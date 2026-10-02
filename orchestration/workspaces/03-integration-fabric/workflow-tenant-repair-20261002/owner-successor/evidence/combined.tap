@@ -1,0 +1,302 @@
+TAP version 13
+# (node:2240) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: local-proof: exact extracted curl body satisfies real handler required tenant contract
+ok 1 - local-proof: exact extracted curl body satisfies real handler required tenant contract
+  ---
+  duration_ms: 242.334
+  type: 'test'
+  ...
+# Subtest: local-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+ok 2 - local-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+  ---
+  duration_ms: 267.9342
+  type: 'test'
+  ...
+# Subtest: local-proof: bootstrap request uses existing authenticated cookie and matching origin
+ok 3 - local-proof: bootstrap request uses existing authenticated cookie and matching origin
+  ---
+  duration_ms: 0.7148
+  type: 'test'
+  ...
+# Subtest: local-proof: missing/malformed/wrong actor is rejected before request construction
+ok 4 - local-proof: missing/malformed/wrong actor is rejected before request construction
+  ---
+  duration_ms: 11.0624
+  type: 'test'
+  ...
+# Subtest: local-proof: malformed/missing tenant is rejected without coercion or default
+ok 5 - local-proof: malformed/missing tenant is rejected without coercion or default
+  ---
+  duration_ms: 22.1294
+  type: 'test'
+  ...
+# Subtest: local-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+ok 6 - local-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+  ---
+  duration_ms: 9.4797
+  type: 'test'
+  ...
+# Subtest: local-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+ok 7 - local-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+  ---
+  duration_ms: 233.2904
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects missing tenant without importing or activating
+ok 8 - local-proof: real handler rejects missing tenant without importing or activating
+  ---
+  duration_ms: 197.2412
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects null tenant without importing or activating
+ok 9 - local-proof: real handler rejects null tenant without importing or activating
+  ---
+  duration_ms: 200.7633
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects empty tenant without importing or activating
+ok 10 - local-proof: real handler rejects empty tenant without importing or activating
+  ---
+  duration_ms: 202.6169
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects numeric tenant without importing or activating
+ok 11 - local-proof: real handler rejects numeric tenant without importing or activating
+  ---
+  duration_ms: 207.7724
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects foreign tenant without importing or activating
+ok 12 - local-proof: real handler rejects foreign tenant without importing or activating
+  ---
+  duration_ms: 207.5496
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects object tenant without importing or activating
+ok 13 - local-proof: real handler rejects object tenant without importing or activating
+  ---
+  duration_ms: 206.376
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects control tenant without importing or activating
+ok 14 - local-proof: real handler rejects control tenant without importing or activating
+  ---
+  duration_ms: 216.0466
+  type: 'test'
+  ...
+# Subtest: local-proof: wrong worker cannot validate a correctly scoped body
+ok 15 - local-proof: wrong worker cannot validate a correctly scoped body
+  ---
+  duration_ms: 201.7687
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact extracted curl body satisfies real handler required tenant contract
+ok 16 - hosted-railway-proof: exact extracted curl body satisfies real handler required tenant contract
+  ---
+  duration_ms: 208.0744
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+ok 17 - hosted-railway-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+  ---
+  duration_ms: 175.3018
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: bootstrap request uses existing authenticated cookie and matching origin
+ok 18 - hosted-railway-proof: bootstrap request uses existing authenticated cookie and matching origin
+  ---
+  duration_ms: 0.208
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: missing/malformed/wrong actor is rejected before request construction
+ok 19 - hosted-railway-proof: missing/malformed/wrong actor is rejected before request construction
+  ---
+  duration_ms: 9.7416
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: malformed/missing tenant is rejected without coercion or default
+ok 20 - hosted-railway-proof: malformed/missing tenant is rejected without coercion or default
+  ---
+  duration_ms: 16.9206
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+ok 21 - hosted-railway-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+  ---
+  duration_ms: 6.4368
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+ok 22 - hosted-railway-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+  ---
+  duration_ms: 168.1138
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects missing tenant without importing or activating
+ok 23 - hosted-railway-proof: real handler rejects missing tenant without importing or activating
+  ---
+  duration_ms: 148.2763
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects null tenant without importing or activating
+ok 24 - hosted-railway-proof: real handler rejects null tenant without importing or activating
+  ---
+  duration_ms: 150.6648
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects empty tenant without importing or activating
+ok 25 - hosted-railway-proof: real handler rejects empty tenant without importing or activating
+  ---
+  duration_ms: 146.0036
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects numeric tenant without importing or activating
+ok 26 - hosted-railway-proof: real handler rejects numeric tenant without importing or activating
+  ---
+  duration_ms: 153.9653
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects foreign tenant without importing or activating
+ok 27 - hosted-railway-proof: real handler rejects foreign tenant without importing or activating
+  ---
+  duration_ms: 148.8853
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects object tenant without importing or activating
+ok 28 - hosted-railway-proof: real handler rejects object tenant without importing or activating
+  ---
+  duration_ms: 151.193
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects control tenant without importing or activating
+ok 29 - hosted-railway-proof: real handler rejects control tenant without importing or activating
+  ---
+  duration_ms: 147.8424
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: wrong worker cannot validate a correctly scoped body
+ok 30 - hosted-railway-proof: wrong worker cannot validate a correctly scoped body
+  ---
+  duration_ms: 147.1093
+  type: 'test'
+  ...
+# Subtest: hosted bootstrap URL resolves from the actual job declared environment under set -u
+ok 31 - hosted bootstrap URL resolves from the actual job declared environment under set -u
+  ---
+  duration_ms: 0.7092
+  type: 'test'
+  ...
+# Subtest: canonical manager/session authority remains tenant scoped and employee blocked
+ok 32 - canonical manager/session authority remains tenant scoped and employee blocked
+  ---
+  duration_ms: 178.0238
+  type: 'test'
+  ...
+# Subtest: qualification: frozen worker handler coerces single-item tenant array; repaired caller rejects it
+ok 33 - qualification: frozen worker handler coerces single-item tenant array; repaired caller rejects it
+  ---
+  duration_ms: 205.6731
+  type: 'test'
+  ...
+# (node:28592) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: deterministic product discovery recognises common enterprise systems
+ok 34 - deterministic product discovery recognises common enterprise systems
+  ---
+  duration_ms: 3.2836
+  type: 'test'
+  ...
+# Subtest: mapping suggestions are deterministic and fail unresolved fields closed
+ok 35 - mapping suggestions are deterministic and fail unresolved fields closed
+  ---
+  duration_ms: 0.7126
+  type: 'test'
+  ...
+# Subtest: credential references accept managed pointers and reject raw credentials
+ok 36 - credential references accept managed pointers and reject raw credentials
+  ---
+  duration_ms: 0.5331
+  type: 'test'
+  ...
+# Subtest: employee role cannot inspect or configure integration control plane
+ok 37 - employee role cannot inspect or configure integration control plane
+  ---
+  duration_ms: 145.7696
+  type: 'test'
+  ...
+# Subtest: discovery evidence is tenant-isolated
+ok 38 - discovery evidence is tenant-isolated
+  ---
+  duration_ms: 179.3237
+  type: 'test'
+  ...
+# Subtest: trusted directory worker is bound to a short-lived server-side discovery session
+ok 39 - trusted directory worker is bound to a short-lived server-side discovery session
+  ---
+  duration_ms: 187.6679
+  type: 'test'
+  ...
+# Subtest: concurrent worker callbacks can claim a discovery session only once
+ok 40 - concurrent worker callbacks can claim a discovery session only once
+  ---
+  duration_ms: 180.1632
+  type: 'test'
+  ...
+# Subtest: discovery session rejects provider substitution and expired sessions
+ok 41 - discovery session rejects provider substitution and expired sessions
+  ---
+  duration_ms: 167.5398
+  type: 'test'
+  ...
+# Subtest: browser/admin cannot attest provider authorization without trusted worker
+ok 42 - browser/admin cannot attest provider authorization without trusted worker
+  ---
+  duration_ms: 184.6596
+  type: 'test'
+  ...
+# Subtest: people sync cannot activate from a connector capability without a people grant
+ok 43 - people sync cannot activate from a connector capability without a people grant
+  ---
+  duration_ms: 217.344
+  type: 'test'
+  ...
+# Subtest: healthy report cannot bypass authorization or an unvalidated mapping version
+ok 44 - healthy report cannot bypass authorization or an unvalidated mapping version
+  ---
+  duration_ms: 296.4699
+  type: 'test'
+  ...
+# Subtest: trusted worker can attest authorization, activate mapping, validate sync and reach ACTIVE
+ok 45 - trusted worker can attest authorization, activate mapping, validate sync and reach ACTIVE
+  ---
+  duration_ms: 290.2423
+  type: 'test'
+  ...
+# Subtest: validation with duplicate identifiers degrades safely instead of silently activating
+ok 46 - validation with duplicate identifiers degrades safely instead of silently activating
+  ---
+  duration_ms: 250.2703
+  type: 'test'
+  ...
+# Subtest: schema drift produces targeted repair guidance while preserving mapping version
+ok 47 - schema drift produces targeted repair guidance while preserving mapping version
+  ---
+  duration_ms: 232.8946
+  type: 'test'
+  ...
+# Subtest: reconciliation stores only counts and digests, not raw employee payloads
+ok 48 - reconciliation stores only counts and digests, not raw employee payloads
+  ---
+  duration_ms: 229.1398
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4725.691

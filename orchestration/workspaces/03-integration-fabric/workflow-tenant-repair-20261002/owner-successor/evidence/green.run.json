@@ -1,0 +1,22 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant-repair\\network-guard.cjs",
+    "--test",
+    ".github/workflows/autonomous-integration-fabric.test.cjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "counts": {
+    "tests": 33,
+    "pass": 33,
+    "fail": 0,
+    "skipped": 0
+  },
+  "networkBlocked": true,
+  "scope": "ACTUAL_EXTRACTED_WORKFLOW_EXPRESSIONS_AND_BODIES_DIRECT_FROZEN_HANDLER_ONLY",
+  "qualification": "No Bash/curl/Docker/HTTP server/hosted/provider workflow execution. Bootstrap actor document synthetic, exact server/session source evidence separately preserved. Unmodified handler tenant coercion qualified.",
+  "logSha256": "675af8899f279983f77e09854f781b847b7c50b3a9fe6aaa5e553f2454d08a19"
+}

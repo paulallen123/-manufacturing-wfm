@@ -1,0 +1,356 @@
+TAP version 13
+# (node:27240) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: local-proof: exact extracted curl body satisfies real handler required tenant contract
+not ok 1 - local-proof: exact extracted curl body satisfies real handler required tenant contract
+  ---
+  duration_ms: 201.6878
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:127:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"tenant is required for source-data validation."}
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:132:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: local-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+not ok 2 - local-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+  ---
+  duration_ms: 198.9924
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:137:3'
+  failureType: 'testCodeFailure'
+  error: 'tenant binding must exist in local-proof'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    binding (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:26:10)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:141:26)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: local-proof: bootstrap request uses existing authenticated cookie and matching origin
+not ok 3 - local-proof: bootstrap request uses existing authenticated cookie and matching origin
+  ---
+  duration_ms: 0.4159
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:161:3'
+  failureType: 'testCodeFailure'
+  error: 'bootstrap request exists'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:163:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: local-proof: missing/malformed/wrong actor is rejected before request construction
+ok 4 - local-proof: missing/malformed/wrong actor is rejected before request construction
+  ---
+  duration_ms: 1.4156
+  type: 'test'
+  ...
+# Subtest: local-proof: malformed/missing tenant is rejected without coercion or default
+ok 5 - local-proof: malformed/missing tenant is rejected without coercion or default
+  ---
+  duration_ms: 1.4821
+  type: 'test'
+  ...
+# Subtest: local-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+not ok 6 - local-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+  ---
+  duration_ms: 0.2467
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:191:3'
+  failureType: 'testCodeFailure'
+  error: 'tenant binding must exist in local-proof'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    binding (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:26:10)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:193:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: local-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+not ok 7 - local-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+  ---
+  duration_ms: 192.0576
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:198:3'
+  failureType: 'testCodeFailure'
+  error: 'tenant binding must exist in local-proof'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    binding (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:26:10)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:202:41)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: local-proof: real handler rejects missing tenant without importing or activating
+ok 8 - local-proof: real handler rejects missing tenant without importing or activating
+  ---
+  duration_ms: 192.9809
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects null tenant without importing or activating
+ok 9 - local-proof: real handler rejects null tenant without importing or activating
+  ---
+  duration_ms: 200.2991
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects empty tenant without importing or activating
+ok 10 - local-proof: real handler rejects empty tenant without importing or activating
+  ---
+  duration_ms: 195.407
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects numeric tenant without importing or activating
+ok 11 - local-proof: real handler rejects numeric tenant without importing or activating
+  ---
+  duration_ms: 194.3343
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects foreign tenant without importing or activating
+ok 12 - local-proof: real handler rejects foreign tenant without importing or activating
+  ---
+  duration_ms: 202.7154
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects object tenant without importing or activating
+ok 13 - local-proof: real handler rejects object tenant without importing or activating
+  ---
+  duration_ms: 206.2753
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects control tenant without importing or activating
+ok 14 - local-proof: real handler rejects control tenant without importing or activating
+  ---
+  duration_ms: 198.989
+  type: 'test'
+  ...
+# Subtest: local-proof: wrong worker cannot validate a correctly scoped body
+ok 15 - local-proof: wrong worker cannot validate a correctly scoped body
+  ---
+  duration_ms: 193.5287
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact extracted curl body satisfies real handler required tenant contract
+not ok 16 - hosted-railway-proof: exact extracted curl body satisfies real handler required tenant contract
+  ---
+  duration_ms: 192.3515
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:127:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"tenant is required for source-data validation."}
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:132:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: hosted-railway-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+not ok 17 - hosted-railway-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+  ---
+  duration_ms: 189.5177
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:137:3'
+  failureType: 'testCodeFailure'
+  error: 'tenant binding must exist in hosted-railway-proof'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    binding (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:26:10)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:141:26)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: hosted-railway-proof: bootstrap request uses existing authenticated cookie and matching origin
+not ok 18 - hosted-railway-proof: bootstrap request uses existing authenticated cookie and matching origin
+  ---
+  duration_ms: 0.2574
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:161:3'
+  failureType: 'testCodeFailure'
+  error: 'bootstrap request exists'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:163:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: hosted-railway-proof: missing/malformed/wrong actor is rejected before request construction
+ok 19 - hosted-railway-proof: missing/malformed/wrong actor is rejected before request construction
+  ---
+  duration_ms: 0.977
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: malformed/missing tenant is rejected without coercion or default
+ok 20 - hosted-railway-proof: malformed/missing tenant is rejected without coercion or default
+  ---
+  duration_ms: 1.269
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+not ok 21 - hosted-railway-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+  ---
+  duration_ms: 0.2282
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:191:3'
+  failureType: 'testCodeFailure'
+  error: 'tenant binding must exist in hosted-railway-proof'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    binding (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:26:10)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:193:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: hosted-railway-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+not ok 22 - hosted-railway-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+  ---
+  duration_ms: 193.6593
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs:198:3'
+  failureType: 'testCodeFailure'
+  error: 'tenant binding must exist in hosted-railway-proof'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    binding (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:26:10)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-workflow-tenant\candidate\.github\workflows\autonomous-integration-fabric.test.cjs:202:41)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: hosted-railway-proof: real handler rejects missing tenant without importing or activating
+ok 23 - hosted-railway-proof: real handler rejects missing tenant without importing or activating
+  ---
+  duration_ms: 198.7254
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects null tenant without importing or activating
+ok 24 - hosted-railway-proof: real handler rejects null tenant without importing or activating
+  ---
+  duration_ms: 179.3791
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects empty tenant without importing or activating
+ok 25 - hosted-railway-proof: real handler rejects empty tenant without importing or activating
+  ---
+  duration_ms: 192.695
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects numeric tenant without importing or activating
+ok 26 - hosted-railway-proof: real handler rejects numeric tenant without importing or activating
+  ---
+  duration_ms: 203.3855
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects foreign tenant without importing or activating
+ok 27 - hosted-railway-proof: real handler rejects foreign tenant without importing or activating
+  ---
+  duration_ms: 195.2242
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects object tenant without importing or activating
+ok 28 - hosted-railway-proof: real handler rejects object tenant without importing or activating
+  ---
+  duration_ms: 198.349
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects control tenant without importing or activating
+ok 29 - hosted-railway-proof: real handler rejects control tenant without importing or activating
+  ---
+  duration_ms: 195.4585
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: wrong worker cannot validate a correctly scoped body
+ok 30 - hosted-railway-proof: wrong worker cannot validate a correctly scoped body
+  ---
+  duration_ms: 418.4609
+  type: 'test'
+  ...
+# Subtest: canonical manager/session authority remains tenant scoped and employee blocked
+ok 31 - canonical manager/session authority remains tenant scoped and employee blocked
+  ---
+  duration_ms: 528.4862
+  type: 'test'
+  ...
+# Subtest: qualification: frozen worker handler coerces single-item tenant array; repaired caller rejects it
+ok 32 - qualification: frozen worker handler coerces single-item tenant array; repaired caller rejects it
+  ---
+  duration_ms: 161.202
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 22
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5353.267

@@ -1,0 +1,23 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "workflow-caller-control.test.cjs"
+  ],
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "counts": {
+    "tests": 2,
+    "pass": 1,
+    "fail": 1,
+    "skipped": 0
+  },
+  "networkBlocked": true,
+  "timeoutMs": 60000,
+  "scope": "SOURCE_WORKFLOW_BODY_SHAPE_DIRECT_HANDLER_ONLY",
+  "qualification": "No workflow/container/hosted run. Source body shape is reproduced with synthetic connectionId; missing tenant rejects before connection lookup. Control includes tenant and reaches missing fixture connection404.",
+  "logSha256": "3c23d3cce00c0910e024e1e6e1ea0d7e2276a8b133491f71eb4070e8b1d531cd"
+}

@@ -1,0 +1,19 @@
+{
+  "shippingNormalization": false,
+  "normalizations": [
+    {
+      "sourceLocalPath": "work/trust_review/workflow-tenant-heldouts.initial-powershell.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/independent-review/workflow-tenant-heldouts.initial-powershell.tap",
+      "receiptPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/original-byte-receipts/0001-workflow-tenant-heldouts.initial-powershell.tap.json",
+      "originalBytes": 10652,
+      "originalSha256": "b759419a1b319acb874d16ed575791a69d02e82aedad3f6c665f0224efe72a47"
+    },
+    {
+      "sourceLocalPath": "work/trust_review/workflow-tenant-url.red.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/independent-review/workflow-tenant-url.red.tap",
+      "receiptPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/original-byte-receipts/0002-workflow-tenant-url.red.tap.json",
+      "originalBytes": 3102,
+      "originalSha256": "b1ad8529282291ba716d84493ee7e6249e49219b466cac07fffbadcab84fa202"
+    }
+  ]
+}

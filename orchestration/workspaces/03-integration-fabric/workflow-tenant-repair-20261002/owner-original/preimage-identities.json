@@ -1,0 +1,37 @@
+[
+  {
+    "path": ".github/workflows/autonomous-integration-fabric.yml",
+    "mode": "100644",
+    "gitBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+    "sha256": "43b1764040222c030eb6c02caf8e4e850c0f50b008187c944ee106c10983bcb2",
+    "bytes": 16565
+  },
+  {
+    "path": "integration/runtime/autonomous-integration-hub.cjs",
+    "mode": "100644",
+    "gitBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+    "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+    "bytes": 61466
+  },
+  {
+    "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+    "mode": "100644",
+    "gitBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+    "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+    "bytes": 24573
+  },
+  {
+    "path": "integration/runtime/gusto-company-connector.cjs",
+    "mode": "100644",
+    "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+    "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+    "bytes": 26119
+  },
+  {
+    "path": "integration/runtime/gusto-oauth-landing.cjs",
+    "mode": "100644",
+    "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+    "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+    "bytes": 3395
+  }
+]

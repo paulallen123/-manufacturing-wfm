@@ -1,0 +1,343 @@
+{
+  "original41ArtifactsUnchanged": true,
+  "successorSealSha256": "a841311231287f9e636304e0713f6d8a1fd8fdd20c943a38bc88e1d54941f675",
+  "successorManifestSha256": "2aa3cfdd067641fa1ffdac479b3a5d816c2fb3bbea01a1d39bf6d7a869e76016",
+  "checks": [
+    {
+      "path": "baseline-lock.json",
+      "bytes": 257,
+      "sha256": "73c6e60148d4aab43c5ce78427798a2cbef7a29787acf432c05a34b07e86699b",
+      "gitBlob": "57106a1bba5537080ddc4831f7d6f46a990e6395",
+      "verified": true
+    },
+    {
+      "path": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 14371,
+      "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+      "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "verified": true
+    },
+    {
+      "path": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17879,
+      "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+      "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "verified": true
+    },
+    {
+      "path": "candidate/integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 61466,
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+      "gitBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "verified": true
+    },
+    {
+      "path": "candidate/integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 24573,
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+      "gitBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "verified": true
+    },
+    {
+      "path": "candidate/integration/runtime/gusto-company-connector.cjs",
+      "bytes": 26119,
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+      "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "verified": true
+    },
+    {
+      "path": "candidate/integration/runtime/gusto-oauth-landing.cjs",
+      "bytes": 3395,
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+      "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+      "verified": true
+    },
+    {
+      "path": "evidence/combined.run.json",
+      "bytes": 905,
+      "sha256": "d8130491356deaf24abe8cdb598e7062fc21509f70c7399dd14381f6f6dc287c",
+      "gitBlob": "d50f2cd74acd36c6c56963b9a1aeb391b5c1465d",
+      "verified": true
+    },
+    {
+      "path": "evidence/combined.tap",
+      "bytes": 11654,
+      "sha256": "aaf7b1b76f68aa2804c2ad03fa0465eded4ffa19da8a73474674524c80ac1034",
+      "gitBlob": "7280007ef17d7c13a505cc3323a8773edd23a767",
+      "verified": true
+    },
+    {
+      "path": "evidence/correction-red.test.cjs",
+      "bytes": 14371,
+      "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+      "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "verified": true
+    },
+    {
+      "path": "evidence/green.run.json",
+      "bytes": 842,
+      "sha256": "45b002e34364ec383f788d4db9f8ca0adad45c5816c901576e946886c7b63592",
+      "gitBlob": "75ed81bf7837cc51e012a176c06005bf765defda",
+      "verified": true
+    },
+    {
+      "path": "evidence/green.tap",
+      "bytes": 8246,
+      "sha256": "675af8899f279983f77e09854f781b847b7c50b3a9fe6aaa5e553f2454d08a19",
+      "gitBlob": "3d738ac163921e2f1c1fd80b457caf3a352c35d4",
+      "verified": true
+    },
+    {
+      "path": "evidence/red.run.json",
+      "bytes": 842,
+      "sha256": "74bd98c93e8d500f75213df4e3c15f8342ce2f719ca2a24c36f7b32584782d9c",
+      "gitBlob": "9355fd05978acaaef48c9c285e472ab7b3e73a5a",
+      "verified": true
+    },
+    {
+      "path": "evidence/red.tap",
+      "bytes": 10705,
+      "sha256": "bbaceed41417e09b8df71334558d5c67e90c469747727fe7687bb281a37034d8",
+      "gitBlob": "e1ce5257425cd898d5387e42306fe7884dfe4233",
+      "verified": true
+    },
+    {
+      "path": "evidence/syntax.run.json",
+      "bytes": 348,
+      "sha256": "fc6ad2748a91f9ed8425e18c7b7cc785ad8c512fa29705c81f6057025eba8a0d",
+      "gitBlob": "47e1c4091147a4ff5ea7d2c87b6401daf109cda4",
+      "verified": true
+    },
+    {
+      "path": "evidence/syntax.tap",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gitBlob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "verified": true
+    },
+    {
+      "path": "network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f",
+      "gitBlob": "aad42e823a4eaaf73dca85152f6756f75634e94b",
+      "verified": true
+    },
+    {
+      "path": "preimages/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 16565,
+      "sha256": "43b1764040222c030eb6c02caf8e4e850c0f50b008187c944ee106c10983bcb2",
+      "gitBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "verified": true
+    },
+    {
+      "path": "preimages/integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 61466,
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+      "gitBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "verified": true
+    },
+    {
+      "path": "preimages/integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 24573,
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+      "gitBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "verified": true
+    },
+    {
+      "path": "preimages/integration/runtime/gusto-company-connector.cjs",
+      "bytes": 26119,
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+      "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "verified": true
+    },
+    {
+      "path": "preimages/integration/runtime/gusto-oauth-landing.cjs",
+      "bytes": 3395,
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+      "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+      "verified": true
+    },
+    {
+      "path": "prepare.cjs",
+      "bytes": 1900,
+      "sha256": "3e20166db61439600f37064c440c281ccdbb3eb939a9229ff0b438094aaa8026",
+      "gitBlob": "d0d1e5a861fecc9baa597458e444ab4b1abb6ff2",
+      "verified": true
+    },
+    {
+      "path": "provenance/addendum-seal.json",
+      "bytes": 645,
+      "sha256": "616bec4307bcccc9eb8c0964d4871ff5975f388bfe045234550e1951a854a745",
+      "gitBlob": "8125828fb4bb5528b855bc7f4ea3c31b4a6c31b9",
+      "verified": true
+    },
+    {
+      "path": "provenance/AUTHENTICATION_REACHABILITY.md",
+      "bytes": 2388,
+      "sha256": "bc6a647bd256b8954a41f9cfa100a4f79bb308422ef5bb1f1082fb57535f3160",
+      "gitBlob": "694abc81ee365949ea1ad353ef46481b44b9e2df",
+      "verified": true
+    },
+    {
+      "path": "provenance/original-owner-review-seal.json",
+      "bytes": 10948,
+      "sha256": "d5e9c797728195fb669de40744c7f22d7ca8ebc5a422f3143d0cda0168a50888",
+      "gitBlob": "e464e7ef6567e3f116264d2daf21d97c11053cd8",
+      "verified": true
+    },
+    {
+      "path": "provenance/original-owner-REVIEW_HANDOFF.md",
+      "bytes": 3614,
+      "sha256": "32f84c0f624bbc8065f1f57b1c19480634408ce1b53bfa192ba3614df3d8c228",
+      "gitBlob": "f15cb63cc3d68979a821020c641da79406defbf6",
+      "verified": true
+    },
+    {
+      "path": "provenance/original-owner-source-manifest.json",
+      "bytes": 4663,
+      "sha256": "1849de2d777fd802b50bac22b9bbff211297c36c437b21286bc669e6bfb01d0c",
+      "gitBlob": "58fadc6e79fd5e63f20f566c05e7a88af22ae9de",
+      "verified": true
+    },
+    {
+      "path": "provenance/source-observations.json",
+      "bytes": 2039,
+      "sha256": "f6caebe3a0f0c2a18bb679a300857aa3aa4c83b1878fad6b86f31fd065555f3d",
+      "gitBlob": "108a0429bca6d3a01b35f2c9e66c55186203ac6d",
+      "verified": true
+    },
+    {
+      "path": "provenance/workflow-tenant-url.red-direct.tap",
+      "bytes": 1509,
+      "sha256": "3df8eb295239a918e56679fb3062e3de0888c6e0bfe54ffa79c17d3140619d52",
+      "gitBlob": "685ed99f0141b4f75df120a1bf1fbbc91d29b2a2",
+      "verified": true
+    },
+    {
+      "path": "provenance/workflow-tenant-url.red-seal.json",
+      "bytes": 2498,
+      "sha256": "bed39d7b4cae5724f37e94ee44781e241e77aa6890c073c96d5dda6644a9e264",
+      "gitBlob": "663aee57c01f15fb0e509fdb667bdd6ead1e0bc0",
+      "verified": true
+    },
+    {
+      "path": "provenance/workflow-tenant-url.red.test.cjs",
+      "bytes": 1258,
+      "sha256": "e49a36a2819037ab1fcbddec4abd5726d8f3872ca46bd2b280aa41b2661e7920",
+      "gitBlob": "4ff97be3b0a7f061421f08038df54ccc884c31e7",
+      "verified": true
+    },
+    {
+      "path": "reviewed-preimages/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 13475,
+      "sha256": "44e087c5496567cc6e85dd82ac0bd7a5c5974f11b0d5542f8dd3309759f5fe59",
+      "gitBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "verified": true
+    },
+    {
+      "path": "reviewed-preimages/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17876,
+      "sha256": "ceab39e1c428e002ff54bac8017455640475984125787a679c0e3d1e2282c5f2",
+      "gitBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "verified": true
+    },
+    {
+      "path": "REVIEW_HANDOFF.md",
+      "bytes": 2314,
+      "sha256": "62aec201a2997d8c99dee36179b10c7cdb764ebb0f17895d4a3b1c20239a4030",
+      "gitBlob": "992800c325128a90a6f8f01b35a7a3bb96f69cae",
+      "verified": true
+    },
+    {
+      "path": "run.cjs",
+      "bytes": 1820,
+      "sha256": "f533a550130e3bff14896ca3986f8de38ba284a1d5b9a957e4922385474ec2e0",
+      "gitBlob": "0e8bbb56e3c2949fb051bc78457389f6535516e6",
+      "verified": true
+    },
+    {
+      "path": "seal.cjs",
+      "bytes": 7528,
+      "sha256": "f99e937b3f9f40716cd4223c833daa87d4045cecf2fe1386cc7cbb4ec3dc6e07",
+      "gitBlob": "cf66f17a8357ce2b4602cc71dc507d5c07c3b66d",
+      "verified": true
+    },
+    {
+      "path": "secret-scan.json",
+      "bytes": 1319,
+      "sha256": "7bd88b144ae010ef5107721ec2027127287cf71b19b966f5dee5178fb0ac26c5",
+      "gitBlob": "ce3586c1090e134a71812f4afca00f7ec296120f",
+      "verified": true
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 4073,
+      "sha256": "2aa3cfdd067641fa1ffdac479b3a5d816c2fb3bbea01a1d39bf6d7a869e76016",
+      "gitBlob": "a146e4ecc00e499a31ae6248789a917bb260d318",
+      "verified": true
+    }
+  ],
+  "canonicalDependencies": [
+    {
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "mode": "100644",
+      "gitBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+      "bytes": 61466,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+      "mode": "100644",
+      "gitBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+      "bytes": 24573,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/gusto-company-connector.cjs",
+      "mode": "100644",
+      "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+      "bytes": 26119,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/gusto-oauth-landing.cjs",
+      "mode": "100644",
+      "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+      "bytes": 3395,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    }
+  ],
+  "shipping": [
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17879,
+      "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+      "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "frozenPreimageBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "reviewedPreimageBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "owner": "lane03/inventory_edges"
+    },
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.test.cjs",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 14371,
+      "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+      "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "frozenPreimageBlob": null,
+      "reviewedPreimageBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "owner": "lane03/inventory_edges"
+    }
+  ],
+  "workflowCorrectionOnly": true
+}

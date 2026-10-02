@@ -1,0 +1,1589 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "shippingPaths": 0,
+  "implementationCreated": false,
+  "sourceArchive": {
+    "path": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "blob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+    "sha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+    "entries": [
+      {
+        "path": "BUILD_INFO.json",
+        "bytes": 1265,
+        "sha256": "66d68190e4cec945205f3e39dae92ec0d28e3846b30627c4891619f37e9b9315",
+        "blob": "7d05af977e18d21443b3b0c7efcf82e63b8e49ba"
+      },
+      {
+        "path": "BUILD_INFO_HOSTED.json",
+        "bytes": 554,
+        "sha256": "623fd1510e4206efe2ede13a4bad5dccde85fa1c673601b87df9bc7c08317962",
+        "blob": "23340df4c715fe6ae8ba74fc35f778caad79391f"
+      },
+      {
+        "path": "PACKAGE_MANIFEST_SHA256.json",
+        "bytes": 14032,
+        "sha256": "b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a",
+        "blob": "475c0947a6b39b50484793485bccb50cbb56780a"
+      },
+      {
+        "path": "RUNTIME_MANIFEST.json",
+        "bytes": 13252,
+        "sha256": "8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce",
+        "blob": "87b890ebca8a7bffb5c262bab06d8cb7960f9a70"
+      },
+      {
+        "path": "STAGING_PROVENANCE.json",
+        "bytes": 1143,
+        "sha256": "ad662868327f95b08d7353f7e0ad0522853401b1226bbbda73414e3e931923ea",
+        "blob": "c5b04ff7efde434465d0a03822951107234befc2"
+      },
+      {
+        "path": "lib/agent-tool-authority.cjs",
+        "bytes": 10709,
+        "sha256": "1d3525f9cbc631c8997fd9342ca798ec5ef216d9d49dd0d499f8b42f2b3bc82f",
+        "blob": "06883aa3ddfaf0800e562fede92805804afc506a"
+      },
+      {
+        "path": "lib/agent-trust-boundary.cjs",
+        "bytes": 3955,
+        "sha256": "f72a05727621a330250fa6b614fea10d36ee606cb77c26b0295b8a3ed8e095b5",
+        "blob": "ee5f6159e9b37974e99cc61a4b8665de72bb685a"
+      },
+      {
+        "path": "lib/ai.cjs",
+        "bytes": 3195,
+        "sha256": "ccb1afe8daca1bf621640c0fbe4ba9b376a64144580b00303a1dc5ab5504236b",
+        "blob": "94b4e090531665963f178a37b78724324856d390"
+      },
+      {
+        "path": "lib/auth-abuse-guard.cjs",
+        "bytes": 2595,
+        "sha256": "4b23c760814670c4623e7615637752333783a2200a91f6aca0561938b6a2068e",
+        "blob": "d1cf18a27d77ca904f9275d7053158fe32f30e2b"
+      },
+      {
+        "path": "lib/autonomous-remediation.cjs",
+        "bytes": 2021,
+        "sha256": "f748d34cf9edd265ba2154b47009822a3247178768b6e97853f5e16015f3ba7a",
+        "blob": "a754bf3d82ffd9306fd62dba4bdd96edac2ae93f"
+      },
+      {
+        "path": "lib/autonomy-safety-kernel.cjs",
+        "bytes": 3495,
+        "sha256": "5504f62816339e9e7d4067e72845e3eb527691731ce78ae4b2261b7d27f55eaa",
+        "blob": "940fe8e79e73a7bd73cee27a2d9c3e7c8af2a1de"
+      },
+      {
+        "path": "lib/build-attestation-policy.cjs",
+        "bytes": 4084,
+        "sha256": "0d542cbd6ad7608ffe924ebdddc0ea94811a8abe6b1f918c393bee5aa4c3367c",
+        "blob": "a470d82c7054a5760934da83dfe7836ff7688b9b"
+      },
+      {
+        "path": "lib/build-identity.cjs",
+        "bytes": 5270,
+        "sha256": "3c2d05f5c2a7d21e50ce2ec8dd0d97f43176b2f8a700a368bbb331ea9fa10d76",
+        "blob": "0df0ffab4464efb0d529c5e5bec5e5f3e5b517e6"
+      },
+      {
+        "path": "lib/configuration-compiler.cjs",
+        "bytes": 4789,
+        "sha256": "379eb6b01dd032f50029c3a50109600a4a77db25261e00cd75079e2dcbb8c793",
+        "blob": "a7e42a4ad81ba89d8c62ac946977d8423ec7ff25"
+      },
+      {
+        "path": "lib/connector-activation-proposals.cjs",
+        "bytes": 8779,
+        "sha256": "88ea03b3a34468a94c00708806ff6551d53875b27f02dcd5d81bac4960445f24",
+        "blob": "f9c08e8c56a6aac0753e4b914fe4ab1471e816b5"
+      },
+      {
+        "path": "lib/connector-discovery.cjs",
+        "bytes": 14146,
+        "sha256": "9f538a3f21dac8ca859914f4ab1841e83adb6588fe5ca4bbef6f91e5f9ac73ac",
+        "blob": "bf851641851258c2b73a5a06a459ef19b509c7ca"
+      },
+      {
+        "path": "lib/decision-court.cjs",
+        "bytes": 2783,
+        "sha256": "7c28d73990e460da2adefb02bd5906349b176c950e23c9f9674adbf558dd6154",
+        "blob": "543ba3003164fc46b7a681af9198b6eb56a1ddb8"
+      },
+      {
+        "path": "lib/dependency-firewall.cjs",
+        "bytes": 10655,
+        "sha256": "01881665f73bdfaaff3fbe0a3de50a7eda0eebd94a39efd3f16f09bda6a55749",
+        "blob": "f369bb2ab14d91aa39ebfa4403fb861f16b24bf3"
+      },
+      {
+        "path": "lib/discovery-review-receipts.cjs",
+        "bytes": 8101,
+        "sha256": "3d8c76353f3f563b724e9f9cc250144af8721dac6ae7bd82e14dc13561fab162",
+        "blob": "4c7a71bb3c087e474802074717c18396e02386d7"
+      },
+      {
+        "path": "lib/disposable-verification-worker.cjs",
+        "bytes": 18575,
+        "sha256": "d86db9564a6dc6c5719122738257238fe15e46cb181d559bd0a24b7de0e9f344",
+        "blob": "aafdeffd740abed022c415dd3d05d8c8a774de8b"
+      },
+      {
+        "path": "lib/engine.js",
+        "bytes": 154,
+        "sha256": "c36d450d2a13436d85581fb56d956383178bcd764ade1b51697cffe8490ee802",
+        "blob": "3b36fd4789614dadc23ff0d5d0e88ded7cef0951"
+      },
+      {
+        "path": "lib/implementation-autopilot.cjs",
+        "bytes": 9703,
+        "sha256": "3538d4dd511439a66c929b0b5ddd42f9efc0ef7164a5cf08bbfc76e57ceb9f80",
+        "blob": "41cd1296f5a8febcb65bcd6e1e60276e9c81e99c"
+      },
+      {
+        "path": "lib/inbound-webhook.cjs",
+        "bytes": 12945,
+        "sha256": "b4510a767f1ec376bcdb330c5bf517bd67d716e958d428dd4671d4ffffd1383e",
+        "blob": "661c24665ee495b2d10d72c6937815526572b64f"
+      },
+      {
+        "path": "lib/integration-gateway.cjs",
+        "bytes": 12816,
+        "sha256": "03cd0caacff0a751d7c3865f2b625655f67d1155b8b2ca5af7b6246683ccc578",
+        "blob": "225cac500eae74cf3630008f71d8b1034f2b571e"
+      },
+      {
+        "path": "lib/level-a-proof.cjs",
+        "bytes": 6719,
+        "sha256": "abe16a1e03dd19d65d17ff5b2d15d719c32c1fba0b2d98846162b03026535a05",
+        "blob": "27c8787fbda712fbbc085f6d5b3501b6346a53c2"
+      },
+      {
+        "path": "lib/outbound-integration.cjs",
+        "bytes": 23640,
+        "sha256": "7e7b3126ac7fdd5712fc5fc7299e3c75893bc699f7ed200dbba29b914c2bf9d4",
+        "blob": "3489c796d290e900459eeb07ba756c4e5ae6bb3e"
+      },
+      {
+        "path": "lib/payroll-handoff-reconciliation.cjs",
+        "bytes": 13135,
+        "sha256": "5aee5da0ae2e70a94617edb9b6ee86e814c54b6c647922a6b60ac71bec3a37b0",
+        "blob": "e6e911d72037436235869e504b8321de087072df"
+      },
+      {
+        "path": "lib/payroll-lineage-ledger.cjs",
+        "bytes": 10655,
+        "sha256": "b240b5fdde03d0c77e727431151d2cb68887335b45225e20673d3ead7688dfc3",
+        "blob": "19d648d5814dcccbab83c1a7ff2b2fd29cc7fddb"
+      },
+      {
+        "path": "lib/payroll-provider-receipts.cjs",
+        "bytes": 12320,
+        "sha256": "ae55b524351684dab1e8d2bf7ed9d5692adfba5d7f39f8b4042a0b740e3e7791",
+        "blob": "abde0abb4d2a804ce8dfb94d5ea7ea4727aed0c2"
+      },
+      {
+        "path": "lib/personal-store.cjs",
+        "bytes": 11654,
+        "sha256": "037ce962b9038f8de6a894c2a4d9f6f3b079928dd33784630d6eb06f47743613",
+        "blob": "a1023cd22c0b4f3229465a756773fba2a390d564"
+      },
+      {
+        "path": "lib/protection-shield.cjs",
+        "bytes": 24185,
+        "sha256": "2900aef31e86ed8d75a25e99b40d7b7b015778e862f7f04672180cce79fc3221",
+        "blob": "6795e95a48439ca187e5d18c006e525da972ef89"
+      },
+      {
+        "path": "lib/provider-adapter-contract.cjs",
+        "bytes": 16559,
+        "sha256": "e5631bc79138e2da426daa01d0ce1af7a394758abbc5232655cf7af6e2f5f196",
+        "blob": "6a84b94fe3d9fc29dc88048973ce2bafd5b1a49a"
+      },
+      {
+        "path": "lib/provider-collection-control-plane.cjs",
+        "bytes": 4449,
+        "sha256": "a5124c01e431c1fcbb39c3fcfe233e1c90d1e6b0d1ceaec94870e78ea6846a4f",
+        "blob": "0ebb8f3847a205ff600107b4bc1e22d9e82c5822"
+      },
+      {
+        "path": "lib/provider-collection-permits.cjs",
+        "bytes": 6844,
+        "sha256": "3af60e5c0f78da46200e131fc3c3f045348101bd75c122defbf722f81574769c",
+        "blob": "852bc5e696f66e8db3b3b4225c2c51ecafe8f770"
+      },
+      {
+        "path": "lib/provider-extraction-plan.cjs",
+        "bytes": 9051,
+        "sha256": "83749087cd3ec5ce89440301149400c2e89144d55c0085f5c7545399f1f2400d",
+        "blob": "a523031c3c3812fb86c9b81b126e540059482662"
+      },
+      {
+        "path": "lib/provider-investigation.cjs",
+        "bytes": 16505,
+        "sha256": "c69950a2253de9479dfdc3a325fc23cb800470fab3347271e98c4e8963b4e555",
+        "blob": "c124ce4b2729685fdd10edb7b7a0617a7da42816"
+      },
+      {
+        "path": "lib/provider-job-store.cjs",
+        "bytes": 23559,
+        "sha256": "1b36e5f9bc599741ab2cc8ef245ac3f5c8ac33e68aea46612cb31252965282a0",
+        "blob": "891575196e0e6a98b6257577cd3d09d5a47f0d3d"
+      },
+      {
+        "path": "lib/provider-live-acceptance.cjs",
+        "bytes": 20392,
+        "sha256": "adad42fbb4e9a216450953174e14d99a0bf8bc57d9a2c792c00b3507ee88eb06",
+        "blob": "31eed03c0a9ba8b8f8b56d9b262aaaa53225fb44"
+      },
+      {
+        "path": "lib/provider-metadata-broker.cjs",
+        "bytes": 14328,
+        "sha256": "746ee6571853be4395f48fcf2826b110caa27cacc6261bd82731e7a6534aa5d1",
+        "blob": "85ec9b39863f8d9a03abefe91ac5b98104d2ceda"
+      },
+      {
+        "path": "lib/provider-metadata-evidence.cjs",
+        "bytes": 12943,
+        "sha256": "e3b08bd80464689ea5d783cbc4dc261d8db8c1ebb48936d84fb2f591e846bd41",
+        "blob": "2951dd64d078f296ead9be98b9cf0eb7909a8f1c"
+      },
+      {
+        "path": "lib/provider-reconciliation-evidence.cjs",
+        "bytes": 9615,
+        "sha256": "db09a439e32090fe4f079a3660e976b8275053107ee0012536e896328d412749",
+        "blob": "2349833a8b5907c96c6c19de455327a7b986e4ee"
+      },
+      {
+        "path": "lib/provider-recovery-authority.cjs",
+        "bytes": 10554,
+        "sha256": "5a53dc665b6f4e651705d8590c91188b4e325e625fa64cb8210a0b65dbf2cb63",
+        "blob": "70bd2475431e1e85869710b10900bc275a4b49bc"
+      },
+      {
+        "path": "lib/reliable-event-outbox.cjs",
+        "bytes": 9703,
+        "sha256": "af9a9e05479defd636d5723684b0552c9e31ad2e9afe12da115653f9bd99891b",
+        "blob": "7e07b158fc1065d1c1dc95e1cfcff9caeee6aa38"
+      },
+      {
+        "path": "lib/request-source.cjs",
+        "bytes": 1326,
+        "sha256": "d5ce8a9531d8e2fc544f7440828e182ed8fd6010f5ab9829c0016cb9f7c603f2",
+        "blob": "9392d8a42102a8b7a1e472b5272dfd033a3b2548"
+      },
+      {
+        "path": "lib/sap-event-audit-reconciliation.cjs",
+        "bytes": 7375,
+        "sha256": "bb3fcbd81eef003ddb8cd50ed580c64ba077f4e90bc5e4bdcc647906048361f7",
+        "blob": "5653215bcf44ef7b9ddc733ed552aafa95a4e49d"
+      },
+      {
+        "path": "lib/sap-successfactors-event-connector.cjs",
+        "bytes": 10927,
+        "sha256": "46d9eba7b3be2d57bb1bfe5c6007058ea8bb9a2b91728320cd0072cf0ff4b387",
+        "blob": "452d7cb06d2e4b5b31016408405a52969aba1651"
+      },
+      {
+        "path": "lib/security-control-plane.cjs",
+        "bytes": 13498,
+        "sha256": "2a0d580d9a08cb817eb899cd5d5726a0ed0387d1a8738878519d561c778ab834",
+        "blob": "b5f0fc70fdc140f128720579f249a73f6e610b9d"
+      },
+      {
+        "path": "lib/support-bot.cjs",
+        "bytes": 15154,
+        "sha256": "f5d3f6720fa888eefb98e136e8eba470edca57be0761410912c4f43bb03161db",
+        "blob": "f1a5164cf98d95fe8d32d133567581db9c2c6490"
+      },
+      {
+        "path": "lib/support-operations.cjs",
+        "bytes": 16706,
+        "sha256": "459c381fbdf517d438bcbb0a1341c0708eed1b8ba1e6e482147bb8f3b6143ddf",
+        "blob": "09cf9eabff7eb1759484ae00e39778dc77e40b68"
+      },
+      {
+        "path": "lib/training-studio.cjs",
+        "bytes": 2607,
+        "sha256": "52d1d0f554c8e38b3214fdfead797b15d1bb4a40d63e95264bcc8900549f53e2",
+        "blob": "a08b0b8ce6a50becee8f2647fb595a2f6eae546c"
+      },
+      {
+        "path": "lib/transactional-outbound-bridge.cjs",
+        "bytes": 4317,
+        "sha256": "52f890d30bde3e657e8e95d2f4db25d075ebdc8c8cf3be3bd4331b40c072e81f",
+        "blob": "9617ce7f74c573b57edb58aeeda03244e03757f4"
+      },
+      {
+        "path": "lib/universal-connectivity.cjs",
+        "bytes": 19480,
+        "sha256": "fa9a6b1418abb7af900a4d0a468cc373c99c485bc8d0e3a53aee45f9fcb9a5cd",
+        "blob": "0862d010d6aa2ea48db3fd6159ed62c3be55e192"
+      },
+      {
+        "path": "lib/verified-ingress-attestation.cjs",
+        "bytes": 7242,
+        "sha256": "20447545ba57c0274258db1a46136e153eda5daf6bb316844fefa010975f7393",
+        "blob": "929f2e5a5f822d0ed87cd40d1934d39b1f01fb72"
+      },
+      {
+        "path": "package.json",
+        "bytes": 1525,
+        "sha256": "aad05a5c5f91e6603d6116511950607752733d43bbc5520c0bc4c573eac8b490",
+        "blob": "d2b715d917cda6a1c0e409ce0d47ed2a81e1076d"
+      },
+      {
+        "path": "public/app.js",
+        "bytes": 44461,
+        "sha256": "ee829f52e8c68a2545476f719d0c049b53e5dfd22c3cb2decd29eab3532fcec3",
+        "blob": "a80b32accbbe7a5d0e220f3f419e613c21d7a262"
+      },
+      {
+        "path": "public/attendance-corrections.js",
+        "bytes": 9447,
+        "sha256": "d76c6b64aa7ef17eaf13333cfdbef773453b814d54eb354fcdc84b5885bcb461",
+        "blob": "9631f8fc61c4941014d69f9c45028ff0ab2dd8d8"
+      },
+      {
+        "path": "public/availability-control.js",
+        "bytes": 9198,
+        "sha256": "e9b6e2a4018f8fe612e2f78a6d388c6da9e065d92f379ef116cdee62ef89c9ca",
+        "blob": "97221cb9481fc6fedf838d67c6dd557964822402"
+      },
+      {
+        "path": "public/availability-ui.js",
+        "bytes": 5591,
+        "sha256": "148d7e47de4b5483fbdc241b55cfeb533d3933ba14a8c036f5b2666ba67b584e",
+        "blob": "c43d335a6b1a986be52be5973e5781e087a735eb"
+      },
+      {
+        "path": "public/company-ui.css",
+        "bytes": 7726,
+        "sha256": "3a345bcf101e5bef4af884e512dcbc8150a37752053b42165078363fc354c99e",
+        "blob": "0dc599925c39702553b49f491ed2e6b356a9beae"
+      },
+      {
+        "path": "public/company-ui.js",
+        "bytes": 43110,
+        "sha256": "5d2152d8aab79a58d2b562f9842142fe0324c2b284fc1979745e1c400d79615d",
+        "blob": "8720aaa94f59d019adffbd3d0b8c0a703a81bb12"
+      },
+      {
+        "path": "public/core.js",
+        "bytes": 5737,
+        "sha256": "7884119d1b1cd3f28d3bdf130b1733a0ba9d187bf92dea8bd8bc7980aebd8218",
+        "blob": "88052babeba5793ca90fde17960716aa7f229325"
+      },
+      {
+        "path": "public/corrections-ui.css",
+        "bytes": 2260,
+        "sha256": "0be520b0874addd1bf5ec4c070eeeceeaf776583d5261fddde12e511231032e9",
+        "blob": "efa40cc537986a93c0ff389239d26dd53a435125"
+      },
+      {
+        "path": "public/corrections-ui.js",
+        "bytes": 14469,
+        "sha256": "e43c61daf15ce955cf77465fb3e83a70daccb355a11a722917d500482151816c",
+        "blob": "c88bb8329a31d7cb8f0f409622d3d1a21b08331f"
+      },
+      {
+        "path": "public/cost-engine.js",
+        "bytes": 39840,
+        "sha256": "9dce4e7281da433d1b8ae2efa783bd0e30fef43d4c4f6e0e210478ff0c3475f5",
+        "blob": "75eeb7c3291d1b234c6ab8cf9d93b043e39a61f7"
+      },
+      {
+        "path": "public/cost-ui.css",
+        "bytes": 6424,
+        "sha256": "cdadcb26c2b4950dd7625dcad13c9abfd27e7bd286ccad0a1fd7184c17ffcfc3",
+        "blob": "f2f1f09a853c8f255ce124c4ec45d65f5ca5f2b1"
+      },
+      {
+        "path": "public/cost-ui.js",
+        "bytes": 36728,
+        "sha256": "ebf4a0b32dc1a0ff927eead33f119f7294ab4212219eca767e952ff8cb1c2aed",
+        "blob": "f065ebc2891bb5d43bb863ed33dcf380e30ea086"
+      },
+      {
+        "path": "public/demand-engine.js",
+        "bytes": 39456,
+        "sha256": "c8adb3f2b023a106250b06877b0e46ed499a7152ce148d14f915e278e2645218",
+        "blob": "e02eedd2de5d9275d090940d70a1639c683bc32e"
+      },
+      {
+        "path": "public/demand-ui.css",
+        "bytes": 6793,
+        "sha256": "2b544dbeed907427ac8561d4c701c48ef49713864fb889f5eac66dfef199258a",
+        "blob": "6caec3e54cb11566c49fbfdf314afd99b3c16bf7"
+      },
+      {
+        "path": "public/demand-ui.js",
+        "bytes": 32627,
+        "sha256": "b40f8ad3fc4cd63eeab830002be5c2990784cdc66b7bf05a1ea57ab513876eb9",
+        "blob": "d9b47240c99e9c7352d287ac3918582b5fa715ec"
+      },
+      {
+        "path": "public/economic-cost-engine.js",
+        "bytes": 11442,
+        "sha256": "d3ca6923c17e1d38fb0305df7fd709763f3af87f54c1382c0aae1a084f0caefe",
+        "blob": "3f9ee6c30641723a06ac6d3c3073968e58f4649d"
+      },
+      {
+        "path": "public/engine.js",
+        "bytes": 30581,
+        "sha256": "bd54d977582f2dbb9d4571d5184b553e5ade350ab077805f337a392324eae944",
+        "blob": "4a386fe50bc433dcc9a5a0bbcf6b61a0dfda01f7"
+      },
+      {
+        "path": "public/factory-control-ui.css",
+        "bytes": 11441,
+        "sha256": "d5d30c881925070056b064976a995c6a81ef68f9b668a46270617feea7ce6afd",
+        "blob": "f339346842867005a430c56660375dd135cee488"
+      },
+      {
+        "path": "public/factory-control-ui.js",
+        "bytes": 15294,
+        "sha256": "309b9d6b66421f50a73ef2bc17556dce618a9668ac2774ee282af7ad86cbf18d",
+        "blob": "f8cb41b84c781623e0b530d1fedd763f00d2c3a7"
+      },
+      {
+        "path": "public/features.css",
+        "bytes": 6699,
+        "sha256": "ce9088c7a92e654d8852a294ec136794b32a1d840d3a137cc4c9c78fb54f18a5",
+        "blob": "1f1f80655b9e428452edafc948fb364a3b64d275"
+      },
+      {
+        "path": "public/features.js",
+        "bytes": 28559,
+        "sha256": "a21508c6e1ceca85830e947fae52615f606c8075174cc8a10a0a747bfb12a239",
+        "blob": "8c7a1a7c793a533fb7b8667d21defc5398da3dd6"
+      },
+      {
+        "path": "public/index.html",
+        "bytes": 3928,
+        "sha256": "5a15e0a23a56202895243940ba66680b43903328afc17713902d440300c3801b",
+        "blob": "a8e0d825da99a9b3d373e0ede0ab64afdf0b38eb"
+      },
+      {
+        "path": "public/integration-ui.css",
+        "bytes": 2214,
+        "sha256": "d4f99edf6d15928cd0b8b022f52f36c89e99ccc9b23b82ee7a0419374a438f38",
+        "blob": "36471bca15a7f9ef826d58a287bca2ea7688e3a0"
+      },
+      {
+        "path": "public/integration-ui.js",
+        "bytes": 17152,
+        "sha256": "a1473f7c89e24165cd083289f9991903f82fa82a06696c80195e131a04ee2e05",
+        "blob": "a14af9da7eb79fb7e65402a20d7f1dc24915a67f"
+      },
+      {
+        "path": "public/kiosk-admin-ui.css",
+        "bytes": 504,
+        "sha256": "5f82e67518d40deec42aa17fdea248ef3ef94e037969e636db175540cfd48824",
+        "blob": "f60995a23cb2126d2f22709ba16572347e4710f6"
+      },
+      {
+        "path": "public/kiosk-admin-ui.js",
+        "bytes": 3953,
+        "sha256": "2a83a31b738c669c6f003b9b237837c4adfed2aa2c1da1afccd21e59939534ba",
+        "blob": "6885693959ce1aad4407073e7f33292dae8bf6af"
+      },
+      {
+        "path": "public/kiosk-client.js",
+        "bytes": 4208,
+        "sha256": "a10aba2de7b99907368551314a830b62551dcaa2b553ab8cda389766f63be99b",
+        "blob": "ea8bb26d7c7ebbad62e98ec8c4843332585e3d6c"
+      },
+      {
+        "path": "public/kiosk-manifest.json",
+        "bytes": 174,
+        "sha256": "c3043f329fd54b0a32c429bbbb5969edb3e6397e2aa8da5fa80dd49c8924bbe9",
+        "blob": "e2b48c763c596f99b2fab12c505b1e2186fa520a"
+      },
+      {
+        "path": "public/kiosk-sw.js",
+        "bytes": 571,
+        "sha256": "0e784c2342efbfccd422701cbd57052a01b6bb0ef827e8396d8f1c5d4a012b3b",
+        "blob": "a1ec339d7e9a368fe4cc274538f014e829d1718a"
+      },
+      {
+        "path": "public/kiosk.css",
+        "bytes": 1546,
+        "sha256": "1d60a80a13819fb79a1e5cfbcfc50d444ed043808eb41ace110ea781e6b9af24",
+        "blob": "97cb2f07d5d6b64b6e42dc16c2142f3fbd3e0351"
+      },
+      {
+        "path": "public/kiosk.html",
+        "bytes": 1916,
+        "sha256": "53a206d907149dd82bc0667e54be178b8333069aba4ec149191b60b190c942df",
+        "blob": "15c2b312adee62223886165f3efb40e3e480b94d"
+      },
+      {
+        "path": "public/manufacturing-context.js",
+        "bytes": 21467,
+        "sha256": "748c15b7527cd806bbec914f5370b94fafd4adc85ba421fc9b11a57951ce59c6",
+        "blob": "096b332efde37dd2ab92dca6a59ced90a4a5df63"
+      },
+      {
+        "path": "public/manufacturing-scenarios.js",
+        "bytes": 11716,
+        "sha256": "59dfa17ebf7b5ec9eb23ab691b6bd90ac6f67e81ec21145fe73bc9ddb6159266",
+        "blob": "1c7ba7c8aaaa070c8dccfbaf0b90ee79a6f3ecd3"
+      },
+      {
+        "path": "public/onboarding-engine.js",
+        "bytes": 15310,
+        "sha256": "c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e",
+        "blob": "eb77f38d7579b9e17155e98d4350d15bd994caa7"
+      },
+      {
+        "path": "public/onboarding-ui.css",
+        "bytes": 1579,
+        "sha256": "d55f832ca90d0b6a13a45fac72b339fef0a962b1eab2348445da3d1024be8b3c",
+        "blob": "436ba12e7e23e6bb3718ca56f660c9f7a7aa7337"
+      },
+      {
+        "path": "public/onboarding-ui.js",
+        "bytes": 9164,
+        "sha256": "b10658c226607a5b2f67cda1166755c8f447d4bda404a96e726d062b549e2a76",
+        "blob": "ceefd600ac4a5fb485cb49bafe1593f861771abf"
+      },
+      {
+        "path": "public/operations-engine.js",
+        "bytes": 37881,
+        "sha256": "73678a22593433928b52dd7bee75ee2f9f75cca3d777711209aa0fa7706b1302",
+        "blob": "2a071007170ac91bbfd182777b1a2fa195c75cc0"
+      },
+      {
+        "path": "public/operations-ui.css",
+        "bytes": 3792,
+        "sha256": "f06def76fe5029a13dccf5d1f89d3d3a7b73940b3ec1456c016571b729ec0762",
+        "blob": "6a6dbd09d8d33d3bde56980c2d282e2da8a91ec0"
+      },
+      {
+        "path": "public/operations-ui.js",
+        "bytes": 39144,
+        "sha256": "5d7135cf8a479bbef987cef818fcf260dbea086e9b7cd018a81ae4ce3688dce0",
+        "blob": "5f9c91b4c724fad2028eda3bce5ced04b8c1e884"
+      },
+      {
+        "path": "public/org-admin-ui.css",
+        "bytes": 1159,
+        "sha256": "a42d85608e5f24598583a73d1c3228e40f8095c2115180bb3947e5522e6066f4",
+        "blob": "3cea3bc67153af85ec0155335bae35bad773604e"
+      },
+      {
+        "path": "public/org-admin-ui.js",
+        "bytes": 8166,
+        "sha256": "4faddf2c9b7089977a6bb1f84f13b42af3129a30c97b05a9d38a194216bc471a",
+        "blob": "bd006aa943fdeeb1ec882ea48b461ca8263821a7"
+      },
+      {
+        "path": "public/org-admin.js",
+        "bytes": 5747,
+        "sha256": "1910c2919ea47d08b9f4aa8c52818e9117127c9dc959c72d723959ede97b79cf",
+        "blob": "a44f5a6bf75e8270aa047b9670e4c3df56ae0685"
+      },
+      {
+        "path": "public/overtime-watch-ui.css",
+        "bytes": 2862,
+        "sha256": "d7eebb691e4439fdacc80489f442a6bc4000eb8f244425cdfba35a10120804e1",
+        "blob": "bc1ad58d0d47aa1b3ddcf3fa36d2752ab62347a3"
+      },
+      {
+        "path": "public/overtime-watch-ui.js",
+        "bytes": 9967,
+        "sha256": "8e59747c7691a809b3b15bb53eb901abcd6ea94980936142214633643c5235ad",
+        "blob": "53bb613447696dbd08e7c635429e13cc0b1bbd7f"
+      },
+      {
+        "path": "public/overtime-watch.js",
+        "bytes": 15916,
+        "sha256": "6d28116e7de4b10adee2e2d41cdfea48cf282385d3dd49ca0b55c38365f7877a",
+        "blob": "8464472008e89a15c52e4fb495207d7556b3d2dc"
+      },
+      {
+        "path": "public/payroll-control.js",
+        "bytes": 55342,
+        "sha256": "ec5fa3cd5cb2bc4d2e66694b6211ad3dc8c24ea279bd48b0bc0fa01260eb1200",
+        "blob": "64cd0ceee0e16dfe19ea326f5071e56bb7d2c0c7"
+      },
+      {
+        "path": "public/payroll-intelligence-ui.css",
+        "bytes": 3172,
+        "sha256": "7e14d140c404ed3164ec998693af4cd2da92ab042b6b5dd4282ab5fd8ee3bc55",
+        "blob": "db3e4fd53975961a9af1181163803deaa8a1b97b"
+      },
+      {
+        "path": "public/payroll-intelligence-ui.js",
+        "bytes": 6860,
+        "sha256": "f3d7485e84c496e999a48b6cdec7a0aed1b582bcd096ce069e4c454c6f081274",
+        "blob": "4069802b3ba05355d032ecc21e27917757a4d956"
+      },
+      {
+        "path": "public/payroll-intelligence.js",
+        "bytes": 14311,
+        "sha256": "17e34c86e435be12bd16457f8cf68629541bf701342e39426561b5ddb1df8bd1",
+        "blob": "f42370acd7d8bfaf87b2dc7ac735af4a49502eb2"
+      },
+      {
+        "path": "public/personal-core.js",
+        "bytes": 6587,
+        "sha256": "b2676079666e687760bf5a75ffde6174a7a2c8af2f3a52029898fee9a05901a0",
+        "blob": "e81859e956a6dc51a75aace9ad495d2148d5c4fa"
+      },
+      {
+        "path": "public/personal-ui.css",
+        "bytes": 3438,
+        "sha256": "acd390fef07d4c3d23ae025146fdb954ac9933f89348fde1859aed04a697b3f2",
+        "blob": "05dfffd6d13d333cbdcb48f71d15fde26f4a5399"
+      },
+      {
+        "path": "public/personal-ui.js",
+        "bytes": 21952,
+        "sha256": "1b6a88284120ead654029c226768044c2160a9feb85e9a36ca0a5b1a88d09f87",
+        "blob": "7cfbfff73e4bb171acf6a799af49a1f318bae55a"
+      },
+      {
+        "path": "public/personal-view.js",
+        "bytes": 4982,
+        "sha256": "72ba33bf3c19d43e0bf02243e9ce02340520a53495271618d3aefe102e96f697",
+        "blob": "2069f34d652fc7ef97d8a175bb37221d5cb87d04"
+      },
+      {
+        "path": "public/readiness-engine.js",
+        "bytes": 69703,
+        "sha256": "3938b68823864d2c8f91136df47ed8b983bd6c1e5e27a301deb5cf1d9e59ff90",
+        "blob": "55f45cb48cafba85efcdbed73efd67987d7513c2"
+      },
+      {
+        "path": "public/readiness-ui.css",
+        "bytes": 6634,
+        "sha256": "384aa1bf604a2f8b186219e8c5aa47044ab8fd726f7b8a4f00c78a1a18de072d",
+        "blob": "3537f842f843f7d41d7624789ca3c79ee16a5da3"
+      },
+      {
+        "path": "public/readiness-ui.js",
+        "bytes": 34964,
+        "sha256": "be8e0898d23836b7a38a0cfca3df326113202b991cdb1ea141c4de64226f01b8",
+        "blob": "d5e757eac2b3a1ed80cd0d99fdd6143a81b859d1"
+      },
+      {
+        "path": "public/recommendation-demo.js",
+        "bytes": 3858,
+        "sha256": "5f21d5451979c87c3b291be8e1f99e59adde759dfee5a9050f32611b28bd24eb",
+        "blob": "adc7ce3e4e51d50ed05380c05c834a8bfa2168d8"
+      },
+      {
+        "path": "public/recommendation-engine.js",
+        "bytes": 24522,
+        "sha256": "15377ac2f154131a1ff4d095c6d7b65f389a7ac71fec57467c889fe9cfeb4b16",
+        "blob": "bd3a45958f1159bde83a9725a9a099b46eca8a6b"
+      },
+      {
+        "path": "public/recommendation-ui.css",
+        "bytes": 1883,
+        "sha256": "cec05ef56863d246a0a446ec4b13556712b84b93ee02ba1d05b72ebf2a2b43eb",
+        "blob": "104415b2f2cef0ab7216a886ee107f70250d03b6"
+      },
+      {
+        "path": "public/recommendation-ui.js",
+        "bytes": 10705,
+        "sha256": "9b3d5f06f77900bf13fa214c91f1ed99daa3c30c1d2d87d29c7e477a6e34fda2",
+        "blob": "bbf1d884f8cf641fd8d3927263c172fe981f5007"
+      },
+      {
+        "path": "public/resources-engine.js",
+        "bytes": 35290,
+        "sha256": "44111eb9eb35795d91325616b628a26ad673d69edc2cfd9d8e4232357a65ed8b",
+        "blob": "5c08b8e07b119c2c1d27395363d89910d6cf6958"
+      },
+      {
+        "path": "public/resources-ui.css",
+        "bytes": 1960,
+        "sha256": "d130598989bbb6bf89db0dc4a96027083adab3d091bb67f852ce2aadfa5036c9",
+        "blob": "2def015e06333add323f47cee44da6b1092ad1d2"
+      },
+      {
+        "path": "public/resources-ui.js",
+        "bytes": 33933,
+        "sha256": "f317285f27c11a07d904f6cd6a217f96e3cefef0a1aeeb2e4b4f821fba70ec0f",
+        "blob": "c2a5a3a95f378c0f421be8fa4d72950d6edee226"
+      },
+      {
+        "path": "public/review-ui.css",
+        "bytes": 9982,
+        "sha256": "abbb6b3ac2ac10a322cf41cd16371acdfad0d3a0140744c870e20543ef546489",
+        "blob": "482a1bcbecb8aaddc50087c74c28cd0a3ffd1e56"
+      },
+      {
+        "path": "public/review-ui.js",
+        "bytes": 55467,
+        "sha256": "d1a6d52678b389d21f165de886f7fb907d27bd1fb245dde569b65041bf2c8b63",
+        "blob": "da32d2116f3e164a4cd77e3fa49ac9da3f2ba1c1"
+      },
+      {
+        "path": "public/schedule-publication.js",
+        "bytes": 24414,
+        "sha256": "6678113945a1196174564a277d8e61ba64af61684c7e27c8d53c06dcbebe50f9",
+        "blob": "e16396f8e5a5ee5d4bffff8f8ad99b27b4127f7d"
+      },
+      {
+        "path": "public/schedule-report.js",
+        "bytes": 3400,
+        "sha256": "ec4e117b689f7da39ac5d8aa6d69861d794a896d3bf07ef443e723a47ce5a700",
+        "blob": "a65287003e8e03e6f8c12bb4dd976a6717cdb88b"
+      },
+      {
+        "path": "public/schedule-ui.css",
+        "bytes": 4669,
+        "sha256": "744be408bf6dc7f89ebfcc9fb2375947570fc9d02b098d7a5718dff18fbfe5db",
+        "blob": "5a6dd710c7b015d25196fff10f9e837d59b6b753"
+      },
+      {
+        "path": "public/schedule-ui.js",
+        "bytes": 19051,
+        "sha256": "a0394484562a489a932845b1e7fa0c63cda8b18386a48e21dc270a7e1f7203da",
+        "blob": "82697c6db32749a005003cb0622c6b07560677f1"
+      },
+      {
+        "path": "public/styles.css",
+        "bytes": 18430,
+        "sha256": "a22f87aa1ae83aefd5d3fb8d9962a0dee150ff41770b35d785df1577af27ed5a",
+        "blob": "543848f4f568382dc297246df6bbbaa157ea1b8e"
+      },
+      {
+        "path": "public/support-bot-ui.js",
+        "bytes": 11269,
+        "sha256": "d9308e4621037c1de1665a93a5d88863498204899648e52a3ee27817a870e2ea",
+        "blob": "41b1756ed268f93ff77b21e1c0043493791fa70f"
+      },
+      {
+        "path": "public/support-bot.css",
+        "bytes": 2679,
+        "sha256": "0d14e2e1019b7ef6e6c5dae793ec26ee5cd8dc2e04b166cd27cabbc6ea5c1d21",
+        "blob": "fca320417219e8623572870b22be17d4dfc3185e"
+      },
+      {
+        "path": "public/support-ui.js",
+        "bytes": 4734,
+        "sha256": "b3089fec672bbe4ad5d12dd07293869ac9fec4b70a6f0de756efb66c19422c8e",
+        "blob": "d5aa29ed242f5c2e8efe6ebe4fe65fc2ae4d79fb"
+      },
+      {
+        "path": "public/time-review-ui.css",
+        "bytes": 5901,
+        "sha256": "a7f021c3c41a1e1f7a9a92154dec48f9011dc7461259884ddba5f21a19283d2c",
+        "blob": "f14b15cae36c480c3e9fae71e5a61732aab20609"
+      },
+      {
+        "path": "public/time-review-ui.js",
+        "bytes": 25429,
+        "sha256": "cfa8fa363cf4aa2e179fd32208831e29a9fb578d5775aba236d4029467a298c5",
+        "blob": "be231cb98b876bf23c2215d877318aaa5f7f87f3"
+      },
+      {
+        "path": "public/time-review.js",
+        "bytes": 21105,
+        "sha256": "4779479574ddfe005255c6fba30e51e366f270a14c1dc66a63de7767c3dfac4c",
+        "blob": "4afd3829ac638c71fd81322c5d976f1fd94b840a"
+      },
+      {
+        "path": "public/ui-evolution.css",
+        "bytes": 14420,
+        "sha256": "3007cd83bb3a2deada99d2f3c97ad9752ebd9908fcead3aba68bd8581209aa69",
+        "blob": "4be9b0d32577e8e7adac14dd3de4db0bdc7026f8"
+      },
+      {
+        "path": "public/value-cockpit-ui.css",
+        "bytes": 2777,
+        "sha256": "49f47fab59d1b15b9ec8b12c53b7c3f0c90736eca46e60579cbbbe4a2ed81acc",
+        "blob": "77b509c34b6b99078c0dfff0b7f7e7dfae0f9820"
+      },
+      {
+        "path": "public/value-cockpit-ui.js",
+        "bytes": 6775,
+        "sha256": "4cbd58309c00167e9db1b750bc12543fa1522c51379d2c56b0553392e6461417",
+        "blob": "303375762db8da5a9dc40b932ded0f137922bf0c"
+      },
+      {
+        "path": "public/value-cockpit.js",
+        "bytes": 14569,
+        "sha256": "34228339bb497d24a6f36fb3b596b0f5a94cbada2455fab9e3f9dce07a8bbbc5",
+        "blob": "43d554a4e722320891d0dd0da612bbd972e45438"
+      },
+      {
+        "path": "public/work-rules.js",
+        "bytes": 53487,
+        "sha256": "bfd456214b9581f97bd9fd6be25f4f6b3266974483c3dffcded520b1390bed4a",
+        "blob": "d2f8e2a51f7e7c2058a8e43737a7cb5f5d43f73c"
+      },
+      {
+        "path": "security/AUTONOMY_SAFETY_MODEL.md",
+        "bytes": 605,
+        "sha256": "3328741875666ee8679c9eaad88e7392cf09f69fa8928ac94a9c2d043bac47ee",
+        "blob": "ea38d2abab7e1ee1eec4d79ecdd4f35c9e22f57c"
+      },
+      {
+        "path": "security/DEPENDENCY_POLICY.json",
+        "bytes": 2166,
+        "sha256": "f822fa00dfe761bab10704502f379553c3762da626c58506a997d6abb5a2d4f9",
+        "blob": "d3aa39cccad5e9094d7c619a591d282d187e5d26"
+      },
+      {
+        "path": "server.cjs",
+        "bytes": 123267,
+        "sha256": "1792f544d0fea25577f683f3df957b4f74b6a086cd0479b24b1fe77f58587dd0",
+        "blob": "7306998ba72723cc8d93141d03167df97d1fdecf"
+      }
+    ]
+  },
+  "files": [
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "remoteBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 16565,
+      "sha256": "43b1764040222c030eb6c02caf8e4e850c0f50b008187c944ee106c10983bcb2",
+      "blob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "clocking-security-v2/access-control-evidence.mjs",
+      "mode": "100644",
+      "remoteBlob": "ff89f396f3db0f7ad3b9dc4b000c6c31103580e7",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/clocking-security-v2/access-control-evidence.mjs",
+      "bytes": 8974,
+      "sha256": "7673be5dd9dfda416209e9c7a7c6845ae9425998a0f645b9dde46867039d3dbf",
+      "blob": "ff89f396f3db0f7ad3b9dc4b000c6c31103580e7",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "clocking-security-v2/access-push-adapters.mjs",
+      "mode": "100644",
+      "remoteBlob": "f1f45929d35b733c9062357ec356b522f9788658",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/clocking-security-v2/access-push-adapters.mjs",
+      "bytes": 13569,
+      "sha256": "6640b47ab0ee9c0fad4acc201d33fbf8d56e36f716fa25a81f0b774afbed2554",
+      "blob": "f1f45929d35b733c9062357ec356b522f9788658",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "clocking-security-v2/access-push-adapters.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "00635451081d00db5d70ec8723c7249477e34855",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/clocking-security-v2/access-push-adapters.test.mjs",
+      "bytes": 12853,
+      "sha256": "3836b1fcc26d46d39f012076a6c11f16ec17ab67011db2551f6cc7f6fd6a17ae",
+      "blob": "00635451081d00db5d70ec8723c7249477e34855",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/connection-test-plan.mjs",
+      "mode": "100644",
+      "remoteBlob": "e90c6263c470a043cf366180624b96c1319ec43f",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connection-test-plan.mjs",
+      "bytes": 8657,
+      "sha256": "6f0988c9c8ef6a985dfdb6dea932d0bb0f0e089256b3b278c052cac17ec8ac8c",
+      "blob": "e90c6263c470a043cf366180624b96c1319ec43f",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/connection-test-plan.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "62a060090fd7146eb62d623a7336d30bd46a85e5",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connection-test-plan.test.mjs",
+      "bytes": 6185,
+      "sha256": "7d80f78a518bb41b9e1eecf31d7b11cbf6f5ed65fa38033b72ff1b0425d0bdcb",
+      "blob": "62a060090fd7146eb62d623a7336d30bd46a85e5",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/connector-registry.mjs",
+      "mode": "100644",
+      "remoteBlob": "23e99d6f0b2c43327a62e26da8020f614ded6282",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connector-registry.mjs",
+      "bytes": 9999,
+      "sha256": "8afc7108a2409939246f3e416f4ec72a3a546138f08b6a941c96c6f8cc206f19",
+      "blob": "23e99d6f0b2c43327a62e26da8020f614ded6282",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/connector-registry.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "1b4f202cc6efe98766dc1b437e1647b18888d9c5",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connector-registry.test.mjs",
+      "bytes": 10434,
+      "sha256": "8ac903efe5f8b9e471c67dc7dbee937c7439612489dacd62270b00393a3b81b6",
+      "blob": "1b4f202cc6efe98766dc1b437e1647b18888d9c5",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/evidence-provenance.mjs",
+      "mode": "100644",
+      "remoteBlob": "e3b9656d63b4909df0deb1460f7511ad287ad5c7",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/evidence-provenance.mjs",
+      "bytes": 1676,
+      "sha256": "498deb5eabbf7aae474ec8307fe07af9ae1fc96ba7c5d688d5be2355729c8656",
+      "blob": "e3b9656d63b4909df0deb1460f7511ad287ad5c7",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/governed-read-projection-registry.mjs",
+      "mode": "100644",
+      "remoteBlob": "29d83c5c813ba648e8364478720eb68ee565bc59",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection-registry.mjs",
+      "bytes": 1535,
+      "sha256": "a0d776862a75a36c98b55eff0158af5c80f11a322105eece5e681ffcf1711421",
+      "blob": "29d83c5c813ba648e8364478720eb68ee565bc59",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/governed-read-projection-registry.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "6dfdd3a1a303ce5385ef7c3cdeafec57e0168d85",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection-registry.test.mjs",
+      "bytes": 817,
+      "sha256": "c053f1224c61bef72767126cb454be4e80270fe2076b16260b119951a2815fe8",
+      "blob": "6dfdd3a1a303ce5385ef7c3cdeafec57e0168d85",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/governed-read-projection.mjs",
+      "mode": "100644",
+      "remoteBlob": "5ae784c9d801866e747c4d2bf69f91a4a3299594",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection.mjs",
+      "bytes": 5924,
+      "sha256": "3605e0d910a4c3f3ce89b5ab30c3bafb77eaee2e4d839fa46f8236784227e723",
+      "blob": "5ae784c9d801866e747c4d2bf69f91a4a3299594",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/governed-read-projection.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "438744dd1da3b7f529d0fc104b22e4b37a3256e7",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection.test.mjs",
+      "bytes": 3282,
+      "sha256": "d3e595ce471ffb120f58bd3f794e1d2a851df4bdda0e036e23a4144101f0534f",
+      "blob": "438744dd1da3b7f529d0fc104b22e4b37a3256e7",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/privileged-bootstrap-guard.mjs",
+      "mode": "100644",
+      "remoteBlob": "a3c4ecc0e858a1e8de592e8b3e91a99fef4db7f0",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/privileged-bootstrap-guard.mjs",
+      "bytes": 3003,
+      "sha256": "d8d2cda6574d6cdedee0ce3770130dd3aaf80a5c0fc1c61e4c2bdc88b825222e",
+      "blob": "a3c4ecc0e858a1e8de592e8b3e91a99fef4db7f0",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/privileged-bootstrap-guard.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "8bfd99d908d890c427b03a42d5e20f691d3fdf28",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/privileged-bootstrap-guard.test.mjs",
+      "bytes": 2616,
+      "sha256": "9f8822585fa74bbb5d86f912a4ae80d759e9147ad6e677d8211ca83535c38856",
+      "blob": "8bfd99d908d890c427b03a42d5e20f691d3fdf28",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/session-broker.mjs",
+      "mode": "100644",
+      "remoteBlob": "2991c96dc35e50f128521b66e444e09d0e69abdb",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/session-broker.mjs",
+      "bytes": 15945,
+      "sha256": "7fcadf0d132a9b4e2363bb57211e8aea63806dd6721b2e6faf6de92409c1d82f",
+      "blob": "2991c96dc35e50f128521b66e444e09d0e69abdb",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/session-broker.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "21dcef2ec7cdd40c9c5dc8d7a172e9a3df7fe23e",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/session-broker.test.mjs",
+      "bytes": 11200,
+      "sha256": "37bde4c8104130aad1f71c58faf176fb44f02ad5dddb56a4da747843814e79fd",
+      "blob": "21dcef2ec7cdd40c9c5dc8d7a172e9a3df7fe23e",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/static-credential-authority.mjs",
+      "mode": "100644",
+      "remoteBlob": "07b4cac17f4684b5f0a72d65a5bb7de2c9cf275d",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/static-credential-authority.mjs",
+      "bytes": 5031,
+      "sha256": "4099851a5873b1d8de192ed773614ec3017a8129b6136841aaa8db93cecf77ee",
+      "blob": "07b4cac17f4684b5f0a72d65a5bb7de2c9cf275d",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/static-credential-authority.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "8e8901f10cead95acde684a3fdd8a4d336236967",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/static-credential-authority.test.mjs",
+      "bytes": 3585,
+      "sha256": "903593157d9691841e03ca89c190ee293f0beb068617136048e934fa29b60513",
+      "blob": "8e8901f10cead95acde684a3fdd8a4d336236967",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration-fabric/runtime/webhook-origin-security.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "ca8998edef1faf805cc4d9c79e1677a4c4a7e7f0",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/webhook-origin-security.test.mjs",
+      "bytes": 652,
+      "sha256": "1453dc846148cbe18c2fe65ba89252e1cd4bc9461f9a2a0515f1fc840c856e1f",
+      "blob": "ca8998edef1faf805cc4d9c79e1677a4c4a7e7f0",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/GUSTO_CONNECTION.md",
+      "mode": "100644",
+      "remoteBlob": "7a9a6b41abd67c16656449e9401324f035bce802",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/GUSTO_CONNECTION.md",
+      "bytes": 6081,
+      "sha256": "e2ca526c7675efc0d62ecad309bcd9da75f3ae81da3585b7fdcd7830c04c15f8",
+      "blob": "7a9a6b41abd67c16656449e9401324f035bce802",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "mode": "100644",
+      "remoteBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 61466,
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+      "blob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+      "mode": "100644",
+      "remoteBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 24573,
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+      "blob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/directory-oauth-broker.cjs",
+      "mode": "100644",
+      "remoteBlob": "ebb3855ccf22ec25511f55e7b02b5f77ea2d91ab",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/directory-oauth-broker.cjs",
+      "bytes": 8292,
+      "sha256": "eec35f21c35d32106bc0fa9e61621c7146d3d40b3a26b86f7cfa0622b988c4b7",
+      "blob": "ebb3855ccf22ec25511f55e7b02b5f77ea2d91ab",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/directory-oauth-broker.test.cjs",
+      "mode": "100644",
+      "remoteBlob": "79d8762177008f45bcf2296a9bfc3f1989f9dfa1",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/directory-oauth-broker.test.cjs",
+      "bytes": 6656,
+      "sha256": "4f7d0bfb96e219ff255b26ae6faa89046b1e874a984d4fe10ced7f494d07964a",
+      "blob": "79d8762177008f45bcf2296a9bfc3f1989f9dfa1",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/gusto-company-connector.cjs",
+      "mode": "100644",
+      "remoteBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-company-connector.cjs",
+      "bytes": 26119,
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+      "blob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/gusto-company-connector.test.cjs",
+      "mode": "100644",
+      "remoteBlob": "0438b1dc14e1f32489c7e5161851cdfc0e7051b3",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-company-connector.test.cjs",
+      "bytes": 37280,
+      "sha256": "0053222da8f8045f13a2f73fa4ed05e45d357033f55d89f63d7ca4cf22a4b2b2",
+      "blob": "0438b1dc14e1f32489c7e5161851cdfc0e7051b3",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/gusto-integration-hub.test.cjs",
+      "mode": "100644",
+      "remoteBlob": "2e25765a83f1b0e702246f2fa5faf44be734ea84",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-integration-hub.test.cjs",
+      "bytes": 16716,
+      "sha256": "98c7bce46f44f16422349de2d4119ae6f7a989a6860708a8b2cfeba08877d9ec",
+      "blob": "2e25765a83f1b0e702246f2fa5faf44be734ea84",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/gusto-oauth-landing.cjs",
+      "mode": "100644",
+      "remoteBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-oauth-landing.cjs",
+      "bytes": 3395,
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+      "blob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/gusto-oauth-landing.test.cjs",
+      "mode": "100644",
+      "remoteBlob": "b7bd3cb483ac575cd9a775daa542a92a34e6c228",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-oauth-landing.test.cjs",
+      "bytes": 6409,
+      "sha256": "b038ab1edd47f2bf1e1d9886095de486e01d94bc21240eedac7b2ec12937f4e6",
+      "blob": "b7bd3cb483ac575cd9a775daa542a92a34e6c228",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/worker/directory-discovery-worker.cjs",
+      "mode": "100644",
+      "remoteBlob": "d6928bb4fb9d120548aa289c5747216b422fcfbf",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/worker/directory-discovery-worker.cjs",
+      "bytes": 11287,
+      "sha256": "2ccd01ea867ed7c310ed5138264d28a5e6aabbc1b710fbd5c504ba9d37f0fa84",
+      "blob": "d6928bb4fb9d120548aa289c5747216b422fcfbf",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/worker/directory-discovery-worker.test.cjs",
+      "mode": "100644",
+      "remoteBlob": "82e38a2edb3df4dfeafaef8d74b8d76566c51a54",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/integration/worker/directory-discovery-worker.test.cjs",
+      "bytes": 6710,
+      "sha256": "f16eb6a9701aa5b3bc8d78bbc2ecbb10fff610096e33183e60c266e939b94763",
+      "blob": "82e38a2edb3df4dfeafaef8d74b8d76566c51a54",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "security/runtime/bootstrap.cjs",
+      "mode": "100644",
+      "remoteBlob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/security/runtime/bootstrap.cjs",
+      "bytes": 22307,
+      "sha256": "52ff513c87c6baa35f6cfc103b6f22004495dd4151b025f8792a2ee2ca0c914b",
+      "blob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "Dockerfile",
+      "mode": "100644",
+      "remoteBlob": "55aa82c19aab225e234a4f4ce33b2896483efd5c",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/Dockerfile",
+      "bytes": 36977,
+      "sha256": "0acf74eb3686f54789a1983af62ab7d1d2b49d28210f894b2290c033e62cf029",
+      "blob": "55aa82c19aab225e234a4f4ce33b2896483efd5c",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "mode": "100644",
+      "remoteBlob": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/frozen/scripts/compose-vector-local-runtime.mjs",
+      "bytes": 15859,
+      "sha256": "5c664112897a2407336348bbcfafdeb4bf72e35cebc5c28028472c6878a95709",
+      "blob": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "637ed8ede33b02c5eec11b9aecdbe61137e45986",
+      "path": "clocking-security-v2/access-push-adapters.mjs",
+      "mode": "100644",
+      "remoteBlob": "ba66301765888e9f62405a5f3481347dd58b3b7f",
+      "frozenBlob": "f1f45929d35b733c9062357ec356b522f9788658",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/historical/637ed8ede33b02c5eec11b9aecdbe61137e45986/clocking-security-v2/access-push-adapters.mjs",
+      "bytes": 8344,
+      "sha256": "6053c105c2415b396e45d9185dce290f5aeedb6d78b801e526a81c77aa95cf97",
+      "blob": "ba66301765888e9f62405a5f3481347dd58b3b7f",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "637ed8ede33b02c5eec11b9aecdbe61137e45986",
+      "path": "clocking-security-v2/access-push-adapters.test.mjs",
+      "mode": "100644",
+      "remoteBlob": "65a27d298acd8169cb0c677437cde677f0d76a08",
+      "frozenBlob": "00635451081d00db5d70ec8723c7249477e34855",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/historical/637ed8ede33b02c5eec11b9aecdbe61137e45986/clocking-security-v2/access-push-adapters.test.mjs",
+      "bytes": 7456,
+      "sha256": "abbc9c36333653dbf34334fbe6786debc68b84219e5c344221b3fae53bc0bb2a",
+      "blob": "65a27d298acd8169cb0c677437cde677f0d76a08",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "ba64a8951a394f5b39fee15ef3550441c67d90ae",
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "mode": "100644",
+      "remoteBlob": "2452c98f6dc0bdaa13e70d2bfcfba5c3a18c2dee",
+      "frozenBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/historical/ba64a8951a394f5b39fee15ef3550441c67d90ae/integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 43062,
+      "sha256": "b1e550feb2a2338c1ca76140dd433e76f73c30ace6c0191afd06260f7f7d400a",
+      "blob": "2452c98f6dc0bdaa13e70d2bfcfba5c3a18c2dee",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "ba64a8951a394f5b39fee15ef3550441c67d90ae",
+      "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+      "mode": "100644",
+      "remoteBlob": "1d50ea15035445d5083c254f66f2a45531833d8c",
+      "frozenBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/historical/ba64a8951a394f5b39fee15ef3550441c67d90ae/integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 23224,
+      "sha256": "83ed478bb2623234a7dbc8e387ad7e183f227f939779e2806d8cab4ac92339ee",
+      "blob": "1d50ea15035445d5083c254f66f2a45531833d8c",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "637ed8ede33b02c5eec11b9aecdbe61137e45986",
+      "path": "clocking-security-v2/access-control-evidence.mjs",
+      "mode": "100644",
+      "remoteBlob": "786d6cab113da9755843ef018274979c61b91e69",
+      "frozenBlob": "ff89f396f3db0f7ad3b9dc4b000c6c31103580e7",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/historical/637ed8ede33b02c5eec11b9aecdbe61137e45986/clocking-security-v2/access-control-evidence.mjs",
+      "bytes": 7375,
+      "sha256": "7752524331b0e8f1ebb8692676562e707cef30f0f5b83c95892d4ab9a6855fb6",
+      "blob": "786d6cab113da9755843ef018274979c61b91e69",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/connector-activation-proposals.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/connector-activation-proposals.cjs",
+      "bytes": 8779,
+      "sha256": "88ea03b3a34468a94c00708806ff6551d53875b27f02dcd5d81bac4960445f24",
+      "blob": "f9c08e8c56a6aac0753e4b914fe4ab1471e816b5",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/connector-discovery.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/connector-discovery.cjs",
+      "bytes": 14146,
+      "sha256": "9f538a3f21dac8ca859914f4ab1841e83adb6588fe5ca4bbef6f91e5f9ac73ac",
+      "blob": "bf851641851258c2b73a5a06a459ef19b509c7ca",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/discovery-review-receipts.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/discovery-review-receipts.cjs",
+      "bytes": 8101,
+      "sha256": "3d8c76353f3f563b724e9f9cc250144af8721dac6ae7bd82e14dc13561fab162",
+      "blob": "4c7a71bb3c087e474802074717c18396e02386d7",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/inbound-webhook.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/inbound-webhook.cjs",
+      "bytes": 12945,
+      "sha256": "b4510a767f1ec376bcdb330c5bf517bd67d716e958d428dd4671d4ffffd1383e",
+      "blob": "661c24665ee495b2d10d72c6937815526572b64f",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/integration-gateway.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/integration-gateway.cjs",
+      "bytes": 12816,
+      "sha256": "03cd0caacff0a751d7c3865f2b625655f67d1155b8b2ca5af7b6246683ccc578",
+      "blob": "225cac500eae74cf3630008f71d8b1034f2b571e",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/outbound-integration.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/outbound-integration.cjs",
+      "bytes": 23640,
+      "sha256": "7e7b3126ac7fdd5712fc5fc7299e3c75893bc699f7ed200dbba29b914c2bf9d4",
+      "blob": "3489c796d290e900459eeb07ba756c4e5ae6bb3e",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-adapter-contract.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-adapter-contract.cjs",
+      "bytes": 16559,
+      "sha256": "e5631bc79138e2da426daa01d0ce1af7a394758abbc5232655cf7af6e2f5f196",
+      "blob": "6a84b94fe3d9fc29dc88048973ce2bafd5b1a49a",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-collection-control-plane.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-collection-control-plane.cjs",
+      "bytes": 4449,
+      "sha256": "a5124c01e431c1fcbb39c3fcfe233e1c90d1e6b0d1ceaec94870e78ea6846a4f",
+      "blob": "0ebb8f3847a205ff600107b4bc1e22d9e82c5822",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-collection-permits.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-collection-permits.cjs",
+      "bytes": 6844,
+      "sha256": "3af60e5c0f78da46200e131fc3c3f045348101bd75c122defbf722f81574769c",
+      "blob": "852bc5e696f66e8db3b3b4225c2c51ecafe8f770",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-extraction-plan.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-extraction-plan.cjs",
+      "bytes": 9051,
+      "sha256": "83749087cd3ec5ce89440301149400c2e89144d55c0085f5c7545399f1f2400d",
+      "blob": "a523031c3c3812fb86c9b81b126e540059482662",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-investigation.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-investigation.cjs",
+      "bytes": 16505,
+      "sha256": "c69950a2253de9479dfdc3a325fc23cb800470fab3347271e98c4e8963b4e555",
+      "blob": "c124ce4b2729685fdd10edb7b7a0617a7da42816",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-job-store.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-job-store.cjs",
+      "bytes": 23559,
+      "sha256": "1b36e5f9bc599741ab2cc8ef245ac3f5c8ac33e68aea46612cb31252965282a0",
+      "blob": "891575196e0e6a98b6257577cd3d09d5a47f0d3d",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-live-acceptance.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-live-acceptance.cjs",
+      "bytes": 20392,
+      "sha256": "adad42fbb4e9a216450953174e14d99a0bf8bc57d9a2c792c00b3507ee88eb06",
+      "blob": "31eed03c0a9ba8b8f8b56d9b262aaaa53225fb44",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-metadata-broker.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-metadata-broker.cjs",
+      "bytes": 14328,
+      "sha256": "746ee6571853be4395f48fcf2826b110caa27cacc6261bd82731e7a6534aa5d1",
+      "blob": "85ec9b39863f8d9a03abefe91ac5b98104d2ceda",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-metadata-evidence.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-metadata-evidence.cjs",
+      "bytes": 12943,
+      "sha256": "e3b08bd80464689ea5d783cbc4dc261d8db8c1ebb48936d84fb2f591e846bd41",
+      "blob": "2951dd64d078f296ead9be98b9cf0eb7909a8f1c",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-reconciliation-evidence.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-reconciliation-evidence.cjs",
+      "bytes": 9615,
+      "sha256": "db09a439e32090fe4f079a3660e976b8275053107ee0012536e896328d412749",
+      "blob": "2349833a8b5907c96c6c19de455327a7b986e4ee",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/provider-recovery-authority.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-recovery-authority.cjs",
+      "bytes": 10554,
+      "sha256": "5a53dc665b6f4e651705d8590c91188b4e325e625fa64cb8210a0b65dbf2cb63",
+      "blob": "70bd2475431e1e85869710b10900bc275a4b49bc",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/sap-successfactors-event-connector.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/sap-successfactors-event-connector.cjs",
+      "bytes": 10927,
+      "sha256": "46d9eba7b3be2d57bb1bfe5c6007058ea8bb9a2b91728320cd0072cf0ff4b387",
+      "blob": "452d7cb06d2e4b5b31016408405a52969aba1651",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/transactional-outbound-bridge.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/transactional-outbound-bridge.cjs",
+      "bytes": 4317,
+      "sha256": "52f890d30bde3e657e8e95d2f4db25d075ebdc8c8cf3be3bd4331b40c072e81f",
+      "blob": "9617ce7f74c573b57edb58aeeda03244e03757f4",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/universal-connectivity.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/universal-connectivity.cjs",
+      "bytes": 19480,
+      "sha256": "fa9a6b1418abb7af900a4d0a468cc373c99c485bc8d0e3a53aee45f9fcb9a5cd",
+      "blob": "0862d010d6aa2ea48db3fd6159ed62c3be55e192",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "lib/verified-ingress-attestation.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/verified-ingress-attestation.cjs",
+      "bytes": 7242,
+      "sha256": "20447545ba57c0274258db1a46136e153eda5daf6bb316844fefa010975f7393",
+      "blob": "929f2e5a5f822d0ed87cd40d1934d39b1f01fb72",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "package.json",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/package.json",
+      "bytes": 1525,
+      "sha256": "aad05a5c5f91e6603d6116511950607752733d43bbc5520c0bc4c573eac8b490",
+      "blob": "d2b715d917cda6a1c0e409ce0d47ed2a81e1076d",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "server.cjs",
+      "mode": "100644",
+      "sourceArchive": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sourceArchiveBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "qualification": "Packed base runtime only; Docker/bootstrap overlays must be separately traced. No runtime composition/execution claimed.",
+      "localPath": "work/inventory_edges/lane03-caller-continuation/packed-runtime/server.cjs",
+      "bytes": 123267,
+      "sha256": "1792f544d0fea25577f683f3df957b4f74b6a086cd0479b24b1fe77f58587dd0",
+      "blob": "7306998ba72723cc8d93141d03167df97d1fdecf",
+      "scope": "READ_ONLY_SOURCE_SNAPSHOT"
+    }
+  ]
+}

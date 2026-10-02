@@ -105,6 +105,11 @@ jobs:
           cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/login.headers | cut -d';' -f1)"
           test -n "$cookie"
 
+          # Bind to the existing authenticated session; no fixture tenant default.
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             http://127.0.0.1:38119/api/bootstrap >/tmp/bootstrap.json
+          tenant_json="$(node -e "const d=require('/tmp/bootstrap.json');const a=d&&d.actor;const t=a&&a.tenant;if(!a||a.email!=='manager@northstar.example'||a.role!=='manager'||typeof t!=='string'||!t||t!==t.trim()||t.length>120||Array.from(t).some(c=>c.charCodeAt(0)<32||c.charCodeAt(0)===127))process.exit(2);process.stdout.write(JSON.stringify(t))")"
+          test -n "$tenant_json"
+
           curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             http://127.0.0.1:38119/api/integrations/autonomous/status >/tmp/status.json
 
           curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data '{"source":"ENTRA","apps":[{"appId":"wd-ci","displayName":"Workday Production"},{"appId":"ns-ci","displayName":"Oracle NetSuite"}]}'             http://127.0.0.1:38119/api/integrations/autonomous/discover >/tmp/discover.json
@@ -123,7 +128,7 @@ jobs:
 
           curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"mappings\":[{\"sourceField\":\"employee_id\",\"canonicalField\":\"employeeId\",\"confidence\":1},{\"sourceField\":\"first_name\",\"canonicalField\":\"firstName\",\"confidence\":1},{\"sourceField\":\"last_name\",\"canonicalField\":\"lastName\",\"confidence\":1}]}"             http://127.0.0.1:38119/api/integrations/autonomous/mapping-activate >/tmp/mapping.json
 
-          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"records\":[{\"employee_id\":\"E-100\",\"first_name\":\"A\",\"last_name\":\"One\"},{\"employee_id\":\"E-101\",\"first_name\":\"B\",\"last_name\":\"Two\"}]}"             http://127.0.0.1:38119/api/integrations/autonomous/sync-validate >/tmp/sync.json
+          curl -sSf             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"tenant\":$tenant_json,\"connectionId\":\"$connection_id\",\"records\":[{\"employee_id\":\"E-100\",\"first_name\":\"A\",\"last_name\":\"One\"},{\"employee_id\":\"E-101\",\"first_name\":\"B\",\"last_name\":\"Two\"}]}"             http://127.0.0.1:38119/api/integrations/autonomous/sync-validate >/tmp/sync.json
 
           node - <<'NODE'
           const fs = require('node:fs');
@@ -219,6 +224,11 @@ jobs:
           cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/hosted-login.headers | cut -d';' -f1)"
           test -n "$cookie"
 
+          # Bind to the existing authenticated session; no fixture tenant default.
+          curl -sSf -H "Cookie: $cookie" "$HOSTED_BASE_URL/api/bootstrap" >/tmp/hosted-bootstrap.json
+          tenant_json="$(node -e "const d=require('/tmp/hosted-bootstrap.json');const a=d&&d.actor;const t=a&&a.tenant;if(!a||a.email!=='manager@northstar.example'||a.role!=='manager'||typeof t!=='string'||!t||t!==t.trim()||t.length>120||Array.from(t).some(c=>c.charCodeAt(0)<32||c.charCodeAt(0)===127))process.exit(2);process.stdout.write(JSON.stringify(t))")"
+          test -n "$tenant_json"
+
           curl -sSf -H "Cookie: $cookie" "$HOSTED_BASE_URL/api/integrations/autonomous/status" >/tmp/hosted-status.json
 
           curl -sSf             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data '{"source":"ENTRA","apps":[{"appId":"wd-hosted","displayName":"Workday Production"},{"appId":"ns-hosted","displayName":"Oracle NetSuite"}]}'             "$HOSTED_BASE_URL/api/integrations/autonomous/discover" >/tmp/hosted-discover.json
@@ -237,7 +247,7 @@ jobs:
 
           curl -sSf             -H "Cookie: $cookie"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"mappings\":[{\"sourceField\":\"employee_id\",\"canonicalField\":\"employeeId\",\"confidence\":1},{\"sourceField\":\"first_name\",\"canonicalField\":\"firstName\",\"confidence\":1},{\"sourceField\":\"last_name\",\"canonicalField\":\"lastName\",\"confidence\":1}]}"             "$HOSTED_BASE_URL/api/integrations/autonomous/mapping-activate" >/tmp/hosted-mapping.json
 
-          curl -sSf             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"connectionId\":\"$connection_id\",\"records\":[{\"employee_id\":\"E-HOST-100\",\"first_name\":\"A\",\"last_name\":\"One\"},{\"employee_id\":\"E-HOST-101\",\"first_name\":\"B\",\"last_name\":\"Two\"}]}"             "$HOSTED_BASE_URL/api/integrations/autonomous/sync-validate" >/tmp/hosted-sync.json
+          curl -sSf             -H "Cookie: $cookie"             -H "X-WFM-Integration-Internal: $internal"             -H 'Content-Type: application/json'             --data "{\"tenant\":$tenant_json,\"connectionId\":\"$connection_id\",\"records\":[{\"employee_id\":\"E-HOST-100\",\"first_name\":\"A\",\"last_name\":\"One\"},{\"employee_id\":\"E-HOST-101\",\"first_name\":\"B\",\"last_name\":\"Two\"}]}"             "$HOSTED_BASE_URL/api/integrations/autonomous/sync-validate" >/tmp/hosted-sync.json
 
           node - <<'NODE'
           const fs = require('node:fs');

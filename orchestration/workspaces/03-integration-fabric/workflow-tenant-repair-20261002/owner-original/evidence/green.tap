@@ -1,0 +1,204 @@
+TAP version 13
+# (node:25660) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: local-proof: exact extracted curl body satisfies real handler required tenant contract
+ok 1 - local-proof: exact extracted curl body satisfies real handler required tenant contract
+  ---
+  duration_ms: 214.192
+  type: 'test'
+  ...
+# Subtest: local-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+ok 2 - local-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+  ---
+  duration_ms: 223.2445
+  type: 'test'
+  ...
+# Subtest: local-proof: bootstrap request uses existing authenticated cookie and matching origin
+ok 3 - local-proof: bootstrap request uses existing authenticated cookie and matching origin
+  ---
+  duration_ms: 1.2679
+  type: 'test'
+  ...
+# Subtest: local-proof: missing/malformed/wrong actor is rejected before request construction
+ok 4 - local-proof: missing/malformed/wrong actor is rejected before request construction
+  ---
+  duration_ms: 10.6829
+  type: 'test'
+  ...
+# Subtest: local-proof: malformed/missing tenant is rejected without coercion or default
+ok 5 - local-proof: malformed/missing tenant is rejected without coercion or default
+  ---
+  duration_ms: 18.5612
+  type: 'test'
+  ...
+# Subtest: local-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+ok 6 - local-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+  ---
+  duration_ms: 7.1098
+  type: 'test'
+  ...
+# Subtest: local-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+ok 7 - local-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+  ---
+  duration_ms: 198.4781
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects missing tenant without importing or activating
+ok 8 - local-proof: real handler rejects missing tenant without importing or activating
+  ---
+  duration_ms: 157.9203
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects null tenant without importing or activating
+ok 9 - local-proof: real handler rejects null tenant without importing or activating
+  ---
+  duration_ms: 157.9289
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects empty tenant without importing or activating
+ok 10 - local-proof: real handler rejects empty tenant without importing or activating
+  ---
+  duration_ms: 154.6213
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects numeric tenant without importing or activating
+ok 11 - local-proof: real handler rejects numeric tenant without importing or activating
+  ---
+  duration_ms: 152.1357
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects foreign tenant without importing or activating
+ok 12 - local-proof: real handler rejects foreign tenant without importing or activating
+  ---
+  duration_ms: 146.1242
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects object tenant without importing or activating
+ok 13 - local-proof: real handler rejects object tenant without importing or activating
+  ---
+  duration_ms: 158.4836
+  type: 'test'
+  ...
+# Subtest: local-proof: real handler rejects control tenant without importing or activating
+ok 14 - local-proof: real handler rejects control tenant without importing or activating
+  ---
+  duration_ms: 150.8995
+  type: 'test'
+  ...
+# Subtest: local-proof: wrong worker cannot validate a correctly scoped body
+ok 15 - local-proof: wrong worker cannot validate a correctly scoped body
+  ---
+  duration_ms: 150.5155
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact extracted curl body satisfies real handler required tenant contract
+ok 16 - hosted-railway-proof: exact extracted curl body satisfies real handler required tenant contract
+  ---
+  duration_ms: 201.6535
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+ok 17 - hosted-railway-proof: actual body reaches ACTIVE/PASS with authenticated actor tenant
+  ---
+  duration_ms: 194.3688
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: bootstrap request uses existing authenticated cookie and matching origin
+ok 18 - hosted-railway-proof: bootstrap request uses existing authenticated cookie and matching origin
+  ---
+  duration_ms: 0.2121
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: missing/malformed/wrong actor is rejected before request construction
+ok 19 - hosted-railway-proof: missing/malformed/wrong actor is rejected before request construction
+  ---
+  duration_ms: 11.033
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: malformed/missing tenant is rejected without coercion or default
+ok 20 - hosted-railway-proof: malformed/missing tenant is rejected without coercion or default
+  ---
+  duration_ms: 16.5536
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+ok 21 - hosted-railway-proof: exact string boundaries and JSON quoting preserve tenant, never interpolate source
+  ---
+  duration_ms: 6.0025
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+ok 22 - hosted-railway-proof: exact JSON tenant with quote/backslash reaches its own tenant connection
+  ---
+  duration_ms: 176.0461
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects missing tenant without importing or activating
+ok 23 - hosted-railway-proof: real handler rejects missing tenant without importing or activating
+  ---
+  duration_ms: 145.2517
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects null tenant without importing or activating
+ok 24 - hosted-railway-proof: real handler rejects null tenant without importing or activating
+  ---
+  duration_ms: 147.0611
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects empty tenant without importing or activating
+ok 25 - hosted-railway-proof: real handler rejects empty tenant without importing or activating
+  ---
+  duration_ms: 146.2517
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects numeric tenant without importing or activating
+ok 26 - hosted-railway-proof: real handler rejects numeric tenant without importing or activating
+  ---
+  duration_ms: 149.1291
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects foreign tenant without importing or activating
+ok 27 - hosted-railway-proof: real handler rejects foreign tenant without importing or activating
+  ---
+  duration_ms: 154.0055
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects object tenant without importing or activating
+ok 28 - hosted-railway-proof: real handler rejects object tenant without importing or activating
+  ---
+  duration_ms: 147.572
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: real handler rejects control tenant without importing or activating
+ok 29 - hosted-railway-proof: real handler rejects control tenant without importing or activating
+  ---
+  duration_ms: 153.1609
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof: wrong worker cannot validate a correctly scoped body
+ok 30 - hosted-railway-proof: wrong worker cannot validate a correctly scoped body
+  ---
+  duration_ms: 142.7976
+  type: 'test'
+  ...
+# Subtest: canonical manager/session authority remains tenant scoped and employee blocked
+ok 31 - canonical manager/session authority remains tenant scoped and employee blocked
+  ---
+  duration_ms: 142.0755
+  type: 'test'
+  ...
+# Subtest: qualification: frozen worker handler coerces single-item tenant array; repaired caller rejects it
+ok 32 - qualification: frozen worker handler coerces single-item tenant array; repaired caller rejects it
+  ---
+  duration_ms: 163.9179
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4127.2246

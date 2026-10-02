@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
+const phase=process.argv[2];if(!['red','red-body','green','combined'].includes(phase))throw Error('Explicit phase required');
+const node=path.resolve('work/tools/node22/node.exe'),guard=path.join(__dirname,'network-guard.cjs');
+const tests=['.github/workflows/autonomous-integration-fabric.test.cjs'];
+if(phase==='combined')tests.push('integration/runtime/autonomous-integration-hub.test.cjs');
+const args=['--require',guard,'--test',...tests],result=spawnSync(node,args,{cwd:path.join(__dirname,'candidate'),encoding:'utf8',timeout:60000});
+const raw=Buffer.from((result.stdout||'')+(result.stderr||''),'utf8'),content=raw.toString();
+const counts=Object.fromEntries(['tests','pass','fail','skipped'].map(n=>[n,Number(content.match(new RegExp('^# '+n+' (\\d+)','m'))?.[1]||0)]));
+const output=path.join(__dirname,'evidence',phase);if(fs.existsSync(output+'.tap'))throw Error('Do not overwrite raw run');
+fs.writeFileSync(output+'.tap',raw);const receipt={node:spawnSync(node,['--version'],{encoding:'utf8'}).stdout.trim(),args,status:result.status,signal:result.signal,error:result.error?String(result.error):null,counts,networkBlocked:true,scope:'ACTUAL_EXTRACTED_WORKFLOW_EXPRESSIONS_AND_BODIES_DIRECT_FROZEN_HANDLER_ONLY',qualification:'No Bash/curl/Docker/HTTP server/hosted/provider workflow execution. Bootstrap actor document synthetic, exact server/session source evidence separately preserved. Unmodified handler tenant coercion qualified.',logSha256:crypto.createHash('sha256').update(raw).digest('hex')};
+fs.writeFileSync(output+'.run.json',JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({phase,...counts,status:result.status,error:receipt.error}));

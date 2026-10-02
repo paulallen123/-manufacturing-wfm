@@ -1,0 +1,102 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "runtimeWired": false,
+  "hostedTested": false,
+  "shippingPaths": 2,
+  "capabilityId": "edge03-activation-maintenance",
+  "broadState": "IN_PROGRESS",
+  "componentState": "TESTED_LOCAL_ONLY",
+  "wholeWorkflowState": "BLOCKED_BEFORE_TENANT_BINDING",
+  "shipping": [
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17879,
+      "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+      "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "frozenPreimageBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "reviewedPreimageBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "owner": "lane03/inventory_edges"
+    },
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.test.cjs",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 14371,
+      "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+      "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "frozenPreimageBlob": null,
+      "reviewedPreimageBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "owner": "lane03/inventory_edges"
+    }
+  ],
+  "shippingBytes": 32250,
+  "canonicalDependencies": [
+    {
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "mode": "100644",
+      "gitBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+      "bytes": 61466,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+      "mode": "100644",
+      "gitBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+      "bytes": 24573,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/gusto-company-connector.cjs",
+      "mode": "100644",
+      "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+      "bytes": 26119,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/gusto-oauth-landing.cjs",
+      "mode": "100644",
+      "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+      "bytes": 3395,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    }
+  ],
+  "correction": {
+    "finding": "WORKFLOW-TENANT-01",
+    "severity": "P2",
+    "operation": "One new hosted bootstrap request reference corrected to existing HOSTED_BASE_URL; adjacent source-driven regression",
+    "priorOwnerSealSha256": "d5e9c797728195fb669de40744c7f22d7ca8ebc5a422f3143d0cda0168a50888",
+    "prior41ArtifactsUnchanged": true,
+    "trustRed": {
+      "workflow-tenant-url.red-direct.tap": "3df8eb295239a918e56679fb3062e3de0888c6e0bfe54ffa79c17d3140619d52",
+      "workflow-tenant-url.red.test.cjs": "e49a36a2819037ab1fcbddec4abd5726d8f3872ca46bd2b280aa41b2661e7920",
+      "workflow-tenant-url.red-seal.json": "bed39d7b4cae5724f37e94ee44781e241e77aa6890c073c96d5dda6644a9e264"
+    },
+    "reviewPending": true
+  },
+  "baselineCoverage": {
+    "frozenSnapshotBlobCount": 1094,
+    "publicationNotBuilt": true,
+    "otherFrozenPathsMustRemainUnchanged": 1093
+  },
+  "executed": {
+    "new": 33,
+    "combined": 48,
+    "skipped": 0,
+    "networkBlocked": true
+  },
+  "externalExecuted": false,
+  "githubMutations": 0
+}

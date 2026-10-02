@@ -1,0 +1,58 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "runtimeWired": false,
+  "originalSealSha256": "d5e9c797728195fb669de40744c7f22d7ca8ebc5a422f3143d0cda0168a50888",
+  "original41ArtifactsUnchanged": true,
+  "sourceOnly": true,
+  "hostedVariablesFetched": false,
+  "executedProviderOrAuthenticationCalls": false,
+  "observations": {
+    "hostedCondition": [
+      {
+        "line": 27,
+        "text": "const hosted = process.env.WFM_HOSTED_STAGING === 'true';"
+      }
+    ],
+    "passkeyConstruction": [
+      {
+        "line": 354,
+        "text": "  if (hosted && !passkeyAuth) {"
+      }
+    ],
+    "loginInterception": [
+      {
+        "line": 473,
+        "text": "    if (passkeyAuth && requestPath(req) === '/api/login') {"
+      }
+    ],
+    "status410": [
+      {
+        "line": 272,
+        "text": "      res.statusCode = 410;"
+      },
+      {
+        "line": 474,
+        "text": "      res.statusCode = 410;"
+      }
+    ],
+    "localHostedFlag": [
+      {
+        "line": 92,
+        "text": "          cid=\"$(docker run -d --rm             -p 127.0.0.1:38119:3000             -e PORT=3000             -e WFM_HOSTED_STAGING=true             -e WFM_PUBLIC_ORIGIN=https://staging.integration.test             -e WFM_STAGING_PASSWORD=\"$password\"             -e WFM_DB=/tmp/wfm-integration.sqlite             -e WFM_INTEGRATION_INTERNAL_TOKEN=\"$internal\"             \"$image\")\""
+      }
+    ],
+    "loginStatusRequirement": [
+      {
+        "line": 104,
+        "text": "          test \"$login_code\" = '200'"
+      },
+      {
+        "line": 218,
+        "text": "          test \"$login_code\" = '200'"
+      }
+    ]
+  },
+  "qualification": "Frozen local job hosted flag plus passkey login interception implies independent pre-existing authentication precondition blocker. Hosted environment values not inspected; conditional same source guard only. Bounded tenant repair local tests remain valid; assembled workflow admission pending."
+}

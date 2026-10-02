@@ -1,0 +1,40 @@
+{
+  "capabilityId": "edge03-activation-maintenance",
+  "classification": "EVOLVE",
+  "state": "IN_PROGRESS",
+  "authSourceClassification": "ALREADY_CANONICAL_USE_AS_IS",
+  "implementationCreated": false,
+  "shippingPaths": 0,
+  "runtimeWired": false,
+  "hostedTested": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "assembledWorkflowState": "BLOCKED_BEFORE_TENANT_BINDING",
+  "prerequisites": [
+    {
+      "scope": "local-frozen-workflow",
+      "state": "MISSING_EXPLICIT_SIGNED_PROOF_CONFIGURATION",
+      "evidence": "WFM_PROOF_RUNNER_AUTH/public key/email allowlist absent from exact workflow source."
+    },
+    {
+      "scope": "hosted",
+      "state": "UNKNOWN_NOT_FETCHED",
+      "evidence": "No secret/configuration values read; signer/current manager allowlist/origin availability not demonstrated."
+    },
+    {
+      "scope": "customer-passkey",
+      "state": "CURRENT_CREDENTIAL_OR_RECIPIENT_INVITATION_REQUIRED",
+      "evidence": "Existing fixture direct proof-session seed is not a legitimate deployed caller source."
+    }
+  ],
+  "existingTestsExecuted": {
+    "node": "v22.23.2",
+    "tests": 18,
+    "pass": 18,
+    "skipped": 0,
+    "networkBlocked": true,
+    "scope": "Existing exact frozen signed proof auth/guard direct handler fixtures and static bootstrap wiring only. Synthetic locally generated keys, no external/private key retrieval or real session exchange. Passkey ceremony test source inspected only; no assembled runtime/caller/hosted workflow proof."
+  },
+  "passkeyTestsExecuted": false,
+  "githubMutations": 0
+}

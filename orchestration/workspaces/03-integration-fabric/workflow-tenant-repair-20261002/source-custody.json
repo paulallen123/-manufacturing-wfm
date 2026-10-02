@@ -1,0 +1,100 @@
+{
+  "custody": [
+    {
+      "sourceCapsule": "work/lane03-workflow-tenant",
+      "sealName": "review-seal.json",
+      "sealedArtifactCount": 41,
+      "sealSha256": "d5e9c797728195fb669de40744c7f22d7ca8ebc5a422f3143d0cda0168a50888",
+      "publishedCoordinationSubdir": "owner-original"
+    },
+    {
+      "sourceCapsule": "work/lane03-workflow-tenant-repair",
+      "sealName": "review-seal.json",
+      "sealedArtifactCount": 39,
+      "sealSha256": "a841311231287f9e636304e0713f6d8a1fd8fdd20c943a38bc88e1d54941f675",
+      "publishedCoordinationSubdir": "owner-successor"
+    },
+    {
+      "sourceCapsule": "work/lane03-workflow-tenant-addendum",
+      "sealName": "addendum-seal.json",
+      "sealedArtifactCount": 3,
+      "sealSha256": "616bec4307bcccc9eb8c0964d4871ff5975f388bfe045234550e1951a854a745",
+      "publishedCoordinationSubdir": "authentication-reachability"
+    },
+    {
+      "sourceCapsule": "work/inventory_edges/lane03-auth-caller-design",
+      "sealName": "design-seal.json",
+      "sealedArtifactCount": 21,
+      "sealSha256": "1be6e52590d4b5dbe0da13c7f0ceae495ac86b8b66a3b02bee576bd6a5b20daf",
+      "publishedCoordinationSubdir": "authentication-design"
+    },
+    {
+      "sourceCapsule": "work/trust_review",
+      "sealName": "workflow-tenant-review-index.json",
+      "sealedArtifactCount": 21,
+      "sealSha256": "8554b63b9e757ca2278879a9bdec39ce470b9ca44493e859f9ae8a2f10a4dab1",
+      "publishedCoordinationSubdir": "independent-review"
+    }
+  ],
+  "shippingReviewedBlobs": {
+    ".github/workflows/autonomous-integration-fabric.yml": "548c10430ddcba08738995530f3daded8b63b2c0",
+    ".github/workflows/autonomous-integration-fabric.test.cjs": "337921b6c0988fda2b456c58cfd18ee5c935b925"
+  },
+  "original41Preserved": true,
+  "successor39Preserved": true,
+  "independentReviewArtifacts": 21,
+  "unchangedFrozenDependencies": [
+    {
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "mode": "100644",
+      "gitBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+      "bytes": 61466,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+      "mode": "100644",
+      "gitBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+      "bytes": 24573,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/gusto-company-connector.cjs",
+      "mode": "100644",
+      "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+      "bytes": 26119,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    },
+    {
+      "path": "integration/runtime/gusto-oauth-landing.cjs",
+      "mode": "100644",
+      "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+      "bytes": 3395,
+      "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+      "shipping": false
+    }
+  ],
+  "normalizations": [
+    {
+      "sourceLocalPath": "work/trust_review/workflow-tenant-heldouts.initial-powershell.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/independent-review/workflow-tenant-heldouts.initial-powershell.tap",
+      "receiptPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/original-byte-receipts/0001-workflow-tenant-heldouts.initial-powershell.tap.json",
+      "originalBytes": 10652,
+      "originalSha256": "b759419a1b319acb874d16ed575791a69d02e82aedad3f6c665f0224efe72a47"
+    },
+    {
+      "sourceLocalPath": "work/trust_review/workflow-tenant-url.red.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/independent-review/workflow-tenant-url.red.tap",
+      "receiptPath": "orchestration/workspaces/03-integration-fabric/workflow-tenant-repair-20261002/original-byte-receipts/0002-workflow-tenant-url.red.tap.json",
+      "originalBytes": 3102,
+      "originalSha256": "b1ad8529282291ba716d84493ee7e6249e49219b466cac07fffbadcab84fa202"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "node": "v22.23.2",
+  "checks": [
+    {
+      "args": [
+        "--check",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-workflow-tenant\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs"
+      ],
+      "status": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

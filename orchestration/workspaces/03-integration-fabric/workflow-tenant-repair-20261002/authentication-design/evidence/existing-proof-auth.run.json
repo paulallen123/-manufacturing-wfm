@@ -1,0 +1,24 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "security/runtime/proof-runner-auth.test.cjs",
+    "security/runtime/bootstrap-proof-runner-wiring.test.cjs",
+    "security/runtime/identity-survival-guard.test.cjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "counts": {
+    "tests": 18,
+    "pass": 18,
+    "fail": 0,
+    "skipped": 0
+  },
+  "networkBlocked": true,
+  "testsUnmodified": true,
+  "qualification": "Existing exact frozen signed proof auth/guard direct handler fixtures and static bootstrap wiring only. Synthetic locally generated keys, no external/private key retrieval or real session exchange. Passkey ceremony test source inspected only; no assembled runtime/caller/hosted workflow proof.",
+  "logSha256": "a2b70baaa417eeccc7d248d464cc08e5d6426cbe16218705f3c616fa8a12df18"
+}

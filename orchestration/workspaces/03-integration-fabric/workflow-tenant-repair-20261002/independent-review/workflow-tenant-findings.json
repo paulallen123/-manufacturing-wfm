@@ -1,0 +1,272 @@
+{
+  "schema": "INDEPENDENT_WORKFLOW_COMPONENT_REVIEW",
+  "capability": "edge03-activation-maintenance",
+  "broadState": "IN_PROGRESS",
+  "componentState": "TESTED_LOCAL_ONLY",
+  "wholeWorkflowState": "BLOCKED_BEFORE_TENANT_BINDING",
+  "runtimeWired": false,
+  "hostedTested": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "shipping": [
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17879,
+      "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+      "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "frozenPreimageBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "reviewedPreimageBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "owner": "lane03/inventory_edges"
+    },
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.test.cjs",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 14371,
+      "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+      "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "frozenPreimageBlob": null,
+      "reviewedPreimageBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "owner": "lane03/inventory_edges"
+    }
+  ],
+  "identity": {
+    "originalSealSha256": "d5e9c797728195fb669de40744c7f22d7ca8ebc5a422f3143d0cda0168a50888",
+    "originalArtifactCount": 41,
+    "originalArtifactsPreserved": true,
+    "authAddendumSha256": "616bec4307bcccc9eb8c0964d4871ff5975f388bfe045234550e1951a854a745",
+    "successorSealSha256": "a841311231287f9e636304e0713f6d8a1fd8fdd20c943a38bc88e1d54941f675",
+    "successorArtifactCount": 39,
+    "successorManifestSha256": "2aa3cfdd067641fa1ffdac479b3a5d816c2fb3bbea01a1d39bf6d7a869e76016",
+    "correctionOnly": true,
+    "canonicalDependencies": [
+      {
+        "path": "integration/runtime/autonomous-integration-hub.cjs",
+        "mode": "100644",
+        "gitBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+        "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+        "bytes": 61466,
+        "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+        "shipping": false
+      },
+      {
+        "path": "integration/runtime/autonomous-integration-hub.test.cjs",
+        "mode": "100644",
+        "gitBlob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8",
+        "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+        "bytes": 24573,
+        "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+        "shipping": false
+      },
+      {
+        "path": "integration/runtime/gusto-company-connector.cjs",
+        "mode": "100644",
+        "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+        "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+        "bytes": 26119,
+        "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+        "shipping": false
+      },
+      {
+        "path": "integration/runtime/gusto-oauth-landing.cjs",
+        "mode": "100644",
+        "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+        "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+        "bytes": 3395,
+        "classification": "UNCHANGED_FROZEN_VERIFICATION_DEPENDENCY",
+        "shipping": false
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "WORKFLOW-TENANT-01",
+      "priority": "P2",
+      "status": "CLOSED_ON_EXACT_SUCCESSOR_COMPONENT_ONLY",
+      "originalPath": ".github/workflows/autonomous-integration-fabric.yml",
+      "line": 228,
+      "originalWorkflowBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "originalTestBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "originalMirroredTestLine": 166,
+      "reason": "New hosted bootstrap referenced undeclared WFM_BASE_URL under set -u while job declared HOSTED_BASE_URL. Adjacent test expected same bad variable.",
+      "successorWorkflowBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "successorTestBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "correction": "Single new URL reference uses declared existing HOSTED_BASE_URL; test asserts actual URL against job env."
+    }
+  ],
+  "holds": [
+    {
+      "id": "INHERITED_HOSTED_LOGIN_REACHABILITY",
+      "path": "security/runtime/bootstrap.cjs",
+      "blob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "constructionLines": [
+        353,
+        354,
+        355
+      ],
+      "loginLines": [
+        473,
+        474
+      ],
+      "workflowLocalHostedFlagLine": 92,
+      "workflowLocalLogin200Line": 104,
+      "status": "OPEN_OUTSIDE_BOUNDED_TENANT_REPAIR",
+      "reason": "Declared local job enables hosted staging; frozen bootstrap builds passkey auth and returns /api/login410 before listener. Existing password login200 precondition is unreachable in that configuration.",
+      "qualification": "Read-only source control; no auth route/container execution. Hosted target environment was not fetched, so only conditional same-guard conclusion there. Do not weaken auth or call whole workflow runnable."
+    }
+  ],
+  "observations": [
+    {
+      "id": "ADJACENT_TEST_INVOCATION",
+      "severity": "QUALIFIED_COVERAGE_OBSERVATION",
+      "reason": "Unchanged workflow unit commands do not invoke the new adjacent .github workflow test. Executed33 source tests are explicit local verification, not a demonstrated hosted workflow/CI test run."
+    },
+    {
+      "id": "WORKER_KEY_CONTRACT",
+      "reason": "Frozen key is global trusted worker attestation, not tenant-scoped provider credential. Correct tenant body is compared with existing connection; caller now rejects array tenants but unchanged compact() handler coerces a single-item tenant array. No general worker/auth repair claim."
+    }
+  ],
+  "executions": {
+    "originalOwnExpanded": {
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "./work/trust_review/network-guard.cjs",
+        "--test",
+        "./work/trust_review/workflow-tenant-heldouts.cjs"
+      ],
+      "scope": "Actual isolated extracted expressions/direct handler/real SQLite. No Bash/HTTP/Docker/hosted/auth server executed.",
+      "capture": "Original PowerShell redirected TAP; retained original bytes, decoded only for stats. No rerun for encoding.",
+      "rawSha256": "b759419a1b319acb874d16ed575791a69d02e82aedad3f6c665f0224efe72a47",
+      "rawBytes": 10652,
+      "tests": 17,
+      "pass": 16,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 2122.5977
+    },
+    "originalOwnAdjacent": {
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-original-capsule\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs"
+      ],
+      "start": "2026-10-02T13:39:30.260Z",
+      "end": "2026-10-02T13:39:35.374Z",
+      "exit": 0,
+      "sourceWorkflowBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "testBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "rawSha256": "4c14cbf0aeb57b422ccb367983690f9d53e82b16149430d8941965ca806ff07a",
+      "tests": 32,
+      "pass": 32,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 5023.9061,
+      "qualification": "Original adjacent tests pass while independently evidenced hosted variable remains defective; extracted handler only, no actual workflow success."
+    },
+    "successorOwnExpanded": {
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-heldouts.cjs"
+      ],
+      "start": "2026-10-02T13:42:03.956Z",
+      "end": "2026-10-02T13:42:06.120Z",
+      "exit": 0,
+      "sourceSnapshot": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-successor-capsule\\candidate",
+      "shipping": [
+        {
+          "path": ".github/workflows/autonomous-integration-fabric.yml",
+          "mode": "100644",
+          "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+          "bytes": 17879,
+          "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+          "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+          "frozenPreimageBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+          "reviewedPreimageBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+          "owner": "lane03/inventory_edges"
+        },
+        {
+          "path": ".github/workflows/autonomous-integration-fabric.test.cjs",
+          "mode": "100644",
+          "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+          "bytes": 14371,
+          "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+          "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+          "frozenPreimageBlob": null,
+          "reviewedPreimageBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+          "owner": "lane03/inventory_edges"
+        }
+      ],
+      "rawSha256": "bb89d8867e51c215c38a44435bccec130d6ad53bf5a31cb03b4e2bebbe61d309",
+      "tests": 17,
+      "pass": 17,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 2077.3231,
+      "qualification": "Local extracted expression/direct handler+real SQLite synthetic contract only, no Bash/HTTP/Docker/hosted/provider/auth server proof."
+    },
+    "successorOwnAdjacent": {
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-successor-capsule\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs"
+      ],
+      "start": "2026-10-02T13:42:06.123Z",
+      "end": "2026-10-02T13:42:11.032Z",
+      "exit": 0,
+      "sourceSnapshot": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-successor-capsule\\candidate",
+      "shipping": [
+        {
+          "path": ".github/workflows/autonomous-integration-fabric.yml",
+          "mode": "100644",
+          "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+          "bytes": 17879,
+          "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+          "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+          "frozenPreimageBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+          "reviewedPreimageBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+          "owner": "lane03/inventory_edges"
+        },
+        {
+          "path": ".github/workflows/autonomous-integration-fabric.test.cjs",
+          "mode": "100644",
+          "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+          "bytes": 14371,
+          "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+          "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+          "frozenPreimageBlob": null,
+          "reviewedPreimageBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+          "owner": "lane03/inventory_edges"
+        }
+      ],
+      "rawSha256": "cc972f65da5c34a6c8edf496b61df73ef81d1a6f2b1ab5997b6e90eb1a73dea8",
+      "tests": 33,
+      "pass": 33,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 4825.5961,
+      "qualification": "Local extracted expression/direct handler+real SQLite synthetic contract only, no Bash/HTTP/Docker/hosted/provider/auth server proof."
+    },
+    "uniqueCounting": "17 expanded retained cases, not 17+17+2. Original two URL cases overlap expanded requirements. Original32 and successor33 source suite counts are separate executions; no aggregate unique count.",
+    "ownerHistorical": "Original provenance2=1pass1fail, augmented32=22pass10fail, preliminary28=22pass6fail qualified; successor33=31pass2fail red then33/33, combined48/48. Owner evidence hash-verified, not reviewer reruns."
+  },
+  "proofScope": "Local extracted Node expressions/body templates and frozen direct handler with real SQLite, synthetic actor inputs. No Bash/curl/Docker/Railway/HTTP server/provider/passkey/authentication/hosted workflow/customer proof executed.",
+  "publication": "Not performed by reviewer; future publication must bind actual preimage and preserve unrelated frozen paths."
+}

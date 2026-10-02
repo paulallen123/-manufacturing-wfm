@@ -1,0 +1,122 @@
+TAP version 13
+# Subtest: exact bootstrap enables the signed proof runner only through explicit staging configuration
+ok 1 - exact bootstrap enables the signed proof runner only through explicit staging configuration
+  ---
+  duration_ms: 1.8439
+  type: 'test'
+  ...
+# Subtest: identity guard executes before the proof runner session exchange
+ok 2 - identity guard executes before the proof runner session exchange
+  ---
+  duration_ms: 0.3137
+  type: 'test'
+  ...
+# (node:13168) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: valid authenticated session is resource-bound and allowed
+ok 3 - valid authenticated session is resource-bound and allowed
+  ---
+  duration_ms: 180.4326
+  type: 'test'
+  ...
+# Subtest: client-supplied tenant or role authority is rejected before application code
+ok 4 - client-supplied tenant or role authority is rejected before application code
+  ---
+  duration_ms: 166.5487
+  type: 'test'
+  ...
+# Subtest: stale tenant session epoch self-revokes only the presented session
+ok 5 - stale tenant session epoch self-revokes only the presented session
+  ---
+  duration_ms: 203.4902
+  type: 'test'
+  ...
+# Subtest: tampered cross-tenant binding is contained and session revoked
+ok 6 - tampered cross-tenant binding is contained and session revoked
+  ---
+  duration_ms: 192.9002
+  type: 'test'
+  ...
+# Subtest: privileged freeze blocks manager mutation but preserves employee low-risk path and other tenant
+ok 7 - privileged freeze blocks manager mutation but preserves employee low-risk path and other tenant
+  ---
+  duration_ms: 177.9576
+  type: 'test'
+  ...
+# Subtest: Gusto callback respects the tenant privileged freeze and audit events exclude OAuth query values
+ok 8 - Gusto callback respects the tenant privileged freeze and audit events exclude OAuth query values
+  ---
+  duration_ms: 146.6467
+  type: 'test'
+  ...
+# Subtest: policy version change forces re-authentication rather than silently changing authority
+ok 9 - policy version change forces re-authentication rather than silently changing authority
+  ---
+  duration_ms: 139.585
+  type: 'test'
+  ...
+# Subtest: unknown or expired bearer is denied before the application
+ok 10 - unknown or expired bearer is denied before the application
+  ---
+  duration_ms: 123.0444
+  type: 'test'
+  ...
+# (node:18936) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: exact candidate exposes the signed proof runner authentication boundary
+ok 11 - exact candidate exposes the signed proof runner authentication boundary
+  ---
+  duration_ms: 1.5338
+  type: 'test'
+  ...
+# Subtest: signed proof identity mints a short-lived audited session without a password
+ok 12 - signed proof identity mints a short-lived audited session without a password
+  ---
+  duration_ms: 187.3323
+  type: 'test'
+  ...
+# Subtest: signed assertion is single use and replay fails closed
+ok 13 - signed assertion is single use and replay fails closed
+  ---
+  duration_ms: 84.8409
+  type: 'test'
+  ...
+# Subtest: tampered signature and expired assertion are rejected
+ok 14 - tampered signature and expired assertion are rejected
+  ---
+  duration_ms: 69.5292
+  type: 'test'
+  ...
+# Subtest: proof runner refuses non-staging activation
+ok 15 - proof runner refuses non-staging activation
+  ---
+  duration_ms: 1.8432
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back session issuance and permits a clean retry after repair
+ok 16 - audit failure rolls back session issuance and permits a clean retry after repair
+  ---
+  duration_ms: 91.5156
+  type: 'test'
+  ...
+# Subtest: proof session refuses tenant drift before first product request
+ok 17 - proof session refuses tenant drift before first product request
+  ---
+  duration_ms: 176.5991
+  type: 'test'
+  ...
+# Subtest: proof session refuses role drift before first product request
+ok 18 - proof session refuses role drift before first product request
+  ---
+  duration_ms: 169.8861
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1480.2245

@@ -1,0 +1,8 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
+const node=path.resolve('work/tools/node22/node.exe'),guard=path.resolve('work/trust_review/network-guard.cjs');
+const args=['--require',guard,'--test','security/runtime/proof-runner-auth.test.cjs','security/runtime/bootstrap-proof-runner-wiring.test.cjs','security/runtime/identity-survival-guard.test.cjs'];
+const result=spawnSync(node,args,{cwd:path.join(__dirname,'frozen'),encoding:'utf8',timeout:60000}),raw=Buffer.from((result.stdout||'')+(result.stderr||''),'utf8'),text=raw.toString();
+const counts=Object.fromEntries(['tests','pass','fail','skipped'].map(n=>[n,Number(text.match(new RegExp('^# '+n+' (\\d+)','m'))?.[1]||0)]));
+const output=path.join(__dirname,'evidence/existing-proof-auth');if(fs.existsSync(output+'.tap'))throw Error('Evidence immutable');
+fs.writeFileSync(output+'.tap',raw);fs.writeFileSync(output+'.run.json',JSON.stringify({node:spawnSync(node,['--version'],{encoding:'utf8'}).stdout.trim(),args,status:result.status,signal:result.signal,error:result.error?String(result.error):null,counts,networkBlocked:true,testsUnmodified:true,qualification:'Existing exact frozen signed proof auth/guard direct handler fixtures and static bootstrap wiring only. Synthetic locally generated keys, no external/private key retrieval or real session exchange. Passkey ceremony test source inspected only; no assembled runtime/caller/hosted workflow proof.',logSha256:crypto.createHash('sha256').update(raw).digest('hex')},null,2)+'\n');console.log(JSON.stringify({...counts,status:result.status,error:result.error?String(result.error):null}));

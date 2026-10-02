@@ -1,0 +1,116 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "runtimeWired": false,
+  "shippingPaths": 0,
+  "implementationCreated": false,
+  "githubMutations": 0,
+  "files": [
+    {
+      "path": "security/runtime/proof-runner-auth.cjs",
+      "mode": "100644",
+      "gitBlob": "0165b9a5207eeb870e2690c4da6456ec8457db7e",
+      "bytes": 12863,
+      "sha256": "035e973167e2b2d3782386f5a4d852c30a84549789d662342ee30de99431ca37",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.test.cjs",
+      "mode": "100644",
+      "gitBlob": "429954089f3ca7bdc47aed41058859a594f964d7",
+      "bytes": 9889,
+      "sha256": "0dc5f650ec1be9991622d9adef29a1aac05d2a25bc9f7da382b3542e204c3ade",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/bootstrap-proof-runner-wiring.test.cjs",
+      "mode": "100644",
+      "gitBlob": "878403b2ed74b5b79f6b7a185eb00c0f3893e045",
+      "bytes": 964,
+      "sha256": "2baca537fc21d578d3c0e2eb8ff65d876fd7461d42679a4991b17d4619578a00",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/identity-survival-guard.cjs",
+      "mode": "100644",
+      "gitBlob": "929297a2fc698d6aa1ba2714ded5db79ee9bb3d4",
+      "bytes": 11241,
+      "sha256": "b57836440642b7157f72a19a11f1c9c80ea7faa68de9cf9173d2346137f9385f",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/identity-survival-guard.test.cjs",
+      "mode": "100644",
+      "gitBlob": "f5d569efc29861f3c55a305e487aa3b881bf7b80",
+      "bytes": 9047,
+      "sha256": "2d3d5cf90f3a18e0c9c3e31ae8d2d7cb052a1f06c5aed9e3c025e56c17df3f51",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/passkey-auth.cjs",
+      "mode": "100644",
+      "gitBlob": "937da182a3123bf71550084a774b5bdf51228697",
+      "bytes": 16971,
+      "sha256": "af46d7ab53587c76adee20761e8d6802eb56778e73711486edccb617098d6816",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/passkey-auth.test.cjs",
+      "mode": "100644",
+      "gitBlob": "af4388246970639adc84b351cf1cf3d0fb028963",
+      "bytes": 14054,
+      "sha256": "c11e4f5422f33bd09a20272123a9864e4cc4ac5ebd1d4c85e8c4c8e441839c71",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/passkey-schema.cjs",
+      "mode": "100644",
+      "gitBlob": "f6d37edc3c7135b3feeb210605cf9c3619c31307",
+      "bytes": 1741,
+      "sha256": "5a31cefe7f21f265b16b78182d319e1987ead8e393a357599f7d97a84acd301a",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/package.json",
+      "mode": "100644",
+      "gitBlob": "e0207c51535c84751b3d12eb8b9db9d480f2a413",
+      "bytes": 194,
+      "sha256": "1e3cf74f95d599c55c7bd47cd449b8099b4331d6cfc67ba978bef62e38179ae0",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/package-lock.json",
+      "mode": "100644",
+      "gitBlob": "263d573e1b60080e3e7d430a61813924001df0a1",
+      "bytes": 12969,
+      "sha256": "8a21dada89673eb721a2200c4e64444b4d583a7df5df5d0add52d3ca2546229d",
+      "source": "Exact f32 identity verified against frozen full Git tree; locally available work/src bytes reused read-only."
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "mode": "100644",
+      "gitBlob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "bytes": 22307,
+      "sha256": "52ff513c87c6baa35f6cfc103b6f22004495dd4151b025f8792a2ee2ca0c914b",
+      "source": "Exact sealed frozen authority source reused read-only."
+    },
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "gitBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "bytes": 16565,
+      "sha256": "43b1764040222c030eb6c02caf8e4e850c0f50b008187c944ee106c10983bcb2",
+      "source": "Exact sealed frozen authority source reused read-only."
+    },
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "gitBlob": "55aa82c19aab225e234a4f4ce33b2896483efd5c",
+      "bytes": 36977,
+      "sha256": "0acf74eb3686f54789a1983af62ab7d1d2b49d28210f894b2290c033e62cf029",
+      "source": "Exact sealed frozen authority source reused read-only."
+    }
+  ]
+}

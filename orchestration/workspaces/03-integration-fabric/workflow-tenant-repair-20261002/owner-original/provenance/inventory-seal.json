@@ -1,0 +1,553 @@
+{
+  "scope": "EXACT_CALLER_SOURCE_INVENTORY_AND_LOCAL_FOCUSED_TESTS",
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "sourcePaths": 63,
+  "existingCapabilityRecords": 8,
+  "shippingPaths": 0,
+  "implementationCreated": false,
+  "runtimeWired": false,
+  "configurationValuesFetched": 0,
+  "providerCalls": 0,
+  "githubMutations": 0,
+  "staffologyOrProofRootMutations": 0,
+  "utf8RawRoundtrip": true,
+  "normalizations": 0,
+  "files": [
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/FINDINGS.md",
+      "bytes": 8082,
+      "sha256": "b0a42f385c79287af5aed80cb5f8febdc3c9ac6fb4add21d9515b651d7599eb0",
+      "blob": "7092af5e7fd567b5ef69c51e23c01276f6a89d6d"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/PREPARATION_QUALIFICATIONS.md",
+      "bytes": 1819,
+      "sha256": "d405d2e9ae85f3dcfc221a533b370462c486d98b971571cfc5200072ecaa6bba",
+      "blob": "15388e29e09016b064678b51bf1dad27bd998d4e"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/branch-ref-tree-capsules.json",
+      "bytes": 460042,
+      "sha256": "de1d7154cbe3ba2ab3255e647e1faef0514354e2462f985e5078f4137e5ee291",
+      "blob": "2f876c8f558708610be7973e2d51c3112bd815b5"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/capabilities.json",
+      "bytes": 27495,
+      "sha256": "0ca35c25ea8d86e09201dc48e25f0689d2fb2db29855c96539d8eabea51f3027",
+      "blob": "850c81c8c2e140a16c14cd871f7ad74228deff0f"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/commit-change-index.json",
+      "bytes": 10753,
+      "sha256": "0e3e9861a0b75dd18cc8f16eac5dd3abe7e17f605b3dd85f73cf217365def8a0",
+      "blob": "2306b87c72ebe36aa5250fa371612046b94cfcea"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/coverage.json",
+      "bytes": 8546,
+      "sha256": "23e09bc1bd2de974a4776bd030cc19c12e49e385ef9df39d3ca46f8c3a4dff5e",
+      "blob": "6b657ff03fd30f50dc9a4970388372be73a50cda"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/01-frozen-focused.run.json",
+      "bytes": 819,
+      "sha256": "b554ac94d1869f2c12809512151773aeddeeefd2c6d0d7f8182e870a97aec92d",
+      "blob": "bc374d417b382cdaf4de4beed0f91a74d876b720"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/01-frozen-focused.tap",
+      "bytes": 7625,
+      "sha256": "309dc08303268d45fec0e5015b15a1d7922a5950213d9b89c8c745015899b6f4",
+      "blob": "0e5a7db63e57789f0787e0ecf743c3908f0d467d"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/02-historical-grant-validation.run.json",
+      "bytes": 687,
+      "sha256": "c473d9f60c0c61d541261c95c707aee01875b6ac28d6212fbcf1ddde11d81088",
+      "blob": "44150859c20acfbd5dffbc128b6fba30a35da7ad"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/02-historical-grant-validation.tap",
+      "bytes": 3519,
+      "sha256": "dac47df942a60503ed1835b9064762964fc297324480ffd6d887f759a8b2bafe",
+      "blob": "6b6e07616238cf46db3af9dc3231cfaa182423e1"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/03-historical-signed-webhook.run.json",
+      "bytes": 682,
+      "sha256": "9b9109db51d82d60db88f71c2bc6fa044fd66e9163cbcad360d75c12280f31ea",
+      "blob": "0b04c6dd525b55ba14efcae8abca06e7d2514f29"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/03-historical-signed-webhook.tap",
+      "bytes": 3299,
+      "sha256": "aaadf385f0e0b29f8fb681bd291c58321323ddba6ab468a496660ea6bbdaa5a7",
+      "blob": "48d342e71c5d8042b01b694f7a5aec4479f78d51"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/04-frozen-workflow-tenant-caller-red.run.json",
+      "bytes": 794,
+      "sha256": "c73c258d5d8aa9d5e019c9287696f40e1abb8844c8671de69620ff0491a2bef7",
+      "blob": "3fa133a010b0a98ee8de0df1da905c99c1303c4e"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/evidence/04-frozen-workflow-tenant-caller-red.tap",
+      "bytes": 1632,
+      "sha256": "3c23d3cce00c0910e024e1e6e1ea0d7e2276a8b133491f71eb4070e8b1d531cd",
+      "blob": "0f233060cc5118aa5a1ac872c547ecfad2d9d269"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen-bootstrap-capsule.json",
+      "bytes": 23146,
+      "sha256": "b2c79e3e0dbfc2d75a8c3451e774b725e6a53c0dd4ceb8a6ae53eaac5199e32d",
+      "blob": "f9890f86ba4a525cbce500d5dfd44a9ead2c35d8"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen-fetch-capsules.json",
+      "bytes": 54255,
+      "sha256": "91be8b802e73539ed21a0a628e1ae22f7b129ef5caec8f76a3317764f6fba6f6",
+      "blob": "f7c3d4dcf0e0d73cc8eb93fd080c6d2289b75c40"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 16565,
+      "sha256": "43b1764040222c030eb6c02caf8e4e850c0f50b008187c944ee106c10983bcb2",
+      "blob": "d9e4099141bb3feafe82369892e51c1c60125dc5"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/Dockerfile",
+      "bytes": 36977,
+      "sha256": "0acf74eb3686f54789a1983af62ab7d1d2b49d28210f894b2290c033e62cf029",
+      "blob": "55aa82c19aab225e234a4f4ce33b2896483efd5c"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/clocking-security-v2/access-control-evidence.mjs",
+      "bytes": 8974,
+      "sha256": "7673be5dd9dfda416209e9c7a7c6845ae9425998a0f645b9dde46867039d3dbf",
+      "blob": "ff89f396f3db0f7ad3b9dc4b000c6c31103580e7"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/clocking-security-v2/access-push-adapters.mjs",
+      "bytes": 13569,
+      "sha256": "6640b47ab0ee9c0fad4acc201d33fbf8d56e36f716fa25a81f0b774afbed2554",
+      "blob": "f1f45929d35b733c9062357ec356b522f9788658"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/clocking-security-v2/access-push-adapters.test.mjs",
+      "bytes": 12853,
+      "sha256": "3836b1fcc26d46d39f012076a6c11f16ec17ab67011db2551f6cc7f6fd6a17ae",
+      "blob": "00635451081d00db5d70ec8723c7249477e34855"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connection-test-plan.mjs",
+      "bytes": 8657,
+      "sha256": "6f0988c9c8ef6a985dfdb6dea932d0bb0f0e089256b3b278c052cac17ec8ac8c",
+      "blob": "e90c6263c470a043cf366180624b96c1319ec43f"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connection-test-plan.test.mjs",
+      "bytes": 6185,
+      "sha256": "7d80f78a518bb41b9e1eecf31d7b11cbf6f5ed65fa38033b72ff1b0425d0bdcb",
+      "blob": "62a060090fd7146eb62d623a7336d30bd46a85e5"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connector-registry.mjs",
+      "bytes": 9999,
+      "sha256": "8afc7108a2409939246f3e416f4ec72a3a546138f08b6a941c96c6f8cc206f19",
+      "blob": "23e99d6f0b2c43327a62e26da8020f614ded6282"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/connector-registry.test.mjs",
+      "bytes": 10434,
+      "sha256": "8ac903efe5f8b9e471c67dc7dbee937c7439612489dacd62270b00393a3b81b6",
+      "blob": "1b4f202cc6efe98766dc1b437e1647b18888d9c5"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/evidence-provenance.mjs",
+      "bytes": 1676,
+      "sha256": "498deb5eabbf7aae474ec8307fe07af9ae1fc96ba7c5d688d5be2355729c8656",
+      "blob": "e3b9656d63b4909df0deb1460f7511ad287ad5c7"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection-registry.mjs",
+      "bytes": 1535,
+      "sha256": "a0d776862a75a36c98b55eff0158af5c80f11a322105eece5e681ffcf1711421",
+      "blob": "29d83c5c813ba648e8364478720eb68ee565bc59"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection-registry.test.mjs",
+      "bytes": 817,
+      "sha256": "c053f1224c61bef72767126cb454be4e80270fe2076b16260b119951a2815fe8",
+      "blob": "6dfdd3a1a303ce5385ef7c3cdeafec57e0168d85"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection.mjs",
+      "bytes": 5924,
+      "sha256": "3605e0d910a4c3f3ce89b5ab30c3bafb77eaee2e4d839fa46f8236784227e723",
+      "blob": "5ae784c9d801866e747c4d2bf69f91a4a3299594"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/governed-read-projection.test.mjs",
+      "bytes": 3282,
+      "sha256": "d3e595ce471ffb120f58bd3f794e1d2a851df4bdda0e036e23a4144101f0534f",
+      "blob": "438744dd1da3b7f529d0fc104b22e4b37a3256e7"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/privileged-bootstrap-guard.mjs",
+      "bytes": 3003,
+      "sha256": "d8d2cda6574d6cdedee0ce3770130dd3aaf80a5c0fc1c61e4c2bdc88b825222e",
+      "blob": "a3c4ecc0e858a1e8de592e8b3e91a99fef4db7f0"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/privileged-bootstrap-guard.test.mjs",
+      "bytes": 2616,
+      "sha256": "9f8822585fa74bbb5d86f912a4ae80d759e9147ad6e677d8211ca83535c38856",
+      "blob": "8bfd99d908d890c427b03a42d5e20f691d3fdf28"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/session-broker.mjs",
+      "bytes": 15945,
+      "sha256": "7fcadf0d132a9b4e2363bb57211e8aea63806dd6721b2e6faf6de92409c1d82f",
+      "blob": "2991c96dc35e50f128521b66e444e09d0e69abdb"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/session-broker.test.mjs",
+      "bytes": 11200,
+      "sha256": "37bde4c8104130aad1f71c58faf176fb44f02ad5dddb56a4da747843814e79fd",
+      "blob": "21dcef2ec7cdd40c9c5dc8d7a172e9a3df7fe23e"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/static-credential-authority.mjs",
+      "bytes": 5031,
+      "sha256": "4099851a5873b1d8de192ed773614ec3017a8129b6136841aaa8db93cecf77ee",
+      "blob": "07b4cac17f4684b5f0a72d65a5bb7de2c9cf275d"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/static-credential-authority.test.mjs",
+      "bytes": 3585,
+      "sha256": "903593157d9691841e03ca89c190ee293f0beb068617136048e934fa29b60513",
+      "blob": "8e8901f10cead95acde684a3fdd8a4d336236967"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration-fabric/runtime/webhook-origin-security.test.mjs",
+      "bytes": 652,
+      "sha256": "1453dc846148cbe18c2fe65ba89252e1cd4bc9461f9a2a0515f1fc840c856e1f",
+      "blob": "ca8998edef1faf805cc4d9c79e1677a4c4a7e7f0"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/GUSTO_CONNECTION.md",
+      "bytes": 6081,
+      "sha256": "e2ca526c7675efc0d62ecad309bcd9da75f3ae81da3585b7fdcd7830c04c15f8",
+      "blob": "7a9a6b41abd67c16656449e9401324f035bce802"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 61466,
+      "sha256": "830b445572087461a50187cd28c6d71930b4f7ee8a1e0551b7a7acc2cb1346c9",
+      "blob": "af327965343ce1f84e75111ac6bd8c92a2685433"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 24573,
+      "sha256": "beeafffb910ddda49ac9bc3740a3e726f873b7439e755b19197324157ee5ac2c",
+      "blob": "f9f3dcbc690bc99aea3652f9ec2c070d545f86b8"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/directory-oauth-broker.cjs",
+      "bytes": 8292,
+      "sha256": "eec35f21c35d32106bc0fa9e61621c7146d3d40b3a26b86f7cfa0622b988c4b7",
+      "blob": "ebb3855ccf22ec25511f55e7b02b5f77ea2d91ab"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/directory-oauth-broker.test.cjs",
+      "bytes": 6656,
+      "sha256": "4f7d0bfb96e219ff255b26ae6faa89046b1e874a984d4fe10ced7f494d07964a",
+      "blob": "79d8762177008f45bcf2296a9bfc3f1989f9dfa1"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-company-connector.cjs",
+      "bytes": 26119,
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4",
+      "blob": "b53fb02bb707f876b579294ffa93c978fd41da97"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-company-connector.test.cjs",
+      "bytes": 37280,
+      "sha256": "0053222da8f8045f13a2f73fa4ed05e45d357033f55d89f63d7ca4cf22a4b2b2",
+      "blob": "0438b1dc14e1f32489c7e5161851cdfc0e7051b3"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-integration-hub.test.cjs",
+      "bytes": 16716,
+      "sha256": "98c7bce46f44f16422349de2d4119ae6f7a989a6860708a8b2cfeba08877d9ec",
+      "blob": "2e25765a83f1b0e702246f2fa5faf44be734ea84"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-oauth-landing.cjs",
+      "bytes": 3395,
+      "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+      "blob": "60ca5c2f7397414577f02eff4a73686f651739f2"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/runtime/gusto-oauth-landing.test.cjs",
+      "bytes": 6409,
+      "sha256": "b038ab1edd47f2bf1e1d9886095de486e01d94bc21240eedac7b2ec12937f4e6",
+      "blob": "b7bd3cb483ac575cd9a775daa542a92a34e6c228"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/worker/directory-discovery-worker.cjs",
+      "bytes": 11287,
+      "sha256": "2ccd01ea867ed7c310ed5138264d28a5e6aabbc1b710fbd5c504ba9d37f0fa84",
+      "blob": "d6928bb4fb9d120548aa289c5747216b422fcfbf"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/integration/worker/directory-discovery-worker.test.cjs",
+      "bytes": 6710,
+      "sha256": "f16eb6a9701aa5b3bc8d78bbc2ecbb10fff610096e33183e60c266e939b94763",
+      "blob": "82e38a2edb3df4dfeafaef8d74b8d76566c51a54"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/scripts/compose-vector-local-runtime.mjs",
+      "bytes": 15859,
+      "sha256": "5c664112897a2407336348bbcfafdeb4bf72e35cebc5c28028472c6878a95709",
+      "blob": "9fb2656a23e308fbee8c01263d414a15ac8763d9"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/frozen/security/runtime/bootstrap.cjs",
+      "bytes": 22307,
+      "sha256": "52ff513c87c6baa35f6cfc103b6f22004495dd4151b025f8792a2ee2ca0c914b",
+      "blob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/historical-access-dependency-capsule.json",
+      "bytes": 7931,
+      "sha256": "f727e24e0013d1ae634c4080c314bcfb10d3e6c8c8f40a1d46de927187f8679d",
+      "blob": "f50063a460487dc4e59d253d1952603743090ca8"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/historical-source-capsules.json",
+      "bytes": 85607,
+      "sha256": "7f4f2e145961d0f31bd178d792c099e2b1e0187f3267462a43b5a3b4f2333895",
+      "blob": "aba5e3c65611d14dd3d8d9faad6abf8df6a33838"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/historical/637ed8ede33b02c5eec11b9aecdbe61137e45986/clocking-security-v2/access-control-evidence.mjs",
+      "bytes": 7375,
+      "sha256": "7752524331b0e8f1ebb8692676562e707cef30f0f5b83c95892d4ab9a6855fb6",
+      "blob": "786d6cab113da9755843ef018274979c61b91e69"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/historical/637ed8ede33b02c5eec11b9aecdbe61137e45986/clocking-security-v2/access-push-adapters.mjs",
+      "bytes": 8344,
+      "sha256": "6053c105c2415b396e45d9185dce290f5aeedb6d78b801e526a81c77aa95cf97",
+      "blob": "ba66301765888e9f62405a5f3481347dd58b3b7f"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/historical/637ed8ede33b02c5eec11b9aecdbe61137e45986/clocking-security-v2/access-push-adapters.test.mjs",
+      "bytes": 7456,
+      "sha256": "abbc9c36333653dbf34334fbe6786debc68b84219e5c344221b3fae53bc0bb2a",
+      "blob": "65a27d298acd8169cb0c677437cde677f0d76a08"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/historical/ba64a8951a394f5b39fee15ef3550441c67d90ae/integration/runtime/autonomous-integration-hub.cjs",
+      "bytes": 43062,
+      "sha256": "b1e550feb2a2338c1ca76140dd433e76f73c30ace6c0191afd06260f7f7d400a",
+      "blob": "2452c98f6dc0bdaa13e70d2bfcfba5c3a18c2dee"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/historical/ba64a8951a394f5b39fee15ef3550441c67d90ae/integration/runtime/autonomous-integration-hub.test.cjs",
+      "bytes": 23224,
+      "sha256": "83ed478bb2623234a7dbc8e387ad7e183f227f939779e2806d8cab4ac92339ee",
+      "blob": "1d50ea15035445d5083c254f66f2a45531833d8c"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/literal-caller-scan.json",
+      "bytes": 32955,
+      "sha256": "5c43dfb12e04dfd60b85c59ec3edd7ad410e2ee838758168b3c71b849e8a57c6",
+      "blob": "f28f36d70465ab4b8c5656a753352bb7f57ae648"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/connector-activation-proposals.cjs",
+      "bytes": 8779,
+      "sha256": "88ea03b3a34468a94c00708806ff6551d53875b27f02dcd5d81bac4960445f24",
+      "blob": "f9c08e8c56a6aac0753e4b914fe4ab1471e816b5"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/connector-discovery.cjs",
+      "bytes": 14146,
+      "sha256": "9f538a3f21dac8ca859914f4ab1841e83adb6588fe5ca4bbef6f91e5f9ac73ac",
+      "blob": "bf851641851258c2b73a5a06a459ef19b509c7ca"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/discovery-review-receipts.cjs",
+      "bytes": 8101,
+      "sha256": "3d8c76353f3f563b724e9f9cc250144af8721dac6ae7bd82e14dc13561fab162",
+      "blob": "4c7a71bb3c087e474802074717c18396e02386d7"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/inbound-webhook.cjs",
+      "bytes": 12945,
+      "sha256": "b4510a767f1ec376bcdb330c5bf517bd67d716e958d428dd4671d4ffffd1383e",
+      "blob": "661c24665ee495b2d10d72c6937815526572b64f"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/integration-gateway.cjs",
+      "bytes": 12816,
+      "sha256": "03cd0caacff0a751d7c3865f2b625655f67d1155b8b2ca5af7b6246683ccc578",
+      "blob": "225cac500eae74cf3630008f71d8b1034f2b571e"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/outbound-integration.cjs",
+      "bytes": 23640,
+      "sha256": "7e7b3126ac7fdd5712fc5fc7299e3c75893bc699f7ed200dbba29b914c2bf9d4",
+      "blob": "3489c796d290e900459eeb07ba756c4e5ae6bb3e"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-adapter-contract.cjs",
+      "bytes": 16559,
+      "sha256": "e5631bc79138e2da426daa01d0ce1af7a394758abbc5232655cf7af6e2f5f196",
+      "blob": "6a84b94fe3d9fc29dc88048973ce2bafd5b1a49a"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-collection-control-plane.cjs",
+      "bytes": 4449,
+      "sha256": "a5124c01e431c1fcbb39c3fcfe233e1c90d1e6b0d1ceaec94870e78ea6846a4f",
+      "blob": "0ebb8f3847a205ff600107b4bc1e22d9e82c5822"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-collection-permits.cjs",
+      "bytes": 6844,
+      "sha256": "3af60e5c0f78da46200e131fc3c3f045348101bd75c122defbf722f81574769c",
+      "blob": "852bc5e696f66e8db3b3b4225c2c51ecafe8f770"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-extraction-plan.cjs",
+      "bytes": 9051,
+      "sha256": "83749087cd3ec5ce89440301149400c2e89144d55c0085f5c7545399f1f2400d",
+      "blob": "a523031c3c3812fb86c9b81b126e540059482662"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-investigation.cjs",
+      "bytes": 16505,
+      "sha256": "c69950a2253de9479dfdc3a325fc23cb800470fab3347271e98c4e8963b4e555",
+      "blob": "c124ce4b2729685fdd10edb7b7a0617a7da42816"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-job-store.cjs",
+      "bytes": 23559,
+      "sha256": "1b36e5f9bc599741ab2cc8ef245ac3f5c8ac33e68aea46612cb31252965282a0",
+      "blob": "891575196e0e6a98b6257577cd3d09d5a47f0d3d"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-live-acceptance.cjs",
+      "bytes": 20392,
+      "sha256": "adad42fbb4e9a216450953174e14d99a0bf8bc57d9a2c792c00b3507ee88eb06",
+      "blob": "31eed03c0a9ba8b8f8b56d9b262aaaa53225fb44"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-metadata-broker.cjs",
+      "bytes": 14328,
+      "sha256": "746ee6571853be4395f48fcf2826b110caa27cacc6261bd82731e7a6534aa5d1",
+      "blob": "85ec9b39863f8d9a03abefe91ac5b98104d2ceda"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-metadata-evidence.cjs",
+      "bytes": 12943,
+      "sha256": "e3b08bd80464689ea5d783cbc4dc261d8db8c1ebb48936d84fb2f591e846bd41",
+      "blob": "2951dd64d078f296ead9be98b9cf0eb7909a8f1c"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-reconciliation-evidence.cjs",
+      "bytes": 9615,
+      "sha256": "db09a439e32090fe4f079a3660e976b8275053107ee0012536e896328d412749",
+      "blob": "2349833a8b5907c96c6c19de455327a7b986e4ee"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/provider-recovery-authority.cjs",
+      "bytes": 10554,
+      "sha256": "5a53dc665b6f4e651705d8590c91188b4e325e625fa64cb8210a0b65dbf2cb63",
+      "blob": "70bd2475431e1e85869710b10900bc275a4b49bc"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/sap-successfactors-event-connector.cjs",
+      "bytes": 10927,
+      "sha256": "46d9eba7b3be2d57bb1bfe5c6007058ea8bb9a2b91728320cd0072cf0ff4b387",
+      "blob": "452d7cb06d2e4b5b31016408405a52969aba1651"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/transactional-outbound-bridge.cjs",
+      "bytes": 4317,
+      "sha256": "52f890d30bde3e657e8e95d2f4db25d075ebdc8c8cf3be3bd4331b40c072e81f",
+      "blob": "9617ce7f74c573b57edb58aeeda03244e03757f4"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/universal-connectivity.cjs",
+      "bytes": 19480,
+      "sha256": "fa9a6b1418abb7af900a4d0a468cc373c99c485bc8d0e3a53aee45f9fcb9a5cd",
+      "blob": "0862d010d6aa2ea48db3fd6159ed62c3be55e192"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/lib/verified-ingress-attestation.cjs",
+      "bytes": 7242,
+      "sha256": "20447545ba57c0274258db1a46136e153eda5daf6bb316844fefa010975f7393",
+      "blob": "929f2e5a5f822d0ed87cd40d1934d39b1f01fb72"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/package.json",
+      "bytes": 1525,
+      "sha256": "aad05a5c5f91e6603d6116511950607752733d43bbc5520c0bc4c573eac8b490",
+      "blob": "d2b715d917cda6a1c0e409ce0d47ed2a81e1076d"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/packed-runtime/server.cjs",
+      "bytes": 123267,
+      "sha256": "1792f544d0fea25577f683f3df957b4f74b6a086cd0479b24b1fe77f58587dd0",
+      "blob": "7306998ba72723cc8d93141d03167df97d1fdecf"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/prepare.cjs",
+      "bytes": 4651,
+      "sha256": "c332395ced476338194f6f367dc5b8151d58d95da95dbddeddab6da55f53037e",
+      "blob": "1d3b14e80f2b835ecce02ff0a6e0719533b881d3"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/run-caller-control.cjs",
+      "bytes": 1480,
+      "sha256": "9f060df9b88fb140d970b9505635550028bce84b23de43f7c5b6c9eb27750998",
+      "blob": "ec4068048ebe010ef68404a6f3750c61287113b3"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/run.cjs",
+      "bytes": 1864,
+      "sha256": "604609c1704ea16bf648a71f4374d2da5be056afe6bb14ee1140c2a2a8b46478",
+      "blob": "aa59b1a4ce5e556b521b408ed866527bbb4c4c07"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/scan-callers.cjs",
+      "bytes": 2432,
+      "sha256": "e2d3899fbf7fe276c82b23d37d286e7eda61dd19ce48badfa03400a909ef3fb3",
+      "blob": "c2c7a0bdc61a130cfaea47b81af31cc0221504f5"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/seal.cjs",
+      "bytes": 14193,
+      "sha256": "ad598bbe941966f9d674f39cecbd5ce1f0d17aec060e6669139b673dc61605ac",
+      "blob": "fa791675c7a8dd376ca037613aae1f3d8f0f35a0"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/source-manifest.json",
+      "bytes": 73128,
+      "sha256": "fbf92c0ee6f234872eebad4e6481d7264b28364f8a5656dd3a0c99031f3d1609",
+      "blob": "9ba2b2e94bccdb84ccf2798ce396a20139ad3b55"
+    },
+    {
+      "path": "work/inventory_edges/lane03-caller-continuation/workflow-caller-control.test.cjs",
+      "bytes": 2350,
+      "sha256": "f69d7810ddec49f977be4b963bc33b50ef4299bf7e665ce2db5aa78cffcc09a3",
+      "blob": "04c164f17f1df2e311028710706bfab95ddc9a98"
+    }
+  ]
+}

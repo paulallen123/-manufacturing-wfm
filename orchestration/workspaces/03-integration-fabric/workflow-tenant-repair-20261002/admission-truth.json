@@ -1,0 +1,39 @@
+{
+  "capabilityId": "edge03-activation-maintenance",
+  "owner": "lane03/inventory_edges",
+  "broadState": "IN_PROGRESS",
+  "componentState": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_ONLY",
+  "wholeWorkflowState": "BLOCKED_BEFORE_TENANT_BINDING",
+  "inheritedBlocker": "Frozen local job sets WFM_HOSTED_STAGING=true; canonical bootstrap enables passkeys and intercepts the existing password POST /api/login with410 before tenant propagation is reached. Hosted application values were not inspected; equivalent hosted source guard is conditional on actual configuration.",
+  "adjacentTestInvokedByUnchangedWorkflowCommands": false,
+  "ownerNewTests": "33/33",
+  "ownerCombinedTests": "48/48",
+  "independentHeldouts": "17/17",
+  "independentAdjacentTests": "33/33",
+  "node": "22.23.2",
+  "testScope": "Actual extracted workflow Node expressions/body JSON and exact frozen direct handlers with persisted synthetic fixture state; source variable/origin checks; no Bash, curl, assembled HTTP/bootstrap, Docker, hosted, provider or customer execution.",
+  "closedLocalFinding": "WORKFLOW-TENANT-01 P2 closed only on548c10430ddcba08738995530f3daded8b63b2c0/337921b6c0988fda2b456c58cfd18ee5c935b925; original faulty source/false-positive coverage/red preserved.",
+  "sourceAuthorityQualifications": [
+    "Authenticated bootstrap actor source uses persisted session/user; synthetic test actors do not prove assembled bootstrap execution.",
+    "Canonical global worker key is trusted attestation, not a tenant credential or verified provider authorization.",
+    "Unchanged handler compact() coerces single-item tenant arrays; repaired caller rejects them before request construction.",
+    "Credential pointer/scopes are submitted trusted attestation, not demonstrated external provider access.",
+    "Read-only future auth design requires existing authorized signer/manager allowlist/configuration. No auth/config implementation is packaged."
+  ],
+  "additionalRootSuppliedNonsecretConfigurationObservation": {
+    "source": "Root coordination message, not independently checked by this packaging worker",
+    "assertionRequires": ["hosted staging", "durable state", "proof-runner auth enabled", "Ed25519 public key", "nonempty allowlist"],
+    "variableNamesReportedPresent": true,
+    "variableValuesVerified": false,
+    "currentAuthorizedSignerVerified": false,
+    "authorization": false,
+    "qualification": "Source configuration assertion and variable name presence do not prove configured values, current signer authority, manager allowlist admission or runtime/customer authentication. No secret or variable values fetched."
+  },
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "runtimeWired": false,
+  "hostedTested": false,
+  "githubMutations": 0,
+  "packagingProductTestsExecuted": 0
+}

@@ -1,0 +1,41 @@
+TAP version 13
+# (node:12824) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: frozen workflow sync payload must succeed rather than fail its curl -sSf expectation
+not ok 1 - frozen workflow sync payload must succeed rather than fail its curl -sSf expectation
+  ---
+  duration_ms: 127.8015
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\inventory_edges\\lane03-caller-continuation\\workflow-caller-control.test.cjs:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":"tenant is required for source-data validation."}
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\inventory_edges\lane03-caller-continuation\workflow-caller-control.test.cjs:6:341)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: explicit tenant proceeds to connection lookup; missing fixture connection is qualified control
+ok 2 - explicit tenant proceeds to connection lookup; missing fixture connection is qualified control
+  ---
+  duration_ms: 87.8052
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 336.9061
