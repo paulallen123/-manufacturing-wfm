@@ -1,0 +1,364 @@
+TAP version 13
+# Subtest: source normalise rejects accessors without execution
+ok 1 - source normalise rejects accessors without execution
+  ---
+  duration_ms: 4.484
+  type: 'test'
+  ...
+# Subtest: source normalise rejects proxy without traps
+ok 2 - source normalise rejects proxy without traps
+  ---
+  duration_ms: 0.2715
+  type: 'test'
+  ...
+# Subtest: source normalise rejects nested nonfinite and serializers
+ok 3 - source normalise rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.6002
+  type: 'test'
+  ...
+# Subtest: source initial rejects accessors without execution
+ok 4 - source initial rejects accessors without execution
+  ---
+  duration_ms: 0.2806
+  type: 'test'
+  ...
+# Subtest: source initial rejects proxy without traps
+ok 5 - source initial rejects proxy without traps
+  ---
+  duration_ms: 0.1629
+  type: 'test'
+  ...
+# Subtest: source initial rejects nested nonfinite and serializers
+ok 6 - source initial rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.3065
+  type: 'test'
+  ...
+# Subtest: source register rejects accessors without execution
+ok 7 - source register rejects accessors without execution
+  ---
+  duration_ms: 2.5555
+  type: 'test'
+  ...
+# Subtest: source register rejects proxy without traps
+ok 8 - source register rejects proxy without traps
+  ---
+  duration_ms: 0.4284
+  type: 'test'
+  ...
+# Subtest: source register rejects nested nonfinite and serializers
+ok 9 - source register rejects nested nonfinite and serializers
+  ---
+  duration_ms: 1.8317
+  type: 'test'
+  ...
+# Subtest: source snapshot rejects accessors without execution
+ok 10 - source snapshot rejects accessors without execution
+  ---
+  duration_ms: 0.8408
+  type: 'test'
+  ...
+# Subtest: source snapshot rejects proxy without traps
+ok 11 - source snapshot rejects proxy without traps
+  ---
+  duration_ms: 0.3527
+  type: 'test'
+  ...
+# Subtest: source snapshot rejects nested nonfinite and serializers
+ok 12 - source snapshot rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.9984
+  type: 'test'
+  ...
+# Subtest: source assess rejects accessors without execution
+ok 13 - source assess rejects accessors without execution
+  ---
+  duration_ms: 0.3866
+  type: 'test'
+  ...
+# Subtest: source assess rejects proxy without traps
+ok 14 - source assess rejects proxy without traps
+  ---
+  duration_ms: 0.2128
+  type: 'test'
+  ...
+# Subtest: source assess rejects nested nonfinite and serializers
+ok 15 - source assess rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.6266
+  type: 'test'
+  ...
+# Subtest: source latest rejects accessors without execution
+ok 16 - source latest rejects accessors without execution
+  ---
+  duration_ms: 0.2856
+  type: 'test'
+  ...
+# Subtest: source latest rejects proxy without traps
+ok 17 - source latest rejects proxy without traps
+  ---
+  duration_ms: 0.214
+  type: 'test'
+  ...
+# Subtest: source latest rejects nested nonfinite and serializers
+ok 18 - source latest rejects nested nonfinite and serializers
+  ---
+  duration_ms: 1.1204
+  type: 'test'
+  ...
+# Subtest: pack normalise rejects accessors without execution
+ok 19 - pack normalise rejects accessors without execution
+  ---
+  duration_ms: 0.4005
+  type: 'test'
+  ...
+# Subtest: pack normalise rejects proxy without traps
+ok 20 - pack normalise rejects proxy without traps
+  ---
+  duration_ms: 0.1048
+  type: 'test'
+  ...
+# Subtest: pack normalise rejects nested nonfinite and serializers
+ok 21 - pack normalise rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.3745
+  type: 'test'
+  ...
+# Subtest: pack register rejects accessors without execution
+ok 22 - pack register rejects accessors without execution
+  ---
+  duration_ms: 0.2856
+  type: 'test'
+  ...
+# Subtest: pack register rejects proxy without traps
+ok 23 - pack register rejects proxy without traps
+  ---
+  duration_ms: 0.0992
+  type: 'test'
+  ...
+# Subtest: pack register rejects nested nonfinite and serializers
+ok 24 - pack register rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.3748
+  type: 'test'
+  ...
+# Subtest: pack resolve rejects accessors without execution
+ok 25 - pack resolve rejects accessors without execution
+  ---
+  duration_ms: 2.9466
+  type: 'test'
+  ...
+# Subtest: pack resolve rejects proxy without traps
+ok 26 - pack resolve rejects proxy without traps
+  ---
+  duration_ms: 0.5753
+  type: 'test'
+  ...
+# Subtest: pack resolve rejects nested nonfinite and serializers
+ok 27 - pack resolve rejects nested nonfinite and serializers
+  ---
+  duration_ms: 2.2937
+  type: 'test'
+  ...
+# Subtest: graph normalise rejects accessors without execution
+ok 28 - graph normalise rejects accessors without execution
+  ---
+  duration_ms: 0.4032
+  type: 'test'
+  ...
+# Subtest: graph normalise rejects proxy without traps
+ok 29 - graph normalise rejects proxy without traps
+  ---
+  duration_ms: 0.1026
+  type: 'test'
+  ...
+# Subtest: graph normalise rejects nested nonfinite and serializers
+ok 30 - graph normalise rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.3249
+  type: 'test'
+  ...
+# Subtest: graph register rejects accessors without execution
+ok 31 - graph register rejects accessors without execution
+  ---
+  duration_ms: 0.2623
+  type: 'test'
+  ...
+# Subtest: graph register rejects proxy without traps
+ok 32 - graph register rejects proxy without traps
+  ---
+  duration_ms: 0.1
+  type: 'test'
+  ...
+# Subtest: graph register rejects nested nonfinite and serializers
+ok 33 - graph register rejects nested nonfinite and serializers
+  ---
+  duration_ms: 0.3404
+  type: 'test'
+  ...
+# Subtest: graph resolve rejects accessors without execution
+ok 34 - graph resolve rejects accessors without execution
+  ---
+  duration_ms: 1.4059
+  type: 'test'
+  ...
+# Subtest: graph resolve rejects proxy without traps
+ok 35 - graph resolve rejects proxy without traps
+  ---
+  duration_ms: 0.5811
+  type: 'test'
+  ...
+# Subtest: graph resolve rejects nested nonfinite and serializers
+ok 36 - graph resolve rejects nested nonfinite and serializers
+  ---
+  duration_ms: 1.8904
+  type: 'test'
+  ...
+# Subtest: preflight assess rejects accessors without execution
+ok 37 - preflight assess rejects accessors without execution
+  ---
+  duration_ms: 1.0734
+  type: 'test'
+  ...
+# Subtest: preflight assess rejects proxy without traps
+ok 38 - preflight assess rejects proxy without traps
+  ---
+  duration_ms: 0.5465
+  type: 'test'
+  ...
+# Subtest: preflight assess rejects nested nonfinite and serializers
+ok 39 - preflight assess rejects nested nonfinite and serializers
+  ---
+  duration_ms: 2.6106
+  type: 'test'
+  ...
+# Subtest: source serializers reject hostile arrays and preserve stable canonical data
+ok 40 - source serializers reject hostile arrays and preserve stable canonical data
+  ---
+  duration_ms: 1.2563
+  type: 'test'
+  ...
+# Subtest: country serializers reject hostile arrays and preserve stable canonical data
+ok 41 - country serializers reject hostile arrays and preserve stable canonical data
+  ---
+  duration_ms: 0.3268
+  type: 'test'
+  ...
+# Subtest: graph serializers reject hostile arrays and preserve stable canonical data
+ok 42 - graph serializers reject hostile arrays and preserve stable canonical data
+  ---
+  duration_ms: 0.2707
+  type: 'test'
+  ...
+# Subtest: preflight serializers reject hostile arrays and preserve stable canonical data
+ok 43 - preflight serializers reject hostile arrays and preserve stable canonical data
+  ---
+  duration_ms: 0.4164
+  type: 'test'
+  ...
+# Subtest: observed future and admitted future are independently unusable
+ok 44 - observed future and admitted future are independently unusable
+  ---
+  duration_ms: 0.9302
+  type: 'test'
+  ...
+# Subtest: default clock stamps real admission and invalid trusted clocks retain nothing
+ok 45 - default clock stamps real admission and invalid trusted clocks retain nothing
+  ---
+  duration_ms: 1.1662
+  type: 'test'
+  ...
+# Subtest: source exact freshness boundary and latest append fail closed historically
+ok 46 - source exact freshness boundary and latest append fail closed historically
+  ---
+  duration_ms: 0.5121
+  type: 'test'
+  ...
+# Subtest: registration and output snapshots detach and deep freeze across source, pack, graph
+ok 47 - registration and output snapshots detach and deep freeze across source, pack, graph
+  ---
+  duration_ms: 6.5704
+  type: 'test'
+  ...
+# Subtest: graph known and legal upper/lower bounds and scoped site are distinct
+ok 48 - graph known and legal upper/lower bounds and scoped site are distinct
+  ---
+  duration_ms: 4.6788
+  type: 'test'
+  ...
+# Subtest: country effective upper boundary and country identity reject coverage
+ok 49 - country effective upper boundary and country identity reject coverage
+  ---
+  duration_ms: 1.7881
+  type: 'test'
+  ...
+# Subtest: preflight missing batch makes zero graph calls
+ok 50 - preflight missing batch makes zero graph calls
+  ---
+  duration_ms: 0.3691
+  type: 'test'
+  ...
+# Subtest: preflight normalised duplicate batch makes zero graph calls
+ok 51 - preflight normalised duplicate batch makes zero graph calls
+  ---
+  duration_ms: 0.1501
+  type: 'test'
+  ...
+# Subtest: preflight truncated duplicate batch makes zero graph calls
+ok 52 - preflight truncated duplicate batch makes zero graph calls
+  ---
+  duration_ms: 0.1998
+  type: 'test'
+  ...
+# Subtest: preflight non-array batch makes zero graph calls
+ok 53 - preflight non-array batch makes zero graph calls
+  ---
+  duration_ms: 0.136
+  type: 'test'
+  ...
+# Subtest: preflight fully counts mixed coverage, empty remains explicit, output freezes
+ok 54 - preflight fully counts mixed coverage, empty remains explicit, output freezes
+  ---
+  duration_ms: 0.8975
+  type: 'test'
+  ...
+# Subtest: graph return behavior is rejected before reads
+ok 55 - graph return behavior is rejected before reads
+  ---
+  duration_ms: 1.0473
+  type: 'test'
+  ...
+# Subtest: trusted configuration accessor/proxy rejection before clock or graph use
+ok 56 - trusted configuration accessor/proxy rejection before clock or graph use
+  ---
+  duration_ms: 0.4948
+  type: 'test'
+  ...
+# Subtest: mixed units compare customers only within exact units and carry review
+ok 57 - mixed units compare customers only within exact units and carry review
+  ---
+  duration_ms: 18.2966
+  type: 'test'
+  ...
+# Subtest: floor and unitless limits remain exact and DENY retains unit review
+ok 58 - floor and unitless limits remain exact and DENY retains unit review
+  ---
+  duration_ms: 4.6274
+  type: 'test'
+  ...
+# Subtest: composition public array guards, finite extreme values, exception remains review
+ok 59 - composition public array guards, finite extreme values, exception remains review
+  ---
+  duration_ms: 1.4273
+  type: 'test'
+  ...
+1..59
+# tests 59
+# suites 0
+# pass 59
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 238.1992

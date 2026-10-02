@@ -1,0 +1,79 @@
+{
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+    "treeIdentitySource": "Root verified VECTOR_CONVERGENCE_STATE frozen.tree; connector tree sha echoes request ref",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "scope": "Unchanged exact frozen source only; pure advisory factories, runtime exposure unestablished",
+  "independentlyReviewed": false,
+  "findings": [
+    {
+      "id": "JURISDICTION-SOURCE-01",
+      "state": "REPRODUCED_LOCALLY_NOT_REPAIRED",
+      "case": "future-source-snapshot",
+      "result": {
+        "sourceId": "s",
+        "state": "CURRENT",
+        "usable": true,
+        "requiresAttention": false,
+        "ageHours": -24,
+        "freshnessHours": 24,
+        "snapshotDigest": "1e49a8ac132aaa844890fe44a2711b56131891682dc8811c16f1c3748179e202"
+      }
+    },
+    {
+      "id": "JURISDICTION-SOURCE-02",
+      "state": "REPRODUCED_LOCALLY_NOT_REPAIRED",
+      "case": "pack-query-alias",
+      "before": 10,
+      "after": 999,
+      "digestUnchanged": true
+    },
+    {
+      "id": "JURISDICTION-SOURCE-03",
+      "state": "REPRODUCED_LOCALLY_NOT_REPAIRED",
+      "case": "graph-register-alias",
+      "before": 10,
+      "after": 999,
+      "digestUnchanged": true
+    },
+    {
+      "id": "JURISDICTION-SOURCE-04",
+      "state": "REPRODUCED_LOCALLY_NOT_REPAIRED",
+      "case": "missing-worker-identity",
+      "status": "READY_ADVISORY",
+      "coverage": {
+        "workerCount": 1,
+        "covered": 1,
+        "missing": [],
+        "requiresReview": []
+      },
+      "questions": []
+    },
+    {
+      "id": "JURISDICTION-SOURCE-05",
+      "state": "REPRODUCED_LOCALLY_NOT_REPAIRED",
+      "case": "unit-conflict",
+      "constraints": [
+        {
+          "key": "synthetic-limit",
+          "result": "MAX",
+          "value": 10,
+          "unit": "declared-unit",
+          "sources": [
+            "synthetic-ceiling"
+          ],
+          "reason": "STRICTEST_MANDATORY_CEILING"
+        }
+      ],
+      "review": []
+    }
+  ]
+}

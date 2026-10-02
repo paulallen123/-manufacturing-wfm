@@ -1,0 +1,7 @@
+# Jurisdiction boundary future publication
+
+Eight explicit MODIFY paths against exact f32 preimages: four existing policy owners and their adjacent tests. The same Lane01 inert-finite-json helper/test pair are dependency-only ADDs. Every one of the other1086 frozen blobs/modes stays identical; all1094 original paths remain, no deletions. Protected serving branch remains f32. No country display, materials, Staffology or shared-helper implementation edits.
+
+Future observed/admitted receipts are unusable at earlier asOf; nested state/output is inert finite detached frozen; missing/duplicate worker batches reject before graph calls; incompatible units require review and compare only within exact units. Trusted clock/graph are explicit collaborators, not authenticated evidence. No new policy facts, legal advice, known-time bridge, source authenticity, execution authority, runtime wiring or hosted/customer proof. Product058 remains IN_PROGRESS and proven/convergence locks remain null.
+
+Original five boundary reds, subsequent owner tests-first and repair red/green records, archive bytes, plus independent59/59 held-outs and40/40 affected tests are preserved separately. Earlier metadata pending/not-authorised status is historical; admission-truth records current final-byte closure. No new tests were run while packaging. All raw UTF8 payload/source custody is checked, with exact original-byte receipts if normalization is required. Root alone publishes and later admits after current-head checks.

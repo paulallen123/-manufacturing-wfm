@@ -1,0 +1,61 @@
+[
+  {
+    "case": "UTC-not-local-calendar",
+    "legalTimes": [
+      "2026-10-25T00:30:00.000Z",
+      "2026-10-25T01:30:00.000Z"
+    ],
+    "timezoneFieldDoesNotChangeRules": true
+  },
+  {
+    "case": "future-source-snapshot",
+    "result": {
+      "sourceId": "s",
+      "state": "CURRENT",
+      "usable": true,
+      "requiresAttention": false,
+      "ageHours": -24,
+      "freshnessHours": 24,
+      "snapshotDigest": "1e49a8ac132aaa844890fe44a2711b56131891682dc8811c16f1c3748179e202"
+    }
+  },
+  {
+    "case": "pack-query-alias",
+    "before": 10,
+    "after": 999,
+    "digestUnchanged": true
+  },
+  {
+    "case": "graph-register-alias",
+    "before": 10,
+    "after": 999,
+    "digestUnchanged": true
+  },
+  {
+    "case": "missing-worker-identity",
+    "status": "READY_ADVISORY",
+    "coverage": {
+      "workerCount": 1,
+      "covered": 1,
+      "missing": [],
+      "requiresReview": []
+    },
+    "questions": []
+  },
+  {
+    "case": "unit-conflict",
+    "constraints": [
+      {
+        "key": "synthetic-limit",
+        "result": "MAX",
+        "value": 10,
+        "unit": "declared-unit",
+        "sources": [
+          "synthetic-ceiling"
+        ],
+        "reason": "STRICTEST_MANDATORY_CEILING"
+      }
+    ],
+    "review": []
+  }
+]

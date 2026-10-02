@@ -1,0 +1,251 @@
+{"node":"v22.23.2","args":["C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.test.cjs"],"exit":0,"networkGuard":"../trust_review/network-guard.cjs"}
+TAP version 13
+# Subtest: verified official snapshot becomes current evidence
+ok 1 - verified official snapshot becomes current evidence
+  ---
+  duration_ms: 8.1628
+  type: 'test'
+  ...
+# Subtest: stale source cannot silently remain usable
+ok 2 - stale source cannot silently remain usable
+  ---
+  duration_ms: 0.7996
+  type: 'test'
+  ...
+# Subtest: unverified retrieval cannot enter authoritative evidence
+ok 3 - unverified retrieval cannot enter authoritative evidence
+  ---
+  duration_ms: 2.8085
+  type: 'test'
+  ...
+# Subtest: source metadata never grants execution authority
+ok 4 - source metadata never grants execution authority
+  ---
+  duration_ms: 0.9666
+  type: 'test'
+  ...
+# Subtest: future observed receipt is not CURRENT even when already ingested
+ok 5 - future observed receipt is not CURRENT even when already ingested
+  ---
+  duration_ms: 1.1928
+  type: 'test'
+  ...
+# Subtest: late ingestion cannot be backdated by a caller field
+ok 6 - late ingestion cannot be backdated by a caller field
+  ---
+  duration_ms: 1.0879
+  type: 'test'
+  ...
+# Subtest: source controls preserve inclusive current age, stale, missing and disabled
+ok 7 - source controls preserve inclusive current age, stale, missing and disabled
+  ---
+  duration_ms: 1.6048
+  type: 'test'
+  ...
+# Subtest: source registration detaches and recursively freezes language and all output
+ok 8 - source registration detaches and recursively freezes language and all output
+  ---
+  duration_ms: 31.0496
+  type: 'test'
+  ...
+# Subtest: source data getters/proxies/non-finite values rejected without execution
+ok 9 - source data getters/proxies/non-finite values rejected without execution
+  ---
+  duration_ms: 1.773
+  type: 'test'
+  ...
+# Subtest: default admission clock is current and invalid trusted clock cannot retain receipt
+ok 10 - default admission clock is current and invalid trusted clock cannot retain receipt
+  ---
+  duration_ms: 2.5275
+  type: 'test'
+  ...
+# Subtest: source trusted clock config accessors and proxies are rejected without reads
+ok 11 - source trusted clock config accessors and proxies are rejected without reads
+  ---
+  duration_ms: 0.7798
+  type: 'test'
+  ...
+# Subtest: public serializers preserve canonical key order and reject executable/nonfinite inputs across owners
+ok 12 - public serializers preserve canonical key order and reject executable/nonfinite inputs across owners
+  ---
+  duration_ms: 9.7064
+  type: 'test'
+  ...
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 13 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 34.1974
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 14 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 1.5107
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 15 - verified pack requires provenance
+  ---
+  duration_ms: 1.1977
+  type: 'test'
+  ...
+# Subtest: pack returned resolved nested data cannot rewrite registered digest content
+ok 16 - pack returned resolved nested data cannot rewrite registered digest content
+  ---
+  duration_ms: 2.7801
+  type: 'test'
+  ...
+# Subtest: pack rejects executable and non-finite data before reading or serializing it
+ok 17 - pack rejects executable and non-finite data before reading or serializing it
+  ---
+  duration_ms: 2.1136
+  type: 'test'
+  ...
+# Subtest: complete known site becomes advisory-ready with zero routine customer rule entry
+ok 18 - complete known site becomes advisory-ready with zero routine customer rule entry
+  ---
+  duration_ms: 12.8241
+  type: 'test'
+  ...
+# Subtest: unknown organisational facts create only targeted exception questions
+ok 19 - unknown organisational facts create only targeted exception questions
+  ---
+  duration_ms: 4.6722
+  type: 'test'
+  ...
+# Subtest: worker temporarily located in unsupported country blocks only that worker policy coverage
+ok 20 - worker temporarily located in unsupported country blocks only that worker policy coverage
+  ---
+  duration_ms: 6.0073
+  type: 'test'
+  ...
+# Subtest: preflight never grants execution or customer mutation authority
+ok 21 - preflight never grants execution or customer mutation authority
+  ---
+  duration_ms: 3.0853
+  type: 'test'
+  ...
+# Subtest: missing and duplicate identities reject entire batch before graph resolution
+ok 22 - missing and duplicate identities reject entire batch before graph resolution
+  ---
+  duration_ms: 1.6157
+  type: 'test'
+  ...
+# Subtest: empty population remains valid and complete populations are fully counted
+ok 23 - empty population remains valid and complete populations are fully counted
+  ---
+  duration_ms: 1.8885
+  type: 'test'
+  ...
+# Subtest: preflight rejects accessor/proxy/non-finite population before any collaborator call
+ok 24 - preflight rejects accessor/proxy/non-finite population before any collaborator call
+  ---
+  duration_ms: 1.0126
+  type: 'test'
+  ...
+# Subtest: trusted graph configuration requires an inert method descriptor, never an accessor or proxy
+ok 25 - trusted graph configuration requires an inert method descriptor, never an accessor or proxy
+  ---
+  duration_ms: 0.5491
+  type: 'test'
+  ...
+# Subtest: graph return is checked as finite inert data before preflight reads it
+ok 26 - graph return is checked as finite inert data before preflight reads it
+  ---
+  duration_ms: 1.4685
+  type: 'test'
+  ...
+# Subtest: bitemporal resolution distinguishes legal validity from what VECTOR knew
+ok 27 - bitemporal resolution distinguishes legal validity from what VECTOR knew
+  ---
+  duration_ms: 14.7866
+  type: 'test'
+  ...
+# Subtest: mandatory ceilings compose to the strictest applicable rule across layers
+ok 28 - mandatory ceilings compose to the strictest applicable rule across layers
+  ---
+  duration_ms: 4.3481
+  type: 'test'
+  ...
+# Subtest: customer policy cannot weaken a mandatory ceiling
+ok 29 - customer policy cannot weaken a mandatory ceiling
+  ---
+  duration_ms: 5.9534
+  type: 'test'
+  ...
+# Subtest: collective agreement scope does not leak to workers outside that agreement
+ok 30 - collective agreement scope does not leak to workers outside that agreement
+  ---
+  duration_ms: 6.3351
+  type: 'test'
+  ...
+# Subtest: verified exceptions never silently weaken the base rule
+ok 31 - verified exceptions never silently weaken the base rule
+  ---
+  duration_ms: 4.9685
+  type: 'test'
+  ...
+# Subtest: graph retains immutable detached nodes, contexts and composition outputs
+ok 32 - graph retains immutable detached nodes, contexts and composition outputs
+  ---
+  duration_ms: 5.4546
+  type: 'test'
+  ...
+# Subtest: incompatible numeric units require review without cross-unit comparison
+ok 33 - incompatible numeric units require review without cross-unit comparison
+  ---
+  duration_ms: 29.6738
+  type: 'test'
+  ...
+# Subtest: same-unit floors and stricter customer policy and exceptions preserve semantics
+ok 34 - same-unit floors and stricter customer policy and exceptions preserve semantics
+  ---
+  duration_ms: 2.7493
+  type: 'test'
+  ...
+# Subtest: graph rejects caller behavior at registration, resolution and exported composition
+ok 35 - graph rejects caller behavior at registration, resolution and exported composition
+  ---
+  duration_ms: 1.9233
+  type: 'test'
+  ...
+# Subtest: DENY priority retains incompatible-unit review without numerically composing the denied key
+ok 36 - DENY priority retains incompatible-unit review without numerically composing the denied key
+  ---
+  duration_ms: 2.3283
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 37 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 2.2505
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 38 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 3.1695
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 39 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 1.4467
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 40 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 1.1477
+  type: 'test'
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 280.306

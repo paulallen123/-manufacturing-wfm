@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: verified official snapshot becomes current evidence
+ok 1 - verified official snapshot becomes current evidence
+  ---
+  duration_ms: 15.9477
+  type: 'test'
+  ...
+# Subtest: stale source cannot silently remain usable
+ok 2 - stale source cannot silently remain usable
+  ---
+  duration_ms: 0.6845
+  type: 'test'
+  ...
+# Subtest: unverified retrieval cannot enter authoritative evidence
+ok 3 - unverified retrieval cannot enter authoritative evidence
+  ---
+  duration_ms: 2.6711
+  type: 'test'
+  ...
+# Subtest: source metadata never grants execution authority
+ok 4 - source metadata never grants execution authority
+  ---
+  duration_ms: 0.7573
+  type: 'test'
+  ...
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 5 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 83.0751
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 6 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 0.9353
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 7 - verified pack requires provenance
+  ---
+  duration_ms: 1.0492
+  type: 'test'
+  ...
+# Subtest: complete known site becomes advisory-ready with zero routine customer rule entry
+ok 8 - complete known site becomes advisory-ready with zero routine customer rule entry
+  ---
+  duration_ms: 7.9944
+  type: 'test'
+  ...
+# Subtest: unknown organisational facts create only targeted exception questions
+ok 9 - unknown organisational facts create only targeted exception questions
+  ---
+  duration_ms: 3.5016
+  type: 'test'
+  ...
+# Subtest: worker temporarily located in unsupported country blocks only that worker policy coverage
+ok 10 - worker temporarily located in unsupported country blocks only that worker policy coverage
+  ---
+  duration_ms: 2.9921
+  type: 'test'
+  ...
+# Subtest: preflight never grants execution or customer mutation authority
+ok 11 - preflight never grants execution or customer mutation authority
+  ---
+  duration_ms: 1.3771
+  type: 'test'
+  ...
+# Subtest: bitemporal resolution distinguishes legal validity from what VECTOR knew
+ok 12 - bitemporal resolution distinguishes legal validity from what VECTOR knew
+  ---
+  duration_ms: 7.7131
+  type: 'test'
+  ...
+# Subtest: mandatory ceilings compose to the strictest applicable rule across layers
+ok 13 - mandatory ceilings compose to the strictest applicable rule across layers
+  ---
+  duration_ms: 1.564
+  type: 'test'
+  ...
+# Subtest: customer policy cannot weaken a mandatory ceiling
+ok 14 - customer policy cannot weaken a mandatory ceiling
+  ---
+  duration_ms: 1.695
+  type: 'test'
+  ...
+# Subtest: collective agreement scope does not leak to workers outside that agreement
+ok 15 - collective agreement scope does not leak to workers outside that agreement
+  ---
+  duration_ms: 3.6049
+  type: 'test'
+  ...
+# Subtest: verified exceptions never silently weaken the base rule
+ok 16 - verified exceptions never silently weaken the base rule
+  ---
+  duration_ms: 1.66
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 17 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 2.4586
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 18 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 3.2579
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 19 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 1.6744
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 20 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.7399
+  type: 'test'
+  ...
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 21 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 29.6963
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 22 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 0.5256
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 23 - verified pack requires provenance
+  ---
+  duration_ms: 0.7303
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 285.1035

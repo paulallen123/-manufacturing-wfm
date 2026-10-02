@@ -1,0 +1,19 @@
+{
+  "scanned": [
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "sha": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "mode": "100644",
+      "bytes": 22307,
+      "references": []
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "sha": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+      "mode": "100644",
+      "bytes": 15859,
+      "references": []
+    }
+  ],
+  "limit": "Exact frozen bootstrap/composition plus selected policy source only; no whole-runtime absence proof"
+}

@@ -1,0 +1,153 @@
+{
+  "capabilityId": "product-058",
+  "mode": "ISOLATED_FUTURE_EXISTING_OWNER_REPAIR",
+  "protectedCommit": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "protectedTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "broadState": "IN_PROGRESS",
+  "componentState": "TESTED",
+  "testScope": "isolated source contract only; independent review pending",
+  "changes": [
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "mode": "100644",
+      "bytes": 6740,
+      "blob": "88decc24a881f43fe73b32c25617591683144e84",
+      "sha256": "c167c324c9179b8b0c5b4730b137723d2fc9d23688692e8a5d29b920dc4ce143",
+      "local": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "preimageBytes": 4591,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 2149
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "mode": "100644",
+      "bytes": 6233,
+      "blob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+      "sha256": "4f297e6a24f1235db5f8dfb575edec15a314ec6379ba56e2773cd173379feed4",
+      "local": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "preimageBytes": 1559,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 4674
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "mode": "100644",
+      "bytes": 6695,
+      "blob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+      "sha256": "5488a04ee4cfa857dcf7ac4666d7862d17bb86d1129bdbfdbefa8ba26f627fc2",
+      "local": "policy/runtime/country-policy-pack-registry.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "preimageBytes": 5407,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 1288
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "mode": "100644",
+      "bytes": 3170,
+      "blob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+      "sha256": "c7fbdc5f952cc7e09395647b17a1a101d7e81a113d10f963b9066d5443baa2b0",
+      "local": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "preimageBytes": 1555,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 1615
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "mode": "100644",
+      "bytes": 6250,
+      "blob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+      "sha256": "270843eeb104bb4d103647069fc60439c34c821d8d2732285fd17cccbcf88c43",
+      "local": "policy/runtime/global-site-policy-preflight.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "preimageBytes": 4295,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 1955
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "mode": "100644",
+      "bytes": 5319,
+      "blob": "c4c06550ab63391eec40b07a17b69971d1499866",
+      "sha256": "4b92d224ca1d5170c2185a47a98aed6c00c5592faa76c40146d94cb0d66f68b8",
+      "local": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "preimageBytes": 2439,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 2880
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "mode": "100644",
+      "bytes": 12319,
+      "blob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+      "sha256": "0f2446883db46da796564e1d5ed6c11110646986a414938f14081521de6927a2",
+      "local": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "preimageBytes": 10225,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 2094
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "mode": "100644",
+      "bytes": 7989,
+      "blob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+      "sha256": "71151b34236ec5b04ada537bdaf53718799446cb5ff36ca320caf4599ed523af",
+      "local": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "preimageBytes": 4010,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 3979
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "mode": "100644",
+      "bytes": 3281,
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+      "local": "policy/runtime/regulatory-change-candidate.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "mode": "100644",
+      "bytes": 1881,
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+      "local": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "implementation/runtime/inert-finite-json.cjs",
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "bytes": 1981,
+      "mode": "100644",
+      "owner": "Lane01",
+      "shipping": false,
+      "requiresExistingCanonicalAdmission": true
+    }
+  ],
+  "changedPathCount": 8,
+  "changedFileBytes": 54715,
+  "netByteDelta": 20634,
+  "rollback": "Restore each exact frozen preimage listed; if helper is canonical already do not delete/revert helper. No external state mutation performed."
+}

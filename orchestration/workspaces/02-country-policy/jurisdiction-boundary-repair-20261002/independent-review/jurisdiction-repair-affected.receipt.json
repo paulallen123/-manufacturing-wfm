@@ -1,0 +1,27 @@
+{
+  "node": "v22.23.2",
+  "exe": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.test.cjs"
+  ],
+  "start": "2026-10-02T13:23:28.156Z",
+  "end": "2026-10-02T13:23:28.499Z",
+  "exit": 0,
+  "error": null,
+  "logSha256": "a8b3ba3a598e683668ec7bc545165cee4960cfeb8168d53b1d56a8af0d4c290d",
+  "tests": 40,
+  "pass": 40,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 258.9447,
+  "scope": "isolated local synthetic source contract; no legal/source authenticity/customer/provider or hosted proof"
+}

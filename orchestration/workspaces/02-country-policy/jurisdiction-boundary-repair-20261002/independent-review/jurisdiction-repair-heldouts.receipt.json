@@ -1,0 +1,23 @@
+{
+  "node": "v22.23.2",
+  "exe": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\jurisdiction-repair-heldouts.cjs"
+  ],
+  "start": "2026-10-02T13:23:27.776Z",
+  "end": "2026-10-02T13:23:28.152Z",
+  "exit": 0,
+  "error": null,
+  "logSha256": "88a0799df9cca0a7ea938693410218b2f9932d97360a1beeff53cf8e00309b25",
+  "tests": 59,
+  "pass": 59,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 238.1992,
+  "scope": "isolated local synthetic source contract; no legal/source authenticity/customer/provider or hosted proof"
+}

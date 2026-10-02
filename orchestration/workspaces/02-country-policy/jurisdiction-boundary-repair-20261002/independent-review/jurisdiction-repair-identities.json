@@ -1,0 +1,829 @@
+{
+  "schema": "INDEPENDENT_BOUNDED_SOURCE_REVIEW",
+  "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "protectedTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "manifestSha256": "546a59b0702341e3f84fe577bf08042c4af28f910e87325901015a7c3ba914b1",
+  "evidenceIndexSha256": "234db2c36667e87a9534f97b98acffecbdc373eab4a78d393dd9d91921137ea4",
+  "shippingCount": 8,
+  "dependencyCount": 3,
+  "checks": [
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.cjs",
+      "bytes": 6740,
+      "sha256": "c167c324c9179b8b0c5b4730b137723d2fc9d23688692e8a5d29b920dc4ce143",
+      "blob": "88decc24a881f43fe73b32c25617591683144e84",
+      "expected": {
+        "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+        "mode": "100644",
+        "bytes": 6740,
+        "blob": "88decc24a881f43fe73b32c25617591683144e84",
+        "sha256": "c167c324c9179b8b0c5b4730b137723d2fc9d23688692e8a5d29b920dc4ce143",
+        "local": "policy/runtime/authoritative-policy-source-registry.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+        "preimageBytes": 4591,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 2149
+      },
+      "verified": true
+    },
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs",
+      "bytes": 6233,
+      "sha256": "4f297e6a24f1235db5f8dfb575edec15a314ec6379ba56e2773cd173379feed4",
+      "blob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+      "expected": {
+        "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "mode": "100644",
+        "bytes": 6233,
+        "blob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+        "sha256": "4f297e6a24f1235db5f8dfb575edec15a314ec6379ba56e2773cd173379feed4",
+        "local": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+        "preimageBytes": 1559,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 4674
+      },
+      "verified": true
+    },
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.cjs",
+      "bytes": 6695,
+      "sha256": "5488a04ee4cfa857dcf7ac4666d7862d17bb86d1129bdbfdbefa8ba26f627fc2",
+      "blob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+      "expected": {
+        "path": "policy/runtime/country-policy-pack-registry.cjs",
+        "mode": "100644",
+        "bytes": 6695,
+        "blob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+        "sha256": "5488a04ee4cfa857dcf7ac4666d7862d17bb86d1129bdbfdbefa8ba26f627fc2",
+        "local": "policy/runtime/country-policy-pack-registry.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+        "preimageBytes": 5407,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 1288
+      },
+      "verified": true
+    },
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs",
+      "bytes": 3170,
+      "sha256": "c7fbdc5f952cc7e09395647b17a1a101d7e81a113d10f963b9066d5443baa2b0",
+      "blob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+      "expected": {
+        "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+        "mode": "100644",
+        "bytes": 3170,
+        "blob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+        "sha256": "c7fbdc5f952cc7e09395647b17a1a101d7e81a113d10f963b9066d5443baa2b0",
+        "local": "policy/runtime/country-policy-pack-registry.test.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+        "preimageBytes": 1555,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 1615
+      },
+      "verified": true
+    },
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.cjs",
+      "bytes": 6250,
+      "sha256": "270843eeb104bb4d103647069fc60439c34c821d8d2732285fd17cccbcf88c43",
+      "blob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+      "expected": {
+        "path": "policy/runtime/global-site-policy-preflight.cjs",
+        "mode": "100644",
+        "bytes": 6250,
+        "blob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+        "sha256": "270843eeb104bb4d103647069fc60439c34c821d8d2732285fd17cccbcf88c43",
+        "local": "policy/runtime/global-site-policy-preflight.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+        "preimageBytes": 4295,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 1955
+      },
+      "verified": true
+    },
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs",
+      "bytes": 5319,
+      "sha256": "4b92d224ca1d5170c2185a47a98aed6c00c5592faa76c40146d94cb0d66f68b8",
+      "blob": "c4c06550ab63391eec40b07a17b69971d1499866",
+      "expected": {
+        "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+        "mode": "100644",
+        "bytes": 5319,
+        "blob": "c4c06550ab63391eec40b07a17b69971d1499866",
+        "sha256": "4b92d224ca1d5170c2185a47a98aed6c00c5592faa76c40146d94cb0d66f68b8",
+        "local": "policy/runtime/global-site-policy-preflight.test.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+        "preimageBytes": 2439,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 2880
+      },
+      "verified": true
+    },
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.cjs",
+      "bytes": 12319,
+      "sha256": "0f2446883db46da796564e1d5ed6c11110646986a414938f14081521de6927a2",
+      "blob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+      "expected": {
+        "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+        "mode": "100644",
+        "bytes": 12319,
+        "blob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+        "sha256": "0f2446883db46da796564e1d5ed6c11110646986a414938f14081521de6927a2",
+        "local": "policy/runtime/jurisdiction-policy-graph.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+        "preimageBytes": 10225,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 2094
+      },
+      "verified": true
+    },
+    {
+      "label": "shipping",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs",
+      "bytes": 7989,
+      "sha256": "71151b34236ec5b04ada537bdaf53718799446cb5ff36ca320caf4599ed523af",
+      "blob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+      "expected": {
+        "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "mode": "100644",
+        "bytes": 7989,
+        "blob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+        "sha256": "71151b34236ec5b04ada537bdaf53718799446cb5ff36ca320caf4599ed523af",
+        "local": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "action": "MODIFY",
+        "preimageBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+        "preimageBytes": 4010,
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "byteDelta": 3979
+      },
+      "verified": true
+    },
+    {
+      "label": "dependency",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.cjs",
+      "bytes": 3281,
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "expected": {
+        "path": "policy/runtime/regulatory-change-candidate.cjs",
+        "mode": "100644",
+        "bytes": 3281,
+        "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+        "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+        "local": "policy/runtime/regulatory-change-candidate.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "shipping": false
+      },
+      "verified": true
+    },
+    {
+      "label": "dependency",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.test.cjs",
+      "bytes": 1881,
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "expected": {
+        "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+        "mode": "100644",
+        "bytes": 1881,
+        "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+        "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+        "local": "policy/runtime/regulatory-change-candidate.test.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "shipping": false
+      },
+      "verified": true
+    },
+    {
+      "label": "dependency",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\implementation\\runtime\\inert-finite-json.cjs",
+      "bytes": 1981,
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "expected": {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+        "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+        "bytes": 1981,
+        "mode": "100644",
+        "owner": "Lane01",
+        "shipping": false,
+        "requiresExistingCanonicalAdmission": true
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\DESIGN.md",
+      "bytes": 2057,
+      "sha256": "f15a028011251c98fa449df61974ffd3895578b9c765f015e7cd4a30baada081",
+      "blob": "18195af0f7dbeb58802a53732110f6ee9e9a5f9d",
+      "expected": {
+        "local": "DESIGN.md",
+        "bytes": 2057,
+        "sha256": "f15a028011251c98fa449df61974ffd3895578b9c765f015e7cd4a30baada081",
+        "gitBlob": "18195af0f7dbeb58802a53732110f6ee9e9a5f9d"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\baseline-lock.json",
+      "bytes": 313,
+      "sha256": "3fb9e0300c53d38e4dc9961c440d976afdef3bf51aa944539b4d35c0de9cb1f4",
+      "blob": "d54a6c53b841b1dcbeb1b4e3a46d9da3151b0083",
+      "expected": {
+        "local": "baseline-lock.json",
+        "bytes": 313,
+        "sha256": "3fb9e0300c53d38e4dc9961c440d976afdef3bf51aa944539b4d35c0de9cb1f4",
+        "gitBlob": "d54a6c53b841b1dcbeb1b4e3a46d9da3151b0083"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\changes-manifest.json",
+      "bytes": 6263,
+      "sha256": "546a59b0702341e3f84fe577bf08042c4af28f910e87325901015a7c3ba914b1",
+      "blob": "a4bcce89547bb9bb2091ac8b19ea6f01d56b4d7c",
+      "expected": {
+        "local": "changes-manifest.json",
+        "bytes": 6263,
+        "sha256": "546a59b0702341e3f84fe577bf08042c4af28f910e87325901015a7c3ba914b1",
+        "gitBlob": "a4bcce89547bb9bb2091ac8b19ea6f01d56b4d7c"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\frozen-identities.json",
+      "bytes": 5344,
+      "sha256": "f3497302fd8ad587eca2b9d8db4622904751973272b9921b1d2a308e3ceef25d",
+      "blob": "4ab8bab7ebe388b51641611f15946764b1699e7d",
+      "expected": {
+        "local": "frozen-identities.json",
+        "bytes": 5344,
+        "sha256": "f3497302fd8ad587eca2b9d8db4622904751973272b9921b1d2a308e3ceef25d",
+        "gitBlob": "4ab8bab7ebe388b51641611f15946764b1699e7d"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\REVIEW_HANDOFF.md",
+      "bytes": 4478,
+      "sha256": "198586f7b823c08d3da101f400daba529084a2fa6a6aa2ef018195c6e7428c4f",
+      "blob": "f3d340606235b818f7ad4bcde9728f31885f878c",
+      "expected": {
+        "local": "REVIEW_HANDOFF.md",
+        "bytes": 4478,
+        "sha256": "198586f7b823c08d3da101f400daba529084a2fa6a6aa2ef018195c6e7428c4f",
+        "gitBlob": "f3d340606235b818f7ad4bcde9728f31885f878c"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\evidence\\01-pre-implementation-red.log",
+      "bytes": 19269,
+      "sha256": "7f9163329e9ff160ba3ae5b4109943b32fd98fde660ea6a637a7057201e4d30c",
+      "blob": "c8ed21eb5c34991cc9ba7f53a27796c3f181ce9d",
+      "expected": {
+        "local": "evidence/01-pre-implementation-red.log",
+        "bytes": 19269,
+        "sha256": "7f9163329e9ff160ba3ae5b4109943b32fd98fde660ea6a637a7057201e4d30c",
+        "gitBlob": "c8ed21eb5c34991cc9ba7f53a27796c3f181ce9d"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\evidence\\02-first-repair.log",
+      "bytes": 7975,
+      "sha256": "053a354ad2d7eae709ed556082647b0be53612a1155687c06f1dd9fad30f62bd",
+      "blob": "c66644c2a1c3aaefcfd89823f6533d34a48f8eca",
+      "expected": {
+        "local": "evidence/02-first-repair.log",
+        "bytes": 7975,
+        "sha256": "053a354ad2d7eae709ed556082647b0be53612a1155687c06f1dd9fad30f62bd",
+        "gitBlob": "c66644c2a1c3aaefcfd89823f6533d34a48f8eca"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\evidence\\03-added-boundary-red.log",
+      "bytes": 10418,
+      "sha256": "44269748c2904bf3e3230d7913a0bb9fa178a075418f648e28d6cc89cde122d1",
+      "blob": "5b9e77877a29d85e4a5d7faf569a5cf2563bedab",
+      "expected": {
+        "local": "evidence/03-added-boundary-red.log",
+        "bytes": 10418,
+        "sha256": "44269748c2904bf3e3230d7913a0bb9fa178a075418f648e28d6cc89cde122d1",
+        "gitBlob": "5b9e77877a29d85e4a5d7faf569a5cf2563bedab"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\evidence\\04-boundary-repair-green.log",
+      "bytes": 8479,
+      "sha256": "1607177507f4ec8233a381ff71c8b488f209f2f6b05bd05c2814471bd5d7acaf",
+      "blob": "4de7455d20d8e0f34ce22d63acb1120eb0d6b8e9",
+      "expected": {
+        "local": "evidence/04-boundary-repair-green.log",
+        "bytes": 8479,
+        "sha256": "1607177507f4ec8233a381ff71c8b488f209f2f6b05bd05c2814471bd5d7acaf",
+        "gitBlob": "4de7455d20d8e0f34ce22d63acb1120eb0d6b8e9"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\evidence\\05-collaborator-return-red.log",
+      "bytes": 10324,
+      "sha256": "45b49a9c2704978049c2477fd1f7448370afef693de40883a1e576a295db91de",
+      "blob": "bc14a1bac086157a46c6bfba37c6a7364a05d013",
+      "expected": {
+        "local": "evidence/05-collaborator-return-red.log",
+        "bytes": 10324,
+        "sha256": "45b49a9c2704978049c2477fd1f7448370afef693de40883a1e576a295db91de",
+        "gitBlob": "bc14a1bac086157a46c6bfba37c6a7364a05d013"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\evidence\\06-final-source-green.log",
+      "bytes": 9418,
+      "sha256": "b270247ee8404560b447957ba572a0a40cbd784707845fd79c3a555363ce0e1d",
+      "blob": "7b78001ebc199436ec04b4c2c1fc6c8c4c04ecea",
+      "expected": {
+        "local": "evidence/06-final-source-green.log",
+        "bytes": 9418,
+        "sha256": "b270247ee8404560b447957ba572a0a40cbd784707845fd79c3a555363ce0e1d",
+        "gitBlob": "7b78001ebc199436ec04b4c2c1fc6c8c4c04ecea"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.cjs",
+      "bytes": 6740,
+      "sha256": "c167c324c9179b8b0c5b4730b137723d2fc9d23688692e8a5d29b920dc4ce143",
+      "blob": "88decc24a881f43fe73b32c25617591683144e84",
+      "expected": {
+        "local": "policy/runtime/authoritative-policy-source-registry.cjs",
+        "bytes": 6740,
+        "sha256": "c167c324c9179b8b0c5b4730b137723d2fc9d23688692e8a5d29b920dc4ce143",
+        "gitBlob": "88decc24a881f43fe73b32c25617591683144e84"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs",
+      "bytes": 6233,
+      "sha256": "4f297e6a24f1235db5f8dfb575edec15a314ec6379ba56e2773cd173379feed4",
+      "blob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+      "expected": {
+        "local": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "bytes": 6233,
+        "sha256": "4f297e6a24f1235db5f8dfb575edec15a314ec6379ba56e2773cd173379feed4",
+        "gitBlob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.cjs",
+      "bytes": 6695,
+      "sha256": "5488a04ee4cfa857dcf7ac4666d7862d17bb86d1129bdbfdbefa8ba26f627fc2",
+      "blob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+      "expected": {
+        "local": "policy/runtime/country-policy-pack-registry.cjs",
+        "bytes": 6695,
+        "sha256": "5488a04ee4cfa857dcf7ac4666d7862d17bb86d1129bdbfdbefa8ba26f627fc2",
+        "gitBlob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs",
+      "bytes": 3170,
+      "sha256": "c7fbdc5f952cc7e09395647b17a1a101d7e81a113d10f963b9066d5443baa2b0",
+      "blob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+      "expected": {
+        "local": "policy/runtime/country-policy-pack-registry.test.cjs",
+        "bytes": 3170,
+        "sha256": "c7fbdc5f952cc7e09395647b17a1a101d7e81a113d10f963b9066d5443baa2b0",
+        "gitBlob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.cjs",
+      "bytes": 6250,
+      "sha256": "270843eeb104bb4d103647069fc60439c34c821d8d2732285fd17cccbcf88c43",
+      "blob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+      "expected": {
+        "local": "policy/runtime/global-site-policy-preflight.cjs",
+        "bytes": 6250,
+        "sha256": "270843eeb104bb4d103647069fc60439c34c821d8d2732285fd17cccbcf88c43",
+        "gitBlob": "7e83203aa2a38dc11f27f83817c34c60ffca8819"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs",
+      "bytes": 5319,
+      "sha256": "4b92d224ca1d5170c2185a47a98aed6c00c5592faa76c40146d94cb0d66f68b8",
+      "blob": "c4c06550ab63391eec40b07a17b69971d1499866",
+      "expected": {
+        "local": "policy/runtime/global-site-policy-preflight.test.cjs",
+        "bytes": 5319,
+        "sha256": "4b92d224ca1d5170c2185a47a98aed6c00c5592faa76c40146d94cb0d66f68b8",
+        "gitBlob": "c4c06550ab63391eec40b07a17b69971d1499866"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.cjs",
+      "bytes": 12319,
+      "sha256": "0f2446883db46da796564e1d5ed6c11110646986a414938f14081521de6927a2",
+      "blob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+      "expected": {
+        "local": "policy/runtime/jurisdiction-policy-graph.cjs",
+        "bytes": 12319,
+        "sha256": "0f2446883db46da796564e1d5ed6c11110646986a414938f14081521de6927a2",
+        "gitBlob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs",
+      "bytes": 7989,
+      "sha256": "71151b34236ec5b04ada537bdaf53718799446cb5ff36ca320caf4599ed523af",
+      "blob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+      "expected": {
+        "local": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "bytes": 7989,
+        "sha256": "71151b34236ec5b04ada537bdaf53718799446cb5ff36ca320caf4599ed523af",
+        "gitBlob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.cjs",
+      "bytes": 3281,
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "expected": {
+        "local": "policy/runtime/regulatory-change-candidate.cjs",
+        "bytes": 3281,
+        "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+        "gitBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.test.cjs",
+      "bytes": 1881,
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "expected": {
+        "local": "policy/runtime/regulatory-change-candidate.test.cjs",
+        "bytes": 1881,
+        "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+        "gitBlob": "d43879fe7db0028e521d443a38af1cbd0b306354"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\implementation\\runtime\\inert-finite-json.cjs",
+      "bytes": 1981,
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "expected": {
+        "local": "implementation/runtime/inert-finite-json.cjs",
+        "bytes": 1981,
+        "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+        "gitBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\evidence\\02-unchanged-source-held-outs.log",
+      "bytes": 6912,
+      "sha256": "271ed4f27f2737841c29620ab9e3a7e7bd6a3685c08f52590af66aaa55425200",
+      "blob": "77694056ca080823fdc5da2289fe173af7e2b1da",
+      "expected": {
+        "local": "../lane02-jurisdiction/evidence/02-unchanged-source-held-outs.log",
+        "bytes": 6912,
+        "sha256": "271ed4f27f2737841c29620ab9e3a7e7bd6a3685c08f52590af66aaa55425200",
+        "gitBlob": "77694056ca080823fdc5da2289fe173af7e2b1da",
+        "shipping": false
+      },
+      "verified": true
+    },
+    {
+      "label": "indexed-evidence",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\jurisdiction-boundaries.held-out.test.cjs",
+      "bytes": 6285,
+      "sha256": "f79285b1466e0a927eae64e8e5e8e7da3f025550e1278a915f9ca858d1bad1a4",
+      "blob": "bbec65f73bc5cb7d2d4baa621675548a8111bbfe",
+      "expected": {
+        "local": "../lane02-jurisdiction/jurisdiction-boundaries.held-out.test.cjs",
+        "bytes": 6285,
+        "sha256": "f79285b1466e0a927eae64e8e5e8e7da3f025550e1278a915f9ca858d1bad1a4",
+        "gitBlob": "bbec65f73bc5cb7d2d4baa621675548a8111bbfe",
+        "shipping": false
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\authoritative-policy-source-registry.cjs",
+      "bytes": 4591,
+      "sha256": "0a3d5b39a796d509e20b62e2d18227ab49000e6706ccf4d09342134a83aafde8",
+      "blob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "expected": {
+        "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+        "mode": "100644",
+        "bytes": 4591,
+        "local": "frozen/policy/runtime/authoritative-policy-source-registry.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\authoritative-policy-source-registry.test.cjs",
+      "bytes": 1559,
+      "sha256": "c6f4d4f5348fb60cff8e8736f1dca639391cced66d490fb51d0b9cff5a58d83d",
+      "blob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "expected": {
+        "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "00e10eca8168d3493cd1e468d965e655496fb89d",
+        "mode": "100644",
+        "bytes": 1559,
+        "local": "frozen/policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\country-policy-pack-registry.cjs",
+      "bytes": 5407,
+      "sha256": "d49d5258a991024fc1cfea3060b9cd403c1c6d71a6756a32bda0d1f10393c642",
+      "blob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "expected": {
+        "path": "policy/runtime/country-policy-pack-registry.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+        "mode": "100644",
+        "bytes": 5407,
+        "local": "frozen/policy/runtime/country-policy-pack-registry.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\country-policy-pack-registry.test.cjs",
+      "bytes": 1555,
+      "sha256": "e567775ab36913c0a78f1cdf73bcda3725c5235c99c032e8695c173fcb71b59c",
+      "blob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "expected": {
+        "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+        "mode": "100644",
+        "bytes": 1555,
+        "local": "frozen/policy/runtime/country-policy-pack-registry.test.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\global-site-policy-preflight.cjs",
+      "bytes": 4295,
+      "sha256": "ba91ae4e44cb4da19d76978c1c3c067f54646015cdb7928e777187bc7710b62f",
+      "blob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "expected": {
+        "path": "policy/runtime/global-site-policy-preflight.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "4f18cffc150935e760c914a216c97c0700e23e44",
+        "mode": "100644",
+        "bytes": 4295,
+        "local": "frozen/policy/runtime/global-site-policy-preflight.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\global-site-policy-preflight.test.cjs",
+      "bytes": 2439,
+      "sha256": "5ba6ca5bbfbfe9c24add83ce6b46cf40a9d2e2631d703a69c624771a9aa33819",
+      "blob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "expected": {
+        "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+        "mode": "100644",
+        "bytes": 2439,
+        "local": "frozen/policy/runtime/global-site-policy-preflight.test.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\jurisdiction-policy-graph.cjs",
+      "bytes": 10225,
+      "sha256": "3f7f932197f54abdc5aed5d9c797d3287306c9e6ebf74a8cb57f8c7124cc7a9b",
+      "blob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "expected": {
+        "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "7f58c8ac9289311a8837e899af200ec785563987",
+        "mode": "100644",
+        "bytes": 10225,
+        "local": "frozen/policy/runtime/jurisdiction-policy-graph.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\jurisdiction-policy-graph.test.cjs",
+      "bytes": 4010,
+      "sha256": "77de65adce623c17f29b4d9eec8cb2b9c26fc99535eeac30871ee4af78b230cc",
+      "blob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "expected": {
+        "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+        "mode": "100644",
+        "bytes": 4010,
+        "local": "frozen/policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\regulatory-change-candidate.cjs",
+      "bytes": 3281,
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "expected": {
+        "path": "policy/runtime/regulatory-change-candidate.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+        "mode": "100644",
+        "bytes": 3281,
+        "local": "frozen/policy/runtime/regulatory-change-candidate.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\policy\\runtime\\regulatory-change-candidate.test.cjs",
+      "bytes": 1881,
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "expected": {
+        "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "d43879fe7db0028e521d443a38af1cbd0b306354",
+        "mode": "100644",
+        "bytes": 1881,
+        "local": "frozen/policy/runtime/regulatory-change-candidate.test.cjs",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\release\\global-sites-policy-architecture.json",
+      "bytes": 3931,
+      "sha256": "769d626a0277c22a403f2087402eb42d4dcc6c1838745a4ac2a28e8b51846c86",
+      "blob": "2e4be4a8ff792bfd1b75438ecfa5c74970708938",
+      "expected": {
+        "path": "release/global-sites-policy-architecture.json",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "2e4be4a8ff792bfd1b75438ecfa5c74970708938",
+        "mode": "100644",
+        "bytes": 3931,
+        "local": "frozen/release/global-sites-policy-architecture.json",
+        "verified935Copy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\historical\\pr230\\policy\\runtime\\country-policy-pack-registry.cjs",
+      "bytes": 5611,
+      "sha256": "5d81795f4602054fca33f44e93d64ca4226e43ce011ba1b714c14e9d0f352c7d",
+      "blob": "e79d76a37c58650feebef2e2538c74165e3fa707",
+      "expected": {
+        "path": "policy/runtime/country-policy-pack-registry.cjs",
+        "sourceRef": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+        "sha": "e79d76a37c58650feebef2e2538c74165e3fa707",
+        "mode": "100644",
+        "bytes": 5611,
+        "local": "historical/pr230/policy/runtime/country-policy-pack-registry.cjs",
+        "sourcePR": 230
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\historical\\pr230\\policy\\runtime\\country-policy-pack-registry.test.cjs",
+      "bytes": 1595,
+      "sha256": "c436199fbb3bb49d2b1de43a769f9a7b96e7128b85c4214f8b588ce3de29a539",
+      "blob": "f5e8e78d8eeee861ea1eb02d6ec2d49ecefe29d1",
+      "expected": {
+        "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+        "sourceRef": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+        "sha": "f5e8e78d8eeee861ea1eb02d6ec2d49ecefe29d1",
+        "mode": "100644",
+        "bytes": 1595,
+        "local": "historical/pr230/policy/runtime/country-policy-pack-registry.test.cjs",
+        "sourcePR": 230
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\security\\runtime\\bootstrap.cjs",
+      "bytes": 22307,
+      "sha256": "52ff513c87c6baa35f6cfc103b6f22004495dd4151b025f8792a2ee2ca0c914b",
+      "blob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "expected": {
+        "path": "security/runtime/bootstrap.cjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+        "mode": "100644",
+        "bytes": 22307,
+        "local": "frozen/security/runtime/bootstrap.cjs",
+        "verified935Copy": false,
+        "verifiedPriorFrozenCopy": true
+      },
+      "verified": true
+    },
+    {
+      "label": "frozen-or-historical",
+      "file": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction\\frozen\\scripts\\compose-vector-local-runtime.mjs",
+      "bytes": 15859,
+      "sha256": "5c664112897a2407336348bbcfafdeb4bf72e35cebc5c28028472c6878a95709",
+      "blob": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+      "expected": {
+        "path": "scripts/compose-vector-local-runtime.mjs",
+        "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "sha": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+        "mode": "100644",
+        "bytes": 15859,
+        "local": "frozen/scripts/compose-vector-local-runtime.mjs",
+        "verified935Copy": false,
+        "verifiedPriorFrozenCopy": true
+      },
+      "verified": true
+    }
+  ],
+  "allVerified": true
+}

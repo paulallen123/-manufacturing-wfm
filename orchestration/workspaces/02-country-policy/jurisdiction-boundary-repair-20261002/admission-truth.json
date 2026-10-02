@@ -1,0 +1,244 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "parentSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baseTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "branchSuggestion": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "runtimeWired": false,
+  "hostedProof": false,
+  "customerProof": false,
+  "providerProof": false,
+  "legalProof": false,
+  "sourceAuthentication": false,
+  "knownTimeBridgeAdded": false,
+  "newPolicyFacts": false,
+  "readinessAuthority": false,
+  "executionAuthority": "NONE",
+  "product058": "IN_PROGRESS",
+  "componentStatus": "TESTED_AND_INDEPENDENTLY_REVIEWED_ISOLATED_EXISTING_OWNER_SOURCE_ONLY",
+  "proofScope": "ISOLATED_SYNTHETIC_SOURCE_CONTRACT_ONLY",
+  "independentReview": "NO_MATERIAL_P1_P2_FOUND_IN_BOUNDED_ISOLATED_SOURCE_REPAIR",
+  "independentHeldOut": {
+    "node": "v22.23.2",
+    "exe": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+    "args": [
+      "--require",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "--test",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\jurisdiction-repair-heldouts.cjs"
+    ],
+    "start": "2026-10-02T13:23:27.776Z",
+    "end": "2026-10-02T13:23:28.152Z",
+    "exit": 0,
+    "error": null,
+    "logSha256": "88a0799df9cca0a7ea938693410218b2f9932d97360a1beeff53cf8e00309b25",
+    "tests": 59,
+    "pass": 59,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 238.1992,
+    "scope": "isolated local synthetic source contract; no legal/source authenticity/customer/provider or hosted proof"
+  },
+  "independentAffected": {
+    "node": "v22.23.2",
+    "exe": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+    "args": [
+      "--require",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "--test",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs",
+      "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.test.cjs"
+    ],
+    "start": "2026-10-02T13:23:28.156Z",
+    "end": "2026-10-02T13:23:28.499Z",
+    "exit": 0,
+    "error": null,
+    "logSha256": "a8b3ba3a598e683668ec7bc545165cee4960cfeb8168d53b1d56a8af0d4c290d",
+    "tests": 40,
+    "pass": 40,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 258.9447,
+    "scope": "isolated local synthetic source contract; no legal/source authenticity/customer/provider or hosted proof"
+  },
+  "ownerExecutions": {
+    "node": "v22.23.2",
+    "networkGuard": "../trust_review/network-guard.cjs",
+    "originalHeldOut": {
+      "tests": 8,
+      "pass": 3,
+      "fail": 5
+    },
+    "firstOwnerRed": {
+      "tests": 34,
+      "pass": 22,
+      "fail": 12
+    },
+    "edgeRed": {
+      "tests": 36,
+      "pass": 34,
+      "fail": 2
+    },
+    "returnRed": {
+      "tests": 40,
+      "pass": 39,
+      "fail": 1
+    },
+    "final": {
+      "tests": 40,
+      "pass": 40,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "approvedOwnerPreimages": [
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "mode": "100644",
+      "priorBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "priorBytes": 4591,
+      "proposedBlob": "88decc24a881f43fe73b32c25617591683144e84",
+      "proposedBytes": 6740,
+      "netByteDelta": 2149
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "mode": "100644",
+      "priorBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "priorBytes": 1559,
+      "proposedBlob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+      "proposedBytes": 6233,
+      "netByteDelta": 4674
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "mode": "100644",
+      "priorBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "priorBytes": 5407,
+      "proposedBlob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+      "proposedBytes": 6695,
+      "netByteDelta": 1288
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "mode": "100644",
+      "priorBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "priorBytes": 1555,
+      "proposedBlob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+      "proposedBytes": 3170,
+      "netByteDelta": 1615
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "mode": "100644",
+      "priorBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "priorBytes": 4295,
+      "proposedBlob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+      "proposedBytes": 6250,
+      "netByteDelta": 1955
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "mode": "100644",
+      "priorBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "priorBytes": 2439,
+      "proposedBlob": "c4c06550ab63391eec40b07a17b69971d1499866",
+      "proposedBytes": 5319,
+      "netByteDelta": 2880
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "mode": "100644",
+      "priorBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "priorBytes": 10225,
+      "proposedBlob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+      "proposedBytes": 12319,
+      "netByteDelta": 2094
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "mode": "100644",
+      "priorBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "priorBytes": 4010,
+      "proposedBlob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+      "proposedBytes": 7989,
+      "netByteDelta": 3979
+    }
+  ],
+  "preimageBytes": 34081,
+  "ownerModifiedBytes": 54715,
+  "ownerNetByteDelta": 20634,
+  "sharedHelper": {
+    "owner": "LANE01",
+    "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+    "oneOwnerOnePath": true,
+    "paths": [
+      {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+        "bytes": 1981
+      },
+      {
+        "path": "implementation/runtime/inert-finite-json.test.cjs",
+        "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+        "bytes": 2371
+      }
+    ],
+    "standalonePurpose": "Identical helper/test dependency-only ADDs because protected f32 lacks them. No Twin/Country-display/value implementation or parallel authority."
+  },
+  "unchangedDependencies": [
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "mode": "100644",
+      "bytes": 3281,
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+      "local": "policy/runtime/regulatory-change-candidate.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "mode": "100644",
+      "bytes": 1881,
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+      "local": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "implementation/runtime/inert-finite-json.cjs",
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "bytes": 1981,
+      "mode": "100644",
+      "owner": "Lane01",
+      "shipping": false,
+      "requiresExistingCanonicalAdmission": true
+    }
+  ],
+  "historicalTruth": "Owner manifests and original repair proposal retain earlier pending/not-authorised stage; parent subsequently approved bounded repairs, and exact final eight bytes received independent59/59 and40/40 closure. Original five and subsequent owner reds remain historical failures.",
+  "limits": [
+    "Source and verified flags are caller assertions; digest is integrity, not authenticity.",
+    "Trusted clock and graph resolver are explicit configuration collaborators; no verification authority is inferred.",
+    "Country packs select by effective time only; no known-time/history/source integration added.",
+    "Existing permissive Date.parse acceptance, string coercion, and mutable exported sets are retained API outside this bounded repair.",
+    "No source retrieval, tenant authority store, legal facts, runtime routes, provider actions, browser/hosted/customer proof.",
+    "Historical reds remain evidence; independent successor green does not relabel original execution."
+  ],
+  "remainingAdmission": [
+    "Root isolated publication/readback only; serving release remains f32.",
+    "Current-head eight preimages plus exact helper/dependencies must be revalidated before future convergence.",
+    "Actual source authentication, owner configuration, caller resource bounds and complete runtime/customer proof remain pending."
+  ],
+  "rollback": "Restore all eight exact preimages recorded; exclude this future capsule. Do not delete already-canonical shared helper required by other projections. No external state mutation."
+}

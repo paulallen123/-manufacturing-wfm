@@ -1,0 +1,78 @@
+{
+  "protectedCommit": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "protectedTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "files": [
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "mode": "100644",
+      "priorBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "priorBytes": 4591,
+      "proposedBlob": "88decc24a881f43fe73b32c25617591683144e84",
+      "proposedBytes": 6740,
+      "netByteDelta": 2149
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "mode": "100644",
+      "priorBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "priorBytes": 1559,
+      "proposedBlob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+      "proposedBytes": 6233,
+      "netByteDelta": 4674
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "mode": "100644",
+      "priorBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "priorBytes": 5407,
+      "proposedBlob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+      "proposedBytes": 6695,
+      "netByteDelta": 1288
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "mode": "100644",
+      "priorBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "priorBytes": 1555,
+      "proposedBlob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+      "proposedBytes": 3170,
+      "netByteDelta": 1615
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "mode": "100644",
+      "priorBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "priorBytes": 4295,
+      "proposedBlob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+      "proposedBytes": 6250,
+      "netByteDelta": 1955
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "mode": "100644",
+      "priorBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "priorBytes": 2439,
+      "proposedBlob": "c4c06550ab63391eec40b07a17b69971d1499866",
+      "proposedBytes": 5319,
+      "netByteDelta": 2880
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "mode": "100644",
+      "priorBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "priorBytes": 10225,
+      "proposedBlob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+      "proposedBytes": 12319,
+      "netByteDelta": 2094
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "mode": "100644",
+      "priorBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "priorBytes": 4010,
+      "proposedBlob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+      "proposedBytes": 7989,
+      "netByteDelta": 3979
+    }
+  ]
+}

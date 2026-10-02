@@ -1,0 +1,80 @@
+{
+  "historicalBlob": "e79d76a37c58650feebef2e2538c74165e3fa707",
+  "frozenBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+  "exportsSame": true,
+  "cases": [
+    {
+      "status": "DRAFT",
+      "at": "2025-12-31T23:59:59.999Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "DRAFT",
+      "at": "2026-01-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "DRAFT",
+      "at": "2026-09-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "DRAFT",
+      "at": "2027-01-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "VERIFIED",
+      "at": "2025-12-31T23:59:59.999Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "VERIFIED",
+      "at": "2026-01-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": true
+    },
+    {
+      "status": "VERIFIED",
+      "at": "2026-09-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": true
+    },
+    {
+      "status": "VERIFIED",
+      "at": "2027-01-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "RETIRED",
+      "at": "2025-12-31T23:59:59.999Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "RETIRED",
+      "at": "2026-01-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "RETIRED",
+      "at": "2026-09-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": false
+    },
+    {
+      "status": "RETIRED",
+      "at": "2027-01-01T00:00:00.000Z",
+      "sameOutput": true,
+      "coverage": false
+    }
+  ],
+  "scope": "Representative unchanged runtime output across statuses/effective boundaries, not exhaustive semantic equivalence or deployed proof"
+}

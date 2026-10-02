@@ -1,0 +1,403 @@
+{"node":"v22.23.2","args":["C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.test.cjs"],"exit":1,"networkGuard":"../trust_review/network-guard.cjs"}
+TAP version 13
+# Subtest: verified official snapshot becomes current evidence
+ok 1 - verified official snapshot becomes current evidence
+  ---
+  duration_ms: 5.4411
+  type: 'test'
+  ...
+# Subtest: stale source cannot silently remain usable
+ok 2 - stale source cannot silently remain usable
+  ---
+  duration_ms: 0.7643
+  type: 'test'
+  ...
+# Subtest: unverified retrieval cannot enter authoritative evidence
+ok 3 - unverified retrieval cannot enter authoritative evidence
+  ---
+  duration_ms: 1.381
+  type: 'test'
+  ...
+# Subtest: source metadata never grants execution authority
+ok 4 - source metadata never grants execution authority
+  ---
+  duration_ms: 0.6169
+  type: 'test'
+  ...
+# Subtest: future observed receipt is not CURRENT even when already ingested
+not ok 5 - future observed receipt is not CURRENT even when already ingested
+  ---
+  duration_ms: 3.5657
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\authoritative-policy-source-registry.test.cjs:14:181)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: late ingestion cannot be backdated by a caller field
+not ok 6 - late ingestion cannot be backdated by a caller field
+  ---
+  duration_ms: 1.0005
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - '2026-09-02T00:00:00.000Z'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '2026-09-02T00:00:00.000Z'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\authoritative-policy-source-registry.test.cjs:15:204)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: source controls preserve inclusive current age, stale, missing and disabled
+ok 7 - source controls preserve inclusive current age, stale, missing and disabled
+  ---
+  duration_ms: 0.8436
+  type: 'test'
+  ...
+# Subtest: source registration detaches and recursively freezes language and all output
+not ok 8 - source registration detaches and recursively freezes language and all output
+  ---
+  duration_ms: 4.6699
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs:17:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\authoritative-policy-source-registry.test.cjs:17:296)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: source data getters/proxies/non-finite values rejected without execution
+not ok 9 - source data getters/proxies/non-finite values rejected without execution
+  ---
+  duration_ms: 1.0893
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs:18:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\authoritative-policy-source-registry.test.cjs:18:217)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 10 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 51.546
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 11 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 0.772
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 12 - verified pack requires provenance
+  ---
+  duration_ms: 0.7764
+  type: 'test'
+  ...
+# Subtest: pack returned resolved nested data cannot rewrite registered digest content
+not ok 13 - pack returned resolved nested data cannot rewrite registered digest content
+  ---
+  duration_ms: 1.6518
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs:11:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\country-policy-pack-registry.test.cjs:11:329)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: pack rejects executable and non-finite data before reading or serializing it
+not ok 14 - pack rejects executable and non-finite data before reading or serializing it
+  ---
+  duration_ms: 0.7179
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\country-policy-pack-registry.test.cjs:12:172)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: complete known site becomes advisory-ready with zero routine customer rule entry
+ok 15 - complete known site becomes advisory-ready with zero routine customer rule entry
+  ---
+  duration_ms: 7.3138
+  type: 'test'
+  ...
+# Subtest: unknown organisational facts create only targeted exception questions
+ok 16 - unknown organisational facts create only targeted exception questions
+  ---
+  duration_ms: 2.5612
+  type: 'test'
+  ...
+# Subtest: worker temporarily located in unsupported country blocks only that worker policy coverage
+ok 17 - worker temporarily located in unsupported country blocks only that worker policy coverage
+  ---
+  duration_ms: 3.0055
+  type: 'test'
+  ...
+# Subtest: preflight never grants execution or customer mutation authority
+ok 18 - preflight never grants execution or customer mutation authority
+  ---
+  duration_ms: 1.116
+  type: 'test'
+  ...
+# Subtest: missing and duplicate identities reject entire batch before graph resolution
+not ok 19 - missing and duplicate identities reject entire batch before graph resolution
+  ---
+  duration_ms: 1.2246
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs:13:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\global-site-policy-preflight.test.cjs:13:354)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: empty population remains valid and complete populations are fully counted
+not ok 20 - empty population remains valid and complete populations are fully counted
+  ---
+  duration_ms: 0.6527
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs:14:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\global-site-policy-preflight.test.cjs:14:522)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: preflight rejects accessor/proxy/non-finite population before any collaborator call
+not ok 21 - preflight rejects accessor/proxy/non-finite population before any collaborator call
+  ---
+  duration_ms: 0.3617
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs:15:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\global-site-policy-preflight.test.cjs:15:353)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: bitemporal resolution distinguishes legal validity from what VECTOR knew
+ok 22 - bitemporal resolution distinguishes legal validity from what VECTOR knew
+  ---
+  duration_ms: 6.7655
+  type: 'test'
+  ...
+# Subtest: mandatory ceilings compose to the strictest applicable rule across layers
+ok 23 - mandatory ceilings compose to the strictest applicable rule across layers
+  ---
+  duration_ms: 1.4674
+  type: 'test'
+  ...
+# Subtest: customer policy cannot weaken a mandatory ceiling
+ok 24 - customer policy cannot weaken a mandatory ceiling
+  ---
+  duration_ms: 2.3506
+  type: 'test'
+  ...
+# Subtest: collective agreement scope does not leak to workers outside that agreement
+ok 25 - collective agreement scope does not leak to workers outside that agreement
+  ---
+  duration_ms: 1.8861
+  type: 'test'
+  ...
+# Subtest: verified exceptions never silently weaken the base rule
+ok 26 - verified exceptions never silently weaken the base rule
+  ---
+  duration_ms: 1.4565
+  type: 'test'
+  ...
+# Subtest: graph retains immutable detached nodes, contexts and composition outputs
+not ok 27 - graph retains immutable detached nodes, contexts and composition outputs
+  ---
+  duration_ms: 2.184
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs:15:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\jurisdiction-policy-graph.test.cjs:15:300)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: incompatible numeric units require review without cross-unit comparison
+not ok 28 - incompatible numeric units require review without cross-unit comparison
+  ---
+  duration_ms: 11.6158
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs:16:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(r.review.some(x=>x.reason==='INCOMPATIBLE_RULE_UNITS'))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\jurisdiction-policy-graph.test.cjs:16:330)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: same-unit floors and stricter customer policy and exceptions preserve semantics
+ok 29 - same-unit floors and stricter customer policy and exceptions preserve semantics
+  ---
+  duration_ms: 1.6662
+  type: 'test'
+  ...
+# Subtest: graph rejects caller behavior at registration, resolution and exported composition
+not ok 30 - graph rejects caller behavior at registration, resolution and exported composition
+  ---
+  duration_ms: 0.8412
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs:18:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane02-jurisdiction-repair\policy\runtime\jurisdiction-policy-graph.test.cjs:18:289)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 31 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 1.9767
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 32 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 2.9718
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 33 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 1.085
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 34 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.4799
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 22
+# fail 12
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 256.8828
