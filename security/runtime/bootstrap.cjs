@@ -12,6 +12,7 @@ const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
 const { enforceDurableState } = require('./durable-state-guard.cjs');
 const { createRuntimeIdentity } = require('./runtime-identity.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
+const { enforceHostedApplicationUser } = require('./hosted-application-user-guard.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
@@ -25,6 +26,7 @@ const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-custome
 const { createVectorReportingService } = require('/app/reporting-runtime/vector-reporting-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
+enforceHostedApplicationUser({ hosted });
 const STAGING_ACCESS_GRANTS = Object.freeze([
   { key: 'vector-ui-access-direct-20260919', tokenHash: '206b067c57a91d14c0dedee7a717e907ada9b04b5d964a4b3aa2d94da7aa58b8', restore: true },
   { key: 'vector-ui-probe-restore-20260919', tokenHash: 'a1a70f9319430281482a623d3453756ef8c0f279a243d9fe8d67fafcb5fc1c16', restore: false }

@@ -1,0 +1,18 @@
+{
+  "evidence": "root20261002-independent-five-person-lifecycle-red",
+  "source": "retained private Staffology readback; no provider request performed",
+  "cohort": { "count": 5, "current": 4, "former": 1 },
+  "former": {
+    "employeeId": "3a7e7298-b414-4b87-9cf9-ab9c75bded62",
+    "name": "Ian Jones",
+    "status": "Former",
+    "effectiveTo": "2019-07-21"
+  },
+  "preFix": {
+    "errorCode": "STAFFOLOGY_EMPLOYEE_LIFECYCLE_REQUIRED",
+    "canonicalStages": 0,
+    "externalProviderRequests": 0,
+    "eligibleCurrentEmployeesStaged": 0
+  },
+  "privacy": "The other four exact provider identities remain in the separately retained private readback and are intentionally not copied into source evidence."
+}

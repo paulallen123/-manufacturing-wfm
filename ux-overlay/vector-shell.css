@@ -131,3 +131,8 @@ body.vector-ui-active .insight-hero{background:white!important;color:var(--vecto
 .vector-value-grid strong{font-size:26px;line-height:1.15;letter-spacing:-.02em;color:var(--vector-text,#0f172a)}
 .vector-value-grid span{font-size:12px;line-height:1.4;color:var(--vector-muted,#667085)}
 @media (max-width:760px){.vector-value-grid{grid-template-columns:1fr}.vector-verified-value{padding:16px}}
+
+/* Staffology exact-scope operation controls */
+.vector-staffology-mappings{display:grid;gap:12px;margin-top:12px}.vector-staffology-mappings fieldset{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;border:1px solid #dce3ec;border-radius:8px;padding:12px}.vector-staffology-mappings legend{font-weight:700}.vector-staffology-mappings label{display:grid;gap:4px}.vector-staffology-mappings .vector-staffology-review{display:flex;align-items:flex-start;gap:8px}
+.vector-staffology-card details{margin-top:12px}.vector-staffology-card details label{display:block;margin-top:10px}.vector-staffology-card details input{display:block;width:100%;margin-top:4px}
+.vector-staffology-held{margin-top:12px;padding:12px;border-left:4px solid #a35b00;background:#fff7e6}.vector-staffology-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.vector-staffology-message{min-height:1.5em;margin-top:10px}.vector-staffology-message.success{color:#17653a}.vector-staffology-message.error{color:#9b2c2c}
