@@ -17,7 +17,7 @@ assert.equal(existsSync(privateEvidenceDirectory),true,'STAFFOLOGY_PRIVATE_EVIDE
 const token='0123456789abcdef0123456789abcdef',configuration=JSON.stringify([{id:'staffology-people',provider:'staffology',tenant:'northstar-demo',scope:'d1',token,objectTypes:['people']}]);
 const binding={tenant:'northstar-demo',implementationRunId:'offline-http-run-001',candidateSha,deploymentId:'offline-http-deployment-001',configurationId:'offline-http-configuration-001',employerId:'employer-001'};
 const cohort=['employee-001','employee-002'];
-const profile=payroll=>JSON.stringify({...binding,employeeIds:cohort,pageSize:2,maxPages:2,...(payroll?{payroll}:{})});
+const profile=payroll=>JSON.stringify({...binding,connector:{id:'staffology-people',scope:'d1'},employeeIds:cohort,pageSize:2,maxPages:2,...(payroll?{payroll}:{})});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const sha256=value=>createHash('sha256').update(value).digest('hex');
 const privateSanitise=value=>Array.isArray(value)?value.map(privateSanitise):(value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([key])=>!/token|password|cookie|credential|authorization|secret|api.?key/i.test(key)).map(([key,item])=>[key,privateSanitise(item)])):value);

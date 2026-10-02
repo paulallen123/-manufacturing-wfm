@@ -54,7 +54,7 @@ test('reviewed Staffology employee import persists across restart without duplic
  runtime.assertEmployeeStaging(actor,receipt);
  const staged=runtime.stageEmployeeAcquisition(actor,acquisition,receipt);
  assert.equal(staged.status,'staged');assert.equal(staged.valid,4);assert.equal(staged.held,0);assert.equal(staged.lifecycleHold.held,1);assert.deepEqual(staged.lifecycleHold.employeeIds,[formerId]);
- const held=integrations.detail(actor,staged.lifecycleHold.batchId);assert.equal(held.status,'review_required');assert.equal(held.valid,4);assert.equal(held.held,1);assert.equal(held.records.find(row=>row.externalId===formerId).status,'held');assert.match(held.records.find(row=>row.externalId===formerId).reason,/Former employee .*2019-07-21/);
+ const held=integrations.detail(actor,staged.lifecycleHold.batchId),heldRecords=held.records.filter(row=>row.status==='held'),validRecords=held.records.filter(row=>row.status==='valid');assert.equal(held.status,'review_required');assert.equal(validRecords.length,4);assert.equal(heldRecords.length,1);assert.equal(heldRecords[0].externalId,formerId);assert.match(held.records.find(row=>row.externalId===formerId).reason,/Former employee .*2019-07-21/);
  assert.throws(()=>integrations.apply(actor,held.id,true,{people:()=>assert.fail('held cohort must not apply')}),{status:409});
  db.exec('BEGIN IMMEDIATE');
  try{
