@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: api exact total attempt ceiling and elapsed exhaustion
+ok 1 - api exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 20.5938
+  type: 'test'
+  ...
+# Subtest: api scheduling respects exact window and provider floor
+ok 2 - api scheduling respects exact window and provider floor
+  ---
+  duration_ms: 1.5281
+  type: 'test'
+  ...
+# Subtest: webhook exact total attempt ceiling and elapsed exhaustion
+ok 3 - webhook exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 3.2137
+  type: 'test'
+  ...
+# Subtest: webhook scheduling respects exact window and provider floor
+ok 4 - webhook scheduling respects exact window and provider floor
+  ---
+  duration_ms: 0.6681
+  type: 'test'
+  ...
+# Subtest: queue-stream exact total attempt ceiling and elapsed exhaustion
+ok 5 - queue-stream exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 0.9336
+  type: 'test'
+  ...
+# Subtest: queue-stream scheduling respects exact window and provider floor
+ok 6 - queue-stream scheduling respects exact window and provider floor
+  ---
+  duration_ms: 0.5078
+  type: 'test'
+  ...
+# Subtest: secure-file exact total attempt ceiling and elapsed exhaustion
+ok 7 - secure-file exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 0.2647
+  type: 'test'
+  ...
+# Subtest: secure-file scheduling respects exact window and provider floor
+ok 8 - secure-file scheduling respects exact window and provider floor
+  ---
+  duration_ms: 0.2976
+  type: 'test'
+  ...
+# Subtest: read-only-db exact total attempt ceiling and elapsed exhaustion
+ok 9 - read-only-db exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 0.5818
+  type: 'test'
+  ...
+# Subtest: read-only-db scheduling respects exact window and provider floor
+ok 10 - read-only-db scheduling respects exact window and provider floor
+  ---
+  duration_ms: 1.0765
+  type: 'test'
+  ...
+# Subtest: identity exact total attempt ceiling and elapsed exhaustion
+ok 11 - identity exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 0.8023
+  type: 'test'
+  ...
+# Subtest: identity scheduling respects exact window and provider floor
+ok 12 - identity scheduling respects exact window and provider floor
+  ---
+  duration_ms: 0.4975
+  type: 'test'
+  ...
+# Subtest: on-prem-agent exact total attempt ceiling and elapsed exhaustion
+ok 13 - on-prem-agent exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 0.3357
+  type: 'test'
+  ...
+# Subtest: on-prem-agent scheduling respects exact window and provider floor
+ok 14 - on-prem-agent scheduling respects exact window and provider floor
+  ---
+  duration_ms: 0.2649
+  type: 'test'
+  ...
+# Subtest: ipaas exact total attempt ceiling and elapsed exhaustion
+ok 15 - ipaas exact total attempt ceiling and elapsed exhaustion
+  ---
+  duration_ms: 0.1974
+  type: 'test'
+  ...
+# Subtest: ipaas scheduling respects exact window and provider floor
+ok 16 - ipaas scheduling respects exact window and provider floor
+  ---
+  duration_ms: 0.216
+  type: 'test'
+  ...
+# Subtest: conflicting codes cannot hide auth or terminal authority
+ok 17 - conflicting codes cannot hide auth or terminal authority
+  ---
+  duration_ms: 1.3817
+  type: 'test'
+  ...
+# Subtest: tightened budgets never loosen and arithmetic remains safe
+ok 18 - tightened budgets never loosen and arithmetic remains safe
+  ---
+  duration_ms: 1.0384
+  type: 'test'
+  ...
+# Subtest: authorization expires before or at scheduling target and no alternate operation gains authority
+ok 19 - authorization expires before or at scheduling target and no alternate operation gains authority
+  ---
+  duration_ms: 1.7542
+  type: 'test'
+  ...
+# Subtest: provider hints cannot coerce overflow, malformed dates or competing minima
+ok 20 - provider hints cannot coerce overflow, malformed dates or competing minima
+  ---
+  duration_ms: 1.8331
+  type: 'test'
+  ...
+# Subtest: payload descriptors, proxies, revoked proxies and nested coercion execute no user code
+ok 21 - payload descriptors, proxies, revoked proxies and nested coercion execute no user code
+  ---
+  duration_ms: 1.1029
+  type: 'test'
+  ...
+# Subtest: null-prototype inert inputs work, symbol keys block, outputs neither echo nor mutate input
+ok 22 - null-prototype inert inputs work, symbol keys block, outputs neither echo nor mutate input
+  ---
+  duration_ms: 1.1064
+  type: 'test'
+  ...
+# Subtest: explicit clock and pure decision never arm timers or dispatch
+ok 23 - explicit clock and pure decision never arm timers or dispatch
+  ---
+  duration_ms: 4.6508
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 392.1416

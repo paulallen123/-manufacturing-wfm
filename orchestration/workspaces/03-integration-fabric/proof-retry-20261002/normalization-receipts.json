@@ -1,0 +1,47 @@
+{
+  "shippingNormalization": false,
+  "normalizations": [
+    {
+      "sourcePath": "work/lane03-retry-policy/evidence/historical-red.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/owner-evidence/historical-red.tap",
+      "originalByteReceipt": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/original-byte-receipts/historical-red.tap.json",
+      "originalBytes": 148578,
+      "publishedBytes": 74288
+    },
+    {
+      "sourcePath": "work/lane03-retry-policy/evidence/overflow-red.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/owner-evidence/overflow-red.tap",
+      "originalByteReceipt": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/original-byte-receipts/overflow-red.tap.json",
+      "originalBytes": 2478,
+      "publishedBytes": 1238
+    },
+    {
+      "sourcePath": "work/lane03-retry-policy/evidence/green.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/owner-evidence/green.tap",
+      "originalByteReceipt": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/original-byte-receipts/green.tap.json",
+      "originalBytes": 31132,
+      "publishedBytes": 15565
+    },
+    {
+      "sourcePath": "work/lane03-retry-policy/evidence/green-final.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/owner-evidence/green-final.tap",
+      "originalByteReceipt": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/original-byte-receipts/green-final.tap.json",
+      "originalBytes": 32222,
+      "publishedBytes": 16110
+    },
+    {
+      "sourcePath": "work/lane03-retry-policy/evidence/combined-canonical.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/owner-evidence/combined-canonical.tap",
+      "originalByteReceipt": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/original-byte-receipts/combined-canonical.tap.json",
+      "originalBytes": 61968,
+      "publishedBytes": 30983
+    },
+    {
+      "sourcePath": "work/lane03-retry-policy/evidence/baseline-cleanup-reproduction.tap",
+      "publishedPath": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/owner-evidence/baseline-cleanup-reproduction.tap",
+      "originalByteReceipt": "orchestration/workspaces/03-integration-fabric/proof-retry-20261002/original-byte-receipts/baseline-cleanup-reproduction.tap.json",
+      "originalBytes": 3078,
+      "publishedBytes": 1538
+    }
+  ]
+}

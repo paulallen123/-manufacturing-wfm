@@ -1,0 +1,865 @@
+TAP version 13
+# Subtest: explicit transient read proof gets a deterministic bounded schedule
+ok 1 - explicit transient read proof gets a deterministic bounded schedule
+  ---
+  duration_ms: 10.237
+  type: 'test'
+  ...
+# Subtest: backoff grows with the number of completed attempts
+ok 2 - backoff grows with the number of completed attempts
+  ---
+  duration_ms: 0.8988
+  type: 'test'
+  ...
+# Subtest: api retains a finite transport-specific ceiling
+ok 3 - api retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.8015
+  type: 'test'
+  ...
+# Subtest: webhook retains a finite transport-specific ceiling
+ok 4 - webhook retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.4682
+  type: 'test'
+  ...
+# Subtest: queue-stream retains a finite transport-specific ceiling
+ok 5 - queue-stream retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.7812
+  type: 'test'
+  ...
+# Subtest: secure-file retains a finite transport-specific ceiling
+ok 6 - secure-file retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.3122
+  type: 'test'
+  ...
+# Subtest: read-only-db retains a finite transport-specific ceiling
+ok 7 - read-only-db retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.6918
+  type: 'test'
+  ...
+# Subtest: identity retains a finite transport-specific ceiling
+ok 8 - identity retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.415
+  type: 'test'
+  ...
+# Subtest: on-prem-agent retains a finite transport-specific ceiling
+ok 9 - on-prem-agent retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.8211
+  type: 'test'
+  ...
+# Subtest: ipaas retains a finite transport-specific ceiling
+ok 10 - ipaas retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.9254
+  type: 'test'
+  ...
+# Subtest: attempt limit counts the first provider attempt and cannot be reset
+ok 11 - attempt limit counts the first provider attempt and cannot be reset
+  ---
+  duration_ms: 0.4974
+  type: 'test'
+  ...
+# Subtest: elapsed budget includes the proposed wait and preserves durable anchor
+ok 12 - elapsed budget includes the proposed wait and preserves durable anchor
+  ---
+  duration_ms: 0.3657
+  type: 'test'
+  ...
+# Subtest: invalid anchor undefined cannot renew budget
+ok 13 - invalid anchor undefined cannot renew budget
+  ---
+  duration_ms: 0.2966
+  type: 'test'
+  ...
+# Subtest: invalid anchor null cannot renew budget
+ok 14 - invalid anchor null cannot renew budget
+  ---
+  duration_ms: 0.1998
+  type: 'test'
+  ...
+# Subtest: invalid anchor NaN cannot renew budget
+ok 15 - invalid anchor NaN cannot renew budget
+  ---
+  duration_ms: 0.1837
+  type: 'test'
+  ...
+# Subtest: invalid anchor Infinity cannot renew budget
+ok 16 - invalid anchor Infinity cannot renew budget
+  ---
+  duration_ms: 0.1934
+  type: 'test'
+  ...
+# Subtest: invalid anchor 1800000000001 cannot renew budget
+ok 17 - invalid anchor 1800000000001 cannot renew budget
+  ---
+  duration_ms: 0.1118
+  type: 'test'
+  ...
+# Subtest: invalid anchor 2027-01-01 cannot renew budget
+ok 18 - invalid anchor 2027-01-01 cannot renew budget
+  ---
+  duration_ms: 0.1086
+  type: 'test'
+  ...
+# Subtest: invalid anchor -1 cannot renew budget
+ok 19 - invalid anchor -1 cannot renew budget
+  ---
+  duration_ms: 0.2983
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts undefined cannot renew budget
+ok 20 - invalid completed attempts undefined cannot renew budget
+  ---
+  duration_ms: 0.2487
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts null cannot renew budget
+ok 21 - invalid completed attempts null cannot renew budget
+  ---
+  duration_ms: 0.1768
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 0 cannot renew budget
+ok 22 - invalid completed attempts 0 cannot renew budget
+  ---
+  duration_ms: 0.1722
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts -1 cannot renew budget
+ok 23 - invalid completed attempts -1 cannot renew budget
+  ---
+  duration_ms: 0.1625
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 1.5 cannot renew budget
+ok 24 - invalid completed attempts 1.5 cannot renew budget
+  ---
+  duration_ms: 0.186
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 1 cannot renew budget
+ok 25 - invalid completed attempts 1 cannot renew budget
+  ---
+  duration_ms: 0.2053
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts Infinity cannot renew budget
+ok 26 - invalid completed attempts Infinity cannot renew budget
+  ---
+  duration_ms: 0.1832
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 9007199254740992 cannot renew budget
+ok 27 - invalid completed attempts 9007199254740992 cannot renew budget
+  ---
+  duration_ms: 0.1612
+  type: 'test'
+  ...
+# Subtest: provider rate-limit minimum is never clipped to the transport delay cap
+ok 28 - provider rate-limit minimum is never clipped to the transport delay cap
+  ---
+  duration_ms: 0.4247
+  type: 'test'
+  ...
+# Subtest: HTTP date hint is a minimum; expired date keeps local floor
+ok 29 - HTTP date hint is a minimum; expired date keeps local floor
+  ---
+  duration_ms: 0.67
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After null is denied
+ok 30 - malformed Retry-After null is denied
+  ---
+  duration_ms: 0.293
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After -1 is denied
+ok 31 - malformed Retry-After -1 is denied
+  ---
+  duration_ms: 0.1526
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After NaN is denied
+ok 32 - malformed Retry-After NaN is denied
+  ---
+  duration_ms: 0.1818
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After Infinity is denied
+ok 33 - malformed Retry-After Infinity is denied
+  ---
+  duration_ms: 0.1983
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After [object Object] is denied
+ok 34 - malformed Retry-After [object Object] is denied
+  ---
+  duration_ms: 0.1878
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After  is denied
+ok 35 - malformed Retry-After  is denied
+  ---
+  duration_ms: 0.2774
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After true is denied
+ok 36 - malformed Retry-After true is denied
+  ---
+  duration_ms: 1.4813
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After  is denied
+ok 37 - malformed Retry-After  is denied
+  ---
+  duration_ms: 0.2969
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After    is denied
+ok 38 - malformed Retry-After    is denied
+  ---
+  duration_ms: 0.2041
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After tomorrow is denied
+ok 39 - malformed Retry-After tomorrow is denied
+  ---
+  duration_ms: 0.2659
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx is denied
+ok 40 - malformed Retry-After xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx is denied
+  ---
+  duration_ms: 0.4063
+  type: 'test'
+  ...
+# Subtest: malformed direct millisecond hint cannot be hidden by valid seconds hint
+ok 41 - malformed direct millisecond hint cannot be hidden by valid seconds hint
+  ---
+  duration_ms: 0.4259
+  type: 'test'
+  ...
+# Subtest: auth-expired requires reauthorization despite retry hint
+ok 42 - auth-expired requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.3998
+  type: 'test'
+  ...
+# Subtest: auth-revoked requires reauthorization despite retry hint
+ok 43 - auth-revoked requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.1549
+  type: 'test'
+  ...
+# Subtest: invalid-credential requires reauthorization despite retry hint
+ok 44 - invalid-credential requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.1335
+  type: 'test'
+  ...
+# Subtest: HTTP 401 requires reauthorization
+ok 45 - HTTP 401 requires reauthorization
+  ---
+  duration_ms: 0.2196
+  type: 'test'
+  ...
+# Subtest: wrong-target cannot be overridden by a transient HTTP status
+ok 46 - wrong-target cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.185
+  type: 'test'
+  ...
+# Subtest: permission-denied cannot be overridden by a transient HTTP status
+ok 47 - permission-denied cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1103
+  type: 'test'
+  ...
+# Subtest: invalid-scope cannot be overridden by a transient HTTP status
+ok 48 - invalid-scope cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1003
+  type: 'test'
+  ...
+# Subtest: schema-mismatch cannot be overridden by a transient HTTP status
+ok 49 - schema-mismatch cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1102
+  type: 'test'
+  ...
+# Subtest: bad-request cannot be overridden by a transient HTTP status
+ok 50 - bad-request cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1947
+  type: 'test'
+  ...
+# Subtest: write-attempt cannot be overridden by a transient HTTP status
+ok 51 - write-attempt cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1858
+  type: 'test'
+  ...
+# Subtest: credential-missing cannot be overridden by a transient HTTP status
+ok 52 - credential-missing cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1442
+  type: 'test'
+  ...
+# Subtest: unsupported-operation cannot be overridden by a transient HTTP status
+ok 53 - unsupported-operation cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.2038
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 400 wins over retry hint
+ok 54 - terminal HTTP 400 wins over retry hint
+  ---
+  duration_ms: 0.1704
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 403 wins over retry hint
+ok 55 - terminal HTTP 403 wins over retry hint
+  ---
+  duration_ms: 0.1295
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 404 wins over retry hint
+ok 56 - terminal HTTP 404 wins over retry hint
+  ---
+  duration_ms: 0.0987
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 405 wins over retry hint
+ok 57 - terminal HTTP 405 wins over retry hint
+  ---
+  duration_ms: 0.0792
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 409 wins over retry hint
+ok 58 - terminal HTTP 409 wins over retry hint
+  ---
+  duration_ms: 0.0777
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 410 wins over retry hint
+ok 59 - terminal HTTP 410 wins over retry hint
+  ---
+  duration_ms: 0.0936
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 422 wins over retry hint
+ok 60 - terminal HTTP 422 wins over retry hint
+  ---
+  duration_ms: 0.0906
+  type: 'test'
+  ...
+# Subtest: unknown error, raw message and retryable flag never grant retry
+ok 61 - unknown error, raw message and retryable flag never grant retry
+  ---
+  duration_ms: 0.2125
+  type: 'test'
+  ...
+# Subtest: operation write cannot be automatically replayed
+ok 62 - operation write cannot be automatically replayed
+  ---
+  duration_ms: 0.1385
+  type: 'test'
+  ...
+# Subtest: operation authorization cannot be automatically replayed
+ok 63 - operation authorization cannot be automatically replayed
+  ---
+  duration_ms: 0.109
+  type: 'test'
+  ...
+# Subtest: operation refresh cannot be automatically replayed
+ok 64 - operation refresh cannot be automatically replayed
+  ---
+  duration_ms: 0.0799
+  type: 'test'
+  ...
+# Subtest: operation acknowledge cannot be automatically replayed
+ok 65 - operation acknowledge cannot be automatically replayed
+  ---
+  duration_ms: 0.0759
+  type: 'test'
+  ...
+# Subtest: operation delete cannot be automatically replayed
+ok 66 - operation delete cannot be automatically replayed
+  ---
+  duration_ms: 0.1053
+  type: 'test'
+  ...
+# Subtest: operation proof cannot be automatically replayed
+ok 67 - operation proof cannot be automatically replayed
+  ---
+  duration_ms: 0.0753
+  type: 'test'
+  ...
+# Subtest: operation  cannot be automatically replayed
+ok 68 - operation  cannot be automatically replayed
+  ---
+  duration_ms: 0.074
+  type: 'test'
+  ...
+# Subtest: authorization must be current and cannot be replaced by a transport digest
+ok 69 - authorization must be current and cannot be replaced by a transport digest
+  ---
+  duration_ms: 0.3685
+  type: 'test'
+  ...
+# Subtest: webhook duplicate-sensitive proof requires operation key
+ok 70 - webhook duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.1622
+  type: 'test'
+  ...
+# Subtest: queue-stream duplicate-sensitive proof requires operation key
+ok 71 - queue-stream duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.1148
+  type: 'test'
+  ...
+# Subtest: secure-file duplicate-sensitive proof requires operation key
+ok 72 - secure-file duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.0938
+  type: 'test'
+  ...
+# Subtest: on-prem-agent duplicate-sensitive proof requires operation key
+ok 73 - on-prem-agent duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.0958
+  type: 'test'
+  ...
+# Subtest: ipaas duplicate-sensitive proof requires operation key
+ok 74 - ipaas duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.0971
+  type: 'test'
+  ...
+# Subtest: malformed operation key is denied without echoing it
+ok 75 - malformed operation key is denied without echoing it
+  ---
+  duration_ms: 0.2811
+  type: 'test'
+  ...
+# Subtest: reviewed policy can tighten but not loosen ceilings
+ok 76 - reviewed policy can tighten but not loosen ceilings
+  ---
+  duration_ms: 0.4961
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"unknown","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+ok 77 - malformed review {"transport":"unknown","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+  ---
+  duration_ms: 0.1443
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"API","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+ok 78 - malformed review {"transport":"API","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+  ---
+  duration_ms: 0.1053
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"api","reviewedDigest":""} is denied
+ok 79 - malformed review {"transport":"api","reviewedDigest":""} is denied
+  ---
+  duration_ms: 0.1449
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"api","reviewedDigest":"unsigned"} is denied
+ok 80 - malformed review {"transport":"api","reviewedDigest":"unsigned"} is denied
+  ---
+  duration_ms: 0.1331
+  type: 'test'
+  ...
+# Subtest: records reject accessors without executing code
+ok 81 - records reject accessors without executing code
+  ---
+  duration_ms: 0.3696
+  type: 'test'
+  ...
+# Subtest: coercion hooks and inherited records do not execute
+ok 82 - coercion hooks and inherited records do not execute
+  ---
+  duration_ms: 0.3387
+  type: 'test'
+  ...
+# Subtest: malformed status or clock does not produce a schedule
+ok 83 - malformed status or clock does not produce a schedule
+  ---
+  duration_ms: 1.7419
+  type: 'test'
+  ...
+# Subtest: input and nested reviewed policy remain unchanged
+ok 84 - input and nested reviewed policy remain unchanged
+  ---
+  duration_ms: 0.3675
+  type: 'test'
+  ...
+# Subtest: attempt metadata never overflows a safe integer
+ok 85 - attempt metadata never overflows a safe integer
+  ---
+  duration_ms: 0.1801
+  type: 'test'
+  ...
+# Subtest: fractional hints round upward to preserve the provider minimum
+ok 86 - fractional hints round upward to preserve the provider minimum
+  ---
+  duration_ms: 0.2316
+  type: 'test'
+  ...
+# Subtest: proxy records are rejected before running any traps
+ok 87 - proxy records are rejected before running any traps
+  ---
+  duration_ms: 0.2441
+  type: 'test'
+  ...
+# (node:5668) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: deterministic product discovery recognises common enterprise systems
+ok 88 - deterministic product discovery recognises common enterprise systems
+  ---
+  duration_ms: 3.1154
+  type: 'test'
+  ...
+# Subtest: mapping suggestions are deterministic and fail unresolved fields closed
+ok 89 - mapping suggestions are deterministic and fail unresolved fields closed
+  ---
+  duration_ms: 1.1873
+  type: 'test'
+  ...
+# Subtest: credential references accept managed pointers and reject raw credentials
+ok 90 - credential references accept managed pointers and reject raw credentials
+  ---
+  duration_ms: 0.6668
+  type: 'test'
+  ...
+# Subtest: employee role cannot inspect or configure integration control plane
+ok 91 - employee role cannot inspect or configure integration control plane
+  ---
+  duration_ms: 207.5153
+  type: 'test'
+  ...
+# Subtest: discovery evidence is tenant-isolated
+ok 92 - discovery evidence is tenant-isolated
+  ---
+  duration_ms: 173.6649
+  type: 'test'
+  ...
+# Subtest: trusted directory worker is bound to a short-lived server-side discovery session
+ok 93 - trusted directory worker is bound to a short-lived server-side discovery session
+  ---
+  duration_ms: 204.2458
+  type: 'test'
+  ...
+# Subtest: concurrent worker callbacks can claim a discovery session only once
+ok 94 - concurrent worker callbacks can claim a discovery session only once
+  ---
+  duration_ms: 210.7939
+  type: 'test'
+  ...
+# Subtest: discovery session rejects provider substitution and expired sessions
+ok 95 - discovery session rejects provider substitution and expired sessions
+  ---
+  duration_ms: 184.2453
+  type: 'test'
+  ...
+# Subtest: browser/admin cannot attest provider authorization without trusted worker
+ok 96 - browser/admin cannot attest provider authorization without trusted worker
+  ---
+  duration_ms: 227.0737
+  type: 'test'
+  ...
+# Subtest: people sync cannot activate from a connector capability without a people grant
+ok 97 - people sync cannot activate from a connector capability without a people grant
+  ---
+  duration_ms: 284.7194
+  type: 'test'
+  ...
+# Subtest: healthy report cannot bypass authorization or an unvalidated mapping version
+ok 98 - healthy report cannot bypass authorization or an unvalidated mapping version
+  ---
+  duration_ms: 423.9737
+  type: 'test'
+  ...
+# Subtest: trusted worker can attest authorization, activate mapping, validate sync and reach ACTIVE
+ok 99 - trusted worker can attest authorization, activate mapping, validate sync and reach ACTIVE
+  ---
+  duration_ms: 390.6491
+  type: 'test'
+  ...
+# Subtest: validation with duplicate identifiers degrades safely instead of silently activating
+ok 100 - validation with duplicate identifiers degrades safely instead of silently activating
+  ---
+  duration_ms: 291.3749
+  type: 'test'
+  ...
+# Subtest: schema drift produces targeted repair guidance while preserving mapping version
+ok 101 - schema drift produces targeted repair guidance while preserving mapping version
+  ---
+  duration_ms: 251.9349
+  type: 'test'
+  ...
+# Subtest: reconciliation stores only counts and digests, not raw employee payloads
+ok 102 - reconciliation stores only counts and digests, not raw employee payloads
+  ---
+  duration_ms: 265.3098
+  type: 'test'
+  ...
+# (node:25300) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing or invalid configuration cannot initiate authorization and reveals only configuration names
+ok 103 - missing or invalid configuration cannot initiate authorization and reveals only configuration names
+  ---
+  duration_ms: 58.546
+  type: 'test'
+  ...
+# Subtest: authorization uses the selected Gusto host, exact callback, and opaque one-use state stored without its bearer value
+ok 104 - authorization uses the selected Gusto host, exact callback, and opaque one-use state stored without its bearer value
+  ---
+  duration_ms: 17.2691
+  type: 'test'
+  ...
+# Subtest: authorization requires a company UUID and nonempty tenant, connection, and browser binding
+ok 105 - authorization requires a company UUID and nonempty tenant, connection, and browser binding
+  ---
+  duration_ms: 2.4733
+  type: 'test'
+  ...
+# Subtest: callback exchanges only at Gusto and verifies company identity plus actual read grants before storing credentials
+ok 106 - callback exchanges only at Gusto and verifies company identity plus actual read grants before storing credentials
+  ---
+  duration_ms: 112.1531
+  type: 'test'
+  ...
+# Subtest: state rejects another tenant or browser without consuming the legitimate callback, then rejects replay
+ok 107 - state rejects another tenant or browser without consuming the legitimate callback, then rejects replay
+  ---
+  duration_ms: 7.4956
+  type: 'test'
+  ...
+# Subtest: expired state and declined consent never exchange a code and declined consent consumes its state
+ok 108 - expired state and declined consent never exchange a code and declined consent consumes its state
+  ---
+  duration_ms: 3.464
+  type: 'test'
+  ...
+# Subtest: callback rejects a non-company subject, a different company, and a mismatching company response without persisting a connection
+ok 109 - callback rejects a non-company subject, a different company, and a mismatching company response without persisting a connection
+  ---
+  duration_ms: 14.5326
+  type: 'test'
+  ...
+# Subtest: state and encrypted credentials survive restart while tenant, environment, and encryption-key boundaries remain enforced
+not ok 110 - state and encrypted credentials survive restart while tenant, environment, and encryption-key boundaries remain enforced
+  ---
+  duration_ms: 61.8559
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\src\\integration\\runtime\\gusto-company-connector.test.cjs:240:1'
+  failureType: 'hookFailed'
+  error: "EBUSY: resource busy or locked, unlink 'C:\\Users\\User\\AppData\\Local\\Temp\\gusto-connector-MOLeIn\\integration.sqlite'"
+  code: 'EBUSY'
+  stack: |-
+    unlinkSync (node:fs:1948:11)
+    _unlinkSync (node:internal/fs/rimraf:215:14)
+    rimrafSync (node:internal/fs/rimraf:196:7)
+    node:internal/fs/rimraf:254:9
+    Array.forEach (<anonymous>)
+    _rmdirSync (node:internal/fs/rimraf:251:7)
+    rimrafSync (node:internal/fs/rimraf:194:7)
+    rmSync (node:fs:1239:10)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\src\integration\runtime\gusto-company-connector.test.cjs:243:17)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+  ...
+# Subtest: provider rejection and network failures expose safe codes without provider bodies or request secrets
+ok 111 - provider rejection and network failures expose safe codes without provider bodies or request secrets
+  ---
+  duration_ms: 12.5319
+  type: 'test'
+  ...
+# Subtest: redirects, malformed token responses, and oversized provider bodies fail closed
+ok 112 - redirects, malformed token responses, and oversized provider bodies fail closed
+  ---
+  duration_ms: 21.766
+  type: 'test'
+  ...
+# Subtest: a stalled external request is aborted and cannot leave an indefinitely pending callback
+ok 113 - a stalled external request is aborted and cannot leave an indefinitely pending callback
+  ---
+  duration_ms: 10021.4161
+  type: 'test'
+  ...
+# Subtest: expired credentials rotate as one encrypted pair and subsequent refreshes use the persisted replacement
+ok 114 - expired credentials rotate as one encrypted pair and subsequent refreshes use the persisted replacement
+  ---
+  duration_ms: 23.4744
+  type: 'test'
+  ...
+# Subtest: an early access-token 401 refreshes once and then rechecks the company with the replacement
+ok 115 - an early access-token 401 refreshes once and then rechecks the company with the replacement
+  ---
+  duration_ms: 16.4566
+  type: 'test'
+  ...
+# Subtest: transient refresh failure preserves the previous credential pair and releases its lease for retry
+ok 116 - transient refresh failure preserves the previous credential pair and releases its lease for retry
+  ---
+  duration_ms: 11.8031
+  type: 'test'
+  ...
+# Subtest: rotated credentials survive a later provider outage but are not reported verified until a successful company check
+ok 117 - rotated credentials survive a later provider outage but are not reported verified until a successful company check
+  ---
+  duration_ms: 8.4429
+  type: 'test'
+  ...
+# Subtest: refresh revocation and repeated 401/403 responses clear verified status without loops or raw provider details
+ok 118 - refresh revocation and repeated 401/403 responses clear verified status without loops or raw provider details
+  ---
+  duration_ms: 28.102
+  type: 'test'
+  ...
+# Subtest: two SQLite connections cannot simultaneously consume a single-use refresh token
+ok 119 - two SQLite connections cannot simultaneously consume a single-use refresh token
+  ---
+  duration_ms: 1932.776
+  type: 'test'
+  ...
+# Subtest: a late refresh response cannot overwrite a newer completed authorization for the same connection
+ok 120 - a late refresh response cannot overwrite a newer completed authorization for the same connection
+  ---
+  duration_ms: 10.3602
+  type: 'test'
+  ...
+# Subtest: an expired refresh lease left by a stopped worker is reclaimed safely
+ok 121 - an expired refresh lease left by a stopped worker is reclaimed safely
+  ---
+  duration_ms: 6.7419
+  type: 'test'
+  ...
+# Subtest: encrypted credentials are authenticated against tenant, connection, company, and environment
+ok 122 - encrypted credentials are authenticated against tenant, connection, company, and environment
+  ---
+  duration_ms: 17.9945
+  type: 'test'
+  ...
+# Subtest: concurrent authorizations cannot retarget an already verified connection to a different company
+ok 123 - concurrent authorizations cannot retarget an already verified connection to a different company
+  ---
+  duration_ms: 19.2786
+  type: 'test'
+  ...
+# Subtest: a pending authorization cannot move a verified connection into another Gusto environment
+ok 124 - a pending authorization cannot move a verified connection into another Gusto environment
+  ---
+  duration_ms: 7.5542
+  type: 'test'
+  ...
+# Subtest: changing the registered OAuth client invalidates stored status and pending state until explicit reauthorization
+ok 125 - changing the registered OAuth client invalidates stored status and pending state until explicit reauthorization
+  ---
+  duration_ms: 8.3611
+  type: 'test'
+  ...
+# Subtest: a changed tenant company binding rejects a pending callback before token exchange and preserves stored credentials
+ok 126 - a changed tenant company binding rejects a pending callback before token exchange and preserves stored credentials
+  ---
+  duration_ms: 5.448
+  type: 'test'
+  ...
+# Subtest: temporary SQLite write contention after a successful refresh retries persistence without consuming the token twice
+ok 127 - temporary SQLite write contention after a successful refresh retries persistence without consuming the token twice
+  ---
+  duration_ms: 2450.3186
+  type: 'test'
+  ...
+# Subtest: storage failures have safe connector errors and cannot produce a successful authorization result
+ok 128 - storage failures have safe connector errors and cannot produce a successful authorization result
+  ---
+  duration_ms: 2.8091
+  type: 'test'
+  ...
+# Subtest: an old verification denial becomes a retryable conflict after a newer authorization succeeds
+ok 129 - an old verification denial becomes a retryable conflict after a newer authorization succeeds
+  ---
+  duration_ms: 3.9804
+  type: 'test'
+  ...
+# (node:25216) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Gusto appears in the existing catalog and missing setup never reports a connection
+ok 130 - Gusto appears in the existing catalog and missing setup never reports a connection
+  ---
+  duration_ms: 276.5427
+  type: 'test'
+  ...
+# Subtest: authorization verifies the exact company, survives restart, and does not certify a data sync
+ok 131 - authorization verifies the exact company, survives restart, and does not certify a data sync
+  ---
+  duration_ms: 338.5929
+  type: 'test'
+  ...
+# Subtest: Gusto setup requires an administrator, the original tenant, and same-origin authorization
+ok 132 - Gusto setup requires an administrator, the original tenant, and same-origin authorization
+  ---
+  duration_ms: 206.0099
+  type: 'test'
+  ...
+# Subtest: a configured company selection is tenant-scoped and cannot be overridden by the browser
+ok 133 - a configured company selection is tenant-scoped and cannot be overridden by the browser
+  ---
+  duration_ms: 216.4009
+  type: 'test'
+  ...
+# Subtest: invalid tenant configuration blocks callback completion and verification before contacting Gusto
+ok 134 - invalid tenant configuration blocks callback completion and verification before contacting Gusto
+  ---
+  duration_ms: 220.409
+  type: 'test'
+  ...
+# Subtest: a changed tenant company selection invalidates historical sync readiness and cannot activate through health attestation
+ok 135 - a changed tenant company selection invalidates historical sync readiness and cannot activate through health attestation
+  ---
+  duration_ms: 395.2621
+  type: 'test'
+  ...
+# Subtest: changing the company selection while authorization is pending rejects it before credential exchange
+ok 136 - changing the company selection while authorization is pending rejects it before credential exchange
+  ---
+  duration_ms: 283.9428
+  type: 'test'
+  ...
+# Subtest: an OAuth callback from a different session or tenant cannot consume the original state
+ok 137 - an OAuth callback from a different session or tenant cannot consume the original state
+  ---
+  duration_ms: 300.1145
+  type: 'test'
+  ...
+# Subtest: a wrong Gusto company and worker attestation cannot mark Gusto authorized
+ok 138 - a wrong Gusto company and worker attestation cannot mark Gusto authorized
+  ---
+  duration_ms: 244.4125
+  type: 'test'
+  ...
+# Subtest: callback completion requires the original session and origin and errors remain secret-free
+ok 139 - callback completion requires the original session and origin and errors remain secret-free
+  ---
+  duration_ms: 238.9562
+  type: 'test'
+  ...
+1..139
+# tests 139
+# suites 0
+# pass 138
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15073.454

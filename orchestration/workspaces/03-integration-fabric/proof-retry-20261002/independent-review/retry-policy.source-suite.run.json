@@ -1,0 +1,16 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true,
+  "logSha256": "db91fe14a471568f5fbbdcf5bf3891d9c0aa446587010f017d8b88e9f7bc18a2",
+  "customerProof": false
+}

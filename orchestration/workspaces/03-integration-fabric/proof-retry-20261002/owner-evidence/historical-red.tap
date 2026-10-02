@@ -1,0 +1,1482 @@
+TAP version 13
+# Subtest: explicit transient read proof gets a deterministic bounded schedule
+not ok 1 - explicit transient read proof gets a deterministic bounded schedule
+  ---
+  duration_ms: 29.5751
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:11:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(a.retryAfterMs>=250 && a.retryAfterMs<=300)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:13:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: backoff grows with the number of completed attempts
+not ok 2 - backoff grows with the number of completed attempts
+  ---
+  duration_ms: 1.1774
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(run(review(),{code:'timeout'},state({completedAttempts:2})).retryAfterMs>run().retryAfterMs)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:17:71)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: api retains a finite transport-specific ceiling
+ok 3 - api retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.3906
+  type: 'test'
+  ...
+# Subtest: webhook retains a finite transport-specific ceiling
+ok 4 - webhook retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.2859
+  type: 'test'
+  ...
+# Subtest: queue-stream retains a finite transport-specific ceiling
+not ok 5 - queue-stream retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.5701
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:19:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:21:5)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: secure-file retains a finite transport-specific ceiling
+ok 6 - secure-file retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.3197
+  type: 'test'
+  ...
+# Subtest: read-only-db retains a finite transport-specific ceiling
+ok 7 - read-only-db retains a finite transport-specific ceiling
+  ---
+  duration_ms: 1.2756
+  type: 'test'
+  ...
+# Subtest: identity retains a finite transport-specific ceiling
+ok 8 - identity retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.2719
+  type: 'test'
+  ...
+# Subtest: on-prem-agent retains a finite transport-specific ceiling
+not ok 9 - on-prem-agent retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.6306
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:19:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:21:5)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: ipaas retains a finite transport-specific ceiling
+ok 10 - ipaas retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.4871
+  type: 'test'
+  ...
+# Subtest: attempt limit counts the first provider attempt and cannot be reset
+not ok 11 - attempt limit counts the first provider attempt and cannot be reset
+  ---
+  duration_ms: 0.7774
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:24:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'RETRY'
+    - 'QUARANTINE'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'QUARANTINE'
+  actual: 'RETRY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:26:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: elapsed budget includes the proposed wait and preserves durable anchor
+ok 12 - elapsed budget includes the proposed wait and preserves durable anchor
+  ---
+  duration_ms: 0.2017
+  type: 'test'
+  ...
+# Subtest: invalid anchor undefined cannot renew budget
+not ok 13 - invalid anchor undefined cannot renew budget
+  ---
+  duration_ms: 0.2657
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:32:83'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:32:156)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid anchor null cannot renew budget
+ok 14 - invalid anchor null cannot renew budget
+  ---
+  duration_ms: 0.0852
+  type: 'test'
+  ...
+# Subtest: invalid anchor NaN cannot renew budget
+not ok 15 - invalid anchor NaN cannot renew budget
+  ---
+  duration_ms: 0.2586
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:32:83'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:32:156)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid anchor Infinity cannot renew budget
+not ok 16 - invalid anchor Infinity cannot renew budget
+  ---
+  duration_ms: 0.1894
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:32:83'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:32:156)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid anchor 1800000000001 cannot renew budget
+not ok 17 - invalid anchor 1800000000001 cannot renew budget
+  ---
+  duration_ms: 0.4034
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:32:83'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:32:156)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid anchor 2027-01-01 cannot renew budget
+not ok 18 - invalid anchor 2027-01-01 cannot renew budget
+  ---
+  duration_ms: 0.7144
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:32:83'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:32:156)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid anchor -1 cannot renew budget
+ok 19 - invalid anchor -1 cannot renew budget
+  ---
+  duration_ms: 0.165
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts undefined cannot renew budget
+not ok 20 - invalid completed attempts undefined cannot renew budget
+  ---
+  duration_ms: 0.47
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:33:99'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:33:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid completed attempts null cannot renew budget
+not ok 21 - invalid completed attempts null cannot renew budget
+  ---
+  duration_ms: 0.3029
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:33:99'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:33:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid completed attempts 0 cannot renew budget
+not ok 22 - invalid completed attempts 0 cannot renew budget
+  ---
+  duration_ms: 0.4002
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:33:99'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:33:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid completed attempts -1 cannot renew budget
+not ok 23 - invalid completed attempts -1 cannot renew budget
+  ---
+  duration_ms: 0.1864
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:33:99'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:33:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid completed attempts 1.5 cannot renew budget
+not ok 24 - invalid completed attempts 1.5 cannot renew budget
+  ---
+  duration_ms: 0.1639
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:33:99'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:33:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid completed attempts 1 cannot renew budget
+not ok 25 - invalid completed attempts 1 cannot renew budget
+  ---
+  duration_ms: 0.159
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:33:99'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:33:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid completed attempts Infinity cannot renew budget
+not ok 26 - invalid completed attempts Infinity cannot renew budget
+  ---
+  duration_ms: 0.1559
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:33:99'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:33:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid completed attempts 9007199254740992 cannot renew budget
+ok 27 - invalid completed attempts 9007199254740992 cannot renew budget
+  ---
+  duration_ms: 0.1135
+  type: 'test'
+  ...
+# Subtest: provider rate-limit minimum is never clipped to the transport delay cap
+not ok 28 - provider rate-limit minimum is never clipped to the transport delay cap
+  ---
+  duration_ms: 0.584
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:34:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(r.retryAfterMs>=30000)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:35:111)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: HTTP date hint is a minimum; expired date keeps local floor
+not ok 29 - HTTP date hint is a minimum; expired date keeps local floor
+  ---
+  duration_ms: 1.0785
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:38:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 60000
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 60000
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:39:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After null is denied
+not ok 30 - malformed Retry-After null is denied
+  ---
+  duration_ms: 0.2504
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After -1 is denied
+not ok 31 - malformed Retry-After -1 is denied
+  ---
+  duration_ms: 0.1712
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After NaN is denied
+not ok 32 - malformed Retry-After NaN is denied
+  ---
+  duration_ms: 0.1592
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After Infinity is denied
+not ok 33 - malformed Retry-After Infinity is denied
+  ---
+  duration_ms: 0.1541
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After [object Object] is denied
+not ok 34 - malformed Retry-After [object Object] is denied
+  ---
+  duration_ms: 0.1784
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After  is denied
+not ok 35 - malformed Retry-After  is denied
+  ---
+  duration_ms: 0.3804
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After true is denied
+not ok 36 - malformed Retry-After true is denied
+  ---
+  duration_ms: 0.1953
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After  is denied
+not ok 37 - malformed Retry-After  is denied
+  ---
+  duration_ms: 0.1682
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After    is denied
+not ok 38 - malformed Retry-After    is denied
+  ---
+  duration_ms: 0.162
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After tomorrow is denied
+not ok 39 - malformed Retry-After tomorrow is denied
+  ---
+  duration_ms: 0.1542
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed Retry-After xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx is denied
+not ok 40 - malformed Retry-After xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx is denied
+  ---
+  duration_ms: 0.1491
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:42:89'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:42:149)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed direct millisecond hint cannot be hidden by valid seconds hint
+not ok 41 - malformed direct millisecond hint cannot be hidden by valid seconds hint
+  ---
+  duration_ms: 0.2227
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:43:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:43:85)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: auth-expired requires reauthorization despite retry hint
+ok 42 - auth-expired requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.1593
+  type: 'test'
+  ...
+# Subtest: auth-revoked requires reauthorization despite retry hint
+ok 43 - auth-revoked requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.0969
+  type: 'test'
+  ...
+# Subtest: invalid-credential requires reauthorization despite retry hint
+ok 44 - invalid-credential requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.0731
+  type: 'test'
+  ...
+# Subtest: HTTP 401 requires reauthorization
+ok 45 - HTTP 401 requires reauthorization
+  ---
+  duration_ms: 0.109
+  type: 'test'
+  ...
+# Subtest: wrong-target cannot be overridden by a transient HTTP status
+ok 46 - wrong-target cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.0997
+  type: 'test'
+  ...
+# Subtest: permission-denied cannot be overridden by a transient HTTP status
+ok 47 - permission-denied cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.0733
+  type: 'test'
+  ...
+# Subtest: invalid-scope cannot be overridden by a transient HTTP status
+ok 48 - invalid-scope cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.068
+  type: 'test'
+  ...
+# Subtest: schema-mismatch cannot be overridden by a transient HTTP status
+ok 49 - schema-mismatch cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.0662
+  type: 'test'
+  ...
+# Subtest: bad-request cannot be overridden by a transient HTTP status
+ok 50 - bad-request cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.0726
+  type: 'test'
+  ...
+# Subtest: write-attempt cannot be overridden by a transient HTTP status
+ok 51 - write-attempt cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.0642
+  type: 'test'
+  ...
+# Subtest: credential-missing cannot be overridden by a transient HTTP status
+ok 52 - credential-missing cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1259
+  type: 'test'
+  ...
+# Subtest: unsupported-operation cannot be overridden by a transient HTTP status
+ok 53 - unsupported-operation cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.0787
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 400 wins over retry hint
+ok 54 - terminal HTTP 400 wins over retry hint
+  ---
+  duration_ms: 0.1598
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 403 wins over retry hint
+ok 55 - terminal HTTP 403 wins over retry hint
+  ---
+  duration_ms: 0.0856
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 404 wins over retry hint
+ok 56 - terminal HTTP 404 wins over retry hint
+  ---
+  duration_ms: 0.064
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 405 wins over retry hint
+ok 57 - terminal HTTP 405 wins over retry hint
+  ---
+  duration_ms: 0.0641
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 409 wins over retry hint
+ok 58 - terminal HTTP 409 wins over retry hint
+  ---
+  duration_ms: 0.0872
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 410 wins over retry hint
+ok 59 - terminal HTTP 410 wins over retry hint
+  ---
+  duration_ms: 0.0678
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 422 wins over retry hint
+ok 60 - terminal HTTP 422 wins over retry hint
+  ---
+  duration_ms: 0.0658
+  type: 'test'
+  ...
+# Subtest: unknown error, raw message and retryable flag never grant retry
+not ok 61 - unknown error, raw message and retryable flag never grant retry
+  ---
+  duration_ms: 0.7253
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:48:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(!JSON.stringify(r).includes('secret'))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:49:111)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operation write cannot be automatically replayed
+not ok 62 - operation write cannot be automatically replayed
+  ---
+  duration_ms: 0.3326
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:51:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:51:164)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operation authorization cannot be automatically replayed
+not ok 63 - operation authorization cannot be automatically replayed
+  ---
+  duration_ms: 0.183
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:51:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:51:164)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operation refresh cannot be automatically replayed
+not ok 64 - operation refresh cannot be automatically replayed
+  ---
+  duration_ms: 0.1778
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:51:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:51:164)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operation acknowledge cannot be automatically replayed
+not ok 65 - operation acknowledge cannot be automatically replayed
+  ---
+  duration_ms: 0.1794
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:51:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:51:164)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operation delete cannot be automatically replayed
+not ok 66 - operation delete cannot be automatically replayed
+  ---
+  duration_ms: 0.2
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:51:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:51:164)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operation proof cannot be automatically replayed
+not ok 67 - operation proof cannot be automatically replayed
+  ---
+  duration_ms: 0.3261
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:51:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:51:164)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: operation  cannot be automatically replayed
+not ok 68 - operation  cannot be automatically replayed
+  ---
+  duration_ms: 0.2203
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:51:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:51:164)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: authorization must be current and cannot be replaced by a transport digest
+not ok 69 - authorization must be current and cannot be replaced by a transport digest
+  ---
+  duration_ms: 0.3514
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:52:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:53:3)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: webhook duplicate-sensitive proof requires operation key
+ok 70 - webhook duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.16
+  type: 'test'
+  ...
+# Subtest: queue-stream duplicate-sensitive proof requires operation key
+ok 71 - queue-stream duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.0923
+  type: 'test'
+  ...
+# Subtest: secure-file duplicate-sensitive proof requires operation key
+ok 72 - secure-file duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.0863
+  type: 'test'
+  ...
+# Subtest: on-prem-agent duplicate-sensitive proof requires operation key
+ok 73 - on-prem-agent duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.0687
+  type: 'test'
+  ...
+# Subtest: ipaas duplicate-sensitive proof requires operation key
+ok 74 - ipaas duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.0662
+  type: 'test'
+  ...
+# Subtest: malformed operation key is denied without echoing it
+not ok 75 - malformed operation key is denied without echoing it
+  ---
+  duration_ms: 0.2438
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:60:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:60:157)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reviewed policy can tighten but not loosen ceilings
+not ok 76 - reviewed policy can tighten but not loosen ceilings
+  ---
+  duration_ms: 0.3229
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:61:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'RETRY'
+    - 'QUARANTINE'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'QUARANTINE'
+  actual: 'RETRY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:62:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed review {"transport":"unknown","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+not ok 77 - malformed review {"transport":"unknown","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+  ---
+  duration_ms: 0.1369
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:66:128'
+  failureType: 'testCodeFailure'
+  error: 'Unsupported enterprise transport runtime policy.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    reviewTransport (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-transport-runtime-policy.cjs:80:22)
+    nextRetryDecision (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-transport-runtime-policy.cjs:138:22)
+    exports.proofRetryDecision (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-adapter.cjs:5:11)
+    run (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:8:66)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:66:195)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: malformed review {"transport":"API","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+not ok 78 - malformed review {"transport":"API","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+  ---
+  duration_ms: 0.1735
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:66:128'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:66:188)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed review {"transport":"api","reviewedDigest":""} is denied
+not ok 79 - malformed review {"transport":"api","reviewedDigest":""} is denied
+  ---
+  duration_ms: 0.0802
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:66:128'
+  failureType: 'testCodeFailure'
+  error: 'Reviewed connection digest is required.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    reviewTransport (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-transport-runtime-policy.cjs:81:38)
+    nextRetryDecision (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-transport-runtime-policy.cjs:138:22)
+    exports.proofRetryDecision (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-adapter.cjs:5:11)
+    run (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:8:66)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:66:195)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: malformed review {"transport":"api","reviewedDigest":"unsigned"} is denied
+not ok 80 - malformed review {"transport":"api","reviewedDigest":"unsigned"} is denied
+  ---
+  duration_ms: 0.1544
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:66:128'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:66:188)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: records reject accessors without executing code
+not ok 81 - records reject accessors without executing code
+  ---
+  duration_ms: 0.2074
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:67:1'
+  failureType: 'testCodeFailure'
+  error: 'Unsupported enterprise transport runtime policy.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    reviewTransport (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-transport-runtime-policy.cjs:80:22)
+    nextRetryDecision (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-transport-runtime-policy.cjs:138:22)
+    exports.proofRetryDecision (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\evidence\historical-adapter.cjs:5:11)
+    run (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:8:66)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:70:28)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  ...
+# Subtest: coercion hooks and inherited records do not execute
+not ok 82 - coercion hooks and inherited records do not execute
+  ---
+  duration_ms: 0.2681
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:73:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:75:3)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed status or clock does not produce a schedule
+not ok 83 - malformed status or clock does not produce a schedule
+  ---
+  duration_ms: 0.2476
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-retry-policy\\source\\integration\\runtime\\provider-proof-retry-policy.test.cjs:78:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'RETRY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RETRY'
+  actual: 'RETRY'
+  operator: 'notStrictEqual'
+  stack: |-
+    denied (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:9:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane03-retry-policy\source\integration\runtime\provider-proof-retry-policy.test.cjs:79:49)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: input and nested reviewed policy remain unchanged
+ok 84 - input and nested reviewed policy remain unchanged
+  ---
+  duration_ms: 0.7875
+  type: 'test'
+  ...
+1..84
+# tests 84
+# suites 0
+# pass 35
+# fail 49
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 306.9817

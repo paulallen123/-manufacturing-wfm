@@ -1,0 +1,72 @@
+{
+  "scope": "ISOLATED_UNWIRED_PURE_RETRY_POLICY",
+  "verdict": "NO_MATERIAL_P1_OR_P2_OBSERVED",
+  "sourceVerified": true,
+  "files": [
+    {
+      "path": "integration/runtime/provider-proof-retry-policy.cjs",
+      "mode": "100644",
+      "localPath": "work/lane03-retry-policy/source/integration/runtime/provider-proof-retry-policy.cjs",
+      "localBlob": "46aae02be5d521aa0446aa3af9e615b19eea7f91",
+      "sha256": "bbc222ce5fb4c9cab035e987e6ff3434072d04284832cf0316c2fc6495cd02c9",
+      "bytes": 8766,
+      "disposition": "ADAPTED_PORT",
+      "sourceBlob": null,
+      "sourceIdentical": false,
+      "sourceProvenancePaths": [
+        "evidence/historical-transport-runtime-policy.cjs",
+        "evidence/historical-provider-proof-retry-policy.cjs"
+      ]
+    },
+    {
+      "path": "integration/runtime/provider-proof-retry-policy.test.cjs",
+      "mode": "100644",
+      "localPath": "work/lane03-retry-policy/source/integration/runtime/provider-proof-retry-policy.test.cjs",
+      "localBlob": "6c6ca54b31c1a59710cf55768ae092c59cab1a1d",
+      "sha256": "0d9c9989f53634d4b2da3d3da420c90bdff6c5304ea48ef2d8c88f5e365a9e59",
+      "bytes": 8724,
+      "disposition": "ADAPTED_PORT",
+      "sourceBlob": null,
+      "sourceIdentical": false,
+      "sourceProvenancePaths": [
+        "port-design.md",
+        "evidence/historical-red.tap"
+      ]
+    }
+  ],
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "findings": [],
+  "tests": {
+    "heldOut": {
+      "file": "retry-policy.held-out.node22.tap",
+      "tests": 23,
+      "pass": 23,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 392.1416
+    },
+    "sourceSuite": {
+      "file": "retry-policy.source-suite.node22.tap",
+      "tests": 87,
+      "pass": 87,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 455.3262
+    },
+    "ownerCombined": {
+      "tests": 139,
+      "pass": 138,
+      "fail": 1,
+      "skip": 0,
+      "qualification": "Hash-verified owner log: unchanged Gusto SQLite restart cleanup EBUSY Windows hook; baseline-only reproduction also failed. Not independently rerun and not blanket green."
+    }
+  },
+  "limitations": [
+    "Two unwired files; no runtime/provider/hosted/customer proof.",
+    "authorizationValid, reviewedDigest, operationKey and firstFailureAt are caller assertions. Existing canonical authorities must authenticate and preserve them.",
+    "NextAttemptAt may equal the elapsed deadline; current elapsed at that deadline is exhausted. Scheduling permission supplies no later admission authority.",
+    "Provenance reference blobs were independently rehashed against recorded identities; remote commit trees were not refetched in this bounded review."
+  ]
+}

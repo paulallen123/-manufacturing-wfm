@@ -1,0 +1,514 @@
+TAP version 13
+# Subtest: explicit transient read proof gets a deterministic bounded schedule
+ok 1 - explicit transient read proof gets a deterministic bounded schedule
+  ---
+  duration_ms: 21.1155
+  type: 'test'
+  ...
+# Subtest: backoff grows with the number of completed attempts
+ok 2 - backoff grows with the number of completed attempts
+  ---
+  duration_ms: 0.6686
+  type: 'test'
+  ...
+# Subtest: api retains a finite transport-specific ceiling
+ok 3 - api retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.5062
+  type: 'test'
+  ...
+# Subtest: webhook retains a finite transport-specific ceiling
+ok 4 - webhook retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.2661
+  type: 'test'
+  ...
+# Subtest: queue-stream retains a finite transport-specific ceiling
+ok 5 - queue-stream retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.6082
+  type: 'test'
+  ...
+# Subtest: secure-file retains a finite transport-specific ceiling
+ok 6 - secure-file retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.2535
+  type: 'test'
+  ...
+# Subtest: read-only-db retains a finite transport-specific ceiling
+ok 7 - read-only-db retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.5147
+  type: 'test'
+  ...
+# Subtest: identity retains a finite transport-specific ceiling
+ok 8 - identity retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.2387
+  type: 'test'
+  ...
+# Subtest: on-prem-agent retains a finite transport-specific ceiling
+ok 9 - on-prem-agent retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.5857
+  type: 'test'
+  ...
+# Subtest: ipaas retains a finite transport-specific ceiling
+ok 10 - ipaas retains a finite transport-specific ceiling
+  ---
+  duration_ms: 0.7232
+  type: 'test'
+  ...
+# Subtest: attempt limit counts the first provider attempt and cannot be reset
+ok 11 - attempt limit counts the first provider attempt and cannot be reset
+  ---
+  duration_ms: 0.3863
+  type: 'test'
+  ...
+# Subtest: elapsed budget includes the proposed wait and preserves durable anchor
+ok 12 - elapsed budget includes the proposed wait and preserves durable anchor
+  ---
+  duration_ms: 0.2468
+  type: 'test'
+  ...
+# Subtest: invalid anchor undefined cannot renew budget
+ok 13 - invalid anchor undefined cannot renew budget
+  ---
+  duration_ms: 0.4928
+  type: 'test'
+  ...
+# Subtest: invalid anchor null cannot renew budget
+ok 14 - invalid anchor null cannot renew budget
+  ---
+  duration_ms: 0.1425
+  type: 'test'
+  ...
+# Subtest: invalid anchor NaN cannot renew budget
+ok 15 - invalid anchor NaN cannot renew budget
+  ---
+  duration_ms: 0.1219
+  type: 'test'
+  ...
+# Subtest: invalid anchor Infinity cannot renew budget
+ok 16 - invalid anchor Infinity cannot renew budget
+  ---
+  duration_ms: 0.1163
+  type: 'test'
+  ...
+# Subtest: invalid anchor 1800000000001 cannot renew budget
+ok 17 - invalid anchor 1800000000001 cannot renew budget
+  ---
+  duration_ms: 0.1145
+  type: 'test'
+  ...
+# Subtest: invalid anchor 2027-01-01 cannot renew budget
+ok 18 - invalid anchor 2027-01-01 cannot renew budget
+  ---
+  duration_ms: 0.1139
+  type: 'test'
+  ...
+# Subtest: invalid anchor -1 cannot renew budget
+ok 19 - invalid anchor -1 cannot renew budget
+  ---
+  duration_ms: 1.2493
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts undefined cannot renew budget
+ok 20 - invalid completed attempts undefined cannot renew budget
+  ---
+  duration_ms: 0.3346
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts null cannot renew budget
+ok 21 - invalid completed attempts null cannot renew budget
+  ---
+  duration_ms: 0.216
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 0 cannot renew budget
+ok 22 - invalid completed attempts 0 cannot renew budget
+  ---
+  duration_ms: 0.212
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts -1 cannot renew budget
+ok 23 - invalid completed attempts -1 cannot renew budget
+  ---
+  duration_ms: 0.2074
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 1.5 cannot renew budget
+ok 24 - invalid completed attempts 1.5 cannot renew budget
+  ---
+  duration_ms: 0.1976
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 1 cannot renew budget
+ok 25 - invalid completed attempts 1 cannot renew budget
+  ---
+  duration_ms: 0.2052
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts Infinity cannot renew budget
+ok 26 - invalid completed attempts Infinity cannot renew budget
+  ---
+  duration_ms: 0.2026
+  type: 'test'
+  ...
+# Subtest: invalid completed attempts 9007199254740992 cannot renew budget
+ok 27 - invalid completed attempts 9007199254740992 cannot renew budget
+  ---
+  duration_ms: 0.2002
+  type: 'test'
+  ...
+# Subtest: provider rate-limit minimum is never clipped to the transport delay cap
+ok 28 - provider rate-limit minimum is never clipped to the transport delay cap
+  ---
+  duration_ms: 0.4994
+  type: 'test'
+  ...
+# Subtest: HTTP date hint is a minimum; expired date keeps local floor
+ok 29 - HTTP date hint is a minimum; expired date keeps local floor
+  ---
+  duration_ms: 1.1081
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After null is denied
+ok 30 - malformed Retry-After null is denied
+  ---
+  duration_ms: 0.3867
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After -1 is denied
+ok 31 - malformed Retry-After -1 is denied
+  ---
+  duration_ms: 0.1774
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After NaN is denied
+ok 32 - malformed Retry-After NaN is denied
+  ---
+  duration_ms: 0.1359
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After Infinity is denied
+ok 33 - malformed Retry-After Infinity is denied
+  ---
+  duration_ms: 0.1374
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After [object Object] is denied
+ok 34 - malformed Retry-After [object Object] is denied
+  ---
+  duration_ms: 0.1343
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After  is denied
+ok 35 - malformed Retry-After  is denied
+  ---
+  duration_ms: 0.2981
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After true is denied
+ok 36 - malformed Retry-After true is denied
+  ---
+  duration_ms: 0.1716
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After  is denied
+ok 37 - malformed Retry-After  is denied
+  ---
+  duration_ms: 0.614
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After    is denied
+ok 38 - malformed Retry-After    is denied
+  ---
+  duration_ms: 0.1915
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After tomorrow is denied
+ok 39 - malformed Retry-After tomorrow is denied
+  ---
+  duration_ms: 0.2221
+  type: 'test'
+  ...
+# Subtest: malformed Retry-After xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx is denied
+ok 40 - malformed Retry-After xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx is denied
+  ---
+  duration_ms: 0.1923
+  type: 'test'
+  ...
+# Subtest: malformed direct millisecond hint cannot be hidden by valid seconds hint
+ok 41 - malformed direct millisecond hint cannot be hidden by valid seconds hint
+  ---
+  duration_ms: 0.425
+  type: 'test'
+  ...
+# Subtest: auth-expired requires reauthorization despite retry hint
+ok 42 - auth-expired requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.3448
+  type: 'test'
+  ...
+# Subtest: auth-revoked requires reauthorization despite retry hint
+ok 43 - auth-revoked requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.1842
+  type: 'test'
+  ...
+# Subtest: invalid-credential requires reauthorization despite retry hint
+ok 44 - invalid-credential requires reauthorization despite retry hint
+  ---
+  duration_ms: 0.1471
+  type: 'test'
+  ...
+# Subtest: HTTP 401 requires reauthorization
+ok 45 - HTTP 401 requires reauthorization
+  ---
+  duration_ms: 0.2579
+  type: 'test'
+  ...
+# Subtest: wrong-target cannot be overridden by a transient HTTP status
+ok 46 - wrong-target cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.2789
+  type: 'test'
+  ...
+# Subtest: permission-denied cannot be overridden by a transient HTTP status
+ok 47 - permission-denied cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1302
+  type: 'test'
+  ...
+# Subtest: invalid-scope cannot be overridden by a transient HTTP status
+ok 48 - invalid-scope cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1801
+  type: 'test'
+  ...
+# Subtest: schema-mismatch cannot be overridden by a transient HTTP status
+ok 49 - schema-mismatch cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1154
+  type: 'test'
+  ...
+# Subtest: bad-request cannot be overridden by a transient HTTP status
+ok 50 - bad-request cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1128
+  type: 'test'
+  ...
+# Subtest: write-attempt cannot be overridden by a transient HTTP status
+ok 51 - write-attempt cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1168
+  type: 'test'
+  ...
+# Subtest: credential-missing cannot be overridden by a transient HTTP status
+ok 52 - credential-missing cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.0965
+  type: 'test'
+  ...
+# Subtest: unsupported-operation cannot be overridden by a transient HTTP status
+ok 53 - unsupported-operation cannot be overridden by a transient HTTP status
+  ---
+  duration_ms: 0.1108
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 400 wins over retry hint
+ok 54 - terminal HTTP 400 wins over retry hint
+  ---
+  duration_ms: 0.1862
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 403 wins over retry hint
+ok 55 - terminal HTTP 403 wins over retry hint
+  ---
+  duration_ms: 0.1092
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 404 wins over retry hint
+ok 56 - terminal HTTP 404 wins over retry hint
+  ---
+  duration_ms: 0.1358
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 405 wins over retry hint
+ok 57 - terminal HTTP 405 wins over retry hint
+  ---
+  duration_ms: 0.092
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 409 wins over retry hint
+ok 58 - terminal HTTP 409 wins over retry hint
+  ---
+  duration_ms: 0.0903
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 410 wins over retry hint
+ok 59 - terminal HTTP 410 wins over retry hint
+  ---
+  duration_ms: 0.1019
+  type: 'test'
+  ...
+# Subtest: terminal HTTP 422 wins over retry hint
+ok 60 - terminal HTTP 422 wins over retry hint
+  ---
+  duration_ms: 0.1138
+  type: 'test'
+  ...
+# Subtest: unknown error, raw message and retryable flag never grant retry
+ok 61 - unknown error, raw message and retryable flag never grant retry
+  ---
+  duration_ms: 0.5559
+  type: 'test'
+  ...
+# Subtest: operation write cannot be automatically replayed
+ok 62 - operation write cannot be automatically replayed
+  ---
+  duration_ms: 0.2015
+  type: 'test'
+  ...
+# Subtest: operation authorization cannot be automatically replayed
+ok 63 - operation authorization cannot be automatically replayed
+  ---
+  duration_ms: 0.1026
+  type: 'test'
+  ...
+# Subtest: operation refresh cannot be automatically replayed
+ok 64 - operation refresh cannot be automatically replayed
+  ---
+  duration_ms: 0.1129
+  type: 'test'
+  ...
+# Subtest: operation acknowledge cannot be automatically replayed
+ok 65 - operation acknowledge cannot be automatically replayed
+  ---
+  duration_ms: 0.0903
+  type: 'test'
+  ...
+# Subtest: operation delete cannot be automatically replayed
+ok 66 - operation delete cannot be automatically replayed
+  ---
+  duration_ms: 0.086
+  type: 'test'
+  ...
+# Subtest: operation proof cannot be automatically replayed
+ok 67 - operation proof cannot be automatically replayed
+  ---
+  duration_ms: 0.0877
+  type: 'test'
+  ...
+# Subtest: operation  cannot be automatically replayed
+ok 68 - operation  cannot be automatically replayed
+  ---
+  duration_ms: 0.0881
+  type: 'test'
+  ...
+# Subtest: authorization must be current and cannot be replaced by a transport digest
+ok 69 - authorization must be current and cannot be replaced by a transport digest
+  ---
+  duration_ms: 0.3945
+  type: 'test'
+  ...
+# Subtest: webhook duplicate-sensitive proof requires operation key
+ok 70 - webhook duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.2528
+  type: 'test'
+  ...
+# Subtest: queue-stream duplicate-sensitive proof requires operation key
+ok 71 - queue-stream duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.1132
+  type: 'test'
+  ...
+# Subtest: secure-file duplicate-sensitive proof requires operation key
+ok 72 - secure-file duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.1
+  type: 'test'
+  ...
+# Subtest: on-prem-agent duplicate-sensitive proof requires operation key
+ok 73 - on-prem-agent duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.1217
+  type: 'test'
+  ...
+# Subtest: ipaas duplicate-sensitive proof requires operation key
+ok 74 - ipaas duplicate-sensitive proof requires operation key
+  ---
+  duration_ms: 0.1131
+  type: 'test'
+  ...
+# Subtest: malformed operation key is denied without echoing it
+ok 75 - malformed operation key is denied without echoing it
+  ---
+  duration_ms: 0.271
+  type: 'test'
+  ...
+# Subtest: reviewed policy can tighten but not loosen ceilings
+ok 76 - reviewed policy can tighten but not loosen ceilings
+  ---
+  duration_ms: 0.583
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"unknown","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+ok 77 - malformed review {"transport":"unknown","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+  ---
+  duration_ms: 0.1761
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"API","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+ok 78 - malformed review {"transport":"API","reviewedDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"} is denied
+  ---
+  duration_ms: 0.1552
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"api","reviewedDigest":""} is denied
+ok 79 - malformed review {"transport":"api","reviewedDigest":""} is denied
+  ---
+  duration_ms: 0.1028
+  type: 'test'
+  ...
+# Subtest: malformed review {"transport":"api","reviewedDigest":"unsigned"} is denied
+ok 80 - malformed review {"transport":"api","reviewedDigest":"unsigned"} is denied
+  ---
+  duration_ms: 0.1572
+  type: 'test'
+  ...
+# Subtest: records reject accessors without executing code
+ok 81 - records reject accessors without executing code
+  ---
+  duration_ms: 0.4172
+  type: 'test'
+  ...
+# Subtest: coercion hooks and inherited records do not execute
+ok 82 - coercion hooks and inherited records do not execute
+  ---
+  duration_ms: 0.3495
+  type: 'test'
+  ...
+# Subtest: malformed status or clock does not produce a schedule
+ok 83 - malformed status or clock does not produce a schedule
+  ---
+  duration_ms: 0.5179
+  type: 'test'
+  ...
+# Subtest: input and nested reviewed policy remain unchanged
+ok 84 - input and nested reviewed policy remain unchanged
+  ---
+  duration_ms: 1.6061
+  type: 'test'
+  ...
+1..84
+# tests 84
+# suites 0
+# pass 84
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 290.8676

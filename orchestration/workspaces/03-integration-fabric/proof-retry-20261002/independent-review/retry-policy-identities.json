@@ -1,0 +1,135 @@
+{
+  "verified": true,
+  "manifestSha256": "3afcd43951c2bfa4c212766c8c3edc5a6c5a6aeb5b6c3fdde14f7f7bf99b56d0",
+  "files": [
+    {
+      "path": "integration/runtime/provider-proof-retry-policy.cjs",
+      "mode": "100644",
+      "localPath": "work/lane03-retry-policy/source/integration/runtime/provider-proof-retry-policy.cjs",
+      "localBlob": "46aae02be5d521aa0446aa3af9e615b19eea7f91",
+      "sha256": "bbc222ce5fb4c9cab035e987e6ff3434072d04284832cf0316c2fc6495cd02c9",
+      "bytes": 8766,
+      "disposition": "ADAPTED_PORT",
+      "sourceBlob": null,
+      "sourceIdentical": false,
+      "sourceProvenancePaths": [
+        "evidence/historical-transport-runtime-policy.cjs",
+        "evidence/historical-provider-proof-retry-policy.cjs"
+      ]
+    },
+    {
+      "path": "integration/runtime/provider-proof-retry-policy.test.cjs",
+      "mode": "100644",
+      "localPath": "work/lane03-retry-policy/source/integration/runtime/provider-proof-retry-policy.test.cjs",
+      "localBlob": "6c6ca54b31c1a59710cf55768ae092c59cab1a1d",
+      "sha256": "0d9c9989f53634d4b2da3d3da420c90bdff6c5304ea48ef2d8c88f5e365a9e59",
+      "bytes": 8724,
+      "disposition": "ADAPTED_PORT",
+      "sourceBlob": null,
+      "sourceIdentical": false,
+      "sourceProvenancePaths": [
+        "port-design.md",
+        "evidence/historical-red.tap"
+      ]
+    }
+  ],
+  "provenance": [
+    {
+      "sourceSha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+      "path": "integration/runtime/transport-runtime-policy.cjs",
+      "sourceBlob": "3116d01b6fc15b323ad70cfcb7123efbbc26b6b4",
+      "evidencePath": "work/lane03-retry-policy/evidence/historical-transport-runtime-policy.cjs",
+      "bytes": 12374
+    },
+    {
+      "sourceSha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+      "path": "integration/runtime/provider-proof-retry-policy.cjs",
+      "sourceBlob": "178f63e41e53b494bd99db98164b741f4776226b",
+      "evidencePath": "work/lane03-retry-policy/evidence/historical-provider-proof-retry-policy.cjs",
+      "bytes": 4083
+    },
+    {
+      "sourceSha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+      "path": "integration/runtime/provider-proof-maintenance-runner.cjs",
+      "sourceBlob": "94ecd27e67efab1978a4a1b7918c034d7591e664",
+      "evidencePath": "work/lane03-retry-policy/evidence/historical-provider-proof-maintenance-runner.cjs",
+      "bytes": 2927
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "sourceBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "evidencePath": "work/lane03-retry-policy/evidence/frozen-autonomous-integration-hub.cjs",
+      "bytes": 61466
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "integration/runtime/gusto-company-connector.cjs",
+      "sourceBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "evidencePath": "work/lane03-retry-policy/evidence/frozen-gusto-company-connector.cjs",
+      "bytes": 26119
+    }
+  ],
+  "ownerLogsVerified": [
+    {
+      "path": "work/lane03-retry-policy/evidence/historical-red.tap",
+      "counts": {
+        "tests": 84,
+        "pass": 35,
+        "fail": 49,
+        "skipped": 0
+      },
+      "sha256": "33d61f4575e756df03b001695b3e6d9978e386ea0d2878df545c79f43d6bc186"
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/overflow-red.tap",
+      "counts": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0
+      },
+      "sha256": "5eedafa62cf564048f31638ebf78c39ae08a4b1856ca8bf8509c7be28f911156"
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/green.tap",
+      "counts": {
+        "tests": 84,
+        "pass": 84,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "bfbd93d4ace782707834c012832bf43c1b0e7c2c22da690f9f14ed0fdd6c2015"
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/green-final.tap",
+      "counts": {
+        "tests": 87,
+        "pass": 87,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "ba86bbb2ab1a5426a10503ad62ecd6314cb8316d003c160bd5ac0988d82eda83"
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/combined-canonical.tap",
+      "counts": {
+        "tests": 139,
+        "pass": 138,
+        "fail": 1,
+        "skipped": 0
+      },
+      "sha256": "43aae5e58e619c61d814425aa4b41656e4a56210a64a28aeb7451866a8b86bfa"
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/baseline-cleanup-reproduction.tap",
+      "counts": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0
+      },
+      "sha256": "31531542888ae80d2eb1adeaadca18e76a71898eaba7f23825fa2b6f806dedf1"
+    }
+  ]
+}

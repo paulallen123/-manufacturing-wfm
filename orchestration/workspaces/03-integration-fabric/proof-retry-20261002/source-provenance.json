@@ -1,0 +1,37 @@
+[
+  {
+    "sourceSha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+    "path": "integration/runtime/transport-runtime-policy.cjs",
+    "sourceBlob": "3116d01b6fc15b323ad70cfcb7123efbbc26b6b4",
+    "evidencePath": "work/lane03-retry-policy/evidence/historical-transport-runtime-policy.cjs",
+    "bytes": 12374
+  },
+  {
+    "sourceSha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+    "path": "integration/runtime/provider-proof-retry-policy.cjs",
+    "sourceBlob": "178f63e41e53b494bd99db98164b741f4776226b",
+    "evidencePath": "work/lane03-retry-policy/evidence/historical-provider-proof-retry-policy.cjs",
+    "bytes": 4083
+  },
+  {
+    "sourceSha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+    "path": "integration/runtime/provider-proof-maintenance-runner.cjs",
+    "sourceBlob": "94ecd27e67efab1978a4a1b7918c034d7591e664",
+    "evidencePath": "work/lane03-retry-policy/evidence/historical-provider-proof-maintenance-runner.cjs",
+    "bytes": 2927
+  },
+  {
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "path": "integration/runtime/autonomous-integration-hub.cjs",
+    "sourceBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+    "evidencePath": "work/lane03-retry-policy/evidence/frozen-autonomous-integration-hub.cjs",
+    "bytes": 61466
+  },
+  {
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "path": "integration/runtime/gusto-company-connector.cjs",
+    "sourceBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+    "evidencePath": "work/lane03-retry-policy/evidence/frozen-gusto-company-connector.cjs",
+    "bytes": 26119
+  }
+]

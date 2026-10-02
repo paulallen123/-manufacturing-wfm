@@ -1,0 +1,101 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "owner": "inventory_edges",
+  "lane": "lane03",
+  "capabilityId": "edge03-cont-transport-governed-proof-retry",
+  "runtimeWired": false,
+  "hostedProof": false,
+  "providerProof": false,
+  "node": "v22.23.2",
+  "logs": [
+    {
+      "path": "work/lane03-retry-policy/evidence/historical-red.tap",
+      "bytes": 148578,
+      "sha256": "33d61f4575e756df03b001695b3e6d9978e386ea0d2878df545c79f43d6bc186",
+      "counts": {
+        "tests": 84,
+        "pass": 35,
+        "fail": 49,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/overflow-red.tap",
+      "bytes": 2478,
+      "sha256": "5eedafa62cf564048f31638ebf78c39ae08a4b1856ca8bf8509c7be28f911156",
+      "counts": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/green.tap",
+      "bytes": 31132,
+      "sha256": "bfbd93d4ace782707834c012832bf43c1b0e7c2c22da690f9f14ed0fdd6c2015",
+      "counts": {
+        "tests": 84,
+        "pass": 84,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/green-final.tap",
+      "bytes": 32222,
+      "sha256": "ba86bbb2ab1a5426a10503ad62ecd6314cb8316d003c160bd5ac0988d82eda83",
+      "counts": {
+        "tests": 87,
+        "pass": 87,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/combined-canonical.tap",
+      "bytes": 61968,
+      "sha256": "43aae5e58e619c61d814425aa4b41656e4a56210a64a28aeb7451866a8b86bfa",
+      "counts": {
+        "tests": 139,
+        "pass": 138,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane03-retry-policy/evidence/baseline-cleanup-reproduction.tap",
+      "bytes": 3078,
+      "sha256": "31531542888ae80d2eb1adeaadca18e76a71898eaba7f23825fa2b6f806dedf1",
+      "counts": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0
+      }
+    }
+  ],
+  "syntaxChecks": {
+    "module": 0,
+    "test": 0
+  },
+  "isolatedSuite": {
+    "tests": 87,
+    "pass": 87,
+    "fail": 0,
+    "skip": 0
+  },
+  "combinedCanonicalSuite": {
+    "tests": 139,
+    "pass": 138,
+    "fail": 1,
+    "skip": 0,
+    "limitation": "unchanged Gusto test Windows EBUSY cleanup hook; independently reproduced baseline-only"
+  },
+  "independentReview": "PENDING",
+  "wholeRuntimeAssemblyAdversarialProof": "PENDING",
+  "manifestSha256": "3afcd43951c2bfa4c212766c8c3edc5a6c5a6aeb5b6c3fdde14f7f7bf99b56d0"
+}
