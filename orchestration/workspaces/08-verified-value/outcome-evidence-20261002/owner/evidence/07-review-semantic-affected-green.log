@@ -1,0 +1,208 @@
+TAP version 13
+# Subtest: episode is deterministic regardless of option order
+ok 1 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 35.5776
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 2 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.8268
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 3 - do-nothing option is mandatory
+  ---
+  duration_ms: 1.2371
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 4 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 1.8694
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 5 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 0.9508
+  type: 'test'
+  ...
+# Subtest: identical supplied proof content collapses independently of object identity
+ok 6 - identical supplied proof content collapses independently of object identity
+  ---
+  duration_ms: 34.8213
+  type: 'test'
+  ...
+# Subtest: different currencies and declared classes remain distinct without summing
+ok 7 - different currencies and declared classes remain distinct without summing
+  ---
+  duration_ms: 5.3928
+  type: 'test'
+  ...
+# Subtest: divergent content for one episode metric class and window is visibly ambiguous
+ok 8 - divergent content for one episode metric class and window is visibly ambiguous
+  ---
+  duration_ms: 3.3035
+  type: 'test'
+  ...
+# Subtest: finance reference reuse is a warning rather than an allocation or realised total
+ok 9 - finance reference reuse is a warning rather than an allocation or realised total
+  ---
+  duration_ms: 2.401
+  type: 'test'
+  ...
+# Subtest: tenant and digest tampering reject without altering the source declarations
+ok 10 - tenant and digest tampering reject without altering the source declarations
+  ---
+  duration_ms: 2.8162
+  type: 'test'
+  ...
+# Subtest: internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+ok 11 - internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+  ---
+  duration_ms: 1.969
+  type: 'test'
+  ...
+# Subtest: getters proxies serializers and nonfinite declaration data reject before caller execution
+ok 12 - getters proxies serializers and nonfinite declaration data reject before caller execution
+  ---
+  duration_ms: 1.9465
+  type: 'test'
+  ...
+# Subtest: output is detached and immutable and empty data does not invent outcomes
+ok 13 - output is detached and immutable and empty data does not invent outcomes
+  ---
+  duration_ms: 1.0657
+  type: 'test'
+  ...
+# Subtest: same semantic window detects divergent declarations independent of object property order
+ok 14 - same semantic window detects divergent declarations independent of object property order
+  ---
+  duration_ms: 1.9104
+  type: 'test'
+  ...
+# Subtest: reject rehashed wrong prediction error that canonical producer never emits
+ok 15 - reject rehashed wrong prediction error that canonical producer never emits
+  ---
+  duration_ms: 1.9717
+  type: 'test'
+  ...
+# Subtest: reject rehashed string prediction error that canonical producer never emits
+ok 16 - reject rehashed string prediction error that canonical producer never emits
+  ---
+  duration_ms: 0.8396
+  type: 'test'
+  ...
+# Subtest: reject rehashed missing prediction error that canonical producer never emits
+ok 17 - reject rehashed missing prediction error that canonical producer never emits
+  ---
+  duration_ms: 0.7983
+  type: 'test'
+  ...
+# Subtest: reject rehashed missing observed time that canonical producer never emits
+ok 18 - reject rehashed missing observed time that canonical producer never emits
+  ---
+  duration_ms: 0.6771
+  type: 'test'
+  ...
+# Subtest: reject rehashed impossible observed date that canonical producer never emits
+ok 19 - reject rehashed impossible observed date that canonical producer never emits
+  ---
+  duration_ms: 0.707
+  type: 'test'
+  ...
+# Subtest: reject rehashed malformed observed time that canonical producer never emits
+ok 20 - reject rehashed malformed observed time that canonical producer never emits
+  ---
+  duration_ms: 1.1705
+  type: 'test'
+  ...
+# Subtest: reject rehashed impossible financial window that canonical producer never emits
+ok 21 - reject rehashed impossible financial window that canonical producer never emits
+  ---
+  duration_ms: 1.1873
+  type: 'test'
+  ...
+# Subtest: reject rehashed numeric financial window that canonical producer never emits
+ok 22 - reject rehashed numeric financial window that canonical producer never emits
+  ---
+  duration_ms: 1.2127
+  type: 'test'
+  ...
+# Subtest: reject rehashed simulation financial metadata that canonical producer never emits
+ok 23 - reject rehashed simulation financial metadata that canonical producer never emits
+  ---
+  duration_ms: 1.0901
+  type: 'test'
+  ...
+# Subtest: canonical finite rounded prediction error and ISO-normalized producer output stay valid
+ok 24 - canonical finite rounded prediction error and ISO-normalized producer output stay valid
+  ---
+  duration_ms: 1.003
+  type: 'test'
+  ...
+# Subtest: canonical simulation omits currency and window and remains a simulation declaration
+ok 25 - canonical simulation omits currency and window and remains a simulation declaration
+  ---
+  duration_ms: 0.7217
+  type: 'test'
+  ...
+# Subtest: simulation can never become learning-eligible or verified value
+ok 26 - simulation can never become learning-eligible or verified value
+  ---
+  duration_ms: 30.9736
+  type: 'test'
+  ...
+# Subtest: operational proof requires independent baseline and result evidence
+ok 27 - operational proof requires independent baseline and result evidence
+  ---
+  duration_ms: 1.8692
+  type: 'test'
+  ...
+# Subtest: cost improvement maps lower actual cost to positive learning delta
+ok 28 - cost improvement maps lower actual cost to positive learning delta
+  ---
+  duration_ms: 1.2361
+  type: 'test'
+  ...
+# Subtest: realised financial value requires finance evidence currency and a bounded window
+ok 29 - realised financial value requires finance evidence currency and a bounded window
+  ---
+  duration_ms: 1.2009
+  type: 'test'
+  ...
+# Subtest: non-financial KPI cannot be labelled realised financial value
+ok 30 - non-financial KPI cannot be labelled realised financial value
+  ---
+  duration_ms: 0.8316
+  type: 'test'
+  ...
+# Subtest: keeps realised outcome distinct from the prediction
+ok 31 - keeps realised outcome distinct from the prediction
+  ---
+  duration_ms: 1.4557
+  type: 'test'
+  ...
+# Subtest: refuses to learn from non-authoritative financial outcomes
+ok 32 - refuses to learn from non-authoritative financial outcomes
+  ---
+  duration_ms: 0.2739
+  type: 'test'
+  ...
+# Subtest: learning summary is evidence-only and cannot mutate decision authority
+ok 33 - learning summary is evidence-only and cannot mutate decision authority
+  ---
+  duration_ms: 0.2988
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 251.8375

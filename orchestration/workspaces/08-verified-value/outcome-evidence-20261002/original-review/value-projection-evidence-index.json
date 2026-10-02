@@ -1,0 +1,87 @@
+{
+  "sourceIdentities": [
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "9b0ccf4b7a6f9a074b711d0add1713686f3e8729",
+      "sha256": "7f17aa684e700a125fa9f4a08d814a3d2f5bbfed9c6c7d8632dff53f471cfada",
+      "bytes": 6484,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "4aec0277204a33f5ca06609a85e684730719125a",
+      "sha256": "7c28f8a0750d67410c4074c3e91673f9b0ac1e5d5ea0f23b79af1aace40c9c58",
+      "bytes": 5712,
+      "change": "ADD"
+    }
+  ],
+  "status": "HOLD_TWO_MATERIAL_P2",
+  "evidence": [
+    {
+      "path": "work/trust_review/value-projection-review.md",
+      "bytes": 3109,
+      "sha256": "5c9f611e9b895acc9fa32912f9e7c3e44fddb7f5fef1cb00a928e0fbcc043d5e"
+    },
+    {
+      "path": "work/trust_review/value-projection-findings.json",
+      "bytes": 64686,
+      "sha256": "4de25694ec403f4ed3f2f57959fa511ca35a17e9d6e7d444590ad1db5fc13e86"
+    },
+    {
+      "path": "work/trust_review/value-projection-identities.json",
+      "bytes": 6608,
+      "sha256": "0f48d2f300cc920597c2944433cd3c6d6da2989a3740940afe2ddea0ddb9251d"
+    },
+    {
+      "path": "work/trust_review/value-projection.held-out.test.cjs",
+      "bytes": 8622,
+      "sha256": "9fcbbaed6c9ff1fff88d1ecfa67272ff616eac0e5a0c73b0af5cb6ef65588787"
+    },
+    {
+      "path": "work/trust_review/value-projection-held-out.node22.tap",
+      "bytes": 15236,
+      "sha256": "e2c0135a625eb9001dcccc8de78ae29afed375a1176b5e499442ffa07d3775ce"
+    },
+    {
+      "path": "work/trust_review/value-projection-held-out.run.json",
+      "bytes": 543,
+      "sha256": "111c78780fabd799346dc8d8c94781ca0cf96d18f20040171a75d10c8a716fcb"
+    },
+    {
+      "path": "work/trust_review/value-projection-source.node22.tap",
+      "bytes": 4375,
+      "sha256": "6121fe3fdfcb6882eaaf2b7d72b26014cb195fdaaf0698f80b1f81a172bd87fd"
+    },
+    {
+      "path": "work/trust_review/value-projection-source.run.json",
+      "bytes": 1046,
+      "sha256": "594a7932c62e0c8ce4d3694f20e7927662d5d369a9c0a8000c5513f07efb31c8"
+    },
+    {
+      "path": "work/trust_review/value-projection.observations.json",
+      "bytes": 46248,
+      "sha256": "34da39ec35b059e4516eb43c5d2924a46db894425f9e6b8bf55dffe7035cb1fd"
+    },
+    {
+      "path": "work/trust_review/run-value-projection-review.cjs",
+      "bytes": 2694,
+      "sha256": "dbe41507351aa21f6ee9ab1bd0da85869317703fdb9b498fa40ffdf3cfca88fa"
+    },
+    {
+      "path": "work/trust_review/seal-value-projection-review.cjs",
+      "bytes": 10960,
+      "sha256": "617f82795a61f27960e5913181765cadb89d10e8bf53684a087af6464ccd4633"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    }
+  ]
+}

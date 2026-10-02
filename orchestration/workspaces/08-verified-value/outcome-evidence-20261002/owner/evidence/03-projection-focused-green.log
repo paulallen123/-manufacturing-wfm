@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: identical supplied proof content collapses independently of object identity
+ok 1 - identical supplied proof content collapses independently of object identity
+  ---
+  duration_ms: 26.9769
+  type: 'test'
+  ...
+# Subtest: different currencies and declared classes remain distinct without summing
+ok 2 - different currencies and declared classes remain distinct without summing
+  ---
+  duration_ms: 3.0418
+  type: 'test'
+  ...
+# Subtest: divergent content for one episode metric class and window is visibly ambiguous
+ok 3 - divergent content for one episode metric class and window is visibly ambiguous
+  ---
+  duration_ms: 3.8252
+  type: 'test'
+  ...
+# Subtest: finance reference reuse is a warning rather than an allocation or realised total
+ok 4 - finance reference reuse is a warning rather than an allocation or realised total
+  ---
+  duration_ms: 2.3863
+  type: 'test'
+  ...
+# Subtest: tenant and digest tampering reject without altering the source declarations
+ok 5 - tenant and digest tampering reject without altering the source declarations
+  ---
+  duration_ms: 1.5128
+  type: 'test'
+  ...
+# Subtest: internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+ok 6 - internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+  ---
+  duration_ms: 1.35
+  type: 'test'
+  ...
+# Subtest: getters proxies serializers and nonfinite declaration data reject before caller execution
+ok 7 - getters proxies serializers and nonfinite declaration data reject before caller execution
+  ---
+  duration_ms: 1.8935
+  type: 'test'
+  ...
+# Subtest: output is detached and immutable and empty data does not invent outcomes
+ok 8 - output is detached and immutable and empty data does not invent outcomes
+  ---
+  duration_ms: 1.6937
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 167.2408

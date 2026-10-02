@@ -1,0 +1,12 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "historical-duplicate-control.mjs"
+  ],
+  "exitCode": 1,
+  "networkBlocked": true,
+  "logSha256": "d9e3fd9e66c58fa43432fa5545b482bb1156a97a3dd0dfdcade68e14ffabe6be"
+}

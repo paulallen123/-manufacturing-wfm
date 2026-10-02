@@ -1,0 +1,19 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-proof.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-episode.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\test\\frontier\\cash-to-capacity-outcome.test.mjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true,
+  "logSha256": "6121fe3fdfcb6882eaaf2b7d72b26014cb195fdaaf0698f80b1f81a172bd87fd",
+  "customerProof": false
+}

@@ -1,0 +1,16 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs"
+  ],
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true,
+  "logSha256": "e2c0135a625eb9001dcccc8de78ae29afed375a1176b5e499442ffa07d3775ce",
+  "customerProof": false
+}

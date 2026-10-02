@@ -1,0 +1,276 @@
+TAP version 13
+# Subtest: identical supplied proof content collapses independently of object identity
+ok 1 - identical supplied proof content collapses independently of object identity
+  ---
+  duration_ms: 53.9306
+  type: 'test'
+  ...
+# Subtest: different currencies and declared classes remain distinct without summing
+ok 2 - different currencies and declared classes remain distinct without summing
+  ---
+  duration_ms: 3.1611
+  type: 'test'
+  ...
+# Subtest: divergent content for one episode metric class and window is visibly ambiguous
+ok 3 - divergent content for one episode metric class and window is visibly ambiguous
+  ---
+  duration_ms: 3.8374
+  type: 'test'
+  ...
+# Subtest: finance reference reuse is a warning rather than an allocation or realised total
+ok 4 - finance reference reuse is a warning rather than an allocation or realised total
+  ---
+  duration_ms: 1.9938
+  type: 'test'
+  ...
+# Subtest: tenant and digest tampering reject without altering the source declarations
+ok 5 - tenant and digest tampering reject without altering the source declarations
+  ---
+  duration_ms: 2.1235
+  type: 'test'
+  ...
+# Subtest: internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+ok 6 - internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+  ---
+  duration_ms: 1.4061
+  type: 'test'
+  ...
+# Subtest: getters proxies serializers and nonfinite declaration data reject before caller execution
+ok 7 - getters proxies serializers and nonfinite declaration data reject before caller execution
+  ---
+  duration_ms: 1.744
+  type: 'test'
+  ...
+# Subtest: output is detached and immutable and empty data does not invent outcomes
+ok 8 - output is detached and immutable and empty data does not invent outcomes
+  ---
+  duration_ms: 1.3122
+  type: 'test'
+  ...
+# Subtest: same semantic window detects divergent declarations independent of object property order
+not ok 9 - same semantic window detects divergent declarations independent of object property order
+  ---
+  duration_ms: 4.8494
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:45:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:47:104)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed wrong prediction error that canonical producer never emits
+not ok 10 - reject rehashed wrong prediction error that canonical producer never emits
+  ---
+  duration_ms: 1.7781
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed string prediction error that canonical producer never emits
+not ok 11 - reject rehashed string prediction error that canonical producer never emits
+  ---
+  duration_ms: 1.0633
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed missing prediction error that canonical producer never emits
+not ok 12 - reject rehashed missing prediction error that canonical producer never emits
+  ---
+  duration_ms: 0.8072
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed missing observed time that canonical producer never emits
+not ok 13 - reject rehashed missing observed time that canonical producer never emits
+  ---
+  duration_ms: 0.7867
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed impossible observed date that canonical producer never emits
+not ok 14 - reject rehashed impossible observed date that canonical producer never emits
+  ---
+  duration_ms: 0.7205
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed malformed observed time that canonical producer never emits
+not ok 15 - reject rehashed malformed observed time that canonical producer never emits
+  ---
+  duration_ms: 0.7655
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed impossible financial window that canonical producer never emits
+not ok 16 - reject rehashed impossible financial window that canonical producer never emits
+  ---
+  duration_ms: 0.7747
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed numeric financial window that canonical producer never emits
+not ok 17 - reject rehashed numeric financial window that canonical producer never emits
+  ---
+  duration_ms: 0.8627
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reject rehashed simulation financial metadata that canonical producer never emits
+not ok 18 - reject rehashed simulation financial metadata that canonical producer never emits
+  ---
+  duration_ms: 1.0172
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:59:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:60:141)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: canonical finite rounded prediction error and ISO-normalized producer output stay valid
+ok 19 - canonical finite rounded prediction error and ISO-normalized producer output stay valid
+  ---
+  duration_ms: 0.7592
+  type: 'test'
+  ...
+# Subtest: canonical simulation omits currency and window and remains a simulation declaration
+ok 20 - canonical simulation omits currency and window and remains a simulation declaration
+  ---
+  duration_ms: 0.6361
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 10
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 227.2178

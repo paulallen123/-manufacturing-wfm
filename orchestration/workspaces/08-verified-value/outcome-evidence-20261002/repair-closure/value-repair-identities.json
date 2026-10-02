@@ -1,0 +1,195 @@
+{
+  "verified": true,
+  "shipping": [
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "80c9d72a90f6c0dab549b44ca6e2ce67810e4d3d",
+      "sha256": "29162500036ffe96756b5731dcdb875d81c534444a50ae51b335445403d3379c",
+      "bytes": 7363,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "d031d2e352590f9c02400cf02af150461dc1feb5",
+      "sha256": "e12393808201eb5d0503ac30c4d821b90f836fcf83c7b778c6e5201f3b8e9274",
+      "bytes": 8338,
+      "change": "ADD"
+    }
+  ],
+  "requiredSingleHelper": {
+    "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
+    "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\implementation\\runtime\\inert-finite-json.cjs",
+    "mode": "100644",
+    "sourceBlob": null,
+    "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+    "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+    "bytes": 1981,
+    "change": "ADD",
+    "owner": "lane01 bounded projection boundary repair",
+    "publishByThisLane": false,
+    "verificationOnlyMirror": true,
+    "integrationRequirement": "Exact helper must ship once before/together integration; no standalone frozen-base capsule without it"
+  },
+  "frozenDependenciesUnchanged": [
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "mode": "100644",
+      "blob": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "bytes": 7146,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.test.cjs",
+      "mode": "100644",
+      "blob": "376e9d05751fa6bd749144a260416b8a6d9d7c7b",
+      "bytes": 4661,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "mode": "100644",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "mode": "100644",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "bytes": 3042,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "src/frontier/cash-to-capacity-outcome.mjs",
+      "mode": "100644",
+      "blob": "e8edf6e141368176ccea7ccd9bbfb6a43b4b9c28",
+      "bytes": 2702,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "test/frontier/cash-to-capacity-outcome.test.mjs",
+      "mode": "100644",
+      "blob": "7fe6a92b9d05e56780f023c869ba4bd32b34d34b",
+      "bytes": 1354,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "product-factory/features/verified-value-ledger.json",
+      "mode": "100644",
+      "blob": "a0a6e87d51b88cb44898eb107feea651a7f12c91",
+      "bytes": 2218,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "COMPARISON_EVIDENCE_ONLY"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "mode": "100644",
+      "blob": "7d19861571d1cf63a3cde32142e39f1e6fa84cf3",
+      "bytes": 70579,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "COMPARISON_EVIDENCE_ONLY"
+    }
+  ],
+  "ownerRepairEvidenceVerified": [
+    {
+      "path": "evidence/01-historical-duplicate-red.json",
+      "blob": "d8eb8a1455b9116f80504d2933bfda9be9c0872b",
+      "sha256": "4d6247a7dee584768748ae5a9791b568577c3fbe86c1bd591702a4f91f87b9c5",
+      "bytes": 362
+    },
+    {
+      "path": "evidence/01-historical-duplicate-red.log",
+      "blob": "7c835671a8cf8a316bf6f5313f25759aeb80c07f",
+      "sha256": "d9e3fd9e66c58fa43432fa5545b482bb1156a97a3dd0dfdcade68e14ffabe6be",
+      "bytes": 1123
+    },
+    {
+      "path": "evidence/02-projection-contract-red.json",
+      "blob": "f88bfd5e67b581147cb2c1f353351f21454c4c1b",
+      "sha256": "568454bd2c265a5bd3c3e0083619809427069c4223505d43f6d2b84f10ef932f",
+      "bytes": 394
+    },
+    {
+      "path": "evidence/02-projection-contract-red.log",
+      "blob": "4e19d713f3e8a51c8bbb013c6d84aff5add589e4",
+      "sha256": "92aa64d2955818a24b9fbd8f7d35ad379c4d8cbecdf0a790672ceae215d58115",
+      "bytes": 12207
+    },
+    {
+      "path": "evidence/03-projection-focused-green.json",
+      "blob": "5a5fd8f21d7ae08434456bd7102c10ae9c5625b2",
+      "sha256": "ef84a9fc040c1eec10332f1f90c7c0fc2f9d1a9d24c17ba35f6ee76bb5258663",
+      "bytes": 394
+    },
+    {
+      "path": "evidence/03-projection-focused-green.log",
+      "blob": "8a2656a404818d4afba1eb141bce7617cc11b835",
+      "sha256": "ab176fb0f2f951055811032e29189a5bba47e0a5ef2667a7a666d1261e966d2e",
+      "bytes": 1934
+    },
+    {
+      "path": "evidence/04-projection-affected-green.json",
+      "blob": "5f3ec9e237686ef5560a1cc547dd6d13ad0ec1f7",
+      "sha256": "0d32497e0349da5c547c6b64aac4842ac044e98710c6a972521dbf253e9bffbf",
+      "bytes": 559
+    },
+    {
+      "path": "evidence/04-projection-affected-green.log",
+      "blob": "9448053b985090772bb9838a17df7fd89e8519e4",
+      "sha256": "16bfbb4a4bec1e5a3f6d13446288fae47edcc3a8592cde9b768c069697e9f67c",
+      "bytes": 4375
+    },
+    {
+      "path": "evidence/05-review-semantic-red.json",
+      "blob": "2f21b87222a247b69e53622e480784272296501a",
+      "sha256": "070205232380296e2b24d8f73269f16da0d9dfa30dbf531e6cc8278a21137f0a",
+      "bytes": 394
+    },
+    {
+      "path": "evidence/05-review-semantic-red.log",
+      "blob": "0ca0dc8e7cf0781e3e4108d613294c401129c586",
+      "sha256": "81437658bfcd7d4c919a78e6a3df4ce900e1681102c536c1f91cbf30db0b55e8",
+      "bytes": 13762
+    },
+    {
+      "path": "evidence/06-review-semantic-focused-green.json",
+      "blob": "e082edf77fd3e25f8486119724374c025f6768b9",
+      "sha256": "136581c900d68445fcc6ac963a8509ae3a90cececb8feff62ccc7391b610891d",
+      "bytes": 394
+    },
+    {
+      "path": "evidence/06-review-semantic-focused-green.log",
+      "blob": "109e48030cade5a10dd299c95a123b16b58a1e89",
+      "sha256": "d541118fe7edcca8bc4b56eadbda5253fe33582283f6585c124eddc9a26baad2",
+      "bytes": 4661
+    },
+    {
+      "path": "evidence/07-review-semantic-affected-green.json",
+      "blob": "1eed440172747af9a9f6b2de3e059ee1b2e9c3e8",
+      "sha256": "4412978612caf697fc59855d56247a22d66222f2361b58a1295752b04e172529",
+      "bytes": 559
+    },
+    {
+      "path": "evidence/07-review-semantic-affected-green.log",
+      "blob": "50e4f217975dce85cbaae52c5c6adb9823d5e227",
+      "sha256": "bcfbea62dfa9aead15e3f3d8e55417dfaf7ca82e07d201a0ca856c5820da8f6f",
+      "bytes": 7100
+    }
+  ],
+  "sourceBaseline": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "product019": "IN_PROGRESS",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null
+}

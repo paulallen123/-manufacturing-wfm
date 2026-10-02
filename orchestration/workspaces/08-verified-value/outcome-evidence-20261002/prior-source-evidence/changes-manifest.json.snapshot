@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "lane": "08",
+  "capabilityId": "product-019",
+  "classification": "EVOLVE",
+  "state": "IN_PROGRESS",
+  "componentProofState": "TESTED",
+  "proofScope": "ISOLATED_LOCAL_SOURCE_CONTRACT_ONLY",
+  "frozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "sourcePR": 205,
+  "sourceSha": "65fc59dadba377bce5fc68a88dc536261a5e68be",
+  "sourceBranch": "evolution/factory-evidence-kernel-20260920-1146",
+  "sourcePath": "platform/optimisation/savings-engine.mjs",
+  "sourceBlob": "ebd801c481ddfbe623a6ad55bc3cb5071e924fac",
+  "canonicalOwner": "Existing DecisionOutcomeProof; projection audits supplied content only",
+  "files": [
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "9b0ccf4b7a6f9a074b711d0add1713686f3e8729",
+      "sha256": "7f17aa684e700a125fa9f4a08d814a3d2f5bbfed9c6c7d8632dff53f471cfada",
+      "bytes": 6484,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "4aec0277204a33f5ca06609a85e684730719125a",
+      "sha256": "7c28f8a0750d67410c4074c3e91673f9b0ac1e5d5ea0f23b79af1aace40c9c58",
+      "bytes": 5712,
+      "change": "ADD"
+    }
+  ],
+  "shippingTargets": [
+    "operations/runtime/decision-outcome-evidence-projection.cjs",
+    "operations/runtime/decision-outcome-evidence-projection.test.cjs"
+  ],
+  "addedBytes": 12196,
+  "sharedProductChangedBytes": 0,
+  "requiredProposalDependencies": [
+    {
+      "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\implementation\\runtime\\inert-finite-json.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "bytes": 1981,
+      "change": "ADD",
+      "owner": "lane01 bounded projection boundary repair",
+      "publishByThisLane": false,
+      "verificationOnlyMirror": true,
+      "integrationRequirement": "Exact helper must ship once before/together integration; no standalone frozen-base capsule without it"
+    }
+  ],
+  "unchangedFrozenDependencies": [
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "mode": "100644",
+      "blob": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "bytes": 7146,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.test.cjs",
+      "mode": "100644",
+      "blob": "376e9d05751fa6bd749144a260416b8a6d9d7c7b",
+      "bytes": 4661,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "mode": "100644",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "mode": "100644",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "bytes": 3042,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "src/frontier/cash-to-capacity-outcome.mjs",
+      "mode": "100644",
+      "blob": "e8edf6e141368176ccea7ccd9bbfb6a43b4b9c28",
+      "bytes": 2702,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "test/frontier/cash-to-capacity-outcome.test.mjs",
+      "mode": "100644",
+      "blob": "7fe6a92b9d05e56780f023c869ba4bd32b34d34b",
+      "bytes": 1354,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "product-factory/features/verified-value-ledger.json",
+      "mode": "100644",
+      "blob": "a0a6e87d51b88cb44898eb107feea651a7f12c91",
+      "bytes": 2218,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "COMPARISON_EVIDENCE_ONLY"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "mode": "100644",
+      "blob": "7d19861571d1cf63a3cde32142e39f1e6fa84cf3",
+      "bytes": 70579,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "COMPARISON_EVIDENCE_ONLY"
+    }
+  ],
+  "sourceMismatches": [
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "localCheckout": "935",
+      "localBlob": "7a54fb0864527d895847324f638696d789eb3997",
+      "frozenBlob": "7d19861571d1cf63a3cde32142e39f1e6fa84cf3",
+      "resolution": "Direct exact f32 GitHub blob fetch and hash-verified isolated copy; current differing implementation not reviewed"
+    }
+  ],
+  "tests": {
+    "runtime": "v22.23.2",
+    "networkBlocked": true,
+    "focusedPassed": 8,
+    "canonicalAffectedPassed": 13,
+    "totalPassed": 21,
+    "totalFailed": 0,
+    "receipts": [
+      {
+        "path": "evidence/01-historical-duplicate-red.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "historical-duplicate-control.mjs"
+        ],
+        "exitCode": 1,
+        "networkBlocked": true,
+        "logSha256": "d9e3fd9e66c58fa43432fa5545b482bb1156a97a3dd0dfdcade68e14ffabe6be"
+      },
+      {
+        "path": "evidence/02-projection-contract-red.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "operations/runtime/decision-outcome-evidence-projection.test.cjs"
+        ],
+        "exitCode": 1,
+        "networkBlocked": true,
+        "logSha256": "92aa64d2955818a24b9fbd8f7d35ad379c4d8cbecdf0a790672ceae215d58115"
+      },
+      {
+        "path": "evidence/03-projection-focused-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "operations/runtime/decision-outcome-evidence-projection.test.cjs"
+        ],
+        "exitCode": 0,
+        "networkBlocked": true,
+        "logSha256": "ab176fb0f2f951055811032e29189a5bba47e0a5ef2667a7a666d1261e966d2e"
+      },
+      {
+        "path": "evidence/04-projection-affected-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "operations/runtime/decision-outcome-evidence-projection.test.cjs",
+          "operations/runtime/decision-outcome-proof.test.cjs",
+          "operations/runtime/decision-episode.test.cjs",
+          "test/frontier/cash-to-capacity-outcome.test.mjs"
+        ],
+        "exitCode": 0,
+        "networkBlocked": true,
+        "logSha256": "16bfbb4a4bec1e5a3f6d13446288fae47edcc3a8592cde9b768c069697e9f67c"
+      }
+    ],
+    "meaningfulRed": "Historical source records same selected actual and evidence twice under reminted attributionKey; 0/1 source control",
+    "contractRed": "Initial missing new API:1/8pass7fail; not claimed as a runtime bug"
+  },
+  "authority": {
+    "execution": "NONE",
+    "financialAttribution": false,
+    "learning": false,
+    "aggregateFinancialValue": null,
+    "sourceAuthentication": "NOT_ESTABLISHED_BY_PROJECTION",
+    "causalProof": false
+  },
+  "remainingWork": [
+    "Independent source/held-out review",
+    "Authenticated canonical proof producers and tenant/role scope",
+    "Explicit finance attribution/allocation owner before any aggregate financial value",
+    "Input/CPU/size admission and UI/route consumer wiring",
+    "Customer/provider financial evidence and deployment/restart/rollback proof"
+  ],
+  "exclusions": [
+    "Financial total/savings promotion",
+    "New ledger/attributionMap/store",
+    "Causal inference or customer truth",
+    "Canonical owner edits",
+    "Provider/network/deployment/GitHub mutation",
+    "Staffology/shared proof-repair changes"
+  ],
+  "rollback": "Omit two added value projection paths; lane01-owned shared helper stays only while other projections use it; frozen outcome/cash/UI owners untouched",
+  "publication": "LOCAL_ONLY_UNADMITTED"
+}

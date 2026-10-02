@@ -1,0 +1,357 @@
+TAP version 13
+# Subtest: canonical classifications remain declarations without any value/authentication/execution/learning promotion
+ok 1 - canonical classifications remain declarations without any value/authentication/execution/learning promotion
+  ---
+  duration_ms: 45.8729
+  type: 'test'
+  ...
+# Subtest: exact repeated canonical digest dedupe ignores object identity/key order and preserves copy count
+ok 2 - exact repeated canonical digest dedupe ignores object identity/key order and preserves copy count
+  ---
+  duration_ms: 2.0382
+  type: 'test'
+  ...
+# Subtest: divergent same semantic financial window conflicts despite property insertion order
+not ok 3 - divergent same semantic financial window conflicts despite property insertion order
+  ---
+  duration_ms: 3.6289
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:18:275)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: same declared tuple divergent baseline/selected option/result warns and never aggregates
+ok 4 - same declared tuple divergent baseline/selected option/result warns and never aggregates
+  ---
+  duration_ms: 1.4786
+  type: 'test'
+  ...
+# Subtest: shared finance reference across distinct realised declarations warns exactly once per proof
+ok 5 - shared finance reference across distinct realised declarations warns exactly once per proof
+  ---
+  duration_ms: 2.0217
+  type: 'test'
+  ...
+# Subtest: cross classification finance-reference scope is observed without claiming financial allocation
+ok 6 - cross classification finance-reference scope is observed without claiming financial allocation
+  ---
+  duration_ms: 1.1449
+  type: 'test'
+  ...
+# Subtest: same episode different currencies stays separated and visibly conflicting rather than summed
+ok 7 - same episode different currencies stays separated and visibly conflicting rather than summed
+  ---
+  duration_ms: 1.1751
+  type: 'test'
+  ...
+# Subtest: malformed scope, unsupported class/direction, stale digest and rehashed arithmetic reject
+ok 8 - malformed scope, unsupported class/direction, stale digest and rehashed arithmetic reject
+  ---
+  duration_ms: 3.853
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects incorrect numeric predictionError
+not ok 9 - rehashed noncanonical declaration rejects incorrect numeric predictionError
+  ---
+  duration_ms: 1.1666
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects nonnumeric predictionError
+not ok 10 - rehashed noncanonical declaration rejects nonnumeric predictionError
+  ---
+  duration_ms: 0.9961
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects missing predictionError
+not ok 11 - rehashed noncanonical declaration rejects missing predictionError
+  ---
+  duration_ms: 0.7911
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects missing observedAt
+not ok 12 - rehashed noncanonical declaration rejects missing observedAt
+  ---
+  duration_ms: 0.7288
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects invalid calendar observedAt
+not ok 13 - rehashed noncanonical declaration rejects invalid calendar observedAt
+  ---
+  duration_ms: 0.7166
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects malformed observedAt
+not ok 14 - rehashed noncanonical declaration rejects malformed observedAt
+  ---
+  duration_ms: 0.699
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects invalid calendar measurement window
+not ok 15 - rehashed noncanonical declaration rejects invalid calendar measurement window
+  ---
+  duration_ms: 0.7639
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects numeric measurement timestamps
+not ok 16 - rehashed noncanonical declaration rejects numeric measurement timestamps
+  ---
+  duration_ms: 0.9386
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rehashed noncanonical declaration rejects simulated financial currency/window
+not ok 17 - rehashed noncanonical declaration rejects simulated financial currency/window
+  ---
+  duration_ms: 1.6252
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\value-projection.held-out.test.cjs:45:3'
+  failureType: 'testCodeFailure'
+  error: 'Noncanonical content was accepted'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\value-projection.held-out.test.cjs:46:272)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rejects hostile top-level accessor before caller code
+ok 18 - rejects hostile top-level accessor before caller code
+  ---
+  duration_ms: 0.6529
+  type: 'test'
+  ...
+# Subtest: rejects hostile nested accessor before caller code
+ok 19 - rejects hostile nested accessor before caller code
+  ---
+  duration_ms: 0.4559
+  type: 'test'
+  ...
+# Subtest: rejects hostile indexed accessor before caller code
+ok 20 - rejects hostile indexed accessor before caller code
+  ---
+  duration_ms: 0.8165
+  type: 'test'
+  ...
+# Subtest: rejects hostile top-level proxy before caller code
+ok 21 - rejects hostile top-level proxy before caller code
+  ---
+  duration_ms: 0.5413
+  type: 'test'
+  ...
+# Subtest: rejects hostile nested proxy before caller code
+ok 22 - rejects hostile nested proxy before caller code
+  ---
+  duration_ms: 0.5128
+  type: 'test'
+  ...
+# Subtest: rejects hostile array override before caller code
+ok 23 - rejects hostile array override before caller code
+  ---
+  duration_ms: 0.5169
+  type: 'test'
+  ...
+# Subtest: rejects hostile serializer before caller code
+ok 24 - rejects hostile serializer before caller code
+  ---
+  duration_ms: 0.5194
+  type: 'test'
+  ...
+# Subtest: rejects hostile coercion hook before caller code
+ok 25 - rejects hostile coercion hook before caller code
+  ---
+  duration_ms: 0.5585
+  type: 'test'
+  ...
+# Subtest: rejects hostile sparse proof array before caller code
+ok 26 - rejects hostile sparse proof array before caller code
+  ---
+  duration_ms: 0.764
+  type: 'test'
+  ...
+# Subtest: rejects hostile record symbol before caller code
+ok 27 - rejects hostile record symbol before caller code
+  ---
+  duration_ms: 0.6958
+  type: 'test'
+  ...
+# Subtest: rejects hostile cycle before caller code
+ok 28 - rejects hostile cycle before caller code
+  ---
+  duration_ms: 0.8701
+  type: 'test'
+  ...
+# Subtest: rejects hostile nonfinite0 before caller code
+ok 29 - rejects hostile nonfinite0 before caller code
+  ---
+  duration_ms: 1.6192
+  type: 'test'
+  ...
+# Subtest: rejects hostile nonfinite1 before caller code
+ok 30 - rejects hostile nonfinite1 before caller code
+  ---
+  duration_ms: 0.4851
+  type: 'test'
+  ...
+# Subtest: rejects hostile nonfinite2 before caller code
+ok 31 - rejects hostile nonfinite2 before caller code
+  ---
+  duration_ms: 0.4577
+  type: 'test'
+  ...
+# Subtest: source inputs and outputs stay detached; unknown hints cannot create verified status
+ok 32 - source inputs and outputs stay detached; unknown hints cannot create verified status
+  ---
+  duration_ms: 2.0281
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 22
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 235.342

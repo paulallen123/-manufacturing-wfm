@@ -1,0 +1,86 @@
+{
+  "frozen": [
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "mode": "100644",
+      "blob": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "bytes": 7146,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.test.cjs",
+      "mode": "100644",
+      "blob": "376e9d05751fa6bd749144a260416b8a6d9d7c7b",
+      "bytes": 4661,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "mode": "100644",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "mode": "100644",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "bytes": 3042,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "src/frontier/cash-to-capacity-outcome.mjs",
+      "mode": "100644",
+      "blob": "e8edf6e141368176ccea7ccd9bbfb6a43b4b9c28",
+      "bytes": 2702,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "test/frontier/cash-to-capacity-outcome.test.mjs",
+      "mode": "100644",
+      "blob": "7fe6a92b9d05e56780f023c869ba4bd32b34d34b",
+      "bytes": 1354,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "UNCHANGED_VERIFICATION_DEPENDENCY"
+    },
+    {
+      "path": "product-factory/features/verified-value-ledger.json",
+      "mode": "100644",
+      "blob": "a0a6e87d51b88cb44898eb107feea651a7f12c91",
+      "bytes": 2218,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "COMPARISON_EVIDENCE_ONLY"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "mode": "100644",
+      "blob": "7d19861571d1cf63a3cde32142e39f1e6fa84cf3",
+      "bytes": 70579,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "COMPARISON_EVIDENCE_ONLY"
+    }
+  ],
+  "shared": {
+    "owner": "LANE01",
+    "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+    "paths": [
+      {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+        "bytes": 1981
+      },
+      {
+        "path": "implementation/runtime/inert-finite-json.test.cjs",
+        "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+        "bytes": 2371
+      }
+    ],
+    "standalonePurpose": "Exact same canonical path/blob dependency is included in this separate frozen-base branch; no competing helper owner or store.",
+    "oneOwnerOnePath": true
+  }
+}

@@ -1,0 +1,836 @@
+{
+  "sourceBlob": "80c9d72a90f6c0dab549b44ca6e2ce67810e4d3d",
+  "observations": [
+    {
+      "name": "window-order-conflict",
+      "inputProofs": [
+        {
+          "schemaVersion": 1,
+          "recordType": "vector-decision-outcome-proof",
+          "classification": "REALISED_FINANCIAL",
+          "tenant": "t1",
+          "site": "s1",
+          "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+          "decisionType": "absence",
+          "selectedOptionId": "reassign",
+          "metric": "labourCost",
+          "direction": "MINIMIZE",
+          "predicted": {
+            "baseline": 500,
+            "selected": 300,
+            "improvement": 200
+          },
+          "observed": {
+            "baseline": 520,
+            "result": 320,
+            "improvement": 200,
+            "predictionError": 20,
+            "observedAt": "2026-09-22T16:00:00.000Z"
+          },
+          "evidence": {
+            "baseline": [
+              "baseline:e1"
+            ],
+            "result": [
+              "result:e1"
+            ],
+            "finance": [
+              "finance:1"
+            ]
+          },
+          "measurementWindow": {
+            "start": "2026-09-22T08:00:00.000Z",
+            "end": "2026-09-22T16:00:00.000Z"
+          },
+          "currency": "GBP",
+          "verifiedOperationalOutcome": true,
+          "realisedFinancialOutcome": true,
+          "learningEligible": true,
+          "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+          "proofDigest": "ad28bc8e71c29808e9dd0cf66c3c824b34f48cd836a9d4a71acb1075f19ecbcd"
+        },
+        {
+          "schemaVersion": 1,
+          "recordType": "vector-decision-outcome-proof",
+          "classification": "REALISED_FINANCIAL",
+          "tenant": "t1",
+          "site": "s1",
+          "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+          "decisionType": "absence",
+          "selectedOptionId": "reassign",
+          "metric": "labourCost",
+          "direction": "MINIMIZE",
+          "predicted": {
+            "baseline": 500,
+            "selected": 300,
+            "improvement": 200
+          },
+          "observed": {
+            "baseline": 530,
+            "result": 320,
+            "improvement": 210,
+            "predictionError": 20,
+            "observedAt": "2026-09-22T16:00:00.000Z"
+          },
+          "evidence": {
+            "baseline": [
+              "baseline:e1"
+            ],
+            "result": [
+              "result:e1"
+            ],
+            "finance": [
+              "finance:1"
+            ]
+          },
+          "measurementWindow": {
+            "end": "2026-09-22T16:00:00.000Z",
+            "start": "2026-09-22T08:00:00.000Z"
+          },
+          "currency": "GBP",
+          "verifiedOperationalOutcome": true,
+          "realisedFinancialOutcome": true,
+          "learningEligible": true,
+          "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+          "proofDigest": "af3aa63e0ffed210bf799a6e7c644ae03da50682713d96db17f1bd8d470d09f6"
+        }
+      ],
+      "result": {
+        "tenant": "t1",
+        "suppliedRecordCount": 2,
+        "uniqueDeclarationCount": 2,
+        "groups": [
+          {
+            "declaredClassification": "REALISED_FINANCIAL",
+            "metric": "labourCost",
+            "currency": "GBP",
+            "declarations": [
+              {
+                "sourceProofDigest": "ad28bc8e71c29808e9dd0cf66c3c824b34f48cd836a9d4a71acb1075f19ecbcd",
+                "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+                "site": "s1",
+                "selectedOptionId": "reassign",
+                "direction": "MINIMIZE",
+                "predicted": {
+                  "baseline": 500,
+                  "selected": 300,
+                  "improvement": 200
+                },
+                "observed": {
+                  "baseline": 520,
+                  "result": 320,
+                  "improvement": 200,
+                  "predictionError": 20,
+                  "observedAt": "2026-09-22T16:00:00.000Z"
+                },
+                "evidence": {
+                  "baseline": [
+                    "baseline:e1"
+                  ],
+                  "result": [
+                    "result:e1"
+                  ],
+                  "finance": [
+                    "finance:1"
+                  ]
+                },
+                "measurementWindow": {
+                  "start": "2026-09-22T08:00:00.000Z",
+                  "end": "2026-09-22T16:00:00.000Z"
+                }
+              },
+              {
+                "sourceProofDigest": "af3aa63e0ffed210bf799a6e7c644ae03da50682713d96db17f1bd8d470d09f6",
+                "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+                "site": "s1",
+                "selectedOptionId": "reassign",
+                "direction": "MINIMIZE",
+                "predicted": {
+                  "baseline": 500,
+                  "selected": 300,
+                  "improvement": 200
+                },
+                "observed": {
+                  "baseline": 530,
+                  "result": 320,
+                  "improvement": 210,
+                  "predictionError": 20,
+                  "observedAt": "2026-09-22T16:00:00.000Z"
+                },
+                "evidence": {
+                  "baseline": [
+                    "baseline:e1"
+                  ],
+                  "result": [
+                    "result:e1"
+                  ],
+                  "finance": [
+                    "finance:1"
+                  ]
+                },
+                "measurementWindow": {
+                  "end": "2026-09-22T16:00:00.000Z",
+                  "start": "2026-09-22T08:00:00.000Z"
+                }
+              }
+            ]
+          }
+        ],
+        "repeatedDeclarations": [],
+        "conflictingDeclarations": [
+          {
+            "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+            "metric": "labourCost",
+            "declaredClassification": "REALISED_FINANCIAL",
+            "measurementWindow": {
+              "start": "2026-09-22T08:00:00.000Z",
+              "end": "2026-09-22T16:00:00.000Z"
+            },
+            "proofDigests": [
+              "ad28bc8e71c29808e9dd0cf66c3c824b34f48cd836a9d4a71acb1075f19ecbcd",
+              "af3aa63e0ffed210bf799a6e7c644ae03da50682713d96db17f1bd8d470d09f6"
+            ]
+          }
+        ],
+        "potentialFinanceEvidenceOverlap": [
+          {
+            "evidenceRef": "finance:1",
+            "proofDigests": [
+              "ad28bc8e71c29808e9dd0cf66c3c824b34f48cd836a9d4a71acb1075f19ecbcd",
+              "af3aa63e0ffed210bf799a6e7c644ae03da50682713d96db17f1bd8d470d09f6"
+            ]
+          }
+        ],
+        "aggregateFinancialValue": null,
+        "executionAuthority": "NONE",
+        "financialAttributionAuthority": false,
+        "learningAuthority": false,
+        "sourceAuthentication": "NOT_ESTABLISHED_BY_THIS_PROJECTION",
+        "claimBoundary": "Supplied content-consistent declarations only. Shared finance references among realised-financial declarations flag possible overlap; no allocation or aggregate saving is computed. Evidence linkage does not prove causality or customer financial truth."
+      }
+    },
+    {
+      "name": "finance-cross-classification-scope",
+      "inputProofs": [
+        {
+          "schemaVersion": 1,
+          "recordType": "vector-decision-outcome-proof",
+          "classification": "REALISED_FINANCIAL",
+          "tenant": "t1",
+          "site": "s1",
+          "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+          "decisionType": "absence",
+          "selectedOptionId": "reassign",
+          "metric": "labourCost",
+          "direction": "MINIMIZE",
+          "predicted": {
+            "baseline": 500,
+            "selected": 300,
+            "improvement": 200
+          },
+          "observed": {
+            "baseline": 520,
+            "result": 320,
+            "improvement": 200,
+            "predictionError": 20,
+            "observedAt": "2026-09-22T16:00:00.000Z"
+          },
+          "evidence": {
+            "baseline": [
+              "baseline:e1"
+            ],
+            "result": [
+              "result:e1"
+            ],
+            "finance": [
+              "finance:1"
+            ]
+          },
+          "measurementWindow": {
+            "start": "2026-09-22T08:00:00.000Z",
+            "end": "2026-09-22T16:00:00.000Z"
+          },
+          "currency": "GBP",
+          "verifiedOperationalOutcome": true,
+          "realisedFinancialOutcome": true,
+          "learningEligible": true,
+          "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+          "proofDigest": "ad28bc8e71c29808e9dd0cf66c3c824b34f48cd836a9d4a71acb1075f19ecbcd"
+        },
+        {
+          "schemaVersion": 1,
+          "recordType": "vector-decision-outcome-proof",
+          "classification": "VERIFIED_OPERATIONAL",
+          "tenant": "t1",
+          "site": "s1",
+          "episodeId": "2970b73d46255ad901c5b93763a13199472608cb5dba435671313f4977856284",
+          "decisionType": "absence",
+          "selectedOptionId": "reassign",
+          "metric": "labourCost",
+          "direction": "MINIMIZE",
+          "predicted": {
+            "baseline": 500,
+            "selected": 300,
+            "improvement": 200
+          },
+          "observed": {
+            "baseline": 520,
+            "result": 320,
+            "improvement": 200,
+            "predictionError": 20,
+            "observedAt": "2026-09-22T16:00:00.000Z"
+          },
+          "evidence": {
+            "baseline": [
+              "baseline:e2"
+            ],
+            "result": [
+              "result:e2"
+            ],
+            "finance": [
+              "finance:1"
+            ]
+          },
+          "measurementWindow": null,
+          "currency": null,
+          "verifiedOperationalOutcome": true,
+          "realisedFinancialOutcome": false,
+          "learningEligible": true,
+          "claimBoundary": "Verified operational outcome only. No realised financial saving is claimed.",
+          "proofDigest": "6c82920dd682e0eca127fcffdedebc30e464078185f3e821644550c956d41f9e"
+        }
+      ],
+      "result": {
+        "tenant": "t1",
+        "suppliedRecordCount": 2,
+        "uniqueDeclarationCount": 2,
+        "groups": [
+          {
+            "declaredClassification": "REALISED_FINANCIAL",
+            "metric": "labourCost",
+            "currency": "GBP",
+            "declarations": [
+              {
+                "sourceProofDigest": "ad28bc8e71c29808e9dd0cf66c3c824b34f48cd836a9d4a71acb1075f19ecbcd",
+                "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+                "site": "s1",
+                "selectedOptionId": "reassign",
+                "direction": "MINIMIZE",
+                "predicted": {
+                  "baseline": 500,
+                  "selected": 300,
+                  "improvement": 200
+                },
+                "observed": {
+                  "baseline": 520,
+                  "result": 320,
+                  "improvement": 200,
+                  "predictionError": 20,
+                  "observedAt": "2026-09-22T16:00:00.000Z"
+                },
+                "evidence": {
+                  "baseline": [
+                    "baseline:e1"
+                  ],
+                  "result": [
+                    "result:e1"
+                  ],
+                  "finance": [
+                    "finance:1"
+                  ]
+                },
+                "measurementWindow": {
+                  "start": "2026-09-22T08:00:00.000Z",
+                  "end": "2026-09-22T16:00:00.000Z"
+                }
+              }
+            ]
+          },
+          {
+            "declaredClassification": "VERIFIED_OPERATIONAL",
+            "metric": "labourCost",
+            "currency": null,
+            "declarations": [
+              {
+                "sourceProofDigest": "6c82920dd682e0eca127fcffdedebc30e464078185f3e821644550c956d41f9e",
+                "episodeId": "2970b73d46255ad901c5b93763a13199472608cb5dba435671313f4977856284",
+                "site": "s1",
+                "selectedOptionId": "reassign",
+                "direction": "MINIMIZE",
+                "predicted": {
+                  "baseline": 500,
+                  "selected": 300,
+                  "improvement": 200
+                },
+                "observed": {
+                  "baseline": 520,
+                  "result": 320,
+                  "improvement": 200,
+                  "predictionError": 20,
+                  "observedAt": "2026-09-22T16:00:00.000Z"
+                },
+                "evidence": {
+                  "baseline": [
+                    "baseline:e2"
+                  ],
+                  "result": [
+                    "result:e2"
+                  ],
+                  "finance": [
+                    "finance:1"
+                  ]
+                },
+                "measurementWindow": null
+              }
+            ]
+          }
+        ],
+        "repeatedDeclarations": [],
+        "conflictingDeclarations": [],
+        "potentialFinanceEvidenceOverlap": [],
+        "aggregateFinancialValue": null,
+        "executionAuthority": "NONE",
+        "financialAttributionAuthority": false,
+        "learningAuthority": false,
+        "sourceAuthentication": "NOT_ESTABLISHED_BY_THIS_PROJECTION",
+        "claimBoundary": "Supplied content-consistent declarations only. Shared finance references among realised-financial declarations flag possible overlap; no allocation or aggregate saving is computed. Evidence linkage does not prove causality or customer financial truth."
+      }
+    },
+    {
+      "name": "incorrect numeric predictionError",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "predictionError": 999,
+          "observedAt": "2026-09-22T16:00:00.000Z"
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": "2026-09-22T08:00:00.000Z",
+          "end": "2026-09-22T16:00:00.000Z"
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "5212fc8d8fc03e59c48eae6f7eebf1e2a157d6ab1a4fc5fdbddab5e61c3c636d"
+      },
+      "result": null,
+      "error": "Observed prediction error mismatch"
+    },
+    {
+      "name": "nonnumeric predictionError",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "predictionError": "paid",
+          "observedAt": "2026-09-22T16:00:00.000Z"
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": "2026-09-22T08:00:00.000Z",
+          "end": "2026-09-22T16:00:00.000Z"
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "f2ea0a54ca5cb9295d7e96ff0afec72cda0fcfe040333473be9f09b08f532fe4"
+      },
+      "result": null,
+      "error": "observed.predictionError must be finite"
+    },
+    {
+      "name": "missing predictionError",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "observedAt": "2026-09-22T16:00:00.000Z"
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": "2026-09-22T08:00:00.000Z",
+          "end": "2026-09-22T16:00:00.000Z"
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "781676316f8f5f0eb2e5b6d710f17738f8d96a0ad00a74c5bb1d2e05a58b945f"
+      },
+      "result": null,
+      "error": "observed.predictionError must be finite"
+    },
+    {
+      "name": "missing observedAt",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "predictionError": 20
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": "2026-09-22T08:00:00.000Z",
+          "end": "2026-09-22T16:00:00.000Z"
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "fe24280b332999a71f3a0baae66e97e57189c3b78619927c5fa6938ec45e3ad5"
+      },
+      "result": null,
+      "error": "observed.observedAt requires a canonical ISO timestamp"
+    },
+    {
+      "name": "invalid calendar observedAt",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "predictionError": 20,
+          "observedAt": "2026-02-30T16:00:00.000Z"
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": "2026-09-22T08:00:00.000Z",
+          "end": "2026-09-22T16:00:00.000Z"
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "8bfe2ff5f99d8a10d3fe103e61e53e42f25411015cc811dcb86e77d09b403dca"
+      },
+      "result": null,
+      "error": "observed.observedAt requires a valid canonical ISO timestamp"
+    },
+    {
+      "name": "malformed observedAt",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "predictionError": 20,
+          "observedAt": "not-a-time"
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": "2026-09-22T08:00:00.000Z",
+          "end": "2026-09-22T16:00:00.000Z"
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "d6e6320e145d2d864fafd1e98dcff164d7ebce37436111f00844f5f2377b0354"
+      },
+      "result": null,
+      "error": "observed.observedAt requires a valid canonical ISO timestamp"
+    },
+    {
+      "name": "invalid calendar measurement window",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "predictionError": 20,
+          "observedAt": "2026-09-22T16:00:00.000Z"
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": "2026-02-30T08:00:00.000Z",
+          "end": "2026-03-03T16:00:00.000Z"
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "ce3f0327e4cf688315626e81880ff4ebb0c840aca72fb74d2e13f0930a63e78a"
+      },
+      "result": null,
+      "error": "measurementWindow.start requires a valid canonical ISO timestamp"
+    },
+    {
+      "name": "numeric measurement timestamps",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "REALISED_FINANCIAL",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": {
+          "baseline": 520,
+          "result": 320,
+          "improvement": 200,
+          "predictionError": 20,
+          "observedAt": "2026-09-22T16:00:00.000Z"
+        },
+        "evidence": {
+          "baseline": [
+            "baseline:e1"
+          ],
+          "result": [
+            "result:e1"
+          ],
+          "finance": [
+            "finance:1"
+          ]
+        },
+        "measurementWindow": {
+          "start": 123,
+          "end": 124
+        },
+        "currency": "GBP",
+        "verifiedOperationalOutcome": true,
+        "realisedFinancialOutcome": true,
+        "learningEligible": true,
+        "claimBoundary": "Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.",
+        "proofDigest": "f2870f15412d14dbcf65a805c8c1c9bda9510435c8adeac23c922f7e5fafbba3"
+      },
+      "result": null,
+      "error": "measurementWindow.start requires a canonical ISO timestamp"
+    },
+    {
+      "name": "simulated financial currency/window",
+      "inputProof": {
+        "schemaVersion": 1,
+        "recordType": "vector-decision-outcome-proof",
+        "classification": "SIMULATED",
+        "tenant": "t1",
+        "site": "s1",
+        "episodeId": "0b5db7c27d34530683802eaadb7d1e754c488a9186535546a63d7166bf92d26d",
+        "decisionType": "absence",
+        "selectedOptionId": "reassign",
+        "metric": "labourCost",
+        "direction": "MINIMIZE",
+        "predicted": {
+          "baseline": 500,
+          "selected": 300,
+          "improvement": 200
+        },
+        "observed": null,
+        "evidence": {
+          "baseline": [],
+          "result": [],
+          "finance": []
+        },
+        "verifiedOperationalOutcome": false,
+        "realisedFinancialOutcome": false,
+        "learningEligible": false,
+        "claimBoundary": "Simulation only. No verified operational or realised financial outcome is claimed.",
+        "proofDigest": "776fb2fdf48bd38a280a1799c5b4c476c1dbeee5249ca2bb092a7b0e30a57e97",
+        "currency": "GBP",
+        "measurementWindow": {
+          "start": "2026-09-22T08:00:00.000Z",
+          "end": "2026-09-22T16:00:00.000Z"
+        }
+      },
+      "result": null,
+      "error": "Simulation cannot carry financial currency/window metadata"
+    }
+  ]
+}

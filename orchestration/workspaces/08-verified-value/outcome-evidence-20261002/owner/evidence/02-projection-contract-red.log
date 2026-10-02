@@ -1,0 +1,255 @@
+TAP version 13
+# Subtest: identical supplied proof content collapses independently of object identity
+not ok 1 - identical supplied proof content collapses independently of object identity
+  ---
+  duration_ms: 51.33
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing pure outcome evidence audit
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:6:29)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:13:25)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: different currencies and declared classes remain distinct without summing
+not ok 2 - different currencies and declared classes remain distinct without summing
+  ---
+  duration_ms: 3.3082
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing pure outcome evidence audit
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:6:29)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:18:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: divergent content for one episode metric class and window is visibly ambiguous
+not ok 3 - divergent content for one episode metric class and window is visibly ambiguous
+  ---
+  duration_ms: 0.9457
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:22:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing pure outcome evidence audit
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:6:29)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:23:49)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: finance reference reuse is a warning rather than an allocation or realised total
+not ok 4 - finance reference reuse is a warning rather than an allocation or realised total
+  ---
+  duration_ms: 1.1357
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing pure outcome evidence audit
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:6:29)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:27:15)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tenant and digest tampering reject without altering the source declarations
+not ok 5 - tenant and digest tampering reject without altering the source declarations
+  ---
+  duration_ms: 2.0907
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /tenant/i. Input:
+    
+    'AssertionError [ERR_ASSERTION]: Missing pure outcome evidence audit\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    Missing pure outcome evidence audit
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    call (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:6:29)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:31:61
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:31:50)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:31:50)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+not ok 6 - internally inconsistent rehashed declarations cannot promote simulation or alter arithmetic
+  ---
+  duration_ms: 1.5472
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:33:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /classification|improvement/i. Input:
+    
+    'AssertionError [ERR_ASSERTION]: Missing pure outcome evidence audit\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    Missing pure outcome evidence audit
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    call (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:6:29)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:34:220
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:34:209)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:34:209)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: getters proxies serializers and nonfinite declaration data reject before caller execution
+ok 7 - getters proxies serializers and nonfinite declaration data reject before caller execution
+  ---
+  duration_ms: 2.3372
+  type: 'test'
+  ...
+# Subtest: output is detached and immutable and empty data does not invent outcomes
+not ok 8 - output is detached and immutable and empty data does not invent outcomes
+  ---
+  duration_ms: 0.5369
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing pure outcome evidence audit
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    call (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:6:29)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane08-value\operations\runtime\decision-outcome-evidence-projection.test.cjs:40:25)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 1
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 202.0798

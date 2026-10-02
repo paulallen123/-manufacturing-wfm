@@ -1,0 +1,12 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "operations/runtime/decision-outcome-evidence-projection.test.cjs"
+  ],
+  "exitCode": 0,
+  "networkBlocked": true,
+  "logSha256": "d541118fe7edcca8bc4b56eadbda5253fe33582283f6585c124eddc9a26baad2"
+}

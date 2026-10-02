@@ -1,0 +1,15 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "operations/runtime/decision-outcome-evidence-projection.test.cjs",
+    "operations/runtime/decision-outcome-proof.test.cjs",
+    "operations/runtime/decision-episode.test.cjs",
+    "test/frontier/cash-to-capacity-outcome.test.mjs"
+  ],
+  "exitCode": 0,
+  "networkBlocked": true,
+  "logSha256": "16bfbb4a4bec1e5a3f6d13446288fae47edcc3a8592cde9b768c069697e9f67c"
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "sourcePart": "evaluateProjectedDecision constrained projected ranking",
+    "classification": "DUPLICATE",
+    "canonicalOwner": "operations/runtime/decision-episode.cjs",
+    "disposition": "Preserve canonical bounded weighted objectives, hard constraints and recorded selection; no separate ranking owner"
+  },
+  {
+    "sourcePart": "recordRealisedOutcome",
+    "classification": "REJECT",
+    "canonicalOwner": "operations/runtime/decision-outcome-proof.cjs",
+    "disposition": "Projected baseline minus selected actual and arbitrary refs cannot establish realised/causal truth; canonical classification/evidence/currency/window owner retained"
+  },
+  {
+    "sourcePart": "createOutcomeLedger Map store",
+    "classification": "REJECT",
+    "canonicalOwner": "Existing DecisionOutcomeProof and application evidence/presentation owners",
+    "disposition": "No second attributionMap/store. Label uniqueness alone permits repeated same-evidence outcome under reminted labels"
+  },
+  {
+    "sourcePart": "attribution-key duplicate guard intent",
+    "classification": "PORT",
+    "canonicalOwner": "Pure operations/runtime/decision-outcome-evidence-projection.cjs atop existing proof owner",
+    "disposition": "Content-consistent proof digest dedupe plus divergent-declaration/shared-finance-reference warnings. No sums/authority/persistence"
+  },
+  {
+    "sourcePart": "prediction/result delta and learning calibration",
+    "classification": "DUPLICATE",
+    "canonicalOwner": "decision-outcome-proof.cjs; src/frontier/cash-to-capacity-outcome.mjs",
+    "disposition": "Already implemented source contracts retained unchanged"
+  },
+  {
+    "sourcePart": "Verified value / opportunity UI",
+    "classification": "ALREADY_CANONICAL",
+    "canonicalOwner": "product-factory/features/verified-value-ledger.json and frozen ux-overlay/vector-shell.js",
+    "disposition": "Source only; runtime VCU report, authentic role scope and customer evidence still required"
+  }
+]

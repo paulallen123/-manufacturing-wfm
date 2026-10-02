@@ -1,0 +1,202 @@
+TAP version 13
+# Subtest: canonical classifications remain declarations without any value/authentication/execution/learning promotion
+ok 1 - canonical classifications remain declarations without any value/authentication/execution/learning promotion
+  ---
+  duration_ms: 55.9381
+  type: 'test'
+  ...
+# Subtest: exact repeated canonical digest dedupe ignores object identity/key order and preserves copy count
+ok 2 - exact repeated canonical digest dedupe ignores object identity/key order and preserves copy count
+  ---
+  duration_ms: 3.2762
+  type: 'test'
+  ...
+# Subtest: divergent same semantic financial window conflicts despite property insertion order
+ok 3 - divergent same semantic financial window conflicts despite property insertion order
+  ---
+  duration_ms: 2.4736
+  type: 'test'
+  ...
+# Subtest: same declared tuple divergent baseline/selected option/result warns and never aggregates
+ok 4 - same declared tuple divergent baseline/selected option/result warns and never aggregates
+  ---
+  duration_ms: 1.4731
+  type: 'test'
+  ...
+# Subtest: shared finance reference across distinct realised declarations warns exactly once per proof
+ok 5 - shared finance reference across distinct realised declarations warns exactly once per proof
+  ---
+  duration_ms: 1.9152
+  type: 'test'
+  ...
+# Subtest: cross classification finance-reference scope is observed without claiming financial allocation
+ok 6 - cross classification finance-reference scope is observed without claiming financial allocation
+  ---
+  duration_ms: 1.1974
+  type: 'test'
+  ...
+# Subtest: same episode different currencies stays separated and visibly conflicting rather than summed
+ok 7 - same episode different currencies stays separated and visibly conflicting rather than summed
+  ---
+  duration_ms: 1.22
+  type: 'test'
+  ...
+# Subtest: malformed scope, unsupported class/direction, stale digest and rehashed arithmetic reject
+ok 8 - malformed scope, unsupported class/direction, stale digest and rehashed arithmetic reject
+  ---
+  duration_ms: 4.2889
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects incorrect numeric predictionError
+ok 9 - rehashed noncanonical declaration rejects incorrect numeric predictionError
+  ---
+  duration_ms: 1.1157
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects nonnumeric predictionError
+ok 10 - rehashed noncanonical declaration rejects nonnumeric predictionError
+  ---
+  duration_ms: 1.0034
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects missing predictionError
+ok 11 - rehashed noncanonical declaration rejects missing predictionError
+  ---
+  duration_ms: 0.7161
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects missing observedAt
+ok 12 - rehashed noncanonical declaration rejects missing observedAt
+  ---
+  duration_ms: 0.6751
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects invalid calendar observedAt
+ok 13 - rehashed noncanonical declaration rejects invalid calendar observedAt
+  ---
+  duration_ms: 0.7944
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects malformed observedAt
+ok 14 - rehashed noncanonical declaration rejects malformed observedAt
+  ---
+  duration_ms: 0.7069
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects invalid calendar measurement window
+ok 15 - rehashed noncanonical declaration rejects invalid calendar measurement window
+  ---
+  duration_ms: 0.7256
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects numeric measurement timestamps
+ok 16 - rehashed noncanonical declaration rejects numeric measurement timestamps
+  ---
+  duration_ms: 0.6851
+  type: 'test'
+  ...
+# Subtest: rehashed noncanonical declaration rejects simulated financial currency/window
+ok 17 - rehashed noncanonical declaration rejects simulated financial currency/window
+  ---
+  duration_ms: 0.6618
+  type: 'test'
+  ...
+# Subtest: rejects hostile top-level accessor before caller code
+ok 18 - rejects hostile top-level accessor before caller code
+  ---
+  duration_ms: 0.9701
+  type: 'test'
+  ...
+# Subtest: rejects hostile nested accessor before caller code
+ok 19 - rejects hostile nested accessor before caller code
+  ---
+  duration_ms: 0.5594
+  type: 'test'
+  ...
+# Subtest: rejects hostile indexed accessor before caller code
+ok 20 - rejects hostile indexed accessor before caller code
+  ---
+  duration_ms: 0.9248
+  type: 'test'
+  ...
+# Subtest: rejects hostile top-level proxy before caller code
+ok 21 - rejects hostile top-level proxy before caller code
+  ---
+  duration_ms: 0.8016
+  type: 'test'
+  ...
+# Subtest: rejects hostile nested proxy before caller code
+ok 22 - rejects hostile nested proxy before caller code
+  ---
+  duration_ms: 0.8721
+  type: 'test'
+  ...
+# Subtest: rejects hostile array override before caller code
+ok 23 - rejects hostile array override before caller code
+  ---
+  duration_ms: 0.873
+  type: 'test'
+  ...
+# Subtest: rejects hostile serializer before caller code
+ok 24 - rejects hostile serializer before caller code
+  ---
+  duration_ms: 0.7982
+  type: 'test'
+  ...
+# Subtest: rejects hostile coercion hook before caller code
+ok 25 - rejects hostile coercion hook before caller code
+  ---
+  duration_ms: 0.6746
+  type: 'test'
+  ...
+# Subtest: rejects hostile sparse proof array before caller code
+ok 26 - rejects hostile sparse proof array before caller code
+  ---
+  duration_ms: 0.5529
+  type: 'test'
+  ...
+# Subtest: rejects hostile record symbol before caller code
+ok 27 - rejects hostile record symbol before caller code
+  ---
+  duration_ms: 0.9846
+  type: 'test'
+  ...
+# Subtest: rejects hostile cycle before caller code
+ok 28 - rejects hostile cycle before caller code
+  ---
+  duration_ms: 0.5677
+  type: 'test'
+  ...
+# Subtest: rejects hostile nonfinite0 before caller code
+ok 29 - rejects hostile nonfinite0 before caller code
+  ---
+  duration_ms: 1.3569
+  type: 'test'
+  ...
+# Subtest: rejects hostile nonfinite1 before caller code
+ok 30 - rejects hostile nonfinite1 before caller code
+  ---
+  duration_ms: 0.5038
+  type: 'test'
+  ...
+# Subtest: rejects hostile nonfinite2 before caller code
+ok 31 - rejects hostile nonfinite2 before caller code
+  ---
+  duration_ms: 0.462
+  type: 'test'
+  ...
+# Subtest: source inputs and outputs stay detached; unknown hints cannot create verified status
+ok 32 - source inputs and outputs stay detached; unknown hints cannot create verified status
+  ---
+  duration_ms: 1.5003
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 250.7427
