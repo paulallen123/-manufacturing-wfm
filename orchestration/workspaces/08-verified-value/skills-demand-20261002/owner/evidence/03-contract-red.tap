@@ -1,0 +1,1183 @@
+TAP version 13
+# Subtest: one supplied current mastered person yields a one-person advisory gap without granting authority
+not ok 1 - one supplied current mastered person yields a one-person advisory gap without granting authority
+  ---
+  duration_ms: 3.2128
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:13:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: valid canonical-shaped empty profiles and zero integer demand produce no skill assignments
+not ok 2 - valid canonical-shaped empty profiles and zero integer demand produce no skill assignments
+  ---
+  duration_ms: 0.4149
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:14:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: explicit threshold95 excludes supplied score90 but never awards missing mastery
+not ok 3 - explicit threshold95 excludes supplied score90 but never awards missing mastery
+  ---
+  duration_ms: 0.2743
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:15:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit null threshold cannot lower the default finite contract
+not ok 4 - explicit null threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.2615
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:16:125'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit NaN threshold cannot lower the default finite contract
+not ok 5 - explicit NaN threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.6721
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:16:125'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit infinite threshold cannot lower the default finite contract
+not ok 6 - explicit infinite threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.3548
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:16:125'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit string threshold cannot lower the default finite contract
+not ok 7 - explicit string threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.2544
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:16:125'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit negative threshold cannot lower the default finite contract
+not ok 8 - explicit negative threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.244
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:16:125'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit above100 threshold cannot lower the default finite contract
+not ok 9 - explicit above100 threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.6163
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:16:125'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: null demand count cannot silently become covered
+not ok 10 - null demand count cannot silently become covered
+  ---
+  duration_ms: 0.4221
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:17:120'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: NaN demand count cannot silently become covered
+not ok 11 - NaN demand count cannot silently become covered
+  ---
+  duration_ms: 0.3581
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:17:120'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: string demand count cannot silently become covered
+not ok 12 - string demand count cannot silently become covered
+  ---
+  duration_ms: 0.2403
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:17:120'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: fraction demand count cannot silently become covered
+not ok 13 - fraction demand count cannot silently become covered
+  ---
+  duration_ms: 0.2244
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:17:120'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: negative demand count cannot silently become covered
+not ok 14 - negative demand count cannot silently become covered
+  ---
+  duration_ms: 0.4193
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:17:120'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tooLarge demand count cannot silently become covered
+not ok 15 - tooLarge demand count cannot silently become covered
+  ---
+  duration_ms: 0.2513
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:17:120'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing demand count rejects instead of inferring zero
+not ok 16 - missing demand count rejects instead of inferring zero
+  ---
+  duration_ms: 0.2569
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:18:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing score cannot claim supplied current mastery
+not ok 17 - missing score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.2084
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:19:147'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: null score cannot claim supplied current mastery
+not ok 18 - null score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.2896
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:19:147'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: NaN score cannot claim supplied current mastery
+not ok 19 - NaN score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.2399
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:19:147'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: infinite score cannot claim supplied current mastery
+not ok 20 - infinite score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.2052
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:19:147'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: string score cannot claim supplied current mastery
+not ok 21 - string score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.2064
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:19:147'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: negative score cannot claim supplied current mastery
+not ok 22 - negative score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.2064
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:19:147'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: above100 score cannot claim supplied current mastery
+not ok 23 - above100 score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.2161
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:19:147'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate exact person IDs reject instead of counting one worker twice
+not ok 24 - duplicate exact person IDs reject instead of counting one worker twice
+  ---
+  duration_ms: 0.2012
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:20:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: trim-colliding person IDs reject without rewriting source identity
+not ok 25 - trim-colliding person IDs reject without rewriting source identity
+  ---
+  duration_ms: 0.2592
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:21:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate competency facts reject rather than selecting one contradictory mastery row
+not ok 26 - duplicate competency facts reject rather than selecting one contradictory mastery row
+  ---
+  duration_ms: 0.2217
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:22:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unavailable supplied current mastered person cannot fill the requirement
+not ok 27 - unavailable supplied current mastered person cannot fill the requirement
+  ---
+  duration_ms: 0.2092
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:23:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: MASTERED below canonical80 rejects even with a lower requested threshold
+not ok 28 - MASTERED below canonical80 rejects even with a lower requested threshold
+  ---
+  duration_ms: 0.2051
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:24:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: score100 and retrieval/teach-back-like flags cannot manufacture MASTERED status
+not ok 29 - score100 and retrieval/teach-back-like flags cannot manufacture MASTERED status
+  ---
+  duration_ms: 0.2051
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:25:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: dueAt equal asOf is expired while a later dueAt remains current
+not ok 30 - dueAt equal asOf is expired while a later dueAt remains current
+  ---
+  duration_ms: 0.2014
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:26:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing or future masteredAt cannot attest supplied canonical current status
+not ok 31 - missing or future masteredAt cannot attest supplied canonical current status
+  ---
+  duration_ms: 0.2003
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:27:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: future source observation and expired provenance are rejected at exact boundaries
+not ok 32 - future source observation and expired provenance are rejected at exact boundaries
+  ---
+  duration_ms: 0.2021
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:28:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: same-instant observedAt is admitted with a later expiry
+not ok 33 - same-instant observedAt is admitted with a later expiry
+  ---
+  duration_ms: 0.1997
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:29:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cross-tenant source assertions reject for demand and profile wrappers
+not ok 34 - cross-tenant source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.1998
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:30:74'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cross-site source assertions reject for demand and profile wrappers
+not ok 35 - cross-site source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.2179
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:30:74'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cross-contextRevision source assertions reject for demand and profile wrappers
+not ok 36 - cross-contextRevision source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.2011
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:30:74'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cross-producerSourceSha source assertions reject for demand and profile wrappers
+not ok 37 - cross-producerSourceSha source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.1992
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:30:74'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unverified or missing source revision assertions cannot support a gap
+not ok 38 - unverified or missing source revision assertions cannot support a gap
+  ---
+  duration_ms: 0.2003
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:31:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cross tenant/site person wrappers are denied even with a matching declared profile source
+not ok 39 - cross tenant/site person wrappers are denied even with a matching declared profile source
+  ---
+  duration_ms: 0.1995
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:32:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: incompatible profile and absent explicit availability cannot imply an available current worker
+not ok 40 - incompatible profile and absent explicit availability cannot imply an available current worker
+  ---
+  duration_ms: 0.1976
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:33:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: requirement at and asOf mismatch or malformed calendar timestamps reject
+not ok 41 - requirement at and asOf mismatch or malformed calendar timestamps reject
+  ---
+  duration_ms: 0.1993
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:34:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: untrusted override hints reject and never enter authority output
+not ok 42 - untrusted override hints reject and never enter authority output
+  ---
+  duration_ms: 0.2023
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:35:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: indexed getter is rejected before any caller code executes
+not ok 43 - indexed getter is rejected before any caller code executes
+  ---
+  duration_ms: 0.2019
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:36:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proxy and serializer hooks reject without reflection or method execution
+not ok 44 - proxy and serializer hooks reject without reflection or method execution
+  ---
+  duration_ms: 0.2039
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:37:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: sparse and caller-overridden arrays cannot hide worker rows
+not ok 45 - sparse and caller-overridden arrays cannot hide worker rows
+  ---
+  duration_ms: 0.1994
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:38:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: excessive people and competency cardinality reject rather than truncate coverage
+not ok 46 - excessive people and competency cardinality reject rather than truncate coverage
+  ---
+  duration_ms: 0.2024
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:39:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: output is detached and deeply frozen while source input remains unchanged
+not ok 47 - output is detached and deeply frozen while source input remains unchanged
+  ---
+  duration_ms: 0.1995
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:40:1'
+  failureType: 'hookFailed'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:6:28)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    Test.runHook (node:internal/test_runner/test:965:20)
+    Test.run (node:internal/test_runner/test:1022:27)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 0
+# fail 47
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 204.4336

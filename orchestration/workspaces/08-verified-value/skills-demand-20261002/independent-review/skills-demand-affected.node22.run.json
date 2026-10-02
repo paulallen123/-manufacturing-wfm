@@ -1,0 +1,15 @@
+{
+  "node": "v22.23.2",
+  "startedAt": "2026-10-02T12:10:10.938Z",
+  "finishedAt": "2026-10-02T12:10:19.126Z",
+  "args": [
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\adaptive-learning-engine.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\training-twin.test.cjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true
+}

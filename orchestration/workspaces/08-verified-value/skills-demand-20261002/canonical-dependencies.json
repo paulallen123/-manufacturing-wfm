@@ -1,0 +1,67 @@
+{
+  "frozen": [
+    {
+      "path": "learning/runtime/adaptive-learning-engine.cjs",
+      "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+      "mode": "100644",
+      "bytes": 29121,
+      "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/adaptive-learning-engine.test.cjs",
+      "blob": "89d2a54ab3cb945ba53f25a235b47d0e02737213",
+      "mode": "100644",
+      "bytes": 21771,
+      "sha256": "b8b2e3f2f8418e6b5b9149b112a503b3000ee134719d99054d6f3af83e7b87dd",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/training-twin.cjs",
+      "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+      "mode": "100644",
+      "bytes": 4716,
+      "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/training-twin.test.cjs",
+      "blob": "1d85a35b09a521159abd66949e1bcfe905dfc8b7",
+      "mode": "100644",
+      "bytes": 1742,
+      "sha256": "cfbcb674b3e43f4b12b92afc82348bd76d1fead478fc58973270ffadc4721e17",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/training-workflow-manifest.cjs",
+      "blob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd",
+      "mode": "100644",
+      "bytes": 24222,
+      "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    }
+  ],
+  "shared": {
+    "owner": "LANE01",
+    "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+    "oneOwnerOnePath": true,
+    "paths": [
+      {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+        "bytes": 1981
+      },
+      {
+        "path": "implementation/runtime/inert-finite-json.test.cjs",
+        "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+        "bytes": 2371
+      }
+    ],
+    "standalonePurpose": "Same canonical paths/blobs included only to make this separate frozen-base branch runnable; no competing helper implementation or owner."
+  }
+}

@@ -1,0 +1,6 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process'),crypto=require('node:crypto');
+const base=path.resolve('work/lane05-skills-demand'),name=process.argv[2],tests=process.argv.slice(3),guard=path.resolve('work/trust_review/network-guard.cjs');
+if(!name||!tests.length)throw Error('Name and tests required');const all=tests.length===1&&tests[0]==='--all',args=['--require',guard,'--test',...(all?[]:tests)],result=spawnSync(process.execPath,args,{cwd:base,encoding:'utf8',timeout:60000,maxBuffer:20*1024*1024});
+const log=String(result.stdout||'')+String(result.stderr||''),p=base+'/evidence/'+name+'.tap';fs.writeFileSync(p,log);const counts={};for(const key of ['tests','pass','fail','skipped']){const match=log.match(new RegExp('^# '+key+' (\\d+)','m'));counts[key]=match?Number(match[1]):null;}
+const receipt={node:process.version,args,status:result.status,signal:result.signal,error:result.error?.message||null,networkBlocked:true,timeoutMs:60000,counts,logSha256:crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')};fs.writeFileSync(base+'/evidence/'+name+'.run.json',JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));if(result.error)process.exitCode=2;

@@ -1,0 +1,490 @@
+TAP version 13
+# Subtest: finite JSON is copied without aliasing, with special property names preserved as data
+ok 1 - finite JSON is copied without aliasing, with special property names preserved as data
+  ---
+  duration_ms: 3.5489
+  type: 'test'
+  ...
+# Subtest: null-prototype JSON objects and repeated noncyclic references are finite inert data
+ok 2 - null-prototype JSON objects and repeated noncyclic references are finite inert data
+  ---
+  duration_ms: 1.1694
+  type: 'test'
+  ...
+# Subtest: reject accessor without executing caller code
+ok 3 - reject accessor without executing caller code
+  ---
+  duration_ms: 1.361
+  type: 'test'
+  ...
+# Subtest: reject proxy without executing caller code
+ok 4 - reject proxy without executing caller code
+  ---
+  duration_ms: 0.276
+  type: 'test'
+  ...
+# Subtest: reject revokedProxy without executing caller code
+ok 5 - reject revokedProxy without executing caller code
+  ---
+  duration_ms: 0.2385
+  type: 'test'
+  ...
+# Subtest: reject serializer without executing caller code
+ok 6 - reject serializer without executing caller code
+  ---
+  duration_ms: 0.257
+  type: 'test'
+  ...
+# Subtest: reject arrayMethod without executing caller code
+ok 7 - reject arrayMethod without executing caller code
+  ---
+  duration_ms: 0.4426
+  type: 'test'
+  ...
+# Subtest: reject arrayAccessor without executing caller code
+ok 8 - reject arrayAccessor without executing caller code
+  ---
+  duration_ms: 0.2706
+  type: 'test'
+  ...
+# Subtest: reject arraySubclass without executing caller code
+ok 9 - reject arraySubclass without executing caller code
+  ---
+  duration_ms: 0.631
+  type: 'test'
+  ...
+# Subtest: reject objectSubclass without executing caller code
+ok 10 - reject objectSubclass without executing caller code
+  ---
+  duration_ms: 0.77
+  type: 'test'
+  ...
+# Subtest: reject every non-JSON primitive, hidden and symbol property, cycle and sparse array
+ok 11 - reject every non-JSON primitive, hidden and symbol property, cycle and sparse array
+  ---
+  duration_ms: 2.4016
+  type: 'test'
+  ...
+# (node:11944) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: role curriculum protects least privilege while still teaching each role deeply
+ok 12 - role curriculum protects least privilege while still teaching each role deeply
+  ---
+  duration_ms: 2.6448
+  type: 'test'
+  ...
+# Subtest: plan is generated automatically for the signed-in role
+ok 13 - plan is generated automatically for the signed-in role
+  ---
+  duration_ms: 409.5117
+  type: 'test'
+  ...
+# Subtest: malformed practice answers cannot earn credit or create evidence
+ok 14 - malformed practice answers cannot earn credit or create evidence
+  ---
+  duration_ms: 1705.6348
+  type: 'test'
+  ...
+# Subtest: guidance and retrieval cannot certify without independently observed task success
+ok 15 - guidance and retrieval cannot certify without independently observed task success
+  ---
+  duration_ms: 169.4488
+  type: 'test'
+  ...
+# Subtest: legacy practice without a validated answer is retained but cannot contribute credit
+ok 16 - legacy practice without a validated answer is retained but cannot contribute credit
+  ---
+  duration_ms: 182.6201
+  type: 'test'
+  ...
+# Subtest: guided practice teaches but cannot alone certify durable competence
+ok 17 - guided practice teaches but cannot alone certify durable competence
+  ---
+  duration_ms: 153.3465
+  type: 'test'
+  ...
+# Subtest: coach and trainer competencies require explicit teach-back evidence
+ok 18 - coach and trainer competencies require explicit teach-back evidence
+  ---
+  duration_ms: 227.5253
+  type: 'test'
+  ...
+# Subtest: browser cannot self-certify independent competence
+ok 19 - browser cannot self-certify independent competence
+  ---
+  duration_ms: 150.1745
+  type: 'test'
+  ...
+# Subtest: repeated help use schedules a contextual refresher instead of interrupting every user
+ok 20 - repeated help use schedules a contextual refresher instead of interrupting every user
+  ---
+  duration_ms: 177.5362
+  type: 'test'
+  ...
+# Subtest: new feature can automatically assign delta learning to only affected roles
+ok 21 - new feature can automatically assign delta learning to only affected roles
+  ---
+  duration_ms: 720.1382
+  type: 'test'
+  ...
+# Subtest: learning summary is tenant isolated and employee cannot view aggregate analytics
+ok 22 - learning summary is tenant isolated and employee cannot view aggregate analytics
+  ---
+  duration_ms: 719.1523
+  type: 'test'
+  ...
+# Subtest: director receives privileged curriculum after earlier employee assignments
+ok 23 - director receives privileged curriculum after earlier employee assignments
+  ---
+  duration_ms: 556.457
+  type: 'test'
+  ...
+# Subtest: role demotion hides retired privileged assignments and rejects their practice and help
+ok 24 - role demotion hides retired privileged assignments and rejects their practice and help
+  ---
+  duration_ms: 295.4534
+  type: 'test'
+  ...
+# Subtest: learning event evidence is append only
+ok 25 - learning event evidence is append only
+  ---
+  duration_ms: 145.5863
+  type: 'test'
+  ...
+# Subtest: training-first read reconciles director role and reopens stale unsupported mastery
+ok 26 - training-first read reconciles director role and reopens stale unsupported mastery
+  ---
+  duration_ms: 339.3435
+  type: 'test'
+  ...
+# Subtest: feature assignments survive only while their recorded feature authorizes the current role
+ok 27 - feature assignments survive only while their recorded feature authorizes the current role
+  ---
+  duration_ms: 680.6704
+  type: 'test'
+  ...
+# Subtest: training reads preserve an explicit refresh until fresh independent success
+ok 28 - training reads preserve an explicit refresh until fresh independent success
+  ---
+  duration_ms: 287.1334
+  type: 'test'
+  ...
+# (node:4524) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: one supplied current mastered person yields a one-person advisory gap without granting authority
+ok 29 - one supplied current mastered person yields a one-person advisory gap without granting authority
+  ---
+  duration_ms: 22.8274
+  type: 'test'
+  ...
+# Subtest: valid canonical-shaped empty profiles and zero integer demand produce no skill assignments
+ok 30 - valid canonical-shaped empty profiles and zero integer demand produce no skill assignments
+  ---
+  duration_ms: 0.984
+  type: 'test'
+  ...
+# Subtest: explicit threshold95 excludes supplied score90 but never awards missing mastery
+ok 31 - explicit threshold95 excludes supplied score90 but never awards missing mastery
+  ---
+  duration_ms: 1.4297
+  type: 'test'
+  ...
+# Subtest: explicit null threshold cannot lower the default finite contract
+ok 32 - explicit null threshold cannot lower the default finite contract
+  ---
+  duration_ms: 1.046
+  type: 'test'
+  ...
+# Subtest: explicit NaN threshold cannot lower the default finite contract
+ok 33 - explicit NaN threshold cannot lower the default finite contract
+  ---
+  duration_ms: 1.8991
+  type: 'test'
+  ...
+# Subtest: explicit infinite threshold cannot lower the default finite contract
+ok 34 - explicit infinite threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.624
+  type: 'test'
+  ...
+# Subtest: explicit string threshold cannot lower the default finite contract
+ok 35 - explicit string threshold cannot lower the default finite contract
+  ---
+  duration_ms: 2.4114
+  type: 'test'
+  ...
+# Subtest: explicit negative threshold cannot lower the default finite contract
+ok 36 - explicit negative threshold cannot lower the default finite contract
+  ---
+  duration_ms: 1.4064
+  type: 'test'
+  ...
+# Subtest: explicit above100 threshold cannot lower the default finite contract
+ok 37 - explicit above100 threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.8806
+  type: 'test'
+  ...
+# Subtest: null demand count cannot silently become covered
+ok 38 - null demand count cannot silently become covered
+  ---
+  duration_ms: 0.9512
+  type: 'test'
+  ...
+# Subtest: NaN demand count cannot silently become covered
+ok 39 - NaN demand count cannot silently become covered
+  ---
+  duration_ms: 0.6432
+  type: 'test'
+  ...
+# Subtest: string demand count cannot silently become covered
+ok 40 - string demand count cannot silently become covered
+  ---
+  duration_ms: 0.581
+  type: 'test'
+  ...
+# Subtest: fraction demand count cannot silently become covered
+ok 41 - fraction demand count cannot silently become covered
+  ---
+  duration_ms: 0.9669
+  type: 'test'
+  ...
+# Subtest: negative demand count cannot silently become covered
+ok 42 - negative demand count cannot silently become covered
+  ---
+  duration_ms: 0.8505
+  type: 'test'
+  ...
+# Subtest: tooLarge demand count cannot silently become covered
+ok 43 - tooLarge demand count cannot silently become covered
+  ---
+  duration_ms: 0.5066
+  type: 'test'
+  ...
+# Subtest: missing demand count rejects instead of inferring zero
+ok 44 - missing demand count rejects instead of inferring zero
+  ---
+  duration_ms: 0.7664
+  type: 'test'
+  ...
+# Subtest: missing score cannot claim supplied current mastery
+ok 45 - missing score cannot claim supplied current mastery
+  ---
+  duration_ms: 1.0555
+  type: 'test'
+  ...
+# Subtest: null score cannot claim supplied current mastery
+ok 46 - null score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.9544
+  type: 'test'
+  ...
+# Subtest: NaN score cannot claim supplied current mastery
+ok 47 - NaN score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.6931
+  type: 'test'
+  ...
+# Subtest: infinite score cannot claim supplied current mastery
+ok 48 - infinite score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.4733
+  type: 'test'
+  ...
+# Subtest: string score cannot claim supplied current mastery
+ok 49 - string score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.6366
+  type: 'test'
+  ...
+# Subtest: negative score cannot claim supplied current mastery
+ok 50 - negative score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.9176
+  type: 'test'
+  ...
+# Subtest: above100 score cannot claim supplied current mastery
+ok 51 - above100 score cannot claim supplied current mastery
+  ---
+  duration_ms: 1.1668
+  type: 'test'
+  ...
+# Subtest: duplicate exact person IDs reject instead of counting one worker twice
+ok 52 - duplicate exact person IDs reject instead of counting one worker twice
+  ---
+  duration_ms: 2.2504
+  type: 'test'
+  ...
+# Subtest: trim-colliding person IDs reject without rewriting source identity
+ok 53 - trim-colliding person IDs reject without rewriting source identity
+  ---
+  duration_ms: 1.0721
+  type: 'test'
+  ...
+# Subtest: duplicate competency facts reject rather than selecting one contradictory mastery row
+ok 54 - duplicate competency facts reject rather than selecting one contradictory mastery row
+  ---
+  duration_ms: 0.7194
+  type: 'test'
+  ...
+# Subtest: unavailable supplied current mastered person cannot fill the requirement
+ok 55 - unavailable supplied current mastered person cannot fill the requirement
+  ---
+  duration_ms: 1.4451
+  type: 'test'
+  ...
+# Subtest: MASTERED below canonical80 rejects even with a lower requested threshold
+ok 56 - MASTERED below canonical80 rejects even with a lower requested threshold
+  ---
+  duration_ms: 1.4757
+  type: 'test'
+  ...
+# Subtest: score100 and retrieval/teach-back-like flags cannot manufacture MASTERED status
+ok 57 - score100 and retrieval/teach-back-like flags cannot manufacture MASTERED status
+  ---
+  duration_ms: 0.9
+  type: 'test'
+  ...
+# Subtest: dueAt equal asOf is expired while a later dueAt remains current
+ok 58 - dueAt equal asOf is expired while a later dueAt remains current
+  ---
+  duration_ms: 0.932
+  type: 'test'
+  ...
+# Subtest: missing or future masteredAt cannot attest supplied canonical current status
+ok 59 - missing or future masteredAt cannot attest supplied canonical current status
+  ---
+  duration_ms: 0.8472
+  type: 'test'
+  ...
+# Subtest: future source observation and expired provenance are rejected at exact boundaries
+ok 60 - future source observation and expired provenance are rejected at exact boundaries
+  ---
+  duration_ms: 1.3547
+  type: 'test'
+  ...
+# Subtest: same-instant observedAt is admitted with a later expiry
+ok 61 - same-instant observedAt is admitted with a later expiry
+  ---
+  duration_ms: 0.6824
+  type: 'test'
+  ...
+# Subtest: cross-tenant source assertions reject for demand and profile wrappers
+ok 62 - cross-tenant source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.8798
+  type: 'test'
+  ...
+# Subtest: cross-site source assertions reject for demand and profile wrappers
+ok 63 - cross-site source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.8367
+  type: 'test'
+  ...
+# Subtest: cross-contextRevision source assertions reject for demand and profile wrappers
+ok 64 - cross-contextRevision source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 1.0598
+  type: 'test'
+  ...
+# Subtest: cross-producerSourceSha source assertions reject for demand and profile wrappers
+ok 65 - cross-producerSourceSha source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 1.6803
+  type: 'test'
+  ...
+# Subtest: unverified or missing source revision assertions cannot support a gap
+ok 66 - unverified or missing source revision assertions cannot support a gap
+  ---
+  duration_ms: 3.2115
+  type: 'test'
+  ...
+# Subtest: cross tenant/site person wrappers are denied even with a matching declared profile source
+ok 67 - cross tenant/site person wrappers are denied even with a matching declared profile source
+  ---
+  duration_ms: 1.7
+  type: 'test'
+  ...
+# Subtest: incompatible profile and absent explicit availability cannot imply an available current worker
+ok 68 - incompatible profile and absent explicit availability cannot imply an available current worker
+  ---
+  duration_ms: 0.9984
+  type: 'test'
+  ...
+# Subtest: requirement at and asOf mismatch or malformed calendar timestamps reject
+ok 69 - requirement at and asOf mismatch or malformed calendar timestamps reject
+  ---
+  duration_ms: 1.08
+  type: 'test'
+  ...
+# Subtest: untrusted override hints reject and never enter authority output
+ok 70 - untrusted override hints reject and never enter authority output
+  ---
+  duration_ms: 1.358
+  type: 'test'
+  ...
+# Subtest: indexed getter is rejected before any caller code executes
+ok 71 - indexed getter is rejected before any caller code executes
+  ---
+  duration_ms: 1.3812
+  type: 'test'
+  ...
+# Subtest: proxy and serializer hooks reject without reflection or method execution
+ok 72 - proxy and serializer hooks reject without reflection or method execution
+  ---
+  duration_ms: 1.186
+  type: 'test'
+  ...
+# Subtest: sparse and caller-overridden arrays cannot hide worker rows
+ok 73 - sparse and caller-overridden arrays cannot hide worker rows
+  ---
+  duration_ms: 1.0992
+  type: 'test'
+  ...
+# Subtest: excessive people and competency cardinality reject rather than truncate coverage
+ok 74 - excessive people and competency cardinality reject rather than truncate coverage
+  ---
+  duration_ms: 59.9233
+  type: 'test'
+  ...
+# Subtest: output is detached and deeply frozen while source input remains unchanged
+ok 75 - output is detached and deeply frozen while source input remains unchanged
+  ---
+  duration_ms: 2.0625
+  type: 'test'
+  ...
+# Subtest: candidate priority preserves independent-test first and weighted score/help without assigning work
+ok 76 - candidate priority preserves independent-test first and weighted score/help without assigning work
+  ---
+  duration_ms: 0.9568
+  type: 'test'
+  ...
+# Subtest: actual frozen Training Twin role filtering supplies compatible profiles without restoring retired competencies
+ok 77 - actual frozen Training Twin role filtering supplies compatible profiles without restoring retired competencies
+  ---
+  duration_ms: 243.8203
+  type: 'test'
+  ...
+# (node:13812) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: training twin recommends exposure first and never infers mastery
+ok 78 - training twin recommends exposure first and never infers mastery
+  ---
+  duration_ms: 180.4784
+  type: 'test'
+  ...
+# Subtest: explicit skip explanation routes knowledgeable user toward proving competence, not auto-mastery
+ok 79 - explicit skip explanation routes knowledgeable user toward proving competence, not auto-mastery
+  ---
+  duration_ms: 0.3296
+  type: 'test'
+  ...
+1..79
+# tests 79
+# suites 0
+# pass 79
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7141.195

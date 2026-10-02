@@ -1,0 +1,21 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "learning/runtime/skills-demand-intelligence.test.cjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "networkBlocked": true,
+  "timeoutMs": 60000,
+  "counts": {
+    "tests": 49,
+    "pass": 49,
+    "fail": 0,
+    "skipped": 0
+  },
+  "logSha256": "d5317e4a0f4327c57fc9647353f17a38a20cc71cd9595c7517801bbe62f7039c"
+}

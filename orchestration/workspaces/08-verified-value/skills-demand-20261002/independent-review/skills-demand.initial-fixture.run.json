@@ -1,0 +1,13 @@
+{
+  "node": "v22.23.2",
+  "startedAt": "2026-10-02T12:10:10.440Z",
+  "finishedAt": "2026-10-02T12:10:10.935Z",
+  "args": [
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\skills-demand.held-out.test.cjs"
+  ],
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true
+}

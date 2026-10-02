@@ -1,0 +1,21 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "historical-controls.cjs"
+  ],
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "networkBlocked": true,
+  "timeoutMs": 60000,
+  "counts": {
+    "tests": 5,
+    "pass": 0,
+    "fail": 5,
+    "skipped": 0
+  },
+  "logSha256": "3eadd1dece874971ade681dd8c3cf368cceb34433563d9a687d35aedff814b16"
+}

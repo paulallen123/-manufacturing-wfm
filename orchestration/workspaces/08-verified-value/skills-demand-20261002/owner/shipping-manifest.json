@@ -1,0 +1,138 @@
+{
+  "capabilityId": "product-033",
+  "lane": "05",
+  "classification": "EVOLVE",
+  "state": "IN_PROGRESS",
+  "componentProofState": "TESTED",
+  "proofScope": "ISOLATED_LOCAL_ADVISORY_SOURCE_CONTRACT_ONLY",
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "canonicalOwner": "Existing Training Twin/adaptive-learning competency authority plus authoritative production-demand owner; this pure projection is advisory only.",
+  "runtimeWired": false,
+  "hostedProof": false,
+  "sourceAuthentication": false,
+  "independentReview": "PENDING",
+  "wholeRuntimeAdmission": "PENDING",
+  "files": [
+    {
+      "repositoryTargetPath": "learning/runtime/skills-demand-intelligence.cjs",
+      "localPath": "work/lane05-skills-demand/learning/runtime/skills-demand-intelligence.cjs",
+      "mode": "100644",
+      "proposedBlob": "e4b556cf37460a4e24c1df3de6d1612f0f7738af",
+      "sha256": "84c15ecfef46966c460e6fcc386adf53fdf17acb3e0d17e6305877f492aada9d",
+      "bytes": 8709,
+      "change": "ADD_ADAPTED_PORT",
+      "historicalSourceIdentical": false
+    },
+    {
+      "repositoryTargetPath": "learning/runtime/skills-demand-intelligence.test.cjs",
+      "localPath": "work/lane05-skills-demand/learning/runtime/skills-demand-intelligence.test.cjs",
+      "mode": "100644",
+      "proposedBlob": "4db7407ae0e3349808b75cc474fb35cd64f44d05",
+      "sha256": "94ffc1aa03127f3052565556c399ab1f7ffce7b30fa33040aa0cdc43b53b49c5",
+      "bytes": 12117,
+      "change": "ADD_ADAPTED_PORT",
+      "historicalSourceIdentical": false
+    }
+  ],
+  "shippingPaths": 2,
+  "localPortBytes": 20826,
+  "requiredProposalDependencies": [
+    {
+      "path": "implementation/runtime/inert-finite-json.cjs",
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "bytes": 1981,
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "owner": "LANE01",
+      "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+      "shippingByThisLane": false,
+      "verificationOnlyLocalMirror": true
+    }
+  ],
+  "verificationOnlyDependencies": [
+    {
+      "path": "learning/runtime/adaptive-learning-engine.cjs",
+      "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+      "mode": "100644",
+      "bytes": 29121,
+      "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/adaptive-learning-engine.test.cjs",
+      "blob": "89d2a54ab3cb945ba53f25a235b47d0e02737213",
+      "mode": "100644",
+      "bytes": 21771,
+      "sha256": "b8b2e3f2f8418e6b5b9149b112a503b3000ee134719d99054d6f3af83e7b87dd",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/training-twin.cjs",
+      "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+      "mode": "100644",
+      "bytes": 4716,
+      "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/training-twin.test.cjs",
+      "blob": "1d85a35b09a521159abd66949e1bcfe905dfc8b7",
+      "mode": "100644",
+      "bytes": 1742,
+      "sha256": "cfbcb674b3e43f4b12b92afc82348bd76d1fead478fc58973270ffadc4721e17",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "learning/runtime/training-workflow-manifest.cjs",
+      "blob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd",
+      "mode": "100644",
+      "bytes": 24222,
+      "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "shipping": false
+    },
+    {
+      "path": "implementation/runtime/inert-finite-json.test.cjs",
+      "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+      "bytes": 2371,
+      "sha256": "9c4954f38bbd051cb57ecdc416c3a36658ef52d06795f20cba977f8e8a654fa5",
+      "owner": "LANE01",
+      "shippingByThisLane": false,
+      "verificationOnlyLocalMirror": true
+    }
+  ],
+  "historicalProvenance": {
+    "sourcePR": 230,
+    "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+    "path": "learning/runtime/skills-demand-intelligence.cjs",
+    "blob": "eb059a4be9cfc2d3b90c3e667e20453bda783378",
+    "bytes": 4315
+  },
+  "authority": {
+    "execution": "NONE",
+    "hr": "NONE",
+    "scheduling": "NONE",
+    "learning": "NONE",
+    "masteryAwarded": false,
+    "finance": false
+  },
+  "compatibility": "Actual frozen Training Twin V1 output and role-demotion active filtering exercised. Old unscoped wrappers intentionally fail; no historical whole-source replacement.",
+  "remainingWork": [
+    "Independent adversarial/source review",
+    "Authenticated canonical current tenant/source/demand/role-filtered profile producers",
+    "Intake byte/depth/CPU/size admission before recursive clone",
+    "Runtime caller/UI/candidate/container/hosted/customer/provider/restart/rollback proof"
+  ],
+  "exclusions": [
+    "New competency/learning ledger/store/state",
+    "Canonical role/mastery/active filtering changes",
+    "Helper implementation changes",
+    "Scheduling/HR decisions, workers, publishers, providers, deployment, Staffology or proof-root edits"
+  ]
+}

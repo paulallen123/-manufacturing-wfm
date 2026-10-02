@@ -1,0 +1,426 @@
+TAP version 13
+# Subtest: one supplied current mastered person yields a one-person advisory gap without granting authority
+not ok 1 - one supplied current mastered person yields a one-person advisory gap without granting authority
+  ---
+  duration_ms: 7.4237
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:10:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:10:120)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: valid canonical-shaped empty profiles and zero integer demand produce no skill assignments
+not ok 2 - valid canonical-shaped empty profiles and zero integer demand produce no skill assignments
+  ---
+  duration_ms: 0.6808
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:11:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:11:241)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: explicit threshold95 excludes supplied score90 but never awards missing mastery
+not ok 3 - explicit threshold95 excludes supplied score90 but never awards missing mastery
+  ---
+  duration_ms: 0.8225
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:12:157)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit null threshold cannot lower the default finite contract
+ok 4 - explicit null threshold cannot lower the default finite contract
+  ---
+  duration_ms: 1.7003
+  type: 'test'
+  ...
+# Subtest: explicit NaN threshold cannot lower the default finite contract
+ok 5 - explicit NaN threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.8381
+  type: 'test'
+  ...
+# Subtest: explicit infinite threshold cannot lower the default finite contract
+ok 6 - explicit infinite threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.4959
+  type: 'test'
+  ...
+# Subtest: explicit string threshold cannot lower the default finite contract
+ok 7 - explicit string threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.4599
+  type: 'test'
+  ...
+# Subtest: explicit negative threshold cannot lower the default finite contract
+ok 8 - explicit negative threshold cannot lower the default finite contract
+  ---
+  duration_ms: 0.4965
+  type: 'test'
+  ...
+# Subtest: explicit above100 threshold cannot lower the default finite contract
+ok 9 - explicit above100 threshold cannot lower the default finite contract
+  ---
+  duration_ms: 3.1701
+  type: 'test'
+  ...
+# Subtest: null demand count cannot silently become covered
+ok 10 - null demand count cannot silently become covered
+  ---
+  duration_ms: 1.8361
+  type: 'test'
+  ...
+# Subtest: NaN demand count cannot silently become covered
+ok 11 - NaN demand count cannot silently become covered
+  ---
+  duration_ms: 1.1299
+  type: 'test'
+  ...
+# Subtest: string demand count cannot silently become covered
+ok 12 - string demand count cannot silently become covered
+  ---
+  duration_ms: 0.7678
+  type: 'test'
+  ...
+# Subtest: fraction demand count cannot silently become covered
+ok 13 - fraction demand count cannot silently become covered
+  ---
+  duration_ms: 0.4789
+  type: 'test'
+  ...
+# Subtest: negative demand count cannot silently become covered
+ok 14 - negative demand count cannot silently become covered
+  ---
+  duration_ms: 0.5023
+  type: 'test'
+  ...
+# Subtest: tooLarge demand count cannot silently become covered
+ok 15 - tooLarge demand count cannot silently become covered
+  ---
+  duration_ms: 0.4274
+  type: 'test'
+  ...
+# Subtest: missing demand count rejects instead of inferring zero
+ok 16 - missing demand count rejects instead of inferring zero
+  ---
+  duration_ms: 0.5814
+  type: 'test'
+  ...
+# Subtest: missing score cannot claim supplied current mastery
+ok 17 - missing score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.5238
+  type: 'test'
+  ...
+# Subtest: null score cannot claim supplied current mastery
+ok 18 - null score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.4089
+  type: 'test'
+  ...
+# Subtest: NaN score cannot claim supplied current mastery
+ok 19 - NaN score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.3874
+  type: 'test'
+  ...
+# Subtest: infinite score cannot claim supplied current mastery
+ok 20 - infinite score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.3541
+  type: 'test'
+  ...
+# Subtest: string score cannot claim supplied current mastery
+ok 21 - string score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.3708
+  type: 'test'
+  ...
+# Subtest: negative score cannot claim supplied current mastery
+ok 22 - negative score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.3362
+  type: 'test'
+  ...
+# Subtest: above100 score cannot claim supplied current mastery
+ok 23 - above100 score cannot claim supplied current mastery
+  ---
+  duration_ms: 0.3618
+  type: 'test'
+  ...
+# Subtest: duplicate exact person IDs reject instead of counting one worker twice
+ok 24 - duplicate exact person IDs reject instead of counting one worker twice
+  ---
+  duration_ms: 0.6243
+  type: 'test'
+  ...
+# Subtest: trim-colliding person IDs reject without rewriting source identity
+ok 25 - trim-colliding person IDs reject without rewriting source identity
+  ---
+  duration_ms: 2.2327
+  type: 'test'
+  ...
+# Subtest: duplicate competency facts reject rather than selecting one contradictory mastery row
+ok 26 - duplicate competency facts reject rather than selecting one contradictory mastery row
+  ---
+  duration_ms: 0.686
+  type: 'test'
+  ...
+# Subtest: unavailable supplied current mastered person cannot fill the requirement
+not ok 27 - unavailable supplied current mastered person cannot fill the requirement
+  ---
+  duration_ms: 0.4822
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:20:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:20:145)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: MASTERED below canonical80 rejects even with a lower requested threshold
+ok 28 - MASTERED below canonical80 rejects even with a lower requested threshold
+  ---
+  duration_ms: 0.4648
+  type: 'test'
+  ...
+# Subtest: score100 and retrieval/teach-back-like flags cannot manufacture MASTERED status
+not ok 29 - score100 and retrieval/teach-back-like flags cannot manufacture MASTERED status
+  ---
+  duration_ms: 0.472
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:22:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:22:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: dueAt equal asOf is expired while a later dueAt remains current
+not ok 30 - dueAt equal asOf is expired while a later dueAt remains current
+  ---
+  duration_ms: 0.5312
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:23:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:23:127)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing or future masteredAt cannot attest supplied canonical current status
+ok 31 - missing or future masteredAt cannot attest supplied canonical current status
+  ---
+  duration_ms: 0.7801
+  type: 'test'
+  ...
+# Subtest: future source observation and expired provenance are rejected at exact boundaries
+ok 32 - future source observation and expired provenance are rejected at exact boundaries
+  ---
+  duration_ms: 1.3979
+  type: 'test'
+  ...
+# Subtest: same-instant observedAt is admitted with a later expiry
+not ok 33 - same-instant observedAt is admitted with a later expiry
+  ---
+  duration_ms: 0.5846
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:26:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:26:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cross-tenant source assertions reject for demand and profile wrappers
+ok 34 - cross-tenant source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.7393
+  type: 'test'
+  ...
+# Subtest: cross-site source assertions reject for demand and profile wrappers
+ok 35 - cross-site source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.7202
+  type: 'test'
+  ...
+# Subtest: cross-contextRevision source assertions reject for demand and profile wrappers
+ok 36 - cross-contextRevision source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.5924
+  type: 'test'
+  ...
+# Subtest: cross-producerSourceSha source assertions reject for demand and profile wrappers
+ok 37 - cross-producerSourceSha source assertions reject for demand and profile wrappers
+  ---
+  duration_ms: 0.7886
+  type: 'test'
+  ...
+# Subtest: unverified or missing source revision assertions cannot support a gap
+ok 38 - unverified or missing source revision assertions cannot support a gap
+  ---
+  duration_ms: 2.3206
+  type: 'test'
+  ...
+# Subtest: cross tenant/site person wrappers are denied even with a matching declared profile source
+ok 39 - cross tenant/site person wrappers are denied even with a matching declared profile source
+  ---
+  duration_ms: 0.7842
+  type: 'test'
+  ...
+# Subtest: incompatible profile and absent explicit availability cannot imply an available current worker
+ok 40 - incompatible profile and absent explicit availability cannot imply an available current worker
+  ---
+  duration_ms: 0.7031
+  type: 'test'
+  ...
+# Subtest: requirement at and asOf mismatch or malformed calendar timestamps reject
+ok 41 - requirement at and asOf mismatch or malformed calendar timestamps reject
+  ---
+  duration_ms: 0.8348
+  type: 'test'
+  ...
+# Subtest: untrusted override hints reject and never enter authority output
+ok 42 - untrusted override hints reject and never enter authority output
+  ---
+  duration_ms: 0.9315
+  type: 'test'
+  ...
+# Subtest: indexed getter is rejected before any caller code executes
+ok 43 - indexed getter is rejected before any caller code executes
+  ---
+  duration_ms: 0.5844
+  type: 'test'
+  ...
+# Subtest: proxy and serializer hooks reject without reflection or method execution
+ok 44 - proxy and serializer hooks reject without reflection or method execution
+  ---
+  duration_ms: 0.7752
+  type: 'test'
+  ...
+# Subtest: sparse and caller-overridden arrays cannot hide worker rows
+ok 45 - sparse and caller-overridden arrays cannot hide worker rows
+  ---
+  duration_ms: 1.0635
+  type: 'test'
+  ...
+# Subtest: excessive people and competency cardinality reject rather than truncate coverage
+ok 46 - excessive people and competency cardinality reject rather than truncate coverage
+  ---
+  duration_ms: 7.4669
+  type: 'test'
+  ...
+# Subtest: output is detached and deeply frozen while source input remains unchanged
+not ok 47 - output is detached and deeply frozen while source input remains unchanged
+  ---
+  duration_ms: 0.697
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane05-skills-demand\\learning\\runtime\\skills-demand-intelligence.test.cjs:37:1'
+  failureType: 'testCodeFailure'
+  error: 'bounded source API is not implemented yet'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    evaluate (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:4:33)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane05-skills-demand\learning\runtime\skills-demand-intelligence.test.cjs:37:137)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 39
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 334.596

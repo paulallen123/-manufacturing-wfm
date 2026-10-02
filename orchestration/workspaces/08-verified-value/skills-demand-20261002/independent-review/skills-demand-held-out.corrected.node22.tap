@@ -1,0 +1,252 @@
+﻿TAP version 13
+# (node:10036) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: exact time and canonical80 floor yield detached advisory coverage without authority
+ok 1 - exact time and canonical80 floor yield detached advisory coverage without authority
+  ---
+  duration_ms: 7.1204
+  type: 'test'
+  ...
+# Subtest: person tenant
+ok 2 - person tenant
+  ---
+  duration_ms: 0.4169
+  type: 'test'
+  ...
+# Subtest: person site
+ok 3 - person site
+  ---
+  duration_ms: 0.2909
+  type: 'test'
+  ...
+# Subtest: profile context
+ok 4 - profile context
+  ---
+  duration_ms: 0.3894
+  type: 'test'
+  ...
+# Subtest: demand context
+ok 5 - demand context
+  ---
+  duration_ms: 0.3166
+  type: 'test'
+  ...
+# Subtest: profile producer
+ok 6 - profile producer
+  ---
+  duration_ms: 0.6846
+  type: 'test'
+  ...
+# Subtest: demand source missing
+ok 7 - demand source missing
+  ---
+  duration_ms: 1.2585
+  type: 'test'
+  ...
+# Subtest: blank top revision
+ok 8 - blank top revision
+  ---
+  duration_ms: 0.9199
+  type: 'test'
+  ...
+# Subtest: trimmed ID collision
+ok 9 - trimmed ID collision
+  ---
+  duration_ms: 1.5324
+  type: 'test'
+  ...
+# Subtest: duplicate ID contradiction
+ok 10 - duplicate ID contradiction
+  ---
+  duration_ms: 1.4148
+  type: 'test'
+  ...
+# Subtest: duplicate competency contradiction
+ok 11 - duplicate competency contradiction
+  ---
+  duration_ms: 0.879
+  type: 'test'
+  ...
+# Subtest: future observed
+ok 12 - future observed
+  ---
+  duration_ms: 1.7233
+  type: 'test'
+  ...
+# Subtest: expiry equality
+ok 13 - expiry equality
+  ---
+  duration_ms: 0.5256
+  type: 'test'
+  ...
+# Subtest: calendar rollover
+ok 14 - calendar rollover
+  ---
+  duration_ms: 0.394
+  type: 'test'
+  ...
+# Subtest: timezone alternate
+ok 15 - timezone alternate
+  ---
+  duration_ms: 0.2944
+  type: 'test'
+  ...
+# Subtest: future performance
+ok 16 - future performance
+  ---
+  duration_ms: 0.2667
+  type: 'test'
+  ...
+# Subtest: mastery missing performance
+ok 17 - mastery missing performance
+  ---
+  duration_ms: 0.2788
+  type: 'test'
+  ...
+# Subtest: mastery79 lower threshold
+ok 18 - mastery79 lower threshold
+  ---
+  duration_ms: 0.297
+  type: 'test'
+  ...
+# Subtest: string available
+ok 19 - string available
+  ---
+  duration_ms: 0.2318
+  type: 'test'
+  ...
+# Subtest: unknown profile override
+ok 20 - unknown profile override
+  ---
+  duration_ms: 0.246
+  type: 'test'
+  ...
+# Subtest: unknown target override
+ok 21 - unknown target override
+  ---
+  duration_ms: 0.2131
+  type: 'test'
+  ...
+# Subtest: unknown person override
+ok 22 - unknown person override
+  ---
+  duration_ms: 0.2221
+  type: 'test'
+  ...
+# Subtest: null count
+ok 23 - null count
+  ---
+  duration_ms: 0.2023
+  type: 'test'
+  ...
+# Subtest: unsafe count
+ok 24 - unsafe count
+  ---
+  duration_ms: 0.2389
+  type: 'test'
+  ...
+# Subtest: string threshold
+ok 25 - string threshold
+  ---
+  duration_ms: 0.2044
+  type: 'test'
+  ...
+# Subtest: infinite unused preference
+ok 26 - infinite unused preference
+  ---
+  duration_ms: 0.2003
+  type: 'test'
+  ...
+# Subtest: negative help
+ok 27 - negative help
+  ---
+  duration_ms: 0.2377
+  type: 'test'
+  ...
+# Subtest: fraction help
+ok 28 - fraction help
+  ---
+  duration_ms: 0.3174
+  type: 'test'
+  ...
+# Subtest: people1001
+ok 29 - people1001
+  ---
+  duration_ms: 56.5865
+  type: 'test'
+  ...
+# Subtest: competencies257
+ok 30 - competencies257
+  ---
+  duration_ms: 2.8379
+  type: 'test'
+  ...
+# Subtest: expiry, unavailable, refresh and high-score DUE do not count as mastered
+ok 31 - expiry, unavailable, refresh and high-score DUE do not count as mastered
+  ---
+  duration_ms: 1.0529
+  type: 'test'
+  ...
+# Subtest: valid near boundaries and raised threshold preserve integer demand arithmetic
+ok 32 - valid near boundaries and raised threshold preserve integer demand arithmetic
+  ---
+  duration_ms: 0.41
+  type: 'test'
+  ...
+# Subtest: top getter rejects without executing caller code
+ok 33 - top getter rejects without executing caller code
+  ---
+  duration_ms: 0.2771
+  type: 'test'
+  ...
+# Subtest: person getter rejects without executing caller code
+ok 34 - person getter rejects without executing caller code
+  ---
+  duration_ms: 0.153
+  type: 'test'
+  ...
+# Subtest: index getter rejects without executing caller code
+ok 35 - index getter rejects without executing caller code
+  ---
+  duration_ms: 0.2141
+  type: 'test'
+  ...
+# Subtest: preferences getter rejects without executing caller code
+ok 36 - preferences getter rejects without executing caller code
+  ---
+  duration_ms: 0.1795
+  type: 'test'
+  ...
+# Subtest: nested/revoked proxies reject before traps or serializers
+ok 37 - nested/revoked proxies reject before traps or serializers
+  ---
+  duration_ms: 0.3049
+  type: 'test'
+  ...
+# Subtest: array methods, prototype methods, toJSON and sparse/cyclic objects reject without calls
+ok 38 - array methods, prototype methods, toJSON and sparse/cyclic objects reject without calls
+  ---
+  duration_ms: 0.7335
+  type: 'test'
+  ...
+# Subtest: null-prototype inert records do not inherit polluted priority/authority
+ok 39 - null-prototype inert records do not inherit polluted priority/authority
+  ---
+  duration_ms: 0.3026
+  type: 'test'
+  ...
+# Subtest: frozen Training Twin mastered snapshot loses retired skill after role demotion
+ok 40 - frozen Training Twin mastered snapshot loses retired skill after role demotion
+  ---
+  duration_ms: 254.5877
+  type: 'test'
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 523.0796

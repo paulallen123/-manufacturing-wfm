@@ -1,0 +1,8 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),{evaluateSkillsDemand}=require('./evidence/historical-skills-demand-intelligence.cjs');
+function input(){return{tenant:'alpha',site:'plant-a',requirement:{competencyKey:'schedule.recover',requiredCount:2,at:'2026-10-02T10:00:00.000Z',verified:true,sourceRef:'demand:7'},people:[{personRef:'p1',tenant:'alpha',site:'plant-a',available:true,trainingProfile:{contractVersion:'VECTOR_TRAINING_TWIN_V1',role:'manager',preferences:{locale:'en-GB',explanationMode:'step-by-step',skipExplanation:false},competencies:[{competencyKey:'schedule.recover',title:'Recover schedule',status:'MASTERED',score:90,dueAt:'2026-11-02T10:00:00.000Z',masteredAt:'2026-10-01T10:00:00.000Z',recentHelp:0,recommendedMode:'NONE'}],due:[]}}]};}
+test('historical duplicated person cannot cover two required people',()=>{const x=input();x.people.push(structuredClone(x.people[0]));assert.equal(evaluateSkillsDemand(x).qualifiedCount,1);});
+test('historical missing score cannot satisfy current mastery',()=>{const x=input();delete x.people[0].trainingProfile.competencies[0].score;assert.throws(()=>evaluateSkillsDemand(x));});
+test('historical NaN score cannot satisfy current mastery',()=>{const x=input();x.people[0].trainingProfile.competencies[0].score=NaN;assert.throws(()=>evaluateSkillsDemand(x));});
+test('historical null demand cannot become zero demand',()=>{const x=input();x.requirement.requiredCount=null;assert.throws(()=>evaluateSkillsDemand(x));});
+test('historical explicit null threshold cannot become zero threshold',()=>{const x=input();x.requirement.minMasteryScore=null;assert.throws(()=>evaluateSkillsDemand(x));});

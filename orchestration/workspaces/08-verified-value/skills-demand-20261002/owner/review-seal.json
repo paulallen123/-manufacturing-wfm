@@ -1,0 +1,310 @@
+{
+  "capabilityId": "product-033",
+  "state": "IN_PROGRESS",
+  "componentProofState": "TESTED",
+  "independentReview": "PENDING",
+  "runtimeWired": false,
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "shippingPaths": 2,
+  "localPortBytes": 20826,
+  "artifactPaths": 41,
+  "files": [
+    {
+      "path": "work/lane05-skills-demand/BASELINE_LOCK.json",
+      "bytes": 566,
+      "sha256": "1263a1522cb8e94ccd1432747fc12be3c0456e4b1889020c42ce3f06b9e8d9d8",
+      "blob": "49dd5b41d49457962e7db749cc1f90fda13e6d64",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/DESIGN.md",
+      "bytes": 5208,
+      "sha256": "8a87019ad04aecc6e09ec2d2fbbd72715d2a22fc90be78b438c7b385d21489f5",
+      "blob": "d5e5c736b73e018306d48c499fcf369f60a0bbf6",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/REVIEW_HANDOFF.md",
+      "bytes": 3949,
+      "sha256": "cb37161d1a1218d01c1451ec5c381ac82401343e24c2b0a39a51584551e74454",
+      "blob": "41e014ba020df32bfa2a5e721e8ee321faa55521",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/dependency-manifest.json",
+      "bytes": 2920,
+      "sha256": "9b46d2b48214a9c1f2c265dc80f8dbcfcb2e02793ae6d057eff02197711c4898",
+      "blob": "766e32e37105ed1215d99ef677155f78a003dfed",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/01-historical-red.run.json",
+      "bytes": 491,
+      "sha256": "a5c8bce187dfb8d6d5c93f1e954dd3bc099b9f5e5be20741d0f3fbe4975fe717",
+      "blob": "336091d4e9ade313b7cc614a2f9e61c720efd992",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/01-historical-red.tap",
+      "bytes": 5122,
+      "sha256": "3eadd1dece874971ade681dd8c3cf368cceb34433563d9a687d35aedff814b16",
+      "blob": "6e1b7eb42ed2e78dd55591adb684c07655d7de43",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-initial-missing-api-qualified.run.json",
+      "bytes": 522,
+      "sha256": "fee92106cbbe977d02a5b77b36cd123024ee6e8e1fe15329d0894114edaaaaf2",
+      "blob": "32d9dffd33fa089d30ec98a7ddf29696ee77d170",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-initial-missing-api-qualified.tap",
+      "bytes": 18371,
+      "sha256": "afdd1416718dcf802f59c1e04f6d6a5cb40d54b7e719771f9ca22de87d8a571a",
+      "blob": "5d55086ccb0dc135837c6420254b180f36aba0fa",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-new-contract-red.run.json",
+      "bytes": 522,
+      "sha256": "fee92106cbbe977d02a5b77b36cd123024ee6e8e1fe15329d0894114edaaaaf2",
+      "blob": "32d9dffd33fa089d30ec98a7ddf29696ee77d170",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-new-contract-red.tap",
+      "bytes": 18371,
+      "sha256": "afdd1416718dcf802f59c1e04f6d6a5cb40d54b7e719771f9ca22de87d8a571a",
+      "blob": "5d55086ccb0dc135837c6420254b180f36aba0fa",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/03-contract-red.run.json",
+      "bytes": 522,
+      "sha256": "05291a3309ad0baf1ad192736aa7cc0a7ed804fefd7dab2a7681262e3a7f3cfb",
+      "blob": "1b53757bacf2a0cf1fdbe4e84bdb3b6e818cc78e",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/03-contract-red.tap",
+      "bytes": 61612,
+      "sha256": "9dc85b0dd34abebc40b0b6ade05e1f31defa3886c38601b16a8c8482a65e51f3",
+      "blob": "cd3eae7f219d5421d31b727dfb9a939f678412a1",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/04-final-contract-red.run.json",
+      "bytes": 522,
+      "sha256": "908ad5c85253d0bd97e1ae8c278747358b52b0e59fbf91916d6dffb5d5518df7",
+      "blob": "00ece72aac2c4a6379a5cae20f7fc675ab23ab02",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/04-final-contract-red.tap",
+      "bytes": 62982,
+      "sha256": "ac1f2a034e142b533b5dd7883bb7ddb2958ed82ecd5c3f3a85d20b607bc17d23",
+      "blob": "056d2cabefda355afb09ea93cd4843a4c5f9cfef",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/05-canonical-shape-contract-red.run.json",
+      "bytes": 522,
+      "sha256": "c2c9e3af97288fc6d732279a43d5f94c6796bdccb1463231d560034296eb0f3f",
+      "blob": "92a9b71e177c035bdf31ddafca1e331b902a5db9",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/05-canonical-shape-contract-red.tap",
+      "bytes": 64379,
+      "sha256": "0b011e6daac94ede347dac4d258e149166f396237aa84460e5e9069824bfd81e",
+      "blob": "fb0f599c25229debf300caf1a6c62b09a919c03b",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/06-focused-green.run.json",
+      "bytes": 522,
+      "sha256": "d9518e64ad28035a736fe5a85c5bb75560760c0893aeb9d7bcb6d604c78e09c4",
+      "blob": "528d148ab0cf2411e54dcea65c6f82e194fe909e",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/06-focused-green.tap",
+      "bytes": 10350,
+      "sha256": "d5317e4a0f4327c57fc9647353f17a38a20cc71cd9595c7517801bbe62f7039c",
+      "blob": "7a610a446533c11ea949563ceab711eb01410c0b",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/07-capsule-all-green.run.json",
+      "bytes": 462,
+      "sha256": "4e71d5b6297cda9fa805928b187626c3ea2aeff169d74daf2d43df7e4e211f88",
+      "blob": "d2ccbc0c5c949cbdf0943268a521349bfef2969b",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/07-capsule-all-green.tap",
+      "bytes": 16872,
+      "sha256": "1ce5adf5a49054642cbd5aaaaff2470f2fc617f52f81f20a7a30e7f55c8b24ba",
+      "blob": "25a0b4a38697f411dd96b2b3ea903dc46f9136db",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/08-final-capsule-all-green.run.json",
+      "bytes": 462,
+      "sha256": "61a0e84c2af9063a759b5ce84579f67f08bcade46369ab5f937b4f7b930f887d",
+      "blob": "963d99ea54f3cd4b882b13ceaa535bb972b8250f",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/08-final-capsule-all-green.tap",
+      "bytes": 16854,
+      "sha256": "f4f6937f2ea52af74fab714a122a8630e5efeafad12490c5826b72a318594ae3",
+      "blob": "a2111b384cca39992e1ab597d5a919f37761debe",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/historical-skills-demand-intelligence.cjs",
+      "bytes": 4315,
+      "sha256": "f7d2cc747d89c9b77a6c94ed8c8e431e94b0d2bdcdd7f024ea10c59ef356fe67",
+      "blob": "eb059a4be9cfc2d3b90c3e667e20453bda783378",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/syntax.json",
+      "bytes": 256,
+      "sha256": "34b67ffe7b1f2a0b27aa594746a7aaec7b7bfabfc7e95b48d8eea58e8e0d4988",
+      "blob": "137a01cc791812f7643ede713d140d18cb03c746",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/historical-controls.cjs",
+      "bytes": 1693,
+      "sha256": "188f1241d890c29ddd71bc393bc304c0302bfc751d08f1ad506635f6fbc37843",
+      "blob": "aeea51e9fdfc7201a8bdd917ad0a53fc7b97152a",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/implementation/runtime/inert-finite-json.cjs",
+      "bytes": 1981,
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/implementation/runtime/inert-finite-json.test.cjs",
+      "bytes": 2371,
+      "sha256": "9c4954f38bbd051cb57ecdc416c3a36658ef52d06795f20cba977f8e8a654fa5",
+      "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/learning/runtime/adaptive-learning-engine.cjs",
+      "bytes": 29121,
+      "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+      "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/learning/runtime/adaptive-learning-engine.test.cjs",
+      "bytes": 21771,
+      "sha256": "b8b2e3f2f8418e6b5b9149b112a503b3000ee134719d99054d6f3af83e7b87dd",
+      "blob": "89d2a54ab3cb945ba53f25a235b47d0e02737213",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/learning/runtime/skills-demand-intelligence.cjs",
+      "bytes": 8709,
+      "sha256": "84c15ecfef46966c460e6fcc386adf53fdf17acb3e0d17e6305877f492aada9d",
+      "blob": "e4b556cf37460a4e24c1df3de6d1612f0f7738af",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/learning/runtime/skills-demand-intelligence.test.cjs",
+      "bytes": 12117,
+      "sha256": "94ffc1aa03127f3052565556c399ab1f7ffce7b30fa33040aa0cdc43b53b49c5",
+      "blob": "4db7407ae0e3349808b75cc474fb35cd64f44d05",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/learning/runtime/training-twin.cjs",
+      "bytes": 4716,
+      "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+      "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/learning/runtime/training-twin.test.cjs",
+      "bytes": 1742,
+      "sha256": "cfbcb674b3e43f4b12b92afc82348bd76d1fead478fc58973270ffadc4721e17",
+      "blob": "1d85a35b09a521159abd66949e1bcfe905dfc8b7",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/learning/runtime/training-workflow-manifest.cjs",
+      "bytes": 24222,
+      "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0",
+      "blob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/prepare.cjs",
+      "bytes": 3112,
+      "sha256": "8c6c1dfd188e392bd1fc845cbed52c58b9cae50fba7fbf88aaf0710602634961",
+      "blob": "0f38c7ac093a860c16df06ba22ace6ca7b109940",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/run-syntax.cjs",
+      "bytes": 551,
+      "sha256": "48dd85d9b873c321a3fe91d15cbaf99a97738fee645456bc635a1602a4e66c8e",
+      "blob": "3fa68a087734989bea2f29c7f41ff21b60301660",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/run.cjs",
+      "bytes": 1258,
+      "sha256": "848032caeb1803ce4e00840e7d3294b6abd45e023192e8f5033a23f7bc7eb7f7",
+      "blob": "2b1f46bdc2b0d9de65f78a766a3ec92d76ceb07f",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/seal-index.cjs",
+      "bytes": 2460,
+      "sha256": "a1d7e169b587fd89314b8e140bede0ab75a89b4b055708845d258ef904e60e9e",
+      "blob": "b401f967995cc78339d31e508f4edc48b7e0f94c",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/seal.cjs",
+      "bytes": 5283,
+      "sha256": "d31fb125526d78136df6e74b2821879381ba15772c27ce67f243a444ba2a2841",
+      "blob": "14574f49d2d432219f3368bd67d2ffe2214b42fe",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/shipping-manifest.json",
+      "bytes": 5479,
+      "sha256": "51bebb95b63d30d466175df8ecb4b3a7cb750d61823aad866ff7ee49dd7ffe0a",
+      "blob": "7b59510df950d7f25a7dad766613ae8d17095b46",
+      "mode": "100644"
+    },
+    {
+      "path": "work/lane05-skills-demand/verification.json",
+      "bytes": 9378,
+      "sha256": "0f1a3b1ac6c0b43cf24e36f03e51505daf3c5f5b3453a35a2c0c96ac5dd42d12",
+      "blob": "0ea66a48cd595b1e063e4ba27ce58d9f512f56c9",
+      "mode": "100644"
+    }
+  ],
+  "utf8RawRoundtrip": true,
+  "normalizations": 0,
+  "credentialScan": {
+    "patterns": 7,
+    "findings": [],
+    "scope": "All isolated capsule shipping, dependency mirrors, source provenance, design, scripts and raw receipts. Pattern scan only."
+  },
+  "qualification": "Only the isolated local component is tested. All supplied profile/status/provenance data are unauthenticated caller assertions. Full repository/Linux/Docker/runtime/hosted/customer proof remains pending."
+}

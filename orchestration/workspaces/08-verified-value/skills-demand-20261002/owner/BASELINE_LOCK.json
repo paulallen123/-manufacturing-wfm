@@ -1,0 +1,15 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "capabilityId": "product-033",
+  "state": "IN_PROGRESS",
+  "componentProofScope": "ISOLATED_LOCAL_SOURCE_CONTRACT_ONLY",
+  "runtimeWired": false,
+  "callerAdmission": "PENDING_AUTHENTICATED_CANONICAL_TENANT_CURRENT_SOURCE_ROLE_FILTERED_PROFILE",
+  "githubMutation": false,
+  "providerCalls": false,
+  "canonicalLearningMutation": false,
+  "staffologyOrProofRootMutation": false
+}

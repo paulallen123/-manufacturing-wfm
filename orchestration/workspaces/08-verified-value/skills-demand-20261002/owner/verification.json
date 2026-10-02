@@ -1,0 +1,306 @@
+{
+  "node": "v22.23.2",
+  "networkBlocked": true,
+  "historicalRed": {
+    "tests": 5,
+    "pass": 0,
+    "fail": 5,
+    "skipped": 0
+  },
+  "missingAPIContractRed": {
+    "tests": 49,
+    "pass": 0,
+    "fail": 49,
+    "skipped": 0
+  },
+  "focused": {
+    "tests": 49,
+    "pass": 49,
+    "fail": 0,
+    "skipped": 0
+  },
+  "capsuleAll": {
+    "tests": 79,
+    "pass": 79,
+    "fail": 0,
+    "skipped": 0
+  },
+  "capsuleAllCommand": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test"
+  ],
+  "scopeCounts": {
+    "selected": 49,
+    "canonicalAdaptive": 17,
+    "canonicalTwin": 2,
+    "sharedHelper": 11
+  },
+  "syntax": [
+    {
+      "path": "learning/runtime/skills-demand-intelligence.cjs",
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "path": "learning/runtime/skills-demand-intelligence.test.cjs",
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "logs": [
+    {
+      "path": "work/lane05-skills-demand/evidence/01-historical-red.tap",
+      "bytes": 5122,
+      "sha256": "3eadd1dece874971ade681dd8c3cf368cceb34433563d9a687d35aedff814b16"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-initial-missing-api-qualified.tap",
+      "bytes": 18371,
+      "sha256": "afdd1416718dcf802f59c1e04f6d6a5cb40d54b7e719771f9ca22de87d8a571a"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-new-contract-red.tap",
+      "bytes": 18371,
+      "sha256": "afdd1416718dcf802f59c1e04f6d6a5cb40d54b7e719771f9ca22de87d8a571a"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/03-contract-red.tap",
+      "bytes": 61612,
+      "sha256": "9dc85b0dd34abebc40b0b6ade05e1f31defa3886c38601b16a8c8482a65e51f3"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/04-final-contract-red.tap",
+      "bytes": 62982,
+      "sha256": "ac1f2a034e142b533b5dd7883bb7ddb2958ed82ecd5c3f3a85d20b607bc17d23"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/05-canonical-shape-contract-red.tap",
+      "bytes": 64379,
+      "sha256": "0b011e6daac94ede347dac4d258e149166f396237aa84460e5e9069824bfd81e"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/06-focused-green.tap",
+      "bytes": 10350,
+      "sha256": "d5317e4a0f4327c57fc9647353f17a38a20cc71cd9595c7517801bbe62f7039c"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/07-capsule-all-green.tap",
+      "bytes": 16872,
+      "sha256": "1ce5adf5a49054642cbd5aaaaff2470f2fc617f52f81f20a7a30e7f55c8b24ba"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/08-final-capsule-all-green.tap",
+      "bytes": 16854,
+      "sha256": "f4f6937f2ea52af74fab714a122a8630e5efeafad12490c5826b72a318594ae3"
+    }
+  ],
+  "receipts": [
+    {
+      "path": "work/lane05-skills-demand/evidence/01-historical-red.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "historical-controls.cjs"
+      ],
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 5,
+        "pass": 0,
+        "fail": 5,
+        "skipped": 0
+      },
+      "logSha256": "3eadd1dece874971ade681dd8c3cf368cceb34433563d9a687d35aedff814b16"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-initial-missing-api-qualified.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "learning/runtime/skills-demand-intelligence.test.cjs"
+      ],
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 47,
+        "pass": 39,
+        "fail": 8,
+        "skipped": 0
+      },
+      "logSha256": "afdd1416718dcf802f59c1e04f6d6a5cb40d54b7e719771f9ca22de87d8a571a"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/02-new-contract-red.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "learning/runtime/skills-demand-intelligence.test.cjs"
+      ],
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 47,
+        "pass": 39,
+        "fail": 8,
+        "skipped": 0
+      },
+      "logSha256": "afdd1416718dcf802f59c1e04f6d6a5cb40d54b7e719771f9ca22de87d8a571a"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/03-contract-red.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "learning/runtime/skills-demand-intelligence.test.cjs"
+      ],
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 47,
+        "pass": 0,
+        "fail": 47,
+        "skipped": 0
+      },
+      "logSha256": "9dc85b0dd34abebc40b0b6ade05e1f31defa3886c38601b16a8c8482a65e51f3"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/04-final-contract-red.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "learning/runtime/skills-demand-intelligence.test.cjs"
+      ],
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 48,
+        "pass": 0,
+        "fail": 48,
+        "skipped": 0
+      },
+      "logSha256": "ac1f2a034e142b533b5dd7883bb7ddb2958ed82ecd5c3f3a85d20b607bc17d23"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/05-canonical-shape-contract-red.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "learning/runtime/skills-demand-intelligence.test.cjs"
+      ],
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 49,
+        "pass": 0,
+        "fail": 49,
+        "skipped": 0
+      },
+      "logSha256": "0b011e6daac94ede347dac4d258e149166f396237aa84460e5e9069824bfd81e"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/06-focused-green.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "learning/runtime/skills-demand-intelligence.test.cjs"
+      ],
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 49,
+        "pass": 49,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "d5317e4a0f4327c57fc9647353f17a38a20cc71cd9595c7517801bbe62f7039c"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/07-capsule-all-green.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test"
+      ],
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 79,
+        "pass": 79,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "1ce5adf5a49054642cbd5aaaaff2470f2fc617f52f81f20a7a30e7f55c8b24ba"
+    },
+    {
+      "path": "work/lane05-skills-demand/evidence/08-final-capsule-all-green.run.json",
+      "node": "v22.23.2",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test"
+      ],
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "networkBlocked": true,
+      "timeoutMs": 60000,
+      "counts": {
+        "tests": 79,
+        "pass": 79,
+        "fail": 0,
+        "skipped": 0
+      },
+      "logSha256": "f4f6937f2ea52af74fab714a122a8630e5efeafad12490c5826b72a318594ae3"
+    }
+  ],
+  "qualification": "Initial39 negative setup-catch passes are not rejection proof; SQLite experimental warnings expected; capsule suite is not the full repository/Linux/Docker/hosted proof.",
+  "canonicalDependencyIdentitiesVerified": 5,
+  "sharedDependencyIdentitiesVerified": 2,
+  "historicalSourceIdentitiesVerified": 1,
+  "shippingManifestSha256": "51bebb95b63d30d466175df8ecb4b3a7cb750d61823aad866ff7ee49dd7ffe0a",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "runtimeWired": false
+}

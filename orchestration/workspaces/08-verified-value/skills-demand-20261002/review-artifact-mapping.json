@@ -1,0 +1,175 @@
+{
+  "indexOriginalSha256": "d39e19be5322882fe874a65b2306d6e4b837215c049f691775bf03955bd39017",
+  "mappings": [
+    {
+      "originalPath": "work/trust_review/skills-demand-review.md",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-review.md",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "006d681a586d6a693fbbaac23c54b3c6e868ed106a2c7bb623598130180d5b48"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-findings.json",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-findings.json",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "752399f431237c80f64c488c82565b3f59cbbf519a012db8ec1b71eb71a18bbe"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-identities.json",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-identities.json",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "ee6c03027f16808a3431acfeece11ff8dbef7f6caa4d0e334409d3bd8a940d2c"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand.held-out.test.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand.held-out.test.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "73a31b9cd58240a016e2ce735ae834337f609175c7a0a4c66fbcb234bcc50e5d"
+    },
+    {
+      "originalPath": "work/trust_review/run-skills-demand-review.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/run-skills-demand-review.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "eb1c5da3c212f874289566f025aa1273ffd6015b3b5eab5d08b9bc16dedfd2cf"
+    },
+    {
+      "originalPath": "work/trust_review/seal-skills-demand-review.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/seal-skills-demand-review.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "8ca81c8dfd9a19bdb9723489d81c4c3318872015592bc71713f68b84959bfeed"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-held-out.corrected.node22.tap",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-held-out.corrected.node22.tap",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "85aecc8278a7102447ba85211a9908b1ea6efef41798ff487406667833d62494"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-held-out.node22.tap",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-held-out.node22.tap",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "6ba26479e46e13ccbc13fe5720999f426d57ff64da0d46ed0c0671cabbcf1d50"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-held-out.node22.run.json",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-held-out.node22.run.json",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "4023efd9d7cf63e28e4ee0338a98a2d031bffeb69a8c1c30c0bf489c9b623464"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand.initial-fixture.test.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand.initial-fixture.test.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "2c609bab6ed2284b3839115747528f007b02fb3f1b8237d2f22e1cba33475704"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand.initial-fixture.tap",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand.initial-fixture.tap",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "6ba26479e46e13ccbc13fe5720999f426d57ff64da0d46ed0c0671cabbcf1d50"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand.initial-fixture.run.json",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand.initial-fixture.run.json",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "4023efd9d7cf63e28e4ee0338a98a2d031bffeb69a8c1c30c0bf489c9b623464"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-affected.node22.tap",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-affected.node22.tap",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "630de45e17dbe9d91fdbc38b1bb6f6072718a26c520d6c484a279e29a2d79f65"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-affected.node22.run.json",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-affected.node22.run.json",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "bcda571c8fa4309b68eb05a2165e085fa755e993d96f89148477179d2b8ebf96"
+    },
+    {
+      "originalPath": "work/trust_review/network-guard.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/network-guard.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/implementation/runtime/inert-finite-json.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/implementation/runtime/inert-finite-json.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/implementation/runtime/inert-finite-json.test.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/implementation/runtime/inert-finite-json.test.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "9c4954f38bbd051cb57ecdc416c3a36658ef52d06795f20cba977f8e8a654fa5"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/learning/runtime/adaptive-learning-engine.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/learning/runtime/adaptive-learning-engine.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/learning/runtime/adaptive-learning-engine.test.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/learning/runtime/adaptive-learning-engine.test.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "b8b2e3f2f8418e6b5b9149b112a503b3000ee134719d99054d6f3af83e7b87dd"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/learning/runtime/skills-demand-intelligence.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/learning/runtime/skills-demand-intelligence.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "84c15ecfef46966c460e6fcc386adf53fdf17acb3e0d17e6305877f492aada9d"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/learning/runtime/skills-demand-intelligence.test.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/learning/runtime/skills-demand-intelligence.test.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "94ffc1aa03127f3052565556c399ab1f7ffce7b30fa33040aa0cdc43b53b49c5"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/learning/runtime/training-twin.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/learning/runtime/training-twin.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/learning/runtime/training-twin.test.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/learning/runtime/training-twin.test.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "cfbcb674b3e43f4b12b92afc82348bd76d1fead478fc58973270ffadc4721e17"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-reviewed-source/learning/runtime/training-workflow-manifest.cjs",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/skills-demand-reviewed-source/learning/runtime/training-workflow-manifest.cjs",
+      "representation": "UTF8_ORIGINAL_TEXT_WITH_RAW_RECEIPT_IF_NORMALIZED",
+      "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-sqlite-RxuFu8/state.sqlite",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/binary-fixture-receipts/skills-demand-sqlite-RxuFu8/state.sqlite.json",
+      "representation": "LOSSLESS_BASE64_UTF8_JSON",
+      "sha256": "026aba11c965e8ad318e0602703efb4821d3217c58dd5ff916e4542e71780571"
+    },
+    {
+      "originalPath": "work/trust_review/skills-demand-sqlite-viCLPF/state.sqlite",
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/binary-fixture-receipts/skills-demand-sqlite-viCLPF/state.sqlite.json",
+      "representation": "LOSSLESS_BASE64_UTF8_JSON",
+      "sha256": "345a9d3446c29df44883f4b1f85febef617036e3ac7988897f63fc7b4d1e13a5"
+    }
+  ],
+  "rawBinaryReceipts": [
+    {
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/binary-fixture-receipts/skills-demand-sqlite-RxuFu8/state.sqlite.json",
+      "originalPath": "work/trust_review/skills-demand-sqlite-RxuFu8/state.sqlite",
+      "bytes": 69632,
+      "sha256": "026aba11c965e8ad318e0602703efb4821d3217c58dd5ff916e4542e71780571"
+    },
+    {
+      "publicationPath": "orchestration/workspaces/08-verified-value/skills-demand-20261002/independent-review/binary-fixture-receipts/skills-demand-sqlite-viCLPF/state.sqlite.json",
+      "originalPath": "work/trust_review/skills-demand-sqlite-viCLPF/state.sqlite",
+      "bytes": 69632,
+      "sha256": "345a9d3446c29df44883f4b1f85febef617036e3ac7988897f63fc7b4d1e13a5"
+    }
+  ]
+}
