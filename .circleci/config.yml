@@ -46,9 +46,9 @@ jobs:
           name: Build exact FORGE runtime candidate
           command: |
             set -euo pipefail
-            mkdir -p circleci-runtime-artifacts/staffology
-            docker build --pull=false --progress=plain --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" --output "type=local,dest=circleci-runtime-artifacts/staffology" . 2>&1 | tee circleci-runtime-artifacts/staffology-proof-build.log
-            docker build --pull=false --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" . 2>&1 | tee circleci-runtime-artifacts/runtime-image-build.log
+            mkdir -p /tmp/circleci-runtime-artifacts/staffology
+            docker build --pull=false --progress=plain --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" --output "type=local,dest=/tmp/circleci-runtime-artifacts/staffology" . 2>&1 | tee /tmp/circleci-runtime-artifacts/staffology-proof-build.log
+            docker build --pull=false --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" . 2>&1 | tee /tmp/circleci-runtime-artifacts/runtime-image-build.log
       - run:
           name: Verify runtime security boundary
           command: |
@@ -114,22 +114,22 @@ jobs:
           name: Capture exact runtime proof
           when: always
           command: |
-            mkdir -p circleci-runtime-artifacts
-            docker logs vector-forge-proof >circleci-runtime-artifacts/vector-forge-proof.log 2>&1 || true
-            cp production-refusal.log circleci-runtime-artifacts/ 2>/dev/null || true
-            cp /tmp/health.json circleci-runtime-artifacts/ 2>/dev/null || true
-            cp /tmp/runtime-identity.json /tmp/runtime-identity.headers circleci-runtime-artifacts/ 2>/dev/null || true
-            cp /tmp/hosted-http-diagnostics.log circleci-runtime-artifacts/ 2>/dev/null || true
-            cp /tmp/bootstrap-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
-            cp /tmp/demand-unauth.json circleci-runtime-artifacts/ 2>/dev/null || true
-            printf '%s\n' "$CIRCLE_SHA1" > circleci-runtime-artifacts/source-sha.txt
-            docker inspect "vector-forge-ci:${CIRCLE_SHA1}" > circleci-runtime-artifacts/image-inspect.json 2>/dev/null || true
+            mkdir -p /tmp/circleci-runtime-artifacts
+            docker logs vector-forge-proof >/tmp/circleci-runtime-artifacts/vector-forge-proof.log 2>&1 || true
+            cp production-refusal.log /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
+            cp /tmp/health.json /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
+            cp /tmp/runtime-identity.json /tmp/runtime-identity.headers /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
+            cp /tmp/hosted-http-diagnostics.log /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
+            cp /tmp/bootstrap-unauth.json /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
+            cp /tmp/demand-unauth.json /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
+            printf '%s\n' "$CIRCLE_SHA1" > /tmp/circleci-runtime-artifacts/source-sha.txt
+            docker inspect "vector-forge-ci:${CIRCLE_SHA1}" > /tmp/circleci-runtime-artifacts/image-inspect.json 2>/dev/null || true
       - run:
           name: Clean up proof container
           when: always
           command: docker rm -f vector-forge-proof >/dev/null 2>&1 || true
       - store_artifacts:
-          path: circleci-runtime-artifacts
+          path: /tmp/circleci-runtime-artifacts
           destination: forge-runtime-proof
 
 workflows:

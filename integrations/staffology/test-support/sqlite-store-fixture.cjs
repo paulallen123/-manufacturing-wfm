@@ -21,6 +21,7 @@ function openFixtureStore(filename){
   recordEvidence:async(id,evidence,token)=>transaction(()=>{requireOwner(id,token);db.prepare('INSERT INTO fixture_evidence(delivery_id,evidence) VALUES(?,?)').run(id,JSON.stringify(evidence));return true;}),
   acknowledge:async(id,receipt,token)=>transaction(()=>{requireOwner(id,token);db.prepare("UPDATE fixture_deliveries SET status='acknowledged',receipt=? WHERE id=?").run(JSON.stringify(receipt),id);return true;}),
   markUncertain:async(id,details,token)=>transaction(()=>{requireOwner(id,token);db.prepare("UPDATE fixture_deliveries SET status='uncertain',details=? WHERE id=?").run(JSON.stringify(details),id);}),
+  markRejected:async(id,details,token)=>transaction(()=>{requireOwner(id,token);db.prepare("UPDATE fixture_deliveries SET status='rejected',details=? WHERE id=?").run(JSON.stringify(details),id);}),
   evidence:()=>db.prepare('SELECT evidence FROM fixture_evidence ORDER BY sequence').all().map(r=>JSON.parse(r.evidence)),
   close:()=>db.close()
  };

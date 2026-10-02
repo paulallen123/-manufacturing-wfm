@@ -245,16 +245,20 @@ function validateEntryIdentity(entry,expected) {
     throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Provider employee, entry or payroll code mismatch.');
   if(entry.employerId!==undefined&&entry.employerId!==expected.employerId)throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Provider employer mismatch.');
 }
+function calculatedBasicPay(entry,expected) {
+  if(!entry?.totals||typeof entry.totals!=='object'||Array.isArray(entry.totals))throw failure('STAFFOLOGY_FINANCIAL_EVIDENCE_MISSING','Calculated provider totals are missing.');
+  // PayRunTotals suppresses documented zero properties. Normalize only a
+  // missing basicPay inside a present totals object for an expected zero.
+  if(entry.totals.basicPay===undefined){if(decimalEqual(expected.expectedBasicPay,'0'))return 0;throw failure('STAFFOLOGY_FINANCIAL_EVIDENCE_MISSING','Calculated provider basic pay is missing.');}
+  return entry.totals.basicPay;
+}
 function validateProviderResponse(observation,expected) {
   if(observation?.employerId!==expected.employerId)throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Readback employer path is not bound.');
   validateRun(observation.run,expected);validateEntryIdentity(observation.entry,expected);
   const e=observation.entry,p=e.payOptions;
   if(!p||p.basis!=='Hourly'||!decimalEqual(p.payAmount,expected.basic.rate)||!decimalEqual(p.payAmountMultiplier,expected.basic.hours))throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider rate, hours or basis do not match.');
   if(p.payCode!==expected.basic.code)throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider basic pay code does not match.');
-  if(!e.totals||typeof e.totals!=='object'||Array.isArray(e.totals))throw failure('STAFFOLOGY_FINANCIAL_EVIDENCE_MISSING','Calculated provider totals are missing.');
-  // PayRunTotals suppresses zero properties. Only the documented missing zero
-  // field within a PRESENT totals object is normalized, never an absent object.
-  const actual=e.totals.basicPay===undefined&&decimalEqual(expected.expectedBasicPay,'0')?0:e.totals.basicPay;
+  const actual=calculatedBasicPay(e,expected);
   if(!decimalEqual(actual,expected.expectedBasicPay))throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Calculated basic pay does not match the intended amount.');
   const lines=p.regularPayLines;
   if(!Array.isArray(lines)||lines.length!==1||lines[0].code!==expected.basic.code||!decimalEqual(lines[0].rate,expected.basic.rate)||!decimalEqual(lines[0].multiplier,expected.basic.hours)||!decimalEqual(lines[0].value,expected.expectedBasicPay))throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider basic pay line differs from the intended line.');
@@ -312,7 +316,7 @@ function businessKey(payload) {
 }
 function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding,authorizeWrite}) {
   const scope=validateBinding(binding),bindingDigest=sha256(scope);
-  if(!store||!['get','begin','assertOwned','recordEvidence','acknowledge','markUncertain'].every(k=>typeof store[k]==='function'))throw failure('STAFFOLOGY_STORE_INVALID','An explicit durable atomic/owned store contract is required.',500);
+  if(!store||!['get','begin','assertOwned','recordEvidence','acknowledge','markUncertain','markRejected'].every(k=>typeof store[k]==='function'))throw failure('STAFFOLOGY_STORE_INVALID','An explicit durable atomic/owned store contract is required.',500);
   async function owned(deliveryId,token,digest){if(await store.assertOwned({deliveryId,token,digest,bindingDigest})!==true)throw failure('STAFFOLOGY_OWNERSHIP_LOST','Delivery ownership is no longer current.');}
   function assertScope(input){for(const key of BINDING_FIELDS)if(input[key]!==scope[key])throw failure('STAFFOLOGY_BINDING_MISMATCH',`Delivery ${key} does not match the trusted runtime binding.`);}
   function sameIntent(row,digest){if(row.digest!==digest||row.bindingDigest!==bindingDigest)throw failure('STAFFOLOGY_DELIVERY_CONFLICT','Business operation already exists with another intent or runtime binding.');}
@@ -348,9 +352,9 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
   async function startDispatch(row,token) {
     const {deliveryId,digest,payload}=row;let dispatchStarted=false,transportAccepted=false;
     try {
-      const baseline=await observe(payload);
-      const evidence=await retainEvidence(deliveryId,token,'baseline',baseline);
+      const baseline=await observe(payload),before=await store.get(deliveryId),evidence=before?.baseline?persistedBaseline(before):await retainEvidence(deliveryId,token,'baseline',baseline);
       validateReplacementBaseline(baseline.entry,payload);
+      if(before?.baseline&&(evidence.run.sha256!==sha256(baseline.run)||evidence.entry.sha256!==sha256(baseline.entry)))throw failure('STAFFOLOGY_BASELINE_CHANGED','Fresh pre-dispatch provider state differs from the immutable original baseline.');
       const stored=await store.get(deliveryId);
       if(!stored||stored.digest!==digest||stored.bindingDigest!==bindingDigest||sha256(persistedBaseline(stored))!==sha256(evidence))
         throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Stored baseline does not match the exact pre-write observation.');
@@ -380,7 +384,7 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
         try{await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_PRE_DISPATCH_FAILED',dispatchStarted:false},token);}catch(markError){if(markError.code!=='STAFFOLOGY_OWNERSHIP_LOST')throw markError;}
         throw error;
       }
-      await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_OUTCOME_UNCERTAIN',dispatchStarted:true},token);
+      if(error.code==='STAFFOLOGY_AUTH_REJECTED'){await store.markRejected(deliveryId,{code:error.code,dispatchStarted:true,definitive:true},token);throw error;}await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_OUTCOME_UNCERTAIN',dispatchStarted:true},token);
     }
     return {transportAccepted,dispatchStarted};
   }
@@ -388,9 +392,12 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     let row=await store.get(deliveryId);
     if(!row||row.bindingDigest!==bindingDigest||row.digest!==sha256(row.payload))throw failure('STAFFOLOGY_BINDING_MISMATCH','Reconciliation must use the persisted, exact-bound intent.');
     await owned(deliveryId,token,row.digest);
+    if(row.status==='rejected')return {status:'rejected',code:'STAFFOLOGY_AUTH_REJECTED'};
     if(!row.dispatchAttempt) {
       try {await startDispatch(row,token);} catch(error) {
         const code=error.code||'STAFFOLOGY_PRE_DISPATCH_FAILED';
+        const persisted=await store.get(deliveryId);
+        if(persisted?.status==='rejected')return {status:'rejected',code,dispatchStarted:Boolean(persisted.dispatchAttempt)};
         return {status:code==='STAFFOLOGY_WRITE_NOT_AUTHORIZED'?'unresolved':'retryable',code,dispatchStarted:false};
       }
       row=await store.get(deliveryId);
@@ -400,6 +407,7 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
       const intendedDispatch={deliveryId,digest:row.digest,bindingDigest,
         baselineSha256:baseline.entry.sha256,baselineRunSha256:baseline.run.sha256,
         request:{method:'POST',path:importPath(row.payload),bodySha256:bytesHash(canonical(row.payload.importBody))}};
+      if(row.dispatchAttempt?.approvalId!==undefined)intendedDispatch.approvalId=row.dispatchAttempt.approvalId;
       if(!row.dispatchAttempt||canonical(row.dispatchAttempt)!==canonical(intendedDispatch))
         throw failure('STAFFOLOGY_DISPATCH_NOT_RECORDED','Recovery requires the original bound intent-to-dispatch record.');
       const observation=await observe(row.payload);
@@ -439,7 +447,7 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
   async function inspect(input) {
     assertScope(input);
     const payload=mapPayroll(input),observation=await observe(payload),verified=validateProviderResponse(observation,payload);
-    const observedBasicPay=Number(observation.entry.totals.basicPay).toFixed(2);
+    const observedBasicPay=Number(calculatedBasicPay(observation.entry,payload)).toFixed(2);
     return immutable({verified,comparison:{expectedBasicPay:payload.expectedBasicPay,observedBasicPay,matches:observedBasicPay===payload.expectedBasicPay},run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});
   }
   return {deliver,reconcile,inspect};

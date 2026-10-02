@@ -47,8 +47,8 @@ test('supported Docker admission composes and binds the strict full canonical ru
  assert.match(runtime,/COPY integrations\/staffology\/staffology-adapter\.cjs integrations\/staffology\/canonical-runtime-bridge\.cjs integrations\/staffology\/canonical-production-boundaries\.cjs integrations\/staffology\/canonical-operations\.cjs \/workspace\/integrations\/staffology\//);
  const circle=readFileSync(resolve(__dirname,'../../../.circleci/config.yml'),'utf8');
  assert.equal((circle.match(/docker build --pull=false --progress=plain/g)||[]).length,2);
- assert.match(circle,/tee circleci-runtime-artifacts\/staffology-proof-build\.log/);
- assert.match(circle,/tee circleci-runtime-artifacts\/runtime-image-build\.log/);
+ assert.match(circle,/tee \/tmp\/circleci-runtime-artifacts\/staffology-proof-build\.log/);
+ assert.match(circle,/tee \/tmp\/circleci-runtime-artifacts\/runtime-image-build\.log/);
  assert.match(circle,/-e WFM_CANDIDATE_SHA="\$\{CIRCLE_SHA1\}"/);
  assert.match(circle,/api\/runtime-identity >\/tmp\/runtime-identity\.json/);
  assert.match(circle,/body\.sourceBinding!=="build-file-matched"/);

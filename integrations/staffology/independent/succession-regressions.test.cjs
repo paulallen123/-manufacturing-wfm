@@ -17,7 +17,8 @@ test('successor red: a pre-dispatch read failure is durably distinguished from a
   assertOwned:async()=>true,
   recordEvidence:async()=>true,
   acknowledge:async()=>assert.fail('must not acknowledge'),
-  markUncertain:async(id,details)=>{rows.set(id,{...rows.get(id),status:'uncertain',details});return true;}
+  markUncertain:async(id,details)=>{rows.set(id,{...rows.get(id),status:'uncertain',details});return true;},
+  markRejected:async(id,details)=>{rows.set(id,{...rows.get(id),status:'rejected',details});return true;}
  };
  let posts=0;
  const client=async(_url,options)=>{if(options.method==='POST')posts++;throw Error('INJECTED_INITIAL_GET_FAILURE');};

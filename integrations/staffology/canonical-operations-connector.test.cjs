@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const Operations=require('./canonical-operations.cjs');
 const candidate='a'.repeat(40),binding={tenant:'northstar-demo',implementationRunId:'run-reviewed',candidateSha:candidate,deploymentId:'offline-deployment',configurationId:'configuration-reviewed',employerId:'employer-reviewed'};
 const raw={...binding,employeeIds:['employee-reviewed'],connector:{id:'staffology-people',scope:'staffology-reviewed-people'}};
-const profile=Operations.loadConfiguration({WFM_BUILD_SOURCE_SHA:candidate,STAFFOLOGY_API_KEY:'offline-synthetic-key-001',WFM_STAFFOLOGY_OPERATION_JSON:JSON.stringify(raw)});
+const profile=Operations.loadConfiguration({WFM_STAFFOLOGY_LOCAL_PROOF:'true',WFM_BUILD_SOURCE_SHA:candidate,STAFFOLOGY_API_KEY:'offline-synthetic-key-001',WFM_STAFFOLOGY_OPERATION_JSON:JSON.stringify(raw)});
 const actor={tenant:binding.tenant,email:'director@example.invalid',permissions:['company.configure','payroll.export']};
 
 test('profile staging connector needs no generic ingress bearer and preserves compatible configured connectors',()=>{const receipt={connectorId:profile.connector.id,connectorScope:profile.connector.scope},internal=Operations.stagingConnector({profile,configured:[],actor,receipt});assert.deepEqual(internal,profile.connector);assert.equal(internal.token,undefined);const configured={...profile.connector,token:'server-only-generic-token'};const compatible=Operations.stagingConnector({profile,configured:[configured],actor,receipt});assert.deepEqual(compatible,profile.connector);assert.equal(compatible.token,undefined);});
