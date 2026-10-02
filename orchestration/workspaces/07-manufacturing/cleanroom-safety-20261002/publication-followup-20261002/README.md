@@ -1,0 +1,3 @@
+# Coordination-only cleanroom follow-up
+
+Parent is the exact published f3322714142c68f39007a25a4dce41729b2f5959/tree7b7f68a495826513f8862d759d85eeaf598fa813. This preserves its publication history and all48 previous payload paths except the expressly corrected coordination admission-truth record. The original red replay adapter is added as evidence. Both shipping blobs and all1094 frozen paths remain unchanged. No new test execution, runtime/provider/Staffology changes or GitHub writes occurred. P3 CLEANROOM-N01 entry-only aggregate documentation remains; whole runtime/hosted/finance/customer proof remains pending.
