@@ -88,7 +88,8 @@ async function proveCanonicalAssetBinding() {
 try {
   assetBinding = await proveCanonicalAssetBinding();
   const proof = await import('./current-candidate-role-browser-proof.mjs');
-  outcome = roleProofResult(assetBinding, proof.browserProofEvidence?.leaveJourney, proof.browserProofEvidence?.attendanceJourney);
+  outcome = roleProofResult(assetBinding, proof.browserProofEvidence?.leaveJourney,
+    proof.browserProofEvidence?.attendanceJourney, proof.browserProofEvidence?.payrollJourney);
   state = outcome.status;
   console.log(`BROWSER_PROOF_ASSET_BINDING=${assetBinding.status}`);
   console.log('BROWSER_ROLE_CHECKS=PASS');
