@@ -23,6 +23,23 @@ jobs:
           name: Verify exact Node runtime
           command: test "$(node --version)" = "v22.23.2"
       - run:
+          name: Verify isolated signed proof client source contract
+          command: |
+            set -euo pipefail
+            mkdir -p circleci-artifacts
+            test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
+            printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/auth-client-source-sha.txt
+            node --version > circleci-artifacts/auth-client-node-version.txt
+            git ls-files --stage -- .circleci/config.yml artifact/vector-proof-freeze.trigger Dockerfile.current-candidate-role-browser-proof scripts/current-candidate-role-browser-proof.mjs scripts/current-candidate-role-browser-proof.auth.test.mjs scripts/current-candidate-role-browser-proof-server.mjs scripts/current-candidate-role-browser-proof-server.test.mjs scripts/vector-proof-result.mjs security/runtime/proof-runner-auth.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/identity-survival-guard.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/runtime-identity.cjs security/runtime/runtime-identity.test.cjs security/runtime/bootstrap.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/one-day-enterprise-engine.test.cjs scripts/run-forge-ci.mjs > circleci-artifacts/auth-client-git-blobs.txt
+            node --test \
+              scripts/current-candidate-role-browser-proof.auth.test.mjs \
+              security/runtime/proof-runner-auth.test.cjs \
+              security/runtime/identity-survival-guard.test.cjs \
+              security/runtime/runtime-identity.test.cjs \
+              security/runtime/bootstrap-proof-runner-wiring.test.cjs \
+              scripts/current-candidate-role-browser-proof-server.test.mjs \
+              2>&1 | tee circleci-artifacts/auth-client-tests.tap
+      - run:
           name: Current FORGE source validation
           command: node scripts/run-forge-ci.mjs
       - run:
@@ -49,6 +66,49 @@ jobs:
             mkdir -p /tmp/circleci-runtime-artifacts/staffology
             docker build --pull=false --progress=plain --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" --output "type=local,dest=/tmp/circleci-runtime-artifacts/staffology" . 2>&1 | tee /tmp/circleci-runtime-artifacts/staffology-proof-build.log
             docker build --pull=false --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="${CIRCLE_SHA1}" -t "vector-forge-ci:${CIRCLE_SHA1}" . 2>&1 | tee /tmp/circleci-runtime-artifacts/runtime-image-build.log
+      - run:
+          name: Verify exact proof client image module packaging
+          command: |
+            set -euo pipefail
+            mkdir -p /tmp/circleci-runtime-artifacts
+            test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
+            printf '%s\n' "$CIRCLE_SHA1" > /tmp/circleci-runtime-artifacts/auth-client-source-sha.txt
+            git ls-files --stage -- Dockerfile.current-candidate-role-browser-proof scripts/current-candidate-role-browser-proof.mjs scripts/current-candidate-role-browser-proof-server.mjs scripts/vector-proof-result.mjs security/runtime/proof-runner-auth.cjs > /tmp/circleci-runtime-artifacts/auth-client-git-blobs.txt
+            AUTH_IMAGE="vector-role-auth-ci:${CIRCLE_SHA1}"
+            docker build --pull=false --progress=plain -f Dockerfile.current-candidate-role-browser-proof -t "$AUTH_IMAGE" . 2>&1 | tee /tmp/circleci-runtime-artifacts/auth-client-image-build.log
+            docker image inspect "$AUTH_IMAGE" > /tmp/circleci-runtime-artifacts/auth-client-image-inspect.json
+            docker run --rm --network=none --entrypoint node "$AUTH_IMAGE" --version 2>&1 | tee /tmp/circleci-runtime-artifacts/auth-client-image-node-version.txt
+            docker run --rm --network=none --entrypoint node \
+              -e PROOF_SOURCE_SHA="${CIRCLE_SHA1}" \
+              -e PROOF_CLIENT_BLOB="$(git rev-parse HEAD:scripts/current-candidate-role-browser-proof.mjs)" \
+              -e PROOF_WRAPPER_BLOB="$(git rev-parse HEAD:scripts/current-candidate-role-browser-proof-server.mjs)" \
+              -e PROOF_RESULT_BLOB="$(git rev-parse HEAD:scripts/vector-proof-result.mjs)" \
+              -e PROOF_AUTH_BLOB="$(git rev-parse HEAD:security/runtime/proof-runner-auth.cjs)" \
+              "$AUTH_IMAGE" --input-type=module -e '
+                import assert from "node:assert/strict";
+                import { readFileSync } from "node:fs";
+                import { createHash } from "node:crypto";
+                import { DatabaseSync } from "node:sqlite";
+                import auth from "/proof/security/runtime/proof-runner-auth.cjs";
+                const files = [
+                  ["scripts/current-candidate-role-browser-proof.mjs", "PROOF_CLIENT_BLOB"],
+                  ["scripts/current-candidate-role-browser-proof-server.mjs", "PROOF_WRAPPER_BLOB"],
+                  ["scripts/vector-proof-result.mjs", "PROOF_RESULT_BLOB"],
+                  ["security/runtime/proof-runner-auth.cjs", "PROOF_AUTH_BLOB"]
+                ];
+                const modules = files.map(([file, binding]) => {
+                  const bytes = readFileSync("/proof/" + file);
+                  const blob = createHash("sha1").update(Buffer.from("blob " + bytes.length + "\0")).update(bytes).digest("hex");
+                  assert.equal(blob, process.env[binding], "Copied source mismatch: " + file);
+                  return { path: file, blob };
+                });
+                assert.equal(auth.PROOF_RUNNER_PATH, "/api/proof-runner/session");
+                assert.equal(auth.canonicalAssertion({ email: "Fixture@fixture.invalid", origin: "https://fixture.invalid/", nonce: "module-smoke", issuedAt: 1, expiresAt: 2 }), ["VECTOR_PROOF_RUNNER_V1", "wfm-proof-runner", "wfm-proof-session", "fixture@fixture.invalid", "https://fixture.invalid", "module-smoke", "1", "2"].join("\n"));
+                const db = new DatabaseSync(":memory:");
+                assert.equal(db.prepare("SELECT 1 AS available").get().available, 1);
+                db.close();
+                console.log(JSON.stringify({ scope: "PACKAGING_MODULE_SMOKE_ONLY", checkoutSourceSha: process.env.PROOF_SOURCE_SHA, node: process.version, modules, sqliteAvailable: true, signedSessionExecuted: false, chromiumExecuted: false, hostedProof: false }));
+              ' 2>&1 | tee /tmp/circleci-runtime-artifacts/auth-client-module-smoke.log
       - run:
           name: Verify runtime security boundary
           command: |

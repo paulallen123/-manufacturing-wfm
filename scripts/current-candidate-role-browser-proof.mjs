@@ -1,23 +1,160 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { chromium } from 'playwright';
+import proofRunnerAuth from '../security/runtime/proof-runner-auth.cjs';
 
-const origin = new URL(process.env.VECTOR_PROOF_URL).origin;
-const expectedSha = process.env.WFM_EXPECTED_CANDIDATE_SHA;
-const password = process.env.WFM_STAGING_PASSWORD;
+export function createProofClient(env = process.env) {
+  const mode = env.VECTOR_PROOF_AUTH_PROFILE;
+  assert.ok(mode === 'signed' || mode === 'fixture-password', 'An explicit proof authentication profile is required.');
+  const target = new URL(env.VECTOR_PROOF_URL);
+  assert.ok(!target.username && !target.password && target.pathname === '/' && !target.search && !target.hash, 'Proof target must be an origin.');
+  const origin = target.origin;
+  const expectedSha = env.WFM_EXPECTED_CANDIDATE_SHA;
+  assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
+  const descriptors = [
+    { slug: 'manager', role: 'manager', payroll: 403, surface: '/api/time-review', nav: 'Time & Attendance' },
+    { slug: 'employee', role: 'employee', payroll: 403, surface: '/api/personal', nav: null },
+    { slug: 'payroll', role: 'payroll_admin', payroll: 200, surface: '/api/payroll-run', nav: 'Reports' },
+    { slug: 'company-admin', role: 'director', payroll: 200, surface: '/api/onboarding', nav: 'Integrations' },
+    { slug: 'isolation-manager', role: 'manager', payroll: 403, surface: '/api/bootstrap', nav: 'Time & Attendance' }
+  ];
+  let actors, privateKey, password, expectedDeployment, expectedTenant, expectedRun, expectedConfiguration;
+  if (mode === 'fixture-password') {
+    assert.ok(['http:', 'https:'].includes(target.protocol) && ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname), 'Password fixtures require loopback.');
+    password = env.WFM_STAGING_PASSWORD;
+    assert.ok(typeof password === 'string' && password.length >= 20, 'Local fixture password unavailable.');
+    const emails = ['manager@northstar.example', 'maya@northstar.example', 'payroll@northstar.example', 'superuser@northstar.example', 'other@isolation.example'];
+    actors = descriptors.map((d, i) => ({ ...d, email: emails[i], tenant: i === 4 ? 'isolation-test' : 'northstar-demo' }));
+  } else {
+    assert.equal(target.protocol, 'https:', 'Signed proof requires HTTPS.');
+    for (const name of ['EXPECTED_DEPLOYMENT_ID', 'EXPECTED_IMPLEMENTATION_TENANT', 'EXPECTED_IMPLEMENTATION_RUN_ID'])
+      assert.ok(typeof env[name] === 'string' && env[name].trim() === env[name] && env[name].length > 0 && env[name].length <= 160, 'Explicit proof binding required: ' + name);
+    expectedDeployment = env.EXPECTED_DEPLOYMENT_ID;
+    expectedTenant = env.EXPECTED_IMPLEMENTATION_TENANT;
+    expectedRun = env.EXPECTED_IMPLEMENTATION_RUN_ID;
+    expectedConfiguration = env.EXPECTED_CONFIGURATION_DIGEST;
+    assert.match(expectedConfiguration || '', /^[0-9a-f]{64}$/, 'Explicit configuration digest required.');
+    let supplied;
+    try { supplied = JSON.parse(env.VECTOR_PROOF_ACTORS_JSON); } catch { throw new Error('Explicit actor JSON required.'); }
+    assert.ok(Array.isArray(supplied) && supplied.length === descriptors.length, 'All five explicit proof actors are required.');
+    const slugs = new Set(), emails = new Set();
+    for (const a of supplied) {
+      assert.ok(a && typeof a === 'object' && !Array.isArray(a), 'Invalid proof actor.');
+      for (const k of ['slug', 'email', 'tenant', 'role']) assert.ok(typeof a[k] === 'string' && a[k].trim() === a[k] && a[k].length > 0 && a[k].length <= 240, 'Incomplete proof actor.');
+      assert.match(a.email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+      assert.ok(!slugs.has(a.slug) && !emails.has(a.email.toLowerCase()), 'Duplicate proof actor.');
+      slugs.add(a.slug); emails.add(a.email.toLowerCase());
+    }
+    actors = descriptors.map(d => {
+      const a = supplied.find(a => a.slug === d.slug);
+      assert.ok(a && a.role === d.role, 'Explicit journey actor role mismatch.');
+      assert.ok(d.slug === 'isolation-manager' ? a.tenant !== expectedTenant : a.tenant === expectedTenant, 'Explicit journey tenant mismatch.');
+      return { ...d, email: a.email.toLowerCase(), tenant: a.tenant };
+    });
+    try {
+      const encoded = env.PROOF_PRIVATE_KEY_B64;
+      if (typeof encoded !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) || encoded.length > 8192) throw new Error();
+      const decoded = Buffer.from(encoded, 'base64');
+      if (decoded.toString('base64') !== encoded) throw new Error();
+      const pem = decoded.toString('utf8');
+      if (!/^-----BEGIN PRIVATE KEY-----\r?\n[\s\S]+\r?\n-----END PRIVATE KEY-----\r?\n?$/.test(pem)) throw new Error();
+      privateKey = crypto.createPrivateKey(pem);
+      if (privateKey.asymmetricKeyType !== 'ed25519') throw new Error();
+    } catch { throw new Error('Existing signer must be canonical base64 PKCS8 PEM Ed25519.'); }
+  }
+  actors = Object.freeze(actors.map(a => Object.freeze(a)));
+  let implementationContext = null;
+  const authenticated = new Set();
+  async function readPage(page, path, body) {
+    return page.evaluate(async ({ path, body }) => {
+      const response = await fetch(path, { method: body ? 'POST' : 'GET', cache: 'no-store', credentials: 'same-origin', redirect: 'error',
+        ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) });
+      return { status: response.status, json: await response.json(), sourceSha: response.headers.get('x-wfm-source-sha'),
+        sourceBinding: response.headers.get('x-wfm-source-binding'), fixtureOnly: response.headers.get('x-wfm-fixture-only') };
+    }, { path, body });
+  }
+  function requireSource(response) {
+    assert.equal(response.sourceSha, expectedSha, 'Served source mismatch.');
+    assert.equal(response.sourceBinding, 'build-file-matched', 'Served source is not independently build-file matched.');
+    assert.equal(response.fixtureOnly, 'true', 'Fixture boundary unavailable.');
+  }
+  function requireActor(body, actor, signedExchange = false) {
+    assert.equal(body.actor?.role, actor.role, 'Persisted actor role mismatch.');
+    assert.equal(body.actor?.tenant, actor.tenant, 'Persisted actor tenant mismatch.');
+    if (signedExchange || body.actor?.email != null) assert.equal(body.actor?.email?.toLowerCase(), actor.email, 'Persisted actor email mismatch.');
+  }
+  function requireImplementation(body) {
+    assert.equal(body.tenant, expectedTenant, 'Current implementation tenant mismatch.');
+    assert.equal(body.runId, expectedRun, 'Current implementation run mismatch.');
+    assert.equal(body.tenantEnvironment?.runId, expectedRun, 'Applied environment run mismatch.');
+    assert.equal(body.tenantEnvironment?.isolation?.tenant, expectedTenant, 'Applied environment tenant mismatch.');
+    assert.equal(body.tenantEnvironment?.configurationDigest, expectedConfiguration, 'Applied configuration mismatch.');
+    const bindings = (Array.isArray(body.requirements) ? body.requirements : []).map(r => r.evidenceBinding?.expected).filter(b => b?.candidateSha || b?.deploymentId);
+    assert.ok(bindings.length > 0, 'Current configured source/deployment context unavailable.');
+    for (const b of bindings) {
+      assert.equal(b.candidateSha, expectedSha, 'Configured implementation source mismatch.');
+      assert.equal(b.deploymentId, expectedDeployment, 'Configured implementation deployment mismatch.');
+      assert.equal(b.tenant, expectedTenant, 'Configured implementation tenant mismatch.');
+      assert.equal(b.runId, expectedRun, 'Configured implementation run mismatch.');
+    }
+    implementationContext = Object.freeze({ candidateSha: expectedSha, configuredDeploymentId: expectedDeployment, tenant: body.tenant,
+      runId: body.runId, configurationDigest: body.tenantEnvironment.configurationDigest, platformDeploymentVerified: false });
+  }
+  async function authenticate(page, email) {
+    const actor = actors.find(a => a.email === String(email).trim().toLowerCase());
+    assert.ok(actor, 'Actor is not in explicit proof scope.');
+    const first = await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    assert.ok(first && first.status() < 500, 'Initial proof page failed.');
+    if (mode === 'signed') {
+      const runtime = await readPage(page, '/api/runtime-identity');
+      assert.equal(runtime.status, 200); requireSource(runtime);
+      assert.equal(runtime.json.candidateSha, expectedSha); assert.equal(runtime.json.sourceBinding, 'build-file-matched');
+      assert.equal(runtime.json.fixtureOnly, true); assert.equal(runtime.json.productionApproved, false);
+    }
+    const unauthenticated = await readPage(page, '/api/bootstrap');
+    assert.equal(unauthenticated.status, 401, 'Proof requires a fresh unauthenticated context.');
+    if (mode === 'signed') requireSource(unauthenticated);
+    let body, path;
+    if (mode === 'signed') {
+      const issuedAt = Date.now();
+      body = { email: actor.email, origin, nonce: crypto.randomBytes(24).toString('base64url'), issuedAt, expiresAt: issuedAt + 45000 };
+      body.signature = crypto.sign(null, Buffer.from(proofRunnerAuth.canonicalAssertion(body), 'utf8'), privateKey).toString('base64url');
+      path = proofRunnerAuth.PROOF_RUNNER_PATH;
+    } else { path = '/api/login'; body = { email: actor.email, password }; }
+    const exchange = await readPage(page, path, body);
+    assert.equal(exchange.status, 200, 'Proof authentication failed.');
+    if (mode === 'signed') { requireSource(exchange); assert.equal(exchange.json.authMethod, 'proof-runner-signed'); requireActor(exchange.json, actor, true); }
+    const bootstrap = await readPage(page, '/api/bootstrap');
+    assert.equal(bootstrap.status, 200); requireActor(bootstrap.json, actor);
+    if (mode === 'signed') {
+      requireSource(bootstrap);
+      if (actor.tenant === expectedTenant && actor.role !== 'employee') {
+        const status = await readPage(page, '/api/implementation/autonomous/status');
+        assert.equal(status.status, 200); requireSource(status); requireImplementation(status.json);
+      } else assert.ok(implementationContext, 'Primary manager implementation context must be verified first.');
+    }
+    authenticated.add(actor.slug);
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+    return { status: exchange.status, unauthenticatedStatus: unauthenticated.status };
+  }
+  function partialEvidence() {
+    assert.equal(mode, 'signed'); assert.ok(implementationContext);
+    return { authCompatibility: { status: 'PARTIAL', scope: 'signed-auth-navigation-only', authenticatedActors: [...authenticated],
+      implementationContext: { ...implementationContext }, chromiumVerified: false, hostedProof: false }, leaveJourney: null, attendanceJourney: null, payrollJourney: null };
+  }
+  return Object.freeze({ mode, origin, expectedSha, actors, authenticate, partialEvidence });
+}
+
+// VECTOR_PROOF_CLIENT_RUNNER_START
+const proofClient = createProofClient();
+const origin = proofClient.origin;
+const expectedSha = proofClient.expectedSha;
 const requireActionAffordanceCoverage = process.env.WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE === 'true';
 export let browserProofEvidence = { leaveJourney: null, attendanceJourney: null, payrollJourney: null };
 
 assert.match(expectedSha || '', /^[0-9a-f]{40}$/);
-assert.ok(password && password.length >= 20, 'Staging password unavailable.');
-
-const specs = [
-  { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', payroll: 403, surface: '/api/time-review', nav: 'Time & Attendance' },
-  { slug: 'employee', email: 'maya@northstar.example', role: 'employee', tenant: 'northstar-demo', payroll: 403, surface: '/api/personal', nav: null },
-  { slug: 'payroll', email: 'payroll@northstar.example', role: 'payroll_admin', tenant: 'northstar-demo', payroll: 200, surface: '/api/payroll-run', nav: 'Reports' },
-  { slug: 'company-admin', email: 'superuser@northstar.example', role: 'director', tenant: 'northstar-demo', payroll: 200, surface: '/api/onboarding', nav: 'Integrations' },
-  { slug: 'isolation-manager', email: 'other@isolation.example', role: 'manager', tenant: 'isolation-test', payroll: 403, surface: '/api/bootstrap', nav: 'Time & Attendance' }
-];
+const specs = proofClient.actors;
 
 const healthResponse = await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(15000) });
 assert.equal(healthResponse.status, 200);
@@ -33,17 +170,7 @@ let timeReviewEmptyStateJourneys = 0;
 let managerAlignmentEvidence = null;
 
 async function loginRole(page, email) {
-  const first = await page.goto(origin, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  assert.ok(first && first.status() < 500, `${email} initial page failed.`);
-  const loginStatus = await page.evaluate(async ({ email, password }) => {
-    const response = await fetch('/api/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password })
-    });
-    return response.status;
-  }, { email, password });
-  assert.equal(loginStatus, 200, `${email} login failed.`);
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.waitForFunction(() => document.querySelectorAll('.vector-shell,.vector-sidebar,[class*=vector-]').length > 0, { timeout: 30000 });
+  return proofClient.authenticate(page, email);
 }
 
 async function openLeaveRoute(page, expectedRole) {
@@ -78,15 +205,7 @@ try {
     const unauthenticatedBootstrap = await page.evaluate(async () => (await fetch('/api/bootstrap')).status);
     assert.equal(unauthenticatedBootstrap, 401, `${spec.slug} bootstrap did not fail closed.`);
 
-    const loginStatus = await page.evaluate(async ({ email, password }) => {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      return response.status;
-    }, { email: spec.email, password });
-    assert.equal(loginStatus, 200, `${spec.slug} login failed.`);
+    const loginStatus = (await loginRole(page, spec.email)).status;
 
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForFunction(
@@ -477,6 +596,12 @@ try {
     await context.close();
   }
 
+  if (proofClient.mode === 'signed') {
+    assert.equal(receipts.length, specs.length);
+    assert.ok(navigationClicks >= 3, 'Insufficient authenticated navigation.');
+    browserProofEvidence = proofClient.partialEvidence();
+    console.log(`CURRENT_SIGNED_AUTH_NAVIGATION=PARTIAL|roles=${receipts.length}|businessJourneys=0|endToEndVerified=false|productReady=false`);
+  } else {
   const leaveJourney = {
     employeeUiSubmitted: false,
     pendingStateReadBack: false,
@@ -1134,6 +1259,7 @@ try {
   console.log(`CURRENT_MANAGER_SCREENSHOT_META|bytes=${managerAlignmentEvidence.bytes}|sha=${managerAlignmentEvidence.sha256}`);
   console.log(`CURRENT_MANAGER_SCREENSHOT_B64|${managerAlignmentEvidence.base64}`);
   console.log(`CURRENT_CANDIDATE_ROLE_BROWSER_MATRIX=PASS|roles=${receipts.length}|navClicks=${navigationClicks}|sourceActionOpenJourneys=${timeReviewActionJourneys}|leaveBusinessActionJourneys=1|attendanceBusinessActionJourneys=1|emptyStateJourneys=${timeReviewEmptyStateJourneys}|sha=${expectedSha}`);
+  }
 } finally {
   await browser.close();
   delete process.env.WFM_STAGING_PASSWORD;
