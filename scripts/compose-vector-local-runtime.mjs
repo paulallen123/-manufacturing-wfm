@@ -12,13 +12,21 @@ const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const inputs = new Map();
 const recordInput = file => { inputs.set(file, sha256(fs.readFileSync(path.join(root, file)))); };
 const sealedExpected = {
+  'public/onboarding-engine.js': 'c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e',
   'server.cjs': '1792f544d0fea25577f683f3df957b4f74b6a086cd0479b24b1fe77f58587dd0',
   'lib/outbound-integration.cjs': '7e7b3126ac7fdd5712fc5fc7299e3c75893bc699f7ed200dbba29b914c2bf9d4',
   'lib/transactional-outbound-bridge.cjs': '52f890d30bde3e657e8e95d2f4db25d075ebdc8c8cf3be3bd4331b40c072e81f'
 };
+const sealedManifestExpected = {
+  package: 'b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a',
+  runtime: '8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce'
+};
 function validateSealedRuntime(runtime) {
-  const packageManifest = JSON.parse(fs.readFileSync(path.join(runtime, 'PACKAGE_MANIFEST_SHA256.json'), 'utf8'));
+  const packageManifestBytes = fs.readFileSync(path.join(runtime, 'PACKAGE_MANIFEST_SHA256.json'));
+  if (sha256(packageManifestBytes) !== sealedManifestExpected.package) throw Error('SEALED_PACKAGE_MANIFEST_DIGEST_CHANGED');
+  const packageManifest = JSON.parse(packageManifestBytes);
   const runtimeManifestBytes = fs.readFileSync(path.join(runtime, 'RUNTIME_MANIFEST.json'));
+  if (sha256(runtimeManifestBytes) !== sealedManifestExpected.runtime) throw Error('SEALED_RUNTIME_MANIFEST_PIN_CHANGED');
   if (sha256(runtimeManifestBytes) !== packageManifest.files?.['RUNTIME_MANIFEST.json']) throw Error('SEALED_RUNTIME_MANIFEST_DIGEST_CHANGED');
   const runtimeManifest = JSON.parse(runtimeManifestBytes);
   if (Object.keys(runtimeManifest).length !== 133) throw Error('SEALED_RUNTIME_MANIFEST_COVERAGE_CHANGED');
@@ -86,6 +94,7 @@ const names = execFileSync('tar', ['-tzf', archive], { encoding: 'utf8' }).trim(
 if (names.some(name => path.isAbsolute(name) || name.split('/').includes('..'))) throw Error('UNSAFE_ARCHIVE_PATH');
 fs.mkdirSync(output, { recursive: true });
 execFileSync('tar', ['--no-same-owner', '-xzf', archive, '-C', output]);
+validateSealedRuntime(output);
 const run = (file, args = []) => { recordInput(file); return execFileSync(process.execPath, [path.join(root, file), ...args], { stdio: 'inherit' }); };
 const publicRoot = path.join(output, 'public');
 run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
