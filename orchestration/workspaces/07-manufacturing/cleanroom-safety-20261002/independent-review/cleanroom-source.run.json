@@ -1,0 +1,17 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\decision-episode.test.cjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true,
+  "logSha256": "ee36086dcafbb262bb96d30f2a200a03784a2dbc6ad722cc1d12c018961a3bf9",
+  "customerProof": false
+}

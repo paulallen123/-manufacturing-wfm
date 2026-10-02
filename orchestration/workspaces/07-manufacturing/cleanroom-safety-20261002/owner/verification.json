@@ -1,0 +1,97 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "lane": "lane07",
+  "inventoryWorker": "inventory_edges",
+  "canonicalFutureOwner": "existing manufacturing scheduler / Decision Episode evidence projection",
+  "broadCapabilityStates": {
+    "product-023": "IN_PROGRESS",
+    "product-024": "IN_PROGRESS",
+    "product-025": "IN_PROGRESS"
+  },
+  "selectedComponentStatus": "TESTED",
+  "selectedComponent": "product-025 cleanroom safety and observed movement projection",
+  "runtimeWired": false,
+  "hostedProof": false,
+  "providerProof": false,
+  "independentReview": "PENDING",
+  "wholeRuntimeAdmission": "PENDING",
+  "node": "v22.23.2",
+  "logs": [
+    {
+      "path": "work/lane07-cleanroom/evidence/published-red.tap",
+      "bytes": 56244,
+      "sha256": "71722bc1fa12fec2700b69b2762a28d2db411834d818a8c593762446262a9ab7",
+      "counts": {
+        "tests": 27,
+        "pass": 8,
+        "fail": 19,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/overflow-red.tap",
+      "bytes": 2878,
+      "sha256": "86d6714e67bb52023f8de11e5defaa88cc0079a8c088395de6c1c97540ff8a3a",
+      "counts": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/green.tap",
+      "bytes": 11060,
+      "sha256": "bf478278ae8fc24341cf8bed66a2c4886a98e41d9cb8f96b7765b77638b9aad0",
+      "counts": {
+        "tests": 27,
+        "pass": 27,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/green-final.tap",
+      "bytes": 11454,
+      "sha256": "a7535dd2e99576c95242993505ab757f331013515e674a6ba5121eb648058342",
+      "counts": {
+        "tests": 28,
+        "pass": 28,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/combined-canonical.tap",
+      "bytes": 13200,
+      "sha256": "34e47308f8693d49720c4b958747f4ad0a3eb1b615165e1b6ef2e5569e00a528",
+      "counts": {
+        "tests": 33,
+        "pass": 33,
+        "fail": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "isolatedSuite": {
+    "tests": 28,
+    "pass": 28,
+    "fail": 0,
+    "skip": 0
+  },
+  "combinedCanonical": {
+    "tests": 33,
+    "pass": 33,
+    "fail": 0,
+    "skip": 0
+  },
+  "syntaxChecks": {
+    "module": 0,
+    "test": 0
+  },
+  "dependencyIdentitiesVerified": 8,
+  "manifestSha256": "9f6103e106767276eaf8a053cb29fc559dea347b7bb149e2a266a1cea44a33ab"
+}

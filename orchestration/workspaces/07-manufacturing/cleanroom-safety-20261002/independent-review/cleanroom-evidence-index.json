@@ -1,0 +1,120 @@
+{
+  "sourceIdentities": [
+    {
+      "path": "operations/runtime/controlled-environment-safety.mjs",
+      "mode": "100644",
+      "localPath": "work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.mjs",
+      "localBlob": "2478100335800c6d65cb98ff03735de646bf2d35",
+      "sha256": "5f02e65193a9e410617deafb0586c6ce3e3781c212623eb923eb758cca64bf79",
+      "bytes": 14599,
+      "sourceIdentical": false,
+      "disposition": "ADAPTED_PORT",
+      "sourceRefs": [
+        "88185a0e94f5df15e32841fc227cfededbde27d8:66724e05985033501feea66f1effa62fd2032b80",
+        "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309:95f92f92d2b3f3a447259810aae315193bc1945f",
+        "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309:681cbc50fd86706e1a8e699ea7065b006ab02eb9"
+      ]
+    },
+    {
+      "path": "operations/runtime/controlled-environment-safety.test.mjs",
+      "mode": "100644",
+      "localPath": "work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs",
+      "localBlob": "caefd9039757dfa1c3dbe9d956dd786cc6b5cef2",
+      "sha256": "502f4fa17f02fab1c745a099e92c0267333bf183dbcb13029e85cbb0c55dd7ca",
+      "bytes": 11408,
+      "sourceIdentical": false,
+      "disposition": "ADAPTED_PORT",
+      "sourceRefs": [
+        "PR216 ambiguity and repair safety tests; behavioral red fixtures",
+        "new scoped/source-bound safety and overflow tests"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "path": "work/trust_review/cleanroom-review.md",
+      "bytes": 2582,
+      "sha256": "88ba8f98beca9cc7e21cfffddbcfbb316565cda45d90587fc88ccabff6311b5c"
+    },
+    {
+      "path": "work/trust_review/cleanroom-findings.json",
+      "bytes": 10992,
+      "sha256": "a1734958c251121b80316f197933f00c1f3c51a013c2985c597c58f1ad28df08"
+    },
+    {
+      "path": "work/trust_review/cleanroom-identities.json",
+      "bytes": 6432,
+      "sha256": "028986ad036fcbd9b345b47e0e66441b39c44d360040ac1148fd88ee6309ce14"
+    },
+    {
+      "path": "work/trust_review/cleanroom.held-out.test.mjs",
+      "bytes": 11600,
+      "sha256": "83ffabfff7aff7f22160f6cedbf861c47d0777c316794839ab2a1f30d8d45de0"
+    },
+    {
+      "path": "work/trust_review/cleanroom-held-out.node22.tap",
+      "bytes": 7176,
+      "sha256": "830fe80b8e2580bbafa063c0aceb2138be2bcc3161877c0816aca41cbd8a8574"
+    },
+    {
+      "path": "work/trust_review/cleanroom-held-out.run.json",
+      "bytes": 536,
+      "sha256": "f5a814b374e97a335d58decb375cbad9310fd9ae5639c500fbf601eb0be48fc8"
+    },
+    {
+      "path": "work/trust_review/cleanroom-source.node22.tap",
+      "bytes": 6399,
+      "sha256": "ee36086dcafbb262bb96d30f2a200a03784a2dbc6ad722cc1d12c018961a3bf9"
+    },
+    {
+      "path": "work/trust_review/cleanroom-source.run.json",
+      "bytes": 746,
+      "sha256": "0698b6dfe37419015ed662bfe393e678e334c9ea1463531d63ede31d7de2ba2c"
+    },
+    {
+      "path": "work/trust_review/cleanroom.observations.json",
+      "bytes": 10517,
+      "sha256": "369b12d1cf3e4e8034147c940dbc89d4313d489108085e2d26dde588e41485af"
+    },
+    {
+      "path": "work/trust_review/cleanroom.initial-assumptions.test.mjs",
+      "bytes": 10702,
+      "sha256": "074614847840369d394bf41bad0dc2aaa37e7fa3438c053f6ddb374030d7d2dd"
+    },
+    {
+      "path": "work/trust_review/cleanroom.initial-assumptions.node22.tap",
+      "bytes": 9583,
+      "sha256": "ae76841fd71a22527433591caaa15fa1efe22d4c98d48b3471e41f649ba77c8a"
+    },
+    {
+      "path": "work/trust_review/cleanroom.initial-assumptions.run.json",
+      "bytes": 536,
+      "sha256": "8f511589b1e4b16b692f2d9554725c4802ce3b5f96857f9bdfe250a3ca12ca4a"
+    },
+    {
+      "path": "work/trust_review/cleanroom.initial-assumptions.observations.json",
+      "bytes": 10088,
+      "sha256": "ec545f42deba95786e68f1af204875fbf2c17e83b658419d7f8cb595aa162e74"
+    },
+    {
+      "path": "work/trust_review/cleanroom-corrected.node22.tap",
+      "bytes": 7393,
+      "sha256": "9c9df12297597d08dca7d53aa45d2de9d57dc320e90e3acf07f2a6f6741ebf91"
+    },
+    {
+      "path": "work/trust_review/run-cleanroom-review.cjs",
+      "bytes": 2408,
+      "sha256": "2ecc4d7f01d8cc0293ce1ba1a9ffacdc9406d52279ca645a7f1adf01a962fe6c"
+    },
+    {
+      "path": "work/trust_review/seal-cleanroom-review.cjs",
+      "bytes": 8321,
+      "sha256": "c74b1b51f4c4054854bd09d85737eddee7642058ad85050c6c345a071e7a3ee3"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    }
+  ]
+}

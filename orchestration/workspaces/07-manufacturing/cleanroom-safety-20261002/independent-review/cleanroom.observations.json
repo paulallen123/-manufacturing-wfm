@@ -1,0 +1,425 @@
+{
+  "sourceBlob": "2478100335800c6d65cb98ff03735de646bf2d35",
+  "observations": [
+    {
+      "name": "top-level getter:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-record-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "top-level getter:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-record-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nested getter:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-record-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nested getter:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-record-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "indexed getter:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "indexed getter:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "toJSON:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "toJSON:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "array map override:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "array map override:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "array iterator override:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "array iterator override:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "prototype record:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "plain-record-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "prototype record:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "plain-record-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "proxy record:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "proxy record:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "proxy array:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "proxy array:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "revoked proxy:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "revoked proxy:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "inert-input-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "sparse array:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "sparse array:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "array symbol:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "array symbol:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "dense-array-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "cycle:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "input-budget-exceeded",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "cycle:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "input-budget-exceeded",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "deep input:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "input-budget-exceeded",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "deep input:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "input-budget-exceeded",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nonfinite0:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "finite-number-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nonfinite0:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "finite-number-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nonfinite1:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "finite-number-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nonfinite1:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "finite-number-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nonfinite2:plan",
+      "result": {
+        "status": "blocked",
+        "reason": "finite-number-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "nonfinite2:movement",
+      "result": {
+        "status": "blocked",
+        "reason": "finite-number-required",
+        "executionPermitted": false
+      },
+      "userCodeCalls": 0
+    },
+    {
+      "name": "entry-only-control-metrics",
+      "result": {
+        "status": "movement_ready",
+        "metrics": {
+          "observedSessions": 1,
+          "observedEntries": 1,
+          "observedGowningCycles": 1,
+          "observedControlMinutes": 3,
+          "observedControlCost": 5,
+          "sessionsWithoutTaskOverlap": 0
+        },
+        "sessions": [
+          {
+            "workerId": "w1",
+            "zone": "B",
+            "enterAt": "2026-09-20T11:15:00.000Z",
+            "exitAt": "2026-09-20T11:45:00.000Z",
+            "durationMinutes": 30,
+            "matchedTaskIds": [
+              "task1"
+            ],
+            "attribution": "task_window_overlap"
+          }
+        ],
+        "movement": [
+          {
+            "workerId": "w1",
+            "from": "OUT",
+            "to": "B",
+            "at": "2026-09-20T11:15:00.000Z",
+            "approved": true,
+            "gowningCycle": true,
+            "controlMinutes": 3,
+            "controlCost": 5
+          },
+          {
+            "workerId": "w1",
+            "from": "B",
+            "to": "OUT",
+            "at": "2026-09-20T11:45:00.000Z",
+            "approved": true,
+            "gowningCycle": false,
+            "controlMinutes": 2,
+            "controlCost": 7
+          }
+        ],
+        "dataQualityIssues": [],
+        "unapprovedMovement": [],
+        "taskCompletionProven": false,
+        "tenant": "t1",
+        "siteId": "s1",
+        "contextRevision": "c1",
+        "evidenceDigest": "eaa776b840a7f9606d314bd08394703bb7ed727f1e29c9febaf9a6413c1f6669",
+        "executionPermitted": false
+      }
+    },
+    {
+      "name": "unknown-exit-entry-only-metric",
+      "result": {
+        "status": "movement_ready",
+        "metrics": {
+          "observedSessions": 1,
+          "observedEntries": 1,
+          "observedGowningCycles": 1,
+          "observedControlMinutes": 3,
+          "observedControlCost": 5,
+          "sessionsWithoutTaskOverlap": 0
+        },
+        "sessions": [
+          {
+            "workerId": "w1",
+            "zone": "B",
+            "enterAt": "2026-09-20T11:15:00.000Z",
+            "exitAt": "2026-09-20T11:45:00.000Z",
+            "durationMinutes": 30,
+            "matchedTaskIds": [
+              "task1"
+            ],
+            "attribution": "task_window_overlap"
+          }
+        ],
+        "movement": [
+          {
+            "workerId": "w1",
+            "from": "OUT",
+            "to": "B",
+            "at": "2026-09-20T11:15:00.000Z",
+            "approved": true,
+            "gowningCycle": true,
+            "controlMinutes": 3,
+            "controlCost": 5
+          },
+          {
+            "workerId": "w1",
+            "from": "B",
+            "to": "OUT",
+            "at": "2026-09-20T11:45:00.000Z",
+            "approved": true,
+            "gowningCycle": false,
+            "controlMinutes": 2,
+            "controlCost": null
+          }
+        ],
+        "dataQualityIssues": [],
+        "unapprovedMovement": [],
+        "taskCompletionProven": false,
+        "tenant": "t1",
+        "siteId": "s1",
+        "contextRevision": "c1",
+        "evidenceDigest": "fec56386be827e2e3540971c9617ab469093718ab2e7579c469b28f1cf2e3d1f",
+        "executionPermitted": false
+      }
+    }
+  ]
+}

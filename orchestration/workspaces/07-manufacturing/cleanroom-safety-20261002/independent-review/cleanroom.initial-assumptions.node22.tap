@@ -1,0 +1,257 @@
+TAP version 13
+# Subtest: positive inert plan and observed movement retain explicit no execution/completion authority
+ok 1 - positive inert plan and observed movement retain explicit no execution/completion authority
+  ---
+  duration_ms: 17.0833
+  type: 'test'
+  ...
+# Subtest: both consumers reject top-level getter without caller execution
+ok 2 - both consumers reject top-level getter without caller execution
+  ---
+  duration_ms: 0.4715
+  type: 'test'
+  ...
+# Subtest: both consumers reject nested getter without caller execution
+ok 3 - both consumers reject nested getter without caller execution
+  ---
+  duration_ms: 0.29
+  type: 'test'
+  ...
+# Subtest: both consumers reject indexed getter without caller execution
+ok 4 - both consumers reject indexed getter without caller execution
+  ---
+  duration_ms: 0.3211
+  type: 'test'
+  ...
+# Subtest: both consumers reject toJSON without caller execution
+ok 5 - both consumers reject toJSON without caller execution
+  ---
+  duration_ms: 0.4649
+  type: 'test'
+  ...
+# Subtest: both consumers reject array map override without caller execution
+ok 6 - both consumers reject array map override without caller execution
+  ---
+  duration_ms: 0.3187
+  type: 'test'
+  ...
+# Subtest: both consumers reject array iterator override without caller execution
+ok 7 - both consumers reject array iterator override without caller execution
+  ---
+  duration_ms: 0.3446
+  type: 'test'
+  ...
+# Subtest: both consumers reject prototype record without caller execution
+not ok 8 - both consumers reject prototype record without caller execution
+  ---
+  duration_ms: 1.258
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\cleanroom.held-out.test.mjs:34:33'
+  failureType: 'testCodeFailure'
+  error: 'Cannot set property version of #<Object> which has only a getter'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    Function.assign (<anonymous>)
+    x.policy.Proxy.get (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/cleanroom.held-out.test.mjs:24:48)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/cleanroom.held-out.test.mjs:35:121)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: both consumers reject proxy record without caller execution
+ok 9 - both consumers reject proxy record without caller execution
+  ---
+  duration_ms: 0.612
+  type: 'test'
+  ...
+# Subtest: both consumers reject proxy array without caller execution
+ok 10 - both consumers reject proxy array without caller execution
+  ---
+  duration_ms: 0.6891
+  type: 'test'
+  ...
+# Subtest: both consumers reject revoked proxy without caller execution
+ok 11 - both consumers reject revoked proxy without caller execution
+  ---
+  duration_ms: 0.4209
+  type: 'test'
+  ...
+# Subtest: both consumers reject sparse array without caller execution
+ok 12 - both consumers reject sparse array without caller execution
+  ---
+  duration_ms: 0.6412
+  type: 'test'
+  ...
+# Subtest: both consumers reject array symbol without caller execution
+ok 13 - both consumers reject array symbol without caller execution
+  ---
+  duration_ms: 0.4306
+  type: 'test'
+  ...
+# Subtest: both consumers reject cycle without caller execution
+ok 14 - both consumers reject cycle without caller execution
+  ---
+  duration_ms: 2.4641
+  type: 'test'
+  ...
+# Subtest: both consumers reject deep input without caller execution
+ok 15 - both consumers reject deep input without caller execution
+  ---
+  duration_ms: 0.8961
+  type: 'test'
+  ...
+# Subtest: both consumers reject nonfinite0 without caller execution
+ok 16 - both consumers reject nonfinite0 without caller execution
+  ---
+  duration_ms: 0.5999
+  type: 'test'
+  ...
+# Subtest: both consumers reject nonfinite1 without caller execution
+ok 17 - both consumers reject nonfinite1 without caller execution
+  ---
+  duration_ms: 0.4541
+  type: 'test'
+  ...
+# Subtest: both consumers reject nonfinite2 without caller execution
+ok 18 - both consumers reject nonfinite2 without caller execution
+  ---
+  duration_ms: 0.484
+  type: 'test'
+  ...
+# Subtest: scope, source authority, provenance and exact-current evidence reject before ready
+ok 19 - scope, source authority, provenance and exact-current evidence reject before ready
+  ---
+  duration_ms: 3.5736
+  type: 'test'
+  ...
+# Subtest: distinct separator-bearing worker and zone IDs preserve coverage and occupancy
+ok 20 - distinct separator-bearing worker and zone IDs preserve coverage and occupancy
+  ---
+  duration_ms: 0.7215
+  type: 'test'
+  ...
+# Subtest: duplicate worker/task/event exact IDs and assignment double-booking cannot manufacture coverage
+ok 21 - duplicate worker/task/event exact IDs and assignment double-booking cannot manufacture coverage
+  ---
+  duration_ms: 0.8781
+  type: 'test'
+  ...
+# Subtest: task ordering follows actual slots and cannot use caller array order to hide forbidden transition
+ok 22 - task ordering follows actual slots and cannot use caller array order to hide forbidden transition
+  ---
+  duration_ms: 0.3639
+  type: 'test'
+  ...
+# Subtest: finite plan metric accumulation overflow blocks
+ok 23 - finite plan metric accumulation overflow blocks
+  ---
+  duration_ms: 0.3108
+  type: 'test'
+  ...
+# Subtest: positive task/session intersection is half-open; endpoint touch never proves overlap or completion
+ok 24 - positive task/session intersection is half-open; endpoint touch never proves overlap or completion
+  ---
+  duration_ms: 2.4903
+  type: 'test'
+  ...
+# Subtest: zero/negative task windows and event future times block
+ok 25 - zero/negative task windows and event future times block
+  ---
+  duration_ms: 1.2303
+  type: 'test'
+  ...
+# Subtest: open, orphan, duplicate-enter and zero-duration sessions force review
+ok 26 - open, orphan, duplicate-enter and zero-duration sessions force review
+  ---
+  duration_ms: 39.678
+  type: 'test'
+  ...
+# Subtest: overlapping sessions across zones for one person remain data-quality conflicts
+ok 27 - overlapping sessions across zones for one person remain data-quality conflicts
+  ---
+  duration_ms: 0.8587
+  type: 'test'
+  ...
+# Subtest: half-open occupancy boundary admits departure at same instant as another arrival
+ok 28 - half-open occupancy boundary admits departure at same instant as another arrival
+  ---
+  duration_ms: 0.9667
+  type: 'test'
+  ...
+# Subtest: missing/disallowed exit remains visible and needs review
+ok 29 - missing/disallowed exit remains visible and needs review
+  ---
+  duration_ms: 0.7151
+  type: 'test'
+  ...
+# Subtest: evidence digest binds context/policy/source revisions and minimized output stays immutable
+ok 30 - evidence digest binds context/policy/source revisions and minimized output stays immutable
+  ---
+  duration_ms: 2.5516
+  type: 'test'
+  ...
+# Subtest: movement control totals include observed exit controls represented in movement
+not ok 31 - movement control totals include observed exit controls represented in movement
+  ---
+  duration_ms: 1.904
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\cleanroom.held-out.test.mjs:75:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    3 !== 5
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 5
+  actual: 3
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/cleanroom.held-out.test.mjs:76:151)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unknown observed exit control economics remain unknown rather than known entry-only total
+not ok 32 - unknown observed exit control economics remain unknown rather than known entry-only total
+  ---
+  duration_ms: 1.0223
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\cleanroom.held-out.test.mjs:78:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    5 !== null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual: 5
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/trust_review/cleanroom.held-out.test.mjs:79:212)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 29
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 319.4177

@@ -1,0 +1,214 @@
+﻿TAP version 13
+# Subtest: positive inert plan and observed movement retain explicit no execution/completion authority
+ok 1 - positive inert plan and observed movement retain explicit no execution/completion authority
+  ---
+  duration_ms: 8.7023
+  type: 'test'
+  ...
+# Subtest: both consumers reject top-level getter without caller execution
+ok 2 - both consumers reject top-level getter without caller execution
+  ---
+  duration_ms: 0.9329
+  type: 'test'
+  ...
+# Subtest: both consumers reject nested getter without caller execution
+ok 3 - both consumers reject nested getter without caller execution
+  ---
+  duration_ms: 0.2997
+  type: 'test'
+  ...
+# Subtest: both consumers reject indexed getter without caller execution
+ok 4 - both consumers reject indexed getter without caller execution
+  ---
+  duration_ms: 0.881
+  type: 'test'
+  ...
+# Subtest: both consumers reject toJSON without caller execution
+ok 5 - both consumers reject toJSON without caller execution
+  ---
+  duration_ms: 0.4495
+  type: 'test'
+  ...
+# Subtest: both consumers reject array map override without caller execution
+ok 6 - both consumers reject array map override without caller execution
+  ---
+  duration_ms: 0.2753
+  type: 'test'
+  ...
+# Subtest: both consumers reject array iterator override without caller execution
+ok 7 - both consumers reject array iterator override without caller execution
+  ---
+  duration_ms: 0.3432
+  type: 'test'
+  ...
+# Subtest: both consumers reject prototype record without caller execution
+ok 8 - both consumers reject prototype record without caller execution
+  ---
+  duration_ms: 1.1045
+  type: 'test'
+  ...
+# Subtest: both consumers reject proxy record without caller execution
+ok 9 - both consumers reject proxy record without caller execution
+  ---
+  duration_ms: 0.6258
+  type: 'test'
+  ...
+# Subtest: both consumers reject proxy array without caller execution
+ok 10 - both consumers reject proxy array without caller execution
+  ---
+  duration_ms: 0.6415
+  type: 'test'
+  ...
+# Subtest: both consumers reject revoked proxy without caller execution
+ok 11 - both consumers reject revoked proxy without caller execution
+  ---
+  duration_ms: 0.3381
+  type: 'test'
+  ...
+# Subtest: both consumers reject sparse array without caller execution
+ok 12 - both consumers reject sparse array without caller execution
+  ---
+  duration_ms: 0.2022
+  type: 'test'
+  ...
+# Subtest: both consumers reject array symbol without caller execution
+ok 13 - both consumers reject array symbol without caller execution
+  ---
+  duration_ms: 0.183
+  type: 'test'
+  ...
+# Subtest: both consumers reject cycle without caller execution
+ok 14 - both consumers reject cycle without caller execution
+  ---
+  duration_ms: 1.1657
+  type: 'test'
+  ...
+# Subtest: both consumers reject deep input without caller execution
+ok 15 - both consumers reject deep input without caller execution
+  ---
+  duration_ms: 0.4586
+  type: 'test'
+  ...
+# Subtest: both consumers reject nonfinite0 without caller execution
+ok 16 - both consumers reject nonfinite0 without caller execution
+  ---
+  duration_ms: 0.2636
+  type: 'test'
+  ...
+# Subtest: both consumers reject nonfinite1 without caller execution
+ok 17 - both consumers reject nonfinite1 without caller execution
+  ---
+  duration_ms: 0.2074
+  type: 'test'
+  ...
+# Subtest: both consumers reject nonfinite2 without caller execution
+ok 18 - both consumers reject nonfinite2 without caller execution
+  ---
+  duration_ms: 0.2168
+  type: 'test'
+  ...
+# Subtest: scope, source authority, provenance and exact-current evidence reject before ready
+ok 19 - scope, source authority, provenance and exact-current evidence reject before ready
+  ---
+  duration_ms: 2.2149
+  type: 'test'
+  ...
+# Subtest: distinct separator-bearing worker and zone IDs preserve coverage and occupancy
+ok 20 - distinct separator-bearing worker and zone IDs preserve coverage and occupancy
+  ---
+  duration_ms: 0.6473
+  type: 'test'
+  ...
+# Subtest: duplicate worker/task/event exact IDs and assignment double-booking cannot manufacture coverage
+ok 21 - duplicate worker/task/event exact IDs and assignment double-booking cannot manufacture coverage
+  ---
+  duration_ms: 0.8751
+  type: 'test'
+  ...
+# Subtest: task ordering follows actual slots and cannot use caller array order to hide forbidden transition
+ok 22 - task ordering follows actual slots and cannot use caller array order to hide forbidden transition
+  ---
+  duration_ms: 0.4266
+  type: 'test'
+  ...
+# Subtest: finite plan metric accumulation overflow blocks
+ok 23 - finite plan metric accumulation overflow blocks
+  ---
+  duration_ms: 0.3525
+  type: 'test'
+  ...
+# Subtest: positive task/session intersection is half-open; endpoint touch never proves overlap or completion
+ok 24 - positive task/session intersection is half-open; endpoint touch never proves overlap or completion
+  ---
+  duration_ms: 1.3188
+  type: 'test'
+  ...
+# Subtest: zero/negative task windows and event future times block
+ok 25 - zero/negative task windows and event future times block
+  ---
+  duration_ms: 0.6078
+  type: 'test'
+  ...
+# Subtest: open, orphan, duplicate-enter and zero-duration sessions force review
+ok 26 - open, orphan, duplicate-enter and zero-duration sessions force review
+  ---
+  duration_ms: 18.0563
+  type: 'test'
+  ...
+# Subtest: overlapping sessions across zones for one person remain data-quality conflicts
+ok 27 - overlapping sessions across zones for one person remain data-quality conflicts
+  ---
+  duration_ms: 1.3653
+  type: 'test'
+  ...
+# Subtest: half-open occupancy boundary admits departure at same instant as another arrival
+ok 28 - half-open occupancy boundary admits departure at same instant as another arrival
+  ---
+  duration_ms: 1.4481
+  type: 'test'
+  ...
+# Subtest: missing/disallowed exit remains visible and needs review
+ok 29 - missing/disallowed exit remains visible and needs review
+  ---
+  duration_ms: 0.9288
+  type: 'test'
+  ...
+# Subtest: evidence digest binds context/policy/source revisions and minimized output stays immutable
+ok 30 - evidence digest binds context/policy/source revisions and minimized output stays immutable
+  ---
+  duration_ms: 2.6627
+  type: 'test'
+  ...
+# Subtest: inherited movement control metrics count entry controls and retain exit controls separately
+ok 31 - inherited movement control metrics count entry controls and retain exit controls separately
+  ---
+  duration_ms: 0.3597
+  type: 'test'
+  ...
+# Subtest: unknown exit controls stay unknown in row and do not alter inherited entry-only metric
+ok 32 - unknown exit controls stay unknown in row and do not alter inherited entry-only metric
+  ---
+  duration_ms: 0.3269
+  type: 'test'
+  ...
+# Subtest: unknown entry control economics remain unknown in entry-only metric
+ok 33 - unknown entry control economics remain unknown in entry-only metric
+  ---
+  duration_ms: 0.3284
+  type: 'test'
+  ...
+# Subtest: multiple finite observed entry controls cannot overflow aggregate metrics
+ok 34 - multiple finite observed entry controls cannot overflow aggregate metrics
+  ---
+  duration_ms: 0.3071
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 214.4755

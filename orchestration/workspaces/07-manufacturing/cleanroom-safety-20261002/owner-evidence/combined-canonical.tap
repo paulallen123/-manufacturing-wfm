@@ -1,0 +1,208 @@
+TAP version 13
+# Subtest: valid supplied plan retains hard coverage and remains non-executable
+ok 1 - valid supplied plan retains hard coverage and remains non-executable
+  ---
+  duration_ms: 7.4395
+  type: 'test'
+  ...
+# Subtest: evidence identity is stable, scoped and ignores unrelated hints
+ok 2 - evidence identity is stable, scoped and ignores unrelated hints
+  ---
+  duration_ms: 2.3006
+  type: 'test'
+  ...
+# Subtest: duplicate workers cannot manufacture unique people coverage
+ok 3 - duplicate workers cannot manufacture unique people coverage
+  ---
+  duration_ms: 0.358
+  type: 'test'
+  ...
+# Subtest: duplicate tasks never erase independent required coverage
+ok 4 - duplicate tasks never erase independent required coverage
+  ---
+  duration_ms: 0.269
+  type: 'test'
+  ...
+# Subtest: canonical IDs reject numeric, whitespace and alias records
+ok 5 - canonical IDs reject numeric, whitespace and alias records
+  ---
+  duration_ms: 0.5935
+  type: 'test'
+  ...
+# Subtest: required skills, zone qualification and task coverage remain mandatory
+ok 6 - required skills, zone qualification and task coverage remain mandatory
+  ---
+  duration_ms: 0.6901
+  type: 'test'
+  ...
+# Subtest: a person cannot fill simultaneous task slots twice
+ok 7 - a person cannot fill simultaneous task slots twice
+  ---
+  duration_ms: 0.3825
+  type: 'test'
+  ...
+# Subtest: occupancy remains mandatory and cannot be hidden by separator IDs
+ok 8 - occupancy remains mandatory and cannot be hidden by separator IDs
+  ---
+  duration_ms: 0.3466
+  type: 'test'
+  ...
+# Subtest: unapproved plan transition is never traded for an efficiency score
+ok 9 - unapproved plan transition is never traded for an efficiency score
+  ---
+  duration_ms: 0.5647
+  type: 'test'
+  ...
+# Subtest: contradictory and identical transition rows block both consumers
+ok 10 - contradictory and identical transition rows block both consumers
+  ---
+  duration_ms: 1.4994
+  type: 'test'
+  ...
+# Subtest: missing policy revision, source provenance or authority blocks
+ok 11 - missing policy revision, source provenance or authority blocks
+  ---
+  duration_ms: 0.6322
+  type: 'test'
+  ...
+# Subtest: tenant and site mismatches cannot use another scope authority
+ok 12 - tenant and site mismatches cannot use another scope authority
+  ---
+  duration_ms: 0.5516
+  type: 'test'
+  ...
+# Subtest: negative or coerced evidence age cannot appear current
+ok 13 - negative or coerced evidence age cannot appear current
+  ---
+  duration_ms: 0.5053
+  type: 'test'
+  ...
+# Subtest: future and stale policy/source evidence cannot renew validity
+ok 14 - future and stale policy/source evidence cannot renew validity
+  ---
+  duration_ms: 0.4079
+  type: 'test'
+  ...
+# Subtest: malformed policy ages, occupancy and economics block without coercion
+ok 15 - malformed policy ages, occupancy and economics block without coercion
+  ---
+  duration_ms: 0.9249
+  type: 'test'
+  ...
+# Subtest: missing costs remain unknown and never become zero savings
+ok 16 - missing costs remain unknown and never become zero savings
+  ---
+  duration_ms: 0.3641
+  type: 'test'
+  ...
+# Subtest: presence projection explains overlap without asserting task completion
+ok 17 - presence projection explains overlap without asserting task completion
+  ---
+  duration_ms: 1.2
+  type: 'test'
+  ...
+# Subtest: task and event duplicates invalidate observed movement
+ok 18 - task and event duplicates invalidate observed movement
+  ---
+  duration_ms: 0.5586
+  type: 'test'
+  ...
+# Subtest: unapproved and missing exits remain visible and force review
+ok 19 - unapproved and missing exits remain visible and force review
+  ---
+  duration_ms: 1.4183
+  type: 'test'
+  ...
+# Subtest: separator-containing identifiers never pair two people into one session
+ok 20 - separator-containing identifiers never pair two people into one session
+  ---
+  duration_ms: 0.3932
+  type: 'test'
+  ...
+# Subtest: broken, overlapping and future access histories cannot be certified complete
+ok 21 - broken, overlapping and future access histories cannot be certified complete
+  ---
+  duration_ms: 1.0316
+  type: 'test'
+  ...
+# Subtest: movement policy revision must match the authoritative tasks and events
+ok 22 - movement policy revision must match the authoritative tasks and events
+  ---
+  duration_ms: 0.3111
+  type: 'test'
+  ...
+# Subtest: missing timestamps and malformed collections fail closed
+ok 23 - missing timestamps and malformed collections fail closed
+  ---
+  duration_ms: 0.5088
+  type: 'test'
+  ...
+# Subtest: accessor inputs and indexed getters are rejected without invocation
+ok 24 - accessor inputs and indexed getters are rejected without invocation
+  ---
+  duration_ms: 0.3198
+  type: 'test'
+  ...
+# Subtest: coercion hooks and proxy traps cannot run
+ok 25 - coercion hooks and proxy traps cannot run
+  ---
+  duration_ms: 0.225
+  type: 'test'
+  ...
+# Subtest: bounded record counts fail closed rather than dropping required inputs
+ok 26 - bounded record counts fail closed rather than dropping required inputs
+  ---
+  duration_ms: 9.3467
+  type: 'test'
+  ...
+# Subtest: plan and movement evaluation leave source inputs unchanged
+ok 27 - plan and movement evaluation leave source inputs unchanged
+  ---
+  duration_ms: 1.2234
+  type: 'test'
+  ...
+# Subtest: finite input costs cannot overflow plan or presence aggregates
+ok 28 - finite input costs cannot overflow plan or presence aggregates
+  ---
+  duration_ms: 20.1294
+  type: 'test'
+  ...
+# Subtest: episode is deterministic regardless of option order
+ok 29 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 21.2356
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 30 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.84
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 31 - do-nothing option is mandatory
+  ---
+  duration_ms: 1.2178
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 32 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 0.7063
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 33 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 0.9653
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 195.4531

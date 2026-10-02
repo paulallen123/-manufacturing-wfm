@@ -1,0 +1,546 @@
+TAP version 13
+# Subtest: valid supplied plan retains hard coverage and remains non-executable
+not ok 1 - valid supplied plan retains hard coverage and remains non-executable
+  ---
+  duration_ms: 3.3923
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:17:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:18:198)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: evidence identity is stable, scoped and ignores unrelated hints
+not ok 2 - evidence identity is stable, scoped and ignores unrelated hints
+  ---
+  duration_ms: 3.5757
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    undefined
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:22:60)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: duplicate workers cannot manufacture unique people coverage
+ok 3 - duplicate workers cannot manufacture unique people coverage
+  ---
+  duration_ms: 0.3654
+  type: 'test'
+  ...
+# Subtest: duplicate tasks never erase independent required coverage
+ok 4 - duplicate tasks never erase independent required coverage
+  ---
+  duration_ms: 0.2147
+  type: 'test'
+  ...
+# Subtest: canonical IDs reject numeric, whitespace and alias records
+ok 5 - canonical IDs reject numeric, whitespace and alias records
+  ---
+  duration_ms: 0.3738
+  type: 'test'
+  ...
+# Subtest: required skills, zone qualification and task coverage remain mandatory
+ok 6 - required skills, zone qualification and task coverage remain mandatory
+  ---
+  duration_ms: 0.4563
+  type: 'test'
+  ...
+# Subtest: a person cannot fill simultaneous task slots twice
+ok 7 - a person cannot fill simultaneous task slots twice
+  ---
+  duration_ms: 0.2119
+  type: 'test'
+  ...
+# Subtest: occupancy remains mandatory and cannot be hidden by separator IDs
+not ok 8 - occupancy remains mandatory and cannot be hidden by separator IDs
+  ---
+  duration_ms: 1.3112
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:40:41)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unapproved plan transition is never traded for an efficiency score
+ok 9 - unapproved plan transition is never traded for an efficiency score
+  ---
+  duration_ms: 0.4429
+  type: 'test'
+  ...
+# Subtest: contradictory and identical transition rows block both consumers
+not ok 10 - contradictory and identical transition rows block both consumers
+  ---
+  duration_ms: 2.0528
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:46:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'movement_ready'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'movement_ready'
+  actual: 'movement_ready'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedMovement (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:15:32)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:47:232)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing policy revision, source provenance or authority blocks
+not ok 11 - missing policy revision, source provenance or authority blocks
+  ---
+  duration_ms: 0.4781
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:49:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'movement_ready'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'movement_ready'
+  actual: 'movement_ready'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedMovement (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:15:32)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:51:63)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tenant and site mismatches cannot use another scope authority
+not ok 12 - tenant and site mismatches cannot use another scope authority
+  ---
+  duration_ms: 0.2922
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:53:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:55:237)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: negative or coerced evidence age cannot appear current
+not ok 13 - negative or coerced evidence age cannot appear current
+  ---
+  duration_ms: 0.3055
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:59:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:60:101)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: future and stale policy/source evidence cannot renew validity
+not ok 14 - future and stale policy/source evidence cannot renew validity
+  ---
+  duration_ms: 0.2491
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:62:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:64:117)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: malformed policy ages, occupancy and economics block without coercion
+not ok 15 - malformed policy ages, occupancy and economics block without coercion
+  ---
+  duration_ms: 0.4129
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:67:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:68:112)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing costs remain unknown and never become zero savings
+ok 16 - missing costs remain unknown and never become zero savings
+  ---
+  duration_ms: 0.1763
+  type: 'test'
+  ...
+# Subtest: presence projection explains overlap without asserting task completion
+not ok 17 - presence projection explains overlap without asserting task completion
+  ---
+  duration_ms: 0.4181
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:75:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:76:237)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: task and event duplicates invalidate observed movement
+not ok 18 - task and event duplicates invalidate observed movement
+  ---
+  duration_ms: 0.6227
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:78:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'movement_ready'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'movement_ready'
+  actual: 'movement_ready'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedMovement (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:15:32)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:79:92)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unapproved and missing exits remain visible and force review
+not ok 19 - unapproved and missing exits remain visible and force review
+  ---
+  duration_ms: 0.4258
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:82:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'movement_ready'
+    - 'needs_review'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'needs_review'
+  actual: 'movement_ready'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:83:169)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: separator-containing identifiers never pair two people into one session
+not ok 20 - separator-containing identifiers never pair two people into one session
+  ---
+  duration_ms: 0.4151
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:85:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:86:313)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: broken, overlapping and future access histories cannot be certified complete
+not ok 21 - broken, overlapping and future access histories cannot be certified complete
+  ---
+  duration_ms: 0.3898
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:88:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'movement_ready'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'movement_ready'
+  actual: 'movement_ready'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedMovement (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:15:32)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:90:95)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: movement policy revision must match the authoritative tasks and events
+not ok 22 - movement policy revision must match the authoritative tasks and events
+  ---
+  duration_ms: 0.3116
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:93:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'movement_ready'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'movement_ready'
+  actual: 'movement_ready'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedMovement (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:15:32)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:94:113)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing timestamps and malformed collections fail closed
+not ok 23 - missing timestamps and malformed collections fail closed
+  ---
+  duration_ms: 1.5678
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:96:1'
+  failureType: 'testCodeFailure'
+  error: 'presenceEvents is not iterable'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    buildInterventionTransitionLedger (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/evidence/88185a0e94f5df15e32841fc227cfededbde27d8/frontier/controlled-environment-flow/intervention-transition-ledger.mjs:167:22)
+    projectControlledEnvironmentMovement (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/evidence/published-source-adapter.mjs:6:11)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:99:62)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: accessor inputs and indexed getters are rejected without invocation
+not ok 24 - accessor inputs and indexed getters are rejected without invocation
+  ---
+  duration_ms: 0.3221
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:101:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:102:129)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: coercion hooks and proxy traps cannot run
+not ok 25 - coercion hooks and proxy traps cannot run
+  ---
+  duration_ms: 0.3897
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:105:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:106:90)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: bounded record counts fail closed rather than dropping required inputs
+not ok 26 - bounded record counts fail closed rather than dropping required inputs
+  ---
+  duration_ms: 1.5492
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-cleanroom\\source\\operations\\runtime\\controlled-environment-safety.test.mjs:109:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'safe_candidate'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'safe_candidate'
+  actual: 'safe_candidate'
+  operator: 'notStrictEqual'
+  stack: |-
+    deniedPlan (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:14:28)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs:110:101)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: plan and movement evaluation leave source inputs unchanged
+ok 27 - plan and movement evaluation leave source inputs unchanged
+  ---
+  duration_ms: 0.3946
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 8
+# fail 19
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 179.2951

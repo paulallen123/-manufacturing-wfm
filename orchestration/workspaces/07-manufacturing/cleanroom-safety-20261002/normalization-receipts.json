@@ -1,0 +1,30 @@
+{
+  "shippingNormalization": false,
+  "normalizations": [
+    {
+      "sourcePath": "work/lane07-cleanroom/evidence/published-red.tap",
+      "publishedPath": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/owner-evidence/published-red.tap",
+      "originalByteReceipt": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/original-byte-receipts/published-red.tap.json"
+    },
+    {
+      "sourcePath": "work/lane07-cleanroom/evidence/overflow-red.tap",
+      "publishedPath": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/owner-evidence/overflow-red.tap",
+      "originalByteReceipt": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/original-byte-receipts/overflow-red.tap.json"
+    },
+    {
+      "sourcePath": "work/lane07-cleanroom/evidence/green.tap",
+      "publishedPath": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/owner-evidence/green.tap",
+      "originalByteReceipt": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/original-byte-receipts/green.tap.json"
+    },
+    {
+      "sourcePath": "work/lane07-cleanroom/evidence/green-final.tap",
+      "publishedPath": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/owner-evidence/green-final.tap",
+      "originalByteReceipt": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/original-byte-receipts/green-final.tap.json"
+    },
+    {
+      "sourcePath": "work/lane07-cleanroom/evidence/combined-canonical.tap",
+      "publishedPath": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/owner-evidence/combined-canonical.tap",
+      "originalByteReceipt": "orchestration/workspaces/07-manufacturing/cleanroom-safety-20261002/original-byte-receipts/combined-canonical.tap.json"
+    }
+  ]
+}

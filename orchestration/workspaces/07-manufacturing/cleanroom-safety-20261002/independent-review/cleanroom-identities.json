@@ -1,0 +1,164 @@
+{
+  "verified": true,
+  "shipping": [
+    {
+      "path": "operations/runtime/controlled-environment-safety.mjs",
+      "mode": "100644",
+      "localPath": "work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.mjs",
+      "localBlob": "2478100335800c6d65cb98ff03735de646bf2d35",
+      "sha256": "5f02e65193a9e410617deafb0586c6ce3e3781c212623eb923eb758cca64bf79",
+      "bytes": 14599,
+      "sourceIdentical": false,
+      "disposition": "ADAPTED_PORT",
+      "sourceRefs": [
+        "88185a0e94f5df15e32841fc227cfededbde27d8:66724e05985033501feea66f1effa62fd2032b80",
+        "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309:95f92f92d2b3f3a447259810aae315193bc1945f",
+        "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309:681cbc50fd86706e1a8e699ea7065b006ab02eb9"
+      ]
+    },
+    {
+      "path": "operations/runtime/controlled-environment-safety.test.mjs",
+      "mode": "100644",
+      "localPath": "work/lane07-cleanroom/source/operations/runtime/controlled-environment-safety.test.mjs",
+      "localBlob": "caefd9039757dfa1c3dbe9d956dd786cc6b5cef2",
+      "sha256": "502f4fa17f02fab1c745a099e92c0267333bf183dbcb13029e85cbb0c55dd7ca",
+      "bytes": 11408,
+      "sourceIdentical": false,
+      "disposition": "ADAPTED_PORT",
+      "sourceRefs": [
+        "PR216 ambiguity and repair safety tests; behavioral red fixtures",
+        "new scoped/source-bound safety and overflow tests"
+      ]
+    }
+  ],
+  "canonicalDependencies": [
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "operations/runtime/decision-episode.cjs",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "mode": "100644",
+      "snapshotPath": "work/lane07-cleanroom/source/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "shipping": false
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "mode": "100644",
+      "snapshotPath": "work/lane07-cleanroom/source/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "shipping": false
+    }
+  ],
+  "provenanceEvidenceVerified": [
+    {
+      "sourceSha": "88185a0e94f5df15e32841fc227cfededbde27d8",
+      "path": "frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "blob": "66724e05985033501feea66f1effa62fd2032b80",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/88185a0e94f5df15e32841fc227cfededbde27d8/frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "bytes": 7934
+    },
+    {
+      "sourceSha": "88185a0e94f5df15e32841fc227cfededbde27d8",
+      "path": "frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "blob": "6231a401653d5f14410b20e29f5060b103954dcd",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/88185a0e94f5df15e32841fc227cfededbde27d8/frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "bytes": 12030
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "blob": "89ab46c06fd5ee74a58275ceb65cf7bbd3eb25c5",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "bytes": 7223
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/controlled-environment-safety.test.mjs",
+      "blob": "c2e39663fe0dc269664b23a408d898f6e8d0b767",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/controlled-environment-safety.test.mjs",
+      "bytes": 8296
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/controlled-environment-validation.mjs",
+      "blob": "681cbc50fd86706e1a8e699ea7065b006ab02eb9",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/controlled-environment-validation.mjs",
+      "bytes": 1028
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "blob": "95f92f92d2b3f3a447259810aae315193bc1945f",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "bytes": 12890
+    }
+  ],
+  "ownerLogsRehashed": [
+    {
+      "path": "work/lane07-cleanroom/evidence/published-red.tap",
+      "bytes": 56244,
+      "sha256": "71722bc1fa12fec2700b69b2762a28d2db411834d818a8c593762446262a9ab7",
+      "counts": {
+        "tests": 27,
+        "pass": 8,
+        "fail": 19,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/overflow-red.tap",
+      "bytes": 2878,
+      "sha256": "86d6714e67bb52023f8de11e5defaa88cc0079a8c088395de6c1c97540ff8a3a",
+      "counts": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/green.tap",
+      "bytes": 11060,
+      "sha256": "bf478278ae8fc24341cf8bed66a2c4886a98e41d9cb8f96b7765b77638b9aad0",
+      "counts": {
+        "tests": 27,
+        "pass": 27,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/green-final.tap",
+      "bytes": 11454,
+      "sha256": "a7535dd2e99576c95242993505ab757f331013515e674a6ba5121eb648058342",
+      "counts": {
+        "tests": 28,
+        "pass": 28,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "path": "work/lane07-cleanroom/evidence/combined-canonical.tap",
+      "bytes": 13200,
+      "sha256": "34e47308f8693d49720c4b958747f4ad0a3eb1b615165e1b6ef2e5569e00a528",
+      "counts": {
+        "tests": 33,
+        "pass": 33,
+        "fail": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "sourceBaseline": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null
+}

@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: valid supplied plan retains hard coverage and remains non-executable
+ok 1 - valid supplied plan retains hard coverage and remains non-executable
+  ---
+  duration_ms: 7.1901
+  type: 'test'
+  ...
+# Subtest: evidence identity is stable, scoped and ignores unrelated hints
+ok 2 - evidence identity is stable, scoped and ignores unrelated hints
+  ---
+  duration_ms: 2.0375
+  type: 'test'
+  ...
+# Subtest: duplicate workers cannot manufacture unique people coverage
+ok 3 - duplicate workers cannot manufacture unique people coverage
+  ---
+  duration_ms: 0.3568
+  type: 'test'
+  ...
+# Subtest: duplicate tasks never erase independent required coverage
+ok 4 - duplicate tasks never erase independent required coverage
+  ---
+  duration_ms: 0.2681
+  type: 'test'
+  ...
+# Subtest: canonical IDs reject numeric, whitespace and alias records
+ok 5 - canonical IDs reject numeric, whitespace and alias records
+  ---
+  duration_ms: 1.1124
+  type: 'test'
+  ...
+# Subtest: required skills, zone qualification and task coverage remain mandatory
+ok 6 - required skills, zone qualification and task coverage remain mandatory
+  ---
+  duration_ms: 0.6857
+  type: 'test'
+  ...
+# Subtest: a person cannot fill simultaneous task slots twice
+ok 7 - a person cannot fill simultaneous task slots twice
+  ---
+  duration_ms: 0.3754
+  type: 'test'
+  ...
+# Subtest: occupancy remains mandatory and cannot be hidden by separator IDs
+ok 8 - occupancy remains mandatory and cannot be hidden by separator IDs
+  ---
+  duration_ms: 0.3533
+  type: 'test'
+  ...
+# Subtest: unapproved plan transition is never traded for an efficiency score
+ok 9 - unapproved plan transition is never traded for an efficiency score
+  ---
+  duration_ms: 0.6071
+  type: 'test'
+  ...
+# Subtest: contradictory and identical transition rows block both consumers
+ok 10 - contradictory and identical transition rows block both consumers
+  ---
+  duration_ms: 1.9111
+  type: 'test'
+  ...
+# Subtest: missing policy revision, source provenance or authority blocks
+ok 11 - missing policy revision, source provenance or authority blocks
+  ---
+  duration_ms: 0.6607
+  type: 'test'
+  ...
+# Subtest: tenant and site mismatches cannot use another scope authority
+ok 12 - tenant and site mismatches cannot use another scope authority
+  ---
+  duration_ms: 0.554
+  type: 'test'
+  ...
+# Subtest: negative or coerced evidence age cannot appear current
+ok 13 - negative or coerced evidence age cannot appear current
+  ---
+  duration_ms: 0.472
+  type: 'test'
+  ...
+# Subtest: future and stale policy/source evidence cannot renew validity
+ok 14 - future and stale policy/source evidence cannot renew validity
+  ---
+  duration_ms: 0.5411
+  type: 'test'
+  ...
+# Subtest: malformed policy ages, occupancy and economics block without coercion
+ok 15 - malformed policy ages, occupancy and economics block without coercion
+  ---
+  duration_ms: 0.9333
+  type: 'test'
+  ...
+# Subtest: missing costs remain unknown and never become zero savings
+ok 16 - missing costs remain unknown and never become zero savings
+  ---
+  duration_ms: 0.3819
+  type: 'test'
+  ...
+# Subtest: presence projection explains overlap without asserting task completion
+ok 17 - presence projection explains overlap without asserting task completion
+  ---
+  duration_ms: 0.7904
+  type: 'test'
+  ...
+# Subtest: task and event duplicates invalidate observed movement
+ok 18 - task and event duplicates invalidate observed movement
+  ---
+  duration_ms: 0.3589
+  type: 'test'
+  ...
+# Subtest: unapproved and missing exits remain visible and force review
+ok 19 - unapproved and missing exits remain visible and force review
+  ---
+  duration_ms: 1.2119
+  type: 'test'
+  ...
+# Subtest: separator-containing identifiers never pair two people into one session
+ok 20 - separator-containing identifiers never pair two people into one session
+  ---
+  duration_ms: 0.3436
+  type: 'test'
+  ...
+# Subtest: broken, overlapping and future access histories cannot be certified complete
+ok 21 - broken, overlapping and future access histories cannot be certified complete
+  ---
+  duration_ms: 0.9897
+  type: 'test'
+  ...
+# Subtest: movement policy revision must match the authoritative tasks and events
+ok 22 - movement policy revision must match the authoritative tasks and events
+  ---
+  duration_ms: 0.31
+  type: 'test'
+  ...
+# Subtest: missing timestamps and malformed collections fail closed
+ok 23 - missing timestamps and malformed collections fail closed
+  ---
+  duration_ms: 0.4599
+  type: 'test'
+  ...
+# Subtest: accessor inputs and indexed getters are rejected without invocation
+ok 24 - accessor inputs and indexed getters are rejected without invocation
+  ---
+  duration_ms: 0.2568
+  type: 'test'
+  ...
+# Subtest: coercion hooks and proxy traps cannot run
+ok 25 - coercion hooks and proxy traps cannot run
+  ---
+  duration_ms: 0.1913
+  type: 'test'
+  ...
+# Subtest: bounded record counts fail closed rather than dropping required inputs
+ok 26 - bounded record counts fail closed rather than dropping required inputs
+  ---
+  duration_ms: 8.7498
+  type: 'test'
+  ...
+# Subtest: plan and movement evaluation leave source inputs unchanged
+ok 27 - plan and movement evaluation leave source inputs unchanged
+  ---
+  duration_ms: 0.6998
+  type: 'test'
+  ...
+# Subtest: finite input costs cannot overflow plan or presence aggregates
+ok 28 - finite input costs cannot overflow plan or presence aggregates
+  ---
+  duration_ms: 58.3678
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 229.3409

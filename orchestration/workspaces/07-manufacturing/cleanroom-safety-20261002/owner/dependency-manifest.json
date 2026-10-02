@@ -1,0 +1,73 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "records": [
+    {
+      "sourceSha": "88185a0e94f5df15e32841fc227cfededbde27d8",
+      "path": "frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "blob": "66724e05985033501feea66f1effa62fd2032b80",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/88185a0e94f5df15e32841fc227cfededbde27d8/frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "bytes": 7934
+    },
+    {
+      "sourceSha": "88185a0e94f5df15e32841fc227cfededbde27d8",
+      "path": "frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "blob": "6231a401653d5f14410b20e29f5060b103954dcd",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/88185a0e94f5df15e32841fc227cfededbde27d8/frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "bytes": 12030
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "blob": "89ab46c06fd5ee74a58275ceb65cf7bbd3eb25c5",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/controlled-environment-flow.mjs",
+      "bytes": 7223
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/controlled-environment-safety.test.mjs",
+      "blob": "c2e39663fe0dc269664b23a408d898f6e8d0b767",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/controlled-environment-safety.test.mjs",
+      "bytes": 8296
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/controlled-environment-validation.mjs",
+      "blob": "681cbc50fd86706e1a8e699ea7065b006ab02eb9",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/controlled-environment-validation.mjs",
+      "bytes": 1028
+    },
+    {
+      "sourceSha": "8f721b577e78e6f35a7a31e5d8f47ca9c90fa309",
+      "path": "frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "blob": "95f92f92d2b3f3a447259810aae315193bc1945f",
+      "mode": "100644",
+      "evidencePath": "work/lane07-cleanroom/evidence/8f721b577e78e6f35a7a31e5d8f47ca9c90fa309/frontier/controlled-environment-flow/intervention-transition-ledger.mjs",
+      "bytes": 12890
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "operations/runtime/decision-episode.cjs",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "mode": "100644",
+      "snapshotPath": "work/lane07-cleanroom/source/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "shipping": false
+    },
+    {
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "mode": "100644",
+      "snapshotPath": "work/lane07-cleanroom/source/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "shipping": false
+    }
+  ]
+}

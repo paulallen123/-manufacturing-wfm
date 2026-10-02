@@ -1,0 +1,74 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "parentSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baseTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "branchSuggestion": "feature/vector-lane07-cleanroom-safety-20261002",
+  "canonicalFutureOwner": "existing manufacturing scheduler / Decision Episode evidence projection",
+  "broadCapabilityStates": {
+    "product-023": "IN_PROGRESS",
+    "product-024": "IN_PROGRESS",
+    "product-025": "IN_PROGRESS"
+  },
+  "selectedComponent": "product-025 cleanroom safety and observed movement projection",
+  "componentStatus": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_SCOPE",
+  "runtimeWired": false,
+  "hostedProof": false,
+  "providerProof": false,
+  "wholeRuntimeAdmission": "PENDING",
+  "independentReview": "BOUNDED_REVIEW_NO_OPEN_P1_P2",
+  "ownerSourceSuite": {
+    "tests": 28,
+    "pass": 28,
+    "fail": 0,
+    "skip": 0
+  },
+  "ownerCombinedCanonical": {
+    "tests": 33,
+    "pass": 33,
+    "fail": 0,
+    "skip": 0
+  },
+  "independentHeldOut": {
+    "tests": 34,
+    "pass": 34,
+    "fail": 0,
+    "skip": 0
+  },
+  "independentSelectedCanonical": {
+    "tests": 33,
+    "pass": 33,
+    "fail": 0,
+    "skip": 0
+  },
+  "metricScope": {
+    "noteId": "CLEANROOM-N01",
+    "priority": "P3",
+    "aggregateScope": "ENTRY_ONLY",
+    "observedControlMinutes": "Sum of entry transition controlMinutes only; exits excluded from this aggregate.",
+    "observedControlCost": "Sum of entry transition controlCost only; exits excluded from this aggregate. Unknown entry economics remain null.",
+    "transitionRows": "Entry and exit rows retain individual controlMinutes/controlCost, including null unknown values.",
+    "example": {
+      "entryMinutes": 3,
+      "entryCost": 5,
+      "exitMinutes": 2,
+      "exitCost": 7,
+      "observedControlMinutes": 3,
+      "observedControlCost": 5
+    },
+    "semanticsSourceBlobs": [
+      "6231a401653d5f14410b20e29f5060b103954dcd",
+      "95f92f92d2b3f3a447259810aae315193bc1945f"
+    ],
+    "exclusions": [
+      "Total movement time or cost",
+      "Financial or realised savings proof",
+      "Customer proof",
+      "Sterility/contamination or quality proof"
+    ],
+    "callerAdmission": "PENDING; any caller/UI must explicitly convey entry-only scope before using these generic output names."
+  },
+  "historicalEvidenceTruth": "Owner shipping and verification manifests retain pre-review PENDING; final exact-byte independent verdict is separately preserved. Initial reviewer29/32 is qualified in independent findings: one fixture construction error and two all-transition metric assumptions.",
+  "authority": "Pure evidence projection with executionPermitted:false and taskCompletionProven:false. Authenticated current tenant authority and canonical scheduler caller admission remain external requirements."
+}

@@ -1,0 +1,16 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\cleanroom.held-out.test.mjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true,
+  "logSha256": "830fe80b8e2580bbafa063c0aceb2138be2bcc3161877c0816aca41cbd8a8574",
+  "customerProof": false
+}
