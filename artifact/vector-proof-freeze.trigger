@@ -50,3 +50,6 @@ review_vector_actual_staffology_payroll_codes=2026-10-02 parenta3e17ebfbcd3e667e
 2026-10-02 reviewed missing-provider VECTOR email repair from exact parent 775c1168c8f8548d74bd14359632eb43462b1c21. Preserve provided emails, canonical identity review, payroll dormancy and containment. Non-deploy exact CIRCLE_SHA1 runtime admission required.
 
 2026-10-02 reconcile idle Agents session against latest durable turn; preserve actual usage_limit_exceeded and stop before duplicate message. Parent42fe08035ae7e2f0033e3029213332bf56402c75; red retained, implementation144of144 zero skips. Exact non-deploy CIRCLE_SHA1 admission required.
+
+# Golden integrated745 exact-source candidate admission
+review_vector_golden_integrated_745=2026-10-02 parent74533ed802fa20ab35b811b316194a2614af009b; isolated-additive-START4-employee5-PACKED_ON3; external-Agent-Staffology-UX-payroll-transform-and-receipt-preserved; sealed-input-ONc06-derived-output-ONa9ec-separate; local40START-and138composition-controls-no277-orSDKrepeat; independent-source-transport-review-pending-at-preparation; current-integrated-sourceCI-notexecuted-CI63-isolated153only; one-fresh-exact-CIRCLE_SHA1-non-deploy-CI-required; currentcustomerproof0-no-hosted-session-config-invitation-provider-or-accessauthority; root-only-publication-no-shared-serving-change; prior-marker-records-historical

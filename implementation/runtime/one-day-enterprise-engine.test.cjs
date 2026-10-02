@@ -49,8 +49,8 @@ function fixture(options = {}) {
     contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: options.publicOrigin ?? 'https://implementation.test',
     requireCandidateBinding: options.requireCandidateBinding,
-    candidateSha: options.candidateSha || 'a'.repeat(40),
-    deploymentId: options.deploymentId || 'deployment-test',
+    candidateSha: options.candidateSha ?? 'a'.repeat(40),
+    deploymentId: options.deploymentId ?? 'deployment-test',
     notificationRetryDelayMs: options.notificationRetryDelayMs,
     notificationRetryPollMs: options.notificationRetryPollMs ?? 0
   };
@@ -1676,3 +1676,45 @@ test('current admission: receipts accepted before first configuration cannot acq
 test('current admission: trusted contract scope changes share the revision boundary and cannot resurrect prior scope receipts',async()=>{const f=fixture();try{const d=new DatabaseSync(f.dbPath);d.prepare('UPDATE implementation_runs SET contract_ref_hash=? WHERE id=?').run(hash('review-existing-contract'),'run-review');d.close();await admitReady(f);const before=f.audit();const activate=s=>call(f,'contract-activated',{tenant:'review-alpha',contractRef:'review-existing-contract',recipientEmail:'synthetic@example.invalid',scope:s});const changed={...scope(),countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};await activate(changed);assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);await activate(scope());assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);assert.deepEqual(f.audit().evidence,before.evidence);assert.equal(f.audit().environments[0].environment_id,before.environments[0].environment_id);}finally{f.close();}});
 
 }
+
+
+test('START-01 zero stored PASS start declares applied configuration without deployment proof', async () => {
+  const f=fixture({requireCandidateBinding:true,strictEvidence:true});
+  try {
+    const status=await startRun(f),db=new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare("SELECT COUNT(*) n FROM implementation_evidence WHERE status='PASS'").get().n,0);
+    const row=db.prepare('SELECT * FROM tenant_environments WHERE tenant=?').get('alpha');db.close();
+    assert.deepEqual(status.configuredImplementationContext,{scope:'CONFIGURED_DECLARATION',candidateSha:f.candidateSha,deploymentId:f.deploymentId,tenant:'alpha',runId:status.runId,configurationDigest:row.configuration_digest,environmentId:row.environment_id,namespace:row.namespace,applied:true,platformDeploymentVerified:false});
+    assert.equal(status.operationalReady,false);assert.ok(status.completedRequirements<status.totalRequirements);
+    assert.equal(status.requirements.find(r=>r.key==='tenant-environment').evidenceBinding,undefined);
+  } finally {f.close();}
+});
+test('START-01 WARN-only evidence does not become a declaration prerequisite or hosted proof',async()=>{
+  const f=fixture({requireCandidateBinding:true,strictEvidence:true});
+  try{const start=await startRun(f),warn=await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',{runId:start.runId,kind:'tenant-environment',status:'WARN',confidence:0,source:'local-source-control',detail:{reason:'No hosted proof collected.'}},f.internal);
+    assert.equal(warn.status,200);const status=(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/status')).body;
+    assert.equal(status.configuredImplementationContext.scope,'CONFIGURED_DECLARATION');assert.equal(status.configuredImplementationContext.platformDeploymentVerified,false);assert.equal(status.operationalReady,false);
+    const db=new DatabaseSync(f.dbPath);assert.equal(db.prepare("SELECT COUNT(*) n FROM implementation_evidence WHERE status='PASS'").get().n,0);assert.equal(db.prepare("SELECT COUNT(*) n FROM implementation_evidence WHERE status='WARN'").get().n,1);db.close();
+  }finally{f.close();}
+});
+for(const [name,options] of [['missing source',{candidateSha:''}],['malformed source',{candidateSha:'not-a-sha'}],['source controls',{candidateSha:'a'.repeat(40)+'\n'}],['missing deployment',{deploymentId:''}],['deployment controls',{deploymentId:'deployment\ncontrol'}],['deployment whitespace',{deploymentId:' deployment-test '}],['deployment non-string',{deploymentId:42}],['overlong deployment',{deploymentId:'d'.repeat(161)}]])test('START-01 unavailable declaration for '+name,async()=>{
+  const f=fixture({...options,requireCandidateBinding:false});try{const status=await startRun(f);assert.equal(status.configuredImplementationContext,null);assert.equal(status.operationalReady,false);}finally{f.close();}
+});
+for(const name of ['not READY','stale run','scope mismatch','stored digest mismatch','stored bytes altered','blank environment','control environment','blank namespace','control namespace'])test('START-01 rejects '+name+' applied environment',async()=>{
+  const f=fixture({requireCandidateBinding:true});try{const start=await startRun(f),db=new DatabaseSync(f.dbPath),row=db.prepare('SELECT * FROM tenant_environments WHERE tenant=?').get('alpha');
+    if(name==='not READY')db.prepare('UPDATE tenant_environments SET state=?').run('BUILDING');
+    if(name==='stale run')db.prepare('UPDATE tenant_environments SET run_id=?').run('old-run');
+    if(name==='scope mismatch'){const config=JSON.parse(row.configuration_json);config.employeeCount=999;const raw=JSON.stringify(config);db.prepare('UPDATE tenant_environments SET configuration_json=?,configuration_digest=?').run(raw,sha256(raw));}
+    if(name==='stored digest mismatch')db.prepare('UPDATE tenant_environments SET configuration_digest=?').run('f'.repeat(64));
+    if(name==='stored bytes altered')db.prepare('UPDATE tenant_environments SET configuration_json=?').run(row.configuration_json+' ');
+    if(name==='blank environment')db.prepare('UPDATE tenant_environments SET environment_id=?').run('');
+    if(name==='control environment')db.prepare('UPDATE tenant_environments SET environment_id=?').run('env\ncontrol');
+    if(name==='blank namespace')db.prepare('UPDATE tenant_environments SET namespace=?').run('');
+    if(name==='control namespace')db.prepare('UPDATE tenant_environments SET namespace=?').run('tenant_bad\n');
+    assert.equal(db.prepare("SELECT COUNT(*) n FROM implementation_evidence WHERE status='PASS'").get().n,0);db.close();
+    const result=await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/status');assert.equal(result.status,200);assert.equal(result.body.configuredImplementationContext,null);assert.equal(result.body.operationalReady,false);assert.equal(result.body.runId,start.runId);
+  }finally{f.close();}
+});
+test('START-01 missing captured scope has null declaration',async()=>{
+  const f=fixture({requireCandidateBinding:true});try{const invite=await createInvitation(f),started=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/start',{token:invite.token});assert.equal(started.body.configuredImplementationContext,null);}finally{f.close();}
+});

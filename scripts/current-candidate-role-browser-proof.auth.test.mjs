@@ -14,6 +14,7 @@ import { DatabaseSync } from 'node:sqlite';
 import proofRunnerAuth from '../security/runtime/proof-runner-auth.cjs';
 import identityGuard from '../security/runtime/identity-survival-guard.cjs';
 import runtimeModule from '../security/runtime/runtime-identity.cjs';
+import enterpriseEngine from '../implementation/runtime/one-day-enterprise-engine.cjs';
 import { roleProofResult } from './vector-proof-result.mjs';
 
 const source=fs.readFileSync(new URL('./current-candidate-role-browser-proof.mjs',import.meta.url),'utf8');
@@ -37,8 +38,8 @@ function fixture(t,mutate={}){
   for(const a of actors)db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run(a.email,a.tenant,a.slug,a.role,0,'s','00','[]');
   const keys=crypto.generateKeyPairSync('ed25519'),auth=proofRunnerAuth.createProofRunnerAuth({dbPath,hosted:true,nodeEnv:'staging',enabled:true,publicOrigin:origin,publicKey:keys.publicKey,allowedEmails:actors.map(a=>a.email)}),guard=identityGuard.createIdentitySurvivalGuard({dbPath}),control=guard.securityControlForTests();
   const runtime=runtimeModule.createRuntimeIdentity({hosted:true,env:{WFM_CANDIDATE_SHA:sha},readFileSync:()=>sha});
-  const calls=[],bodies=[];let firstBody;
-  const status={tenant:'fixture',runId,tenantEnvironment:{runId,isolation:{tenant:'fixture'},configurationDigest:digest},requirements:[{key:'tenant-environment',evidenceBinding:{status:'REVALIDATION_REQUIRED',expected:{candidateSha:sha,deploymentId:deployment,tenant:'fixture',runId},observed:{candidateSha:'c'.repeat(40),deploymentId:'OLD'}}}]};
+  const calls=[],bodies=[];let firstBody,coreEngine; const config=env(keys.privateKey);
+  const status={tenant:'fixture',runId,tenantEnvironment:{runId,state:'READY',environmentId:'synthetic-env',namespace:'tenant_'+ '1'.repeat(24),isolation:{tenant:'fixture',namespace:'tenant_'+ '1'.repeat(24)},configurationDigest:digest},configuredImplementationContext:{scope:'CONFIGURED_DECLARATION',candidateSha:sha,deploymentId:deployment,tenant:'fixture',runId,configurationDigest:digest,environmentId:'synthetic-env',namespace:'tenant_'+ '1'.repeat(24),applied:true,platformDeploymentVerified:false},requirements:[{key:'tenant-environment',evidenceBinding:{status:'REVALIDATION_REQUIRED',expected:{candidateSha:sha,deploymentId:deployment,tenant:'fixture',runId},observed:{candidateSha:'c'.repeat(40),deploymentId:'OLD'}}}]};
   function page(){let cookie='';return{goto:async()=>({status:()=>200}),reload:async()=>{},waitForFunction:async()=>{},cookie:()=>cookie,evaluate:async(fn,payload)=>vm.runInNewContext('('+fn.toString()+')(payload)',{payload,fetch:async(url,options={})=>{
     calls.push({url,method:options.method||'GET',headers:options.headers||{},payloadKeys:options.body?Object.keys(JSON.parse(options.body)):[]});
     let body=options.body?JSON.parse(options.body):null;
@@ -48,7 +49,7 @@ function fixture(t,mutate={}){
     if(!runtime.handleRequest(req,res)&&!guard.beforeRequest(req,res)&&!await auth.handleRequest(req,res)){
       if(url==='/api/login'){res.statusCode=410;res.end(JSON.stringify({error:'Use your passkey to sign in.'}));}
       else if(url==='/api/bootstrap'){const row=cookie?db.prepare('SELECT u.email,u.role,u.tenant FROM sessions s JOIN users u ON s.email=u.email WHERE token_hash=?').get(crypto.createHash('sha256').update(cookie.split('=')[1]).digest('hex')):null;res.statusCode=row?200:401;res.end(JSON.stringify(row?{actor:row}:{error:'unauthenticated'}));}
-      else if(url==='/api/implementation/autonomous/status'){res.end(JSON.stringify(mutate.context?mutate.context(structuredClone(status)):status));}
+      else if(url==='/api/implementation/autonomous/status'){if(coreEngine){assert.equal(await coreEngine.handleRequest(req,res),true);if(mutate.context)res.body=mutate.context(res.body);}else res.end(JSON.stringify(mutate.context?mutate.context(structuredClone(status)):status));}
       else throw Error('Unexpected local test path '+url);
     }
     if(headers['set-cookie']){cookie=String(headers['set-cookie']).split(';')[0];if(mutate.roleDrift)db.prepare('UPDATE users SET role=? WHERE email=?').run('employee',body.email);if(mutate.tenantDrift)db.prepare('UPDATE users SET tenant=? WHERE email=?').run('other',body.email);}
@@ -57,7 +58,15 @@ function fixture(t,mutate={}){
     if(mutate.header)headers['x-wfm-source-sha']='d'.repeat(40);
     return{status:res.statusCode,json:async()=>res.body,headers:{get:name=>headers[name.toLowerCase()]??null}};
   }})};}
-  t.after(()=>{control.db.close();auth.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});return{keys,db,calls,bodies,page,status,config:env(keys.privateKey)};
+  async function initializeCore(warn=false){
+    coreEngine=enterpriseEngine.createOneDayEnterpriseEngine({dbPath,agentsApiEnabled:false,requireCandidateBinding:true,strictEvidence:true,candidateSha:sha,deploymentId:deployment,internalToken:'local-start-test',publicOrigin:origin,notificationRetryPollMs:0,sendInvitation:async()=>({provider:'synthetic-local',messageId:'source-control'})});
+    async function internal(url,body){const req=Readable.from([JSON.stringify(body)]);req.method='POST';req.url=url;req.headers={'x-wfm-implementation-internal':'local-start-test'};const res={statusCode:200,setHeader(){},end(raw){this.body=JSON.parse(raw);}};assert.equal(await coreEngine.handleRequest(req,res),true);assert.ok([200,201].includes(res.statusCode));return res.body;}
+    const started=await internal('/api/implementation/autonomous/contract-activated',{tenant:'fixture',recipientEmail:actors[0].email,contractRef:'synthetic-start-contract',scope:{companyName:'Fixture',countries:['United Kingdom'],sites:['Fixture site'],employeeCount:5,sourceSystems:['local source'],features:['Scheduling'],workPatterns:['Day'],clockingMethods:['Web'],payrollSystem:'Declared',hcmSystem:'Declared',erpSystem:'Declared',agencyLabour:false,priorities:'Local source test'}});
+    config.EXPECTED_IMPLEMENTATION_RUN_ID=started.implementation.runId;config.EXPECTED_CONFIGURATION_DIGEST=started.implementation.tenantEnvironment.configurationDigest;
+    if(warn)await internal('/api/implementation/autonomous/evidence',{runId:config.EXPECTED_IMPLEMENTATION_RUN_ID,kind:'tenant-environment',status:'WARN',confidence:0,source:'local-source-control',detail:{reason:'Hosted proof absent'}});
+    return started.implementation;
+  }
+  t.after(()=>{coreEngine?.close();control.db.close();auth.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});return{keys,db,calls,bodies,page,status,config,initializeCore};
 }
 test('signed client uses actual handler cookie and persisted actor rather than password login',async t=>{
   const f=fixture(t),client=createProofClient(f.config),p=f.page();await client.authenticate(p,actors[0].email);
@@ -85,7 +94,7 @@ test('an explicitly requested actor outside the existing server allowlist cannot
   await assert.rejects(()=>client.authenticate(f.page(),requested[0].email));assert.equal(f.db.prepare('SELECT COUNT(*) n FROM proof_runner_sessions').get().n,0);assert.ok(!f.calls.some(x=>x.url==='/api/login'));
 });
 for(const change of ['deployment','run','tenant','configuration','absent'])test('current manager context '+change+' mismatch stops auth/navigation proof',async t=>{
-  const f=fixture(t,{context:status=>{if(change==='deployment')status.requirements[0].evidenceBinding.expected.deploymentId='wrong';if(change==='run')status.runId='wrong';if(change==='tenant')status.tenant='wrong';if(change==='configuration')status.tenantEnvironment.configurationDigest='c'.repeat(64);if(change==='absent')delete status.requirements[0].evidenceBinding;return status;}}),client=createProofClient(f.config);await assert.rejects(()=>client.authenticate(f.page(),actors[0].email));
+  const f=fixture(t,{context:status=>{if(change==='deployment')status.requirements[0].evidenceBinding.expected.deploymentId='wrong';if(change==='run')status.runId='wrong';if(change==='tenant')status.tenant='wrong';if(change==='configuration')status.tenantEnvironment.configurationDigest='c'.repeat(64);if(change==='absent')delete status.configuredImplementationContext;return status;}}),client=createProofClient(f.config);await assert.rejects(()=>client.authenticate(f.page(),actors[0].email));
 });
 test('historical evidence observed identity is never treated as current deployment authority',async t=>{
   const f=fixture(t),client=createProofClient(f.config);await client.authenticate(f.page(),actors[0].email);
@@ -142,4 +151,21 @@ test('legacy password profile requires explicit loopback origin and retains fixt
   const config={VECTOR_PROOF_AUTH_PROFILE:'fixture-password',VECTOR_PROOF_URL:'http://127.0.0.1:3000',WFM_EXPECTED_CANDIDATE_SHA:sha,WFM_STAGING_PASSWORD:'synthetic-local-password-at-least20'};
   const client=createProofClient(config);assert.equal(client.mode,'fixture-password');assert.equal(client.actors.length,5);
   for(const url of ['https://remote.invalid','http://127.0.0.1.attacker.invalid','http://user:pass@localhost:3000'])assert.throws(()=>createProofClient({...config,VECTOR_PROOF_URL:url}));
+});
+
+
+for(const warn of [false,true])test('START-01 real SQLite applied start '+(warn?'WARN-only':'zero PASS')+' permits partial authentication only',async t=>{
+  const f=fixture(t);await f.initializeCore(warn);assert.equal(f.db.prepare("SELECT COUNT(*) n FROM implementation_evidence WHERE status='PASS'").get().n,0);
+  if(warn)assert.equal(f.db.prepare("SELECT COUNT(*) n FROM implementation_evidence WHERE status='WARN'").get().n,1);
+  const client=createProofClient(f.config);await client.authenticate(f.page(),actors[0].email);await client.authenticate(f.page(),actors[1].email);
+  const partial=client.partialEvidence();assert.equal(partial.authCompatibility.status,'PARTIAL');assert.equal(partial.authCompatibility.implementationContext.platformDeploymentVerified,false);assert.equal(partial.leaveJourney,null);assert.equal(partial.attendanceJourney,null);assert.equal(partial.payrollJourney,null);
+});
+test('START-01 declared context with no verifier binding permits auth but preserves partial business truth',async t=>{
+  const f=fixture(t,{context:s=>{s.requirements=[];return s;}}),client=createProofClient(f.config);await client.authenticate(f.page(),actors[0].email);assert.equal(client.partialEvidence().authCompatibility.status,'PARTIAL');
+});
+for(const [name,change] of [['null',s=>s.configuredImplementationContext=null],['wrong scope',s=>s.configuredImplementationContext.scope='HOSTED_PROOF'],['not applied',s=>s.configuredImplementationContext.applied=false],['platform proof',s=>s.configuredImplementationContext.platformDeploymentVerified=true],['wrong declared source',s=>s.configuredImplementationContext.candidateSha='f'.repeat(40)],['wrong declared deployment',s=>s.configuredImplementationContext.deploymentId='old'],['wrong declared run',s=>s.configuredImplementationContext.runId='old'],['wrong declared tenant',s=>s.configuredImplementationContext.tenant='other'],['wrong declared digest',s=>s.configuredImplementationContext.configurationDigest='f'.repeat(64)],['wrong environment',s=>s.configuredImplementationContext.environmentId='old'],['wrong namespace',s=>s.configuredImplementationContext.namespace='old'],['blank environment',s=>{s.configuredImplementationContext.environmentId='';s.tenantEnvironment.environmentId='';}],['control namespace',s=>{s.configuredImplementationContext.namespace='tenant_bad\n';s.tenantEnvironment.namespace='tenant_bad\n';}],['missing isolation namespace',s=>delete s.tenantEnvironment.isolation.namespace],['wrong isolation namespace',s=>s.tenantEnvironment.isolation.namespace='tenant_'+ '2'.repeat(24)],['not READY',s=>s.tenantEnvironment.state='BUILDING']])test('START-01 client refuses '+name+' declaration',async t=>{
+  const f=fixture(t,{context:s=>{change(s);return s;}}),client=createProofClient(f.config);await assert.rejects(()=>client.authenticate(f.page(),actors[0].email));assert.ok(!f.calls.some(c=>c.url==='/api/login'));
+});
+test('START-01 real applied declaration still rejects conflicting verifier expected deployment',async t=>{
+  const f=fixture(t,{context:s=>{s.requirements.push({evidenceBinding:{expected:{candidateSha:sha,deploymentId:'wrong',tenant:'fixture',runId:s.runId}}});return s;}});await f.initializeCore();const client=createProofClient(f.config);await assert.rejects(()=>client.authenticate(f.page(),actors[0].email));
 });

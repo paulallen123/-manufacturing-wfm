@@ -90,15 +90,31 @@ export function createProofClient(env = process.env) {
     assert.equal(body.tenantEnvironment?.isolation?.tenant, expectedTenant, 'Applied environment tenant mismatch.');
     assert.equal(body.tenantEnvironment?.configurationDigest, expectedConfiguration, 'Applied configuration mismatch.');
     const bindings = (Array.isArray(body.requirements) ? body.requirements : []).map(r => r.evidenceBinding?.expected).filter(b => b?.candidateSha || b?.deploymentId);
-    assert.ok(bindings.length > 0, 'Current configured source/deployment context unavailable.');
+    const context = body.configuredImplementationContext;
+    assert.ok(context && typeof context === 'object' && !Array.isArray(context), 'Current configured implementation declaration unavailable.');
+    assert.equal(context.scope, 'CONFIGURED_DECLARATION');
+    assert.equal(context.applied, true); assert.equal(context.platformDeploymentVerified, false);
+    assert.equal(body.tenantEnvironment.state, 'READY', 'Applied environment is not ready.');
+    assert.equal(context.candidateSha, expectedSha, 'Declared implementation source mismatch.');
+    assert.equal(context.deploymentId, expectedDeployment, 'Declared implementation deployment mismatch.');
+    assert.equal(context.tenant, expectedTenant, 'Declared implementation tenant mismatch.');
+    assert.equal(context.runId, expectedRun, 'Declared implementation run mismatch.');
+    assert.equal(context.configurationDigest, expectedConfiguration, 'Declared configuration mismatch.');
+    assert.ok(typeof context.environmentId === 'string' && context.environmentId.length > 0 && context.environmentId.length <= 160 &&
+      !/[\s\x00-\x1f\x7f-\x9f]/u.test(context.environmentId), 'Declared environment identity invalid.');
+    assert.match(context.namespace || '', /^tenant_[0-9a-f]{24}$/, 'Declared namespace invalid.');
+    assert.equal(context.environmentId, body.tenantEnvironment.environmentId, 'Declared environment mismatch.');
+    assert.equal(context.namespace, body.tenantEnvironment.namespace, 'Declared namespace mismatch.');
+    assert.equal(context.namespace, body.tenantEnvironment.isolation.namespace, 'Applied isolation namespace mismatch.');
     for (const b of bindings) {
       assert.equal(b.candidateSha, expectedSha, 'Configured implementation source mismatch.');
       assert.equal(b.deploymentId, expectedDeployment, 'Configured implementation deployment mismatch.');
       assert.equal(b.tenant, expectedTenant, 'Configured implementation tenant mismatch.');
       assert.equal(b.runId, expectedRun, 'Configured implementation run mismatch.');
     }
-    implementationContext = Object.freeze({ candidateSha: expectedSha, configuredDeploymentId: expectedDeployment, tenant: body.tenant,
-      runId: body.runId, configurationDigest: body.tenantEnvironment.configurationDigest, platformDeploymentVerified: false });
+    implementationContext = Object.freeze({ scope: context.scope, candidateSha: context.candidateSha, configuredDeploymentId: context.deploymentId, tenant: context.tenant,
+      runId: context.runId, configurationDigest: context.configurationDigest, environmentId: context.environmentId, namespace: context.namespace,
+      applied: context.applied, platformDeploymentVerified: false });
   }
   async function authenticate(page, email) {
     const actor = actors.find(a => a.email === String(email).trim().toLowerCase());

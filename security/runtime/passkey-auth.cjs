@@ -27,6 +27,7 @@ function createPasskeyAuth(options={}) {
   const originURL=new URL(origin);
   if(originURL.origin!==origin||originURL.protocol!=='https:')throw new Error('Passkeys require a canonical HTTPS origin.');
   const rpID=originURL.hostname;
+  const onboardingMarkVerified=options.onboardingMarkVerified;
   const fixtureProof=(options.hosted??process.env.WFM_HOSTED_STAGING==='true')&&(options.nodeEnv||process.env.NODE_ENV)==='staging';
   const db=new DatabaseSync(options.dbPath||process.env.WFM_DB);
   db.exec('PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;');ensurePasskeySchema(db);
@@ -51,7 +52,46 @@ function createPasskeyAuth(options={}) {
     if(control.frozen||binding&&(binding.tenant!==row.tenant||binding.audience!=='wfm-api'||binding.session_epoch!==control.epoch||binding.policy_version!==control.policy||binding.issuer!==(passkey?'wfm-passkey':'wfm-proof-runner')))return null;
     return {email:row.email,tenant:row.tenant,role:row.role,kind:passkey?'passkey':'proof',source:tokenHash,...control};
   }
+  // Workforce invitation authority stays in its existing ledger and tenant
+  // state. The trusted packed onboarding owner performs the identity transition.
+  function workforceAuthorization(token) {
+    if(typeof onboardingMarkVerified!=='function'||typeof token!=='string'||!/^[0-9a-f]{64}$/.test(token))throw denied();
+    const tokenHash=hash(token),invite=get('SELECT * FROM onboarding_invites WHERE token_hash=?',tokenHash);
+    if(!invite||invite.used_at!==null||invite.revoked_at!==null||!Number.isSafeInteger(invite.expires)||invite.expires<=Date.now())throw denied();
+    const tenant=get('SELECT version,state FROM tenants WHERE id=?',invite.tenant);
+    if(!tenant||!Number.isSafeInteger(tenant.version)||tenant.version<1||tenant.version>=Number.MAX_SAFE_INTEGER)throw denied();
+    const state=JSON.parse(tenant.state),people=state.onboarding?.people;
+    if(state.version!==tenant.version||state.onboarding?.schemaVersion!==1||!Array.isArray(people))throw denied();
+    const matches=people.filter(p=>p.sourceId===invite.source_id);
+    if(matches.length!==1)throw denied();const person=matches[0];
+    if(person.status!=='invited'||person.identityVerified!==false||person.inviteId!==invite.id||
+       !Number.isSafeInteger(person.revision)||person.revision<1||
+       !/^[A-Za-z0-9][A-Za-z0-9_.:-]{1,63}$/.test(person.sourceId)||
+       typeof person.email!=='string'||person.email!==person.email.trim().toLowerCase()||person.email.length>254||
+       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(person.email)||
+       Date.parse(person.inviteExpiresAt)!==invite.expires||people.filter(p=>p.email===person.email).length!==1||
+       get('SELECT email FROM users WHERE lower(email)=?',person.email)||get('SELECT id FROM passkey_credentials WHERE lower(email)=?',person.email))throw denied();
+    const u={email:person.email,tenant:invite.tenant,role:'employee'},control=scope(u);if(control.frozen)throw denied();
+    return {...u,kind:'onboarding',source:tokenHash,inviteId:invite.id,sourceId:person.sourceId,personRevision:person.revision,
+      tenantVersion:tenant.version,tenantStateDigest:hash(tenant.state),inviteDigest:hash(JSON.stringify(invite)),...control};
+  }
+  function completeWorkforceIdentity(u) {
+    const tenant=get('SELECT version,state FROM tenants WHERE id=?',u.tenant),state=JSON.parse(tenant.state);
+    const person=onboardingMarkVerified(state,u.sourceId,u.email);
+    if(!person||person.sourceId!==u.sourceId||person.email!==u.email||person.status!=='identity_verified'||person.identityVerified!==true)throw denied();
+    state.version=tenant.version+1;
+    run('INSERT INTO users(email,tenant,person_id,role,costs,salt,password_hash,permissions) VALUES(?,?,?,?,?,?,?,?)',
+      u.email,u.tenant,'pending:'+u.sourceId,'employee',0,randomBytes(16).toString('hex'),randomBytes(64).toString('hex'),'[]');
+    const now=Date.now();
+    const consumed=run('UPDATE onboarding_invites SET used_at=? WHERE id=? AND tenant=? AND source_id=? AND token_hash=? AND used_at IS NULL AND revoked_at IS NULL AND expires>?',now,u.inviteId,u.tenant,u.sourceId,u.source,now);
+    if(consumed.changes!==1)throw denied();
+    const changed=run('UPDATE tenants SET version=?,state=? WHERE id=? AND version=? AND state=?',state.version,JSON.stringify(state),u.tenant,tenant.version,tenant.state);
+    if(changed.changes!==1)throw denied();
+    run('INSERT INTO audit_events(tenant,actor,action,detail,created_at) VALUES(?,?,?,?,?)',u.tenant,'invite:'+u.inviteId,'onboarding-identity-verified',JSON.stringify({sourceId:u.sourceId,email:u.email}),new Date(now).toISOString());
+  }
   function authorize(req,body) {
+    if(['invitation','ownerRecovery','onboardingInvitation'].filter(k=>Object.hasOwn(body,k)).length>1)throw denied();
+    if(Object.hasOwn(body,'onboardingInvitation'))return workforceAuthorization(body.onboardingInvitation);
     if (Object.hasOwn(body,'ownerRecovery')) {
       if (Object.hasOwn(body,'invitation')) throw denied();
       try { return authorizeFirstOwnerPasskey({env:options.ownerRecoveryEnv||process.env,db,token:body.ownerRecovery,origin,dbPath:options.dbPath||process.env.WFM_DB}); } catch { throw denied(); }
@@ -117,7 +157,7 @@ function createPasskeyAuth(options={}) {
       if(req.headers?.origin!==origin||!(req.socket?.encrypted||String(req.headers?.['x-forwarded-proto']||'').split(',')[0].trim()==='https'))throw denied(403);
       if(!/^application\/json(?:;|$)/i.test(String(req.headers?.['content-type']||'')))throw denied(415);
       rateLimit(req);const body=await readJson(req);
-      if(['email','tenant','role','permissions','userId'].some(k=>Object.hasOwn(body,k)))throw denied(400);
+      if(['email','tenant','role','permissions','userId','personId','sourceId','costs'].some(k=>Object.hasOwn(body,k)))throw denied(400);
       if(route==='/api/passkeys/register/options') {
         const u=authorize(req,body);
         const keys=db.prepare('SELECT id,transports FROM passkey_credentials WHERE tenant=? AND email=? AND revoked_at IS NULL').all(u.tenant,u.email);
@@ -135,6 +175,7 @@ function createPasskeyAuth(options={}) {
         const cookies=transaction(()=>{
           if(attempt.expires<=Date.now())throw denied();
           sameAuthorization(req,body,u);
+          if(u.kind==='onboarding')completeWorkforceIdentity(u);
           if(get('SELECT COUNT(*) AS n FROM passkey_credentials WHERE tenant=? AND email=? AND revoked_at IS NULL',u.tenant,u.email).n>=8)throw denied(409);
           const identity=get('SELECT user_handle FROM passkey_users WHERE tenant=? AND email=?',u.tenant,u.email);
           run('INSERT INTO passkey_credentials VALUES(?,?,?,?,?,?,?,?,?,?,NULL)',credential.id,u.tenant,u.email,identity.user_handle,credential.publicKey,credential.counter,JSON.stringify(credential.transports||[]),info.credentialDeviceType,info.credentialBackedUp?1:0,Date.now());
