@@ -32,7 +32,11 @@ test('successor red: a former employee cannot enter the onboarding upsert workfl
  const mapped=Adapter.mapEmployee({id:'former-1',status:'Former',personalDetails:{firstName:'Former',lastName:'Worker',email:'former@example.invalid'},employmentDetails:{payrollCode:'FORMER1',starterDetails:{startDate:'2020-01-01'},leaverDetails:{hasLeft:true,leaveDate:'2026-09-30'}}},{employerId:'synthetic-employer'});
  const acquisition={objectType:'people',cursor:'pageNum:0',sourceVersion:'v1',paginationComplete:true,atomicProviderSnapshot:false,records:[mapped]};
  const receipt={approved:true,mappings:[{externalId:'former-1',payrollId:'FORMER1',managerId:'m1',site:'Leeds',job:'Operator',contractType:'full_time',weeklyHours:'40'}]};
- assert.throws(()=>Bridge.peopleEnvelope(acquisition,receipt),{code:'STAFFOLOGY_EMPLOYEE_LIFECYCLE_REQUIRED'});
+ const envelope=Bridge.peopleEnvelope(acquisition,receipt);
+ assert.equal(envelope.records[0].operation,'delete');
+ assert.equal(envelope.records[0].data.employment_status,'Former');
+ assert.equal(envelope.records[0].data.employment_end_date,'2026-09-30');
+ assert.throws(()=>Bridge.assertPeopleApplicationRecord(envelope.records[0]),{code:'STAFFOLOGY_EMPLOYEE_LIFECYCLE_REQUIRED'});
 });
 
 test('successor red: permit consumption remains bound to the approver current authority',()=>{
