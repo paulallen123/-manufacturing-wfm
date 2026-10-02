@@ -183,3 +183,18 @@ test('concurrent independent workers can consume a grant only once', async t => 
   assert.equal(count(f.db, 'owner_recovery_ledger'), 1);
   assert.equal(count(f.db, 'audit_events'), 1);
 });
+
+
+test('first-passkey recovery page reuses secure VECTOR UI and never asks for an unusable password',async t=>{
+  const f=fixture(t);f.grant.purpose='first-passkey';f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);
+  const response=await request(f.handler,{url:PAGE_PATH,method:'GET'});
+  assert.equal(response.statusCode,200);
+  assert.match(response.body,/id="owner-recovery-code"[^>]*type="password"/);
+  assert.match(response.body,/src="\/passkey-ui.js"/);assert.match(response.body,/href="\/passkey-ui.css"/);
+  assert.ok(!response.body.includes('New password')&&!response.body.includes('new-password'));
+  assert.ok(!response.body.includes(f.token));
+  assert.match(response.headers['content-security-policy'],/frame-ancestors 'none'/);
+  const before=f.db.prepare('SELECT * FROM users WHERE email=?').get(ACCOUNT.email);
+  const reset=await request(f.handler,valid(f));assert.equal(reset.statusCode,410);
+  assert.deepEqual(f.db.prepare('SELECT * FROM users WHERE email=?').get(ACCOUNT.email),before);
+});

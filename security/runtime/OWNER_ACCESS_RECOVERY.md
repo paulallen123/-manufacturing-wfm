@@ -1,41 +1,41 @@
-# Owner-authorized staging access recovery
+# Owner-authorized access setup and recovery
 
-This additive recovery mechanism is **disabled by default**. It changes only the password for the existing synthetic account `superuser@northstar.example` in `northstar-demo`, with existing person `d1` and role `director`. It neither creates users nor grants roles/permissions, and does not issue a session. Subsequent sign-in uses the existing `/api/login` route and its protections.
+The existing recovery mechanism remains **disabled by default**. The passkey setup mode applies only to the existing synthetic owner account `superuser@northstar.example`, tenant `northstar-demo`, person `d1`, role `director`. It does not create an account, change roles/permissions, clear security holds or grant access to another tenant.
 
-The retired `/api/staging-access` grants and expiry remain unchanged. Their hashes are explicitly forbidden for recovery. Never reuse either old token.
+## First passkey in the hosted application
 
-## Deployment prerequisites
+The hosted application rejects password sign-in. A password reset does not fix first-time passkey enrolment. Issue a recovery grant explicitly containing `"purpose":"first-passkey"` for this operation. Legacy six-field password-reset grants cannot authorize passkey enrolment, and a first-passkey grant cannot reset a password.
 
-An authorized environment owner must:
-
-1. Confirm the actual deployed candidate contains `owner-access-recovery.cjs` alongside `bootstrap.cjs`, and that `bootstrap.cjs` loads and routes it. Existing container builds must copy the entire security runtime directory or explicitly include the new file.
-2. Preserve the existing durable SQLite database/volume. Confirm a single persistent writable database is shared by every service instance; independent ephemeral databases cannot enforce global one-time use. SQLite file locking enforces concurrent redemption on the same database.
-3. Obtain the current `session_epoch` and `policy_version` for `northstar-demo` from the authorized security control plane or read-only database access. The existing identity guard creates this row on authenticated activity; recovery refuses when it is absent. Do not invent these values or create/change the row to force recovery. Recovery refuses a privileged freeze and does not clear any holds.
-4. Generate a **fresh cryptographically random 32-byte token**, encoded as canonical base64url (43 characters), and a fresh random grant ID (16–80 URL-safe characters). Keep the plaintext token out of source, environment variables, logs, request URLs, PR descriptions, and tool transcripts. Deliver it through an approved secret-delivery channel. Do not ask an agent to type or read it through ordinary browser tools.
-5. Set `WFM_OWNER_RECOVERY_JSON` through the authorized environment editor using this exact object shape, containing only the SHA-256 hex digest of the token:
+Use this exact seven-field shape, replacing every placeholder/example with verified values:
 
 ```json
-{"id":"NEW_RANDOM_GRANT_ID","tokenHash":"64_LOWERCASE_HEX_SHA256_DIGEST","issuedAt":0,"expiresAt":0,"sessionEpoch":1,"policyVersion":1}
+{"id":"NEW_RANDOM_GRANT_ID","tokenHash":"64_LOWERCASE_HEX_SHA256_DIGEST","issuedAt":0,"expiresAt":0,"sessionEpoch":1,"policyVersion":1,"purpose":"first-passkey"}
 ```
 
-Replace all placeholders and example numbers with actual values. Times are Unix milliseconds. `issuedAt` must not be in the future; `expiresAt` must be after issuance and no more than 30 minutes later. Epoch and policy must match the verified tenant control row. Keep `NODE_ENV=staging`, `WFM_HOSTED_STAGING=true`, `WFM_IDENTITY_SURVIVAL_GUARD` enabled, the existing `WFM_DB`, and the exact bare HTTPS `WFM_PUBLIC_ORIGIN`.
+Before enabling `WFM_OWNER_RECOVERY_JSON`, the authorised release/environment owner must:
 
-No plaintext token or password is configured in the application. Changing `WFM_STAGING_PASSWORD` does not reset existing accounts; this recovery intentionally updates the actual persisted password hash.
+1. Bind the reviewed login repair to the exact existing release, configuration, SQLite database/volume, tenant and proof run. Preserve a consistent recovery backup and the pre-change release/configuration identity. Coordinate the deployment with the existing integration/release owner; do not race another deployment or change its source ref.
+2. Verify the account already has the exact tenant, person and role, and has never registered a passkey (including revoked credentials). This mode does not replace or recover a lost credential.
+3. Read the actual tenant `session_epoch`, `policy_version` and privileged-freeze state. Do not invent, reset or create these controls. A missing, changed or frozen context refuses enrolment.
+4. Obtain approval for this exact account, scope and setup window. Generate a fresh random 32-byte canonical base64url code (43 characters) and random 16–80-character grant ID. Configure only the SHA-256 digest, not the plaintext code. Keep the code out of source, environment variables, logs, request URLs, screenshots, PRs and tool transcripts. Use an approved private owner-to-user handoff; no email service or paid infrastructure is required by this repair.
+5. Use Unix millisecond times with issuance not in the future, expiry strictly later, and a lifetime of at most 30 minutes. Issue the grant only when the tested candidate is deployed and the user is ready. Preserve `NODE_ENV=staging`, `WFM_HOSTED_STAGING=true`, the enabled identity guard, exact durable `WFM_DB` and canonical bare HTTPS `WFM_PUBLIC_ORIGIN`.
 
-## User flow
+The user opens `https://<verified-existing-host>/access-recovery`, privately enters the one-time code and clicks **Create my passkey**. The browser/device performs the WebAuthn ceremony with user presence and verification. The agent must hand off credential entry and submission to the user. The page reuses VECTOR's approved blue-and-white sign-in template and existing WebAuthn client. It never places the code in a URL or browser storage.
 
-Open `https://<verified-existing-host>/access-recovery`. The user privately enters the recovery code, new password (20–256 characters), and confirmation. Password changes require a manual user handoff under the browser skill: the user must complete the recovery form directly in their own browser. browserAuth does not support password changes and must not be used for this step. Ordinary agent secret input or inspection is forbidden. The subsequent normal login may use the approved browserAuth secure-entry workflow. The page sends a same-origin JSON POST; codes never appear in URLs or browser storage. On success, return to `/` and sign in as `superuser@northstar.example` with the newly chosen password.
+Successful, cryptographically verified registration atomically persists the passkey, consumes the existing append-only recovery ledger grant, appends audit evidence and issues the ordinary identity-bound passkey session. Existing account attributes, password hash, permissions, business data and other users' sessions remain unchanged. The user can subsequently sign in from the ordinary entry page with the new passkey, without the code.
 
-The transaction durably consumes the grant, changes the password, revokes only this account's existing sessions/bindings, and appends an audit event. Any transaction/audit failure rolls everything back. Existing role, tenant, permissions, personnel links, business data, freezes, epochs, policy versions, protection records, and other accounts are unchanged. The browser's old session and retired restore cookies are cleared. A lost success response cannot reactivate the grant: try normal sign-in with the new password before requesting another code.
+Cancellation, invalid attestation or failed audit does not consume the grant. Retry within its validity. Lost success response: try ordinary passkey sign-in before requesting another grant. Concurrent registration, replay and restart cannot create a second credential from the same code. Revocation/rotation, expiry, reassignment, changed policy/epoch or freeze between options and final verification fails closed. Origin, RP ID, browser-bound challenge and user verification remain mandatory.
 
-The endpoint requires the exact configured Host, `X-Forwarded-Proto: https`, and exact Origin for POST. It rejects query strings, cross-site fetch metadata, client identity-authority headers, malformed input, unsupported content types, expired or used grants, changed account identity, and changed/frozen tenant security context. It fails closed when configuration or database controls are unavailable.
+## Revocation, cleanup and rollback
 
-## Revocation and limits
+Remove `WFM_OWNER_RECOVERY_JSON` through the existing authorised release procedure after setup or expiry; do not restart independently of the release owner. Configuration removal/rotation disables unused authority. A consumed hash or grant ID remains unusable even if configuration is restored. The existing `owner_recovery_ledger` remains append-only; never delete its rows or restore a database merely to reactivate a code.
 
-Remove `WFM_OWNER_RECOVERY_JSON` and restart/redeploy the service to disable unused grants, including the page. Replacing the config stops accepting the previous grant; an already consumed hash or grant ID remains unusable even if restored in configuration. An authorized database administrator can durably revoke an already provisioned unused grant by inserting its exact hash and ID into `owner_recovery_ledger` with `event='revoked'` and an ISO timestamp, once that additive table exists. No public HTTP revocation/admin route is exposed. Never delete the ledger or roll back the database to undo consumption.
+An authorised administrator can record revocation of an unused grant in the existing ledger with event `revoked`. Do not delete passkeys or weaken login controls as cleanup. Roll back code/configuration through the recorded release procedure while preserving durable credentials, ledger and audit evidence. No grant, credential or hosted configuration is issued by publishing this source repair.
 
-No password, token, session, or external setting was created by this patch. Deployment, verified epoch/policy retrieval, secure token delivery, and user secure-entry still require actual authorized access. Existing redacted provider settings cannot be used to reconstruct credentials. This patch cannot by itself restore access when those channels are unavailable.
+## Historical password recovery
 
-Deployment restarts the application. The existing login source-quarantine implementation stores live counters in process memory; its existing restart behavior is unchanged by this patch. Do not claim this patch makes those counters durable. Account recovery itself never calls a quarantine reset, bypasses login, removes protection records, or clears privileged freezes.
+A six-field grant without a purpose retains the earlier bounded password-reset implementation. It is not the hosted passkey customer-login flow and must not be used to claim access proof. Retired staging-access token hashes remain forbidden. A first-passkey grant returns HTTP 410 from the password-reset endpoint instead of misleading the user into changing an unusable password.
 
-Run verification with `node --test security/runtime/*.test.cjs`. The recovery suite tests one-time/restart replay, independent-worker concurrency, targeted revocation and authority preservation, expiry, host/origin/transport and input rejection, durable grant revocation, and rollback on audit failure.
+## Verification
+
+Run `node --experimental-sqlite --test security/runtime/*.test.cjs` on the prescribed runtime. The suites include real signed WebAuthn registration and fresh authentication, authority preservation, cancellation/retry, wrong tenant/person/role, expired/revoked/rotated grants, policy/freeze changes, concurrent challenges, restart/replay, audit rollback, secret handling and shared UI behaviour. Local tests are not hosted proof. Retest the exact combined release and complete private browser/device enrolment before marking customer authentication proven.

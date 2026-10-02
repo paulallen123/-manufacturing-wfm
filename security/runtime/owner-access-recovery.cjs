@@ -21,6 +21,10 @@ function configuration(env, now) {
   if (origin.protocol !== 'https:' || origin.origin !== env.WFM_PUBLIC_ORIGIN || origin.username || origin.password) throw Error('Recovery unavailable.');
   const grant = JSON.parse(env.WFM_OWNER_RECOVERY_JSON);
   const keys = ['id', 'tokenHash', 'issuedAt', 'expiresAt', 'sessionEpoch', 'policyVersion'];
+  if (grant?.purpose !== undefined) {
+    if (grant.purpose !== 'first-passkey') throw Error('Recovery unavailable.');
+    keys.push('purpose');
+  }
   if (!grant || Array.isArray(grant) || Object.keys(grant).length !== keys.length || keys.some(key => !(key in grant)) ||
       !/^[a-zA-Z0-9_-]{16,80}$/.test(grant.id) || !/^[a-f0-9]{64}$/.test(grant.tokenHash) || RETIRED_HASHES.has(grant.tokenHash) ||
       !Number.isSafeInteger(grant.issuedAt) || !Number.isSafeInteger(grant.expiresAt) ||
@@ -28,6 +32,39 @@ function configuration(env, now) {
       !Number.isSafeInteger(grant.sessionEpoch) || grant.sessionEpoch < 1 ||
       !Number.isSafeInteger(grant.policyVersion) || grant.policyVersion < 1) throw Error('Recovery unavailable.');
   return { ...grant, origin: origin.origin, host: origin.host, dbPath: env.WFM_DB };
+}
+
+
+// The existing environment-owner grant can authorize FIRST enrolment only when
+// explicitly issued for that purpose. It never creates an account or changes roles.
+function authorizeFirstOwnerPasskey({ env = process.env, db, token, now = Date.now(), origin, dbPath }) {
+  const grant = configuration(env, now);
+  if (!grant || grant.purpose !== 'first-passkey' || grant.origin !== origin || grant.dbPath !== dbPath ||
+      now < grant.issuedAt || now >= grant.expiresAt || typeof token !== 'string' ||
+      !/^[A-Za-z0-9_-]{43}$/.test(token) || Buffer.from(token,'base64url').toString('base64url') !== token ||
+      !timingSafeEqual(Buffer.from(hash(token),'hex'),Buffer.from(grant.tokenHash,'hex'))) throw denied();
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS owner_recovery_ledger(token_hash TEXT PRIMARY KEY,grant_id TEXT NOT NULL UNIQUE,event TEXT NOT NULL CHECK(event IN ('consumed','revoked')),created_at TEXT NOT NULL);" +
+    "CREATE TRIGGER IF NOT EXISTS owner_recovery_no_update BEFORE UPDATE ON owner_recovery_ledger BEGIN SELECT RAISE(ABORT,'Recovery ledger is append only.'); END;" +
+    "CREATE TRIGGER IF NOT EXISTS owner_recovery_no_delete BEFORE DELETE ON owner_recovery_ledger BEGIN SELECT RAISE(ABORT,'Recovery ledger is append only.'); END;"
+  );
+  if (db.prepare('SELECT 1 FROM owner_recovery_ledger WHERE token_hash=? OR grant_id=?').get(grant.tokenHash,grant.id)) throw denied();
+  const account = db.prepare('SELECT email,tenant,person_id,role FROM users WHERE email=?').get(ACCOUNT.email);
+  if (!account || account.tenant !== ACCOUNT.tenant || account.person_id !== ACCOUNT.personId || account.role !== ACCOUNT.role) throw denied();
+  const control = db.prepare('SELECT session_epoch,policy_version,privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(ACCOUNT.tenant);
+  if (!control || control.privileged_freeze !== 0 || control.session_epoch !== grant.sessionEpoch || control.policy_version !== grant.policyVersion) throw denied();
+  // Lost/revoked credentials require the separate recovery process, not first setup.
+  if (db.prepare('SELECT 1 FROM passkey_credentials WHERE tenant=? AND email=?').get(ACCOUNT.tenant,ACCOUNT.email)) throw denied();
+  return {email:ACCOUNT.email,tenant:ACCOUNT.tenant,role:ACCOUNT.role,kind:'owner-recovery',source:grant.tokenHash,grantId:grant.id,
+    grantIssuedAt:grant.issuedAt,grantExpiresAt:grant.expiresAt,epoch:control.session_epoch,policy:control.policy_version,frozen:0};
+}
+function consumeFirstOwnerPasskey(db, authority, credentialId, now = Date.now()) {
+  // Called inside the SAME registration transaction after fresh authorization.
+  db.prepare('INSERT INTO owner_recovery_ledger(token_hash,grant_id,event,created_at) VALUES(?,?,?,?)')
+    .run(authority.source,authority.grantId,'consumed',new Date(now).toISOString());
+  db.prepare('INSERT INTO audit_events(tenant,actor,action,detail,created_at) VALUES(?,?,?,?,?)').run(
+    authority.tenant,'owner-authorized-recovery','owner-first-passkey-enrolled',
+    JSON.stringify({grantId:authority.grantId,email:authority.email,credentialId,sessionEpoch:authority.epoch,policyVersion:authority.policy}),new Date(now).toISOString());
 }
 
 function respond(res, status, body) {
@@ -108,6 +145,19 @@ function applyReset(grant, input, now) {
   }
 }
 
+
+function firstPasskeyPage(res) {
+  // Reuse the approved sign-in template, assets and WebAuthn client, not a second UI.
+  let html = require('node:fs').readFileSync(require('node:path').join(__dirname,'passkey-entry.html'),'utf8');
+  html = html.replace('<button id="sign-in">','<label for="owner-recovery-code">One-time access setup code</label><input id="owner-recovery-code" type="password" autocomplete="off" spellcheck="false" maxlength="43" aria-describedby="intro"><button id="sign-in" hidden>');
+  res.statusCode = 200;
+  res.setHeader('Content-Type','text/html; charset=utf-8');
+  res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');
+  res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Strict-Transport-Security','max-age=31536000');
+  res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+  res.end(html);return true;
+}
+
 function recoveryPage(res) {
   const nonce = randomBytes(24).toString('base64');
   res.statusCode = 200;
@@ -137,12 +187,13 @@ function createOwnerAccessRecovery({ env = process.env, clock = Date.now } = {})
             FORBIDDEN_IDENTITY_HEADERS.some(name => req.headers[name] !== undefined)) throw denied();
         if (path === PAGE_PATH) {
           if (req.method !== 'GET') throw denied(405);
-          return recoveryPage(res);
+          return grant.purpose === 'first-passkey' ? firstPasskeyPage(res) : recoveryPage(res);
         }
         if (req.method !== 'POST') throw denied(405);
         if (req.headers.origin !== grant.origin || (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site'] !== 'same-origin')) throw denied();
         if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] || '') || req.headers['content-encoding']) throw denied(415);
         if (Number(req.headers['content-length'] || 0) > 4096) throw denied(413);
+        if (grant.purpose === 'first-passkey') return respond(res,410,{error:'Use secure passkey setup to create your first passkey.'});
         const input = await readBody(req);
         // Environment revocation/rotation during an in-flight body read must also fail closed.
         const current = configuration(env, clock());
@@ -160,4 +211,4 @@ function createOwnerAccessRecovery({ env = process.env, clock = Date.now } = {})
   };
 }
 
-module.exports = { createOwnerAccessRecovery, ACCOUNT, API_PATH, PAGE_PATH };
+module.exports = { createOwnerAccessRecovery, authorizeFirstOwnerPasskey, consumeFirstOwnerPasskey, ACCOUNT, API_PATH, PAGE_PATH };
