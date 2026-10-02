@@ -341,6 +341,29 @@ function createAgentsApiAdapter(options = {}) {
       }
 
       const status = text(session.status, 80).toLowerCase();
+      if (status === 'idle') {
+        // Session idle also follows a failed turn. Read its durable outcome before
+        // retrying, waiting, or accepting an older assistant report.
+        const turns = await request('/sessions/' + encodeURIComponent(sessionId) + '/turns?order=desc&limit=1');
+        if (!turns.response.ok || !Array.isArray(turns.payload?.data)) {
+          const error = new Error('VECTOR_AGENTS_TURN_READBACK_FAILED');
+          error.code = 'AGENTS_SESSION_RECONCILIATION_REQUIRED';
+          error.statusCode = turns.response.ok ? 502 : Number(turns.response.status || 502);
+          throw error;
+        }
+        const latest = turns.payload.data[0];
+        if (latest && ['failed', 'cancelled', 'canceled'].includes(String(latest.status).toLowerCase())) {
+          const codes = { usage_limit_exceeded:429, insufficient_quota:429, rate_limit_exceeded:429, invalid_api_key:401, model_not_found:403 };
+          const providerCode = String(latest.error?.code || '').toLowerCase();
+          const known = Object.prototype.hasOwnProperty.call(codes, providerCode);
+          const error = new Error('VECTOR_AGENTS_ANALYSIS_TURN_FAILED');
+          error.code = known ? 'AGENTS_PROVIDER_' + providerCode.toUpperCase() : 'AGENTS_ANALYSIS_TURN_FAILED';
+          error.statusCode = known ? codes[providerCode] : 502;
+          updateSessionStatus.run('failed', new Date().toISOString(), runId, tenant, candidateSha, deploymentId);
+          throw error;
+        }
+      }
+
       if (!started && status === 'idle') {
         const message = text(prompt, 8000) ||
           'Re-inspect the current VECTOR customer-proof state using every read-only function. Report identity alignment, blockers, drift and next safe actions.';

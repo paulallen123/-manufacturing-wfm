@@ -158,6 +158,7 @@ test('active analysis ignores transient idle until all read-only tools run and a
         data:[{ id:'msg-new', type:'message', role:'assistant', content:[{type:'output_text',text:'fresh active report'}] }]
       }), { status:200 });
     }
+    if (url.includes('/turns?')) return new Response(JSON.stringify({data:[]}), {status:200});
     throw new Error('unexpected ' + init.method + ' ' + url);
   }, { pollIntervalMs:0, maxPolls:8 });
   try {
@@ -172,3 +173,14 @@ test('active analysis ignores transient idle until all read-only tools run and a
     assert.equal(submitted.filter(event => event.type === 'agent.session.input.tool_result').length,3);
   } finally { f.close(); }
 });
+
+
+test('an idle session with a failed billing turn stops before another message or a false timeout',async()=>{
+ const calls=[],f=fixture(async(url,init={})=>{url=String(url);calls.push({url,method:init.method});if(url.endsWith('/v1/agents/sessions'))return new Response(JSON.stringify({id:'sess_billing',status:'idle'}),{status:200});if(url.endsWith('/sess_billing'))return new Response(JSON.stringify({id:'sess_billing',status:'idle',error:null,required_actions:[]}),{status:200});if(url.includes('/turns?'))return new Response(JSON.stringify({data:[{id:'turn_failed',status:'failed',error:{code:'usage_limit_exceeded',message:'private provider detail must not leak'}}]}),{status:200});if(url.endsWith('/events'))return new Response('',{status:202});throw Error('unexpected '+url);},{pollIntervalMs:0,maxPolls:3});try{await f.adapter.ensureSession({runId:'run-1',tenant:'northstar-demo',initialInput:'first'});await assert.rejects(f.adapter.analyzeSession({sessionId:'sess_billing',runId:'run-1',tenant:'northstar-demo',startTurn:true,toolHandler:()=>assert.fail('no tools expected')}),e=>e.code==='AGENTS_PROVIDER_USAGE_LIMIT_EXCEEDED'&&e.statusCode===429&&!e.message.includes('private provider detail'));assert.equal(calls.filter(c=>c.url.endsWith('/events')).length,0);const db=new DatabaseSync(f.dbPath);assert.equal(db.prepare('SELECT status FROM vector_agents_sessions').get().status,'failed');assert.equal(db.prepare('SELECT COUNT(*) AS n FROM vector_agents_reports').get().n,0);db.close();}finally{f.close();}
+});
+
+test('failed turns preserve the difference between provider quota, rate limit and authentication',async()=>{
+ for(const [providerCode,statusCode] of [['insufficient_quota',429],['rate_limit_exceeded',429],['invalid_api_key',401]]){let posts=0;const f=fixture(async(url,init={})=>{url=String(url);if(url.endsWith('/sessions/sess_error'))return new Response(JSON.stringify({id:'sess_error',status:'idle',error:null}),{status:200});if(url.includes('/turns?'))return new Response(JSON.stringify({data:[{id:'failed',status:'failed',error:{code:providerCode}}]}),{status:200});if(init.method==='POST')posts++;return new Response('',{status:202});},{pollIntervalMs:0,maxPolls:2});try{await assert.rejects(f.adapter.analyzeSession({sessionId:'sess_error',runId:'run-1',tenant:'northstar-demo',startTurn:true,toolHandler:async()=>({})}),{code:'AGENTS_PROVIDER_'+providerCode.toUpperCase(),statusCode});assert.equal(posts,0);}finally{f.close();}}
+});
+
+test('unavailable turn readback fails closed before another message is submitted',async()=>{let posts=0;const f=fixture(async(url,init={})=>{if(String(url).endsWith('/sessions/sess_readback'))return new Response(JSON.stringify({id:'sess_readback',status:'idle'}),{status:200});if(String(url).includes('/turns?'))return new Response('{}',{status:503});if(init.method==='POST')posts++;return new Response('',{status:202});},{pollIntervalMs:0,maxPolls:2});try{await assert.rejects(f.adapter.analyzeSession({sessionId:'sess_readback',runId:'run-1',tenant:'northstar-demo',startTurn:true,toolHandler:async()=>({})}),{code:'AGENTS_SESSION_RECONCILIATION_REQUIRED'});assert.equal(posts,0);}finally{f.close();}});

@@ -63,6 +63,7 @@ test('trusted HTTP bootstrap creates the read-only session and returns exact bin
     if (url.endsWith('/items?order=asc&limit=100')) {
       return new Response(JSON.stringify({ data: [{ type:'message', role:'assistant', content:[{type:'output_text',text:'read-only report'}] }] }), { status: 200 });
     }
+    if (url.includes('/turns?')) return new Response(JSON.stringify({data:[]}), {status:200});
     throw new Error('unexpected '+init.method+' '+url);
   });
   try {
@@ -115,6 +116,7 @@ test('server startup uses the same bootstrap without copying internal credential
     if (url.endsWith('/items?order=asc&limit=100')) {
       return new Response(JSON.stringify({ data: [{ type:'message', role:'assistant', content:[{type:'output_text',text:'startup report'}] }] }), { status: 200 });
     }
+    if (url.includes('/turns?')) return new Response(JSON.stringify({data:[]}), {status:200});
     throw new Error('unexpected '+init.method+' '+url);
   });
   try {
@@ -172,7 +174,8 @@ test('bootstrap tool outputs are fresh sanitized read-only state', async () => {
       }
       if(url.includes('/sess_route_tools/items?'))
         return new Response(JSON.stringify({data:[{type:'message',role:'assistant',content:[{type:'output_text',text:'Active controller report'}]}]}),{status:200});
-      throw new Error('unexpected '+init.method+' '+url);
+      if (url.includes('/turns?')) return new Response(JSON.stringify({data:[]}), {status:200});
+    throw new Error('unexpected '+init.method+' '+url);
     }
   });
   try {

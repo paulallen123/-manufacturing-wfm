@@ -48,3 +48,5 @@ review_vector_first_customer_passkey=2026-10-02 parent02508d0557f7573303809e4fcf
 review_vector_actual_staffology_payroll_codes=2026-10-02 parenta3e17ebfbcd3e667e17a560e619df2634892e9a5; retain-actual5575-browser-held-batches-IG-muraghy1-339ea4769871-IG-muraghqp-f94376c2e1d3; canonical-onboarding-payroll1to64-source2to64-distinct; exact-four-current-plus-held-former-cohort-preserved; regression-red-retained; one-exact-source-existing-non-deploy-CircleCI-container-admission; no-provider-payroll-write; hosted-rerun-required; prior-marker-records-historical
 
 2026-10-02 reviewed missing-provider VECTOR email repair from exact parent 775c1168c8f8548d74bd14359632eb43462b1c21. Preserve provided emails, canonical identity review, payroll dormancy and containment. Non-deploy exact CIRCLE_SHA1 runtime admission required.
+
+2026-10-02 reconcile idle Agents session against latest durable turn; preserve actual usage_limit_exceeded and stop before duplicate message. Parent42fe08035ae7e2f0033e3029213332bf56402c75; red retained, implementation144of144 zero skips. Exact non-deploy CIRCLE_SHA1 admission required.
