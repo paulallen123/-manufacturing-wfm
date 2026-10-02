@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { generateRegistrationOptions,verifyRegistrationResponse,generateAuthenticationOptions,verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { ensurePasskeySchema } = require('./passkey-schema.cjs');
+const { authorizeFirstOwnerPasskey, consumeFirstOwnerPasskey } = require('./owner-access-recovery.cjs');
 const { FORBIDDEN_IDENTITY_HEADERS } = require('./identity-survival-guard.cjs');
 const hash = value => createHash('sha256').update(String(value)).digest('hex');
 const random = () => randomBytes(32).toString('base64url');
@@ -51,6 +52,10 @@ function createPasskeyAuth(options={}) {
     return {email:row.email,tenant:row.tenant,role:row.role,kind:passkey?'passkey':'proof',source:tokenHash,...control};
   }
   function authorize(req,body) {
+    if (Object.hasOwn(body,'ownerRecovery')) {
+      if (Object.hasOwn(body,'invitation')) throw denied();
+      try { return authorizeFirstOwnerPasskey({env:options.ownerRecoveryEnv||process.env,db,token:body.ownerRecovery,origin,dbPath:options.dbPath||process.env.WFM_DB}); } catch { throw denied(); }
+    }
     if(body.invitation) {
       if(typeof body.invitation!=='string'||!/^[A-Za-z0-9_-]{32,128}$/.test(body.invitation))throw denied();
       const tokenHash=hash(body.invitation);
@@ -134,6 +139,7 @@ function createPasskeyAuth(options={}) {
           const identity=get('SELECT user_handle FROM passkey_users WHERE tenant=? AND email=?',u.tenant,u.email);
           run('INSERT INTO passkey_credentials VALUES(?,?,?,?,?,?,?,?,?,?,NULL)',credential.id,u.tenant,u.email,identity.user_handle,credential.publicKey,credential.counter,JSON.stringify(credential.transports||[]),info.credentialDeviceType,info.credentialBackedUp?1:0,Date.now());
           if(u.kind==='invitation')run('INSERT INTO passkey_invitation_uses VALUES(?,?)',u.source,Date.now());
+          if(u.kind==='owner-recovery')consumeFirstOwnerPasskey(db,u,credential.id);
           record(u,'passkey-registered',credential.id);return mint(u,credential.id,req);
         });return json(res,200,{ok:true}, {'Set-Cookie':cookies});
       }

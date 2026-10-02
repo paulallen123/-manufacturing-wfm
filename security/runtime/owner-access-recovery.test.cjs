@@ -183,3 +183,31 @@ test('concurrent independent workers can consume a grant only once', async t => 
   assert.equal(count(f.db, 'owner_recovery_ledger'), 1);
   assert.equal(count(f.db, 'audit_events'), 1);
 });
+
+
+test('first-passkey recovery page reuses secure VECTOR UI and never asks for an unusable password',async t=>{
+  const f=fixture(t);f.grant.purpose='first-passkey';f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);
+  const response=await request(f.handler,{url:PAGE_PATH,method:'GET'});
+  assert.equal(response.statusCode,200);
+  assert.match(response.body,/id="owner-recovery-code"[^>]*type="password"/);
+  assert.match(response.body,/src="\/passkey-ui.js"/);assert.match(response.body,/href="\/passkey-ui.css"/);
+  assert.ok(!response.body.includes('New password')&&!response.body.includes('new-password'));
+  assert.ok(!response.body.includes(f.token));
+  assert.match(response.headers['content-security-policy'],/frame-ancestors 'none'/);
+  const before=f.db.prepare('SELECT * FROM users WHERE email=?').get(ACCOUNT.email);
+  const reset=await request(f.handler,valid(f));assert.equal(reset.statusCode,410);
+  assert.deepEqual(f.db.prepare('SELECT * FROM users WHERE email=?').get(ACCOUNT.email),before);
+});
+
+
+test('first-passkey preparation validates the code and clears stale browser cookies without consuming authority or minting a session',async t=>{
+  const f=fixture(t);f.grant.purpose='first-passkey';f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);
+  const before=f.db.prepare('SELECT * FROM users WHERE email=?').get(ACCOUNT.email);
+  const started=await request(f.handler,{body:{token:f.token},headers:{cookie:'wfm_session=stale-browser-session'}});
+  assert.equal(started.statusCode,200);
+  assert.equal(started.headers['set-cookie'].length,2);assert.ok(started.headers['set-cookie'].every(x=>x.includes('Max-Age=0')));
+  assert.equal(count(f.db,'owner_recovery_ledger'),0);assert.equal(count(f.db,'passkey_credentials'),0);assert.equal(count(f.db,'sessions'),2);
+  assert.deepEqual(f.db.prepare('SELECT * FROM users WHERE email=?').get(ACCOUNT.email),before);
+  const refused=await request(f.handler,{body:{token:randomBytes(32).toString('base64url')}});
+  assert.equal(refused.statusCode,403);assert.equal(refused.headers['set-cookie'],undefined);
+});

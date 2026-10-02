@@ -198,3 +198,174 @@ test('second device can be enrolled and a revoked key loses its sessions',async 
   const next=await f.call('authenticate/options');
   assert.equal((await f.call('authenticate/verify',{response:first.device.assertion(next.body)},next.cookies)).statusCode,401);
 });
+
+
+function firstOwnerFixture(t) {
+  const env = {};
+  const f = fixture(t, { ownerRecoveryEnv: env });
+  const dbPath = f.db.prepare('PRAGMA database_list').get().file;
+  f.db.exec('ALTER TABLE users ADD COLUMN person_id TEXT; ALTER TABLE users ADD COLUMN password_hash TEXT; ALTER TABLE users ADD COLUMN permissions TEXT; CREATE TABLE audit_events(id INTEGER PRIMARY KEY,tenant TEXT,actor TEXT,action TEXT,detail TEXT,created_at TEXT);');
+  f.db.prepare('INSERT INTO users(email,tenant,role,person_id,password_hash,permissions) VALUES(?,?,?,?,?,?)').run('superuser@northstar.example','northstar-demo','director','d1','unchanged-password','["company.configure"]');
+  f.guard.securityControlForTests().setFreeze('northstar-demo',false);
+  const token = randomBytes(32).toString('base64url');
+  const grant = {id:randomBytes(16).toString('hex'),tokenHash:hash(token).toString('hex'),issuedAt:Date.now()-1000,expiresAt:Date.now()+600000,sessionEpoch:1,policyVersion:1,purpose:'first-passkey'};
+  Object.assign(env,{NODE_ENV:'staging',WFM_HOSTED_STAGING:'true',WFM_DB:dbPath,WFM_PUBLIC_ORIGIN:f.origin,WFM_OWNER_RECOVERY_JSON:JSON.stringify(grant)});
+  return {...f,env,grant,recoveryToken:token,dbPath};
+}
+async function firstOwnerOptions(f) { return f.call('register/options',{ownerRecovery:f.recoveryToken}); }
+async function firstOwnerRegister(f, started) {
+  const device=authenticator(started.body);
+  const finished=await f.call('register/verify',{ownerRecovery:f.recoveryToken,response:device.registration},started.cookies);
+  return {device,finished};
+}
+test('first owner passkey setup produces a real verified credential and fresh sign-in without changing existing authority',async t=>{
+  const f=firstOwnerFixture(t);
+  const before=f.db.prepare('SELECT * FROM users WHERE email=?').get('superuser@northstar.example');
+  const started=await firstOwnerOptions(f);assert.equal(started.statusCode,200,started.text);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,0);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);
+  const {device,finished}=await firstOwnerRegister(f,started);assert.equal(finished.statusCode,200,finished.text);
+  assert.deepEqual(f.db.prepare('SELECT * FROM users WHERE email=?').get(before.email),before);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,1);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials WHERE tenant=? AND email=?').get(before.tenant,before.email).n,1);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM sessions WHERE email=?').get('manager@fixture.example').n,1);
+  const fresh=await f.call('authenticate/options');
+  const result=await f.call('authenticate/verify',{response:device.assertion(fresh.body)},fresh.cookies);
+  assert.equal(result.statusCode,200,result.text);
+  const guarded={setHeader(){},end(value){this.body=value;}};
+  assert.equal(f.guard.beforeRequest({method:'GET',url:'/api/bootstrap',headers:{cookie:result.cookies}},guarded),false);
+  const binding=f.db.prepare('SELECT u.tenant,u.role,b.issuer FROM sessions s JOIN users u ON u.email=s.email JOIN identity_session_bindings b ON b.token_hash=s.token_hash ORDER BY b.bound_at DESC LIMIT 1').get();
+  assert.deepEqual({...binding},{tenant:'northstar-demo',role:'director',issuer:'wfm-passkey'});
+  assert.equal((await firstOwnerOptions(f)).statusCode,401);
+  const restarted=moduleUnderTest.createPasskeyAuth({dbPath:f.dbPath,publicOrigin:f.origin,hosted:true,nodeEnv:'staging',ownerRecoveryEnv:f.env});
+  
+  const req=Readable.from([JSON.stringify({ownerRecovery:f.recoveryToken})]);req.method='POST';req.url='/api/passkeys/register/options';req.headers={origin:f.origin,'x-forwarded-proto':'https','content-type':'application/json'};req.socket={};
+  const res={setHeader(){},end(v){this.text=v;}};try {await restarted.handleRequest(req,res);assert.equal(res.statusCode,401);} finally {restarted.close();}
+  const audit=JSON.stringify(f.db.prepare('SELECT * FROM audit_events').all());
+  assert.ok(!audit.includes(f.recoveryToken));assert.match(audit,/owner-first-passkey-enrolled/);
+});
+test('first-passkey grant is not consumed by cancellation or invalid attestation',async t=>{
+  const f=firstOwnerFixture(t);const first=await firstOwnerOptions(f);assert.equal(first.statusCode,200);
+  const second=await firstOwnerOptions(f);assert.equal(second.statusCode,200);
+  const bad=authenticator(second.body,{origin:'https://attacker.test'});
+  assert.equal((await f.call('register/verify',{ownerRecovery:f.recoveryToken,response:bad.registration},second.cookies)).statusCode,401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,0);
+  const retry=await firstOwnerOptions(f);assert.equal(retry.statusCode,200);
+  assert.equal((await firstOwnerRegister(f,retry)).finished.statusCode,200);
+});
+for(const changed of ['disabled','expired','wrong-token','wrong-person','wrong-tenant','wrong-role','freeze','epoch','policy','password-purpose','origin']) {
+  test('first-passkey setup refuses '+changed+' without creating credentials or sessions',async t=>{
+    const f=firstOwnerFixture(t);
+    if(changed==='disabled')delete f.env.WFM_OWNER_RECOVERY_JSON;
+    if(changed==='expired'){f.grant.issuedAt=Date.now()-600000;f.grant.expiresAt=Date.now()-1;f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);}
+    if(changed==='wrong-token')f.recoveryToken=randomBytes(32).toString('base64url');
+    if(changed==='wrong-person')f.db.prepare('UPDATE users SET person_id=? WHERE email=?').run('d2','superuser@northstar.example');
+    if(changed==='wrong-tenant')f.db.prepare('UPDATE users SET tenant=? WHERE email=?').run('other-tenant','superuser@northstar.example');
+    if(changed==='wrong-role')f.db.prepare('UPDATE users SET role=? WHERE email=?').run('manager','superuser@northstar.example');
+    if(changed==='freeze')f.guard.securityControlForTests().setFreeze('northstar-demo',true);
+    if(changed==='epoch')f.db.prepare('UPDATE identity_tenant_control SET session_epoch=2 WHERE tenant=?').run('northstar-demo');
+    if(changed==='policy')f.db.prepare('UPDATE identity_tenant_control SET policy_version=2 WHERE tenant=?').run('northstar-demo');
+    if(changed==='password-purpose'){delete f.grant.purpose;f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);}
+    if(changed==='origin')f.env.WFM_PUBLIC_ORIGIN='https://different.test';
+    assert.equal((await firstOwnerOptions(f)).statusCode,401);
+    assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);
+    assert.equal(f.db.prepare('SELECT COUNT(*) n FROM sessions').get().n,1);
+  });
+}
+for(const changed of ['revoked','expired','epoch','policy','freeze','account','grant-renewed']) {
+  test('first-passkey authority is rechecked at final verification after '+changed,async t=>{
+    const f=firstOwnerFixture(t);const start=await firstOwnerOptions(f);assert.equal(start.statusCode,200);
+    if(changed==='revoked')delete f.env.WFM_OWNER_RECOVERY_JSON;
+    if(changed==='expired'){f.grant.expiresAt=Date.now()-1;f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);}
+    if(changed==='epoch')f.db.prepare('UPDATE identity_tenant_control SET session_epoch=2 WHERE tenant=?').run('northstar-demo');
+    if(changed==='policy')f.db.prepare('UPDATE identity_tenant_control SET policy_version=2 WHERE tenant=?').run('northstar-demo');
+    if(changed==='freeze')f.guard.securityControlForTests().setFreeze('northstar-demo',true);
+    if(changed==='account')f.db.prepare('UPDATE users SET person_id=? WHERE email=?').run('d2','superuser@northstar.example');
+    if(changed==='grant-renewed'){f.grant.expiresAt+=1000;f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);}
+    assert.equal((await firstOwnerRegister(f,start)).finished.statusCode,401);
+    assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);
+    assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,0);
+  });
+}
+test('two real owner setup challenges allow only one credential and one consumed grant',async t=>{
+  const f=firstOwnerFixture(t);const a=await firstOwnerOptions(f);const b=await firstOwnerOptions(f);
+  assert.equal(a.statusCode,200);assert.equal(b.statusCode,200);
+  assert.equal((await firstOwnerRegister(f,a)).finished.statusCode,200);
+  assert.equal((await firstOwnerRegister(f,b)).finished.statusCode,401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,1);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,1);
+});
+test('owner setup audit failure rolls back credential, grant consumption and session together',async t=>{
+  const f=firstOwnerFixture(t);const start=await firstOwnerOptions(f);assert.equal(start.statusCode,200);
+  f.db.exec("CREATE TRIGGER fail_owner_audit BEFORE INSERT ON audit_events BEGIN SELECT RAISE(ABORT,'synthetic audit unavailable'); END;");
+  assert.equal((await firstOwnerRegister(f,start)).finished.statusCode,401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,0);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM sessions').get().n,1);
+});
+
+
+function ownerSetupUi(t, {cancel=false,code='A'.repeat(43)}={}) {
+  const vm=require('node:vm');const calls=[],navigations=[];
+  const elements=Object.fromEntries(['status','sign-in','enroll','heading','intro','continue','owner-recovery-code'].map(id=>[id,{hidden:id==='enroll',disabled:false,value:id==='owner-recovery-code'?code:'',textContent:'',events:{},addEventListener(event,fn){this.events[event]=fn;}}]));
+  const context={document:{getElementById(id){return elements[id];}},location:{search:'',hash:'',pathname:'/access-recovery',replace(url){navigations.push(url);}},history:{replaceState(){throw Error('Recovery code must not enter the URL');}},URLSearchParams,window:{PublicKeyCredential:{}},SimpleWebAuthnBrowser:{async startRegistration(){if(cancel){const e=Error('cancelled');e.name='NotAllowedError';throw e;}return {id:'synthetic-browser-ui-only'};}},fetch:async(url,init)=>{calls.push({url,body:init?.body?JSON.parse(init.body):null});return{ok:true,async json(){return url.includes('status')?{canEnroll:false}:{challenge:'browser-ui-test'};}};}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'passkey-ui.js'),'utf8'),context);
+  return{elements,calls,navigations,context};
+}
+test('shared owner setup UI sends the privately typed code only to same-origin enrolment and clears it on success',async t=>{
+  const u=ownerSetupUi(t);assert.equal(u.elements['sign-in'].hidden,true);assert.equal(u.elements.enroll.hidden,false);
+  await u.elements.enroll.events.click();
+  assert.deepEqual(u.calls.map(x=>x.url),['/api/owner-access-recovery','/api/passkeys/register/options','/api/passkeys/register/verify']);
+  assert.equal(u.calls[0].body.token,'A'.repeat(43));assert.equal(u.calls[1].body.ownerRecovery,'A'.repeat(43));assert.equal(u.calls[2].body.ownerRecovery,'A'.repeat(43));
+  assert.equal(u.elements['owner-recovery-code'].value,'');assert.deepEqual(u.navigations,['/']);
+});
+test('shared owner setup UI contains cancellation without a verification request or false success',async t=>{
+  const u=ownerSetupUi(t,{cancel:true});await u.elements.enroll.events.click();
+  assert.equal(u.calls.length,2);assert.equal(u.navigations.length,0);
+  assert.match(u.elements.status.textContent,/Passkey setup was cancelled/);assert.equal(u.elements.enroll.disabled,false);
+});
+test('shared owner setup UI rejects missing setup code before any request',async t=>{
+  const u=ownerSetupUi(t,{code:''});await u.elements.enroll.events.click();
+  assert.equal(u.calls.length,0);assert.equal(u.navigations.length,0);assert.match(u.elements.status.textContent,/setup code/);
+});
+
+
+test('four independent SQLite workers can redeem first-passkey authority only once',async t=>{
+  const {Worker}=require('node:worker_threads');const f=firstOwnerFixture(t);f.db.exec('PRAGMA journal_mode=WAL');
+  const attempts=[];for(let i=0;i<4;i++){const started=await firstOwnerOptions(f);assert.equal(started.statusCode,200);attempts.push({body:{ownerRecovery:f.recoveryToken,response:authenticator(started.body).registration},cookie:started.cookies});}
+  const gate=new SharedArrayBuffer(4);
+  const workerCode=String.raw`const{workerData,parentPort}=require('node:worker_threads');const{Readable}=require('node:stream');const{createPasskeyAuth}=require(workerData.module);const auth=createPasskeyAuth(workerData.options);parentPort.postMessage('ready');Atomics.wait(new Int32Array(workerData.gate),0,0);const req=Readable.from([JSON.stringify(workerData.attempt.body)]);req.method='POST';req.url='/api/passkeys/register/verify';req.headers={origin:workerData.options.publicOrigin,'x-forwarded-proto':'https','content-type':'application/json',cookie:workerData.attempt.cookie};req.socket={};const res={setHeader(){},end(){}};auth.handleRequest(req,res).then(()=>{auth.close();parentPort.postMessage(res.statusCode);}).catch(e=>{auth.close();throw e;});`;
+  const workers=attempts.map(attempt=>new Worker(workerCode,{eval:true,workerData:{module:require.resolve('./passkey-auth.cjs'),options:{dbPath:f.dbPath,publicOrigin:f.origin,hosted:true,nodeEnv:'staging',ownerRecoveryEnv:f.env},attempt,gate}}));
+  t.after(async()=>{await Promise.all(workers.map(w=>w.terminate()));});
+  await Promise.all(workers.map(w=>new Promise((resolve,reject)=>{w.once('message',resolve);w.once('error',reject);}))); 
+  const results=workers.map(w=>new Promise((resolve,reject)=>{w.once('message',resolve);w.once('error',reject);}));
+  Atomics.store(new Int32Array(gate),0,1);Atomics.notify(new Int32Array(gate),0);
+  assert.deepEqual((await Promise.all(results)).sort(),[200,401,401,401]);await Promise.all(workers.map(w=>w.terminate()));
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,1);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,1);
+  assert.equal(f.db.prepare("SELECT COUNT(*) n FROM audit_events WHERE action='owner-first-passkey-enrolled'").get().n,1);
+});
+test('first-passkey purpose refuses replacement credentials and durably revoked authority',async t=>{
+  const f=firstOwnerFixture(t);const start=await firstOwnerOptions(f);assert.equal(start.statusCode,200);
+  f.db.prepare('INSERT INTO owner_recovery_ledger VALUES(?,?,?,?)').run(f.grant.tokenHash,f.grant.id,'revoked',new Date().toISOString());
+  assert.equal((await firstOwnerRegister(f,start)).finished.statusCode,401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);
+  const token=randomBytes(32).toString('base64url');f.recoveryToken=token;f.grant={...f.grant,id:randomBytes(16).toString('hex'),tokenHash:hash(token).toString('hex')};f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);
+  const second=await firstOwnerOptions(f);assert.equal(second.statusCode,200);assert.equal((await firstOwnerRegister(f,second)).finished.statusCode,200);
+  const replacement=randomBytes(32).toString('base64url');f.recoveryToken=replacement;f.grant={...f.grant,id:randomBytes(16).toString('hex'),tokenHash:hash(replacement).toString('hex')};f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);
+  assert.equal((await firstOwnerOptions(f)).statusCode,401);
+  f.db.prepare('UPDATE passkey_credentials SET revoked_at=? WHERE tenant=?').run(Date.now(),'northstar-demo');
+  assert.equal((await firstOwnerOptions(f)).statusCode,401);
+});
+
+
+test('editing setup code cannot enable a duplicate ceremony while a request is pending',async t=>{
+  const u=ownerSetupUi(t);let release;const gate=new Promise(resolve=>{release=resolve;});let n=0;
+  u.context.fetch=async(url,init)=>{u.calls.push({url,body:JSON.parse(init.body)});if(++n===1)await gate;return{ok:true,async json(){return{challenge:'ui-only'};}};};
+  const pending=u.elements.enroll.events.click();
+  try {
+    u.elements['owner-recovery-code'].events.input();assert.equal(u.elements.enroll.disabled,true);
+    const duplicate=u.elements.enroll.events.click();assert.equal(u.calls.length,1);
+    release();await Promise.all([pending,duplicate]);assert.equal(u.calls.length,3);assert.deepEqual(u.navigations,['/']);
+  } finally {release();await pending;}
+});
