@@ -1,0 +1,126 @@
+{
+  "observedAt": "2026-10-02 18:37:53 UTC",
+  "scope": "CURRENT_ROOT_COORDINATION_RECEIPT_SOURCE_ONLY_NOT_CONVERGED",
+  "previousCoordinationPublication": {
+    "observedAt": "2026-10-02 18:25:43 UTC",
+    "branch": "orchestration/vector-convergence-20261002",
+    "commit": "21639e29431e5a310817fe942537f428c391fb68",
+    "parent": "417a1115a73dd5789101d4d996b5b5c80b6289e4",
+    "tree": "8ae12439a7a9c52b5f8a7d4bb2166a3622912a47",
+    "paths": 23,
+    "sourceProductChanges": 0,
+    "historicalProductPathsPreserved": 1094,
+    "coordinationRefUpdates": 1,
+    "productCanonicalRefUpdates": 0,
+    "hostedChanges": 0,
+    "accessChanges": 0,
+    "force": false,
+    "readbackVerified": true,
+    "all27NotProven": true,
+    "implementationRequirementsSeparate": 21,
+    "provenBaseSha": null,
+    "liveCustomerSha": null,
+    "convergenceBaseSha": null,
+    "customerProof": false,
+    "scope": "Coordination-only checkpoint publication; SOURCE observations time-qualified. LOCAL_ONLY/PENDING preparation statuses remain immutable provenance, superseded for this coordination publication by this receipt."
+  },
+  "employeeSourcePublication": {
+    "observedAt": "2026-10-02 18:27:03 UTC",
+    "branch": "feature/vector-golden-employee-passkey-20261002",
+    "commit": "c7b12b09112adc54edd29084774d5f75e4ef881f",
+    "parent": "9f529d222118b7770e6fa0011ea35eea4f49fce7",
+    "tree": "1b99ae7afd6735ed845d1fc2fdf4c69e864ae18d",
+    "paths": 7,
+    "unchangedParentLeaves": 1107,
+    "independentEmployeeControls": 48,
+    "localCombinedTests": 277,
+    "countsOverlapNotAdditive": true,
+    "remoteRefAndCommitReadbackVerified": true,
+    "ciPendingAtPublication": true,
+    "productCanonicalRefUpdates": 0,
+    "hostedChanges": 0,
+    "accessChanges": 0,
+    "customerProof": false,
+    "scope": "Reviewed isolated source branch; current protected release remains A3",
+    "pullRequest": 295,
+    "pullUrl": "https://github.com/paulallen123/-manufacturing-wfm/pull/295"
+  },
+  "ci57": {
+    "sourceSha": "c7b12b09112adc54edd29084774d5f75e4ef881f",
+    "sourceTree": "1b99ae7afd6735ed845d1fc2fdf4c69e864ae18d",
+    "pipeline": 57,
+    "workflow": "27ec04d9-b5ff-469d-8b44-f61285f75d67",
+    "statuses": [
+      {
+        "context": "ci/circleci: forge_core_validation",
+        "state": "success",
+        "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/87",
+        "updatedAt": "2026-10-02T18:27:02Z"
+      },
+      {
+        "context": "ci/circleci: forge_runtime_validation",
+        "state": "failure",
+        "targetUrl": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/88",
+        "updatedAt": "2026-10-02T18:29:20Z"
+      }
+    ],
+    "runtimeBuild": {
+      "status": "FAILED",
+      "tests": 1193,
+      "pass": 1192,
+      "fail": 1,
+      "skip": 0,
+      "countsDuplicateInDockerDiagnostics": true,
+      "rawSha256": "a3b9d2de057a6e39d15c233ac93ef9305d6008a5101f44a34e615b5fe89785ee",
+      "rawBytes": 502924,
+      "failure": "unmapped bootstrap runtime group: public",
+      "test": "tests/vector-runtime-packaging.test.cjs",
+      "assertionLine": 44,
+      "finalImage": null,
+      "proofModule": "NOT_EXECUTED",
+      "security": "NOT_EXECUTED",
+      "http": "NOT_EXECUTED"
+    },
+    "fullEmployeeOrSTARTCaseSelectionClaimed": false,
+    "customerProof": false
+  },
+  "repair": {
+    "state": "IN_PROGRESS",
+    "owner": "EXISTING_SOURCE_OWNER",
+    "scope": "Exact canonical packed onboarding dependency and manifest validation in existing proof composer/guard",
+    "guardRetained": true,
+    "rootWillPublishAfterIndependentReviewAndFreshCI": true
+  },
+  "lastHostedObservation": {
+    "observedAt": "2026-10-02 18:17:21 UTC",
+    "sourceSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+    "deploymentId": "557513d7-166c-4d9a-aa71-402f3dc57249",
+    "deploymentStatus": "SUCCESS",
+    "runtimeTenant": null,
+    "runtimeRun": null,
+    "currentImageEquivalence": false,
+    "operationVariableNamePresent": true,
+    "operationValueScopeOrApprovalObserved": false
+  },
+  "writesHeld": [
+    "Canonical product review/release/convergence",
+    "Hosted/access/provider actions lacking required scope and recovery"
+  ],
+  "authorizedContinuingWrites": [
+    "Reviewed isolated source branches and draft PRs",
+    "Safe coordination metadata"
+  ],
+  "missing": [
+    "Execution owner reconciliation",
+    "Actual tenant/actors/provider environment/employer/full cohort/payroll period",
+    "Coherent database backup and isolated restore verification",
+    "Private passkey handoff and exact executor/source/deployment/run binding"
+  ],
+  "all27GoldenGates": "NOT_PROVEN",
+  "implementationRequirementsSeparate": 21,
+  "provenBaseSha": null,
+  "liveCustomerSha": null,
+  "convergenceBaseSha": null,
+  "deadlineAchieved": false,
+  "resourceExhaustionClaimed": false
+}

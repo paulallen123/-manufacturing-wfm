@@ -1,3 +1,7 @@
+Root completes the narrow onboarding dependency packaging repair and independent review, then runs fresh exact-source Linux CI. Canonical product and hosted/access/provider steps require the outstanding execution-owner, customer-scope, recovery and private-access prerequisites.
+
+Current root receipt: orchestration/evidence/current-source-20261002/CURRENT_ROOT_RECEIPT.json. PR295/c7b12 source CI57 core87 passed; runtime88 failed one packaging guard, with final image/module/security/HTTP unexecuted. Golden Journey has not started; all27NOT_PROVEN,21separate and proven/live/convergence null. The prior coordination checkpoint was published at21639e29431e5a310817fe942537f428c391fb68 with product bytes unchanged. This receipt and first line supersede older preparation-only execution instructions; prior snapshots below retain their observed cutoffs.
+
 Root finalizes the exact combined employee/START source review and transport, admits and publishes this reviewed coordination-only successor nonforce, then resolves the single-controller decision and concrete customer/actor/signer/private-handoff/backup/provider approval before canonical product review/release/convergence or hosted/access writes.
 
 Current A3 deployment is557513d7-166c-4d9a-aa71-402f3dc57249 SUCCESS; f070 isREMOVED/historical. WFM_STAFFOLOGY_OPERATION_JSON name nowpresent, value/scope/auth unobserved. Employee component sealed54within133 +combined277 local TESTED, independent48 source controls closed; combined/root/CI/hosted/customer admission pending.
@@ -35,3 +39,4 @@ scripts/run-forge-ci.mjs c36fc77d0805be18957dfd0e7b5fdc19dfee1db8
 Materials 30b9 and jurisdiction 2678 are published isolated future sources. Prior Twin/Country/Fabric/retry/cleanroom/Value/skills sources remain isolated. Workflow successor 548c104/337921b passed independent 17/17 and source 33/33; its package is sealed and unpublished, and the whole workflow is blocked before tenant binding by inherited login410. Six Lane04 owner/test modifications passed 71/71 affected tests and 15/15 retained probes; independent review is queued. All original reds are retained.
 
 The 437-branch/264-PR snapshot has partial deep inspection. Continue useful authorized work; no overall resource exhaustion is established. User requested continued work and a 30-minute focus on starting Golden Journey; no completion ETA is promised.
+
