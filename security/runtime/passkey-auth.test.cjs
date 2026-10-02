@@ -30,7 +30,7 @@ function fixture(t, extra = {}) {
   db.prepare('INSERT INTO proof_runner_sessions VALUES(?,?,?,?,?,?)').run(digest,'manager@fixture.example','fixture','manager',Date.now(),Date.now()+600000);
   const origin = 'https://vector.test';
   const auth = moduleUnderTest.createPasskeyAuth({dbPath,publicOrigin:origin,hosted:true,nodeEnv:'staging',...extra});
-  const f = {db,auth,guard,origin,token,session:'wfm_session='+token};
+  const f = {db,dbPath,auth,guard,origin,token,session:'wfm_session='+token};
   t.after(()=>{auth.close();guard.securityControlForTests().db.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});
   f.call = async (route, body = {}, cookie = '', headers = {}) => {
     const req = Readable.from([JSON.stringify(body)]);
@@ -200,9 +200,9 @@ test('second device can be enrolled and a revoked key loses its sessions',async 
 });
 
 
-function firstOwnerFixture(t) {
+function firstOwnerFixture(t, extra = {}) {
   const env = {};
-  const f = fixture(t, { ownerRecoveryEnv: env });
+  const f = fixture(t, { ...extra, ownerRecoveryEnv: env });
   const dbPath = f.db.prepare('PRAGMA database_list').get().file;
   f.db.exec('ALTER TABLE users ADD COLUMN person_id TEXT; ALTER TABLE users ADD COLUMN password_hash TEXT; ALTER TABLE users ADD COLUMN permissions TEXT; CREATE TABLE audit_events(id INTEGER PRIMARY KEY,tenant TEXT,actor TEXT,action TEXT,detail TEXT,created_at TEXT);');
   f.db.prepare('INSERT INTO users(email,tenant,role,person_id,password_hash,permissions) VALUES(?,?,?,?,?,?)').run('superuser@northstar.example','northstar-demo','director','d1','unchanged-password','["company.configure"]');
@@ -368,4 +368,147 @@ test('editing setup code cannot enable a duplicate ceremony while a request is p
     const duplicate=u.elements.enroll.events.click();assert.equal(u.calls.length,1);
     release();await Promise.all([pending,duplicate]);assert.equal(u.calls.length,3);assert.deepEqual(u.navigations,['/']);
   } finally {release();await pending;}
+});
+
+// Synthetic certificate fingerprint only: no customer certificate, app, or platform association.
+const androidOrigin='android:apk-key-hash:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+const androidPolicy=()=>({origin:androidOrigin,certificateSha256:'0'.repeat(64),packageName:'example.fixture.passkeys',rpID:'vector.test'});
+test('explicit trusted Android policy accepts the exact signed app origin with existing persisted authority',async t=>{
+  const f=fixture(t,{androidAppPolicy:androidPolicy()});
+  const {device,finished}=await enroll(f,{origin:androidOrigin});
+  assert.equal(finished.statusCode,200,finished.text);
+  const start=await f.call('authenticate/options');
+  const result=await f.call('authenticate/verify',{response:device.assertion(start.body,{origin:androidOrigin})},start.cookies);
+  assert.equal(result.statusCode,200,result.text);
+  const binding=f.db.prepare('SELECT * FROM identity_session_bindings WHERE token_hash=?').get(hash(result.cookies.split(';')[0].split('=')[1]).toString('hex'));
+  assert.equal(binding.tenant,'fixture');assert.equal(binding.issuer,'wfm-passkey');
+  assert.equal(f.guard.beforeRequest({method:'GET',url:'/api/bootstrap',headers:{cookie:result.cookies}},{setHeader(){},end(){}}),false);
+});
+test('Android policy preserves ordinary HTTPS registration and authentication',async t=>{
+  const f=fixture(t,{androidAppPolicy:androidPolicy()});const {device,finished}=await enroll(f);
+  assert.equal(finished.statusCode,200);const start=await f.call('authenticate/options');
+  assert.equal((await f.call('authenticate/verify',{response:device.assertion(start.body)},start.cookies)).statusCode,200);
+});
+test('default web-only policy refuses signed Android origin without minting sessions',async t=>{
+  const f=fixture(t);const {device}=await enroll(f);const before=f.db.prepare('SELECT count(*) n FROM passkey_sessions').get().n;
+  const start=await f.call('authenticate/options');
+  assert.equal((await f.call('authenticate/verify',{response:device.assertion(start.body,{origin:androidOrigin})},start.cookies)).statusCode,401);
+  assert.equal(f.db.prepare('SELECT count(*) n FROM passkey_sessions').get().n,before);
+});
+const invalidPolicies=[
+ ['empty record',{}],['null',null],['list',[androidPolicy()]],['mixed app and web list',[androidPolicy(),'https://vector.test']],
+ ['wildcard app origin',{...androidPolicy(),origin:'android:apk-key-hash:*'}],
+ ['web origin disguised as app policy',{...androidPolicy(),origin:'https://vector.test'}],
+ ['truncated certificate origin',{...androidPolicy(),origin:androidOrigin.slice(0,-1)}],
+ ['padded noncanonical certificate origin',{...androidPolicy(),origin:androidOrigin+'='}],
+ ['certificate mismatch',{...androidPolicy(),certificateSha256:'1'.repeat(64)}],
+ ['missing certificate',{origin:androidOrigin,packageName:'example.fixture.passkeys',rpID:'vector.test'}],
+ ['malformed certificate',{...androidPolicy(),certificateSha256:'Z'.repeat(64)}],
+ ['wrong RP binding',{...androidPolicy(),rpID:'attacker.test'}],
+ ['missing package binding',{...androidPolicy(),packageName:''}],
+ ['wildcard package',{...androidPolicy(),packageName:'example.*'}],
+ ['extra allowed origins',{...androidPolicy(),allowedOrigins:['https://attacker.test']}],
+ ['inherited policy',Object.create(androidPolicy())]
+];
+for(const [name,androidAppPolicy] of invalidPolicies)test('invalid Android policy fails before opening auth: '+name,t=>{
+  const f=fixture(t);let extra;
+  try{assert.throws(()=>{extra=moduleUnderTest.createPasskeyAuth({dbPath:f.dbPath,publicOrigin:f.origin,androidAppPolicy});});}
+  finally{extra?.close();}
+});
+test('trusted policy accessor and proxy inputs are refused without executing caller code',t=>{
+  const f=fixture(t);let calls=0;
+  const accessor={...androidPolicy()};Object.defineProperty(accessor,'origin',{get(){calls++;return androidOrigin;},enumerable:true});
+  const proxy=new Proxy(androidPolicy(),{ownKeys(target){calls++;return Reflect.ownKeys(target);},get(target,key){calls++;return target[key];}});
+  for(const androidAppPolicy of [accessor,proxy]){let extra;try{assert.throws(()=>{extra=moduleUnderTest.createPasskeyAuth({dbPath:f.dbPath,publicOrigin:f.origin,androidAppPolicy});});}finally{extra?.close();}}
+  assert.equal(calls,0);
+});
+test('trusted Android policy is detached from later caller mutation',async t=>{
+  const policy=androidPolicy(),f=fixture(t,{androidAppPolicy:policy});
+  policy.origin='android:apk-key-hash:ERERERERERERERERERERERERERERERERERERERERERE';policy.rpID='attacker.test';
+  const {device,finished}=await enroll(f);assert.equal(finished.statusCode,200);
+  const first=await f.call('authenticate/options');
+  assert.equal((await f.call('authenticate/verify',{response:device.assertion(first.body,{origin:policy.origin})},first.cookies)).statusCode,401);
+  const second=await f.call('authenticate/options');
+  assert.equal((await f.call('authenticate/verify',{response:device.assertion(second.body,{origin:androidOrigin})},second.cookies)).statusCode,200);
+});
+for(const [name,change] of [
+ ['unknown app certificate',{origin:'android:apk-key-hash:ERERERERERERERERERERERERERERERERERERERERERE'}],
+ ['unknown HTTPS origin',{origin:'https://attacker.test'}],['missing UV',{origin:androidOrigin,flags:0x01}],
+ ['wrong challenge',{origin:androidOrigin,challenge:'wrong'}],['wrong user handle',{origin:androidOrigin,userHandle:'wrong'}]
+])test('trusted Android policy preserves refusal: '+name,async t=>{
+  const f=fixture(t,{androidAppPolicy:androidPolicy()}),{device}=await enroll(f);
+  const start=await f.call('authenticate/options'),before=f.db.prepare('SELECT count(*) n FROM passkey_sessions').get().n;
+  assert.equal((await f.call('authenticate/verify',{response:device.assertion(start.body,change)},start.cookies)).statusCode,401);
+  assert.equal(f.db.prepare('SELECT count(*) n FROM passkey_sessions').get().n,before);
+});
+for(const [name,mutate] of [
+ ['current tenant',f=>f.db.exec("UPDATE users SET tenant='other'")],
+ ['revoked credential',f=>f.db.exec('UPDATE passkey_credentials SET revoked_at=1')],
+ ['expired challenge',f=>f.db.exec('UPDATE passkey_challenges SET expires=0')]
+])test('trusted Android policy cannot override '+name,async t=>{
+  const f=fixture(t,{androidAppPolicy:androidPolicy()}),{device}=await enroll(f);const start=await f.call('authenticate/options');mutate(f);
+  assert.equal((await f.call('authenticate/verify',{response:device.assertion(start.body,{origin:androidOrigin})},start.cookies)).statusCode,401);
+});
+for(const [name,mutate] of [
+ ['role',f=>f.db.exec("UPDATE users SET role='employee'")],
+ ['tenant',f=>f.db.exec("UPDATE users SET tenant='other'")],
+ ['epoch',f=>f.db.exec('UPDATE identity_tenant_control SET session_epoch=session_epoch+1')],
+ ['policy',f=>f.db.exec('UPDATE identity_tenant_control SET policy_version=policy_version+1')],
+ ['freeze',f=>f.db.exec('UPDATE identity_tenant_control SET privileged_freeze=1')]
+])test('Android verification rechecks '+name+' changes during real signature verification before minting',async t=>{
+  const f=fixture(t,{androidAppPolicy:androidPolicy()}),{device,finished}=await enroll(f);
+  assert.equal(f.guard.beforeRequest({method:'GET',url:'/api/bootstrap',headers:{cookie:finished.cookies}},{setHeader(){},end(){}}),false);
+  const start=await f.call('authenticate/options'),before=f.db.prepare('SELECT count(*) n FROM passkey_sessions').get().n;
+  const subtle=globalThis.crypto.subtle,original=subtle.verify;let calls=0;
+  subtle.verify=async function(...args){calls++;mutate(f);return original.apply(this,args);};
+  try{assert.equal((await f.call('authenticate/verify',{response:device.assertion(start.body,{origin:androidOrigin})},start.cookies)).statusCode,401);}
+  finally{subtle.verify=original;}
+  assert.equal(calls,1,'real signature verification must occur before the controlled authority drift');
+  assert.equal(f.db.prepare('SELECT count(*) n FROM passkey_sessions').get().n,before);
+});
+test('signed app origin cannot replace the HTTPS HTTP-origin and transport boundary',async t=>{
+  const f=fixture(t,{androidAppPolicy:androidPolicy()}),{device}=await enroll(f);
+  for(const headers of [{origin:androidOrigin},{origin:'https://attacker.test'},{'x-forwarded-proto':'http'}]){
+    const start=await f.call('authenticate/options');
+    assert.equal((await f.call('authenticate/verify',{response:device.assertion(start.body,{origin:androidOrigin})},start.cookies,headers)).statusCode,403);
+  }
+});
+test('Android assertion still requires cookie binding, cryptographic signature and one-use challenge',async t=>{
+  const f=fixture(t,{androidAppPolicy:androidPolicy()}),{device}=await enroll(f);
+  const first=await f.call('authenticate/options');
+  assert.equal((await f.call('authenticate/verify',{response:device.assertion(first.body,{origin:androidOrigin})})).statusCode,401);
+  const second=await f.call('authenticate/options'),bad=device.assertion(second.body,{origin:androidOrigin});bad.response.signature=b64(Buffer.alloc(64));
+  assert.equal((await f.call('authenticate/verify',{response:bad},second.cookies)).statusCode,401);
+  const third=await f.call('authenticate/options'),good=device.assertion(third.body,{origin:androidOrigin});
+  assert.equal((await f.call('authenticate/verify',{response:good},third.cookies)).statusCode,200);
+  assert.equal((await f.call('authenticate/verify',{response:good},third.cookies)).statusCode,401);
+});
+
+
+// A3 owner recovery remains a canonical HTTPS registration purpose, even with
+// the independent ordinary-auth Android origin policy explicitly configured.
+test('opt-in Android policy refuses first-owner signed app enrolment without consuming authority, then HTTPS succeeds',async t=>{
+  const f=firstOwnerFixture(t,{androidAppPolicy:androidPolicy()}),before=f.db.prepare('SELECT * FROM users ORDER BY email').all(),sessions=f.db.prepare('SELECT COUNT(*) n FROM sessions').get().n;
+  const started=await firstOwnerOptions(f);assert.equal(started.statusCode,200);
+  const app=authenticator(started.body,{origin:androidOrigin});
+  assert.equal((await f.call('register/verify',{ownerRecovery:f.recoveryToken,response:app.registration},started.cookies)).statusCode,401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,0);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM sessions').get().n,sessions);assert.deepEqual(f.db.prepare('SELECT * FROM users ORDER BY email').all(),before);
+  const retry=await firstOwnerOptions(f);assert.equal(retry.statusCode,200);const {device,finished}=await firstOwnerRegister(f,retry);assert.equal(finished.statusCode,200,finished.text);
+  assert.deepEqual(f.db.prepare('SELECT * FROM users ORDER BY email').all(),before);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,1);
+  const options=await f.call('authenticate/options');assert.equal((await f.call('authenticate/verify',{response:device.assertion(options.body)},options.cookies)).statusCode,200);
+});
+for(const [name,change] of [['UV',{flags:0x41}],['challenge',{challenge:'invalid-first-owner-challenge'}],['unknown web origin',{origin:'https://attacker.test'}]])test('opt-in Android policy preserves first-owner '+name+' refusal with actual verifier',async t=>{
+  const f=firstOwnerFixture(t,{androidAppPolicy:androidPolicy()}),before=f.db.prepare('SELECT COUNT(*) n FROM users').get().n,started=await firstOwnerOptions(f);assert.equal(started.statusCode,200);
+  const device=authenticator(started.body,change);assert.equal((await f.call('register/verify',{ownerRecovery:f.recoveryToken,response:device.registration},started.cookies)).statusCode,401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,0);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM users').get().n,before);
+});
+test('opt-in Android policy cannot create first-owner authority from absent or mixed grants',async t=>{
+  const f=firstOwnerFixture(t,{androidAppPolicy:androidPolicy()}),before=f.db.prepare('SELECT COUNT(*) n FROM users').get().n;
+  assert.equal((await f.call('register/options',{ownerRecovery:f.recoveryToken,invitation:'A'.repeat(43)})).statusCode,401);
+  delete f.env.WFM_OWNER_RECOVERY_JSON;assert.equal((await firstOwnerOptions(f)).statusCode,401);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM users').get().n,before);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);
+});
+for(const [name,mutate] of [['epoch',f=>f.db.prepare('UPDATE identity_tenant_control SET session_epoch=2 WHERE tenant=?').run('northstar-demo')],['policy',f=>f.db.prepare('UPDATE identity_tenant_control SET policy_version=2 WHERE tenant=?').run('northstar-demo')],['freeze',f=>f.guard.securityControlForTests().setFreeze('northstar-demo',true)],['account',f=>f.db.prepare('UPDATE users SET person_id=? WHERE email=?').run('d2','superuser@northstar.example')]])test('opt-in Android policy preserves first-owner current '+name+' at verification',async t=>{
+  const f=firstOwnerFixture(t,{androidAppPolicy:androidPolicy()}),started=await firstOwnerOptions(f);assert.equal(started.statusCode,200);mutate(f);
+  assert.equal((await firstOwnerRegister(f,started)).finished.statusCode,401);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM owner_recovery_ledger').get().n,0);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM passkey_credentials').get().n,0);
 });

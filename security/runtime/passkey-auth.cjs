@@ -3,6 +3,7 @@ const { createHash, randomBytes } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const fs = require('node:fs');
 const path = require('node:path');
+const { types } = require('node:util');
 const { generateRegistrationOptions,verifyRegistrationResponse,generateAuthenticationOptions,verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { ensurePasskeySchema } = require('./passkey-schema.cjs');
 const { authorizeFirstOwnerPasskey, consumeFirstOwnerPasskey } = require('./owner-access-recovery.cjs');
@@ -22,11 +23,39 @@ async function readJson(req) {
   for await(const chunk of req) {size+=Buffer.byteLength(chunk);if(size>65536)throw denied(413);body+=chunk;}
   try {const result=JSON.parse(body||'{}');if(!result||typeof result!=='object'||Array.isArray(result))throw new Error();return result;}catch{throw denied(400);}
 }
+// Trusted constructor declaration only. The signed origin identifies the certificate;
+// package/RP association still requires deployment/platform verification outside this hook.
+function trustedAndroidOrigin(options,rpID) {
+  const declaration=Object.getOwnPropertyDescriptor(options,'androidAppPolicy');
+  if(!declaration)return null;
+  const refuse=()=>{throw new Error('Android passkey policy requires one exact certificate, package and RP binding.');};
+  if(!Object.hasOwn(declaration,'value'))refuse();
+  const policy=declaration.value;
+  if(!policy||typeof policy!=='object'||types.isProxy(policy)||Array.isArray(policy))refuse();
+  const prototype=Object.getPrototypeOf(policy);
+  if(prototype!==Object.prototype&&prototype!==null)refuse();
+  const descriptors=Object.getOwnPropertyDescriptors(policy),keys=Reflect.ownKeys(descriptors);
+  const fields=['origin','certificateSha256','packageName','rpID'];
+  if(keys.length!==fields.length||keys.some(key=>!fields.includes(key)))refuse();
+  const values=Object.create(null);
+  for(const field of fields) {
+    const descriptor=descriptors[field];
+    if(!descriptor||!Object.hasOwn(descriptor,'value')||typeof descriptor.value!=='string')refuse();
+    values[field]=descriptor.value;
+  }
+  if(!/^[a-f0-9]{64}$/.test(values.certificateSha256)||values.rpID!==rpID||values.packageName.length>255||
+    !/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$/.test(values.packageName))refuse();
+  const expected='android:apk-key-hash:'+Buffer.from(values.certificateSha256,'hex').toString('base64url');
+  if(values.origin!==expected)refuse();
+  return expected;
+}
 function createPasskeyAuth(options={}) {
   const origin=String(options.publicOrigin||process.env.WFM_PUBLIC_ORIGIN||'').replace(/\/$/,'');
   const originURL=new URL(origin);
   if(originURL.origin!==origin||originURL.protocol!=='https:')throw new Error('Passkeys require a canonical HTTPS origin.');
   const rpID=originURL.hostname;
+  const androidOrigin=trustedAndroidOrigin(options,rpID);
+  const verificationOrigin=androidOrigin?Object.freeze([origin,androidOrigin]):origin;
   const fixtureProof=(options.hosted??process.env.WFM_HOSTED_STAGING==='true')&&(options.nodeEnv||process.env.NODE_ENV)==='staging';
   const db=new DatabaseSync(options.dbPath||process.env.WFM_DB);
   db.exec('PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;');ensurePasskeySchema(db);
@@ -129,7 +158,7 @@ function createPasskeyAuth(options={}) {
       }
       if(route==='/api/passkeys/register/verify') {
         const attempt=consume(req,'register');const u=JSON.parse(attempt.authorization);sameAuthorization(req,body,u);
-        const result=await verifyRegistrationResponse({response:body.response,expectedChallenge:attempt.challenge,expectedOrigin:origin,expectedRPID:rpID,requireUserPresence:true,requireUserVerification:true,supportedAlgorithmIDs:[-7,-257]});
+        const result=await verifyRegistrationResponse({response:body.response,expectedChallenge:attempt.challenge,expectedOrigin:u.kind==='owner-recovery'?origin:verificationOrigin,expectedRPID:rpID,requireUserPresence:true,requireUserVerification:true,supportedAlgorithmIDs:[-7,-257]});
         if(!result.verified)throw denied();
         const info=result.registrationInfo;const credential=info.credential;
         const cookies=transaction(()=>{
@@ -151,7 +180,7 @@ function createPasskeyAuth(options={}) {
         const credential=get('SELECT * FROM passkey_credentials WHERE id=? AND revoked_at IS NULL',String(body.response?.id||''));
         if(!credential||body.response?.response?.userHandle!==credential.user_handle)throw denied();
         const u=user(credential.email);if(!u||u.tenant!==credential.tenant)throw denied();const priorScope=JSON.stringify(scope(u));
-        const result=await verifyAuthenticationResponse({response:body.response,expectedChallenge:attempt.challenge,expectedOrigin:origin,expectedRPID:rpID,requireUserVerification:true,credential:{id:credential.id,publicKey:credential.public_key,counter:credential.counter,transports:JSON.parse(credential.transports)}});
+        const result=await verifyAuthenticationResponse({response:body.response,expectedChallenge:attempt.challenge,expectedOrigin:verificationOrigin,expectedRPID:rpID,requireUserVerification:true,credential:{id:credential.id,publicKey:credential.public_key,counter:credential.counter,transports:JSON.parse(credential.transports)}});
         if(!result.verified)throw denied();
         const cookies=transaction(()=>{
           if(attempt.expires<=Date.now())throw denied();

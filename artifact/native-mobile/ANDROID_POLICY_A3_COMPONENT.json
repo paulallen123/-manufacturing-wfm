@@ -1,0 +1,78 @@
+{
+  "capability": "edge06-native-mobile",
+  "canonicalOwner": "security/runtime/passkey-auth.cjs",
+  "classification": "EVOLVE",
+  "state": "IN_PROGRESS",
+  "componentState": "TESTED",
+  "baseSha": "a3e17ebfbcd3e667e17a560e619df2634892e9a5",
+  "baseTree": "712acebba40dd9e0e4b8dd207122008b174275ec",
+  "reviewedSourceOverlayTree": "309166d21105daf6139d2d630cdda5eaabffe7c8",
+  "sourceBlobs": [
+    {
+      "path": "security/runtime/passkey-auth.cjs",
+      "blob": "657c024c01eaf74b4b6d621557361e3a29c1e507",
+      "preimageBlob": "36051648093203901e5b8c7a91dd7b990c8558c5",
+      "mode": "100644"
+    },
+    {
+      "path": "security/runtime/passkey-auth.test.cjs",
+      "blob": "7827f6c300ac359d1ee8d3b16e6bd2bcc9f70589",
+      "preimageBlob": "e09ba3b2a8f8ce91a42f855752946ad8e518ea14",
+      "mode": "100644"
+    }
+  ],
+  "reviewHashes": {
+    "ownerManifest": "aaf703d733223c2bc11632a02c7cf0a4abcbb9d5f122b82e8c01307e5929b5e0",
+    "ownerSeal": "d1e093df2b561d7ecec39efdaae06a1ae8bce271d76d6c97d67177737aac4fb1",
+    "independentReport": "1dfa58c035d218a50ae21e273b4294173b3861f5a6d7bd30be2bec0aa567c036",
+    "independentFindings": "f10da2eb593b16db00fcc93d6783429bf180f8d3b60208a5fb612cd7c8d40482",
+    "independentSafeHandoff": "6314e8aa9478512711f7aa4dc6e0f4bb26997a02452c31d798989abedcf78551",
+    "independentIndex": "d70f9db0e8a14638737e31d73a2dbf915f9337aaafca9acc79f73cc01fb5c6dc",
+    "independentSeal": "7e341f5e99b296b4c0650d440f88579c1756b0a9a97881f27ddb0679d2a1f538"
+  },
+  "independentVerdict": "NO_OPEN_P1_P2_ON_EXACT_REVIEWED_COMPONENT_BYTES",
+  "counts": {
+    "ownerFocused": 95,
+    "ownerAffected": 122,
+    "ownerFocusedContainedInAffected": true,
+    "independent": 26,
+    "nonadditive": true
+  },
+  "executionScope": "LOCAL_SYNTHETIC_WINDOWS_NODE22_23_2_REAL_ES256_SQLITE_DIRECT_HANDLER_NETWORK_DENIED",
+  "defaultAndroidEnabled": false,
+  "bootstrapChanged": false,
+  "configurationActivation": false,
+  "firstOwnerRegistration": "CANONICAL_HTTPS_ONLY_EVEN_WITH_ANDROID_OPT_IN",
+  "certificatePackageRpBinding": "TRUSTED_OPERATOR_DECLARATION_NOT_PLATFORM_PROOF",
+  "digitalAssetLinksVerified": false,
+  "actualDevice": false,
+  "nativeTransportImplemented": false,
+  "chromiumExecuted": false,
+  "hostedProof": false,
+  "customerProof": false,
+  "provenBaseSha": null,
+  "liveCustomerSha": null,
+  "convergenceBaseSha": null,
+  "ci": {
+    "triggerChanged": false,
+    "configChanged": false,
+    "wholeCIPassClaimed": false,
+    "runtimeAdmission": "UNCHANGED_TRIGGER_FILTER_HALTS_ON_SOURCE_ONLY_FUTURE_BRANCH"
+  },
+  "publication": {
+    "proposedBranch": "feature/vector-edge06-native-passkey-policy-a3-20261002",
+    "closureCommit": null,
+    "rootFutureParentRevalidation": "PENDING_FRESH_REF_AND_BRANCH_ABSENCE_CHECK",
+    "rootSolePublisher": true,
+    "sourceOnly": true,
+    "noDeploymentApproval": true
+  },
+  "futureComposition": "DO_NOT_MERGE_WHOLE_FILES_WITH_EMPLOYEE_REPAIR; SAME_CANONICAL_OWNER_PORTS_ONLY_ORIGIN_DELTA_ONTO_LATER_REVIEWED_EMPLOYEE_SOURCE_WITH_RENEWED_TESTS",
+  "remaining": [
+    "Platform certificate/package/RP and DAL custody",
+    "Native secure-entry/private-cookie transport bridge",
+    "Actual device/HTTPS/hosted execution",
+    "Separately authorized activation and customer scope"
+  ],
+  "privateEvidenceCopied": false
+}
