@@ -1,0 +1,64 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-url.red.test.cjs"
+  ],
+  "start": "2026-10-02T13:35:59.942Z",
+  "end": "2026-10-02T13:36:00.161Z",
+  "exit": 1,
+  "tests": 2,
+  "pass": 1,
+  "fail": 1,
+  "skip": 0,
+  "artifacts": [
+    {
+      "file": "workflow-tenant-url.red.test.cjs",
+      "bytes": 1258,
+      "sha256": "e49a36a2819037ab1fcbddec4abd5726d8f3872ca46bd2b280aa41b2661e7920",
+      "blob": "4ff97be3b0a7f061421f08038df54ccc884c31e7"
+    },
+    {
+      "file": "workflow-tenant-original-source/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17876,
+      "sha256": "ceab39e1c428e002ff54bac8017455640475984125787a679c0e3d1e2282c5f2",
+      "blob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd"
+    },
+    {
+      "file": "workflow-tenant-original-source/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 13475,
+      "sha256": "44e087c5496567cc6e85dd82ac0bd7a5c5974f11b0d5542f8dd3309759f5fe59",
+      "blob": "fe13057aa62d7ddeb4072d1283842b82484e98ec"
+    },
+    {
+      "file": "workflow-tenant-url.red-direct.tap",
+      "bytes": 1509,
+      "sha256": "3df8eb295239a918e56679fb3062e3de0888c6e0bfe54ffa79c17d3140619d52",
+      "blob": "685ed99f0141b4f75df120a1bf1fbbc91d29b2a2"
+    },
+    {
+      "file": "workflow-tenant-url.red.tap",
+      "bytes": 3102,
+      "sha256": "b1ad8529282291ba716d84493ee7e6249e49219b466cac07fffbadcab84fa202",
+      "blob": "193d44ec205666d6476d85d46b9c576f4c2c1241"
+    }
+  ],
+  "qualifications": [
+    "Actual Node static/extracted configured-origin test, no Bash/HTTP/Docker/provider/auth execution.",
+    "First same2-case PowerShell-captured log retained; direct Node capture reruns same2 unique cases for raw bytes, counts are not added."
+  ],
+  "finding": {
+    "id": "WORKFLOW-TENANT-01",
+    "priority": "P2",
+    "path": ".github/workflows/autonomous-integration-fabric.yml",
+    "line": 228,
+    "actualVariable": "WFM_BASE_URL",
+    "expectedDeclaredVariable": "HOSTED_BASE_URL",
+    "workflowBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+    "testBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+    "testLine": 180,
+    "inheritedLogin410": "Separate existing admission blocker; no authentication relaxation requested"
+  }
+}

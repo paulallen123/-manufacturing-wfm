@@ -4149,7 +4149,7 @@
     },
     {
       "name": "review/staffology-customer-proof-20261001",
-      "headSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+      "headSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
       "protected": false,
       "prs": [
         289
@@ -4160,7 +4160,12 @@
       "inspection": "FOUND",
       "fullCapabilityCoverage": false,
       "previousHeadSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
-      "observedAt": "2026-10-02T08:58:03.144Z"
+      "observedAt": "2026-10-02T14:13:35.489Z",
+      "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "currentSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+      "classification": "CURRENT_SOLE_REVIEW_SOURCE_ADMITTED_NOT_CUSTOMER_PROVEN",
+      "historicalHeadSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa"
     },
     {
       "name": "rollback/vector-customer-ready-486606",
@@ -8251,5 +8256,139 @@
     "lane07Materials": "Declared-scenario local port2paths43pass; independent queued",
     "lane02Jurisdiction": "15exactfiles/23existingtests/8boundaryprobes3pass5holds; no source edits",
     "lane08LearningReporting": "17exactsource snapshots; historical10/canonical19;10historicalblockingprobes; no port"
+  },
+  "updatedAt": "2026-10-02T14:13:35.489Z",
+  "currentReferenceObservations": {
+    "review": {
+      "branch": "review/staffology-customer-proof-20261001",
+      "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "commit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+      "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "sourceAdmitted": true,
+      "admitted": false,
+      "wholeRuntimeAdmission": false,
+      "fullTreeBlobs": 1109,
+      "actualDeltaPaths": 19,
+      "sourceRepairsChanged": 17,
+      "selectedAlreadyIdentical": 1,
+      "parentUnchanged": 1090,
+      "mandatoryProofBlobsPreserved": 6,
+      "triggerChanged": true,
+      "triggerPurpose": "Exact non-deploy source/runtime CI on actual CIRCLE_SHA1",
+      "local": {
+        "source": {
+          "tests": 159,
+          "pass": 159,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
+        },
+        "persistence": {
+          "tests": 1,
+          "pass": 1,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
+        },
+        "fullHttp": {
+          "tests": 1,
+          "pass": 1,
+          "skip": 0,
+          "mockRequests": 14,
+          "externalRequests": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
+        },
+        "supportedPackaging": {
+          "tests": 8,
+          "pass": 8,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
+        },
+        "initialBroadPackaging": {
+          "tests": 14,
+          "pass": 8,
+          "fail": 6,
+          "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
+        }
+      },
+      "independentComposition": {
+        "verified": true,
+        "evidence": "orchestration/evidence/staffology-composition-review.md"
+      },
+      "previousAdmission": {
+        "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+        "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+        "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+        "evidence": "Historical checkpoint5 commit28f964f733dad532d7cce6838b3e833749b94422; retained current-admission repair receipts"
+      },
+      "native8690Custody": "OPEN",
+      "hostedProof": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "claim": "Exact source admitted; local synthetic checks passed and actual Linux CI jobs executed successfully. RawCI artifact identities pending; deployed/customer gates remain unproven."
+    },
+    "frozen": {
+      "branch": "release/vector-customer-ready-candidate-20260925",
+      "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "tree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+      "preserve": true
+    },
+    "controlPlaneParent": "28f964f733dad532d7cce6838b3e833749b94422",
+    "futureNewPublished": [
+      {
+        "branch": "feature/vector-lane07-materials-projection-20261002",
+        "sha": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+        "tree": "5d9fcd182d72459b4754a1b5625a6a8f816dfe53",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "verifiedFrozenBlobs": 1094,
+        "verifiedAdditions": 99,
+        "verifiedTotalBlobs": 1193,
+        "shippingAdditions": 4,
+        "sourceChanges": 2,
+        "dependencyAdditions": 2,
+        "existingCapability": "product-004",
+        "recursiveUntruncated": true,
+        "readbackVerified": true,
+        "runtimeWired": false,
+        "customerProof": false,
+        "componentState": "TESTED",
+        "broadState": "IN_PROGRESS",
+        "sourceTests": 43,
+        "independentHeldOut": 44,
+        "independentAffected": 43,
+        "producerAuthenticity": false
+      },
+      {
+        "branch": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
+        "sha": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+        "tree": "3f44cc755935987fd31dc5669875f44bbe39ac37",
+        "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "verifiedTotalBlobs": 1213,
+        "originalFrozenPathsRetained": 1094,
+        "frozenBlobsUnchanged": 1086,
+        "approvedExistingOwnerModifications": 8,
+        "verifiedAdditions": 119,
+        "shippingPaths": 10,
+        "dependencyAdditions": 2,
+        "existingCapability": "product-058",
+        "recursiveUntruncated": true,
+        "readbackVerified": true,
+        "independentHeldOut": 59,
+        "independentAffected": 40,
+        "runtimeWired": false,
+        "customerProof": false,
+        "legalAuthenticity": false,
+        "componentState": "TESTED",
+        "broadState": "IN_PROGRESS",
+        "sourceTests": 40,
+        "legalFactsAdded": false
+      }
+    ],
+    "wholeInventoryRefresh": false,
+    "originalSnapshotCounts": {
+      "branches": 437,
+      "prs": 264
+    },
+    "deepCoverageComplete": false
   }
 }

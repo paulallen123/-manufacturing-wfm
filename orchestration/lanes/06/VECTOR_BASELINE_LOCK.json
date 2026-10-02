@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-02T08:49:16.121Z",
+  "observedAt": "2026-10-02T14:13:35.489Z",
   "provenBaseSha": null,
   "convergenceBaseSha": null,
   "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -102,7 +102,10 @@
   "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
   "lastRebase": null,
   "testsExecuted": [],
-  "currentTask": null,
+  "currentTask": "Existing role/mobile source inventory retained; actual customer browser/mobile proof pending",
   "admissionAllowed": false,
-  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
+  "currentReviewHead": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "lastVerifiedReview": "2026-10-02T14:13:35.489Z",
+  "proofState": "SOURCE_ONLY_OR_PENDING_HOSTED; NOT_CUSTOMER_PROVEN"
 }

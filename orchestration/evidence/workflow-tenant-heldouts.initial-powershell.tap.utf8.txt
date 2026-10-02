@@ -1,0 +1,135 @@
+TAP version 13
+# (node:9480) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: new hosted bootstrap URL uses existing job declared origin
+not ok 1 - new hosted bootstrap URL uses existing job declared origin
+  ---
+  duration_ms: 3.5204
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-heldouts.cjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'WFM_BASE_URL'
+    - 'HOSTED_BASE_URL'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'HOSTED_BASE_URL'
+  actual: 'WFM_BASE_URL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\workflow-tenant-heldouts.cjs:15:261)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+  ...
+# Subtest: new caller delta leaves old workflow outside bootstrap/tenant payload insertions identical
+ok 2 - new caller delta leaves old workflow outside bootstrap/tenant payload insertions identical
+  ---
+  duration_ms: 0.5616
+  type: 'test'
+  ...
+# Subtest: local-proof actor admission requires exact manager and inert bounded tenant string
+ok 3 - local-proof actor admission requires exact manager and inert bounded tenant string
+  ---
+  duration_ms: 19.7142
+  type: 'test'
+  ...
+# Subtest: local-proof JSON literal protects metacharacters without evaluating a shell
+ok 4 - local-proof JSON literal protects metacharacters without evaluating a shell
+  ---
+  duration_ms: 6.4575
+  type: 'test'
+  ...
+# Subtest: local-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+ok 5 - local-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+  ---
+  duration_ms: 215.1724
+  type: 'test'
+  ...
+# Subtest: local-proof cross-tenant submitted body cannot import or activate
+ok 6 - local-proof cross-tenant submitted body cannot import or activate
+  ---
+  duration_ms: 206.1107
+  type: 'test'
+  ...
+# Subtest: local-proof wrong worker leaves durable zero batches/rows
+ok 7 - local-proof wrong worker leaves durable zero batches/rows
+  ---
+  duration_ms: 186.5626
+  type: 'test'
+  ...
+# Subtest: local-proof missing tenant literal remains rejected by unchanged real handler
+ok 8 - local-proof missing tenant literal remains rejected by unchanged real handler
+  ---
+  duration_ms: 190.577
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof actor admission requires exact manager and inert bounded tenant string
+ok 9 - hosted-railway-proof actor admission requires exact manager and inert bounded tenant string
+  ---
+  duration_ms: 18.2223
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof JSON literal protects metacharacters without evaluating a shell
+ok 10 - hosted-railway-proof JSON literal protects metacharacters without evaluating a shell
+  ---
+  duration_ms: 5.7471
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+ok 11 - hosted-railway-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+  ---
+  duration_ms: 205.0685
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof cross-tenant submitted body cannot import or activate
+ok 12 - hosted-railway-proof cross-tenant submitted body cannot import or activate
+  ---
+  duration_ms: 177.6438
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof wrong worker leaves durable zero batches/rows
+ok 13 - hosted-railway-proof wrong worker leaves durable zero batches/rows
+  ---
+  duration_ms: 185.1115
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof missing tenant literal remains rejected by unchanged real handler
+ok 14 - hosted-railway-proof missing tenant literal remains rejected by unchanged real handler
+  ---
+  duration_ms: 176.3883
+  type: 'test'
+  ...
+# Subtest: persisted manager demotion and session expiry are authoritative for manager routes
+ok 15 - persisted manager demotion and session expiry are authoritative for manager routes
+  ---
+  duration_ms: 200.397
+  type: 'test'
+  ...
+# Subtest: worker key remains global trusted attestation and malformed array coercion is explicitly unchanged
+ok 16 - worker key remains global trusted attestation and malformed array coercion is explicitly unchanged
+  ---
+  duration_ms: 202.1607
+  type: 'test'
+  ...
+# Subtest: inherited hosted-login source blocker is before delegated server listener, not an auth bypass
+ok 17 - inherited hosted-login source blocker is before delegated server listener, not an auth bypass
+  ---
+  duration_ms: 0.822
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 16
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2122.5977

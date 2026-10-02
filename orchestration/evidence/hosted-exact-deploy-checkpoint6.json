@@ -1,0 +1,37 @@
+{
+  "observedAt": "2026-10-02 14:10:43 UTC",
+  "readOnly": true,
+  "deployments": [
+    {
+      "id": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-01T23:36:12.677Z",
+      "updatedAt": "2026-10-01T23:37:50.365Z",
+      "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+      "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+      "meta": {
+        "reason": "deploy",
+        "commitMessage": "CircleCI: verify the running application identity\n\nTransparent transport of sole-owner native e87402ab75b890bd849493c973c4204fe5881052, tree 74aba749449f3f4cd68ee385b24637026ea90ec8. Preserve actual remote parent dfeb74eb524fe936516c6b4a8b53ac9f2876e580; do not claim native ancestry. Independently verified 1,094 files/modes and ten changed raw blobs. Retain original HTTP failure, extra-field and leading-zero reproductions; require actual PID1 canonical decimal non-root UIDs and bounded private HTTP diagnostics. No deployment or live-provider authority.",
+        "commitHash": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "branch": "release/vector-customer-ready-candidate-20260925"
+      },
+      "canRollback": true
+    },
+    {
+      "id": "c6eadada-9c49-4525-af57-7088903d2862",
+      "status": "REMOVED",
+      "createdAt": "2026-10-01T23:29:36.623Z",
+      "updatedAt": "2026-10-01T23:37:54.077Z",
+      "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+      "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+      "meta": {
+        "reason": "redeploy",
+        "commitMessage": "CircleCI: verify the running application identity\n\nTransparent transport of sole-owner native e87402ab75b890bd849493c973c4204fe5881052, tree 74aba749449f3f4cd68ee385b24637026ea90ec8. Preserve actual remote parent dfeb74eb524fe936516c6b4a8b53ac9f2876e580; do not claim native ancestry. Independently verified 1,094 files/modes and ten changed raw blobs. Retain original HTTP failure, extra-field and leading-zero reproductions; require actual PID1 canonical decimal non-root UIDs and bounded private HTTP diagnostics. No deployment or live-provider authority.",
+        "commitHash": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "branch": "release/vector-customer-ready-candidate-20260925"
+      },
+      "canRollback": true
+    }
+  ],
+  "customerProof": false
+}

@@ -1,0 +1,44 @@
+{
+  "frozenCommit": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "frozenTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "selectedHistoricalPR239Head": "058ed1e8a86970495b6e851c55585817175d2b24",
+  "paths": [
+    {
+      "path": "src/frontier/agency-worker-passport.mjs",
+      "frozenBlob": null,
+      "pr239Blob": "42cea220003887722fcdc6522f9544eaa7cd3866"
+    },
+    {
+      "path": "src/frontier/agency-operating-system.mjs",
+      "frozenBlob": null,
+      "pr239Blob": "612e0d69d470d9fb6f5dcd207b5d2660fb4c4609"
+    },
+    {
+      "path": "src/frontier/agency-operations-intelligence.mjs",
+      "frozenBlob": null,
+      "pr239Blob": "a9babffdd35cbee66bef64d1f88d7bd30c04639f"
+    },
+    {
+      "path": "src/frontier/agency-decision-ledger.mjs",
+      "frozenBlob": null,
+      "pr239Blob": "9397113fa3bface1375a71c96024cbb1e0d776d2"
+    },
+    {
+      "path": "operations/runtime/frontier-decision-control.cjs",
+      "frozenBlob": null,
+      "pr239Blob": null
+    },
+    {
+      "path": "trust/runtime/proof-carrying-state.cjs",
+      "frozenBlob": null,
+      "pr239Blob": null
+    }
+  ],
+  "currentControls": {
+    "decisionUncertainty2": "REJECTED",
+    "training": "SHADOW_PRACTICE_ONLY_NO_MASTERY",
+    "authorityActorDrift": "ACTOR_MISMATCH_REJECTED"
+  },
+  "historicalImportClosureExecuted": false,
+  "qualifiedSourceComparisonOnly": true
+}

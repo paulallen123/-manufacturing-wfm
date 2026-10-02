@@ -1,0 +1,137 @@
+{
+  "artifacts": [
+    {
+      "file": "workflow-tenant-review.md",
+      "bytes": 3907,
+      "sha256": "f46c0ac0555f761225106ad8809a30e9d09d4adb8dd5752eb889b3c63d697bcf"
+    },
+    {
+      "file": "workflow-tenant-findings.json",
+      "bytes": 13257,
+      "sha256": "d459b89700810677baddec487271cb8e5eb162edab26733d4799f5c7c39356f0"
+    },
+    {
+      "file": "workflow-tenant-original-custody.json",
+      "bytes": 11801,
+      "sha256": "31de3d040c51a508fb9da3b577a3aae8445d465132756109e286f8de10d38592"
+    },
+    {
+      "file": "workflow-tenant-final-identities.json",
+      "bytes": 12928,
+      "sha256": "b38ce0ac2b0da3ce55e83741324f26ad618994b7745946ae1136f63d93fc7f8e"
+    },
+    {
+      "file": "workflow-tenant-heldouts.cjs",
+      "bytes": 10298,
+      "sha256": "acb8145388073e544c404bddb5d87243d725f3b44dc8767df0335def1b550f2a"
+    },
+    {
+      "file": "workflow-tenant-heldouts.initial-powershell.tap",
+      "bytes": 10652,
+      "sha256": "b759419a1b319acb874d16ed575791a69d02e82aedad3f6c665f0224efe72a47"
+    },
+    {
+      "file": "workflow-tenant-heldouts.original.receipt.json",
+      "bytes": 647,
+      "sha256": "d331afbeac0218fcaf6309a342d4036776af6c28014d78f3575716ef13adf5e6"
+    },
+    {
+      "file": "workflow-tenant-original-adjacent.tap",
+      "bytes": 8010,
+      "sha256": "4c14cbf0aeb57b422ccb367983690f9d53e82b16149430d8941965ca806ff07a"
+    },
+    {
+      "file": "workflow-tenant-original-adjacent.receipt.json",
+      "bytes": 991,
+      "sha256": "a2161b6d83b430e9198282333bf6a385b8edf582736c64f8c88afca6c2f85808"
+    },
+    {
+      "file": "workflow-tenant-final-heldouts.tap",
+      "bytes": 4261,
+      "sha256": "bb89d8867e51c215c38a44435bccec130d6ad53bf5a31cb03b4e2bebbe61d309"
+    },
+    {
+      "file": "workflow-tenant-final-heldouts.receipt.json",
+      "bytes": 2036,
+      "sha256": "b8a1bd5f1013afafcf33e003520d1ef60e8dac17ee02f1844cba5ce3c7dc12fa"
+    },
+    {
+      "file": "workflow-tenant-final-adjacent.tap",
+      "bytes": 8250,
+      "sha256": "cc972f65da5c34a6c8edf496b61df73ef81d1a6f2b1ab5997b6e90eb1a73dea8"
+    },
+    {
+      "file": "workflow-tenant-final-adjacent.receipt.json",
+      "bytes": 2112,
+      "sha256": "05bb7830312d4d3a1d8a476ecb46e055da777dfff37b66f7ba45a948da2ec3f3"
+    },
+    {
+      "file": "workflow-tenant-url.red.test.cjs",
+      "bytes": 1258,
+      "sha256": "e49a36a2819037ab1fcbddec4abd5726d8f3872ca46bd2b280aa41b2661e7920"
+    },
+    {
+      "file": "workflow-tenant-url.red-direct.tap",
+      "bytes": 1509,
+      "sha256": "3df8eb295239a918e56679fb3062e3de0888c6e0bfe54ffa79c17d3140619d52"
+    },
+    {
+      "file": "workflow-tenant-url.red.tap",
+      "bytes": 3102,
+      "sha256": "b1ad8529282291ba716d84493ee7e6249e49219b466cac07fffbadcab84fa202"
+    },
+    {
+      "file": "workflow-tenant-url.red-seal.json",
+      "bytes": 2498,
+      "sha256": "bed39d7b4cae5724f37e94ee44781e241e77aa6890c073c96d5dda6644a9e264"
+    },
+    {
+      "file": "workflow-tenant-capture.cjs",
+      "bytes": 2510,
+      "sha256": "082303df5c8280e0356859ba3cae9d838b4d8c3b2a1f34dbe55fe9a998fea3af"
+    },
+    {
+      "file": "workflow-tenant-review-runner.cjs",
+      "bytes": 2271,
+      "sha256": "6c5520d9cad4f6e7f6a38a276a98a9c78f98452431f7beb7e2800da7c4a8b2de"
+    },
+    {
+      "file": "workflow-tenant-final-runner.cjs",
+      "bytes": 4013,
+      "sha256": "ad1361ebfc3b784a4a152aaa38f3cf6507f83ce70f9677e970319a2a0dd81547"
+    },
+    {
+      "file": "workflow-tenant-seal.cjs",
+      "bytes": 9891,
+      "sha256": "acce5f017f63c625c025b0a57350bddbcba082ef8da6eedfea576123ce155b21"
+    }
+  ],
+  "shipping": [
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17879,
+      "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+      "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "frozenPreimageBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "reviewedPreimageBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "owner": "lane03/inventory_edges"
+    },
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.test.cjs",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 14371,
+      "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+      "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "frozenPreimageBlob": null,
+      "reviewedPreimageBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "owner": "lane03/inventory_edges"
+    }
+  ],
+  "ownerOriginalSeal": "d5e9c797728195fb669de40744c7f22d7ca8ebc5a422f3143d0cda0168a50888",
+  "ownerSuccessorSeal": "a841311231287f9e636304e0713f6d8a1fd8fdd20c943a38bc88e1d54941f675",
+  "broadState": "IN_PROGRESS",
+  "wholeWorkflowState": "BLOCKED_BEFORE_TENANT_BINDING"
+}

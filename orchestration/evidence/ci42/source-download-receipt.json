@@ -1,0 +1,10 @@
+{
+  "requestedUrl": "https://output.circle-artifacts.com/output/job/b095799b-a0a4-4406-b635-219dbd4e358e/artifacts/0/forge-runtime-proof/source-sha.txt",
+  "finalUrl": "https://app.circleci.com/private/output/job/b095799b-a0a4-4406-b635-219dbd4e358e/artifacts/0/forge-runtime-proof/source-sha.txt",
+  "status": 404,
+  "contentType": "application/json; charset=utf-8",
+  "bytes": 23,
+  "sha256": "aef2ed8a2ebaf652f0f07cf0c47ece26e78c0f712ecb47ce91f2b53530173a79",
+  "sentBrowserCredentials": false,
+  "sourceShaMatched": false
+}

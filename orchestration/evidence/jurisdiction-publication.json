@@ -1,0 +1,21 @@
+{
+  "branch": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
+  "sha": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+  "tree": "3f44cc755935987fd31dc5669875f44bbe39ac37",
+  "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "verifiedTotalBlobs": 1213,
+  "originalFrozenPathsRetained": 1094,
+  "frozenBlobsUnchanged": 1086,
+  "approvedExistingOwnerModifications": 8,
+  "verifiedAdditions": 119,
+  "shippingPaths": 10,
+  "dependencyAdditions": 2,
+  "existingCapability": "product-058",
+  "recursiveUntruncated": true,
+  "readbackVerified": true,
+  "independentHeldOut": 59,
+  "independentAffected": 40,
+  "runtimeWired": false,
+  "customerProof": false,
+  "legalAuthenticity": false
+}

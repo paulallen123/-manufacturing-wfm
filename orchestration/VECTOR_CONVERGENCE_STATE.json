@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T13:01:11.386Z",
+  "updatedAt": "2026-10-02T14:13:35.489Z",
   "programmeStatus": "RUNNING",
   "completionClaim": false,
   "phase": "Protect current proof candidate; repair blockers; inventory and isolated future ports",
@@ -33,101 +33,71 @@
   },
   "reviewCandidate": {
     "branch": "review/staffology-customer-proof-20261001",
-    "commit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-    "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
-    "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-    "verified": true,
-    "shipping": [
-      {
-        "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
-        "blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
-        "mode": "100644"
-      },
-      {
-        "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
-        "blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
-        "mode": "100644"
-      }
-    ],
-    "parentUnchanged": 1106,
-    "fullTreeBlobs": 1108,
-    "priorProof03Preserved": true,
-    "allStaffologyPreserved": true,
-    "triggerChanged": false,
+    "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+    "commit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+    "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+    "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
     "sourceAdmitted": true,
+    "admitted": false,
     "wholeRuntimeAdmission": false,
-    "affected": {
-      "pass": 126,
-      "total": 126,
-      "skip": 0,
-      "scope": "Local Windows actual9-suites"
+    "fullTreeBlobs": 1109,
+    "actualDeltaPaths": 19,
+    "sourceRepairsChanged": 17,
+    "selectedAlreadyIdentical": 1,
+    "parentUnchanged": 1090,
+    "mandatoryProofBlobsPreserved": 6,
+    "triggerChanged": true,
+    "triggerPurpose": "Exact non-deploy source/runtime CI on actual CIRCLE_SHA1",
+    "local": {
+      "source": {
+        "tests": 159,
+        "pass": 159,
+        "skip": 0,
+        "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
+      },
+      "persistence": {
+        "tests": 1,
+        "pass": 1,
+        "skip": 0,
+        "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
+      },
+      "fullHttp": {
+        "tests": 1,
+        "pass": 1,
+        "skip": 0,
+        "mockRequests": 14,
+        "externalRequests": 0,
+        "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
+      },
+      "supportedPackaging": {
+        "tests": 8,
+        "pass": 8,
+        "skip": 0,
+        "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
+      },
+      "initialBroadPackaging": {
+        "tests": 14,
+        "pass": 8,
+        "fail": 6,
+        "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
+      }
     },
-    "independent": {
-      "pass": 16,
-      "total": 16,
-      "skip": 0,
-      "scope": "Retained actual handler/SQLite held-outs"
+    "independentComposition": {
+      "verified": true,
+      "evidence": "orchestration/evidence/staffology-composition-review.md"
     },
-    "reviewReportSha256": "8a7c50ed62142e2ad20d1221b5f34dd9d811a064583b8871b48e4897ed189568",
+    "previousAdmission": {
+      "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "tree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+      "parent": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "evidence": "Historical checkpoint5 commit28f964f733dad532d7cce6838b3e833749b94422; retained current-admission repair receipts"
+    },
+    "native8690Custody": "OPEN",
+    "hostedProof": false,
+    "customerProof": false,
     "provenBaseSha": null,
     "convergenceBaseSha": null,
-    "publishedAt": "2026-10-02T12:59:49.727Z",
-    "sha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-    "admitted": false,
-    "claim": "Only mandatory2 currentconfiguration/strictstoredreceipt source repaired and admitted; Staffology/LinuxDocker/backend/hosted/customer holds remain",
-    "previousAdmission": {
-      "branch": "review/staffology-customer-proof-20261001",
-      "commit": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-      "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
-      "parent": "d387d5300f2de0906d8ea459e1bac610128236d9",
-      "verified": true,
-      "shipping": [
-        {
-          "path": "scripts/current-candidate-role-browser-proof-server.mjs",
-          "mode": "100644",
-          "blob": "3337ec236e64df9552f881fd5be40132f9794646",
-          "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9"
-        },
-        {
-          "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
-          "mode": "100644",
-          "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
-          "preimageBlob": null
-        },
-        {
-          "path": "scripts/run-forge-ci.mjs",
-          "mode": "100644",
-          "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
-          "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49"
-        }
-      ],
-      "parentUnchanged": 1105,
-      "fullTreeBlobs": 1108,
-      "priorProof03Preserved": true,
-      "allStaffologyPreserved": true,
-      "triggerChanged": false,
-      "sourceAdmitted": true,
-      "wholeRuntimeAdmission": false,
-      "affected": {
-        "pass": 113,
-        "total": 113,
-        "skip": 0,
-        "scope": "Local Windows"
-      },
-      "independent": {
-        "pass": 33,
-        "total": 33,
-        "regression": 4,
-        "scope": "Independent loopback/CI-control checks"
-      },
-      "reviewReportSha256": "5e1dc690f42596f73a281475dbe7140e34a2337b779abb7ed7415e0fc28eb663",
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "publishedAt": "2026-10-02T11:41:19.678Z",
-      "sha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-      "admitted": false,
-      "claim": "Only mandatory proof03+proof-runner source repairs admitted; Staffology/container/hosted/customer admission held"
-    }
+    "claim": "Exact source admitted; local synthetic checks passed and actual Linux CI jobs executed successfully. RawCI artifact identities pending; deployed/customer gates remain unproven."
   },
   "readiness": {
     "completed": 5,
@@ -138,51 +108,210 @@
     "state": "SLA_MISSED"
   },
   "currentCI": {
-    "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+    "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+    "pipeline": 42,
+    "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
     "statuses": [
       {
-        "context": "ci/circleci: forge_core_validation",
         "state": "success",
-        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/25"
+        "context": "ci/circleci: forge_core_validation",
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/62",
+        "updated_at": "2026-10-02T13:32:32Z"
       },
       {
+        "state": "success",
         "context": "ci/circleci: forge_runtime_validation",
-        "state": "failure",
-        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/26"
+        "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/63",
+        "updated_at": "2026-10-02T13:38:37Z"
       }
     ],
-    "actualRuntimeLog": {
-      "job": 26,
-      "pipeline": 19,
-      "pass": 142,
-      "total": 143,
-      "fail": 1,
-      "skipped": 0,
-      "signature": "acquire-stage403 canonical mapping options",
-      "sha256": "c5ad82ffd7c176bbeba80c4e72e0d928696b00ccb5ab23a2c388fb5bd6db8f3d",
-      "path": "orchestration/evidence/ci19-browser/job26-build.log"
+    "core": {
+      "recordedAt": "2026-10-02 14:10:43 UTC",
+      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "pipeline": 42,
+      "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+      "job": 62,
+      "jobId": "ddc2b142-f603-425b-8573-5dafee10fec7",
+      "status": "Success",
+      "executor": "Docker/Small",
+      "duration": "18s job details / 19s workflow list",
+      "startedAt": "2026-10-02T13:32:11Z",
+      "completedAt": "2026-10-02T13:32:31Z",
+      "steps": [
+        {
+          "name": "Spin up environment",
+          "status": "success",
+          "durationSeconds": 2
+        },
+        {
+          "name": "Preparing environment variables",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Checkout code",
+          "status": "success",
+          "durationSeconds": 1
+        },
+        {
+          "name": "Admit explicit frozen candidate only",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Verify exact Node runtime",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Current FORGE source validation",
+          "status": "success",
+          "durationSeconds": 13
+        },
+        {
+          "name": "Collect source proof receipts",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Uploading artifacts",
+          "status": "success",
+          "durationSeconds": 0
+        }
+      ],
+      "sourceValidationExecutedObserved": true,
+      "rawTestTotalsRetained": false,
+      "rawArtifactsRetained": false,
+      "customerProof": false
     },
-    "currentReviewExecution": "d387 core36/runtime37 green with unchanged trigger; actual runtime UI has only executor/environment/checkout/admit,2s; heavy validation NOT EXECUTED",
-    "haltedReview": {
-      "sha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
-      "core": 50,
-      "runtime": 51,
-      "triggerChanged": false,
-      "heavyExecuted": false,
-      "validationClaim": false,
-      "runtimeUI": {
-        "pipeline": 35,
-        "durationSeconds": 1,
-        "steps": [
-          "Spin up environment",
-          "Preparing environment variables",
-          "Checkout code",
-          "Admit explicit frozen candidate only"
-        ],
-        "actualBuildOrTestsSteps": 0,
-        "observed": true
+    "runtime": {
+      "recordedAt": "2026-10-02T14:06:38.686Z",
+      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "sourceTree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+      "pipeline": 42,
+      "pipelineId": "6a91fbc3-9ecb-40e1-82f4-532ff0e69684",
+      "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+      "job": 63,
+      "jobId": "b095799b-a0a4-4406-b635-219dbd4e358e",
+      "url": "https://app.circleci.com/pipelines/github/paulallen123/-manufacturing-wfm/42/workflows/9aea79bf-b4e7-4a93-a4ea-7276383ce10c/jobs/63",
+      "status": "Success",
+      "executor": "Machine/Linux Medium",
+      "duration": "6m 1s",
+      "steps": [
+        {
+          "name": "Spin up environment",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Preparing environment variables",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Checkout code",
+          "status": "success",
+          "durationSeconds": 1
+        },
+        {
+          "name": "Admit explicit frozen candidate only",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Build exact FORGE runtime candidate",
+          "status": "success",
+          "durationSeconds": 354
+        },
+        {
+          "name": "Verify runtime security boundary",
+          "status": "success",
+          "durationSeconds": 1
+        },
+        {
+          "name": "Prove isolated hosted HTTP boundary",
+          "status": "success",
+          "durationSeconds": 3
+        },
+        {
+          "name": "Capture exact runtime proof",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Clean up proof container",
+          "status": "success",
+          "durationSeconds": 0
+        },
+        {
+          "name": "Uploading artifacts",
+          "status": "success",
+          "durationSeconds": 0
+        }
+      ],
+      "startedAt": "2026-10-02T13:32:32Z",
+      "buildStartedAt": "2026-10-02T13:32:36Z",
+      "buildCompletedAt": "2026-10-02T13:38:30Z",
+      "completedAt": "2026-10-02T13:38:36Z",
+      "heavyExecutionObserved": true,
+      "rawBuildLogRetained": false,
+      "rawArtifactsRetained": false,
+      "artifactDownloadBlocked": true,
+      "claim": "Actual CI execution and step success observed in authenticated UI; source/image/runtime/proof artifact hashes remain unretained and independently unverified. This isolated container check is not deployed customer proof.",
+      "customerProof": false,
+      "hostedCandidateChanged": false
+    },
+    "rawArtifactCustody": "PENDING_AUTHORIZED_READER; original404 body is failed download evidence only",
+    "imageDigest": null,
+    "containerRuntimeIdentity": null,
+    "customerProof": false,
+    "historicalExecutions": {
+      "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+      "statuses": [
+        {
+          "context": "ci/circleci: forge_core_validation",
+          "state": "success",
+          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/25"
+        },
+        {
+          "context": "ci/circleci: forge_runtime_validation",
+          "state": "failure",
+          "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/26"
+        }
+      ],
+      "actualRuntimeLog": {
+        "job": 26,
+        "pipeline": 19,
+        "pass": 142,
+        "total": 143,
+        "fail": 1,
+        "skipped": 0,
+        "signature": "acquire-stage403 canonical mapping options",
+        "sha256": "c5ad82ffd7c176bbeba80c4e72e0d928696b00ccb5ab23a2c388fb5bd6db8f3d",
+        "path": "orchestration/evidence/ci19-browser/job26-build.log"
       },
-      "logDownloaded": false
+      "currentReviewExecution": "d387 core36/runtime37 green with unchanged trigger; actual runtime UI has only executor/environment/checkout/admit,2s; heavy validation NOT EXECUTED",
+      "haltedReview": {
+        "sha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+        "core": 50,
+        "runtime": 51,
+        "triggerChanged": false,
+        "heavyExecuted": false,
+        "validationClaim": false,
+        "runtimeUI": {
+          "pipeline": 35,
+          "durationSeconds": 1,
+          "steps": [
+            "Spin up environment",
+            "Preparing environment variables",
+            "Checkout code",
+            "Admit explicit frozen candidate only"
+          ],
+          "actualBuildOrTestsSteps": 0,
+          "observed": true
+        },
+        "logDownloaded": false
+      }
     }
   },
   "lanes": [
@@ -192,7 +321,7 @@
       "owner": "inventory_product isolated canonical Twin projection port",
       "status": "ISOLATED_SOURCE_REVIEWED",
       "lock": "orchestration/lanes/01/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Exact repaired Twin head published; canonical shared helper sole Lane01 owner; runtime admission pending"
+      "activeTask": "Reviewed isolated Twin/helper source published; current runtime admission pending"
     },
     {
       "id": "02",
@@ -200,7 +329,7 @@
       "owner": "inventory_product sole isolated country/site display projection",
       "status": "ACTIVE_REPAIR",
       "lock": "orchestration/lanes/02/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Exact reviewed Country projection published; canonical policy authority unchanged; runtime admission pending"
+      "activeTask": "Jurisdiction8-existing-owner repair published2678d1c3 future only; policy evidence/runtime admission pending"
     },
     {
       "id": "03",
@@ -208,7 +337,7 @@
       "owner": "Existing Staffology source owner; inventory_edges owns disjoint future fabric-helper port",
       "status": "ACTIVE",
       "lock": "orchestration/lanes/03/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Staffology source-task access/TR09B/TR12 holds; reviewed retry and Fabric ports isolated/unwired"
+      "activeTask": "Current d4ff source/local/CI execution complete; retain CI artifacts and authorize exact hosted/customer test. Future workflow component reviewed, wholeworkflow login410 blocked"
     },
     {
       "id": "04",
@@ -216,7 +345,7 @@
       "owner": "Commander assigned canonical domain; no duplicate worker",
       "status": "INVENTORIED_NOT_IMPLEMENTING",
       "lock": "orchestration/lanes/04/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Deep Planner/Enterprise/Autopilot archaeology against exact frozen owners"
+      "activeTask": "Same existing product owner repairing actual10 frozen boundary reds in isolated future source"
     },
     {
       "id": "05",
@@ -224,7 +353,7 @@
       "owner": "Root review-lineage admission; no duplicate implementation owner",
       "status": "MANDATORY_REPAIR_SOURCE_ADMITTED",
       "lock": "orchestration/lanes/05/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Same bounded owner designs product033 advisory skills-demand gap; canonical mastery/filtering/role owners unchanged"
+      "activeTask": "Current mandatory configuration/strictreceipt repairs preserved; actual hosted21requirements remain pending"
     },
     {
       "id": "06",
@@ -232,7 +361,7 @@
       "owner": "Commander assigned canonical domain; no duplicate worker",
       "status": "INVENTORIED_NOT_IMPLEMENTING",
       "lock": "orchestration/lanes/06/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Native source inventory sealed; historical device-confirmation red/parity refusal retained"
+      "activeTask": "Existing role/mobile source inventory retained; actual customer browser/mobile proof pending"
     },
     {
       "id": "07",
@@ -240,7 +369,7 @@
       "owner": "inventory_edges sole bounded controlled-environment safety port",
       "status": "ACTIVE",
       "lock": "orchestration/lanes/07/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Materials declared-scenario projection43/43 sealed, independent review queued; jurisdiction archaeology23pass and5holds recorded"
+      "activeTask": "Reviewed material declared-scenario component published30b9a665 future only; producer/runtime wiring pending"
     },
     {
       "id": "08",
@@ -248,7 +377,7 @@
       "owner": "inventory_product; design pauses for countryrepair",
       "status": "SOURCE_COMPARISON",
       "lock": "orchestration/lanes/08/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Skills-demand isolated source published0e80f0c1; non-Staffology integration caller archaeology pending sameowner capacity"
+      "activeTask": "Reviewed Value/skills source isolated; no realisedvalue/mastery/customer proof"
     },
     {
       "id": "09",
@@ -256,225 +385,17 @@
       "owner": "trust_review independent reviewer; commander owns release admission",
       "status": "ACTIVE_INDEPENDENT_REVIEW",
       "lock": "orchestration/lanes/09/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Independent exact current mandatory successor review; source custody and materials next; no implementation"
+      "activeTask": "Independent source/closure review complete; current CI artifact custody and Golden Journey start-readiness packet"
     }
   ],
-  "nextAction": "Verify the independently reviewed DERIVED_PATCH_TREE d689 content proposal and retained recovery results, then compose only justified mandatory repairs onto the freshly verified current review6c8a9718 while preserving six proof blobs.",
+  "nextAction": "Retain and hash the exact Pipeline42 jobs62/63 artifacts using the approved CircleCI reader, then verify source/image/runtime identities against d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd and complete the hosted Golden Journey authorization packet.",
   "promotionRule": "Only exact current customer proof establishes PROVEN_BASE_SHA and then convergence/vector-next. Historic branches supply capability, not ancestry.",
   "sourceOwnerLatest": {
-    "nativeCommit": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
-    "nativeParent": "db041fe7f9c0bddbf53e637184548285849e5f74",
-    "expectedTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
-    "actualTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
-    "fullTreeMatches": true,
-    "files": 1107,
-    "changedFrom935": 20,
-    "verifiedAllTrackedBlobBytes": true,
-    "baseSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
-    "patchSha256": "7898d7131f0d6805e28c66e4c22abde2aa916058af7e661b8c00f4edf9a90a82",
-    "status": "EXACT_TREE_REVIEWED; TR-09B/TR-12 P2 OPEN; new bounded follow-up PREPARED_NOT_SUBMITTED",
     "taskURL": "https://chatgpt.com/codex/cloud/tasks/task_e_6abe6bda82608327ae169f2d17c39f94",
-    "priorFollowupAcceptance": "CONFIRMED_COMPLETED; bf9 owner output recovered",
-    "followupAcceptance": "STAGED_SUBMISSION_ATTEMPTED_UNCONFIRMED",
-    "followupRequest": "orchestration/evidence/staffology-bf9-followup.txt",
-    "tests": {
-      "source": {
-        "scope": "source",
-        "label": "source",
-        "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
-        "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
-        "runtime": "v22.23.2",
-        "platform": "win32",
-        "startedAt": "2026-10-02T10:32:08.859Z",
-        "completedAt": "2026-10-02T10:33:22.442Z",
-        "exitCode": 0,
-        "command": [
-          "--experimental-sqlite",
-          "--require",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
-          "--test",
-          "--test-concurrency=1",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-connector.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-deployment-binding.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-mapping-preflight.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-status.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-production-boundaries.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-runtime-bridge.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\current-authority-recovery-held-out.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\docker-admission-contract.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\generated-provider-preload.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\succession-regressions.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent-boundaries.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5921699729-regressions.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5925613376-regressions.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\sqlite-contract.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-adapter.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-staffology-controls.test.cjs",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-settings-navigation.test.cjs"
-        ],
-        "files": [
-          "integrations/staffology/canonical-operations-connector.test.cjs",
-          "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
-          "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
-          "integrations/staffology/canonical-operations-status.test.cjs",
-          "integrations/staffology/canonical-operations.test.cjs",
-          "integrations/staffology/canonical-production-boundaries.test.cjs",
-          "integrations/staffology/canonical-runtime-bridge.test.cjs",
-          "integrations/staffology/independent/current-authority-recovery-held-out.test.cjs",
-          "integrations/staffology/independent/docker-admission-contract.test.cjs",
-          "integrations/staffology/independent/generated-provider-preload.test.cjs",
-          "integrations/staffology/independent/succession-regressions.test.cjs",
-          "integrations/staffology/independent-boundaries.test.cjs",
-          "integrations/staffology/review-5921699729-regressions.test.cjs",
-          "integrations/staffology/review-5925613376-regressions.test.cjs",
-          "integrations/staffology/sqlite-contract.test.cjs",
-          "integrations/staffology/staffology-adapter.test.cjs",
-          "ux-overlay/vector-staffology-controls.test.cjs",
-          "ux-overlay/vector-settings-navigation.test.cjs"
-        ],
-        "stats": {
-          "tests": 155,
-          "suites": 0,
-          "pass": 155,
-          "fail": 0,
-          "cancelled": 0,
-          "skipped": 0,
-          "todo": 0,
-          "duration_ms": 73405.9817
-        },
-        "evidenceSha256": "b6ca9e20c9e0fc36d3115e1d4e0a7a40903875a79646fee6f0443ccd94d5045b",
-        "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
-      },
-      "persistence": {
-        "scope": "persistence",
-        "label": "persistence",
-        "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
-        "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
-        "runtime": "v22.23.2",
-        "platform": "win32",
-        "startedAt": "2026-10-02T10:32:08.825Z",
-        "completedAt": "2026-10-02T10:32:51.136Z",
-        "exitCode": 0,
-        "command": [
-          "--experimental-sqlite",
-          "--require",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
-          "--test",
-          "--test-concurrency=1",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-employee-persistence.test.cjs"
-        ],
-        "files": [
-          "integrations/staffology/staffology-employee-persistence.test.cjs"
-        ],
-        "stats": {
-          "tests": 1,
-          "suites": 0,
-          "pass": 1,
-          "fail": 0,
-          "cancelled": 0,
-          "skipped": 0,
-          "todo": 0,
-          "duration_ms": 41970.5436
-        },
-        "evidenceSha256": "0c5e3566c9d948882d5492b212efb5442844f1cda5d34b04ea9181978ceb1f36",
-        "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
-      },
-      "full-http": {
-        "scope": "full-http",
-        "label": "full-http",
-        "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
-        "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
-        "runtime": "v22.23.2",
-        "platform": "win32",
-        "startedAt": "2026-10-02T10:31:23.278Z",
-        "completedAt": "2026-10-02T10:31:37.477Z",
-        "exitCode": 1,
-        "command": [
-          "--experimental-sqlite",
-          "--test",
-          "--test-concurrency=1",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
-        ],
-        "files": [
-          "integrations/staffology/independent/full-http-employee-journey.test.cjs"
-        ],
-        "stats": {
-          "tests": 1,
-          "suites": 0,
-          "pass": 0,
-          "fail": 1,
-          "cancelled": 0,
-          "skipped": 0,
-          "todo": 0,
-          "duration_ms": 14065.1316
-        },
-        "evidenceSha256": "12fb41b5db08322e40f1c931d54803165ba1bf7677486bb8d7735e97d3e25813",
-        "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
-      },
-      "full-http-confirmation": {
-        "scope": "full-http",
-        "label": "full-http-confirmation",
-        "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
-        "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
-        "runtime": "v22.23.2",
-        "platform": "win32",
-        "startedAt": "2026-10-02T10:34:49.309Z",
-        "completedAt": "2026-10-02T10:35:11.651Z",
-        "exitCode": 0,
-        "command": [
-          "--experimental-sqlite",
-          "--test",
-          "--test-concurrency=1",
-          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
-        ],
-        "files": [
-          "integrations/staffology/independent/full-http-employee-journey.test.cjs"
-        ],
-        "stats": {
-          "tests": 1,
-          "suites": 0,
-          "pass": 1,
-          "fail": 0,
-          "cancelled": 0,
-          "skipped": 0,
-          "todo": 0,
-          "duration_ms": 22189.3069
-        },
-        "evidenceSha256": "8a6d259cd7bd11ec3d5fa358aa35e9638e4365ecaf4e35bf3a86066b47d292d4",
-        "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
-      }
-    },
-    "fullHTTPStatus": "First local startup timeout retained; unchanged parent-observed rerun and plain serial confirmation1/1 PASS; local simulation only",
-    "independentReview": {
-      "originalBehavior": {
-        "pass": 10,
-        "total": 10
-      },
-      "expandedRecovery": {
-        "pass": 11,
-        "total": 13,
-        "originalSubset": {
-          "pass": 10,
-          "total": 10
-        },
-        "newCases": {
-          "pass": 1,
-          "total": 3
-        }
-      },
-      "uiStatic": {
-        "pass": 4,
-        "total": 4
-      },
-      "openMaterial": [
-        "TR-09B",
-        "TR-12"
-      ],
-      "evidence": "orchestration/evidence/native-bf9-review.md"
-    },
-    "publicationAdmitted": false,
-    "currentTransportParent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+    "implementationOwner": "SAME existing Staffology owner task",
+    "publisher": "root coordinator only",
+    "followupAcceptance": "CONFIRMED_ACCEPTED_AND_COMPLETED; do not resend",
+    "currentTransportParent": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
     "preserveSixProofBlobs": [
       {
         "path": "implementation/runtime/readiness-evidence-contract.cjs",
@@ -507,47 +428,86 @@
         "mode": "100644"
       }
     ],
-    "followupState": "ACCEPTED_AND_COMPLETED_VISIBLE",
-    "latestDeclaredNativeSha": "8690a0bf9b025b6574b410c27cb9a01409fa10c7",
-    "latestDeclaredNativeTree": "087687aefaa19e657dcbb40766c0eca277dcf1b0",
-    "latestDeclaredNativeParent": "81f5ccbeef8fe8c0c039c3c052a3170b2350c2b3",
-    "latestSourceAdmission": "HELD_SOURCE_BINDING_MISMATCH",
-    "patchMeasuredBytes": 621117,
-    "reconstructedTree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
-    "rawCommitVerified": true,
-    "latestAllSourceVerified": false,
-    "latestTestsIndependentlyExecuted": false,
-    "noResend": true,
-    "derivedContentProposal": {
+    "historicalBf9": {
+      "nativeCommit": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+      "tree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+      "patchSha256": "a26d115848867a9b773068dbb09aa8579c2df8faa43d470462568c451874cf82",
+      "exactSourceVerified": true,
+      "sourceTests": 155,
+      "persistenceTests": 1,
+      "fullHttpTests": 1,
+      "syntheticOnly": true,
+      "knownRecoveryReds": "TR09B/TR12 retained; not final current source",
+      "patchHashQualification": "Hash from retained originalbf9 record; inspect exact original receipt before asserting it"
+    },
+    "native8690": {
+      "nativeCommit": "8690a0bf9b025b6574b410c27cb9a01409fa10c7",
+      "parent": "81f5ccbeef8fe8c0c039c3c052a3170b2350c2b3",
+      "expectedTree": "087687aefaa19e657dcbb40766c0eca277dcf1b0",
+      "rawCommitVerified": true,
+      "rawCommitBytes": 238,
+      "rawCommitSha256": "72f0a92d1254aa65db9f41757197ad7feffb2a03f028a8e3e53b3a333ea796d9",
+      "copiedPatchSha256": "7898d7131f0d6805e28c66e4c22abde2aa916058af7e661b8c00f4edf9a90a82",
+      "copiedPatchBytes": 621117,
+      "reconstructedCopiedPatchTree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
+      "fullNativeSourceCustody": "OPEN",
+      "latestOwner76Tests": "OWNER_DECLARED; not independently exact-native bound",
+      "noNativeAncestryClaim": true
+    },
+    "derivedContent": {
       "tree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
-      "classification": "DERIVED_PATCH_TREE",
-      "status": "INDEPENDENT_CONTENT_REVIEW_ACTIVE",
       "baseContentSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
-      "nativeCommitAssertion": null,
-      "fullBlobCount": 1107,
+      "classification": "DERIVED_PATCH_TREE",
+      "fullBlobs": 1107,
+      "independent": {
+        "behavior": 10,
+        "recovery": 13,
+        "ui": 5,
+        "affected": 81
+      },
+      "review": "orchestration/evidence/staffology-derived-review.md",
+      "admittedSelectedContentTo": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
       "noWholeTreeTransport": true,
-      "latest8690CustodyStillOpen": true
+      "noNativeCommitAssertion": true
+    },
+    "currentTransparentComposition": {
+      "branch": "review/staffology-customer-proof-20261001",
+      "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+      "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+      "verifiedBlobs": 1109,
+      "actualDelta": 19,
+      "sourceRepairsChanged": 17,
+      "sourceSelectedAlreadyIdentical": 1,
+      "preservedOtherParentBlobs": 1090,
+      "preservedMandatoryProofBlobs": 6,
+      "nonforce": true,
+      "recursiveUntruncated": true,
+      "readbackVerified": true,
+      "independentCompositionVerified": true,
+      "sourceTests": 159,
+      "persistenceTests": 1,
+      "fullHttpTests": 1,
+      "supportedPackagingTests": 8,
+      "initialBroadPackaging": {
+        "tests": 14,
+        "pass": 8,
+        "fail": 6,
+        "qualification": "Windows POSIX PATH/unavailable bash and initial blanket network guard; retained"
+      },
+      "native8690Custody": "OPEN",
+      "linuxDockerProof": "ACTUAL_JOB63_SUCCESS_OBSERVED; RAW_ARTIFACT_CUSTODY_PENDING",
+      "customerProof": false,
+      "sealCheckCorrection": "Initial expected evidence-index filename incorrect; read-only verification corrected actualreview-index path after branch update. Allthree seals now checked; initial error retained in tool history.",
+      "hostedProof": false
     }
   },
   "futureSourceBranches": [
     {
+      "receiptPath": "orchestration/evidence/twin-repair-publication.json",
       "branch": "feature/vector-lane01-twin-projections-20261002",
-      "sha": "f68dff51c655da9fb68c7064c08e384a217b5314",
-      "tree": "071403827320c6afc7301479d9c2d7250b82585b",
-      "parents": [
-        "f68dff51c655da9fb68c7064c08e384a217b5314"
-      ],
-      "baseBlobsUnchanged": 1094,
-      "shippingPaths": 2,
-      "shippingBytes": 28606,
-      "totalAddedPaths": 39,
-      "totalTreeBlobs": 1133,
-      "tests": {
-        "mapped": 22,
-        "independentHeldOuts": 12
-      },
-      "runtimeCallerIntegrated": false,
       "commit": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+      "tree": "071403827320c6afc7301479d9c2d7250b82585b",
       "parent": "f68dff51c655da9fb68c7064c08e384a217b5314",
       "verified": true,
       "frozenPreserved": 1094,
@@ -573,32 +533,20 @@
       "provenBaseSha": null,
       "convergenceBaseSha": null,
       "publishedAt": "2026-10-02T11:22:05.627Z",
+      "sha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+      "parents": [
+        "f68dff51c655da9fb68c7064c08e384a217b5314"
+      ],
+      "totalTreeBlobs": 1182,
       "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
-      "proofBoundary": "Isolated reviewed source only; runtime/hosted/customer unproven"
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
     },
     {
-      "branch": "feature/vector-lane03-integration-authority-20261002",
-      "sha": "462d1b68b2adc2258750209a87d1895155c54f35",
-      "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "baseBlobsUnchanged": 1092,
-      "allowedBaseModifications": 2,
-      "shippingPaths": 53,
-      "shippingBytes": 616346,
-      "totalAddedPaths": 105,
-      "totalTreeBlobs": 1199,
-      "tests": {
-        "suite": 546,
-        "expandedProbes": 31,
-        "acadia": 3,
-        "staticCommands": 4
-      },
-      "runtimeCallerIntegrated": false
-    },
-    {
+      "receiptPath": "orchestration/evidence/country-publication.json",
       "branch": "feature/vector-lane02-country-context-20261002",
       "commit": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
       "tree": "9b5df1b5a8945c3b46fc79c5d76832fa67e3ca2a",
@@ -627,16 +575,20 @@
       "provenBaseSha": null,
       "convergenceBaseSha": null,
       "publishedAt": "2026-10-02T11:22:05.655Z",
+      "sha": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
       "parents": [
         "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
       ],
-      "baseBlobsUnchanged": 1094,
-      "runtimeCallerIntegrated": false,
+      "totalTreeBlobs": 1164,
       "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
-      "proofBoundary": "Isolated reviewed source only; runtime/hosted/customer unproven"
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
     },
     {
+      "receiptPath": "orchestration/evidence/retry-publication.json",
       "branch": "feature/vector-lane03-proof-retry-20261002",
       "commit": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
       "tree": "c5c74a207be7cac5c9b23d79e937cc9dd08d1b16",
@@ -667,89 +619,50 @@
         "qualification": "Unchanged frozen Gusto Windows SQLite cleanup EBUSY; reproduced baseline-only, no blanket green."
       },
       "publishedAt": "2026-10-02T11:19:17.441Z",
+      "sha": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
       "parents": [
         "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
       ],
-      "baseBlobsUnchanged": 1094,
-      "runtimeCallerIntegrated": false,
+      "totalTreeBlobs": 1133,
       "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
-      "proofBoundary": "Isolated reviewed source only; runtime/hosted/customer unproven"
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
     },
     {
+      "receiptPath": "orchestration/evidence/cleanroom-followup-publication.json",
       "branch": "feature/vector-lane07-cleanroom-safety-20261002",
       "commit": "62e6931137fa931816752db4b2f8f163332198dc",
-      "parent": "f3322714142c68f39007a25a4dce41729b2f5959",
       "tree": "92813acbbb429bd784835cb104e0496c85e9dee7",
+      "parent": "f3322714142c68f39007a25a4dce41729b2f5959",
       "verified": true,
-      "frozenPreserved": 1094,
-      "manifestPaths": 48,
-      "source": {
-        "tests": 28,
-        "pass": 28,
-        "fail": 0,
-        "skip": 0
-      },
-      "canonical": {
-        "tests": 33,
-        "pass": 33,
-        "fail": 0,
-        "skip": 0
-      },
-      "independent": {
-        "tests": 34,
-        "pass": 34,
-        "fail": 0,
-        "skip": 0
-      },
-      "metricScope": {
-        "noteId": "CLEANROOM-N01",
-        "priority": "P3",
-        "aggregateScope": "ENTRY_ONLY",
-        "observedControlMinutes": "Sum of entry transition controlMinutes only; exits excluded from this aggregate.",
-        "observedControlCost": "Sum of entry transition controlCost only; exits excluded from this aggregate. Unknown entry economics remain null.",
-        "transitionRows": "Entry and exit rows retain individual controlMinutes/controlCost, including null unknown values.",
-        "example": {
-          "entryMinutes": 3,
-          "entryCost": 5,
-          "exitMinutes": 2,
-          "exitCost": 7,
-          "observedControlMinutes": 3,
-          "observedControlCost": 5
-        },
-        "semanticsSourceBlobs": [
-          "6231a401653d5f14410b20e29f5060b103954dcd",
-          "95f92f92d2b3f3a447259810aae315193bc1945f"
-        ],
-        "exclusions": [
-          "Total movement time or cost",
-          "Financial or realised savings proof",
-          "Customer proof",
-          "Sterility/contamination or quality proof"
-        ],
-        "callerAdmission": "PENDING; any caller/UI must explicitly convey entry-only scope before using these generic output names."
-      },
-      "runtimeWired": false,
-      "provenBaseSha": null,
-      "convergenceBaseSha": null,
-      "publishedAt": "2026-10-02T11:39:27.667Z",
-      "parents": [
-        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
-      ],
-      "baseBlobsUnchanged": 1094,
-      "runtimeCallerIntegrated": false,
-      "componentState": "TESTED",
-      "broadState": "IN_PROGRESS",
-      "proofBoundary": "Isolated reviewed source only; runtime/hosted/customer unproven",
       "coordinationOnly": true,
       "shippingChanges": 0,
       "priorSourceTestsReused": 28,
       "priorIndependentHeldOutReused": 34,
+      "frozenPreserved": 1094,
       "parentUnchanged": 1141,
       "deltaPaths": 7,
-      "priorComponentPublication": "orchestration/evidence/cleanroom-publication.json"
+      "runtimeWired": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "publishedAt": "2026-10-02T11:39:27.667Z",
+      "sha": "62e6931137fa931816752db4b2f8f163332198dc",
+      "parents": [
+        "f3322714142c68f39007a25a4dce41729b2f5959"
+      ],
+      "totalTreeBlobs": 1148,
+      "componentState": "TESTED",
+      "broadState": "IN_PROGRESS",
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
     },
     {
+      "receiptPath": "orchestration/evidence/value-publication.json",
       "branch": "feature/vector-lane08-value-projection-20261002",
       "commit": "0e752bc01ff134d67360768bc69b1b12951faac9",
       "tree": "8abb0e12930b908420eae63f94b1596e31035f37",
@@ -780,11 +693,20 @@
       "provenBaseSha": null,
       "convergenceBaseSha": null,
       "publishedAt": "2026-10-02T11:44:15.736Z",
+      "sha": "0e752bc01ff134d67360768bc69b1b12951faac9",
+      "parents": [
+        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      ],
+      "totalTreeBlobs": 1159,
       "componentState": "TESTED",
       "broadState": "IN_PROGRESS",
-      "runtimeCallerIntegrated": false
+      "runtimeCallerIntegrated": false,
+      "customerProof": false,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
     },
     {
+      "receiptPath": "orchestration/evidence/skills-demand-publication.json",
       "schemaVersion": 1,
       "at": "2026-10-02T12:29:26.224Z",
       "branch": "feature/vector-lane08-skills-demand-20261002",
@@ -805,7 +727,113 @@
       "customerProof": false,
       "convergenceSha": null,
       "provenBaseSha": null,
-      "runtimeCallerIntegrated": false
+      "sha": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+      "parents": [
+        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      ],
+      "totalTreeBlobs": 1173,
+      "componentState": "TESTED",
+      "broadState": "IN_PROGRESS",
+      "runtimeCallerIntegrated": false,
+      "convergenceBaseSha": null,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
+    },
+    {
+      "receiptPath": "orchestration/evidence/materials-publication.json",
+      "branch": "feature/vector-lane07-materials-projection-20261002",
+      "sha": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+      "tree": "5d9fcd182d72459b4754a1b5625a6a8f816dfe53",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "verifiedFrozenBlobs": 1094,
+      "verifiedAdditions": 99,
+      "verifiedTotalBlobs": 1193,
+      "shippingAdditions": 4,
+      "sourceChanges": 2,
+      "dependencyAdditions": 2,
+      "existingCapability": "product-004",
+      "recursiveUntruncated": true,
+      "readbackVerified": true,
+      "runtimeWired": false,
+      "customerProof": false,
+      "commit": "30b9a6650c10080c9a59ec26f53439cd43a2d7c1",
+      "parents": [
+        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      ],
+      "totalTreeBlobs": 1193,
+      "componentState": "TESTED",
+      "broadState": "IN_PROGRESS",
+      "runtimeCallerIntegrated": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
+    },
+    {
+      "receiptPath": "orchestration/evidence/jurisdiction-publication.json",
+      "branch": "feature/vector-lane02-jurisdiction-boundary-repair-20261002",
+      "sha": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+      "tree": "3f44cc755935987fd31dc5669875f44bbe39ac37",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "verifiedTotalBlobs": 1213,
+      "originalFrozenPathsRetained": 1094,
+      "frozenBlobsUnchanged": 1086,
+      "approvedExistingOwnerModifications": 8,
+      "verifiedAdditions": 119,
+      "shippingPaths": 10,
+      "dependencyAdditions": 2,
+      "existingCapability": "product-058",
+      "recursiveUntruncated": true,
+      "readbackVerified": true,
+      "independentHeldOut": 59,
+      "independentAffected": 40,
+      "runtimeWired": false,
+      "customerProof": false,
+      "legalAuthenticity": false,
+      "commit": "2678d1c3fecc5a6ee6623adec61e5e7e07027f90",
+      "parents": [
+        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      ],
+      "totalTreeBlobs": 1213,
+      "componentState": "TESTED",
+      "broadState": "IN_PROGRESS",
+      "runtimeCallerIntegrated": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
+    },
+    {
+      "receiptPath": "orchestration/evidence/future-lane-publication.json",
+      "branch": "feature/vector-lane03-integration-authority-20261002",
+      "sha": "462d1b68b2adc2258750209a87d1895155c54f35",
+      "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
+      "parents": [
+        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      ],
+      "baseBlobsUnchanged": 1092,
+      "allowedBaseModifications": 2,
+      "shippingPaths": 53,
+      "shippingBytes": 616346,
+      "totalAddedPaths": 105,
+      "totalTreeBlobs": 1199,
+      "tests": {
+        "suite": 546,
+        "expandedProbes": 31,
+        "acadia": 3,
+        "staticCommands": 4
+      },
+      "runtimeCallerIntegrated": false,
+      "commit": "462d1b68b2adc2258750209a87d1895155c54f35",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "componentState": "TESTED",
+      "broadState": "IN_PROGRESS",
+      "runtimeWired": false,
+      "customerProof": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "liveSha": null,
+      "scope": "Isolated future source, not canonical convergence or deployed proof"
     }
   ],
   "freshHostedObservation": {
@@ -1085,6 +1113,27 @@
       "skip": 0,
       "report": "orchestration/evidence/current-admission-revision2-review.md"
     },
-    "historicalFailuresRetained": true
+    "historicalFailuresRetained": true,
+    "currentReviewSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+    "closedSourceSha": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+    "preservedOnCurrentReview": true
+  },
+  "hostedReadOnlyRecheck": {
+    "evidence": "orchestration/evidence/hosted-exact-deploy-checkpoint6.json",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+    "providerConfigValuesRead": false,
+    "hostedMutation": false
+  },
+  "goldenJourneyStartReadiness": {
+    "status": "PREPARING_EXACT_AUTHORIZED_HOSTED_TEST_PACKET",
+    "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+    "servingSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "ciArtifactCustody": "PENDING",
+    "compatibleAuthenticatedBrowserClient": "SOURCE_LOGIN410_DEADEND_UNDER_REUSE_REVIEW",
+    "authorizedCustomerScope": "PENDING_USER_IDENTIFIERS",
+    "hostedDeploymentApproval": "NOT_REQUESTED_BEFORE_CONCRETE_PACKET",
+    "customerProof": false,
+    "user30MinuteRequest": "Focus clearing start blockers; no completion ETA claimed"
   }
 }

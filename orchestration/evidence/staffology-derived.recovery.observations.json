@@ -1,0 +1,105 @@
+{
+  "sourceIdentity": {
+    "kind": "DERIVED_PATCH_TREE",
+    "tree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c"
+  },
+  "fixtureCandidateSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+  "node": "v22.23.2",
+  "observations": [
+    {
+      "id": "TR-04",
+      "reusedUnconsumed": true,
+      "expiredRenewed": true,
+      "consumedOnce": true
+    },
+    {
+      "id": "TR-05",
+      "status": "reconciled",
+      "posts": 1,
+      "digestRequiredFromBrowser": false
+    },
+    {
+      "id": "TR-09",
+      "providerPosts": 1,
+      "dispatchApprovalId": "c72fc94d-7a5f-4ddc-94bc-ec8b41829e6d",
+      "responseApprovalId": "c72fc94d-7a5f-4ddc-94bc-ec8b41829e6d",
+      "auditApprovalId": "c72fc94d-7a5f-4ddc-94bc-ec8b41829e6d",
+      "auditMode": "recovery-dispatch"
+    },
+    {
+      "id": "TR-09-MODE",
+      "posts": 1,
+      "auditMode": "recovery-dispatch"
+    },
+    {
+      "id": "TR-09-READONLY",
+      "totalPosts": 1,
+      "recoveryPosts": 0,
+      "approvalId": "313ceb84-a7d1-4ea8-a212-81e46a50825b",
+      "auditMode": "read-only-reconciliation"
+    },
+    {
+      "id": "TR-09-NO-DISPATCH",
+      "response": {
+        "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+        "status": "retryable",
+        "code": "STAFFOLOGY_BASELINE_CHANGED",
+        "reconciled": false,
+        "approvalId": null
+      },
+      "coordinatorResult": {
+        "status": "retryable",
+        "code": "STAFFOLOGY_BASELINE_CHANGED",
+        "dispatchStarted": false,
+        "approvalId": null,
+        "mode": "held-no-dispatch"
+      },
+      "posts": 0,
+      "audit": {
+        "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+        "status": "retryable",
+        "code": "STAFFOLOGY_BASELINE_CHANGED",
+        "approvalId": null,
+        "mode": "held-no-dispatch"
+      },
+      "durableStatus": "uncertain",
+      "durableDispatch": null,
+      "consumedApprovals": 0
+    },
+    {
+      "id": "TR-02-RECOVERY-REJECTED",
+      "response": {
+        "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+        "status": "rejected",
+        "code": "STAFFOLOGY_AUTH_REJECTED",
+        "reconciled": false,
+        "approvalId": "f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3"
+      },
+      "coordinatorResult": {
+        "status": "rejected",
+        "code": "STAFFOLOGY_AUTH_REJECTED",
+        "dispatchStarted": true,
+        "approvalId": "f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3",
+        "mode": "recovery-dispatch"
+      },
+      "durableStatus": "rejected",
+      "posts": 1,
+      "audit": {
+        "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+        "status": "rejected",
+        "code": "STAFFOLOGY_AUTH_REJECTED",
+        "approvalId": "f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3",
+        "mode": "recovery-dispatch"
+      },
+      "dispatchApprovalId": "f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3",
+      "consumedApprovalId": "f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3",
+      "repeatedRecoveryHeld": true
+    },
+    {
+      "id": "TR-08",
+      "virtualRequestElapsed": 209993,
+      "leaseBudget": 240000,
+      "result": "reconciled"
+    }
+  ]
+}

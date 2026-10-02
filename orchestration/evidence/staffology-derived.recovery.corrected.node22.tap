@@ -1,0 +1,98 @@
+﻿TAP version 13
+# (node:10264) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: TR-04: valid unconsumed permit reuses authority; expiry renews without double-consumption
+ok 1 - TR-04: valid unconsumed permit reuses authority; expiry renews without double-consumption
+  ---
+  duration_ms: 8.4176
+  type: 'test'
+  ...
+# {"id":"TR-04","reusedUnconsumed":true,"expiredRenewed":true,"consumedOnce":true}
+# Subtest: TR-04/06: revoked and legacy identity-less authority cannot be reused
+ok 2 - TR-04/06: revoked and legacy identity-less authority cannot be reused
+  ---
+  duration_ms: 1.6149
+  type: 'test'
+  ...
+# Subtest: TR-05 control: operator recovery derives exact intent without browser digest
+ok 3 - TR-05 control: operator recovery derives exact intent without browser digest
+  ---
+  duration_ms: 53.0645
+  type: 'test'
+  ...
+# {"id":"TR-05","status":"reconciled","posts":1,"digestRequiredFromBrowser":false}
+# Subtest: TR-05 negative: mismatching supplied digest blocks recovery at zero provider writes
+ok 4 - TR-05 negative: mismatching supplied digest blocks recovery at zero provider writes
+  ---
+  duration_ms: 5.7509
+  type: 'test'
+  ...
+# Subtest: TR-09: actual pre-dispatch recovery audit retains the newly consumed approval identity
+ok 5 - TR-09: actual pre-dispatch recovery audit retains the newly consumed approval identity
+  ---
+  duration_ms: 20.3686
+  type: 'test'
+  ...
+# {"id":"TR-09","providerPosts":1,"dispatchApprovalId":"c72fc94d-7a5f-4ddc-94bc-ec8b41829e6d","responseApprovalId":"c72fc94d-7a5f-4ddc-94bc-ec8b41829e6d","auditApprovalId":"c72fc94d-7a5f-4ddc-94bc-ec8b41829e6d","auditMode":"recovery-dispatch"}
+# Subtest: TR-09: recovery that performs a POST is not labelled read-only reconciliation
+ok 6 - TR-09: recovery that performs a POST is not labelled read-only reconciliation
+  ---
+  duration_ms: 17.2511
+  type: 'test'
+  ...
+# {"id":"TR-09-MODE","posts":1,"auditMode":"recovery-dispatch"}
+# Subtest: TR-09 held-out control: already dispatched uncertain recovery remains read-only with original consumed approval
+ok 7 - TR-09 held-out control: already dispatched uncertain recovery remains read-only with original consumed approval
+  ---
+  duration_ms: 16.4449
+  type: 'test'
+  ...
+# {"id":"TR-09-READONLY","totalPosts":1,"recoveryPosts":0,"approvalId":"313ceb84-a7d1-4ea8-a212-81e46a50825b","auditMode":"read-only-reconciliation"}
+# Subtest: TR-09 held-out negative: changed baseline with zero recovery POST is not audited as recovery dispatch
+ok 8 - TR-09 held-out negative: changed baseline with zero recovery POST is not audited as recovery dispatch
+  ---
+  duration_ms: 9.3236
+  type: 'test'
+  ...
+# {"id":"TR-09-NO-DISPATCH","response":{"deliveryId":"staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf","status":"retryable","code":"STAFFOLOGY_BASELINE_CHANGED","reconciled":false,"approvalId":null},"coordinatorResult":{"status":"retryable","code":"STAFFOLOGY_BASELINE_CHANGED","dispatchStarted":false,"approvalId":null,"mode":"held-no-dispatch"},"posts":0,"audit":{"deliveryId":"staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf","status":"retryable","code":"STAFFOLOGY_BASELINE_CHANGED","approvalId":null,"mode":"held-no-dispatch"},"durableStatus":"uncertain","durableDispatch":null,"consumedApprovals":0}
+# Subtest: TR-02/09 held-out negative: definitive 403 during resumed dispatch is reported as rejected with dispatch started
+ok 9 - TR-02/09 held-out negative: definitive 403 during resumed dispatch is reported as rejected with dispatch started
+  ---
+  duration_ms: 11.3
+  type: 'test'
+  ...
+# {"id":"TR-02-RECOVERY-REJECTED","response":{"deliveryId":"staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf","status":"rejected","code":"STAFFOLOGY_AUTH_REJECTED","reconciled":false,"approvalId":"f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3"},"coordinatorResult":{"status":"rejected","code":"STAFFOLOGY_AUTH_REJECTED","dispatchStarted":true,"approvalId":"f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3","mode":"recovery-dispatch"},"durableStatus":"rejected","posts":1,"audit":{"deliveryId":"staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf","status":"rejected","code":"STAFFOLOGY_AUTH_REJECTED","approvalId":"f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3","mode":"recovery-dispatch"},"dispatchApprovalId":"f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3","consumedApprovalId":"f1c5f1dc-7d08-4bfa-aa1b-d30a550645c3","repeatedRecoveryHeld":true}
+# Subtest: TR-08: seven near-deadline requests fit bounded lease
+ok 10 - TR-08: seven near-deadline requests fit bounded lease
+  ---
+  duration_ms: 12.4047
+  type: 'test'
+  ...
+# {"id":"TR-08","virtualRequestElapsed":209993,"leaseBudget":240000,"result":"reconciled"}
+# Subtest: TR-08 negative: genuinely expired owner cannot dispatch after provider reads
+ok 11 - TR-08 negative: genuinely expired owner cannot dispatch after provider reads
+  ---
+  duration_ms: 2.6619
+  type: 'test'
+  ...
+# Subtest: TR-01 negative: changed fresh baseline cannot replace original or resume a POST
+ok 12 - TR-01 negative: changed fresh baseline cannot replace original or resume a POST
+  ---
+  duration_ms: 6.4439
+  type: 'test'
+  ...
+# Subtest: TR-02 negative: definitive rejection cannot replay or recover into another POST
+ok 13 - TR-02 negative: definitive rejection cannot replay or recover into another POST
+  ---
+  duration_ms: 9.6599
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 315.7139

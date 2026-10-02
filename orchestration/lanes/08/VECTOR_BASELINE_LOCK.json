@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-02T08:49:16.121Z",
+  "observedAt": "2026-10-02T14:13:35.489Z",
   "provenBaseSha": null,
   "convergenceBaseSha": null,
   "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -79,11 +79,12 @@
   "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
   "lastRebase": null,
   "testsExecuted": [],
-  "currentTask": null,
+  "currentTask": "Reviewed Value/skills source isolated; no realisedvalue/mastery/customer proof",
   "admissionAllowed": false,
   "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
-  "currentReviewHead": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-  "lastVerifiedReview": "2026-10-02T13:01:11.386Z",
+  "currentReviewHead": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "lastVerifiedReview": "2026-10-02T14:13:35.489Z",
   "currentMandatoryProofSourceAdmission": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
-  "isolatedSkillsSource": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8"
+  "isolatedSkillsSource": "0e80f0c19f872dc0e44ac83bd82db62d231b63d8",
+  "proofState": "SOURCE_ONLY_OR_PENDING_HOSTED; NOT_CUSTOMER_PROVEN"
 }

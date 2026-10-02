@@ -1,0 +1,241 @@
+{
+  "identity": {
+    "kind": "DERIVED_PATCH_TREE_NOT_NATIVE_COMMIT",
+    "tree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
+    "baseSourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+    "patchSha256": "7898d7131f0d6805e28c66e4c22abde2aa916058af7e661b8c00f4edf9a90a82"
+  },
+  "native8690Custody": "OPEN",
+  "ancestryClaim": false,
+  "transportWholeDerivedTree": false,
+  "currentCanonicalParent": "ROOT_OWNS_EXACT_6c8_PARENT_BINDING",
+  "all20ChangedFrom935": [
+    {
+      "path": ".circleci/config.yml",
+      "preimageAt935": "b8a0a884df12410d6ce420b61f598795d04680d1",
+      "blob": "4e1211e401bb022bc9a10ce562f3778069977e08",
+      "mode": "100644",
+      "sha256": "986bfb8e0aa1312a0dfa9e56670959272aa10213fdcf5c42ee8090e5717a9027",
+      "bytes": 7995,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned contained fullHTTP admission keeps evidence outside build context; actual Linux/container result remains pending."
+    },
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "preimageAt935": "7155a9d942f96b968b5e2d7ae8c35ab7d53b549c",
+      "blob": "949f81aecf736bbdee56e2fe448e4e0426722417",
+      "mode": "100644",
+      "sha256": "cbee0fae2f9bcde6f7de43da59ab2304e8e84bfd6d11b7c720aaaf8154a6594e",
+      "bytes": 4364,
+      "selection": "EXCLUDE_STALE_METADATA",
+      "reason": "NONSHIPPING_REFERENCE: existing marker names earlier native df16/fa786 and d387; root must issue one truthful current-parent admission marker after exact composition, not reuse stale metadata."
+    },
+    {
+      "path": "integrations/staffology/REVIEW_5925613376_RESOLUTION.md",
+      "preimageAt935": "47b19f93dc162413c87b34b7c98679d12f50aa12",
+      "blob": "b527c93a00c4d81c5677cb52171e5bfc1c7c6813",
+      "mode": "100644",
+      "sha256": "3d27c9a43d2f00e964f90f9f58a27574163c30a34536780aef85afb92cbd43f9",
+      "bytes": 87376,
+      "selection": "EXCLUDE_STALE_METADATA",
+      "reason": "NONSHIPPING_REFERENCE: historical owner record b527; latest reported8690 resolution97ad9 is unavailable; carry reviewer custody/derived source explanation separately without claiming latest doc native binding."
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-connector.test.cjs",
+      "preimageAt935": "762443963a435602c234db70091f40049b3da525",
+      "blob": "13cb585b30346387634d368028376cad463776df",
+      "mode": "100644",
+      "sha256": "8959689ad3b1b9c2a69012fd2c0ea1f0e297f12ef58262671f1d507fa0a46917",
+      "bytes": 4684,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+      "preimageAt935": "4de09038e1d30542c9c71af86ba29b8377c7341c",
+      "blob": "9cf541ec31c8aac6ec518dcc8f1ffadf43000f4d",
+      "mode": "100644",
+      "sha256": "9fd64d8daa12cbaf8ffe658a687233862ad23c442595c97f599e5c41ace2ac5d",
+      "bytes": 2951,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+      "preimageAt935": "fb65460ff82cc013e5e355ca853958d29d7669e6",
+      "blob": "50c86ca5da5067257294a8738e483f48c4dfcc24",
+      "mode": "100644",
+      "sha256": "88cb40321b19d52fc6187efe951b9f219321359a894418d001e03554164a5106",
+      "bytes": 3471,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "preimageAt935": "58b1139c6ab6108d4e8dbade5c5d873493226c17",
+      "blob": "d705dd486bde5a5016b6205985d296e239d8c7e6",
+      "mode": "100644",
+      "sha256": "e57a96b1c50c3ade8848416c595a716ffbc90564f35ae430b52ab176072f1058",
+      "bytes": 14910,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Original server-held scope/connector/authority and actual recovery approval/mode defects; covered by retained synthetic behavior and realSQLite recovery controls."
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.test.cjs",
+      "preimageAt935": "5696f93ae29caf90ca9484f1462d3d181f74683b",
+      "blob": "b957eac15def38619a44aa90b1a575b4ebdf888a",
+      "mode": "100644",
+      "sha256": "2d03188e17cbe5b08e6614b2c187dfe0cbd63f5bb77852abb04ba790a3dcf3c4",
+      "bytes": 15259,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "preimageAt935": "eb641eaece4ba0ae737600222463e613cbc78197",
+      "blob": "f8783d3baa9492e74303c9d312278b26ad2e61f4",
+      "mode": "100644",
+      "sha256": "20552ae86391661e980753624ed58efb6ce3ee7533395ee640f981a85056ad4f",
+      "bytes": 19443,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Original stale principal/person and one-shot authority defects plus TR09B final durable dispatch marker classification; actual SQLite held-outs pass."
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.test.cjs",
+      "preimageAt935": "7ac361ee5521c4c3b7703796499645585acf8614",
+      "blob": "537fdaeb8787794447855c204808b67ef0ea8064",
+      "mode": "100644",
+      "sha256": "88c5055a42077230d54381da843a0c39af0b9521083cda6b5b49563b846e7886",
+      "bytes": 22012,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/independent-boundaries.test.cjs",
+      "preimageAt935": "0a5e98cd8eeea8f91e7e23339570b795145e59cb",
+      "blob": "7ffa39b5991ad70e5a713668ae34a53eed562e75",
+      "mode": "100644",
+      "sha256": "b3abf3d8b907c37dd84eb2fbfcc24d6fa67623159e82d93da8d398f02f400cf9",
+      "bytes": 13999,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/independent/docker-admission-contract.test.cjs",
+      "preimageAt935": "5515cb7fd5a01b4a25c52f0afaa647268e3d6c72",
+      "blob": "0683258beb87567b33f6c6c62368aeb0f6774ca6",
+      "mode": "100644",
+      "sha256": "c704e07dc92d58017249dab2338ba424b8f2580a6cdb35fb590c2a484dea7cab",
+      "bytes": 5956,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+      "preimageAt935": "8202a7aa827413ba0677bed8cbf00366555526fa",
+      "blob": "d613b1cd56df7399ef82ba1d5321620517d25eee",
+      "mode": "100644",
+      "sha256": "8a7cac2f8d949a00dfc9c31a128873375070099cf2b9a1bfe42895d83481bca2",
+      "bytes": 26406,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing canonical rules-contract fixture resolves actual acquire-stage403 from LinuxCI26; test byte-identical bf9 but new composed runtime execution still required."
+    },
+    {
+      "path": "integrations/staffology/independent/succession-regressions.test.cjs",
+      "preimageAt935": "6785331adf5b3057f9836c6692f266f03df32cfd",
+      "blob": "fa30239892706e6402cfaf9a7f1fedec080d8b97",
+      "mode": "100644",
+      "sha256": "65d114e88ef05e7e6ce42c33656313ddf13b0b0f8cb309cdb8e933f436e85a2e",
+      "bytes": 4134,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "preimageAt935": "f7611c09a83fe5ba4d502912ace65d77ce91b939",
+      "blob": "18d67d781e1914fcc8adde6c6251a3b2376ff26d",
+      "mode": "100644",
+      "sha256": "c5c0be39f924d150e07b88c006bf29d8e658abfbf6fbda6a4441ac1cf9a6b137",
+      "bytes": 38409,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Original definitive401/403 and baseline safety defects plus TR12 rejected recovery and documented-zero inspect normalization; current bounded source tests/held-outs pass."
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.test.cjs",
+      "preimageAt935": "01adb39a4ddb5776285d87ea51d3179ad1156c90",
+      "blob": "d81865b4d299641aa83b4ed1cba566db66c06059",
+      "mode": "100644",
+      "sha256": "46ff4013291734ce6dc44af11576a7dd6a4d75f9b4ea7a5960eee30961fefc69",
+      "bytes": 22941,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "integrations/staffology/staffology-employee-persistence.test.cjs",
+      "preimageAt935": "ea5ab90179775bfe1155496ec6186c0d5f2b8c6d",
+      "blob": "73294c611ce4ea7e9a208a7ed10292b4211191d3",
+      "mode": "100644",
+      "sha256": "9a8a67f9606eb3fa162ea8bcfa9f923a2208c2d0798748ffad4a4df8d115c649",
+      "bytes": 7698,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing contained persistence fixture regression for server-held scope/aggregate behavior; no new composed persistence execution claimed."
+    },
+    {
+      "path": "integrations/staffology/test-support/sqlite-store-fixture.cjs",
+      "preimageAt935": "7fde6d2892fb317a7958d79d7ba291b9f3c767cf",
+      "blob": "6436845fbad8b955939851a3706715bc17e1038c",
+      "mode": "100644",
+      "sha256": "713d4941d41ff562dbc464c12b0be2a2ec314ae8e9656342e515fe0a5fb25567",
+      "bytes": 3742,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "preimageAt935": "7a54fb0864527d895847324f638696d789eb3997",
+      "blob": "389eb5c50399fda21da1bab9b3073c7ed40c6a13",
+      "mode": "100644",
+      "sha256": "2a46423031dd032fa03f842d7b4c71791681a66a005c4b0ba88947427f3ae1ba",
+      "bytes": 85498,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Original acquisition idempotency defect plus false recovery-success customer display; retained UI controls and current no-false-success helper pass."
+    },
+    {
+      "path": "ux-overlay/vector-staffology-controls.test.cjs",
+      "preimageAt935": "071a19ea6ed709bf51f0b3f663071006586b5bcf",
+      "blob": "1159e5cde1698c8d1f4617183a8aa5e0be998ea0",
+      "mode": "100644",
+      "sha256": "e43664c4e59fd992f741725845feb527a2ceee692a0cfc165d8c8725b24bd073",
+      "bytes": 5522,
+      "selection": "POTENTIAL_BOUNDED_SOURCE_REPAIR",
+      "reason": "Existing source-owned bounded regression/support for the held authority, scope, money, recovery, CI/Golden contract defects; no independent new worker or product scope."
+    }
+  ],
+  "potentialSelectedPaths": [
+    ".circleci/config.yml",
+    "integrations/staffology/canonical-operations-connector.test.cjs",
+    "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+    "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+    "integrations/staffology/canonical-operations.cjs",
+    "integrations/staffology/canonical-operations.test.cjs",
+    "integrations/staffology/canonical-production-boundaries.cjs",
+    "integrations/staffology/canonical-production-boundaries.test.cjs",
+    "integrations/staffology/independent-boundaries.test.cjs",
+    "integrations/staffology/independent/docker-admission-contract.test.cjs",
+    "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+    "integrations/staffology/independent/succession-regressions.test.cjs",
+    "integrations/staffology/staffology-adapter.cjs",
+    "integrations/staffology/staffology-adapter.test.cjs",
+    "integrations/staffology/staffology-employee-persistence.test.cjs",
+    "integrations/staffology/test-support/sqlite-store-fixture.cjs",
+    "ux-overlay/vector-shell.js",
+    "ux-overlay/vector-staffology-controls.test.cjs"
+  ],
+  "requiredCompositionControls": [
+    "Root verifies each actual current-parent preimage; no whole-tree overwrite.",
+    "Preserve current six mandatory proof paths and all unrelated blobs.",
+    "Bind resulting real commit/tree/image separately; no invented native ancestry.",
+    "Refresh existing admission marker truthfully after review/composition.",
+    "Re-run composed fullHTTP/persistence on new exact assembly before runtime/customer claims."
+  ]
+}

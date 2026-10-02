@@ -1,0 +1,86 @@
+{
+  "artifacts": [
+    {
+      "file": "checkpoint6-preparation-review.md",
+      "bytes": 2755,
+      "sha256": "c045b6d5bfc05e5a4dd4ebee7e6122eb0d42449b77ee6b0994a38f0c9887bcf4"
+    },
+    {
+      "file": "checkpoint6-preparation-findings.json",
+      "bytes": 13347,
+      "sha256": "fabdbf7d55608320969e8e47a3fb56c2c12c141804174e95ae2447219a8bb874"
+    },
+    {
+      "file": "checkpoint6-preparation-audit.cjs",
+      "bytes": 10341,
+      "sha256": "7ad38f01b7768a6046717d1e52e25d8f5d5f904224a2e281dc444e4442a00c3c"
+    },
+    {
+      "file": "checkpoint6-github-status.json",
+      "bytes": 348,
+      "sha256": "ffd108a74df4c59927f9a2bd8984afc2062fcc925dcec6b7accb0e804fa84e44"
+    },
+    {
+      "file": "checkpoint6-review-ref.json",
+      "bytes": 535,
+      "sha256": "b67caaf99770cf3844af6a73baf2b2bfb85a3bf93db516dd4d0a3d538e9fb13a"
+    },
+    {
+      "file": "checkpoint6-frozen-ref.json",
+      "bytes": 558,
+      "sha256": "84706055706802575975c35450fe28fc59b494b6e8bfc45f6b5db2ba2bfb9940"
+    },
+    {
+      "file": "checkpoint6-materials-remote-commit.json",
+      "bytes": 1295,
+      "sha256": "0beb36abdbeb7f330cd3da8e6ffc4cbd932b4bbfa74b464e1d1836b38bdfc209"
+    },
+    {
+      "file": "checkpoint6-jurisdiction-remote-commit.json",
+      "bytes": 1288,
+      "sha256": "fff9bf44b0df6071a55f4c9e7a7fd6c2f76db8b5d5892c86de170617af143aed"
+    }
+  ],
+  "snapshotArtifacts": [
+    {
+      "name": "NEXT_EXECUTION.md",
+      "bytes": 3859,
+      "sha256": "51e4c7da85be1439ccf0c37fe0b9fcfe2b6bc23994329e71653002a8b6392f53"
+    },
+    {
+      "name": "orchestration/VECTOR_CONVERGENCE_STATE.json",
+      "bytes": 44239,
+      "sha256": "da73b04c495209c9883b767d7ed1dd828fc8f92defb7b4fe75db5a4546763b7c"
+    },
+    {
+      "name": "orchestration/VECTOR_PROOF_MATRIX.json",
+      "bytes": 49355,
+      "sha256": "96367d68011940776a138d37a3333b1f218c3e65075d186ccd0af58c881b4243"
+    },
+    {
+      "name": "orchestration/VECTOR_CAPABILITY_REGISTRY.json",
+      "bytes": 940548,
+      "sha256": "53078d132f08c12039fb01c1031df1e39c6fa490e365ae54e60547bdbf68e153"
+    },
+    {
+      "name": "orchestration/VECTOR_BLOCKERS.json",
+      "bytes": 22971,
+      "sha256": "a33faca84766eab18217bf401deea62718b321228348eab58bea855acb7d5f0f"
+    },
+    {
+      "name": "orchestration/VECTOR_BRANCH_INVENTORY.json",
+      "bytes": 282036,
+      "sha256": "a11bebb6827b9ba96f43cf30d38de8fe6c96078af28ac6e50275eeee627c5fa6"
+    },
+    {
+      "name": "orchestration/VECTOR_DECISIONS.jsonl",
+      "bytes": 5917,
+      "sha256": "858366b9afda42efdd948b3728f2c5b03f775fadb828d76330bc97910142b947"
+    },
+    {
+      "name": "orchestration/VECTOR_EXECUTION_LOG.md",
+      "bytes": 6116,
+      "sha256": "27c60b96a4e89c4b7af822ca25123859daa7296122cb47e67831dffdf2fddf16"
+    }
+  ]
+}

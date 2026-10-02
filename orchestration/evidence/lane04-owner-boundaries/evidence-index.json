@@ -1,0 +1,279 @@
+{
+  "artifacts": [
+    {
+      "path": "baseline-lock.json",
+      "bytes": 320,
+      "blob": "24e24d5d631b3681e6c126a206a473f5e5c3bb78",
+      "sha256": "3caaa4b67893964d88c8dfa52deb9426e46588d68a866340ef3ab5fe7ca57b3d"
+    },
+    {
+      "path": "capabilities.json",
+      "bytes": 29614,
+      "blob": "fa5ee486a1fd2356617e7f25881488c42b59bcbc",
+      "sha256": "724c64746277f6773710c301f37abee0bb3e720780af8bd9f18376a303b1cefa"
+    },
+    {
+      "path": "comparison.json",
+      "bytes": 1365,
+      "blob": "2c844fca2bff70351bbaf44cd2ba8b5bfe9bfca6",
+      "sha256": "46bb620575bbdd171e437251f613fd1ade6d7d21687ec9fb7bcc94b246dca282"
+    },
+    {
+      "path": "complete-closure.cjs",
+      "bytes": 1627,
+      "blob": "a75afeb2d6081a5311d9ca0638c0e145edb6ee84",
+      "sha256": "ba1ee90ca8bd8f4e16eceb51cfcc8acca1cd171fec7384245a22f08f2539e43f"
+    },
+    {
+      "path": "evidence/00-probes-incomplete-closure-harness-error.log",
+      "bytes": 2323,
+      "blob": "17487eb197b14c00e640fea66681262c66674039",
+      "sha256": "bc2d2c7a31e9baeb6dab36769353aaba7562e250c70e6cdeacda97d81b5c71b1"
+    },
+    {
+      "path": "evidence/00-source-incomplete-closure-harness-error.log",
+      "bytes": 4935,
+      "blob": "c2ace849da9ba9ab4ec62aaf1c396d3aed30c3c3",
+      "sha256": "6f2241ae144b11ba3423f4ed3702c6d15957ad4b6dc4a6b37385c94833d4ecd6"
+    },
+    {
+      "path": "evidence/01-frozen-source-tests.log",
+      "bytes": 5137,
+      "blob": "158ac5a0f10dd117b57f2efaaf72e5ffe660ca2a",
+      "sha256": "be2cba894fc456f65af6f39c590bea1e99aa667cfed20f14dd2274a1a2ced5dd"
+    },
+    {
+      "path": "evidence/02-frozen-boundary-observations.json",
+      "bytes": 2443,
+      "blob": "864971e3ad019fad10df3458c37bb545010c91f7",
+      "sha256": "44b2d4560a0e8184890c84cf13dffcf4e5dd5d86c30ed189e7495c1ccb241259"
+    },
+    {
+      "path": "evidence/02-frozen-boundary-red.log",
+      "bytes": 13220,
+      "blob": "3f311089beedc7aa7adb96da37a80540c48b1c5e",
+      "sha256": "e479454e310009857b2c1d60992b458ac1066eac25aec894034586132a4031c0"
+    },
+    {
+      "path": "evidence/02a-first-actual-boundary-observations.json",
+      "bytes": 1842,
+      "blob": "e6d0cacd3c59aa9145c9750d579f4e35267545fa",
+      "sha256": "d2ca3ec528ce74224d00880044d598c74d0c688b78d037f35b300ba031968671"
+    },
+    {
+      "path": "evidence/02a-first-actual-boundary-red.log",
+      "bytes": 9489,
+      "blob": "ac1d5b1b60db65041d8b18f71fb8bc15b8235d90",
+      "sha256": "43abf8a448d68c12c4e1b30f590e96a3ee387e0781cdbb48cb733c65c90f280d"
+    },
+    {
+      "path": "findings.md",
+      "bytes": 4761,
+      "blob": "69bc91ac57e00d987d9da3ff4269b826fe8be54b",
+      "sha256": "ed8fa6bc701dbd6aee737ffd6017ef5a501ace0bf320b49aa348906cfefb1d50"
+    },
+    {
+      "path": "frozen/learning/runtime/training-scenario-engine.cjs",
+      "bytes": 3742,
+      "blob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+      "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b"
+    },
+    {
+      "path": "frozen/learning/runtime/training-scenario-engine.test.cjs",
+      "bytes": 928,
+      "blob": "6842ec867a99c919fd2084c59cfad2842e96a511",
+      "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476"
+    },
+    {
+      "path": "frozen/operations/runtime/autopilot-execution-engine.cjs",
+      "bytes": 14858,
+      "blob": "0b7541fe363d1071c9207ce349273a1e09414bbb",
+      "sha256": "556d0a6d31c2ccbebec12a52c5b2f1f18604d06a843ba2affbf3020376261c84"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3"
+    },
+    {
+      "path": "frozen/policy/runtime/regulatory-change-candidate.cjs",
+      "bytes": 3281,
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041"
+    },
+    {
+      "path": "frozen/policy/runtime/regulatory-change-candidate.test.cjs",
+      "bytes": 1881,
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807"
+    },
+    {
+      "path": "frozen/release/proof-lane-policy.json",
+      "bytes": 10575,
+      "blob": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec",
+      "sha256": "e58c3cf199928601297222e8f4b87f5904a7cdec3531e211909b4476a20e7cc8"
+    },
+    {
+      "path": "frozen/src/frontier/agency-labour-exchange.mjs",
+      "bytes": 19680,
+      "blob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+      "sha256": "567d7d709bc0cb7408dcfa86c084a279d4058bbe24040343fb9865f4c5bff86e"
+    },
+    {
+      "path": "frozen/src/frontier/agency-right-to-work-lifecycle.mjs",
+      "bytes": 5102,
+      "blob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc",
+      "sha256": "c3ef1ec5ef8f378c9afdca0c1a347a9744652a4673f2d1a9344025f78f6af4c1"
+    },
+    {
+      "path": "frozen/src/frontier/agency-right-to-work.mjs",
+      "bytes": 14793,
+      "blob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7",
+      "sha256": "20f23219151332439943554ce06373163110d5cc86b58a62171f94ddce20f98b"
+    },
+    {
+      "path": "frozen/src/frontier/agency-supplier-compliance.mjs",
+      "bytes": 6185,
+      "blob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9",
+      "sha256": "794de11092b621e09c0cab0dadd51f7c5c393fb71ba0082a5e9fd601fc5d4274"
+    },
+    {
+      "path": "frozen/test/frontier/agency-labour-exchange.test.mjs",
+      "bytes": 10566,
+      "blob": "66f05773412202a44e8fee68988a3d8e6d4753f3",
+      "sha256": "709063281b6f939e99f26c81cc8b59243818f38ec10fd7594a4fa524768e4850"
+    },
+    {
+      "path": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "bytes": 22881,
+      "blob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45"
+    },
+    {
+      "path": "frozen-boundaries.held-out.test.mjs",
+      "bytes": 10250,
+      "blob": "2ba69d44bb76da5d8b52bf570cb505c23fe53001",
+      "sha256": "5c9f3f871ca1cfeb4aa5aa777f1609756ea66a4ee7345bc03d462701f6a79bd6"
+    },
+    {
+      "path": "historical/pr239/src/frontier/agency-operating-system.mjs",
+      "bytes": 10883,
+      "blob": "612e0d69d470d9fb6f5dcd207b5d2660fb4c4609",
+      "sha256": "f16969833b036dddb04ea6d0e5eb6fec1355741969a266eb9e1c4bbe154a1822"
+    },
+    {
+      "path": "historical/pr239/src/frontier/agency-worker-passport.mjs",
+      "bytes": 9673,
+      "blob": "42cea220003887722fcdc6522f9544eaa7cd3866",
+      "sha256": "099b6b3b33c86989f37da26607616195edbd6bf3871a2dfa3cd0cb3e9de5620e"
+    },
+    {
+      "path": "historical/pr239/test/frontier/agency-operating-system-v2.test.mjs",
+      "bytes": 12379,
+      "blob": "cde6c453835a0ebacd841e6e534cdc220b8df6e7",
+      "sha256": "6eb894b0e7a56cb944eef2e66d83bfb4b27b86c9dc13614481e2ef7ed99f2652"
+    },
+    {
+      "path": "identities.json",
+      "bytes": 7399,
+      "blob": "3b15bd4e3bc1abc0466dcb678c00d90899ae60ee",
+      "sha256": "a41bac60ae129c2b55cb7f8ce6a09abf089865c65365b9f3c66db6261321d8e1"
+    },
+    {
+      "path": "prepare.cjs",
+      "bytes": 1940,
+      "blob": "edda3b826f158d0f1e3c5890766bdf9e03b7c030",
+      "sha256": "339145a50f91277ac5490bf272a6dae9824d08aaa14d79a82cbeb688d7489f8e"
+    },
+    {
+      "path": "REPAIR_DESIGN_NOT_AUTHORISED.md",
+      "bytes": 4789,
+      "blob": "2386a4e84c3c1a224395349019da0ca013847011",
+      "sha256": "0596f9024728ea238a9d7116b6c23cabbdc560d286a54bd8a17240489f9fe6d6"
+    },
+    {
+      "path": "run.cjs",
+      "bytes": 1079,
+      "blob": "2ea8b3f824ed54f62af0e876eebd5348300ecaaa",
+      "sha256": "e05cfa0d7ae07539642b60cabf6d8c84d54ec6a797b70bce10ad808c9fb948b3"
+    },
+    {
+      "path": "seal.cjs",
+      "bytes": 6022,
+      "blob": "6f7dd5e30dbaad3ba66214baa8dad92d56e1e34f",
+      "sha256": "c61a03c2dec5634159cde9ad08d28045ad81078f041eb9d38fa703af444800be"
+    },
+    {
+      "path": "source-findings.json",
+      "bytes": 5621,
+      "blob": "4180f7d5a865eae4f4bc5958647032a991ef6815",
+      "sha256": "14aa433379ddd83a522159b621a091b20f139e7ae0d2cf745e196299fec30e6c"
+    },
+    {
+      "path": "source-input.json",
+      "bytes": 37630,
+      "blob": "0cb1f19e4e639916f56f3a11ae49ecd32a9df777",
+      "sha256": "c01c3720d4991cd2c36d09a2ffd92dc9a8aed3a17a661e1fd795aa1fe41a8612"
+    },
+    {
+      "path": "sources.json",
+      "bytes": 43252,
+      "blob": "6778b7bc2bf3506f8bb87b3d546965d5972d23fa",
+      "sha256": "1a358d230fdd02ce9af8c063fdbad143607e9eb610f4fce094747f635629087f"
+    },
+    {
+      "path": "../lane04-archaeology/evidence/01-historical-source-tests.log",
+      "bytes": 14085,
+      "blob": "9ba46498c9f0c4f3e84ac50798f6a1db80ceaa63",
+      "sha256": "be06fbaecf33e94bda0e20f1ad9a9bc2bdc848f6023676e2921aafe17bf53423",
+      "shipping": false
+    },
+    {
+      "path": "../lane04-archaeology/evidence/02-proposal-boundaries-held-out.log",
+      "bytes": 3800,
+      "blob": "a4aacd08fd4037fb3e18a49b50aed04b43edecd6",
+      "sha256": "83d9367b8a3e1b4342a5bdaf4b566a23a9787d0f9430f0a4febfc4df35cec7ac",
+      "shipping": false
+    },
+    {
+      "path": "../lane04-archaeology/evidence/02-held-out-observations.json",
+      "bytes": 478,
+      "blob": "c260b8ef70ed7c11d1b5f376507d397c7af25dc7",
+      "sha256": "4393b35606cb206df7ac4b1741de2d9dcec26d8c9d3360aaf2f321429154ef6b",
+      "shipping": false
+    }
+  ],
+  "shippingChangedBytes": 0,
+  "sourceFilesEdited": 0,
+  "node": "v22.23.2",
+  "networkGuard": "../trust_review/network-guard.cjs",
+  "tests": {
+    "frozenSource": {
+      "total": 21,
+      "pass": 21,
+      "fail": 0
+    },
+    "initialActualHeldOut": {
+      "total": 11,
+      "pass": 4,
+      "fail": 7
+    },
+    "finalHeldOut": {
+      "total": 15,
+      "pass": 5,
+      "fail": 10
+    }
+  },
+  "harnessErrorsRetained": true,
+  "customerProof": false,
+  "providerProof": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null
+}

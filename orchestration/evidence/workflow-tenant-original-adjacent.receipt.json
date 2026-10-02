@@ -1,0 +1,23 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-original-capsule\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs"
+  ],
+  "start": "2026-10-02T13:39:30.260Z",
+  "end": "2026-10-02T13:39:35.374Z",
+  "exit": 0,
+  "sourceWorkflowBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+  "testBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+  "rawSha256": "4c14cbf0aeb57b422ccb367983690f9d53e82b16149430d8941965ca806ff07a",
+  "tests": 32,
+  "pass": 32,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 5023.9061,
+  "qualification": "Original adjacent tests pass while independently evidenced hosted variable remains defective; extracted handler only, no actual workflow success."
+}

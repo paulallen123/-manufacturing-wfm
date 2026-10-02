@@ -1,0 +1,228 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "protectedCommit": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "protectedTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "files": [
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3",
+      "verified935Copy": true
+    },
+    {
+      "path": "learning/runtime/training-scenario-engine.cjs",
+      "blob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/learning/runtime/training-scenario-engine.cjs",
+      "bytes": 3742,
+      "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b",
+      "verified935Copy": true
+    },
+    {
+      "path": "learning/runtime/training-scenario-engine.test.cjs",
+      "blob": "6842ec867a99c919fd2084c59cfad2842e96a511",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/learning/runtime/training-scenario-engine.test.cjs",
+      "bytes": 928,
+      "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476",
+      "verified935Copy": true
+    },
+    {
+      "path": "src/frontier/agency-labour-exchange.mjs",
+      "blob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/src/frontier/agency-labour-exchange.mjs",
+      "bytes": 19680,
+      "sha256": "567d7d709bc0cb7408dcfa86c084a279d4058bbe24040343fb9865f4c5bff86e",
+      "verified935Copy": true
+    },
+    {
+      "path": "src/frontier/agency-supplier-compliance.mjs",
+      "blob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/src/frontier/agency-supplier-compliance.mjs",
+      "bytes": 6185,
+      "sha256": "794de11092b621e09c0cab0dadd51f7c5c393fb71ba0082a5e9fd601fc5d4274",
+      "verified935Copy": true
+    },
+    {
+      "path": "src/frontier/agency-right-to-work.mjs",
+      "blob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/src/frontier/agency-right-to-work.mjs",
+      "bytes": 14793,
+      "sha256": "20f23219151332439943554ce06373163110d5cc86b58a62171f94ddce20f98b",
+      "verified935Copy": true
+    },
+    {
+      "path": "test/frontier/agency-labour-exchange.test.mjs",
+      "blob": "66f05773412202a44e8fee68988a3d8e6d4753f3",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/test/frontier/agency-labour-exchange.test.mjs",
+      "bytes": 10566,
+      "sha256": "709063281b6f939e99f26c81cc8b59243818f38ec10fd7594a4fa524768e4850",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/policy/runtime/regulatory-change-candidate.cjs",
+      "bytes": 3281,
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+      "verified935Copy": true
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/policy/runtime/regulatory-change-candidate.test.cjs",
+      "bytes": 1881,
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/autopilot-execution-engine.cjs",
+      "blob": "0b7541fe363d1071c9207ce349273a1e09414bbb",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/operations/runtime/autopilot-execution-engine.cjs",
+      "bytes": 14858,
+      "sha256": "556d0a6d31c2ccbebec12a52c5b2f1f18604d06a843ba2affbf3020376261c84",
+      "verified935Copy": true
+    },
+    {
+      "path": "trust/runtime/vector-trust-spine.cjs",
+      "blob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "bytes": 22881,
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45",
+      "verified935Copy": true
+    },
+    {
+      "path": "release/proof-lane-policy.json",
+      "blob": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec",
+      "mode": "100644",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/release/proof-lane-policy.json",
+      "bytes": 10575,
+      "sha256": "e58c3cf199928601297222e8f4b87f5904a7cdec3531e211909b4476a20e7cc8",
+      "verified935Copy": true
+    },
+    {
+      "path": "src/frontier/agency-worker-passport.mjs",
+      "sourceRef": "058ed1e8a86970495b6e851c55585817175d2b24",
+      "blob": "42cea220003887722fcdc6522f9544eaa7cd3866",
+      "bytes": 9673,
+      "sha256": "099b6b3b33c86989f37da26607616195edbd6bf3871a2dfa3cd0cb3e9de5620e",
+      "local": "historical/pr239/src/frontier/agency-worker-passport.mjs",
+      "mode": "100644",
+      "frozenBlob": null
+    },
+    {
+      "path": "test/frontier/agency-operating-system-v2.test.mjs",
+      "sourceRef": "058ed1e8a86970495b6e851c55585817175d2b24",
+      "blob": "cde6c453835a0ebacd841e6e534cdc220b8df6e7",
+      "bytes": 12379,
+      "sha256": "6eb894b0e7a56cb944eef2e66d83bfb4b27b86c9dc13614481e2ef7ed99f2652",
+      "local": "historical/pr239/test/frontier/agency-operating-system-v2.test.mjs",
+      "mode": "100644",
+      "frozenBlob": null
+    },
+    {
+      "path": "src/frontier/agency-operating-system.mjs",
+      "sourceRef": "058ed1e8a86970495b6e851c55585817175d2b24",
+      "blob": "612e0d69d470d9fb6f5dcd207b5d2660fb4c4609",
+      "bytes": 10883,
+      "sha256": "f16969833b036dddb04ea6d0e5eb6fec1355741969a266eb9e1c4bbe154a1822",
+      "local": "historical/pr239/src/frontier/agency-operating-system.mjs",
+      "mode": "100644",
+      "frozenBlob": null
+    },
+    {
+      "path": "src/frontier/agency-right-to-work-lifecycle.mjs",
+      "blob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc",
+      "mode": "100644",
+      "bytes": 5102,
+      "sha256": "c3ef1ec5ef8f378c9afdca0c1a347a9744652a4673f2d1a9344025f78f6af4c1",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "local": "frozen/src/frontier/agency-right-to-work-lifecycle.mjs",
+      "verified935Copy": true,
+      "role": "TRANSITIVE_UNCHANGED_TEST_IMPORT_DEPENDENCY"
+    }
+  ],
+  "historicalPR239": {
+    "pr": 239,
+    "head": "058ed1e8a86970495b6e851c55585817175d2b24",
+    "branch": "feature/agency-operating-system-v3-20260925",
+    "state": "open",
+    "merged": false,
+    "records": [
+      {
+        "n": 239,
+        "path": "src/frontier/agency-worker-passport.mjs",
+        "ref": "058ed1e8a86970495b6e851c55585817175d2b24",
+        "result": {
+          "content": "import crypto from 'node:crypto';\n\nexport const AGENCY_WORKER_PASSPORT_VERSION = 'agency-worker-passport-v0.1.0';\n\nconst SENSITIVE = new Set([\n  'age','dateOfBirth','sex','gender','genderIdentity','race','ethnicity','religion',\n  'disability','maritalStatus','pregnancy','sexualOrientation','nationality','politicalOpinion'\n]);\nconst n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;\nconst c=v=>Math.max(0,Math.min(1,n(v)));\nconst ms=value=>{\n  const parsed=typeof value==='number'?value:Date.parse(value);\n  return Number.isFinite(parsed)?parsed:null;\n};\nconst stable=value=>Array.isArray(value)\n  ? value.map(stable)\n  : value&&typeof value==='object'\n    ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])]))\n    : value;\nconst hash=value=>crypto.createHash('sha256').update(JSON.stringify(stable(value))).digest('hex');\n\nconst completedAssignment = row => row && ['completed','worked','closed'].includes(row.status);\nconst verifiedSkill = skill => !!skill && (\n  skill.verified === true ||\n  skill.verification?.status === 'verified' ||\n  skill.source === 'observed_competence'\n);\nconst validQualification = (qualification,now) => {\n  if(!qualification || qualification.status==='invalid' || qualification.status==='expired') return false;\n  if(qualification.noExpiry===true) return true;\n  if(!qualification.validUntil) return qualification.status==='valid';\n  const end=ms(qualification.validUntil), nowMs=ms(now);\n  return end!==null && (nowMs===null || end>=nowMs);\n};\n\nfunction familiarity(assignments,key,value){\n  if(!value) return {completed:0,lastCompletedAt:null};\n  const rows=assignments.filter(row=>completedAssignment(row)&&row[key]===value);\n  const latest=rows.map(row=>ms(row.endAt||row.completedAt)).filter(x=>x!==null).sort((a,b)=>b-a)[0]??null;\n  return {completed:rows.length,lastCompletedAt:latest===null?null:new Date(latest).toISOString()};\n}\n\nfunction reliability(outcomes=[]){\n  let accepted=0,attended=0,onTime=0,quality=0,qualityCount=0,productive=0,productiveCount=0,optionalDeclines=0;\n  for(const row of outcomes){\n    if(!row) continue;\n    if(row.type==='optional_shift_declined'){optionalDeclines++;continue;}\n    if(row.type==='shift_accepted') accepted++;\n    if(row.type==='shift_attended'){attended++;accepted=Math.max(accepted,attended);}\n    if(row.type==='shift_on_time') onTime++;\n    if(row.type==='quality_score' && Number.isFinite(Number(row.value))){quality+=c(row.value);qualityCount++;}\n    if(row.type==='productivity_score' && Number.isFinite(Number(row.value))){productive+=c(row.value);productiveCount++;}\n  }\n  const attendanceRate=accepted?attended/accepted:.5;\n  const punctualityRate=attended?onTime/attended:.5;\n  return {\n    acceptedAssignments:accepted,\n    attendedAssignments:attended,\n    attendanceRate:c(attendanceRate),\n    punctualityRate:c(punctualityRate),\n    qualityScore:qualityCount?quality/qualityCount:.5,\n    productivityScore:productiveCount?productive/productiveCount:.5,\n    optionalShiftDeclines:optionalDeclines,\n    note:'optional_shift_declines_do_not_reduce_reliability'\n  };\n}\n\nfunction trainingState(training=[]){\n  const completed=training.filter(row=>row&&row.status==='completed');\n  const verified=completed.filter(row=>row.verified===true||row.assessmentPassed===true||row.observedCompetence===true);\n  const skills=new Map();\n  for(const row of verified){\n    if(!row.skillId) continue;\n    const existing=skills.get(row.skillId);\n    const level=Math.max(1,n(row.level,1));\n    if(!existing||level>existing.level) skills.set(row.skillId,{id:row.skillId,level,source:'verified_training',verified:true,completedAt:row.completedAt??null});\n  }\n  return {completedCount:completed.length,verifiedCount:verified.length,verifiedSkills:[...skills.values()].sort((a,b)=>a.id.localeCompare(b.id))};\n}\n\nexport function buildAgencyWorkerCapabilityPassport(input={}){\n  const worker=input.worker||{};\n  if(typeof worker.workerId!=='string'||!worker.workerId) throw new TypeError('worker.workerId is required');\n  if(typeof worker.agencyId!=='string'||!worker.agencyId) throw new TypeError('worker.agencyId is required');\n\n  const assignments=Array.isArray(input.assignments)?input.assignments:[];\n  const training=Array.isArray(input.training)?input.training:[];\n  const outcomes=Array.isArray(input.outcomes)?input.outcomes:[];\n  const now=input.now??null;\n  const ignoredSensitiveFields=Object.keys(worker).filter(key=>SENSITIVE.has(key)).sort();\n\n  const trainingSummary=trainingState(training);\n  const skillMap=new Map();\n  for(const skill of [...(Array.isArray(worker.skills)?worker.skills:[]),...trainingSummary.verifiedSkills]){\n    if(!skill?.id || !verifiedSkill(skill)) continue;\n    const existing=skillMap.get(skill.id);\n    const level=Math.max(1,n(skill.level,1));\n    if(!existing||level>existing.level) skillMap.set(skill.id,{id:skill.id,level,verified:true,source:skill.source??skill.verification?.source??'verified_evidence'});\n  }\n\n  const qualifications=(Array.isArray(worker.qualifications)?worker.qualifications:[])\n    .filter(q=>validQualification(q,now))\n    .map(q=>({id:q.id??null,level:n(q.level,1),validUntil:q.noExpiry===true?null:(q.validUntil??null),noExpiry:q.noExpiry===true,status:'valid'}))\n    .filter(q=>q.id)\n    .sort((a,b)=>a.id.localeCompare(b.id));\n\n  const site=familiarity(assignments,'siteId',input.context?.siteId);\n  const role=familiarity(assignments,'roleId',input.context?.roleId);\n  const line=familiarity(assignments,'lineId',input.context?.lineId);\n  const rel=reliability(outcomes);\n\n  const preferences={\n    preferredSiteIds:[...(input.preferences?.preferredSiteIds??worker.preferences?.preferredSiteIds??[])],\n    preferredRoleIds:[...(input.preferences?.preferredRoleIds??worker.preferences?.preferredRoleIds??[])],\n    preferredShiftTypes:[...(input.preferences?.preferredShiftTypes??worker.preferences?.preferredShiftTypes??[])],\n    travelRadiusKm:n(input.preferences?.travelRadiusKm??worker.preferences?.travelRadiusKm,0),\n    minimumNoticeMinutes:n(input.preferences?.minimumNoticeMinutes??worker.preferences?.minimumNoticeMinutes,0),\n    repeatAssignmentsPreferred:(input.preferences?.repeatAssignmentsPreferred??worker.preferences?.repeatAssignmentsPreferred)===true,\n  };\n\n  const siteReadiness={\n    rightToWorkStatus:worker.rightToWork?.status??'unknown',\n    siteReady:worker.siteReady===true,\n    inductionReady:worker.inductionNoExpiry===true || (ms(worker.inductionValidUntil)!==null && (ms(now)===null || ms(worker.inductionValidUntil)>=ms(now))),\n    restConfirmed:worker.restCompliant===true,\n    suitabilityStatus:worker.suitabilityStatus??'unknown',\n  };\n\n  const evidenceUnits=\n    rel.attendedAssignments+\n    site.completed+\n    role.completed+\n    line.completed+\n    skillMap.size*2+\n    qualifications.length*2+\n    trainingSummary.verifiedCount*2;\n  const evidenceConfidence=c(evidenceUnits/40);\n\n  const capabilityGraph={\n    verifiedSkills:[...skillMap.values()].sort((a,b)=>a.id.localeCompare(b.id)),\n    qualifications,\n    siteFamiliarity:site,\n    roleFamiliarity:role,\n    lineFamiliarity:line,\n    training:trainingSummary,\n    reliability:rel,\n  };\n\n  const improvementOpportunities=[];\n  if(!site.completed && input.context?.siteId) improvementOpportunities.push('first_site_shift_support');\n  if(!line.completed && input.context?.lineId) improvementOpportunities.push('line_specific_conversion_or_buddy');\n  if(trainingSummary.verifiedCount===0) improvementOpportunities.push('verified_training_pathway');\n  if(evidenceConfidence<.4) improvementOpportunities.push('build_evidence_without_locking_out_new_worker');\n\n  const passport={\n    version:AGENCY_WORKER_PASSPORT_VERSION,\n    workerId:worker.workerId,\n    agencyId:worker.agencyId,\n    context:structuredClone(input.context??{}),\n    capabilityGraph,\n    siteReadiness,\n    preferences,\n    evidenceConfidence,\n    ignoredSensitiveFields,\n    fairnessBoundary:'protected_or_sensitive_attributes_not_used_to_rank_or_reduce_opportunity',\n    workerChoiceBoundary:'declining_an_optional_offer_is_not_a_reliability_failure',\n    improvementOpportunities,\n    generatedAt:now,\n  };\n  passport.passportHash=hash(passport);\n  return passport;\n}\n\nexport function applyVerifiedCapabilityProgression(passport,progress={}){\n  if(!passport?.workerId) throw new TypeError('valid passport is required');\n  if(progress.verified!==true && progress.assessmentPassed!==true && progress.observedCompetence!==true) {\n    return {...structuredClone(passport),progressionApplied:false,progressionReason:'unverified_progression_not_applied'};\n  }\n  if(typeof progress.skillId!=='string'||!progress.skillId) throw new TypeError('progress.skillId is required');\n\n  const next=structuredClone(passport);\n  const skills=Array.isArray(next.capabilityGraph?.verifiedSkills)?next.capabilityGraph.verifiedSkills:[];\n  const existing=skills.find(skill=>skill.id===progress.skillId);\n  const level=Math.max(1,n(progress.level,1));\n  if(existing) existing.level=Math.max(existing.level,level);\n  else skills.push({id:progress.skillId,level,verified:true,source:'verified_progression'});\n  skills.sort((a,b)=>a.id.localeCompare(b.id));\n  next.capabilityGraph.verifiedSkills=skills;\n  next.capabilityGraph.training.verifiedCount=n(next.capabilityGraph.training.verifiedCount)+1;\n  next.progressionApplied=true;\n  next.progressionReason='verified_capability_added';\n  next.progressionEvidence={skillId:progress.skillId,level,completedAt:progress.completedAt??null,evidenceRef:progress.evidenceRef??null};\n  next.evidenceConfidence=c(n(next.evidenceConfidence)+.05);\n  delete next.passportHash;\n  next.passportHash=hash(next);\n  return next;\n}\n",
+          "encoding": "utf-8",
+          "sha": "42cea220003887722fcdc6522f9544eaa7cd3866",
+          "display_url": "https://github.com/paulallen123/-manufacturing-wfm/blob/058ed1e8a86970495b6e851c55585817175d2b24/src/frontier/agency-worker-passport.mjs",
+          "display_title": "agency-worker-passport.mjs"
+        }
+      },
+      {
+        "n": 239,
+        "path": "test/frontier/agency-operating-system-v2.test.mjs",
+        "ref": "058ed1e8a86970495b6e851c55585817175d2b24",
+        "result": {
+          "content": "import test from 'node:test';\nimport assert from 'node:assert/strict';\n\nimport {\n  buildAgencyWorkerCapabilityPassport,\n  applyVerifiedCapabilityProgression,\n} from '../../src/frontier/agency-worker-passport.mjs';\nimport {\n  rankAgencyWorkersContextually,\n  rankAgencySuppliersByRealisedOutcome,\n  simulateFlexibleLabourOptions,\n  assessAgencyAutonomyAuthority,\n} from '../../src/frontier/agency-operations-intelligence.mjs';\nimport {\n  createAgencyDecisionRecord,\n  appendAgencyDecisionOutcome,\n  verifyAgencyDecisionRecord,\n} from '../../src/frontier/agency-decision-ledger.mjs';\nimport { runAgencyOperatingSystem } from '../../src/frontier/agency-operating-system.mjs';\n\nconst START='2026-09-21T06:00:00.000Z';\nconst END='2026-09-21T14:00:00.000Z';\n\nfunction request(){\n  return {\n    requestId:'REQ-AOS-1',\n    hirerName:'Synthetic Manufacturing Ltd',\n    businessNature:'Food packaging',\n    siteId:'site-1',\n    roleId:'PACK-OP',\n    roleName:'Packing Operative',\n    duties:'Operate and inspect packing line',\n    location:'Plant 1, Birmingham',\n    startAt:START,\n    endAt:END,\n    expectedDuration:'1 shift',\n    daysAndHours:'Monday 06:00-14:00',\n    durationHours:8,\n    count:1,\n    requiredSkills:[{id:'packing',level:1}],\n    requiredQualifications:[{id:'food-safety',level:1}],\n    healthSafetyRisks:[{id:'machinery',severity:'medium'}],\n    controlMeasures:['guarding','site induction'],\n    expenses:{},\n    payAndConditions:{shiftPremium:0},\n    maxChargePerHour:30,\n    targetCostPerGoodUnit:0.3,\n    standardRole:true,\n    industrialActionReplacement:false,\n    shiftType:'day',\n  };\n}\n\nfunction agency(id,reliability=.9){\n  return {\n    agencyId:id,\n    approved:true,\n    active:true,\n    responseSlaMinutes:5,\n    performance:{fillReliability:reliability},\n  };\n}\n\nfunction worker(id,agencyId,overrides={}){\n  return {\n    workerId:id,\n    agencyId,\n    consentToShare:true,\n    available:true,\n    siteReady:true,\n    restCompliant:true,\n    suitabilityStatus:'suitable',\n    availability:{startAt:'2026-09-21T05:00:00.000Z',endAt:'2026-09-21T15:00:00.000Z'},\n    inductionValidUntil:'2026-12-31T23:59:59.000Z',\n    rightToWork:{status:'verified',validUntil:'2027-12-31T23:59:59.000Z'},\n    skills:[{id:'packing',level:2,verified:true}],\n    qualifications:[{id:'food-safety',level:1,status:'valid',validUntil:'2027-12-31T23:59:59.000Z'}],\n    awr:{weeksInSameRole:4,equalTreatmentConfirmed:false},\n    chargeRatePerHour:22,\n    preferences:{preferredSiteIds:['site-1'],preferredRoleIds:['PACK-OP'],preferredShiftTypes:['day'],repeatAssignmentsPreferred:true},\n    performance:{completedShifts:30,attendanceRate:.98,punctualityRate:.97,qualityScore:.96,productivityScore:.95,completedSiteShifts:18,completedRoleShifts:20},\n    ...overrides,\n  };\n}\n\ntest('worker capability passport recognises verified capability and does not punish optional declines',()=>{\n  const w=worker('W1','A1',{age:61,sex:'female',ethnicity:'x'});\n  const passport=buildAgencyWorkerCapabilityPassport({\n    worker:w,\n    assignments:[\n      {workerId:'W1',status:'completed',siteId:'site-1',roleId:'PACK-OP',lineId:'L1',endAt:'2026-09-15T14:00:00.000Z'},\n      {workerId:'W1',status:'completed',siteId:'site-1',roleId:'PACK-OP',lineId:'L1',endAt:'2026-09-16T14:00:00.000Z'},\n    ],\n    outcomes:[\n      {workerId:'W1',type:'optional_shift_declined'},\n      {workerId:'W1',type:'optional_shift_declined'},\n      {workerId:'W1',type:'shift_accepted'},\n      {workerId:'W1',type:'shift_attended'},\n      {workerId:'W1',type:'shift_on_time'},\n    ],\n    context:{siteId:'site-1',roleId:'PACK-OP',lineId:'L1'},\n    now:'2026-09-18T12:00:00.000Z',\n  });\n  assert.equal(passport.capabilityGraph.reliability.attendanceRate,1);\n  assert.equal(passport.capabilityGraph.reliability.optionalShiftDeclines,2);\n  assert.equal(passport.workerChoiceBoundary,'declining_an_optional_offer_is_not_a_reliability_failure');\n  assert.ok(passport.ignoredSensitiveFields.includes('age'));\n  assert.ok(passport.ignoredSensitiveFields.includes('sex'));\n  assert.equal(passport.capabilityGraph.siteFamiliarity.completed,2);\n});\n\ntest('verified training can increase portable capability while unverified claims cannot',()=>{\n  const passport=buildAgencyWorkerCapabilityPassport({\n    worker:worker('W1','A1'),\n    context:{siteId:'site-1',roleId:'PACK-OP'},\n    now:'2026-09-18T12:00:00.000Z',\n  });\n  const rejected=applyVerifiedCapabilityProgression(passport,{skillId:'line-changeover',level:2});\n  assert.equal(rejected.progressionApplied,false);\n  const progressed=applyVerifiedCapabilityProgression(passport,{\n    skillId:'line-changeover',\n    level:2,\n    assessmentPassed:true,\n    evidenceRef:'synthetic:assessment-1',\n  });\n  assert.equal(progressed.progressionApplied,true);\n  assert.ok(progressed.capabilityGraph.verifiedSkills.some(x=>x.id==='line-changeover'&&x.level===2));\n});\n\ntest('contextual worker ranking never promotes a hard-gate failure and gives new eligible workers a bounded exploration route',()=>{\n  const agencies=[agency('A1'),agency('A2')];\n  const good=worker('GOOD','A1');\n  const newcomer=worker('NEW','A2',{\n    performance:{completedShifts:0,attendanceRate:.5,punctualityRate:.5,qualityScore:.5,productivityScore:.5,completedSiteShifts:0,completedRoleShifts:0},\n  });\n  const blocked=worker('BLOCK','A1',{restCompliant:false,chargeRatePerHour:10});\n  const passports=[good,newcomer,blocked].map(w=>buildAgencyWorkerCapabilityPassport({\n    worker:w,\n    context:{siteId:'site-1',roleId:'PACK-OP'},\n    now:'2026-09-18T12:00:00.000Z',\n  }));\n  const ranked=rankAgencyWorkersContextually({\n    workers:[good,newcomer,blocked],\n    agencies,\n    request:request(),\n    policy:{tenantId:'tenant-1',newWorkerExplorationBonus:.02},\n    now:'2026-09-18T12:00:00.000Z',\n    passports,\n  });\n  assert.equal(ranked[0].workerId,'GOOD');\n  assert.equal(ranked.find(x=>x.workerId==='BLOCK').eligible,false);\n  assert.ok(ranked.find(x=>x.workerId==='NEW').components.newWorkerExploration>0);\n});\n\ntest('supplier intelligence can prefer better realised operational outcomes over lower charge alone',()=>{\n  const agencies=[agency('A1'),agency('A2')];\n  const events=[\n    {agencyId:'A1',type:'request_sent'},{agencyId:'A1',type:'request_filled',preferredWorker:true},\n    {agencyId:'A1',type:'shift_completed',chargeRatePerHour:24},\n    {agencyId:'A1',type:'agency_response',responseMinutes:4},\n    {agencyId:'A1',type:'invoice_matched'},\n    {agencyId:'A1',type:'production_outcome',goodUnits:1000,totalUnits:1020,labourCost:192,productionFailure:false},\n    {agencyId:'A1',type:'first_shift_outcome',success:true},\n    {agencyId:'A1',type:'repeat_worker_outcome',success:true},\n    {agencyId:'A2',type:'request_sent'},{agencyId:'A2',type:'request_filled',preferredWorker:true},\n    {agencyId:'A2',type:'shift_completed',chargeRatePerHour:18},\n    {agencyId:'A2',type:'agency_response',responseMinutes:8},\n    {agencyId:'A2',type:'invoice_review_required'},\n    {agencyId:'A2',type:'production_outcome',goodUnits:700,totalUnits:1000,labourCost:144,productionFailure:true},\n    {agencyId:'A2',type:'first_shift_outcome',success:false},\n    {agencyId:'A2',type:'repeat_worker_outcome',success:false},\n  ];\n  const ranked=rankAgencySuppliersByRealisedOutcome({agencies,events,request:request(),now:'2026-09-18T12:00:00.000Z'});\n  assert.equal(ranked[0].agencyId,'A1');\n  assert.ok(ranked[0].outcomeScore>ranked[1].outcomeScore);\n  assert.equal(ranked[0].explanation,'supplier_order_uses_realised_operational_outcomes_not_rate_or_fill_alone');\n});\n\ntest('stochastic simulation is deterministic and can prefer the safer risk-adjusted option',()=>{\n  const options=[\n    {id:'cheap-risky',fillProbability:.6,qualityPassProbability:.9,productivityFactor:1,productivityVariance:.1,labourCost:200,productionValue:5000,shortageCost:5000,qualityFailureCost:1000},\n    {id:'mixed-safe',fillProbability:.97,qualityPassProbability:.97,productivityFactor:.98,productivityVariance:.03,labourCost:450,productionValue:5000,shortageCost:5000,qualityFailureCost:1000},\n  ];\n  const a=simulateFlexibleLabourOptions({options,seed:'proof-seed',runs:1200,riskPenalty:.4});\n  const b=simulateFlexibleLabourOptions({options,seed:'proof-seed',runs:1200,riskPenalty:.4});\n  assert.deepEqual(a,b);\n  assert.equal(a[0].id,'mixed-safe');\n  assert.ok(a[0].serviceSuccessProbability>a[1].serviceSuccessProbability);\n});\n\ntest('autonomy is bounded by policy, confidence, reversibility, data and risk',()=>{\n  const auto=assessAgencyAutonomyAuthority({\n    compliancePass:true,withinPolicy:true,confidence:.97,minimumConfidence:.92,\n    reversible:true,highRisk:false,adverseEmploymentImpact:false,dataQuality:.98,minimumDataQuality:.9,\n  });\n  assert.equal(auto.executeAutomatically,true);\n  const held=assessAgencyAutonomyAuthority({\n    compliancePass:true,withinPolicy:true,confidence:.99,reversible:true,\n    highRisk:true,adverseEmploymentImpact:false,dataQuality:1,\n  });\n  assert.equal(held.executeAutomatically,false);\n  assert.ok(held.reasons.includes('high_risk_decision'));\n});\n\ntest('decision record preserves decision-time evidence when outcome is appended',()=>{\n  const record=createAgencyDecisionRecord({\n    tenantId:'tenant-1',\n    decisionId:'D1',\n    decidedAt:'2026-09-18T12:00:00.000Z',\n    alternatives:[{id:'a',riskAdjustedValue:10},{id:'b',riskAdjustedValue:8}],\n    selectedAlternativeId:'a',\n    evidence:{source:'synthetic'},\n    policy:{approvalRequired:true},\n    modelVersions:{ops:'v1'},\n    approval:{status:'approved'},\n  });\n  assert.equal(verifyAgencyDecisionRecord(record).valid,true);\n  const closed=appendAgencyDecisionOutcome(record,{\n    recordedAt:'2026-09-21T15:00:00.000Z',\n    production:{goodUnits:1000},\n    labourCost:{actual:400},\n    realisedValue:7000,\n    attributionQuality:'reviewed',\n  });\n  assert.equal(closed.decisionHash,record.decisionHash);\n  assert.equal(record.outcome,null);\n  assert.equal(verifyAgencyDecisionRecord(closed).outcomeHashValid,true);\n  assert.throws(()=>appendAgencyDecisionOutcome(closed,{}),/already_recorded/);\n});\n\ntest('agency operating system exposes operations, agency and worker experiences as one closed loop',()=>{\n  const input={\n    now:'2026-09-18T12:00:00.000Z',\n    tenantId:'tenant-1',\n    siteId:'site-1',\n    decisionId:'D-AOS-1',\n    request:request(),\n    agencies:[agency('A1')],\n    candidates:[worker('W1','A1')],\n    assignmentHistory:[{workerId:'W1',status:'completed',siteId:'site-1',roleId:'PACK-OP',lineId:'L1',endAt:'2026-09-16T14:00:00.000Z'}],\n    workerOutcomes:[\n      {workerId:'W1',type:'shift_accepted'},\n      {workerId:'W1',type:'shift_attended'},\n      {workerId:'W1',type:'shift_on_time'},\n    ],\n    agencyEvents:[\n      {agencyId:'A1',type:'request_sent'},\n      {agencyId:'A1',type:'request_filled',preferredWorker:true},\n      {agencyId:'A1',type:'shift_completed',chargeRatePerHour:22},\n      {agencyId:'A1',type:'invoice_matched'},\n      {agencyId:'A1',type:'production_outcome',goodUnits:1000,totalUnits:1010,labourCost:176,productionFailure:false},\n    ],\n    operationalOptions:[\n      {id:'agency_only',fillProbability:.94,qualityPassProbability:.96,productivityFactor:.95,productivityVariance:.05,labourCost:176,productionValue:5000,shortageCost:4000,qualityFailureCost:800},\n      {id:'mixed_internal_agency',fillProbability:.99,qualityPassProbability:.98,productivityFactor:1,productivityVariance:.02,labourCost:250,productionValue:5000,shortageCost:4000,qualityFailureCost:800},\n    ],\n    policy:{\n      parallelAgencies:1,\n      responseSlaMinutes:5,\n      autoDispatchApprovedAgencies:true,\n      withinAuthority:true,\n      reversibleAgencyDispatch:true,\n      minimumAutoConfidence:.9,\n      minimumDataQuality:.9,\n    },\n    dataQuality:.99,\n  };\n  const result=runAgencyOperatingSystem(input);\n  assert.equal(result.operatingModel,'production_to_flexible_labour_closed_loop');\n  assert.equal(result.status,'decision_ready');\n  assert.ok(result.experiences.operations.sees.includes('demand_gap'));\n  assert.equal(result.experiences.agency.requestId,'REQ-AOS-1');\n  assert.equal(result.experiences.workers[0].workerId,'W1');\n  assert.equal(result.decisionRecord.selectedAlternativeId,result.recommendation.id);\n  assert.ok(result.hardBoundaries.includes('optional_shift_declines_do_not_reduce_worker_reliability'));\n  assert.equal(typeof result.reproducibilityHash,'string');\n});\n",
+          "encoding": "utf-8",
+          "sha": "cde6c453835a0ebacd841e6e534cdc220b8df6e7",
+          "display_url": "https://github.com/paulallen123/-manufacturing-wfm/blob/058ed1e8a86970495b6e851c55585817175d2b24/test/frontier/agency-operating-system-v2.test.mjs",
+          "display_title": "agency-operating-system-v2.test.mjs"
+        }
+      },
+      {
+        "n": 239,
+        "path": "src/frontier/agency-operating-system.mjs",
+        "ref": "058ed1e8a86970495b6e851c55585817175d2b24",
+        "result": {
+          "content": "import crypto from 'node:crypto';\nimport { planAgencyLabourFulfilment } from './agency-labour-exchange.mjs';\nimport { buildAgencyWorkerCapabilityPassport } from './agency-worker-passport.mjs';\nimport {\n  rankAgencyWorkersContextually,\n  rankAgencySuppliersByRealisedOutcome,\n  simulateFlexibleLabourOptions,\n  assessAgencyAutonomyAuthority\n} from './agency-operations-intelligence.mjs';\nimport { createAgencyDecisionRecord } from './agency-decision-ledger.mjs';\nimport { AGENCY_TEMP_CLOCKING_PROFILE_VERSION } from './agency-temp-clocking-profile.mjs';\n\nexport const AGENCY_OPERATING_SYSTEM_VERSION='agency-operating-system-v0.1.0';\n\nconst n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;\nconst stable=value=>Array.isArray(value)\n  ? value.map(stable)\n  : value&&typeof value==='object'\n    ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])]))\n    : value;\nconst hash=value=>crypto.createHash('sha256').update(JSON.stringify(stable(value))).digest('hex');\n\nfunction workerPacket(worker,passport,request){\n  return {\n    workerId:worker.workerId,\n    agencyId:worker.agencyId,\n    shift:{\n      siteId:request.siteId??null,\n      location:request.location??null,\n      roleId:request.roleId??null,\n      roleName:request.roleName??null,\n      startAt:request.startAt??null,\n      endAt:request.endAt??null,\n      shiftType:request.shiftType??null,\n      payDisplay:request.workerPayDisplay??null,\n    },\n    readiness:{\n      siteReady:passport?.siteReadiness?.siteReady===true,\n      inductionReady:passport?.siteReadiness?.inductionReady===true,\n      restConfirmed:passport?.siteReadiness?.restConfirmed===true,\n      rightToWorkStatus:passport?.siteReadiness?.rightToWorkStatus??'unknown',\n    },\n    preparation:{\n      improvementOpportunities:passport?.improvementOpportunities??[],\n      verifiedSkills:passport?.capabilityGraph?.verifiedSkills??[],\n      qualifications:passport?.capabilityGraph?.qualifications??[],\n    },\n    workerChoice:{\n      preferences:passport?.preferences??{},\n      declineOptionalShiftPenalty:false,\n    },\n    tempClocking:{\n      trigger:'final_confirmation_plus_work_start_readiness',\n      automation:'create_time_limited_placement_bound_profile',\n      managerDayOfShiftSetupRequired:false,\n      expectedJourney:'arrive_identify_clock_in_clock_out_leave',\n      revokeOn:['placement_cancelled','worker_replaced','readiness_revoked','site_access_revoked'],\n    },\n    experienceBoundary:'one_clear_shift_view_preparation_transparency_timesheet_visibility_and_rebooking_continuity'\n  };\n}\n\nfunction agencyDemandPacket(request,rankedWorkers,supplierRanking){\n  return {\n    requestId:request.requestId??null,\n    machineReadableDemand:{\n      siteId:request.siteId??null,\n      roleId:request.roleId??null,\n      roleName:request.roleName??null,\n      count:Number(request.count||0),\n      startAt:request.startAt??null,\n      endAt:request.endAt??null,\n      requiredSkills:structuredClone(request.requiredSkills??[]),\n      requiredQualifications:structuredClone(request.requiredQualifications??[]),\n      healthSafetyRisks:structuredClone(request.healthSafetyRisks??[]),\n      maxChargePerHour:request.maxChargePerHour??null,\n    },\n    candidateFeedback:rankedWorkers.map(row=>({\n      workerId:row.workerId,\n      agencyId:row.agencyId,\n      eligible:row.eligible,\n      contextualSuccessProbability:row.contextualSuccessProbability,\n      failures:row.failures,\n      uncertainty:row.explainability?.uncertainty??null,\n    })),\n    supplierFeedback:supplierRanking.map(row=>({\n      agencyId:row.agencyId,\n      outcomeScore:row.outcomeScore,\n      evidenceConfidence:row.evidenceConfidence,\n      totalCostOfFailureSignal:row.totalCostOfFailureSignal,\n    })),\n    experienceBoundary:'precise_demand_fast_submission_rejection_reasons_live_fill_visibility_and_dispute_prevention'\n  };\n}\n\nfunction defaultOperationalOptions(input,fulfilment,workerRanking){\n  const request=input.request||{};\n  const count=Math.max(1,Number(request.count||1));\n  const best=workerRanking.filter(x=>x.eligible).slice(0,count);\n  const avgSuccess=best.length?best.reduce((s,x)=>s+x.contextualSuccessProbability,0)/best.length:.5;\n  const agencyCost=best.reduce((s,row)=>{\n    const worker=(input.candidates||[]).find(w=>w.workerId===row.workerId);\n    return s+Math.max(0,n(worker?.chargeRatePerHour))*Math.max(0,n(request.durationHours,8));\n  },0);\n  const protectedValue=Math.max(0,n(input.productionEconomics?.productionValueAtRisk,0));\n  return [{\n    id:'agency_fulfilment',\n    fillProbability:Math.min(1,avgSuccess),\n    qualityPassProbability:Math.max(.5,avgSuccess),\n    productivityFactor:Math.max(.5,avgSuccess),\n    productivityVariance:.08,\n    labourCost:agencyCost,\n    productionValue:protectedValue,\n    shortageCost:Math.max(0,n(input.productionEconomics?.shortageCost,protectedValue*.7)),\n    qualityFailureCost:Math.max(0,n(input.productionEconomics?.qualityFailureCost,protectedValue*.1)),\n  }];\n}\n\nexport function runAgencyOperatingSystem(input={}){\n  if(!input.tenantId||!input.siteId) throw new TypeError('tenantId and siteId are required');\n  const request={...(input.request||{}),siteId:input.siteId};\n  const fulfilment=planAgencyLabourFulfilment({...input,request});\n  const passports=(Array.isArray(input.candidates)?input.candidates:[]).map(worker=>buildAgencyWorkerCapabilityPassport({\n    worker,\n    assignments:(input.assignmentHistory||[]).filter(x=>x.workerId===worker.workerId),\n    training:(input.trainingHistory||[]).filter(x=>x.workerId===worker.workerId),\n    outcomes:(input.workerOutcomes||[]).filter(x=>x.workerId===worker.workerId),\n    preferences:worker.preferences,\n    context:{siteId:input.siteId,roleId:request.roleId,lineId:request.lineId},\n    now:input.now??null,\n  }));\n\n  const workerRanking=rankAgencyWorkersContextually({\n    workers:input.candidates||[],\n    agencies:input.agencies||[],\n    request,\n    policy:{...(input.policy||{}),tenantId:input.tenantId},\n    now:input.now??null,\n    passports,\n  });\n  const supplierRanking=rankAgencySuppliersByRealisedOutcome({\n    agencies:input.agencies||[],\n    events:input.agencyEvents||[],\n    request,\n    now:input.now??null,\n  });\n\n  const options=Array.isArray(input.operationalOptions)&&input.operationalOptions.length\n    ? input.operationalOptions\n    : defaultOperationalOptions(input,fulfilment,workerRanking);\n  const simulation=simulateFlexibleLabourOptions({\n    options,\n    seed:input.simulationSeed??request.requestId??'vector-agency',\n    runs:input.simulationRuns??1000,\n    riskPenalty:input.riskPenalty??.25,\n  });\n  const recommended=simulation[0];\n\n  const autonomy=assessAgencyAutonomyAuthority({\n    compliancePass:fulfilment.status!=='request_blocked' && fulfilment.rejectedWorkers?.every(x=>!x.eligible) !== false,\n    withinPolicy:input.policy?.withinAuthority===true,\n    confidence:Math.min(1,Math.max(0,recommended?.serviceSuccessProbability??0)),\n    minimumConfidence:input.policy?.minimumAutoConfidence??.92,\n    reversible:input.policy?.reversibleAgencyDispatch===true,\n    highRisk:request.highRisk===true || (request.healthSafetyRisks||[]).some(x=>x?.severity==='high'),\n    adverseEmploymentImpact:false,\n    dataQuality:input.dataQuality??1,\n    minimumDataQuality:input.policy?.minimumDataQuality??.9,\n  });\n\n  const selectedAlternativeId=recommended?.id??options[0]?.id;\n  const decisionRecord=createAgencyDecisionRecord({\n    tenantId:input.tenantId,\n    decisionId:input.decisionId??('agency:'+String(request.requestId??hash({request,now:input.now})).slice(0,24)),\n    decidedAt:input.now??null,\n    context:{\n      siteId:input.siteId,\n      requestId:request.requestId??null,\n      roleId:request.roleId??null,\n      productionEconomics:structuredClone(input.productionEconomics??{}),\n    },\n    alternatives:simulation,\n    selectedAlternativeId,\n    evidence:{\n      fulfilmentHash:fulfilment.reproducibilityHash??null,\n      workerPassportHashes:passports.map(p=>p.passportHash),\n      rankedWorkers:workerRanking.map(x=>({workerId:x.workerId,eligible:x.eligible,probability:x.contextualSuccessProbability,evidenceConfidence:x.evidenceConfidence})),\n      supplierRanking:supplierRanking.map(x=>({agencyId:x.agencyId,outcomeScore:x.outcomeScore,evidenceConfidence:x.evidenceConfidence})),\n    },\n    policy:{\n      autonomy,\n      agencyPolicy:structuredClone(input.policy??{}),\n    },\n    modelVersions:{\n      operatingSystem:AGENCY_OPERATING_SYSTEM_VERSION,\n      fulfilment:fulfilment.engineVersion??null,\n      tempClockingProfile:AGENCY_TEMP_CLOCKING_PROFILE_VERSION,\n    },\n    approval:{\n      required:!autonomy.executeAutomatically,\n      status:autonomy.executeAutomatically?'pre_authorised_policy':'pending_human_approval',\n    },\n  });\n\n  const workerExperience=(input.candidates||[]).map(worker=>workerPacket(\n    worker,\n    passports.find(p=>p.workerId===worker.workerId),\n    request\n  ));\n  const agencyExperience=agencyDemandPacket(request,workerRanking,supplierRanking);\n\n  const output={\n    version:AGENCY_OPERATING_SYSTEM_VERSION,\n    operatingModel:'production_to_flexible_labour_closed_loop',\n    status:fulfilment.status==='request_blocked'?'blocked':'decision_ready',\n    fulfilment,\n    workerPassports:passports,\n    workerRanking,\n    supplierRanking,\n    simulation,\n    recommendation:recommended,\n    autonomy,\n    decisionRecord,\n    postConfirmationAutomation:{\n      trigger:'final_agency_worker_confirmation_and_work_start_readiness_pass',\n      action:'provision_temp_clocking_profile_and_placement_entitlement',\n      dayOfShiftManagerSetupRequired:false,\n      profileLifetime:'placement_bound_with_configured_clocking_grace',\n      registeredKioskOnly:true,\n      rawClockEventsPreserved:true,\n      attendanceReviewBeforePayOrInvoice:true,\n      safeClockOutAfterRevocationForOpenSession:true,\n    },\n    experiences:{\n      operations:{\n        sees:['demand_gap','internal_and_external_options','cost','risk','confidence','supplier_and_worker_outcomes'],\n        decides:['recommended_labour_mix','supplier_order','worker_preference_order','approval_or_bounded_execution'],\n        learns:['attendance','production','quality','safety','cost','invoice','manager_intervention'],\n      },\n      agency:agencyExperience,\n      workers:workerExperience,\n    },\n    hardBoundaries:[\n      'compliance_and_safety_are_hard_gates',\n      'protected_attributes_are_not_ranking_inputs',\n      'optional_shift_declines_do_not_reduce_worker_reliability',\n      'no_direct_payroll_or_worker_pay_mutation_from_ai_ranking',\n      'high_impact_or_non_reversible_actions_require_human_authority',\n      'temp_clocking_profile_only_after_final_confirmation_and_work_start_readiness',\n      'temp_clocking_never_grants_payroll_schedule_invoice_or_worker_master_authority'\n    ],\n  };\n  output.reproducibilityHash=hash(output);\n  return output;\n}\n",
+          "encoding": "utf-8",
+          "sha": "612e0d69d470d9fb6f5dcd207b5d2660fb4c4609",
+          "display_url": "https://github.com/paulallen123/-manufacturing-wfm/blob/058ed1e8a86970495b6e851c55585817175d2b24/src/frontier/agency-operating-system.mjs",
+          "display_title": "agency-operating-system.mjs"
+        }
+      }
+    ]
+  },
+  "limits": [
+    "PR239 complete tree reused at unchanged exact immutable head; fresh metadata only.",
+    "Three historical files deep-read; historical import/test closure not executed.",
+    "Frozen14 selected files exact; no directory-category assumption or whole-repository coverage claim."
+  ]
+}

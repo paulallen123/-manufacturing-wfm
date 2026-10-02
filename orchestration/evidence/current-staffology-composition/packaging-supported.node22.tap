@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: the final Docker stage includes every relative bootstrap dependency
+ok 1 - the final Docker stage includes every relative bootstrap dependency
+  ---
+  duration_ms: 2.4625
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes the same required bootstrap dependencies
+ok 2 - local proof assembly includes the same required bootstrap dependencies
+  ---
+  duration_ms: 0.4547
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes absolute bootstrap runtime dependencies and training closure
+ok 3 - local proof assembly includes absolute bootstrap runtime dependencies and training closure
+  ---
+  duration_ms: 2.4483
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes scheduling runtime dependency closure
+ok 4 - local proof assembly includes scheduling runtime dependency closure
+  ---
+  duration_ms: 0.6332
+  type: 'test'
+  ...
+# Subtest: retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+ok 5 - retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+  ---
+  duration_ms: 156.7693
+  type: 'test'
+  ...
+# Subtest: legacy local-data writes are redirected outside immutable app root
+ok 6 - legacy local-data writes are redirected outside immutable app root
+  ---
+  duration_ms: 1.971
+  type: 'test'
+  ...
+# Subtest: integration fabric runtime retains its source-relative loader layout
+ok 7 - integration fabric runtime retains its source-relative loader layout
+  ---
+  duration_ms: 1.2382
+  type: 'test'
+  ...
+# Subtest: packaged lifecycle router preserves the trusted Autopilot execution adapter
+ok 8 - packaged lifecycle router preserves the trusted Autopilot execution adapter
+  ---
+  duration_ms: 0.5664
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 281.1463

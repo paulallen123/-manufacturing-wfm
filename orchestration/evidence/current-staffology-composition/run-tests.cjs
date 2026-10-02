@@ -1,0 +1,22 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto');
+const parse=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
+const scope=process.argv[2]||'source',label=process.argv[3]||scope,dir=__dirname,base=path.join(dir,'source'),runtime=path.join(dir,'runtime'),out=path.join(dir,label+'.node22.tap'),commit=parse(path.join(dir,'commit.json')),manifest=parse(path.join(dir,'composition-manifest.json'));
+const blob=b=>crypto.createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex'),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+for(const f of manifest.files)if(blob(fs.readFileSync(path.join(base,f.path)))!==f.sha)throw Error('Tracked source drift '+f.path);
+if(commit.tree!==manifest.expectedTree)throw Error('Candidate tree mismatch');
+const evidence=path.join(dir,'private-evidence-'+label);fs.mkdirSync(evidence,{recursive:true});
+const files=[];function walk(p){for(const e of fs.readdirSync(p,{withFileTypes:true})){const q=path.join(p,e.name);if(e.isDirectory()){if(!e.name.startsWith('__security_hold')&&e.name!=='node_modules')walk(q);}else if(/(?:test|spec)\.(?:cjs|mjs|js)$/.test(e.name))files.push(q);}}
+if(scope==='source'){walk(path.join(base,'integrations/staffology'));for(let i=files.length-1;i>=0;i--)if(['full-http-employee-journey.test.cjs','staffology-employee-persistence.test.cjs'].includes(path.basename(files[i])))files.splice(i,1);files.push(path.join(base,'ux-overlay/vector-staffology-controls.test.cjs'),path.join(base,'ux-overlay/vector-settings-navigation.test.cjs'));}
+else if(scope==='full-http')files.push(path.join(base,'integrations/staffology/independent/full-http-employee-journey.test.cjs'));
+else if(scope==='persistence')files.push(path.join(base,'integrations/staffology/staffology-employee-persistence.test.cjs'));
+else if(scope==='packaging')files.push(path.join(base,'scripts/compose-vector-local-runtime.contract.test.cjs'),path.join(base,'tests/vector-runtime-packaging.test.cjs'),path.join(base,'tests/runtime-process-uid.test.cjs'));
+else if(scope==='packaging-supported')files.push(path.join(base,'tests/vector-runtime-packaging.test.cjs'));
+else throw Error('Unknown scope');
+const args=['--experimental-sqlite'];if(scope==='packaging-supported')args.push('--require',path.join(dir,'loopback-guard.cjs'));else if(scope!=='full-http')args.push('--require',path.resolve('work/trust_review/network-guard.cjs'));args.push('--test','--test-concurrency=1',...files);
+const env={...process.env,CANONICAL_SOURCE_DIR:base,WFM_RUNTIME:runtime,STAFFOLOGY_RUNTIME_MODE:'full',WFM_BUILD_SOURCE_SHA:commit.sha,STAFFOLOGY_PRIVATE_EVIDENCE_DIR:evidence};
+const startedAt=new Date().toISOString(),fd=fs.openSync(out,'w');const run=cp.spawnSync(process.execPath,args,{cwd:base,env,stdio:['ignore',fd,fd],timeout:240000,windowsHide:true});fs.closeSync(fd);
+const text=fs.readFileSync(out,'utf8'),stats=Object.fromEntries([...text.matchAll(/^# (tests|suites|pass|fail|cancelled|skipped|todo|duration_ms) (.+)$/gm)].map(m=>[m[1],Number(m[2])]));
+for(const f of manifest.files)if(blob(fs.readFileSync(path.join(base,f.path)))!==f.sha)throw Error('Post-test source drift '+f.path);
+const receipt={scope,label,sourceSha:commit.sha,sourceTree:commit.tree,parent:commit.parent,native8690Custody:'OPEN',rootTransparentComposition:true,all1109TrackedBlobsVerifiedBeforeAndAfter:true,runtime:process.version,platform:process.platform,startedAt,completedAt:new Date().toISOString(),exitCode:run.status,error:run.error?.message,command:args,files:files.map(p=>path.relative(base,p).replaceAll('\\','/')),stats,evidenceSha256:sha(fs.readFileSync(out)),runtimeProvenanceSha256:sha(fs.readFileSync(path.join(runtime,'LOCAL_PROOF_PROVENANCE.json'))),assemblySha256:sha(fs.readFileSync(path.join(runtime,'STAFFOLOGY_ASSEMBLY.json'))),proofScope:'ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY',networkQualification:scope==='full-http'?'Source fixture blocks unexpected external origin in child; loopback exercised; no blanket parent guard claim':'Networkguard preloaded; no real network',linuxContainerProof:false,customerProof:false};
+fs.writeFileSync(path.join(dir,label+'.receipt.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));console.log(text.split(/\r?\n/).filter(l=>l.startsWith('not ok')).join('\n'));process.exitCode=run.status??1;

@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-02 14:10:43 UTC",
+  "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "state": "success",
+  "statuses": [
+    {
+      "state": "success",
+      "context": "ci/circleci: forge_core_validation",
+      "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/62",
+      "updated_at": "2026-10-02T13:32:32Z"
+    },
+    {
+      "state": "success",
+      "context": "ci/circleci: forge_runtime_validation",
+      "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/63",
+      "updated_at": "2026-10-02T13:38:37Z"
+    }
+  ]
+}

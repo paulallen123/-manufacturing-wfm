@@ -1,0 +1,16 @@
+{
+  "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+  "proofSha256": "44f6d3ffb81b64066349da5b2bc20aa8d2c62186fa514e61584d0511811e637a",
+  "requests": 14,
+  "posts": 1,
+  "actualExternalRequests": 0,
+  "status": "acknowledged",
+  "privateEvidencePhases": [
+    "baseline",
+    "readback",
+    "comparison"
+  ],
+  "customerProof": false,
+  "scope": "LOCAL_SYNTHETIC_COMPOSED_HTTP"
+}

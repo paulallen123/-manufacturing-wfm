@@ -1,0 +1,26 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "--test-concurrency=1",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\staffology-derived-source\\integrations\\staffology\\staffology-adapter.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\staffology-derived-source\\integrations\\staffology\\canonical-production-boundaries.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\staffology-derived-source\\integrations\\staffology\\canonical-operations.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\staffology-derived-source\\ux-overlay\\vector-staffology-controls.test.cjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true,
+  "sourceIdentity": {
+    "kind": "DERIVED_PATCH_TREE_NOT_NATIVE_COMMIT",
+    "tree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c"
+  },
+  "fixtureCandidateSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+  "native8690CustodyOpen": true,
+  "logSha256": "8fde854fca46966c3336dfb7dd63bae7b967d2b4d3b954dc58d153df9862a2ae",
+  "customerProof": false
+}

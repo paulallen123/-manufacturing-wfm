@@ -1,0 +1,30 @@
+{
+  "branch": "review/staffology-customer-proof-20261001",
+  "sha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "tree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+  "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+  "verifiedBlobs": 1109,
+  "actualDelta": 19,
+  "sourceRepairsChanged": 17,
+  "sourceSelectedAlreadyIdentical": 1,
+  "preservedOtherParentBlobs": 1090,
+  "preservedMandatoryProofBlobs": 6,
+  "nonforce": true,
+  "recursiveUntruncated": true,
+  "readbackVerified": true,
+  "independentCompositionVerified": true,
+  "sourceTests": 159,
+  "persistenceTests": 1,
+  "fullHttpTests": 1,
+  "supportedPackagingTests": 8,
+  "initialBroadPackaging": {
+    "tests": 14,
+    "pass": 8,
+    "fail": 6,
+    "qualification": "Windows POSIX PATH/unavailable bash and initial blanket network guard; retained"
+  },
+  "native8690Custody": "OPEN",
+  "linuxDockerProof": "PENDING",
+  "customerProof": false,
+  "sealCheckCorrection": "Initial expected evidence-index filename incorrect; read-only verification corrected actualreview-index path after branch update. Allthree seals now checked; initial error retained in tool history."
+}

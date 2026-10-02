@@ -1,0 +1,59 @@
+{
+  "recordedAt": "2026-10-02 14:10:43 UTC",
+  "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "pipeline": 42,
+  "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+  "job": 62,
+  "jobId": "ddc2b142-f603-425b-8573-5dafee10fec7",
+  "status": "Success",
+  "executor": "Docker/Small",
+  "duration": "18s job details / 19s workflow list",
+  "startedAt": "2026-10-02T13:32:11Z",
+  "completedAt": "2026-10-02T13:32:31Z",
+  "steps": [
+    {
+      "name": "Spin up environment",
+      "status": "success",
+      "durationSeconds": 2
+    },
+    {
+      "name": "Preparing environment variables",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Checkout code",
+      "status": "success",
+      "durationSeconds": 1
+    },
+    {
+      "name": "Admit explicit frozen candidate only",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Verify exact Node runtime",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Current FORGE source validation",
+      "status": "success",
+      "durationSeconds": 13
+    },
+    {
+      "name": "Collect source proof receipts",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Uploading artifacts",
+      "status": "success",
+      "durationSeconds": 0
+    }
+  ],
+  "sourceValidationExecutedObserved": true,
+  "rawTestTotalsRetained": false,
+  "rawArtifactsRetained": false,
+  "customerProof": false
+}

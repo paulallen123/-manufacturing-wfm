@@ -1,0 +1,518 @@
+{
+  "schema": "INDEPENDENT_READONLY_COMPOSITION_CHECK",
+  "candidateCommit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "candidateTree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+  "parentCommit": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+  "parentTree": "d3ef27ae5126ad337bdb6dfea5a9cca9844f37f9",
+  "remoteConnectorFetchedReadOnly": true,
+  "trackedCandidateBlobBytesVerified": 1109,
+  "trackedParentBlobs": 1108,
+  "treeRecomputed": true,
+  "deltaCount": 19,
+  "delta": [
+    {
+      "path": ".circleci/config.yml",
+      "preimage": {
+        "path": ".circleci/config.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b8a0a884df12410d6ce420b61f598795d04680d1",
+        "size": 7920,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/b8a0a884df12410d6ce420b61f598795d04680d1"
+      },
+      "target": {
+        "path": ".circleci/config.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4e1211e401bb022bc9a10ce562f3778069977e08",
+        "size": 7995,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/4e1211e401bb022bc9a10ce562f3778069977e08"
+      }
+    },
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "preimage": {
+        "path": "artifact/vector-proof-freeze.trigger",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+        "size": 4091,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/51d25a33842903473f34ef6d8b87ba15f611b5a3"
+      },
+      "target": {
+        "path": "artifact/vector-proof-freeze.trigger",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "630aa80f4c83d47f6c4c61c2e3329502af3e6514",
+        "size": 4469,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/630aa80f4c83d47f6c4c61c2e3329502af3e6514"
+      }
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-connector.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/canonical-operations-connector.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6d0c9d352f1951ac8a1cb2049430233f81bc6026",
+        "size": 4650,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6d0c9d352f1951ac8a1cb2049430233f81bc6026"
+      },
+      "target": {
+        "path": "integrations/staffology/canonical-operations-connector.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "13cb585b30346387634d368028376cad463776df",
+        "size": 4684,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/13cb585b30346387634d368028376cad463776df"
+      }
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "4de09038e1d30542c9c71af86ba29b8377c7341c",
+        "size": 2999,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/4de09038e1d30542c9c71af86ba29b8377c7341c"
+      },
+      "target": {
+        "path": "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9cf541ec31c8aac6ec518dcc8f1ffadf43000f4d",
+        "size": 2951,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9cf541ec31c8aac6ec518dcc8f1ffadf43000f4d"
+      }
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fb65460ff82cc013e5e355ca853958d29d7669e6",
+        "size": 2158,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/fb65460ff82cc013e5e355ca853958d29d7669e6"
+      },
+      "target": {
+        "path": "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "50c86ca5da5067257294a8738e483f48c4dfcc24",
+        "size": 3471,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/50c86ca5da5067257294a8738e483f48c4dfcc24"
+      }
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "preimage": {
+        "path": "integrations/staffology/canonical-operations.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "58b1139c6ab6108d4e8dbade5c5d873493226c17",
+        "size": 14405,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/58b1139c6ab6108d4e8dbade5c5d873493226c17"
+      },
+      "target": {
+        "path": "integrations/staffology/canonical-operations.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d705dd486bde5a5016b6205985d296e239d8c7e6",
+        "size": 14910,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d705dd486bde5a5016b6205985d296e239d8c7e6"
+      }
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/canonical-operations.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5696f93ae29caf90ca9484f1462d3d181f74683b",
+        "size": 15157,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/5696f93ae29caf90ca9484f1462d3d181f74683b"
+      },
+      "target": {
+        "path": "integrations/staffology/canonical-operations.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b957eac15def38619a44aa90b1a575b4ebdf888a",
+        "size": 15259,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/b957eac15def38619a44aa90b1a575b4ebdf888a"
+      }
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "preimage": {
+        "path": "integrations/staffology/canonical-production-boundaries.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "eb641eaece4ba0ae737600222463e613cbc78197",
+        "size": 16922,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/eb641eaece4ba0ae737600222463e613cbc78197"
+      },
+      "target": {
+        "path": "integrations/staffology/canonical-production-boundaries.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f8783d3baa9492e74303c9d312278b26ad2e61f4",
+        "size": 19443,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f8783d3baa9492e74303c9d312278b26ad2e61f4"
+      }
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/canonical-production-boundaries.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7ac361ee5521c4c3b7703796499645585acf8614",
+        "size": 11832,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/7ac361ee5521c4c3b7703796499645585acf8614"
+      },
+      "target": {
+        "path": "integrations/staffology/canonical-production-boundaries.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "537fdaeb8787794447855c204808b67ef0ea8064",
+        "size": 22012,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/537fdaeb8787794447855c204808b67ef0ea8064"
+      }
+    },
+    {
+      "path": "integrations/staffology/independent-boundaries.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/independent-boundaries.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0a5e98cd8eeea8f91e7e23339570b795145e59cb",
+        "size": 13874,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/0a5e98cd8eeea8f91e7e23339570b795145e59cb"
+      },
+      "target": {
+        "path": "integrations/staffology/independent-boundaries.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7ffa39b5991ad70e5a713668ae34a53eed562e75",
+        "size": 13999,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/7ffa39b5991ad70e5a713668ae34a53eed562e75"
+      }
+    },
+    {
+      "path": "integrations/staffology/independent/docker-admission-contract.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/independent/docker-admission-contract.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5515cb7fd5a01b4a25c52f0afaa647268e3d6c72",
+        "size": 5942,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/5515cb7fd5a01b4a25c52f0afaa647268e3d6c72"
+      },
+      "target": {
+        "path": "integrations/staffology/independent/docker-admission-contract.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0683258beb87567b33f6c6c62368aeb0f6774ca6",
+        "size": 5956,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/0683258beb87567b33f6c6c62368aeb0f6774ca6"
+      }
+    },
+    {
+      "path": "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "21f48b18b2fd2195e745c997a57589ee35b376c0",
+        "size": 26068,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/21f48b18b2fd2195e745c997a57589ee35b376c0"
+      },
+      "target": {
+        "path": "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d613b1cd56df7399ef82ba1d5321620517d25eee",
+        "size": 26406,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d613b1cd56df7399ef82ba1d5321620517d25eee"
+      }
+    },
+    {
+      "path": "integrations/staffology/independent/succession-regressions.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/independent/succession-regressions.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6785331adf5b3057f9836c6692f266f03df32cfd",
+        "size": 4027,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6785331adf5b3057f9836c6692f266f03df32cfd"
+      },
+      "target": {
+        "path": "integrations/staffology/independent/succession-regressions.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fa30239892706e6402cfaf9a7f1fedec080d8b97",
+        "size": 4134,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/fa30239892706e6402cfaf9a7f1fedec080d8b97"
+      }
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "preimage": {
+        "path": "integrations/staffology/staffology-adapter.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f7611c09a83fe5ba4d502912ace65d77ce91b939",
+        "size": 37316,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f7611c09a83fe5ba4d502912ace65d77ce91b939"
+      },
+      "target": {
+        "path": "integrations/staffology/staffology-adapter.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "18d67d781e1914fcc8adde6c6251a3b2376ff26d",
+        "size": 38409,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/18d67d781e1914fcc8adde6c6251a3b2376ff26d"
+      }
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.test.cjs",
+      "preimage": {
+        "path": "integrations/staffology/staffology-adapter.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "01adb39a4ddb5776285d87ea51d3179ad1156c90",
+        "size": 20698,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/01adb39a4ddb5776285d87ea51d3179ad1156c90"
+      },
+      "target": {
+        "path": "integrations/staffology/staffology-adapter.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d81865b4d299641aa83b4ed1cba566db66c06059",
+        "size": 22941,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d81865b4d299641aa83b4ed1cba566db66c06059"
+      }
+    },
+    {
+      "path": "integrations/staffology/test-support/sqlite-store-fixture.cjs",
+      "preimage": {
+        "path": "integrations/staffology/test-support/sqlite-store-fixture.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7fde6d2892fb317a7958d79d7ba291b9f3c767cf",
+        "size": 3543,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/7fde6d2892fb317a7958d79d7ba291b9f3c767cf"
+      },
+      "target": {
+        "path": "integrations/staffology/test-support/sqlite-store-fixture.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6436845fbad8b955939851a3706715bc17e1038c",
+        "size": 3742,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6436845fbad8b955939851a3706715bc17e1038c"
+      }
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "preimage": {
+        "path": "ux-overlay/vector-shell.js",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7a54fb0864527d895847324f638696d789eb3997",
+        "size": 84642,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/7a54fb0864527d895847324f638696d789eb3997"
+      },
+      "target": {
+        "path": "ux-overlay/vector-shell.js",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "389eb5c50399fda21da1bab9b3073c7ed40c6a13",
+        "size": 85498,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/389eb5c50399fda21da1bab9b3073c7ed40c6a13"
+      }
+    },
+    {
+      "path": "ux-overlay/vector-staffology-controls.test.cjs",
+      "preimage": {
+        "path": "ux-overlay/vector-staffology-controls.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "071a19ea6ed709bf51f0b3f663071006586b5bcf",
+        "size": 3801,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/071a19ea6ed709bf51f0b3f663071006586b5bcf"
+      },
+      "target": {
+        "path": "ux-overlay/vector-staffology-controls.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1159e5cde1698c8d1f4617183a8aa5e0be998ea0",
+        "size": 5522,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/1159e5cde1698c8d1f4617183a8aa5e0be998ea0"
+      }
+    },
+    {
+      "path": "integrations/staffology/CURRENT_COMPOSITION_CUSTODY.md",
+      "preimage": null,
+      "target": {
+        "path": "integrations/staffology/CURRENT_COMPOSITION_CUSTODY.md",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a730815b0adfb0b1cd6e5c79f7cb994ee0d8b42b",
+        "size": 1980,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a730815b0adfb0b1cd6e5c79f7cb994ee0d8b42b"
+      }
+    }
+  ],
+  "derivedSelectedPaths": 18,
+  "derivedSelectedChanged": 17,
+  "unchangedSelected": [
+    "integrations/staffology/staffology-employee-persistence.test.cjs"
+  ],
+  "unrelatedParentBlobsPreserved": 1090,
+  "mandatoryProof": [
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "sha": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "mode": "100644"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "sha": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+      "mode": "100644"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "sha": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "sha": "3337ec236e64df9552f881fd5be40132f9794646",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "sha": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "sha": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "mode": "100644"
+    }
+  ],
+  "markerParentPrefixPreserved": true,
+  "markerAppend": "\nreview_vector_exact_composition=2026-10-02T13:20:00Z parent6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad; selected18-source-owner-repairs from DERIVED_PATCH_TREE_d6891f39c48667c7e305fa14a5afbe2691a88b6c; native8690-custodyOPEN; six-current-proof-blobs-preserved; one-cold-exact-CIRCLE_SHA1-non-deploy-CI-admission; runtime-and-customer-proofPENDING; prior-marker-records-historical\n",
+  "oldResolutionUnchanged": true,
+  "custodyClear": true,
+  "native8690Custody": "OPEN",
+  "ancestryClaimToNative8690": false,
+  "findings": [],
+  "receipts": [
+    {
+      "label": "source",
+      "executedBy": "root (not reviewer rerun)",
+      "receiptSha256": "3d06f997bd3383b808234cb639f7ffe1a0b4038b88dfd5f1d64fc37c1f515c4a",
+      "rawSha256": "c2eaaf856919819eea71aa2be21ef8659820fe87e1e4ad8b5c9fa6aed4c6b1e6",
+      "stats": {
+        "tests": 159,
+        "suites": 0,
+        "pass": 159,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 3906.8092
+      },
+      "scope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY",
+      "networkQualification": "Networkguard preloaded; no real network",
+      "linuxContainerProof": false,
+      "customerProof": false
+    },
+    {
+      "label": "persistence",
+      "executedBy": "root (not reviewer rerun)",
+      "receiptSha256": "7e71fbe38cb78d758d717c92041bae2508bc472bb0799d197b01998dba14dc5d",
+      "rawSha256": "04b521870e22a939d728077fab29b6e2a9d4c596a30831b2fc84fc15eb6cc03f",
+      "stats": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 1651.3624
+      },
+      "scope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY",
+      "networkQualification": "Networkguard preloaded; no real network",
+      "linuxContainerProof": false,
+      "customerProof": false
+    },
+    {
+      "label": "full-http",
+      "executedBy": "root (not reviewer rerun)",
+      "receiptSha256": "12314f77fd65999d9f323e99b9c9a94fc4dab95d990ef8b514ac66860198fb76",
+      "rawSha256": "26165fd3733f99d0b58071501aeaa258ce0a82a6257ac0727ca4b3876b5119ae",
+      "stats": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 16018.9697
+      },
+      "scope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY",
+      "networkQualification": "Source fixture blocks unexpected external origin in child; loopback exercised; no blanket parent guard claim",
+      "linuxContainerProof": false,
+      "customerProof": false
+    },
+    {
+      "label": "packaging",
+      "executedBy": "root (not reviewer rerun)",
+      "receiptSha256": "73c591c321f2a6ce72064d9b553708ecccb2cb47b92fd8b1cc130dd5596d1a01",
+      "rawSha256": "94679d0c902fee67221e09e27ad0866ad5db4b5a337fe6692f0f1f8500347e8c",
+      "stats": {
+        "tests": 14,
+        "suites": 0,
+        "pass": 8,
+        "fail": 6,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 1249.0403
+      },
+      "scope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY",
+      "networkQualification": "Networkguard preloaded; no real network",
+      "linuxContainerProof": false,
+      "customerProof": false
+    },
+    {
+      "label": "packaging-supported",
+      "executedBy": "root (not reviewer rerun)",
+      "receiptSha256": "13efeed715fe07ad84fc1546db72536832ce458c0d75e72cb3ec53dbab0ea5bc",
+      "rawSha256": "aa557c82be86cf66c92a48a526fc2fe25a275c0b218293c9e9bb045c9a98cdb7",
+      "stats": {
+        "tests": 8,
+        "suites": 0,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 281.1463
+      },
+      "scope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY",
+      "networkQualification": "Loopback guard preloaded: actual localhost HTTP exercised; external destinations denied",
+      "linuxContainerProof": false,
+      "customerProof": false
+    }
+  ],
+  "reviewerTestsRerun": false,
+  "localDerivedHeldoutsByteBindingPreserved": true,
+  "qualifiedScope": "Exact Git source composition and root local receipt/assembly bindings checked. Native8690 custody, Linux/container/CI, hosted/provider/customer Golden proof remain unproven. Ref advancement is root-owned."
+}

@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: TR-10: ambiguous acquisition retry preserves reviewed intent key; mapping change rotates it
+ok 1 - TR-10: ambiguous acquisition retry preserves reviewed intent key; mapping change rotates it
+  ---
+  duration_ms: 3.609
+  type: 'test'
+  ...
+# Subtest: TR-10 negative: concurrent click cannot create another request or key
+ok 2 - TR-10 negative: concurrent click cannot create another request or key
+  ---
+  duration_ms: 0.9904
+  type: 'test'
+  ...
+# Subtest: TR-10: explicit restage rotates reviewed intent on next acquisition
+ok 3 - TR-10: explicit restage rotates reviewed intent on next acquisition
+  ---
+  duration_ms: 1.1462
+  type: 'test'
+  ...
+# Subtest: TR-11: proof build exports and tee logs stay outside subsequent Docker source context
+ok 4 - TR-11: proof build exports and tee logs stay outside subsequent Docker source context
+  ---
+  duration_ms: 0.5022
+  type: 'test'
+  ...
+# Subtest: derived UI recovery helper reports success only for actually reconciled or acknowledged outcomes
+ok 5 - derived UI recovery helper reports success only for actually reconciled or acknowledged outcomes
+  ---
+  duration_ms: 1.086
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 118.5629

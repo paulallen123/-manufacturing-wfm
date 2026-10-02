@@ -1,0 +1,104 @@
+{"node":"v22.23.2","files":["C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\operations\\runtime\\decision-episode.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\learning\\runtime\\training-scenario-engine.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\policy\\runtime\\regulatory-change-candidate.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\test\\frontier\\agency-labour-exchange.test.mjs"],"networkGuard":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","exit":1,"error":null}
+TAP version 13
+# Subtest: practice scenario reuses Shadow Decision Episode and cannot execute
+ok 1 - practice scenario reuses Shadow Decision Episode and cannot execute
+  ---
+  duration_ms: 48.8184
+  type: 'test'
+  ...
+# Subtest: scenario answer gives feedback but never awards mastery
+ok 2 - scenario answer gives feedback but never awards mastery
+  ---
+  duration_ms: 2.1231
+  type: 'test'
+  ...
+# Subtest: episode is deterministic regardless of option order
+ok 3 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 24.8335
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 4 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.5534
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 5 - do-nothing option is mandatory
+  ---
+  duration_ms: 0.8536
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 6 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 1.8059
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 7 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 1.2504
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 8 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 1.3031
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 9 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 1.7585
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 10 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 0.6209
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 11 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.3074
+  type: 'test'
+  ...
+# node:internal/modules/esm/resolve:275
+#     throw new ERR_MODULE_NOT_FOUND(
+#           ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\src\\frontier\\agency-right-to-work-lifecycle.mjs' imported from C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\src\\frontier\\agency-right-to-work.mjs
+#     at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+#     at moduleResolve (node:internal/modules/esm/resolve:861:10)
+#     at defaultResolve (node:internal/modules/esm/resolve:985:11)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:747:20)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:320:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
+#   code: 'ERR_MODULE_NOT_FOUND',
+#   url: 'file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen/src/frontier/agency-right-to-work-lifecycle.mjs'
+# }
+# Node.js v22.23.2
+# Subtest: C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\test\\frontier\\agency-labour-exchange.test.mjs
+not ok 4 - C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\test\\frontier\\agency-labour-exchange.test.mjs
+  ---
+  duration_ms: 122.0347
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\test\\frontier\\agency-labour-exchange.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 183.864

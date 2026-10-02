@@ -1,0 +1,20 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "./work/trust_review/network-guard.cjs",
+    "--test",
+    "./work/trust_review/workflow-tenant-heldouts.cjs"
+  ],
+  "scope": "Actual isolated extracted expressions/direct handler/real SQLite. No Bash/HTTP/Docker/hosted/auth server executed.",
+  "capture": "Original PowerShell redirected TAP; retained original bytes, decoded only for stats. No rerun for encoding.",
+  "rawSha256": "b759419a1b319acb874d16ed575791a69d02e82aedad3f6c665f0224efe72a47",
+  "rawBytes": 10652,
+  "tests": 17,
+  "pass": 16,
+  "fail": 1,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 2122.5977
+}

@@ -1,0 +1,46 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-successor-capsule\\candidate\\.github\\workflows\\autonomous-integration-fabric.test.cjs"
+  ],
+  "start": "2026-10-02T13:42:06.123Z",
+  "end": "2026-10-02T13:42:11.032Z",
+  "exit": 0,
+  "sourceSnapshot": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\workflow-tenant-successor-capsule\\candidate",
+  "shipping": [
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.yml",
+      "bytes": 17879,
+      "sha256": "4712492ae69a08df66c77a69a4d6e16ed38fd1d753244f899907454d8fdaf1fd",
+      "gitBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "frozenPreimageBlob": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "reviewedPreimageBlob": "b649bc084d2c0f6705aa1a0cc6d877484be42abd",
+      "owner": "lane03/inventory_edges"
+    },
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.test.cjs",
+      "mode": "100644",
+      "sourceLocalPath": "candidate/.github/workflows/autonomous-integration-fabric.test.cjs",
+      "bytes": 14371,
+      "sha256": "1d014b404ab092d998f79497a897b3b752985492c1dc58149754627d3d345d01",
+      "gitBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "frozenPreimageBlob": null,
+      "reviewedPreimageBlob": "fe13057aa62d7ddeb4072d1283842b82484e98ec",
+      "owner": "lane03/inventory_edges"
+    }
+  ],
+  "rawSha256": "cc972f65da5c34a6c8edf496b61df73ef81d1a6f2b1ab5997b6e90eb1a73dea8",
+  "tests": 33,
+  "pass": 33,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 4825.5961,
+  "qualification": "Local extracted expression/direct handler+real SQLite synthetic contract only, no Bash/HTTP/Docker/hosted/provider/auth server proof."
+}

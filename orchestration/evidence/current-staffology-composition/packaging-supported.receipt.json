@@ -1,0 +1,44 @@
+{
+  "scope": "packaging-supported",
+  "label": "packaging-supported",
+  "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "sourceTree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+  "parent": "6c8a9718275953b7bf6fc3a64e92ddf0df29e1ad",
+  "native8690Custody": "OPEN",
+  "rootTransparentComposition": true,
+  "all1109TrackedBlobsVerifiedBeforeAndAfter": true,
+  "runtime": "v22.23.2",
+  "platform": "win32",
+  "startedAt": "2026-10-02T13:27:33.274Z",
+  "completedAt": "2026-10-02T13:27:33.794Z",
+  "exitCode": 0,
+  "command": [
+    "--experimental-sqlite",
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\current-staffology-composition\\loopback-guard.cjs",
+    "--test",
+    "--test-concurrency=1",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\current-staffology-composition\\source\\tests\\vector-runtime-packaging.test.cjs"
+  ],
+  "files": [
+    "tests/vector-runtime-packaging.test.cjs"
+  ],
+  "stats": {
+    "tests": 8,
+    "suites": 0,
+    "pass": 8,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 281.1463
+  },
+  "evidenceSha256": "aa557c82be86cf66c92a48a526fc2fe25a275c0b218293c9e9bb045c9a98cdb7",
+  "runtimeProvenanceSha256": "b3046cda5b44fd9bc5e3383dbd10cf22e4fec3a6db02ce4549c43d56363066bf",
+  "assemblySha256": "d5a1b60a7f2d1561cb18907c4ce596edee3a41f24e2955d936ff5ab1b6572455",
+  "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY",
+  "networkQualification": "Loopback guard preloaded: actual localhost HTTP exercised; external destinations denied",
+  "linuxContainerProof": false,
+  "customerProof": false,
+  "metadataCorrection": "Initial receipt defaulted to blanket-network wording; raw TAP and actual8/8 unchanged, original receipt retained"
+}

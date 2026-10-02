@@ -1,0 +1,77 @@
+{
+  "recordedAt": "2026-10-02T14:06:38.686Z",
+  "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "sourceTree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+  "pipeline": 42,
+  "pipelineId": "6a91fbc3-9ecb-40e1-82f4-532ff0e69684",
+  "workflowId": "9aea79bf-b4e7-4a93-a4ea-7276383ce10c",
+  "job": 63,
+  "jobId": "b095799b-a0a4-4406-b635-219dbd4e358e",
+  "url": "https://app.circleci.com/pipelines/github/paulallen123/-manufacturing-wfm/42/workflows/9aea79bf-b4e7-4a93-a4ea-7276383ce10c/jobs/63",
+  "status": "Success",
+  "executor": "Machine/Linux Medium",
+  "duration": "6m 1s",
+  "steps": [
+    {
+      "name": "Spin up environment",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Preparing environment variables",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Checkout code",
+      "status": "success",
+      "durationSeconds": 1
+    },
+    {
+      "name": "Admit explicit frozen candidate only",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Build exact FORGE runtime candidate",
+      "status": "success",
+      "durationSeconds": 354
+    },
+    {
+      "name": "Verify runtime security boundary",
+      "status": "success",
+      "durationSeconds": 1
+    },
+    {
+      "name": "Prove isolated hosted HTTP boundary",
+      "status": "success",
+      "durationSeconds": 3
+    },
+    {
+      "name": "Capture exact runtime proof",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Clean up proof container",
+      "status": "success",
+      "durationSeconds": 0
+    },
+    {
+      "name": "Uploading artifacts",
+      "status": "success",
+      "durationSeconds": 0
+    }
+  ],
+  "startedAt": "2026-10-02T13:32:32Z",
+  "buildStartedAt": "2026-10-02T13:32:36Z",
+  "buildCompletedAt": "2026-10-02T13:38:30Z",
+  "completedAt": "2026-10-02T13:38:36Z",
+  "heavyExecutionObserved": true,
+  "rawBuildLogRetained": false,
+  "rawArtifactsRetained": false,
+  "artifactDownloadBlocked": true,
+  "claim": "Actual CI execution and step success observed in authenticated UI; source/image/runtime/proof artifact hashes remain unretained and independently unverified. This isolated container check is not deployed customer proof.",
+  "customerProof": false,
+  "hostedCandidateChanged": false
+}

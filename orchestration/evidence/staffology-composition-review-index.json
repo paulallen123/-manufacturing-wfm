@@ -1,0 +1,51 @@
+{
+  "candidateCommit": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "candidateTree": "8bce98423f144ccd90916fc1b1236f3b9996245b",
+  "artifacts": [
+    {
+      "name": "staffology-composition-review.md",
+      "bytes": 2950,
+      "sha256": "b2ffc39c879981b5294d3f68375a1c7b14bbec555c4c18e91f3edb3d751e734f"
+    },
+    {
+      "name": "staffology-composition-findings.json",
+      "bytes": 21120,
+      "sha256": "368e394ecb5b1f5d5739f3bcb9955d9d4283e2ae4da6525068c406b3821a3d28"
+    },
+    {
+      "name": "staffology-composition-all-source-identities.json",
+      "bytes": 291544,
+      "sha256": "223183b46bd29209deea4791ea98c92fe10ad9cb35b7164306efb1c9905f5580"
+    },
+    {
+      "name": "staffology-composition-review.cjs",
+      "bytes": 12002,
+      "sha256": "841eba88c6fc44bc963f4b3ec52a670d58205cf8f53043666d00b711fee6e09e"
+    },
+    {
+      "name": "staffology-composition-remote-parent-tree.json",
+      "bytes": 343463,
+      "sha256": "14c4f7c27199f8a3eeb63b75fb5ce4255ee990d36b7a5d49a82b5b785638dd8f"
+    },
+    {
+      "name": "staffology-composition-remote-candidate-tree.json",
+      "bytes": 343740,
+      "sha256": "0bafff1af476e78b9998c59c0448aa42eefd6daf14389b48a799cea6c953a083"
+    },
+    {
+      "name": "staffology-composition-remote-parent-commit.json",
+      "bytes": 1249,
+      "sha256": "1a912aeea89a2e96184af79d9b71ce06e21aded6c954c6b1d6ab79bf023115f7"
+    },
+    {
+      "name": "staffology-composition-remote-candidate-commit.json",
+      "bytes": 1243,
+      "sha256": "f94ddcefaca135ffd1ce75f219af59c2eda6d5511473886f14b1255155214609"
+    },
+    {
+      "name": "staffology-composition-parent-marker-fetch.json",
+      "bytes": 4265,
+      "sha256": "f6a74bad8e155085dbb7f9f9afe8a48a92b01394f4ca11c2d41535bcf45cba8a"
+    }
+  ]
+}

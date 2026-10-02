@@ -1,0 +1,114 @@
+TAP version 13
+# (node:5368) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: new hosted bootstrap URL uses existing job declared origin
+ok 1 - new hosted bootstrap URL uses existing job declared origin
+  ---
+  duration_ms: 2.4689
+  type: 'test'
+  ...
+# Subtest: new caller delta leaves old workflow outside bootstrap/tenant payload insertions identical
+ok 2 - new caller delta leaves old workflow outside bootstrap/tenant payload insertions identical
+  ---
+  duration_ms: 0.6203
+  type: 'test'
+  ...
+# Subtest: local-proof actor admission requires exact manager and inert bounded tenant string
+ok 3 - local-proof actor admission requires exact manager and inert bounded tenant string
+  ---
+  duration_ms: 20.0824
+  type: 'test'
+  ...
+# Subtest: local-proof JSON literal protects metacharacters without evaluating a shell
+ok 4 - local-proof JSON literal protects metacharacters without evaluating a shell
+  ---
+  duration_ms: 6.3498
+  type: 'test'
+  ...
+# Subtest: local-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+ok 5 - local-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+  ---
+  duration_ms: 236.4147
+  type: 'test'
+  ...
+# Subtest: local-proof cross-tenant submitted body cannot import or activate
+ok 6 - local-proof cross-tenant submitted body cannot import or activate
+  ---
+  duration_ms: 195.6931
+  type: 'test'
+  ...
+# Subtest: local-proof wrong worker leaves durable zero batches/rows
+ok 7 - local-proof wrong worker leaves durable zero batches/rows
+  ---
+  duration_ms: 182.062
+  type: 'test'
+  ...
+# Subtest: local-proof missing tenant literal remains rejected by unchanged real handler
+ok 8 - local-proof missing tenant literal remains rejected by unchanged real handler
+  ---
+  duration_ms: 167.6516
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof actor admission requires exact manager and inert bounded tenant string
+ok 9 - hosted-railway-proof actor admission requires exact manager and inert bounded tenant string
+  ---
+  duration_ms: 19.8419
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof JSON literal protects metacharacters without evaluating a shell
+ok 10 - hosted-railway-proof JSON literal protects metacharacters without evaluating a shell
+  ---
+  duration_ms: 6.4331
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+ok 11 - hosted-railway-proof actual body imports two own-tenant canonical rows after real persisted manager staging
+  ---
+  duration_ms: 188.9176
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof cross-tenant submitted body cannot import or activate
+ok 12 - hosted-railway-proof cross-tenant submitted body cannot import or activate
+  ---
+  duration_ms: 188.5224
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof wrong worker leaves durable zero batches/rows
+ok 13 - hosted-railway-proof wrong worker leaves durable zero batches/rows
+  ---
+  duration_ms: 157.7819
+  type: 'test'
+  ...
+# Subtest: hosted-railway-proof missing tenant literal remains rejected by unchanged real handler
+ok 14 - hosted-railway-proof missing tenant literal remains rejected by unchanged real handler
+  ---
+  duration_ms: 175.9853
+  type: 'test'
+  ...
+# Subtest: persisted manager demotion and session expiry are authoritative for manager routes
+ok 15 - persisted manager demotion and session expiry are authoritative for manager routes
+  ---
+  duration_ms: 197.3159
+  type: 'test'
+  ...
+# Subtest: worker key remains global trusted attestation and malformed array coercion is explicitly unchanged
+ok 16 - worker key remains global trusted attestation and malformed array coercion is explicitly unchanged
+  ---
+  duration_ms: 210.3143
+  type: 'test'
+  ...
+# Subtest: inherited hosted-login source blocker is before delegated server listener, not an auth bypass
+ok 17 - inherited hosted-login source blocker is before delegated server listener, not an auth bypass
+  ---
+  duration_ms: 0.6952
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2077.3231

@@ -1,0 +1,201 @@
+{
+  "protectedCommit": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "protectedTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "sourceTests": {
+    "tests": 21,
+    "pass": 21,
+    "fail": 0,
+    "skip": 0
+  },
+  "heldOut": {
+    "tests": 15,
+    "pass": 5,
+    "fail": 10,
+    "skip": 0
+  },
+  "findings": [
+    {
+      "finding": "DECISION_ARITHMETIC",
+      "ids": [
+        "product-038",
+        "product-041"
+      ],
+      "path": "operations/runtime/decision-episode.cjs",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "cases": [
+        "objective-total-overflow",
+        "prediction-range-overflow"
+      ],
+      "scope": "Existing pure ranking source produces null scores and smaller-benefit recommendation; SHADOW execution remains false.",
+      "status": "FOUND_BOUNDARY_RED",
+      "independentReview": "PENDING",
+      "proposedRepairAuthorised": false,
+      "evidence": [
+        {
+          "case": "objective-total-overflow",
+          "error": null,
+          "total": null,
+          "ranking": [
+            {
+              "optionId": "do-nothing",
+              "score": 0,
+              "uncertainty": 0
+            },
+            {
+              "optionId": "improve",
+              "score": null,
+              "uncertainty": 0
+            }
+          ],
+          "recommendation": "do-nothing"
+        },
+        {
+          "case": "prediction-range-overflow",
+          "error": null,
+          "ranking": [
+            {
+              "optionId": "do-nothing",
+              "score": 0,
+              "uncertainty": 0
+            },
+            {
+              "optionId": "improve",
+              "score": null,
+              "uncertainty": 0
+            }
+          ],
+          "recommendation": "do-nothing"
+        }
+      ]
+    },
+    {
+      "finding": "CHANGE_CONFIDENCE",
+      "ids": [
+        "product-058"
+      ],
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "cases": [
+        "change-confidence"
+      ],
+      "scope": "Invalid confidence exempts informational fixture from review; promotion and execution authority remain false.",
+      "status": "FOUND_BOUNDARY_RED",
+      "independentReview": "PENDING",
+      "proposedRepairAuthorised": false,
+      "evidence": [
+        {
+          "case": "change-confidence",
+          "input": "NaN",
+          "error": null,
+          "state": "STRUCTURED_LOW_AMBIGUITY_CANDIDATE",
+          "reviewRequired": false,
+          "normalisedConfidence": "NaN",
+          "promotionAuthority": false
+        },
+        {
+          "case": "change-confidence",
+          "input": "Infinity",
+          "error": null,
+          "state": "STRUCTURED_LOW_AMBIGUITY_CANDIDATE",
+          "reviewRequired": false,
+          "normalisedConfidence": "Infinity",
+          "promotionAuthority": false
+        },
+        {
+          "case": "change-confidence",
+          "input": "2",
+          "error": null,
+          "state": "STRUCTURED_LOW_AMBIGUITY_CANDIDATE",
+          "reviewRequired": false,
+          "normalisedConfidence": "2",
+          "promotionAuthority": false
+        }
+      ]
+    },
+    {
+      "finding": "LABOUR_POPULATION",
+      "ids": [
+        "product-005",
+        "product-045"
+      ],
+      "path": "src/frontier/agency-labour-exchange.mjs",
+      "blob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+      "cases": [
+        "duplicate-worker-fill",
+        "missing-worker-identity"
+      ],
+      "scope": "Declared preferred coverage counts duplicates or unidentified worker; no direct write/provider executed.",
+      "status": "FOUND_BOUNDARY_RED",
+      "independentReview": "PENDING",
+      "proposedRepairAuthorised": false,
+      "evidence": [
+        {
+          "case": "duplicate-worker-fill",
+          "error": null,
+          "status": "preferred_workers_identified",
+          "coverage": 2,
+          "gap": 0,
+          "selected": [
+            "W1",
+            "W1"
+          ]
+        },
+        {
+          "case": "missing-worker-identity",
+          "error": null,
+          "status": "partial_preferred_coverage_cascade_required",
+          "coverage": 1,
+          "selected": [
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "finding": "LABOUR_RESPONSE_BINDING",
+      "ids": [
+        "product-005",
+        "product-045"
+      ],
+      "path": "src/frontier/agency-labour-exchange.mjs",
+      "blob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+      "cases": [
+        "alternative-worker-mismatch",
+        "alternative-supplier-mismatch",
+        "alternative-request-mismatch"
+      ],
+      "scope": "Matching positive evaluation is accepted for unrelated response identity; source authenticity not established.",
+      "status": "FOUND_BOUNDARY_RED",
+      "independentReview": "PENDING",
+      "proposedRepairAuthorised": false,
+      "evidence": [
+        {
+          "case": "alternative-worker-mismatch",
+          "positive": {
+            "valid": true,
+            "failures": []
+          },
+          "mismatch": {
+            "valid": true,
+            "failures": []
+          }
+        },
+        {
+          "case": "alternative-supplier-mismatch",
+          "mismatch": {
+            "valid": true,
+            "failures": []
+          }
+        },
+        {
+          "case": "alternative-request-mismatch",
+          "mismatch": {
+            "valid": true,
+            "failures": []
+          }
+        }
+      ]
+    }
+  ],
+  "classificationScope": "Source contract defects only; no hosted/customer/permission/provider claim."
+}

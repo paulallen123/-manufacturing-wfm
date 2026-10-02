@@ -1,0 +1,608 @@
+{
+  "existingIdsOnly": true,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "capabilities": [
+    {
+      "id": "product-005",
+      "capability": "Agency labour exchange and hard compliance gates",
+      "lane": "Workforce",
+      "source_branch": "frontier/agency-labour-exchange-v1",
+      "head_sha": "57f6b58764d244fd883d7f883ec28c2d47c0dd18",
+      "source_pr": 82,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/82",
+      "classification": "ALREADY_CANONICAL",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing agency frontier owns fulfillment; use alongside workforce lifecycle, never bypass right-to-work.",
+      "rationale": "82 runtime/test file blobs matched frozen tree; provider availability and hosted wiring unverified.",
+      "evidence_paths": [
+        "src/frontier/agency-labour-exchange.mjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "src/frontier/agency-labour-exchange.mjs",
+          "source_blob_sha": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+          "frozen_blob_sha": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+          "byte_identical_to_frozen": true
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "test/frontier/agency-labour-exchange.test.mjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Retain canonical implementation; verify runtime assembly, full affected regression and hosted customer-like replay before readiness claim"
+      ],
+      "rollback_plan": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes.",
+      "claim_boundary": "FOUND source capability only. File presence, PR merge state, historical reported tests and identical blobs do not establish wired, live, customer-ready or realised value.",
+      "inventoryEnrichment": {
+        "scope": "Lane04 frozen-owner source boundary analysis",
+        "canonicalFiles": [
+          {
+            "path": "src/frontier/agency-labour-exchange.mjs",
+            "blob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-labour-exchange.mjs",
+            "bytes": 19680,
+            "sha256": "567d7d709bc0cb7408dcfa86c084a279d4058bbe24040343fb9865f4c5bff86e",
+            "verified935Copy": true
+          },
+          {
+            "path": "src/frontier/agency-supplier-compliance.mjs",
+            "blob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-supplier-compliance.mjs",
+            "bytes": 6185,
+            "sha256": "794de11092b621e09c0cab0dadd51f7c5c393fb71ba0082a5e9fd601fc5d4274",
+            "verified935Copy": true
+          },
+          {
+            "path": "src/frontier/agency-right-to-work.mjs",
+            "blob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-right-to-work.mjs",
+            "bytes": 14793,
+            "sha256": "20f23219151332439943554ce06373163110d5cc86b58a62171f94ddce20f98b",
+            "verified935Copy": true
+          },
+          {
+            "path": "test/frontier/agency-labour-exchange.test.mjs",
+            "blob": "66f05773412202a44e8fee68988a3d8e6d4753f3",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/test/frontier/agency-labour-exchange.test.mjs",
+            "bytes": 10566,
+            "sha256": "709063281b6f939e99f26c81cc8b59243818f38ec10fd7594a4fa524768e4850",
+            "verified935Copy": true
+          },
+          {
+            "path": "src/frontier/agency-right-to-work-lifecycle.mjs",
+            "blob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc",
+            "mode": "100644",
+            "bytes": 5102,
+            "sha256": "c3ef1ec5ef8f378c9afdca0c1a347a9744652a4673f2d1a9344025f78f6af4c1",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-right-to-work-lifecycle.mjs",
+            "verified935Copy": true,
+            "role": "TRANSITIVE_UNCHANGED_TEST_IMPORT_DEPENDENCY"
+          }
+        ],
+        "newHistoricalFiles": [],
+        "actualFrozenFindings": [
+          "LABOUR_POPULATION",
+          "LABOUR_RESPONSE_BINDING"
+        ],
+        "testsExecuted": [
+          "21/21 frozen source",
+          "5/15 bounded probes"
+        ],
+        "historicalTestsExecuted": false,
+        "remainingWork": [
+          "Parent must admit bounded existing-owner design before source edits.",
+          "Independent source review and authentic runtime/producer proof remain required."
+        ],
+        "rollback": "Shipping changed bytes0; any future source repair must retain exact prior blobs."
+      }
+    },
+    {
+      "id": "product-038",
+      "capability": "Constraint-aware manufacturing scheduling, repair, open-shift/swap and fairness",
+      "lane": "Workforce",
+      "source_branch": "feature/vector-scheduling-parity-evolution-20260923",
+      "head_sha": "5d129fa757d0959c81242be08f6674e5a8eccf05",
+      "source_pr": 233,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+      "classification": "ALREADY_CANONICAL",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Canonical scheduling engine/service owns feasibility and bounded search; no large-instance optimality claim.",
+      "rationale": "Scheduling/forecast/reconciliation source/test blobs identical frozen tree.",
+      "evidence_paths": [
+        "operations/runtime/manufacturing-scheduling-engine.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "operations/runtime/manufacturing-scheduling-engine.cjs",
+          "source_blob_sha": "63970553844acb634391e6b2db865905eb3c4947",
+          "frozen_blob_sha": "63970553844acb634391e6b2db865905eb3c4947",
+          "byte_identical_to_frozen": true
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "operations/runtime/manufacturing-scheduling-engine.test.cjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Retain canonical implementation; verify runtime assembly, full affected regression and hosted customer-like replay before readiness claim"
+      ],
+      "rollback_plan": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes.",
+      "claim_boundary": "FOUND source capability only. File presence, PR merge state, historical reported tests and identical blobs do not establish wired, live, customer-ready or realised value.",
+      "inventoryEnrichment": {
+        "scope": "Lane04 frozen-owner source boundary analysis",
+        "canonicalFiles": [
+          {
+            "path": "operations/runtime/decision-episode.cjs",
+            "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/operations/runtime/decision-episode.cjs",
+            "bytes": 8853,
+            "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39",
+            "verified935Copy": true
+          },
+          {
+            "path": "operations/runtime/decision-episode.test.cjs",
+            "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/operations/runtime/decision-episode.test.cjs",
+            "bytes": 3042,
+            "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3",
+            "verified935Copy": true
+          },
+          {
+            "path": "learning/runtime/training-scenario-engine.cjs",
+            "blob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/learning/runtime/training-scenario-engine.cjs",
+            "bytes": 3742,
+            "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b",
+            "verified935Copy": true
+          },
+          {
+            "path": "learning/runtime/training-scenario-engine.test.cjs",
+            "blob": "6842ec867a99c919fd2084c59cfad2842e96a511",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/learning/runtime/training-scenario-engine.test.cjs",
+            "bytes": 928,
+            "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476",
+            "verified935Copy": true
+          }
+        ],
+        "newHistoricalFiles": [],
+        "actualFrozenFindings": [
+          "DECISION_ARITHMETIC"
+        ],
+        "testsExecuted": [
+          "21/21 frozen source",
+          "5/15 bounded probes"
+        ],
+        "historicalTestsExecuted": false,
+        "remainingWork": [
+          "Parent must admit bounded existing-owner design before source edits.",
+          "Independent source review and authentic runtime/producer proof remain required."
+        ],
+        "rollback": "Shipping changed bytes0; any future source repair must retain exact prior blobs."
+      }
+    },
+    {
+      "id": "product-041",
+      "capability": "Simulation Passport, Decision Assurance and earned autonomy",
+      "lane": "Autopilot",
+      "source_branch": "feature/vector-frontier-t9-converged-20260923",
+      "head_sha": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "source_pr": 235,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/235",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing Autopilot/Trust spine owns permits; map simulation validity and verifier independence into exact permit checks.",
+      "rationale": "Frontier modules absent; canonical Trust spine blobs match but Autopilot changed.",
+      "evidence_paths": [
+        "operations/runtime/frontier-decision-control.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "operations/runtime/frontier-decision-control.cjs",
+          "source_blob_sha": "bbe90c21bbe926317efa8633369f3697508112d5",
+          "frozen_blob_sha": null,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "operations/runtime/frontier-decision-control.test.cjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Select canonical owner and map source dependencies",
+        "Port only unique capability in an isolated development candidate",
+        "Run source/security/adversarial/holdout and exact build/runtime proof",
+        "Verify role UI, restart/durability and rollback/compensation before customer claims"
+      ],
+      "rollback_plan": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes.",
+      "claim_boundary": "FOUND source capability only. File presence, PR merge state, historical reported tests and identical blobs do not establish wired, live, customer-ready or realised value.",
+      "inventoryEnrichment": {
+        "scope": "Lane04 frozen-owner source boundary analysis",
+        "canonicalFiles": [
+          {
+            "path": "operations/runtime/decision-episode.cjs",
+            "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/operations/runtime/decision-episode.cjs",
+            "bytes": 8853,
+            "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39",
+            "verified935Copy": true
+          },
+          {
+            "path": "operations/runtime/decision-episode.test.cjs",
+            "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/operations/runtime/decision-episode.test.cjs",
+            "bytes": 3042,
+            "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3",
+            "verified935Copy": true
+          },
+          {
+            "path": "learning/runtime/training-scenario-engine.cjs",
+            "blob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/learning/runtime/training-scenario-engine.cjs",
+            "bytes": 3742,
+            "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b",
+            "verified935Copy": true
+          },
+          {
+            "path": "learning/runtime/training-scenario-engine.test.cjs",
+            "blob": "6842ec867a99c919fd2084c59cfad2842e96a511",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/learning/runtime/training-scenario-engine.test.cjs",
+            "bytes": 928,
+            "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476",
+            "verified935Copy": true
+          }
+        ],
+        "newHistoricalFiles": [],
+        "actualFrozenFindings": [
+          "DECISION_ARITHMETIC"
+        ],
+        "testsExecuted": [
+          "21/21 frozen source",
+          "5/15 bounded probes"
+        ],
+        "historicalTestsExecuted": false,
+        "remainingWork": [
+          "Parent must admit bounded existing-owner design before source edits.",
+          "Independent source review and authentic runtime/producer proof remain required."
+        ],
+        "rollback": "Shipping changed bytes0; any future source repair must retain exact prior blobs."
+      }
+    },
+    {
+      "id": "product-045",
+      "capability": "Agency worker passports, contextual ranking, exploration and outcome intelligence",
+      "lane": "Workforce",
+      "source_branch": "feature/agency-operating-system-v3-20260925",
+      "head_sha": "058ed1e8a86970495b6e851c55585817175d2b24",
+      "source_pr": 239,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/239",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Canonical agency-v1 identity/compliance/delivery owner; extend with passports, simulations and append-only outcomes.",
+      "rationale": "Five source modules/two test files absent; no bypass of RTW/payroll/worker rights.",
+      "evidence_paths": [
+        "src/frontier/agency-operating-system.mjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "src/frontier/agency-operating-system.mjs",
+          "source_blob_sha": "612e0d69d470d9fb6f5dcd207b5d2660fb4c4609",
+          "frozen_blob_sha": null,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "test/frontier/agency-operating-system-v2.test.mjs",
+        "test/frontier/agency-temp-clocking-profile.test.mjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Select canonical owner and map source dependencies",
+        "Port only unique capability in an isolated development candidate",
+        "Run source/security/adversarial/holdout and exact build/runtime proof",
+        "Verify role UI, restart/durability and rollback/compensation before customer claims"
+      ],
+      "rollback_plan": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes.",
+      "claim_boundary": "FOUND source capability only. File presence, PR merge state, historical reported tests and identical blobs do not establish wired, live, customer-ready or realised value.",
+      "inventoryEnrichment": {
+        "scope": "Lane04 frozen-owner source boundary analysis",
+        "canonicalFiles": [
+          {
+            "path": "src/frontier/agency-labour-exchange.mjs",
+            "blob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-labour-exchange.mjs",
+            "bytes": 19680,
+            "sha256": "567d7d709bc0cb7408dcfa86c084a279d4058bbe24040343fb9865f4c5bff86e",
+            "verified935Copy": true
+          },
+          {
+            "path": "src/frontier/agency-supplier-compliance.mjs",
+            "blob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-supplier-compliance.mjs",
+            "bytes": 6185,
+            "sha256": "794de11092b621e09c0cab0dadd51f7c5c393fb71ba0082a5e9fd601fc5d4274",
+            "verified935Copy": true
+          },
+          {
+            "path": "src/frontier/agency-right-to-work.mjs",
+            "blob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-right-to-work.mjs",
+            "bytes": 14793,
+            "sha256": "20f23219151332439943554ce06373163110d5cc86b58a62171f94ddce20f98b",
+            "verified935Copy": true
+          },
+          {
+            "path": "test/frontier/agency-labour-exchange.test.mjs",
+            "blob": "66f05773412202a44e8fee68988a3d8e6d4753f3",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/test/frontier/agency-labour-exchange.test.mjs",
+            "bytes": 10566,
+            "sha256": "709063281b6f939e99f26c81cc8b59243818f38ec10fd7594a4fa524768e4850",
+            "verified935Copy": true
+          },
+          {
+            "path": "src/frontier/agency-right-to-work-lifecycle.mjs",
+            "blob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc",
+            "mode": "100644",
+            "bytes": 5102,
+            "sha256": "c3ef1ec5ef8f378c9afdca0c1a347a9744652a4673f2d1a9344025f78f6af4c1",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/src/frontier/agency-right-to-work-lifecycle.mjs",
+            "verified935Copy": true,
+            "role": "TRANSITIVE_UNCHANGED_TEST_IMPORT_DEPENDENCY"
+          }
+        ],
+        "newHistoricalFiles": [
+          {
+            "path": "src/frontier/agency-worker-passport.mjs",
+            "sourceRef": "058ed1e8a86970495b6e851c55585817175d2b24",
+            "blob": "42cea220003887722fcdc6522f9544eaa7cd3866",
+            "bytes": 9673,
+            "sha256": "099b6b3b33c86989f37da26607616195edbd6bf3871a2dfa3cd0cb3e9de5620e",
+            "local": "historical/pr239/src/frontier/agency-worker-passport.mjs",
+            "mode": "100644",
+            "frozenBlob": null
+          },
+          {
+            "path": "test/frontier/agency-operating-system-v2.test.mjs",
+            "sourceRef": "058ed1e8a86970495b6e851c55585817175d2b24",
+            "blob": "cde6c453835a0ebacd841e6e534cdc220b8df6e7",
+            "bytes": 12379,
+            "sha256": "6eb894b0e7a56cb944eef2e66d83bfb4b27b86c9dc13614481e2ef7ed99f2652",
+            "local": "historical/pr239/test/frontier/agency-operating-system-v2.test.mjs",
+            "mode": "100644",
+            "frozenBlob": null
+          },
+          {
+            "path": "src/frontier/agency-operating-system.mjs",
+            "sourceRef": "058ed1e8a86970495b6e851c55585817175d2b24",
+            "blob": "612e0d69d470d9fb6f5dcd207b5d2660fb4c4609",
+            "bytes": 10883,
+            "sha256": "f16969833b036dddb04ea6d0e5eb6fec1355741969a266eb9e1c4bbe154a1822",
+            "local": "historical/pr239/src/frontier/agency-operating-system.mjs",
+            "mode": "100644",
+            "frozenBlob": null
+          }
+        ],
+        "actualFrozenFindings": [
+          "LABOUR_POPULATION",
+          "LABOUR_RESPONSE_BINDING"
+        ],
+        "testsExecuted": [
+          "21/21 frozen source",
+          "5/15 bounded probes"
+        ],
+        "historicalTestsExecuted": false,
+        "remainingWork": [
+          "Parent must admit bounded existing-owner design before source edits.",
+          "Independent source review and authentic runtime/producer proof remain required."
+        ],
+        "rollback": "Shipping changed bytes0; any future source repair must retain exact prior blobs."
+      }
+    },
+    {
+      "id": "product-051",
+      "capability": "Proof-carrying authority state exact source/release/scope binding",
+      "lane": "Autopilot / implementation",
+      "source_branch": "feature/vector-forge-proof-carrying-state-20260927",
+      "head_sha": "52cf683ae3f3c84cd8064fc599290f12d766f44e",
+      "source_pr": 269,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/269",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Canonical Trust spine/Autopilot/implementation proposal owners; shared primitive must not parallel authority kernels.",
+      "rationale": "New primitive absent; core and Autopilot differ; PR268 explicitly superseded by269.",
+      "evidence_paths": [
+        "trust/runtime/proof-carrying-state.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "trust/runtime/proof-carrying-state.cjs",
+          "source_blob_sha": "2c9497e88eb9eb0972687921df0d7bbfa3f16cee",
+          "frozen_blob_sha": null,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "trust/runtime/proof-carrying-state.test.cjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Select canonical owner and map source dependencies",
+        "Port only unique capability in an isolated development candidate",
+        "Run source/security/adversarial/holdout and exact build/runtime proof",
+        "Verify role UI, restart/durability and rollback/compensation before customer claims"
+      ],
+      "rollback_plan": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes.",
+      "claim_boundary": "FOUND source capability only. File presence, PR merge state, historical reported tests and identical blobs do not establish wired, live, customer-ready or realised value.",
+      "inventoryEnrichment": {
+        "scope": "Lane04 frozen-owner source boundary analysis",
+        "canonicalFiles": [
+          {
+            "path": "trust/runtime/vector-trust-spine.cjs",
+            "blob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/trust/runtime/vector-trust-spine.cjs",
+            "bytes": 22881,
+            "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45",
+            "verified935Copy": true
+          }
+        ],
+        "newHistoricalFiles": [],
+        "actualFrozenFindings": [],
+        "testsExecuted": [
+          "21/21 frozen source",
+          "5/15 bounded probes"
+        ],
+        "historicalTestsExecuted": false,
+        "remainingWork": [
+          "Parent must admit bounded existing-owner design before source edits.",
+          "Independent source review and authentic runtime/producer proof remain required."
+        ],
+        "rollback": "Shipping changed bytes0; any future source repair must retain exact prior blobs."
+      }
+    },
+    {
+      "id": "product-058",
+      "capability": "Canonical jurisdiction graph, source registry and site policy preflight",
+      "lane": "Country and sites",
+      "source_branch": "release/vector-customer-ready-candidate-20260925",
+      "head_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "source_pr": null,
+      "source_pr_url": null,
+      "classification": "ALREADY_CANONICAL",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Current frozen policy owner; effective/legal-known time and advisory context remain distinct from execution authority.",
+      "rationale": "Direct source inspection confirms verified source refs, temporal scope, no grant of execution authority.",
+      "evidence_paths": [
+        "policy/runtime/jurisdiction-policy-graph.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+          "source_blob_sha": "7f58c8ac9289311a8837e899af200ec785563987",
+          "frozen_blob_sha": "7f58c8ac9289311a8837e899af200ec785563987",
+          "byte_identical_to_frozen": true
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "policy/runtime/jurisdiction-policy-graph.test.cjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "PR body claims only; execution evidence not independently examined by this inventory",
+      "remaining_work": [
+        "Retain canonical implementation; verify runtime assembly, full affected regression and hosted customer-like replay before readiness claim"
+      ],
+      "rollback_plan": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes.",
+      "claim_boundary": "FOUND source capability only. File presence, PR merge state, historical reported tests and identical blobs do not establish wired, live, customer-ready or realised value.",
+      "inventoryEnrichment": {
+        "scope": "Lane04 frozen-owner source boundary analysis",
+        "canonicalFiles": [
+          {
+            "path": "policy/runtime/regulatory-change-candidate.cjs",
+            "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/policy/runtime/regulatory-change-candidate.cjs",
+            "bytes": 3281,
+            "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+            "verified935Copy": true
+          },
+          {
+            "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+            "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+            "mode": "100644",
+            "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "local": "frozen/policy/runtime/regulatory-change-candidate.test.cjs",
+            "bytes": 1881,
+            "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+            "verified935Copy": true
+          }
+        ],
+        "newHistoricalFiles": [],
+        "actualFrozenFindings": [
+          "CHANGE_CONFIDENCE"
+        ],
+        "testsExecuted": [
+          "21/21 frozen source",
+          "5/15 bounded probes"
+        ],
+        "historicalTestsExecuted": false,
+        "remainingWork": [
+          "Parent must admit bounded existing-owner design before source edits.",
+          "Independent source review and authentic runtime/producer proof remain required."
+        ],
+        "rollback": "Shipping changed bytes0; any future source repair must retain exact prior blobs."
+      }
+    }
+  ]
+}

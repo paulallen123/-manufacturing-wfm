@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-02T10:00:44.986Z",
+  "observedAt": "2026-10-02T14:13:35.489Z",
   "provenBaseSha": null,
   "convergenceBaseSha": null,
   "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -328,7 +328,7 @@
     278,
     292
   ],
-  "currentHead": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+  "currentHead": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
   "lastRebase": null,
   "testsExecuted": [
     {
@@ -346,13 +346,118 @@
       "expandedProbes": 31,
       "acadia": 3,
       "staticCommands": 4
+    },
+    {
+      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "local": {
+        "source": {
+          "tests": 159,
+          "pass": 159,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
+        },
+        "persistence": {
+          "tests": 1,
+          "pass": 1,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
+        },
+        "fullHttp": {
+          "tests": 1,
+          "pass": 1,
+          "skip": 0,
+          "mockRequests": 14,
+          "externalRequests": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
+        },
+        "supportedPackaging": {
+          "tests": 8,
+          "pass": 8,
+          "skip": 0,
+          "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
+        },
+        "initialBroadPackaging": {
+          "tests": 14,
+          "pass": 8,
+          "fail": 6,
+          "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
+        }
+      },
+      "ci": "Actual jobs62/63successobserved; rawartifactcustodypending",
+      "customerProof": false
     }
   ],
-  "currentTask": "Repair current Staffology proof path; disjoint future helper port",
+  "currentTask": "Current d4ff source/local/CI execution complete; retain CI artifacts and authorize exact hosted/customer test. Future workflow component reviewed, wholeworkflow login410 blocked",
   "admissionAllowed": false,
   "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
   "isolatedFutureBranch": "feature/vector-lane03-integration-authority-20261002",
   "isolatedFutureSha": "462d1b68b2adc2258750209a87d1895155c54f35",
   "isolatedFutureTree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
-  "componentProofState": "TESTED"
+  "componentProofState": "TESTED_ISOLATED_SOURCE_ONLY",
+  "currentReviewHead": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "lastVerifiedReview": "2026-10-02T14:13:35.489Z",
+  "proofState": "SOURCE_ONLY_OR_PENDING_HOSTED; NOT_CUSTOMER_PROVEN",
+  "historicalCurrentHead": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+  "historicalIsolatedFuture": {
+    "sha": "462d1b68b2adc2258750209a87d1895155c54f35",
+    "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
+    "testsExecuted": [
+      {
+        "runtime": "v22.23.2",
+        "platform": "win32",
+        "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+        "scope": "Direct checkout,19 test files",
+        "pass": 144,
+        "fail": 2,
+        "result": "144 passed;2 files blocked by required composed-runtime environment, not reproduced CircleCI assertions",
+        "evidence": "orchestration/evidence/staffology-node22.23.2.tap"
+      },
+      {
+        "suite": 546,
+        "expandedProbes": 31,
+        "acadia": 3,
+        "staticCommands": 4
+      },
+      {
+        "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+        "local": {
+          "source": {
+            "tests": 159,
+            "pass": 159,
+            "skip": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/source.receipt.json"
+          },
+          "persistence": {
+            "tests": 1,
+            "pass": 1,
+            "skip": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/persistence.receipt.json"
+          },
+          "fullHttp": {
+            "tests": 1,
+            "pass": 1,
+            "skip": 0,
+            "mockRequests": 14,
+            "externalRequests": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/full-http.receipt.json"
+          },
+          "supportedPackaging": {
+            "tests": 8,
+            "pass": 8,
+            "skip": 0,
+            "evidence": "orchestration/evidence/current-staffology-composition/packaging-supported.receipt.json"
+          },
+          "initialBroadPackaging": {
+            "tests": 14,
+            "pass": 8,
+            "fail": 6,
+            "qualification": "Windows POSIX PATH/bashi absence and initial blanket network guard; original reds retained, no14/14 claim"
+          }
+        },
+        "ci": "Actual jobs62/63successobserved; rawartifactcustodypending",
+        "customerProof": false
+      }
+    ]
+  },
+  "isolatedFutureParent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
 }

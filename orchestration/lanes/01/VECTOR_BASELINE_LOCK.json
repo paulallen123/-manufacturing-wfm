@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-02T10:00:44.986Z",
+  "observedAt": "2026-10-02T14:13:35.489Z",
   "provenBaseSha": null,
   "convergenceBaseSha": null,
   "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -49,15 +49,31 @@
   "lastRebase": null,
   "testsExecuted": [
     {
-      "mapped": 22,
-      "independentHeldOuts": 12
+      "sourceSha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+      "sourceTests": 73,
+      "independentHeldOut": 31,
+      "scope": "Current isolated repaired Twin source; no runtime/customer proof"
     }
   ],
-  "currentTask": "Inspect/port compatible read-only Twin projections",
+  "currentTask": "Current reviewed isolated Twin0a950/helper published; runtime admission pending",
   "admissionAllowed": false,
   "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
   "isolatedFutureBranch": "feature/vector-lane01-twin-projections-20261002",
-  "isolatedFutureSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
-  "isolatedFutureTree": "c7a555208d740b871856df8992eee020f3ce2851",
-  "componentProofState": "TESTED"
+  "isolatedFutureSha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+  "isolatedFutureTree": "071403827320c6afc7301479d9c2d7250b82585b",
+  "componentProofState": "TESTED_ISOLATED_SOURCE_ONLY",
+  "currentReviewHead": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+  "lastVerifiedReview": "2026-10-02T14:13:35.489Z",
+  "proofState": "SOURCE_ONLY_OR_PENDING_HOSTED; NOT_CUSTOMER_PROVEN",
+  "historicalIsolatedFuture": {
+    "sha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+    "tree": "c7a555208d740b871856df8992eee020f3ce2851",
+    "testsExecuted": [
+      {
+        "mapped": 22,
+        "independentHeldOuts": 12
+      }
+    ]
+  },
+  "isolatedFutureParent": "f68dff51c655da9fb68c7064c08e384a217b5314"
 }

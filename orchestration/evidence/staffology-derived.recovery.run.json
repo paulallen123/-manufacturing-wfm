@@ -1,0 +1,23 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "--test-concurrency=1",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\staffology-derived.recovery.test.cjs"
+  ],
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "networkGuard": true,
+  "sourceIdentity": {
+    "kind": "DERIVED_PATCH_TREE_NOT_NATIVE_COMMIT",
+    "tree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c"
+  },
+  "fixtureCandidateSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+  "native8690CustodyOpen": true,
+  "logSha256": "ca7c462e619c7c5e307d378b5795c0c9d3f78109d14861bd924473718fbb814e",
+  "customerProof": false
+}

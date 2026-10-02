@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T13:01:11.386Z",
+  "updatedAt": "2026-10-02T14:13:35.489Z",
   "criticalPath": "Staffology repair admission -> exact runtime proof -> all mandatory hosted/customer gates -> immutable proven base -> convergence waves -> live verification",
   "items": [
     {
@@ -127,7 +127,7 @@
       "id": "TR-09",
       "type": "REPAIRABLE_CODE",
       "priority": "P2",
-      "status": "ORIGINAL_POSITIVE_CASE_REPAIRED; TR-09B successorP2OPEN",
+      "status": "ORIGINAL_AND_SUCCESSOR_SOURCE_CASES_CLOSED_ON_CURRENT_D4FF; NOT_CUSTOMER_PROVEN",
       "title": "Recovery dispatch omits the consumed approval from audit",
       "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
       "path": "integrations/staffology/canonical-operations.cjs",
@@ -172,11 +172,15 @@
       "id": "CI-17",
       "type": "REPAIRABLE_TEST_CONTRACT",
       "priority": "P1",
-      "status": "OPEN",
+      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
       "title": "Review935 runtime job23 failed two full-runtime test assertions",
       "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
       "nextAction": "Verify unpublished cb9/1a98 fixture scope and held metadata/detail fixes in current repair source; rerun changed exact source in prescribed pipeline.",
-      "evidence": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/23"
+      "evidence": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/23",
+      "historicalStatus": "OPEN",
+      "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "ciJob": 63,
+      "customerProof": false
     },
     {
       "id": "IMPLEMENTATION-5-21",
@@ -216,40 +220,58 @@
       "id": "LOCAL-FULL-RUNTIME",
       "type": "ENVIRONMENT_SETUP",
       "priority": "P2",
-      "status": "BF9_LOCAL_SYNTHETIC_HTTP_PASS_LINUX_AND_CURRENT_ADMISSION_PENDING",
+      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
       "title": "Official dependency install and runtime composition completed; strict HTTP childstartup still failed locally",
-      "nextAction": "Preserve first startup red; only reviewed Staffology successor plus admitted proof repairs may enter exact Linux/Docker validation."
+      "nextAction": "Preserve first startup red; only reviewed Staffology successor plus admitted proof repairs may enter exact Linux/Docker validation.",
+      "historicalStatus": "BF9_LOCAL_SYNTHETIC_HTTP_PASS_LINUX_AND_CURRENT_ADMISSION_PENDING",
+      "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "ciJob": 63,
+      "customerProof": false
     },
     {
       "id": "CI-19",
       "type": "REPAIRABLE_RUNTIME_BUILD",
       "priority": "P1",
-      "status": "ROOT_CAUSE_EVIDENCED; successorLinuxrerunPENDING",
+      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
       "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
       "title": "New Pipeline19 runtime26 failed,core25 passed",
       "evidence": "orchestration/evidence/ci19-browser/job26-build.log",
       "nextAction": "Read actual failed build logs; distinguish older fixture patch headb851 from new unpublished695 authority/recovery fixes before rerun.",
-      "signature": "Exactb851143tests142pass1fail strictacquire-stage403"
+      "signature": "Exactb851143tests142pass1fail strictacquire-stage403",
+      "historicalStatus": "ROOT_CAUSE_EVIDENCED; successorLinuxrerunPENDING",
+      "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "ciJob": 63,
+      "customerProof": false
     },
     {
       "id": "NATIVE695-HTTP-MAPPING",
       "type": "REPAIRABLE_PROOF_FIXTURE",
       "priority": "P1",
-      "status": "REPAIRED_NATIVE_BF9_LOCAL_PLAIN_HTTP_PASS; Linuxpending",
+      "status": "CURRENT_D4FF_LOCAL_AND_ACTUAL_CI_EXECUTION_SUCCESS_OBSERVED; RAW_CI_PROOF_CUSTODY_PENDING",
       "sourceSha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
       "title": "FullHTTP acquire-stage403: no accepted canonical contract-type/weekly-hours options before fixture acquisition",
       "nextAction": "Sole source owner configures legitimate existing fixture contract through supported authenticated command; preserve mapping guards and all original failures.",
       "repairReportedNative": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
-      "evidence": "orchestration/evidence/native-bf9/full-http-confirmation.receipt.json"
+      "evidence": "orchestration/evidence/native-bf9/full-http-confirmation.receipt.json",
+      "historicalStatus": "REPAIRED_NATIVE_BF9_LOCAL_PLAIN_HTTP_PASS; Linuxpending",
+      "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "ciJob": 63,
+      "customerProof": false
     },
     {
       "id": "SUCCESSOR-CI-TRIGGER",
       "type": "EXACT_CANDIDATE_ADMISSION",
       "priority": "P1",
-      "status": "OPEN",
+      "status": "CLOSED_EXACT_NONDEPLOY_EXECUTION_ON_D4FF; ARTIFACT_CUSTODY_SEPARATE_HOLD",
       "sourceSha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
       "title": "Native695 trigger equals currentb851; successor with remote parentb851 would halt heavyCI",
-      "nextAction": "Sole-owner truthful reviewed successor trigger delta; verify actual jobs run, not halted-green."
+      "nextAction": "Sole-owner truthful reviewed successor trigger delta; verify actual jobs run, not halted-green.",
+      "historicalStatus": "OPEN",
+      "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "actualJobs": [
+        62,
+        63
+      ]
     },
     {
       "id": "PROOF-GATE-REPLAY-COERCION",
@@ -284,21 +306,29 @@
       "id": "TR-09B",
       "type": "REPAIRABLE_CODE",
       "priority": "P2",
-      "status": "OPEN_REPAIR_REQUIRED",
+      "status": "INDEPENDENTLY_CLOSED_ON_SELECTED_DERIVED_CONTENT_CURRENT_SOURCE; NOT_CUSTOMER_PROVEN",
       "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
       "title": "GET-only changed-baseline recovery falsely audited recovery-dispatch",
       "nextAction": "Actual persistedpost-reconcile attempt classification; preserve zeroPOST/noapproval baseline refusal",
-      "evidence": "orchestration/evidence/native-bf9-findings.json"
+      "evidence": "orchestration/evidence/staffology-derived-review.md",
+      "historicalStatus": "OPEN_REPAIR_REQUIRED",
+      "closedSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "derivedTree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
+      "native8690Custody": "OPEN"
     },
     {
       "id": "TR-12",
       "type": "REPAIRABLE_CODE",
       "priority": "P2",
-      "status": "OPEN_REPAIR_REQUIRED",
+      "status": "INDEPENDENTLY_CLOSED_ON_SELECTED_DERIVED_CONTENT_CURRENT_SOURCE; NOT_CUSTOMER_PROVEN",
       "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
       "title": "Resumed403 durable rejection publicly reported retryable and undispatched",
       "nextAction": "Reflect definitive durable rejection/current dispatch marker and actualapproval inresponse/audit; no resend",
-      "evidence": "orchestration/evidence/native-bf9-findings.json"
+      "evidence": "orchestration/evidence/staffology-derived-review.md",
+      "historicalStatus": "OPEN_REPAIR_REQUIRED",
+      "closedSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "derivedTree": "d6891f39c48667c7e305fa14a5afbe2691a88b6c",
+      "native8690Custody": "OPEN"
     },
     {
       "id": "COUNTRY-PROJECTION-INERT-INPUT",
@@ -333,10 +363,12 @@
       "id": "VALUE-PROJECTION-CANONICAL-CONTENT",
       "type": "ISOLATED_FUTURE_COMPONENT",
       "priority": "P2",
-      "status": "CLOSED_ON_REPAIRED_UNPUBLISHED_SOURCE",
+      "status": "CLOSED_ON_REPAIRED_ISOLATED_PUBLISHED_SOURCE",
       "title": "Window-order conflict bypass and rehashed invalid canonical content repaired",
       "evidence": "orchestration/evidence/value-repair-review.md",
-      "nextAction": "Publish isolated reviewed bytes; runtime/customer admission remains pending."
+      "nextAction": "Publish isolated reviewed bytes; runtime/customer admission remains pending.",
+      "historicalStatus": "CLOSED_ON_REPAIRED_UNPUBLISHED_SOURCE",
+      "closedSourceSha": "0e752bc01ff134d67360768bc69b1b12951faac9"
     },
     {
       "id": "PROOF-RUNNER-PAYROLL-PROPAGATION",
@@ -427,6 +459,42 @@
       "nativeSha": "8690a0bf9b025b6574b410c27cb9a01409fa10c7",
       "title": "Exported patch and latest two declared blobs do not reconstruct latest native tree",
       "nextAction": "Use same owner export to obtain exact latest bytes; retain discrepancy and do not publish/test under false8690label"
+    },
+    {
+      "id": "CI42-ARTIFACT-CUSTODY",
+      "status": "OPEN_ACCESS_REQUIRED",
+      "severity": "BLOCKER",
+      "currentSourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd",
+      "nextAction": "Retain and hash Pipeline42 jobs62/63 source/image/runtime/Staffology artifacts through the existing authorized CircleCI reader, verify them against d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd, then complete the exact hosted Golden Journey test authorization packet.",
+      "evidence": "orchestration/evidence/ci42/source-download-receipt.json",
+      "customerProof": false
+    },
+    {
+      "id": "WORKFLOW-TENANT-01",
+      "status": "CLOSED_ONLY_ON_EXACT_REVIEWED_ISOLATED_SUCCESSOR",
+      "sourceBlob": "548c10430ddcba08738995530f3daded8b63b2c0",
+      "testBlob": "337921b6c0988fda2b456c58cfd18ee5c935b925",
+      "heldOutPass": 17,
+      "adjacentPass": 33,
+      "wholeWorkflow": "BLOCKED_BEFORE_TENANT_BINDING",
+      "inheritedLogin410": true
+    },
+    {
+      "id": "LANE04-FROZEN-BOUNDARIES",
+      "status": "REPRODUCED10_REPAIR_APPROVED_SAME_EXISTING_OWNER",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "tests": 15,
+      "pass": 5,
+      "fail": 10,
+      "execution": "ISOLATED_LOCAL_ONLY",
+      "evidence": "orchestration/evidence/lane04-owner-boundaries/evidence-index.json"
+    },
+    {
+      "id": "GOLDEN-BROWSER-AUTH-CALLER",
+      "status": "OPEN_SOURCE_COMPATIBILITY_REVIEW",
+      "severity": "BLOCKER",
+      "detail": "Existing browser proof client expects password /api/login200 while hosted bootstrap refuses410; existing signed proof-session caller must be reused with authorized signer/current persisted role/tenant. No auth weakening or session seeding.",
+      "sourceSha": "d4ffa972a2ddcaf433eff0206fe2cdc77fe13fdd"
     }
   ]
 }

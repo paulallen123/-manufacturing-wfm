@@ -1,0 +1,285 @@
+{
+  "schema": "INDEPENDENT_BOUNDARY_REVIEW",
+  "capabilityId": "product-058",
+  "baselineCommit": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "mode": "ISOLATED_FUTURE_EXISTING_OWNER_REPAIR",
+  "broadState": "IN_PROGRESS",
+  "componentConclusion": "NO_MATERIAL_P1_P2_FOUND_IN_BOUNDED_ISOLATED_SOURCE_REPAIR",
+  "publication": false,
+  "sourceAuthentication": false,
+  "customerProof": false,
+  "findings": [],
+  "shipping": [
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "mode": "100644",
+      "bytes": 6740,
+      "blob": "88decc24a881f43fe73b32c25617591683144e84",
+      "sha256": "c167c324c9179b8b0c5b4730b137723d2fc9d23688692e8a5d29b920dc4ce143",
+      "local": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "preimageBytes": 4591,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 2149
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "mode": "100644",
+      "bytes": 6233,
+      "blob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+      "sha256": "4f297e6a24f1235db5f8dfb575edec15a314ec6379ba56e2773cd173379feed4",
+      "local": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "preimageBytes": 1559,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 4674
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "mode": "100644",
+      "bytes": 6695,
+      "blob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+      "sha256": "5488a04ee4cfa857dcf7ac4666d7862d17bb86d1129bdbfdbefa8ba26f627fc2",
+      "local": "policy/runtime/country-policy-pack-registry.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "preimageBytes": 5407,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 1288
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "mode": "100644",
+      "bytes": 3170,
+      "blob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+      "sha256": "c7fbdc5f952cc7e09395647b17a1a101d7e81a113d10f963b9066d5443baa2b0",
+      "local": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "preimageBytes": 1555,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 1615
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "mode": "100644",
+      "bytes": 6250,
+      "blob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+      "sha256": "270843eeb104bb4d103647069fc60439c34c821d8d2732285fd17cccbcf88c43",
+      "local": "policy/runtime/global-site-policy-preflight.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "preimageBytes": 4295,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 1955
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "mode": "100644",
+      "bytes": 5319,
+      "blob": "c4c06550ab63391eec40b07a17b69971d1499866",
+      "sha256": "4b92d224ca1d5170c2185a47a98aed6c00c5592faa76c40146d94cb0d66f68b8",
+      "local": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "preimageBytes": 2439,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 2880
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "mode": "100644",
+      "bytes": 12319,
+      "blob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+      "sha256": "0f2446883db46da796564e1d5ed6c11110646986a414938f14081521de6927a2",
+      "local": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "preimageBytes": 10225,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 2094
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "mode": "100644",
+      "bytes": 7989,
+      "blob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+      "sha256": "71151b34236ec5b04ada537bdaf53718799446cb5ff36ca320caf4599ed523af",
+      "local": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "action": "MODIFY",
+      "preimageBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "preimageBytes": 4010,
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "byteDelta": 3979
+    }
+  ],
+  "bindings": [
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "proposedBlob": "88decc24a881f43fe73b32c25617591683144e84",
+      "mode": "100644",
+      "verified": true
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "proposedBlob": "6a5d4e5c646a0c6723ae11c5ffa4f032a95e2511",
+      "mode": "100644",
+      "verified": true
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "proposedBlob": "1b2369ebcbe742b346254a22e4f9e5e3fde79de1",
+      "mode": "100644",
+      "verified": true
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "proposedBlob": "af7b890ba11a89a77088efabc42b48ddbb5f4bbc",
+      "mode": "100644",
+      "verified": true
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "proposedBlob": "7e83203aa2a38dc11f27f83817c34c60ffca8819",
+      "mode": "100644",
+      "verified": true
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "proposedBlob": "c4c06550ab63391eec40b07a17b69971d1499866",
+      "mode": "100644",
+      "verified": true
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "proposedBlob": "a2f9fcf7d63b82a1ac83a59a686a5e210ee7b8b2",
+      "mode": "100644",
+      "verified": true
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "preimageSource": "exact review935 source snapshot (same frozen f32 path bytes)",
+      "preimageBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "proposedBlob": "e8f3e6584452926f75a81146dc6b1bf9dbc151d5",
+      "mode": "100644",
+      "verified": true
+    }
+  ],
+  "helper": {
+    "owner": "Lane01",
+    "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+    "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+    "shipping": false,
+    "mirrorByteIdentical": true
+  },
+  "custody": {
+    "manifestSha256": "546a59b0702341e3f84fe577bf08042c4af28f910e87325901015a7c3ba914b1",
+    "evidenceIndexSha256": "234db2c36667e87a9534f97b98acffecbdc373eab4a78d393dd9d91921137ea4",
+    "verifiedRows": 50,
+    "postTestVerified": true
+  },
+  "execution": {
+    "heldouts": {
+      "node": "v22.23.2",
+      "exe": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\jurisdiction-repair-heldouts.cjs"
+      ],
+      "start": "2026-10-02T13:23:27.776Z",
+      "end": "2026-10-02T13:23:28.152Z",
+      "exit": 0,
+      "error": null,
+      "logSha256": "88a0799df9cca0a7ea938693410218b2f9932d97360a1beeff53cf8e00309b25",
+      "tests": 59,
+      "pass": 59,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 238.1992,
+      "scope": "isolated local synthetic source contract; no legal/source authenticity/customer/provider or hosted proof"
+    },
+    "affected": {
+      "node": "v22.23.2",
+      "exe": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\authoritative-policy-source-registry.test.cjs",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\country-policy-pack-registry.test.cjs",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\global-site-policy-preflight.test.cjs",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\jurisdiction-policy-graph.test.cjs",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-jurisdiction-repair\\policy\\runtime\\regulatory-change-candidate.test.cjs"
+      ],
+      "start": "2026-10-02T13:23:28.156Z",
+      "end": "2026-10-02T13:23:28.499Z",
+      "exit": 0,
+      "error": null,
+      "logSha256": "a8b3ba3a598e683668ec7bc545165cee4960cfeb8168d53b1d56a8af0d4c290d",
+      "tests": 40,
+      "pass": 40,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 258.9447,
+      "scope": "isolated local synthetic source contract; no legal/source authenticity/customer/provider or hosted proof"
+    }
+  },
+  "qualifiedLimits": [
+    "Source and verified flags are caller assertions; digest is integrity, not authenticity.",
+    "Trusted clock and graph resolver are explicit configuration collaborators; no verification authority is inferred.",
+    "Country packs select by effective time only; no known-time/history/source integration added.",
+    "Existing permissive Date.parse acceptance, string coercion, and mutable exported sets are retained API outside this bounded repair.",
+    "No source retrieval, tenant authority store, legal facts, runtime routes, provider actions, browser/hosted/customer proof.",
+    "Historical reds remain evidence; independent successor green does not relabel original execution."
+  ],
+  "ownerRetainedExecutions": {
+    "originalHeldout": {
+      "tests": 8,
+      "pass": 3,
+      "fail": 5
+    },
+    "firstRed": {
+      "tests": 34,
+      "pass": 22,
+      "fail": 12
+    },
+    "edgeRed": {
+      "tests": 36,
+      "pass": 34,
+      "fail": 2
+    },
+    "returnRed": {
+      "tests": 40,
+      "pass": 39,
+      "fail": 1
+    }
+  },
+  "independentCoverage": [
+    "13 public data entry paths each tested for accessors, proxies/traps, nested nonfinite values and serializers (39 tests).",
+    "Four public serializers independently tested for getter arrays, overridden map, sparse arrays, undefined, prototype-like JSON keys, and canonical key ordering (4 tests).",
+    "16 behavioral tests for observed/admitted time, freshness/latest, deep detached freeze, bitemporal/site boundaries, country selection, whole-batch identity rejection before graph calls, coverage denominator, collaborator returns/configuration, exact-unit floors/customer ceilings/DENY, and exception/extreme finite behavior."
+  ]
+}

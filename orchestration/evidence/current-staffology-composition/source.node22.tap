@@ -1,0 +1,979 @@
+TAP version 13
+# Subtest: profile staging connector needs no generic ingress bearer and preserves compatible configured connectors
+ok 1 - profile staging connector needs no generic ingress bearer and preserves compatible configured connectors
+  ---
+  duration_ms: 4.2698
+  type: 'test'
+  ...
+# Subtest: wrong tenant, permission, connector, scope, or conflicting configured connector fails closed
+ok 2 - wrong tenant, permission, connector, scope, or conflicting configured connector fails closed
+  ---
+  duration_ms: 0.9555
+  type: 'test'
+  ...
+# Subtest: client connector or scope override is rejected before provider acquisition
+ok 3 - client connector or scope override is rejected before provider acquisition
+  ---
+  duration_ms: 1.1497
+  type: 'test'
+  ...
+# Subtest: configured connector conflict is rejected by operation preflight before provider acquisition
+ok 4 - configured connector conflict is rejected by operation preflight before provider acquisition
+  ---
+  duration_ms: 0.3603
+  type: 'test'
+  ...
+# Subtest: composer does not register profile staging as generic authenticated ingress
+ok 5 - composer does not register profile staging as generic authenticated ingress
+  ---
+  duration_ms: 0.8431
+  type: 'test'
+  ...
+# Subtest: strict full HTTP fixture binds its configured connector to the same server-held scope
+ok 6 - strict full HTTP fixture binds its configured connector to the same server-held scope
+  ---
+  duration_ms: 1.307
+  type: 'test'
+  ...
+# Subtest: hosted profile resolves absent deployment identity from the trusted runtime
+ok 7 - hosted profile resolves absent deployment identity from the trusted runtime
+  ---
+  duration_ms: 1.7972
+  type: 'test'
+  ...
+# Subtest: hosted profile accepts only an explicit exact deployment identity
+ok 8 - hosted profile accepts only an explicit exact deployment identity
+  ---
+  duration_ms: 1.0937
+  type: 'test'
+  ...
+# Subtest: hosted profile rejects absent, malformed, wrong, or stale runtime deployment evidence
+ok 9 - hosted profile rejects absent, malformed, wrong, or stale runtime deployment evidence
+  ---
+  duration_ms: 0.5081
+  type: 'test'
+  ...
+# Subtest: trusted deployment identity cannot substitute for the sealed candidate source
+ok 10 - trusted deployment identity cannot substitute for the sealed candidate source
+  ---
+  duration_ms: 0.214
+  type: 'test'
+  ...
+# Subtest: non-hosted fixtures remain explicit and do not consume Railway identity
+ok 11 - non-hosted fixtures remain explicit and do not consume Railway identity
+  ---
+  duration_ms: 0.2718
+  type: 'test'
+  ...
+# Subtest: invalid canonical workforce mapping fails before Staffology acquisition
+ok 12 - invalid canonical workforce mapping fails before Staffology acquisition
+  ---
+  duration_ms: 2.5383
+  type: 'test'
+  ...
+# Subtest: stale principal fails before mapping validation or provider acquisition
+ok 13 - stale principal fails before mapping validation or provider acquisition
+  ---
+  duration_ms: 0.3376
+  type: 'test'
+  ...
+# Subtest: authority replaced during provider awaits is rechecked before staging PII
+ok 14 - authority replaced during provider awaits is rechecked before staging PII
+  ---
+  duration_ms: 44.6247
+  type: 'test'
+  ...
+# Subtest: status discloses exact non-secret operation scope only to a current authorised principal
+ok 15 - status discloses exact non-secret operation scope only to a current authorised principal
+  ---
+  duration_ms: 2.2679
+  type: 'test'
+  ...
+# (node:19536) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: operation profile is dormant by default and exact-source-bound when enabled
+ok 16 - operation profile is dormant by default and exact-source-bound when enabled
+  ---
+  duration_ms: 4.2309
+  type: 'test'
+  ...
+# Subtest: acquisition-only profile keeps payroll dormant until a released-batch scope is configured
+ok 17 - acquisition-only profile keeps payroll dormant until a released-batch scope is configured
+  ---
+  duration_ms: 1.0386
+  type: 'test'
+  ...
+# Subtest: operation status reveals non-secret exact scope only to the current authorised tenant account
+ok 18 - operation status reveals non-secret exact scope only to the current authorised tenant account
+  ---
+  duration_ms: 0.5277
+  type: 'test'
+  ...
+# Subtest: authenticated acquisition accepts only the server-held tenant, employer and exact cohort
+ok 19 - authenticated acquisition accepts only the server-held tenant, employer and exact cohort
+  ---
+  duration_ms: 42.867
+  type: 'test'
+  ...
+# Subtest: provider list outside the exact cohort is rejected before any employee detail is fetched
+ok 20 - provider list outside the exact cohort is rejected before any employee detail is fetched
+  ---
+  duration_ms: 1.3006
+  type: 'test'
+  ...
+# Subtest: real bridge, SQLite authority and operation attach trusted binding and reconcile one simulated POST across reopen
+ok 21 - real bridge, SQLite authority and operation attach trusted binding and reconcile one simulated POST across reopen
+  ---
+  duration_ms: 92.6385
+  type: 'test'
+  ...
+# Subtest: outside-cohort or conflicting payroll and recovery scope fails before provider read and durable intent
+ok 22 - outside-cohort or conflicting payroll and recovery scope fails before provider read and durable intent
+  ---
+  duration_ms: 12.8707
+  type: 'test'
+  ...
+# Subtest: known valid scope reaches the intercepted baseline GET only after trusted binding is attached
+ok 23 - known valid scope reaches the intercepted baseline GET only after trusted binding is attached
+  ---
+  duration_ms: 30.4093
+  type: 'test'
+  ...
+# Subtest: canonical mapping options reject invalid workforce choices before provider acquisition
+ok 24 - canonical mapping options reject invalid workforce choices before provider acquisition
+  ---
+  duration_ms: 0.6196
+  type: 'test'
+  ...
+# Subtest: canonical mapping options accept an exact current state selection
+ok 25 - canonical mapping options accept an exact current state selection
+  ---
+  duration_ms: 0.9115
+  type: 'test'
+  ...
+# (node:29620) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: production boundary rejects a lost owner and consumes exact authority once
+ok 26 - production boundary rejects a lost owner and consumes exact authority once
+  ---
+  duration_ms: 41.9959
+  type: 'test'
+  ...
+# Subtest: uncertain dispatch survives reopen and begin cannot resend it
+ok 27 - uncertain dispatch survives reopen and begin cannot resend it
+  ---
+  duration_ms: 49.8357
+  type: 'test'
+  ...
+# Subtest: £1,250 provider result remains rejected for approved £12.50 basic pay
+ok 28 - £1,250 provider result remains rejected for approved £12.50 basic pay
+  ---
+  duration_ms: 2.6976
+  type: 'test'
+  ...
+# Subtest: authenticated approved coordinator issues exact authority once and retains simulated financial readback
+ok 29 - authenticated approved coordinator issues exact authority once and retains simulated financial readback
+  ---
+  duration_ms: 94.052
+  type: 'test'
+  ...
+# Subtest: authority accepts only the exact canonical binding and permit schema
+ok 30 - authority accepts only the exact canonical binding and permit schema
+  ---
+  duration_ms: 7.9197
+  type: 'test'
+  ...
+# Subtest: R01 an actor from another tenant cannot issue approval
+ok 31 - R01 an actor from another tenant cannot issue approval
+  ---
+  duration_ms: 8.5515
+  type: 'test'
+  ...
+# Subtest: R01b an actor from another tenant cannot revoke approval
+ok 32 - R01b an actor from another tenant cannot revoke approval
+  ---
+  duration_ms: 15.6173
+  type: 'test'
+  ...
+# Subtest: R02 a permit for another binding, delivery or payload cannot dispatch
+ok 33 - R02 a permit for another binding, delivery or payload cannot dispatch
+  ---
+  duration_ms: 75.5601
+  type: 'test'
+  ...
+# Subtest: authority storage faults are not disguised as a denied permit
+ok 34 - authority storage faults are not disguised as a denied permit
+  ---
+  duration_ms: 18.6915
+  type: 'test'
+  ...
+# Subtest: R03 a differently bound store cannot read another tenant private delivery
+ok 35 - R03 a differently bound store cannot read another tenant private delivery
+  ---
+  duration_ms: 20.8908
+  type: 'test'
+  ...
+# Subtest: R04 a request with the wrong method or employer cannot dispatch
+ok 36 - R04 a request with the wrong method or employer cannot dispatch
+  ---
+  duration_ms: 51.5475
+  type: 'test'
+  ...
+# Subtest: exact unconsumed permit is atomically reused after a pre-dispatch retry
+ok 37 - exact unconsumed permit is atomically reused after a pre-dispatch retry
+  ---
+  duration_ms: 11.7602
+  type: 'test'
+  ...
+# Subtest: approval is bound to canonical person identity, not a reused email
+ok 38 - approval is bound to canonical person identity, not a reused email
+  ---
+  duration_ms: 15.8185
+  type: 'test'
+  ...
+# Subtest: provider deadline budget expands the fenced lease for bounded sequential requests
+ok 39 - provider deadline budget expands the fenced lease for bounded sequential requests
+  ---
+  duration_ms: 25.8268
+  type: 'test'
+  ...
+# Subtest: exact permit safely replaces a still-unconsumed approval owned by a different canonical person
+ok 40 - exact permit safely replaces a still-unconsumed approval owned by a different canonical person
+  ---
+  duration_ms: 15.7155
+  type: 'test'
+  ...
+# Subtest: provably undispatched recovery returns and persists the newly consumed approval identity
+ok 41 - provably undispatched recovery returns and persists the newly consumed approval identity
+  ---
+  duration_ms: 73.93
+  type: 'test'
+  ...
+# Subtest: post-dispatch recovery is classified read-only and retains the original consumed approval
+ok 42 - post-dispatch recovery is classified read-only and retains the original consumed approval
+  ---
+  duration_ms: 74.2297
+  type: 'test'
+  ...
+# Subtest: changed immutable baseline remains honestly held without dispatch
+ok 43 - changed immutable baseline remains honestly held without dispatch
+  ---
+  duration_ms: 49.9137
+  type: 'test'
+  ...
+# Subtest: definitive recovery rejection reports the persisted dispatch and consumed approval
+ok 44 - definitive recovery rejection reports the persisted dispatch and consumed approval
+  ---
+  duration_ms: 58.4222
+  type: 'test'
+  ...
+# Subtest: canonical bridge derives the narrow import from exact retained released bytes
+ok 45 - canonical bridge derives the narrow import from exact retained released bytes
+  ---
+  duration_ms: 4.031
+  type: 'test'
+  ...
+# Subtest: changed retained bytes fail checksum reconciliation
+ok 46 - changed retained bytes fail checksum reconciliation
+  ---
+  duration_ms: 0.9531
+  type: 'test'
+  ...
+# Subtest: sent batches cannot be silently reused
+ok 47 - sent batches cannot be silently reused
+  ---
+  duration_ms: 0.3051
+  type: 'test'
+  ...
+# Subtest: multi-line and unsupported components remain held
+ok 48 - multi-line and unsupported components remain held
+  ---
+  duration_ms: 0.2466
+  type: 'test'
+  ...
+# Subtest: runtime requires current payroll permission and remains dormant
+ok 49 - runtime requires current payroll permission and remains dormant
+  ---
+  duration_ms: 0.4044
+  type: 'test'
+  ...
+# Subtest: runtime derives mapping choices only from the current canonical tenant state
+ok 50 - runtime derives mapping choices only from the current canonical tenant state
+  ---
+  duration_ms: 1.9196
+  type: 'test'
+  ...
+# Subtest: people acquisition crosses only with complete reviewed onboarding mappings
+ok 51 - people acquisition crosses only with complete reviewed onboarding mappings
+  ---
+  duration_ms: 0.6809
+  type: 'test'
+  ...
+# Subtest: mixed lifecycle acquisition durably holds Former and stages eligible Current records separately
+ok 52 - mixed lifecycle acquisition durably holds Former and stages eligible Current records separately
+  ---
+  duration_ms: 0.9401
+  type: 'test'
+  ...
+# Subtest: I01 independent 1250 cents expectation rejects returned 125000 cents
+ok 53 - I01 independent 1250 cents expectation rejects returned 125000 cents
+  ---
+  duration_ms: 36.7265
+  type: 'test'
+  ...
+# Subtest: I02 losing owner during awaited final authorization must not dispatch
+ok 54 - I02 losing owner during awaited final authorization must not dispatch
+  ---
+  duration_ms: 4.5983
+  type: 'test'
+  ...
+# Subtest: I03 existing additional payroll lines must block this basic-only replacement
+ok 55 - I03 existing additional payroll lines must block this basic-only replacement
+  ---
+  duration_ms: 1.9265
+  type: 'test'
+  ...
+# Subtest: I04 unexplained non-basic financial delta must remain unresolved
+ok 56 - I04 unexplained non-basic financial delta must remain unresolved
+  ---
+  duration_ms: 5.0842
+  type: 'test'
+  ...
+# Subtest: I05 oversized streaming response must stop reading at the bound
+ok 57 - I05 oversized streaming response must stop reading at the bound
+  ---
+  duration_ms: 3.9896
+  type: 'test'
+  ...
+# Subtest: I06 a text-only response is refused without invoking unbounded text()
+ok 58 - I06 a text-only response is refused without invoking unbounded text()
+  ---
+  duration_ms: 0.6408
+  type: 'test'
+  ...
+# Subtest: I07 oversized response cancels its reader and aborts the request
+ok 59 - I07 oversized response cancels its reader and aborts the request
+  ---
+  duration_ms: 4.5762
+  type: 'test'
+  ...
+# Subtest: I08 stalled body deadline cancels the pending read
+ok 60 - I08 stalled body deadline cancels the pending read
+  ---
+  duration_ms: 13.934
+  type: 'test'
+  ...
+# Subtest: I09 UTF-8 split across chunks is decoded intact
+ok 61 - I09 UTF-8 split across chunks is decoded intact
+  ---
+  duration_ms: 1.7045
+  type: 'test'
+  ...
+# Subtest: I10 successful basic-only transition requires the guarded dispatch boundary
+ok 62 - I10 successful basic-only transition requires the guarded dispatch boundary
+  ---
+  duration_ms: 6.4691
+  type: 'test'
+  ...
+# Subtest: I11 ownership revoked at persistence dispatch guard refuses submission
+ok 63 - I11 ownership revoked at persistence dispatch guard refuses submission
+  ---
+  duration_ms: 2.6492
+  type: 'test'
+  ...
+# Subtest: I12 ignored or delayed guarded dispatch cannot become a late provider write
+ok 64 - I12 ignored or delayed guarded dispatch cannot become a late provider write
+  ---
+  duration_ms: 2.5307
+  type: 'test'
+  ...
+# Subtest: I13 malformed, duplicate or additional baseline lines refuse replacement
+ok 65 - I13 malformed, duplicate or additional baseline lines refuse replacement
+  ---
+  duration_ms: 13.3372
+  type: 'test'
+  ...
+# Subtest: I14 every unapproved container, unknown field and type change remains held
+ok 66 - I14 every unapproved container, unknown field and type change remains held
+  ---
+  duration_ms: 46.5629
+  type: 'test'
+  ...
+# Subtest: I15 changed run-level financial data remains held with complete comparison evidence
+ok 67 - I15 changed run-level financial data remains held with complete comparison evidence
+  ---
+  duration_ms: 5.3614
+  type: 'test'
+  ...
+# Subtest: I16 missing persisted baseline refuses dispatch despite recordEvidence returning true
+ok 68 - I16 missing persisted baseline refuses dispatch despite recordEvidence returning true
+  ---
+  duration_ms: 4.0725
+  type: 'test'
+  ...
+# Subtest: I17 basic-only changes are classified and bound to preserved baseline/readback hashes
+ok 69 - I17 basic-only changes are classified and bound to preserved baseline/readback hashes
+  ---
+  duration_ms: 3.7803
+  type: 'test'
+  ...
+# Subtest: I18 accepted unresolved 404 cancels an unused response body
+ok 70 - I18 accepted unresolved 404 cancels an unused response body
+  ---
+  duration_ms: 0.4591
+  type: 'test'
+  ...
+# Subtest: I19 a late client response after deadline is cancelled without reading
+ok 71 - I19 a late client response after deadline is cancelled without reading
+  ---
+  duration_ms: 14.8073
+  type: 'test'
+  ...
+# Subtest: I20 denied pre-dispatch authority cannot later reconcile already-matching pay
+ok 72 - I20 denied pre-dispatch authority cannot later reconcile already-matching pay
+  ---
+  duration_ms: 3.4744
+  type: 'test'
+  ...
+# Subtest: I21 wrong amount retains complete comparison, classified as unapproved
+ok 73 - I21 wrong amount retains complete comparison, classified as unapproved
+  ---
+  duration_ms: 3.598
+  type: 'test'
+  ...
+# Subtest: I22 missing, malformed or inconsistent baseline line amounts refuse before POST
+ok 74 - I22 missing, malformed or inconsistent baseline line amounts refuse before POST
+  ---
+  duration_ms: 5.3431
+  type: 'test'
+  ...
+# Subtest: I23 immediate empty chunks cannot starve the deadline
+ok 75 - I23 immediate empty chunks cannot starve the deadline
+  ---
+  duration_ms: 1.4518
+  type: 'test'
+  ...
+# (node:8796) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# SHARED_PERSON_AUTHORITY_OBSERVATION={"approvingAccount":"approving-account@example.invalid","currentApprovingPermissions":[],"samePersonOtherAccountStillPrivileged":true,"stillValid":false,"consumed":false,"providerRequests":0}
+# HELD_CURRENT_AUTHORITY_OBSERVATION={"currentPermissions":[],"cachedPermissions":["payroll.export","company.configure"],"stillValid":false,"consumed":false,"providerRequests":0}
+# HELD_PRE_DISPATCH_SUCCESSOR_OBSERVATION={"beforeStatus":"uncertain","fence":2,"posts":0,"gets":2,"reconciliation":{"status":"retryable","code":"STAFFOLOGY_TRANSPORT_ERROR","dispatchStarted":false},"replay":{"replayed":true,"deliveryId":"staffology:1b82d47babc678d443f46d755ba04109893edcb644239bf0e819957e87d98602","reconciliationRequired":true,"status":"uncertain"},"providerRequests":0}
+# Subtest: current canonical resolver binds the exact approving account when two accounts share personId
+ok 76 - current canonical resolver binds the exact approving account when two accounts share personId
+  ---
+  duration_ms: 6.4406
+  type: 'test'
+  ...
+# Subtest: current canonical authority replacement invalidates permit even when issued request actor is immutable snapshot
+ok 77 - current canonical authority replacement invalidates permit even when issued request actor is immutable snapshot
+  ---
+  duration_ms: 3.6912
+  type: 'test'
+  ...
+# Subtest: zero-dispatch initial read failure remains safely recoverable through real store successor
+ok 78 - zero-dispatch initial read failure remains safely recoverable through real store successor
+  ---
+  duration_ms: 9.5332
+  type: 'test'
+  ...
+# Subtest: fresh fenced successor can resume the original intent once and reconcile without the old worker
+ok 79 - fresh fenced successor can resume the original intent once and reconcile without the old worker
+  ---
+  duration_ms: 35.7119
+  type: 'test'
+  ...
+# Subtest: supported Docker admission composes and binds the strict full canonical runtime
+ok 80 - supported Docker admission composes and binds the strict full canonical runtime
+  ---
+  duration_ms: 2.6022
+  type: 'test'
+  ...
+# Subtest: hosted caller binds configured candidate to the independently read sealed build file
+ok 81 - hosted caller binds configured candidate to the independently read sealed build file
+  ---
+  duration_ms: 1.8626
+  type: 'test'
+  ...
+# Subtest: actual generated Staffology child preload compiles and retains fail-closed loopback fencing
+ok 82 - actual generated Staffology child preload compiles and retains fail-closed loopback fencing
+  ---
+  duration_ms: 1.8466
+  type: 'test'
+  ...
+# (node:5436) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: successor red: a pre-dispatch read failure is durably distinguished from an attempted send
+ok 83 - successor red: a pre-dispatch read failure is durably distinguished from an attempted send
+  ---
+  duration_ms: 5.5012
+  type: 'test'
+  ...
+# Subtest: successor red: a former employee cannot enter the onboarding upsert workflow
+ok 84 - successor red: a former employee cannot enter the onboarding upsert workflow
+  ---
+  duration_ms: 2.6099
+  type: 'test'
+  ...
+# Subtest: successor red: permit consumption remains bound to the approver current authority
+ok 85 - successor red: permit consumption remains bound to the approver current authority
+  ---
+  duration_ms: 3.5299
+  type: 'test'
+  ...
+# (node:16912) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: R01 production binding uses the adapter canonical field names
+ok 86 - R01 production binding uses the adapter canonical field names
+  ---
+  duration_ms: 2.0169
+  type: 'test'
+  ...
+# Subtest: R02 legacy alias binding cannot bypass canonical source identity
+ok 87 - R02 legacy alias binding cannot bypass canonical source identity
+  ---
+  duration_ms: 0.5859
+  type: 'test'
+  ...
+# Subtest: R03 malformed permit check fails closed instead of throwing
+ok 88 - R03 malformed permit check fails closed instead of throwing
+  ---
+  duration_ms: 1.3154
+  type: 'test'
+  ...
+# Subtest: R04 live ownership cannot be stolen by uncertain recovery
+ok 89 - R04 live ownership cannot be stolen by uncertain recovery
+  ---
+  duration_ms: 5.6841
+  type: 'test'
+  ...
+# Subtest: R05 original baseline evidence cannot be replaced
+ok 90 - R05 original baseline evidence cannot be replaced
+  ---
+  duration_ms: 1.198
+  type: 'test'
+  ...
+# Subtest: R06 acknowledged receipt cannot be overwritten
+ok 91 - R06 acknowledged receipt cannot be overwritten
+  ---
+  duration_ms: 1.6702
+  type: 'test'
+  ...
+# Subtest: R07 acknowledged delivery cannot be downgraded to uncertain
+ok 92 - R07 acknowledged delivery cannot be downgraded to uncertain
+  ---
+  duration_ms: 1.6192
+  type: 'test'
+  ...
+# Subtest: R08 production coordinator accepts the exact adapter binding
+ok 93 - R08 production coordinator accepts the exact adapter binding
+  ---
+  duration_ms: 1.1488
+  type: 'test'
+  ...
+# Subtest: R06 rejects £1,250 released gross for approved 1.25 × £10 = £12.50
+ok 94 - R06 rejects £1,250 released gross for approved 1.25 × £10 = £12.50
+  ---
+  duration_ms: 4.8945
+  type: 'test'
+  ...
+# Subtest: R08 rejects duplicated acquired employee that omits another reviewed employee
+ok 95 - R08 rejects duplicated acquired employee that omits another reviewed employee
+  ---
+  duration_ms: 0.4732
+  type: 'test'
+  ...
+# Subtest: R08 accepts a one-to-one exact acquired and reviewed employee cohort
+ok 96 - R08 accepts a one-to-one exact acquired and reviewed employee cohort
+  ---
+  duration_ms: 0.8386
+  type: 'test'
+  ...
+# (node:20364) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: S01 two independent SQLite connections permit exactly one outbound submission
+ok 97 - S01 two independent SQLite connections permit exactly one outbound submission
+  ---
+  duration_ms: 88.6956
+  type: 'test'
+  ...
+# Subtest: S02 acknowledgement and evidence survive closing and reopening SQLite without a resend
+ok 98 - S02 acknowledgement and evidence survive closing and reopening SQLite without a resend
+  ---
+  duration_ms: 59.269
+  type: 'test'
+  ...
+# Subtest: S03 uncertain provider outcome stays held after SQLite reopen
+ok 99 - S03 uncertain provider outcome stays held after SQLite reopen
+  ---
+  duration_ms: 43.2865
+  type: 'test'
+  ...
+# Subtest: S04 mismatched financial details persist across reopen and cannot be acknowledged
+ok 100 - S04 mismatched financial details persist across reopen and cannot be acknowledged
+  ---
+  duration_ms: 44.9506
+  type: 'test'
+  ...
+# Subtest: S05 wrong owner token cannot change SQLite evidence or receipt
+ok 101 - S05 wrong owner token cannot change SQLite evidence or receipt
+  ---
+  duration_ms: 54.0194
+  type: 'test'
+  ...
+# Subtest: S06 transaction failure cannot produce a successful receipt or a resend
+ok 102 - S06 transaction failure cannot produce a successful receipt or a resend
+  ---
+  duration_ms: 52.3524
+  type: 'test'
+  ...
+# Subtest: S07 fresh recovery after reopen uses the original persisted baseline, not a new baseline
+ok 103 - S07 fresh recovery after reopen uses the original persisted baseline, not a new baseline
+  ---
+  duration_ms: 58.8866
+  type: 'test'
+  ...
+# Subtest: S08 missing baseline after restart cannot acknowledge a matching readback
+ok 104 - S08 missing baseline after restart cannot acknowledge a matching readback
+  ---
+  duration_ms: 46.8148
+  type: 'test'
+  ...
+# Subtest: S09 comparison persistence failure cannot acknowledge or resend
+ok 105 - S09 comparison persistence failure cannot acknowledge or resend
+  ---
+  duration_ms: 49.1915
+  type: 'test'
+  ...
+# Subtest: S10 failed dispatch reservation transaction prevents the provider write
+ok 106 - S10 failed dispatch reservation transaction prevents the provider write
+  ---
+  duration_ms: 33.0489
+  type: 'test'
+  ...
+# Subtest: C01 API keys use HTTP Basic, never Bearer
+ok 107 - C01 API keys use HTTP Basic, never Bearer
+  ---
+  duration_ms: 25.4525
+  type: 'test'
+  ...
+# Subtest: C02 arbitrary HTTPS credential destinations are rejected
+ok 108 - C02 arbitrary HTTPS credential destinations are rejected
+  ---
+  duration_ms: 0.9757
+  type: 'test'
+  ...
+# Subtest: C03 origin credentials, query, fragment and non-root path are rejected
+ok 109 - C03 origin credentials, query, fragment and non-root path are rejected
+  ---
+  duration_ms: 0.3153
+  type: 'test'
+  ...
+# Subtest: C04 plain-text 401 retains authentication classification
+ok 110 - C04 plain-text 401 retains authentication classification
+  ---
+  duration_ms: 1.2321
+  type: 'test'
+  ...
+# Subtest: C05 requests carry cancellation and a deadline
+ok 111 - C05 requests carry cancellation and a deadline
+  ---
+  duration_ms: 0.7854
+  type: 'test'
+  ...
+# Subtest: C06 read timeout terminates even if the client ignores the AbortSignal
+ok 112 - C06 read timeout terminates even if the client ignores the AbortSignal
+  ---
+  duration_ms: 26.1326
+  type: 'test'
+  ...
+# Subtest: C07 raw POST refuses missing write authority before any client call
+ok 113 - C07 raw POST refuses missing write authority before any client call
+  ---
+  duration_ms: 0.572
+  type: 'test'
+  ...
+# Subtest: C08 employee detail maps documented nested fields and canonical Person columns
+ok 114 - C08 employee detail maps documented nested fields and canonical Person columns
+  ---
+  duration_ms: 1.9332
+  type: 'test'
+  ...
+# Subtest: C09 pageNum=0 plus full pages and detail GETs acquire the whole fixture cohort
+ok 115 - C09 pageNum=0 plus full pages and detail GETs acquire the whole fixture cohort
+  ---
+  duration_ms: 19.3209
+  type: 'test'
+  ...
+# Subtest: C10 duplicate list IDs and mismatched detail identity are refused
+ok 116 - C10 duplicate list IDs and mismatched detail identity are refused
+  ---
+  duration_ms: 3.9228
+  type: 'test'
+  ...
+# Subtest: C11 missing employee dates are not invented and impossible dates fail
+ok 117 - C11 missing employee dates are not invented and impossible dates fail
+  ---
+  duration_ms: 0.6295
+  type: 'test'
+  ...
+# Subtest: C12 content changes alter sourceVersion even without provider revision
+ok 118 - C12 content changes alter sourceVersion even without provider revision
+  ---
+  duration_ms: 2.1931
+  type: 'test'
+  ...
+# Subtest: C13 stable data with later acquisition timestamps retains sourceVersion
+ok 119 - C13 stable data with later acquisition timestamps retains sourceVersion
+  ---
+  duration_ms: 4.5742
+  type: 'test'
+  ...
+# Subtest: C14 payroll wire mapping is a PayOptionsImport array with explicit basic rate/hours
+ok 120 - C14 payroll wire mapping is a PayOptionsImport array with explicit basic rate/hours
+  ---
+  duration_ms: 1.5628
+  type: 'test'
+  ...
+# Subtest: C15 unsupported multi-line mapping, invalid dates and overflowing numbers fail closed
+ok 121 - C15 unsupported multi-line mapping, invalid dates and overflowing numbers fail closed
+  ---
+  duration_ms: 0.296
+  type: 'test'
+  ...
+# Subtest: C16 sub-cent calculations require an explicit rounding policy
+ok 122 - C16 sub-cent calculations require an explicit rounding policy
+  ---
+  duration_ms: 0.4242
+  type: 'test'
+  ...
+# Subtest: C17 all financial containers and unknown fields are retained
+ok 123 - C17 all financial containers and unknown fields are retained
+  ---
+  duration_ms: 0.861
+  type: 'test'
+  ...
+# Subtest: C18 snapshots are immutable copies and hashes remain valid
+ok 124 - C18 snapshots are immutable copies and hashes remain valid
+  ---
+  duration_ms: 0.1691
+  type: 'test'
+  ...
+# Subtest: C19 arrays and objects cannot compare equal and difference paths are retained
+ok 125 - C19 arrays and objects cannot compare equal and difference paths are retained
+  ---
+  duration_ms: 0.1724
+  type: 'test'
+  ...
+# Subtest: C20 empty import success is followed by real-coordinate readback and financial verification
+ok 126 - C20 empty import success is followed by real-coordinate readback and financial verification
+  ---
+  duration_ms: 8.1289
+  type: 'test'
+  ...
+# Subtest: C21 wrong returned amount £1250 for expected £12.50 is never acknowledged
+ok 127 - C21 wrong returned amount £1250 for expected £12.50 is never acknowledged
+  ---
+  duration_ms: 4.6993
+  type: 'test'
+  ...
+# Subtest: C22 identity-only or missing financial evidence is never acknowledged
+ok 128 - C22 identity-only or missing financial evidence is never acknowledged
+  ---
+  duration_ms: 5.8726
+  type: 'test'
+  ...
+# Subtest: C23 wrong year, period, ordinal or version never acknowledges
+ok 129 - C23 wrong year, period, ordinal or version never acknowledges
+  ---
+  duration_ms: 18.8687
+  type: 'test'
+  ...
+# Subtest: C24 same-identity wrong employee/code and wrong rate/hours are rejected
+ok 130 - C24 same-identity wrong employee/code and wrong rate/hours are rejected
+  ---
+  duration_ms: 21.3261
+  type: 'test'
+  ...
+# Subtest: C25 uncertain POST and response-body loss both read back without resending
+ok 131 - C25 uncertain POST and response-body loss both read back without resending
+  ---
+  duration_ms: 12.7921
+  type: 'test'
+  ...
+# Subtest: C26 unknown 404 readback remains held across a new coordinator
+ok 132 - C26 unknown 404 readback remains held across a new coordinator
+  ---
+  duration_ms: 3.8352
+  type: 'test'
+  ...
+# Subtest: C27 stable business key prevents second send without deliveryId
+ok 133 - C27 stable business key prevents second send without deliveryId
+  ---
+  duration_ms: 6.7353
+  type: 'test'
+  ...
+# Subtest: C28 concurrent losing atomic claim cannot POST
+ok 134 - C28 concurrent losing atomic claim cannot POST
+  ---
+  duration_ms: 3.6878
+  type: 'test'
+  ...
+# Subtest: C29 same business key with changed intent is held, not resent
+ok 135 - C29 same business key with changed intent is held, not resent
+  ---
+  duration_ms: 8.7478
+  type: 'test'
+  ...
+# Subtest: C30 wrong tenant/build/deployment/run/configuration and missing authority refuse POST
+ok 136 - C30 wrong tenant/build/deployment/run/configuration and missing authority refuse POST
+  ---
+  duration_ms: 2.2898
+  type: 'test'
+  ...
+# Subtest: C31 missing binding or missing owner assertion refuses coordinator setup
+ok 137 - C31 missing binding or missing owner assertion refuses coordinator setup
+  ---
+  duration_ms: 0.3124
+  type: 'test'
+  ...
+# Subtest: C32 a lost ownership token refuses all outbound mutation
+ok 138 - C32 a lost ownership token refuses all outbound mutation
+  ---
+  duration_ms: 0.4329
+  type: 'test'
+  ...
+# Subtest: C33 full baseline and mismatched readback are preserved, not just their hashes
+ok 139 - C33 full baseline and mismatched readback are preserved, not just their hashes
+  ---
+  duration_ms: 4.1469
+  type: 'test'
+  ...
+# Subtest: C34 failure to persist baseline evidence prevents POST
+ok 140 - C34 failure to persist baseline evidence prevents POST
+  ---
+  duration_ms: 1.1809
+  type: 'test'
+  ...
+# Subtest: C35 failing local acknowledgement remains unresolved and cannot resend
+ok 141 - C35 failing local acknowledgement remains unresolved and cannot resend
+  ---
+  duration_ms: 3.7453
+  type: 'test'
+  ...
+# Subtest: C36 a silently ignored acknowledgement cannot produce reconciled
+ok 142 - C36 a silently ignored acknowledgement cannot produce reconciled
+  ---
+  duration_ms: 3.3745
+  type: 'test'
+  ...
+# Subtest: C37 persisted intent must be reloaded before reconciliation and cannot be caller-supplied
+ok 143 - C37 persisted intent must be reloaded before reconciliation and cannot be caller-supplied
+  ---
+  duration_ms: 3.3309
+  type: 'test'
+  ...
+# Subtest: C38 a changed current open period blocks the import
+ok 144 - C38 a changed current open period blocks the import
+  ---
+  duration_ms: 0.8623
+  type: 'test'
+  ...
+# Subtest: C39 unknown and infinite pages cannot loop indefinitely
+ok 145 - C39 unknown and infinite pages cannot loop indefinitely
+  ---
+  duration_ms: 3.1063
+  type: 'test'
+  ...
+# Subtest: C40 changed mapped employer/date identity and truncated IDs fail rather than alias
+ok 146 - C40 changed mapped employer/date identity and truncated IDs fail rather than alias
+  ---
+  duration_ms: 0.2405
+  type: 'test'
+  ...
+# Subtest: C41 documented payRunVersion entry field is validated without an invented version field
+ok 147 - C41 documented payRunVersion entry field is validated without an invented version field
+  ---
+  duration_ms: 4.5003
+  type: 'test'
+  ...
+# Subtest: C42 revoked final-boundary permit never acknowledges even when existing pay matches
+ok 148 - C42 revoked final-boundary permit never acknowledges even when existing pay matches
+  ---
+  duration_ms: 1.5658
+  type: 'test'
+  ...
+# Subtest: C43 removed rolled-back or explicitly obsolete entries refuse import
+ok 149 - C43 removed rolled-back or explicitly obsolete entries refuse import
+  ---
+  duration_ms: 3.5723
+  type: 'test'
+  ...
+# Subtest: C44 effective date outside explicitly selected pay-run period refuses import
+ok 150 - C44 effective date outside explicitly selected pay-run period refuses import
+  ---
+  duration_ms: 0.7719
+  type: 'test'
+  ...
+# Subtest: C45 definitive POST authentication rejection is durable and cannot false-acknowledge or resend
+ok 151 - C45 definitive POST authentication rejection is durable and cannot false-acknowledge or resend
+  ---
+  duration_ms: 2.4183
+  type: 'test'
+  ...
+# Subtest: C46 inspect normalizes only documented omitted zero basic pay in present totals
+ok 152 - C46 inspect normalizes only documented omitted zero basic pay in present totals
+  ---
+  duration_ms: 3.7873
+  type: 'test'
+  ...
+# Subtest: Settings & more survives an authoritative content rerender until explicitly closed
+ok 153 - Settings & more survives an authoritative content rerender until explicitly closed
+  ---
+  duration_ms: 2.3118
+  type: 'test'
+  ...
+# Subtest: Staffology customer controls use only authenticated canonical routes and server-held scope
+ok 154 - Staffology customer controls use only authenticated canonical routes and server-held scope
+  ---
+  duration_ms: 2.7625
+  type: 'test'
+  ...
+# Subtest: Staffology controls expose dormant, authority, progress and double-submit boundaries
+ok 155 - Staffology controls expose dormant, authority, progress and double-submit boundaries
+  ---
+  duration_ms: 0.5497
+  type: 'test'
+  ...
+# Subtest: mapping controls derive ordinary choices from authenticated bootstrap without inventing payroll values
+ok 156 - mapping controls derive ordinary choices from authenticated bootstrap without inventing payroll values
+  ---
+  duration_ms: 1.6717
+  type: 'test'
+  ...
+# Subtest: mixed lifecycle response exposes held reasons while eligible batch remains applicable
+ok 157 - mixed lifecycle response exposes held reasons while eligible batch remains applicable
+  ---
+  duration_ms: 0.2267
+  type: 'test'
+  ...
+# Subtest: acquisition retry retains one reviewed-intent key and recovery needs no browser digest
+ok 158 - acquisition retry retains one reviewed-intent key and recovery needs no browser digest
+  ---
+  duration_ms: 0.3192
+  type: 'test'
+  ...
+# Subtest: recover action renders only acknowledged outcomes as success and explains held outcomes
+ok 159 - recover action renders only acknowledged outcomes as success and explains held outcomes
+  ---
+  duration_ms: 1.9087
+  type: 'test'
+  ...
+1..159
+# tests 159
+# suites 0
+# pass 159
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3906.8092

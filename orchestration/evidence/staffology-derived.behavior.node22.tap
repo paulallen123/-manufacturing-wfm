@@ -1,0 +1,82 @@
+TAP version 13
+# (node:6968) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: CONTROL: accepted POST plus unchanged valid pay records one durable acknowledgement
+ok 1 - CONTROL: accepted POST plus unchanged valid pay records one durable acknowledgement
+  ---
+  duration_ms: 78.8338
+  type: 'test'
+  ...
+# {"id":"CONTROL-ACCEPT","status":"acknowledged","result":"reconciled","posts":1,"gets":6}
+# Subtest: TR-02: definite POST 401 must never persist acknowledged
+ok 2 - TR-02: definite POST 401 must never persist acknowledged
+  ---
+  duration_ms: 7.0658
+  type: 'test'
+  ...
+# {"id":"TR-02-401","providerPostStatus":401,"status":"rejected","errorCode":"STAFFOLOGY_AUTH_REJECTED","uncertain":{"code":"STAFFOLOGY_AUTH_REJECTED","definitive":true,"dispatchStarted":true},"hasReceipt":false,"posts":1,"gets":3}
+# Subtest: TR-02: definite POST 403 must never persist acknowledged
+ok 3 - TR-02: definite POST 403 must never persist acknowledged
+  ---
+  duration_ms: 9.5353
+  type: 'test'
+  ...
+# {"id":"TR-02-403","providerPostStatus":403,"status":"rejected","errorCode":"STAFFOLOGY_AUTH_REJECTED","uncertain":{"code":"STAFFOLOGY_AUTH_REJECTED","definitive":true,"dispatchStarted":true},"hasReceipt":false,"posts":1,"gets":3}
+# Subtest: CONTROL: original exact principal can consume approval once
+ok 4 - CONTROL: original exact principal can consume approval once
+  ---
+  duration_ms: 4.5515
+  type: 'test'
+  ...
+# {"id":"CONTROL-PERSON","approvalCount":1}
+# Subtest: TR-06: reassigned email must not let a different person consume prior approval
+ok 5 - TR-06: reassigned email must not let a different person consume prior approval
+  ---
+  duration_ms: 1.8989
+  type: 'test'
+  ...
+# {"id":"TR-06","issuingPerson":"original-person","currentPerson":"replacement-person","approved":false,"consumed":false,"errorCode":"STAFFOLOGY_WRITE_NOT_AUTHORIZED"}
+# Subtest: TR-07: authority revoked during provider acquisition must block employee persistence
+ok 6 - TR-07: authority revoked during provider acquisition must block employee persistence
+  ---
+  duration_ms: 5.5293
+  type: 'test'
+  ...
+# {"id":"TR-07","gets":3,"currentPermissions":[],"staged":0,"sqliteRows":0,"errorCode":"STAFFOLOGY_WRITE_NOT_AUTHORIZED"}
+# Subtest: TR-01: expired provably-undispatched delivery must resume with immutable baseline
+ok 7 - TR-01: expired provably-undispatched delivery must resume with immutable baseline
+  ---
+  duration_ms: 12.4217
+  type: 'test'
+  ...
+# {"id":"TR-01","resultStatus":"reconciled","hasOriginalBaseline":true,"reservedDispatch":true,"posts":1,"gets":9}
+# Subtest: CONTROL: a matching independent image seal/profile can configure operation
+ok 8 - CONTROL: a matching independent image seal/profile can configure operation
+  ---
+  duration_ms: 80.4845
+  type: 'test'
+  ...
+# {"id":"CONTROL-SEAL","configured":true,"code":null,"independentSeal":"bf9f70e21364f00465a3bad40be6ffb1d1b732ac","envProfileSha":"bf9f70e21364f00465a3bad40be6ffb1d1b732ac","loadedSha":"bf9f70e21364f00465a3bad40be6ffb1d1b732ac","sealedReads":1,"mountShim":"readFileSync only for exact Linux seal path; separate child process"}
+# Subtest: CONTROL: seal-only profile reads the Windows test-process mounted seal
+ok 9 - CONTROL: seal-only profile reads the Windows test-process mounted seal
+  ---
+  duration_ms: 75.796
+  type: 'test'
+  ...
+# {"id":"CONTROL-SEAL-MOUNT","configured":true,"code":null,"independentSeal":"bf9f70e21364f00465a3bad40be6ffb1d1b732ac","envProfileSha":"","loadedSha":"bf9f70e21364f00465a3bad40be6ffb1d1b732ac","sealedReads":1,"mountShim":"readFileSync only for exact Linux seal path; separate child process"}
+# Subtest: TR-03: env/profile B must not override independent image seal A
+ok 10 - TR-03: env/profile B must not override independent image seal A
+  ---
+  duration_ms: 70.9938
+  type: 'test'
+  ...
+# {"id":"TR-03","configured":false,"code":"STAFFOLOGY_OPERATION_CONFIGURATION_INVALID","independentSeal":"bf9f70e21364f00465a3bad40be6ffb1d1b732ac","envProfileSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","loadedSha":null,"sealedReads":1,"mountShim":"readFileSync only for exact Linux seal path; separate child process"}
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 486.4074

@@ -1,0 +1,91 @@
+[
+  {
+    "case": "historical-passport-analogue",
+    "uncertainty2Rejected": true,
+    "passportApiAbsent": true
+  },
+  {
+    "case": "objective-total-overflow",
+    "error": null,
+    "total": null,
+    "ranking": [
+      {
+        "optionId": "do-nothing",
+        "score": 0,
+        "uncertainty": 0
+      },
+      {
+        "optionId": "improve",
+        "score": null,
+        "uncertainty": 0
+      }
+    ],
+    "recommendation": "do-nothing"
+  },
+  {
+    "case": "prediction-range-overflow",
+    "error": null,
+    "ranking": [
+      {
+        "optionId": "do-nothing",
+        "score": 0,
+        "uncertainty": 0
+      },
+      {
+        "optionId": "improve",
+        "score": null,
+        "uncertainty": 0
+      }
+    ],
+    "recommendation": "do-nothing"
+  },
+  {
+    "case": "change-confidence",
+    "input": "NaN",
+    "error": null,
+    "state": "STRUCTURED_LOW_AMBIGUITY_CANDIDATE",
+    "reviewRequired": false,
+    "normalisedConfidence": "NaN",
+    "promotionAuthority": false
+  },
+  {
+    "case": "change-confidence",
+    "input": "Infinity",
+    "error": null,
+    "state": "STRUCTURED_LOW_AMBIGUITY_CANDIDATE",
+    "reviewRequired": false,
+    "normalisedConfidence": "Infinity",
+    "promotionAuthority": false
+  },
+  {
+    "case": "change-confidence",
+    "input": "2",
+    "error": null,
+    "state": "STRUCTURED_LOW_AMBIGUITY_CANDIDATE",
+    "reviewRequired": false,
+    "normalisedConfidence": "2",
+    "promotionAuthority": false
+  },
+  {
+    "case": "duplicate-worker-fill",
+    "error": null,
+    "status": "preferred_workers_identified",
+    "coverage": 2,
+    "gap": 0,
+    "selected": [
+      "W1",
+      "W1"
+    ]
+  },
+  {
+    "case": "alternative-worker-mismatch",
+    "positive": {
+      "valid": true,
+      "failures": []
+    },
+    "mismatch": {
+      "valid": true,
+      "failures": []
+    }
+  }
+]
