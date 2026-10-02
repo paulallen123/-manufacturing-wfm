@@ -1,0 +1,30 @@
+﻿TAP version 13
+# (node:30404) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: same-intent satisfied to unsatisfied alone leaves terminal SATISFIED
+ok 1 - same-intent satisfied to unsatisfied alone leaves terminal SATISFIED
+  ---
+  duration_ms: 9.1954
+  type: 'test'
+  ...
+# Subtest: changed evidence binding changes intent and resets SATISFIED to PENDING
+ok 2 - changed evidence binding changes intent and resets SATISFIED to PENDING
+  ---
+  duration_ms: 2.73
+  type: 'test'
+  ...
+# Subtest: new scope dependency resets intent; fenced local effect reconfigures with append-only events and receipts
+ok 3 - new scope dependency resets intent; fenced local effect reconfigures with append-only events and receipts
+  ---
+  duration_ms: 8.8649
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 163.0287

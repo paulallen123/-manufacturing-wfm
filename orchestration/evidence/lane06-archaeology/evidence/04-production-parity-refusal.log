@@ -1,0 +1,31 @@
+{
+  "gate": "VECTOR_MOBILE_STORE_PARITY_V1",
+  "profile": "development",
+  "total": 23,
+  "native": 1,
+  "incomplete": [
+    "overview",
+    "vector-people",
+    "attendance",
+    "leave",
+    "availability-control",
+    "temporary",
+    "schedule-publication",
+    "shifts",
+    "work-patterns",
+    "demand",
+    "cover",
+    "readiness",
+    "op-sites",
+    "forecast",
+    "shutdowns",
+    "insights",
+    "costs",
+    "recommendations",
+    "benchmarks",
+    "compliance",
+    "action-notifications",
+    "settings"
+  ]
+}
+Production store build refused: mobile/web parity is incomplete.

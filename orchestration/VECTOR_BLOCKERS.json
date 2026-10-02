@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T10:53:29.122Z",
+  "updatedAt": "2026-10-02T12:00:19.738Z",
   "criticalPath": "Staffology repair admission -> exact runtime proof -> all mandatory hosted/customer gates -> immutable proven base -> convergence waves -> live verification",
   "items": [
     {
@@ -216,9 +216,9 @@
       "id": "LOCAL-FULL-RUNTIME",
       "type": "ENVIRONMENT_SETUP",
       "priority": "P2",
-      "status": "PARTIALLY_RESOLVED",
+      "status": "BF9_LOCAL_SYNTHETIC_HTTP_PASS_LINUX_AND_CURRENT_ADMISSION_PENDING",
       "title": "Official dependency install and runtime composition completed; strict HTTP childstartup still failed locally",
-      "nextAction": "Verify completed695 repair bytes, compose exact new source and run held-outs/persistence; prescribed Linux container remains unpassed."
+      "nextAction": "Preserve first startup red; only reviewed Staffology successor plus admitted proof repairs may enter exact Linux/Docker validation."
     },
     {
       "id": "CI-19",
@@ -275,9 +275,10 @@
       "id": "SOURCE-OWNER-FOLLOWUP-CONFIRMATION",
       "type": "INTERMITTENT_BROWSER_TASK_ACCESS",
       "priority": "P2",
-      "status": "PRIOR_FOLLOWUP_CONFIRMED_COMPLETED; NEW_FOLLOWUP_PREPARED_NOT_SUBMITTED",
-      "title": "Follow-up staged and Submit clicked; task/source view stalls and backend acceptance remains unconfirmed",
-      "nextAction": "Recover sameexistingtaskcomposer; submit newTR09B/TR12requestonce andverifyacceptance; do not resend previousrequest"
+      "status": "NEW_REQUEST_STAGED; ACTUAL_ACCEPTANCE_UNCONFIRMED",
+      "title": "Earlier follow-up completed bf9; new TR09B/TR12 follow-up prepared but task composer remains unavailable",
+      "nextAction": "Verify whether the already-staged TR-09B/TR-12 follow-up has been accepted by the SAME Staffology task; do not resend while acceptance is unresolved.",
+      "evidence": "orchestration/evidence/staffology-access-20261002T1130.json"
     },
     {
       "id": "TR-09B",
@@ -302,10 +303,12 @@
     {
       "id": "COUNTRY-PROJECTION-INERT-INPUT",
       "priority": "P2",
-      "status": "LOCAL_OWNER_REPAIR_ACTIVE",
+      "status": "CLOSED_ONLY_ON_EXACT_REPAIRED_ISOLATED_SOURCE",
       "type": "ISOLATED_FUTURE_COMPONENT",
       "title": "Caller getters/proxies/overriddenmethods andnonfinitepayload accepted",
-      "nextAction": "Solecountryownerrepairs beforecanonicalTwin invocation; independentheldoutsagain beforepublication"
+      "nextAction": "Authenticated runtime integration, current exact assembly and hosted/customer proof remain open.",
+      "repairedSha": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
+      "evidence": "orchestration/evidence/projection-repair-review.md"
     },
     {
       "id": "CUSTOMER-SCOPE-IDENTIFIERS",
@@ -319,10 +322,51 @@
       "id": "TWIN-PROJECTION-INERT-EXACT-INPUT",
       "priority": "P2",
       "type": "ISOLATED_FUTURE_COMPONENT",
-      "status": "OPEN_REPAIR_REQUIRED",
+      "status": "CLOSED_ONLY_ON_EXACT_REPAIRED_ISOLATED_SOURCE",
       "sourceSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
       "title": "All3twinfactories acceptcaller-code/nonfinitepayload; querygetters/historymethod alsoexecute",
-      "nextAction": "Samecanonicalprojectionowner repairs aftercountry; unchangedcanonicalTwin; expandedindependentreviewbeforepublishedupdate"
+      "nextAction": "Authenticated runtime integration, current exact assembly and hosted/customer proof remain open.",
+      "repairedSha": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+      "evidence": "orchestration/evidence/projection-repair-review.md"
+    },
+    {
+      "id": "VALUE-PROJECTION-CANONICAL-CONTENT",
+      "type": "ISOLATED_FUTURE_COMPONENT",
+      "priority": "P2",
+      "status": "CLOSED_ON_REPAIRED_UNPUBLISHED_SOURCE",
+      "title": "Window-order conflict bypass and rehashed invalid canonical content repaired",
+      "evidence": "orchestration/evidence/value-repair-review.md",
+      "nextAction": "Publish isolated reviewed bytes; runtime/customer admission remains pending."
+    },
+    {
+      "id": "PROOF-RUNNER-PAYROLL-PROPAGATION",
+      "type": "MANDATORY_PROOF_REPAIR",
+      "priority": "P2",
+      "status": "INDEPENDENTLY_REVIEWED_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
+      "title": "Browser wrapper drops existing structured payroll evidence",
+      "evidence": "orchestration/evidence/proof-runner-admission.json",
+      "nextAction": "Independent exact-byte review, source-admit3mandatory files preserving allStaffology/proof03, actual Linux/current hosted proof later.",
+      "sourceSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f"
+    },
+    {
+      "id": "ADMISSION-01",
+      "priority": "P2",
+      "type": "MANDATORY_CURRENT_PROOF_REPAIR",
+      "status": "OPEN_REPAIR_ACTIVE",
+      "sourceSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "title": "Changed customer scope leaves readiness and durable environment on old configuration",
+      "nextAction": "Root preserves old receipts/audits while reopening current configuration/evidence/work through existing canonical mechanisms.",
+      "evidence": "orchestration/evidence/current-admission-review.md"
+    },
+    {
+      "id": "ADMISSION-02",
+      "priority": "P2",
+      "type": "MANDATORY_CURRENT_PROOF_REPAIR",
+      "status": "OPEN_REPAIR_ACTIVE",
+      "sourceSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+      "title": "Invalid legacy compatibility receipts retain strict readiness after SQLite reopen",
+      "nextAction": "Root applies the existing per-kind strict validators to persisted PASS without deleting original receipt/audit.",
+      "evidence": "orchestration/evidence/current-admission-review.md"
     }
   ]
 }

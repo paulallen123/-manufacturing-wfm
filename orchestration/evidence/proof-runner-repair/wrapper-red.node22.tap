@@ -1,0 +1,53 @@
+TAP version 13
+# Subtest: wrapper preserves complete scoped payroll evidence without promoting customer readiness
+not ok 1 - wrapper preserves complete scoped payroll evidence without promoting customer readiness
+  ---
+  duration_ms: 526.7651
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-runner-repair\\source\\scripts\\current-candidate-role-browser-proof-server.test.mjs:136:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.test.mjs:138:12
+    withWrapper (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.test.mjs:125:11)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.test.mjs:137:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: absent payroll evidence stays unverified through the wrapper
+ok 2 - absent payroll evidence stays unverified through the wrapper
+  ---
+  duration_ms: 450.1819
+  type: 'test'
+  ...
+# Subtest: a persisted payroll batch mismatch remains unverified through the wrapper
+ok 3 - a persisted payroll batch mismatch remains unverified through the wrapper
+  ---
+  duration_ms: 531.3549
+  type: 'test'
+  ...
+# Subtest: duplicate team signatures cannot substitute for distinct scoped team sign offs
+ok 4 - duplicate team signatures cannot substitute for distinct scoped team sign offs
+  ---
+  duration_ms: 357.525
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2026.6214

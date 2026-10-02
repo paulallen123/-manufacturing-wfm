@@ -1,0 +1,145 @@
+TAP version 13
+# (node:17464) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: scope update must reopen previously ready evidence and provisioned configuration instead of retaining old21/21
+not ok 1 - scope update must reopen previously ready evidence and provisioned configuration instead of retaining old21/21
+  ---
+  duration_ms: 637.855
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\current-admission.held-out.test.cjs:10:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Old evidence incorrectly keeps READY on changed scope
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\current-admission.held-out.test.cjs:10:1021)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: strict restart must revalidate exact-current persisted source-systems previously admitted under compatibility mode
+not ok 2 - strict restart must revalidate exact-current persisted source-systems previously admitted under compatibility mode
+  ---
+  duration_ms: 561.0548
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\current-admission.held-out.test.cjs:12:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    One invalid persisted receipt incorrectly completes strict readiness
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\current-admission.held-out.test.cjs:12:1492)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: strict restart must revalidate exact-current persisted security-controls previously admitted under compatibility mode
+not ok 3 - strict restart must revalidate exact-current persisted security-controls previously admitted under compatibility mode
+  ---
+  duration_ms: 571.7239
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\current-admission.held-out.test.cjs:12:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    One invalid persisted receipt incorrectly completes strict readiness
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\current-admission.held-out.test.cjs:12:1492)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: strict restart must revalidate exact-current persisted scenario-validation previously admitted under compatibility mode
+not ok 4 - strict restart must revalidate exact-current persisted scenario-validation previously admitted under compatibility mode
+  ---
+  duration_ms: 546.1869
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\current-admission.held-out.test.cjs:12:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    One invalid persisted receipt incorrectly completes strict readiness
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\current-admission.held-out.test.cjs:12:1492)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: strict restart must revalidate exact-current persisted live-data-import previously admitted under compatibility mode
+not ok 5 - strict restart must revalidate exact-current persisted live-data-import previously admitted under compatibility mode
+  ---
+  duration_ms: 513.3382
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\current-admission.held-out.test.cjs:12:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    One invalid persisted receipt incorrectly completes strict readiness
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\current-admission.held-out.test.cjs:12:1492)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: strict immediate admission rejects fixture provider, weak security and fixture live import before persistence
+ok 6 - strict immediate admission rejects fixture provider, weak security and fixture live import before persistence
+  ---
+  duration_ms: 112.7085
+  type: 'test'
+  ...
+# Subtest: candidate/deployment/tenant/run explicit mismatches are denied without any PASS persistence
+ok 7 - candidate/deployment/tenant/run explicit mismatches are denied without any PASS persistence
+  ---
+  duration_ms: 125.9578
+  type: 'test'
+  ...
+# Subtest: manager cookie and unauthenticated caller cannot publish internal readiness evidence
+ok 8 - manager cookie and unauthenticated caller cannot publish internal readiness evidence
+  ---
+  duration_ms: 125.2333
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 3
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3328.3978

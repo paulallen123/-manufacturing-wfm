@@ -1,0 +1,15 @@
+{
+  "reviewSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+  "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
+  "scannedTextFiles": 1004,
+  "maximumBytes": 250000,
+  "excluded": "Binary/sealed runtime artifacts, files above250000bytes and archive/__security_hold; absence is scoped only.",
+  "matches": [
+    {
+      "path": "integrations/staffology/REVIEW_5925613376_RESOLUTION.md",
+      "blob": "91019e8e78f365419635c5d7f014bb540bd27aa6",
+      "line": 661,
+      "text": "- Coordinator-owned runtime facts are recorded without claiming them as source-test results: the executor's two non-secret bindings were corrected to exact candidate `f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560` and deployment `54e96e40-5fc2-428b-b96d-7453a5fa1810`; executor deployment `0255e65b-e501-4f83-9c04-8433ccf15471` completed two authenticated cycles bu"
+    }
+  ]
+}

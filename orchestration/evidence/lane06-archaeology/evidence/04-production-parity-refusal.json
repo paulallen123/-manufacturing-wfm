@@ -1,0 +1,1 @@
+{"node":"v22.23.2","command":["node","mobile/scripts/store-gate.mjs"],"envOverride":{"VECTOR_STORE_GATE":"1"},"exitCode":1,"scope":"Source gate only; no native build/submission/CI"}

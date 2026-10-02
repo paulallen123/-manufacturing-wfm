@@ -1,0 +1,13 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "native-held-out.cjs"
+  ],
+  "exitCode": 1,
+  "networkBlocked": true,
+  "scope": "Historical source held-outs; no actual OS/device/provider or current frozen app proof",
+  "logSha256": "6dcef6d672cd8592c7985ad7e9cc5c553a9553e9e43544bca7eafa1e232cb578"
+}

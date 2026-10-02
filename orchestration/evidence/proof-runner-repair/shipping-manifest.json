@@ -1,0 +1,158 @@
+{
+  "baselineSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "baseTree": "fab958ad86d794bd31caa876606f73c605417e6a",
+  "classification": "MANDATORY_PROOF_REPAIR_ONLY",
+  "files": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9",
+      "blob": "3337ec236e64df9552f881fd5be40132f9794646",
+      "sha256": "ff57ddff67c3cfeda09b9bbf3214e4e8271db839b39e2a326148eda11d9e6d98",
+      "bytes": 4723,
+      "localPath": "work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.mjs"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": null,
+      "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "sha256": "6134bf22ffb289a9a1d74e95dc2706d6c4e56f095afb20ec1a8596503fa9f579",
+      "bytes": 7722,
+      "localPath": "work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.test.mjs"
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49",
+      "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "sha256": "5d20825acebf8032e19191a58c514bbfcec87842930727d8d3a658b151c673a3",
+      "bytes": 2768,
+      "localPath": "work/proof-runner-repair/source/scripts/run-forge-ci.mjs"
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "mode": "100644",
+      "expected": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+      "actual": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+      "bytes": 5059
+    },
+    {
+      "path": "scripts/vector-repair-regressions.test.mjs",
+      "mode": "100644",
+      "expected": "9b6cbf1b9832ea30a6758532c41594c4c1fe29ef",
+      "actual": "9b6cbf1b9832ea30a6758532c41594c4c1fe29ef",
+      "bytes": 5994
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "mode": "100644",
+      "expected": "7a54fb0864527d895847324f638696d789eb3997",
+      "actual": "7a54fb0864527d895847324f638696d789eb3997",
+      "bytes": 84642
+    }
+  ],
+  "testEvidence": {
+    "red": {
+      "label": "wrapper-red",
+      "baseline": "d387d5300f2de0906d8ea459e1bac610128236d9",
+      "runtime": "v22.23.2",
+      "platform": "win32",
+      "startedAt": "2026-10-02T11:26:45.501Z",
+      "completedAt": "2026-10-02T11:26:47.622Z",
+      "exitCode": 1,
+      "command": [
+        "--experimental-sqlite",
+        "--test",
+        "--test-concurrency=1",
+        "scripts/current-candidate-role-browser-proof-server.test.mjs"
+      ],
+      "stats": {
+        "tests": 4,
+        "suites": 0,
+        "pass": 3,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 2026.6214
+      },
+      "logSha256": "42075706d68d7c237156aa88983ff714c79de68cd7e465a338989fd3540f59b8",
+      "scope": "ISOLATED_SYNTHETIC_WRAPPER_LOOPBACK_ONLY; no browser/hosted/customer proof"
+    },
+    "green": {
+      "label": "wrapper-green",
+      "baseline": "d387d5300f2de0906d8ea459e1bac610128236d9",
+      "runtime": "v22.23.2",
+      "platform": "win32",
+      "startedAt": "2026-10-02T11:27:26.529Z",
+      "completedAt": "2026-10-02T11:27:28.378Z",
+      "exitCode": 0,
+      "command": [
+        "--experimental-sqlite",
+        "--test",
+        "--test-concurrency=1",
+        "scripts/current-candidate-role-browser-proof-server.test.mjs"
+      ],
+      "stats": {
+        "tests": 4,
+        "suites": 0,
+        "pass": 4,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 1762.5972
+      },
+      "logSha256": "91e0da7aebfc7f748c2799db87e67e874f9b1994ada344ac2fa82832ffa406fe",
+      "scope": "ISOLATED_SYNTHETIC_WRAPPER_LOOPBACK_ONLY; no browser/hosted/customer proof"
+    },
+    "affected": {
+      "baseline": "d387d5300f2de0906d8ea459e1bac610128236d9",
+      "runtime": "v22.23.2",
+      "platform": "win32",
+      "startedAt": "2026-10-02T11:29:03.982Z",
+      "completedAt": "2026-10-02T11:29:23.466Z",
+      "exitCode": 0,
+      "command": [
+        "--experimental-sqlite",
+        "--test",
+        "--test-concurrency=1",
+        "implementation/runtime/one-day-enterprise-engine.test.cjs",
+        "implementation/runtime/readiness-evidence-contract.test.cjs",
+        "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+        "implementation/runtime/implementation-active-controller.integration.test.cjs",
+        "implementation/runtime/implementation-work-controller.test.cjs",
+        "implementation/runtime/implementation-work-fencing.test.cjs",
+        "scripts/vector-repair-regressions.test.mjs",
+        "tests/vector-payroll-release-proof.test.mjs",
+        "scripts/current-candidate-role-browser-proof-server.test.mjs"
+      ],
+      "stats": {
+        "tests": 113,
+        "suites": 0,
+        "pass": 113,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 19328.7171
+      },
+      "logSha256": "5383689c3dc8022b157423526bca7042166b32913a4c0edfa2a64caade2e42bc",
+      "scope": "Actual new mandatory CI test argv extracted and executed locally; complete run-forge-ci/Linux/Docker/hosted/customer NOT executed"
+    }
+  },
+  "runtimeWired": false,
+  "hostedProof": false,
+  "customerProof": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "staffologyChanged": false,
+  "triggerChanged": false,
+  "credentialScanPassed": true
+}

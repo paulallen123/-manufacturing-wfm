@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "frozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "sourceRecords": [
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "mobile/src/api.ts",
+      "sourceBlob": "e9b7e206dc6e4de8dbb83d7c3f870c28b2e6d00e",
+      "bytes": 4744,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\mobile\\src\\api.ts",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "mobile/src/security.ts",
+      "sourceBlob": "1ff012a46415136d10e2284da39b2fa32ee74732",
+      "bytes": 1088,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\mobile\\src\\security.ts",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "mobile/app/assistant.tsx",
+      "sourceBlob": "f2901a02bb8952eea90d23314b0ef6d99d7863a7",
+      "bytes": 5771,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\mobile\\app\\assistant.tsx",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "mobile/app/recommendation/[id].tsx",
+      "sourceBlob": "6eb60d185caca5284301e76a359039785458c2d5",
+      "bytes": 5957,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\mobile\\app\\recommendation\\[id].tsx",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "mobile/scripts/store-gate.mjs",
+      "sourceBlob": "64ec2e550c6b9aa9d3eec1ed1da8357fecc21b46",
+      "bytes": 904,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\mobile\\scripts\\store-gate.mjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "mobile/package.json",
+      "sourceBlob": "a0cb671123a2998ffb7dc422f2d4275a3033c80a",
+      "bytes": 1051,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\mobile\\package.json",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "mobile/app/_layout.tsx",
+      "sourceBlob": "a3cc994723d77d59f3c34d12da43dc5130b40c86",
+      "bytes": 796,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\mobile\\app\\_layout.tsx",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "operations/runtime/mobile-session-service.cjs",
+      "sourceBlob": "a754e9d5682a92efb52690fdb29b02c759d0e7b7",
+      "bytes": 5044,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\operations\\runtime\\mobile-session-service.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "operations/runtime/mobile-session-service.test.cjs",
+      "sourceBlob": "97c54ee0212110dc21a0ed751b25c96c2393be5b",
+      "bytes": 3281,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\operations\\runtime\\mobile-session-service.test.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "operations/runtime/mobile-assistant-service.cjs",
+      "sourceBlob": "3bdef0d3155528e7cf7dd66e4e6d9f8b06ebb5a1",
+      "bytes": 10791,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\operations\\runtime\\mobile-assistant-service.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "operations/runtime/mobile-assistant-service.test.cjs",
+      "sourceBlob": "3e5c2cd8c4cc3ba0ec9f0cc7deeca7365e088d3d",
+      "bytes": 5475,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\operations\\runtime\\mobile-assistant-service.test.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "operations/runtime/mobile-recommendation-service.cjs",
+      "sourceBlob": "730cee8a78e73698196fbdafa5de0f3bc4a7a482",
+      "bytes": 11661,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\operations\\runtime\\mobile-recommendation-service.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "operations/runtime/mobile-recommendation-service.test.cjs",
+      "sourceBlob": "ff5f8b3ba75c66e5704abc8c117623cc98e990dc",
+      "bytes": 4467,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\operations\\runtime\\mobile-recommendation-service.test.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 241,
+      "sourceSha": "00202a4801a4369a9803b3b7fed0fec44e44d208",
+      "sourcePath": "operations/runtime/vector-operations-bot.cjs",
+      "sourceBlob": "e1a7b675186b79b71d11bbb0e28adb72238c94f9",
+      "bytes": 49149,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr241\\operations\\runtime\\vector-operations-bot.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 241,
+      "sourceSha": "00202a4801a4369a9803b3b7fed0fec44e44d208",
+      "sourcePath": "operations/runtime/vector-operations-bot.test.cjs",
+      "sourceBlob": "ecc0d17fd1f2b9e3f003842276d2753edca99867",
+      "bytes": 16555,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr241\\operations\\runtime\\vector-operations-bot.test.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 241,
+      "sourceSha": "00202a4801a4369a9803b3b7fed0fec44e44d208",
+      "sourcePath": "ux-overlay/vector-operations-bot.js",
+      "sourceBlob": "604e3a25f7c18100de1180e95d1b5dc13c0a8dab",
+      "bytes": 16468,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr241\\ux-overlay\\vector-operations-bot.js",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 241,
+      "sourceSha": "00202a4801a4369a9803b3b7fed0fec44e44d208",
+      "sourcePath": "ux-overlay/vector-operations-bot.test.cjs",
+      "sourceBlob": "ffd6daa07440f52375fabf6532805c93070e2ee5",
+      "bytes": 3256,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr241\\ux-overlay\\vector-operations-bot.test.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "security/runtime/identity-survival-guard.cjs",
+      "sourceBlob": "5839db41ee3f892605f0411bf3a83c2e0f9499cb",
+      "bytes": 11080,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\security\\runtime\\identity-survival-guard.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "security/runtime/bootstrap.cjs",
+      "sourceBlob": "e347871b76673b8372caea83dabccae0c493cacf",
+      "bytes": 21872,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\security\\runtime\\bootstrap.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": 242,
+      "sourceSha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "sourcePath": "operations/runtime/autopilot-execution-engine.cjs",
+      "sourceBlob": "b95fd2fc02467018e1ced1a4b02fd165d23ff3e0",
+      "bytes": 13627,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242\\operations\\runtime\\autopilot-execution-engine.cjs",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": null,
+      "sourceSha": "373fe8c59142c4e02483199a52bcc5a61d477723",
+      "sourcePath": "docs/superpowers/plans/2026-09-21-vector-mobile-mass-clocking-implementation.md",
+      "sourceBlob": "842798b8ba1193e6abf09eab8418f516908fd865",
+      "bytes": 33018,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr0\\docs\\superpowers\\plans\\2026-09-21-vector-mobile-mass-clocking-implementation.md",
+      "mode": "100644"
+    },
+    {
+      "sourcePR": null,
+      "sourceSha": "373fe8c59142c4e02483199a52bcc5a61d477723",
+      "sourcePath": "docs/superpowers/specs/2026-09-21-vector-mobile-mass-clocking-design.md",
+      "sourceBlob": "8bf60ad096338d8641d56cb5e5e84154dd6bb008",
+      "bytes": 14826,
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr0\\docs\\superpowers\\specs\\2026-09-21-vector-mobile-mass-clocking-design.md",
+      "mode": "100644"
+    }
+  ],
+  "frozenIdentityRecords": [
+    {
+      "path": "security/runtime/identity-survival-guard.cjs",
+      "blob": "929297a2fc698d6aa1ba2714ded5db79ee9bb3d4",
+      "bytes": 11241,
+      "mode": "100644"
+    },
+    {
+      "path": "operations/runtime/autopilot-execution-engine.cjs",
+      "blob": "0b7541fe363d1071c9207ce349273a1e09414bbb",
+      "bytes": 14858,
+      "mode": "100644"
+    },
+    {
+      "path": "operations/runtime/workforce-lifecycle-router.cjs",
+      "blob": "8f157db037ed3a47d4199a2bb7c505e968d69243",
+      "bytes": 1645,
+      "mode": "100644"
+    },
+    {
+      "path": "operations/runtime/workforce-lifecycle-guard.cjs",
+      "blob": "1eb3b6b2ff13dc731b0e27f3733ff4cd47f78915",
+      "bytes": 16448,
+      "mode": "100644"
+    },
+    {
+      "path": "operations/runtime/realtime-event-service.cjs",
+      "blob": "f1012b311ca06750641d221e63b3ac7f091465bd",
+      "bytes": 7540,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "blob": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+      "bytes": 15859,
+      "mode": "100644"
+    },
+    {
+      "path": "ux-overlay/vector-shell.css",
+      "blob": "d1a940383c5f64149660db2349b63de7d3834175",
+      "bytes": 42961,
+      "mode": "100644"
+    },
+    {
+      "path": "resilience/support-selfhelp.cjs",
+      "blob": "90f294b136fedf38a3a9a39df81b490c8209561a",
+      "bytes": 4415,
+      "mode": "100644"
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "blob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "bytes": 22307,
+      "mode": "100644"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "blob": "7d19861571d1cf63a3cde32142e39f1e6fa84cf3",
+      "bytes": 70579,
+      "mode": "100644"
+    }
+  ],
+  "metadata": {
+    "prs": [
+      {
+        "n": 241,
+        "state": "open",
+        "merged": false,
+        "head": "00202a4801a4369a9803b3b7fed0fec44e44d208",
+        "branch": "feature/vector-operations-bot-voice-v1-20260925",
+        "changedFiles": 12,
+        "treeTruncated": false,
+        "treeEntries": 663
+      },
+      {
+        "n": 242,
+        "state": "open",
+        "merged": false,
+        "head": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+        "branch": "feature/vector-mobile-app-20260925",
+        "changedFiles": 28,
+        "treeTruncated": false,
+        "treeEntries": 1139
+      },
+      {
+        "n": 243,
+        "state": "open",
+        "merged": false,
+        "head": "81c879b6f8d673948e4da2131f7198dfd5935513",
+        "branch": "feature/vecta-mobile-integrations-20260925",
+        "changedFiles": 2,
+        "treeTruncated": false,
+        "treeEntries": 1111
+      }
+    ],
+    "massClock": {
+      "branch": "feature/vector-mobile-mass-clocking-design",
+      "head": "373fe8c59142c4e02483199a52bcc5a61d477723",
+      "treeTruncated": false
+    },
+    "frozenTrackedAbsences": [
+      {
+        "path": "mobile/README.md",
+        "frozenTreePathPresent": false
+      },
+      {
+        "path": "mobile/parity.json",
+        "frozenTreePathPresent": false
+      },
+      {
+        "path": "mobile/src/api.ts",
+        "frozenTreePathPresent": false
+      },
+      {
+        "path": "operations/runtime/mobile-session-service.cjs",
+        "frozenTreePathPresent": false
+      },
+      {
+        "path": "operations/runtime/mobile-assistant-service.cjs",
+        "frozenTreePathPresent": false
+      },
+      {
+        "path": "operations/runtime/mobile-recommendation-service.cjs",
+        "frozenTreePathPresent": false
+      },
+      {
+        "path": "operations/runtime/vector-operations-bot.cjs",
+        "frozenTreePathPresent": false
+      },
+      {
+        "path": "ux-overlay/vector-operations-bot.js",
+        "frozenTreePathPresent": false
+      }
+    ],
+    "branchSearch": {
+      "enumerated": 437,
+      "matchingMobileVoiceBranches": [
+        {
+          "branch": "feature/vecta-mobile-integrations-20260925"
+        },
+        {
+          "branch": "feature/vector-mobile-app-20260925"
+        },
+        {
+          "branch": "feature/vector-mobile-mass-clocking-design"
+        },
+        {
+          "branch": "feature/vector-operations-bot-voice-v1-20260925"
+        },
+        {
+          "branch": "fix/vector-only-shell-mobile-20260919"
+        }
+      ]
+    }
+  },
+  "localCheckoutMismatches": [
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "frozenBlob": "9fb2656a23e308fbee8c01263d414a15ac8763d9",
+      "sourceCheckoutBlob": "7249a5f9ce59139de9328f406ae3e2e25de2bfcc",
+      "match": false
+    },
+    {
+      "path": "ux-overlay/vector-shell.css",
+      "frozenBlob": "d1a940383c5f64149660db2349b63de7d3834175",
+      "sourceCheckoutBlob": "1cceb55991967d7d103b1b3d8c1c614505bb866d",
+      "match": false
+    }
+  ],
+  "sourceLimits": [
+    "17 primary remote files and5 additional exact historical source files newly inspected; 3 earlier README/parity/release-gate artifacts reused",
+    "3 exact open/unmerged PR heads and4 recursive trees inspected; branch names inventory437 matched5 mobile/voice branches",
+    "PR232 training voice is already product037, excluded here rather than assigned a duplicate ID",
+    "Source/provider unit stubs are not native, real model, microphone, biometric, current frozen integration or customer proof",
+    "No PATH commands adb/xcodebuild/eas/expo/java/gradle resolved in this session; no SDK install or physical-device control performed",
+    "Initial JSON BOM materialization failure left dependency/parity files absent; initial5/6 test/harness gate failure retained as harness evidence, not product defect",
+    "No GitHub, product, authority, permissions, provider, credential, browser, deployment, paid/model or root registry mutation"
+  ]
+}

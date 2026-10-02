@@ -11,3 +11,14 @@ Root exact Node22.23.2 Windows source/UI155/155 and composed persistence1/1 pass
 Root admitted ONLY three independently reviewed mandatory proof-integrity files on the existing review branch at d387d5300f2de0906d8ea459e1bac610128236d9/treefab958ad86d794bd31caa876606f73c605417e6a, actualparentb851. Preserve these exact blobs if fetching/rebasing: implementation/runtime/readiness-evidence-contract.cjs073f0303e161b62ba46ee7115bdf0082259830a3; one-day-enterprise-engine-core.cjs198978255a62a1297e6104f66f67373864534e3e; one-day-enterprise-engine.test.cjsa94904b821126cc6155afd091d6acc4c8b1673e9. Root will compose reviewed Staffology repairs transparently onto that current review parent and add truthful non-deploy CI admission metadata. Do not overwrite those files or claim native whole-tree equality with a later composed remote tree. Frozen serving releasef32 remains unchanged.
 
 Record both defect dispositions, exact native commit,parent,tree and full rawcommit Base64, exact changed paths/full blob IDs/modes, parent patch hash/byte size and actual executed test outputs in existing REVIEW_5925613376_RESOLUTION.md. Do not mutate GitHub, CI, provider, credentials, infrastructure or deployment. Return bounded repaired bytes/evidence for independent extraction/review. No broad future features.
+
+
+CURRENT REVIEW SIX-BLOB PRESERVATION ADDENDUM
+Root has source-admitted mandatory proof-runner repair at current sole review b51f291a5f73ccccd828cab4ad7650efcc67c53f / tree66a12870dc92726712e7edb33f326f4cbb933a6a, parentd387. Staffology bytes remain unchanged. Keep your implementation scope bounded to the two reported Staffology factual recovery findings and their tests; do not overwrite or implement unrelated proof owners. Root will compose your reviewed successor onto the CURRENT review parent and preserve these six exact100644 blobs, not replace the current branch with your whole native tree:
+implementation/runtime/readiness-evidence-contract.cjs 073f0303e161b62ba46ee7115bdf0082259830a3
+implementation/runtime/one-day-enterprise-engine-core.cjs 198978255a62a1297e6104f66f67373864534e3e
+implementation/runtime/one-day-enterprise-engine.test.cjs a94904b821126cc6155afd091d6acc4c8b1673e9
+scripts/current-candidate-role-browser-proof-server.mjs 3337ec236e64df9552f881fd5be40132f9794646
+scripts/current-candidate-role-browser-proof-server.test.mjs e8c79eb3e51e50b5df156486c72921703e21efac
+scripts/run-forge-ci.mjs c36fc77d0805be18957dfd0e7b5fdc19dfee1db8
+These3latest files have independent bounded review33/33+regression4/4 and owner113/113 local Windows affected tests; unchanged trigger CI green does not establish actual Linux/Docker execution. All original current proof/customer/27Golden holds remain. Your source task is still the sole Staffology implementation owner. This is the NEW TR09B/TR12 request; the previous TR09/fullHTTP request completedbf9 and must not be repeated.

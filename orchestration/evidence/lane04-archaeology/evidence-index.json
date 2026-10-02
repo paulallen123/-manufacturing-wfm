@@ -1,0 +1,334 @@
+{
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "node": "22.23.2",
+  "files": [
+    {
+      "path": "baseline-lock.json",
+      "bytes": 324,
+      "gitBlobSha": "241fe1b28611b5004278cef97ec91ac69551ed31",
+      "sha256": "56bdbbee0b8abc7b979da0d232942b26e788d4821e4ce16536901a4387b1a3c9"
+    },
+    {
+      "path": "capabilities.json",
+      "bytes": 28351,
+      "gitBlobSha": "240548d547e2f6c6d293ce6e13f6342805eaad89",
+      "sha256": "36210d3d4eba28b396f6ae276a19800dee183a29b91202ec28b2327dc4debb77"
+    },
+    {
+      "path": "evidence/01-historical-source-tests.log",
+      "bytes": 14085,
+      "gitBlobSha": "9ba46498c9f0c4f3e84ac50798f6a1db80ceaa63",
+      "sha256": "be06fbaecf33e94bda0e20f1ad9a9bc2bdc848f6023676e2921aafe17bf53423"
+    },
+    {
+      "path": "evidence/02-held-out-observations.json",
+      "bytes": 478,
+      "gitBlobSha": "c260b8ef70ed7c11d1b5f376507d397c7af25dc7",
+      "sha256": "4393b35606cb206df7ac4b1741de2d9dcec26d8c9d3360aaf2f321429154ef6b"
+    },
+    {
+      "path": "evidence/02-proposal-boundaries-held-out.log",
+      "bytes": 3800,
+      "gitBlobSha": "a4aacd08fd4037fb3e18a49b50aed04b43edecd6",
+      "sha256": "83d9367b8a3e1b4342a5bdaf4b566a23a9787d0f9430f0a4febfc4df35cec7ac"
+    },
+    {
+      "path": "extra-records.json",
+      "bytes": 39583,
+      "gitBlobSha": "ab1473d6588748dafecfbbdbfaa680af2b416cc5",
+      "sha256": "c412b5e508d852f9b338e4343e3d956c134b5e349af58e601b16768a7904e051"
+    },
+    {
+      "path": "findings.md",
+      "bytes": 4264,
+      "gitBlobSha": "a905f710ca11eb411c6948afbbe8df1230def6f2",
+      "sha256": "7f4b4b77a5713813b172847321a036d222295b38b904735883586b2ef6370db1"
+    },
+    {
+      "path": "frozen/implementation/runtime/implementation-work-controller.cjs",
+      "bytes": 18652,
+      "gitBlobSha": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+      "sha256": "4014c664863d4fa913cb39fe5b8d631bcd7f5144642c8e7dd4f7cc480fc9b714"
+    },
+    {
+      "path": "frozen/implementation/runtime/implementation-work-controller.test.cjs",
+      "bytes": 8651,
+      "gitBlobSha": "556ab49d55e0cfc5b85322e76a4e9b5a5312d70f",
+      "sha256": "4729376f1a4b8fe9159f50d8f72acff77ba0d2b0e1548d2735b61e466238b075"
+    },
+    {
+      "path": "frozen/implementation/runtime/zero-touch-customer-factory.cjs",
+      "bytes": 3330,
+      "gitBlobSha": "a28090fe6beef55e18106f380499233808cc693f",
+      "sha256": "c6c7a16214bdd7316dd8c29618034c8daa74bd864a01bf025f6b31c14df7be25"
+    },
+    {
+      "path": "frozen/operations/runtime/autopilot-execution-engine.cjs",
+      "bytes": 14858,
+      "gitBlobSha": "0b7541fe363d1071c9207ce349273a1e09414bbb",
+      "sha256": "556d0a6d31c2ccbebec12a52c5b2f1f18604d06a843ba2affbf3020376261c84"
+    },
+    {
+      "path": "frozen/operations/runtime/autopilot-execution-engine.test.cjs",
+      "bytes": 4567,
+      "gitBlobSha": "ed160d0319aaed36a3e99888316e6cfa6f524b2a",
+      "sha256": "b10c36700ca8289d6fdcfb7440fbb76221b99c59464d8c5ae6ea9744b3de9761"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "gitBlobSha": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "gitBlobSha": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-outcome-proof.cjs",
+      "bytes": 7146,
+      "gitBlobSha": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4"
+    },
+    {
+      "path": "frozen/operations/runtime/manufacturing-demand-forecast.cjs",
+      "bytes": 6454,
+      "gitBlobSha": "c2a2700245e55155538dd06e86abe6c04444e058",
+      "sha256": "ca91a64915eac0842e0df913806822c2ffcc013577e06cf232ee804fa6068bb9"
+    },
+    {
+      "path": "frozen/operations/runtime/manufacturing-scheduling-engine.cjs",
+      "bytes": 26491,
+      "gitBlobSha": "63970553844acb634391e6b2db865905eb3c4947",
+      "sha256": "cbb15a3f5e560f44a325f487a1615e34883043cd40fc3ba574239f3b94c8ec4e"
+    },
+    {
+      "path": "frozen/release/proof-blocker-knowledge.json",
+      "bytes": 16377,
+      "gitBlobSha": "e00749f70739cacece3f1ee6578d751006acebdb",
+      "sha256": "5509a0565ce96c6867486304f7103bea1d6c1980f5c38a95ecc36a6cab01a9c5"
+    },
+    {
+      "path": "frozen/release/proof-lane-policy.json",
+      "bytes": 10575,
+      "gitBlobSha": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec",
+      "sha256": "e58c3cf199928601297222e8f4b87f5904a7cdec3531e211909b4476a20e7cc8"
+    },
+    {
+      "path": "frozen/scripts/classify-proof-blocker.mjs",
+      "bytes": 3842,
+      "gitBlobSha": "a2b41b042f2b977fdad5edf06332e85691fbff33",
+      "sha256": "26448473804da3d00f430b8c154e9550540de801c8e6c3dae3a960ab415b0d54"
+    },
+    {
+      "path": "frozen/scripts/validate-proof-blocker-classifier.mjs",
+      "bytes": 1359,
+      "gitBlobSha": "7f1fdc9536eea696e6eafa3c77d0fe75495c77e8",
+      "sha256": "508fa4628929e89ed690fcfa59bfb6fc5dc6ecbbc8cffa9fea3fc5a0b1ae5481"
+    },
+    {
+      "path": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "bytes": 22881,
+      "gitBlobSha": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45"
+    },
+    {
+      "path": "historical/pr231/implementation/runtime/implementation-digital-twin.cjs",
+      "bytes": 5922,
+      "gitBlobSha": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d"
+    },
+    {
+      "path": "historical/pr231/implementation/runtime/launch-autopilot-controller.cjs",
+      "bytes": 16869,
+      "gitBlobSha": "88d6fc4145acb84d83365e803917358863b868b4",
+      "sha256": "fcf757b183c88c83d6354ba4d8445cf3063346afab2af6f0e18392d4910657c7"
+    },
+    {
+      "path": "historical/pr231/implementation/runtime/launch-autopilot-controller.test.cjs",
+      "bytes": 5416,
+      "gitBlobSha": "9c91a672678a2c888f12d7a3f24fe3a3edbdc85d",
+      "sha256": "e9f33627f4ba57f0623a622ce162f4dda05233dd94aea9b75fa24322e4ea1a43"
+    },
+    {
+      "path": "historical/pr231/implementation/runtime/launch-autopilot-readiness-adapter.cjs",
+      "bytes": 9605,
+      "gitBlobSha": "473bb187ce3c1de3ff25467c1f2c91b95b3e8679",
+      "sha256": "f83e8e596aa02231799c1a17e6e19963b6bc36f0161d4ad68a50debd216a8a57"
+    },
+    {
+      "path": "historical/pr231/implementation/runtime/launch-autopilot-readiness-adapter.test.cjs",
+      "bytes": 7336,
+      "gitBlobSha": "eee2bf8bd83d18988fecdad22161b5580ae5217c",
+      "sha256": "dee86a654c7676be80d93dda03dbd43f350f6ee29c504bfe346321762f65cbd8"
+    },
+    {
+      "path": "historical/pr231/implementation/runtime/launch-integration-pathfinder.cjs",
+      "bytes": 4848,
+      "gitBlobSha": "57ff51bd468035cd8ea0cc5c497e67f65b9f7e4e",
+      "sha256": "67d89eb9b855e781bab79d4ba72fc99913bab27a3b4985d41547f28c5b7e5c07"
+    },
+    {
+      "path": "historical/pr231/implementation/runtime/launch-integration-pathfinder.test.cjs",
+      "bytes": 3246,
+      "gitBlobSha": "75048432f888358e86437b18853367da68f53a28",
+      "sha256": "885bb05fdb6032bfcb5040cb99193a060e7faadb057eeb6f432dfb2799d8824a"
+    },
+    {
+      "path": "historical/pr234/resilience/blocker-autopilot-policy.json",
+      "bytes": 2034,
+      "gitBlobSha": "ccc86504a1c1e9d377e13960909ae645d38a91c3",
+      "sha256": "49654a5fd78055676d978f072f05fc00a935234ecca349e5d9a6d300654eab7d"
+    },
+    {
+      "path": "historical/pr234/resilience/blocker-autopilot.cjs",
+      "bytes": 18602,
+      "gitBlobSha": "48e9c18e45291dd1f4cd0994a77306fe0f3c67bc",
+      "sha256": "5c3c96bd118d738bec475f0049df26006e9c6bc5ad6a13e76b6c0d6d6731f9b4"
+    },
+    {
+      "path": "historical/pr234/resilience/blocker-autopilot.test.cjs",
+      "bytes": 10479,
+      "gitBlobSha": "4ca702b05da25ed58de19b77bffe3c88a5e76c58",
+      "sha256": "a025af08a684533c8268f3fed2f2acf162b40ba8302d1156847dda48e5dd076f"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/autopilot-execution-engine.cjs",
+      "bytes": 38031,
+      "gitBlobSha": "3b62e576f1d34199b80b442c7173590d3c1a652a",
+      "sha256": "da037288921bbd84e380bad4ee0b6a589c175a41a45d2146c2ba2e3bb383f76a"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "gitBlobSha": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/decision-outcome-proof.cjs",
+      "bytes": 7146,
+      "gitBlobSha": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/frontier-decision-control.cjs",
+      "bytes": 19109,
+      "gitBlobSha": "bbe90c21bbe926317efa8633369f3697508112d5",
+      "sha256": "56fcc92389d3c4335890250ecec6a97be513603c7ff6cddae3842624bd606ae6"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/frontier-decision-control.test.cjs",
+      "bytes": 8536,
+      "gitBlobSha": "893253f815127ea8ae8d9f01298461615a7661ea",
+      "sha256": "80606ed2302612f7403d2a5b433498f3315d4e9aa2ca451d19cb9b3960317594"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/frontier-outcome-learning.cjs",
+      "bytes": 8578,
+      "gitBlobSha": "e39796d2fe214d93132c0e98ca5559af3b438c94",
+      "sha256": "40c3845ba4bfeb849f737f4537498e6ef679fc0b106afdbf80d2682e32dc5ebe"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/frontier-outcome-learning.test.cjs",
+      "bytes": 10481,
+      "gitBlobSha": "95e0a31d17e829b80e7ca69a9288943d0cc19a32",
+      "sha256": "1c7b4e51940c8de171cbcdc228fb9626c2256be423ff11c28b4a797e0ab2ab77"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/golden-industrial-loop.cjs",
+      "bytes": 11326,
+      "gitBlobSha": "eababcab86567382f1c2657dad933d03ee791450",
+      "sha256": "faa8e80f0511915166db2f0e0f4a3cac5765ecdc93d98003ab2e46ce79aadcb1"
+    },
+    {
+      "path": "historical/pr235/operations/runtime/golden-industrial-loop.test.cjs",
+      "bytes": 9588,
+      "gitBlobSha": "22df945b94c34d25b9f9e55735a18ae7f6f8b55c",
+      "sha256": "fc2fad967e78a8ef3446af99fe55c914ced0ad145dc6911783c51d95b1fcb0af"
+    },
+    {
+      "path": "historical/pr269/trust/runtime/proof-carrying-state.cjs",
+      "bytes": 5480,
+      "gitBlobSha": "2c9497e88eb9eb0972687921df0d7bbfa3f16cee",
+      "sha256": "f9b3079de94ab40b1e268e86b8066d99ad04a71a4a948e0d85e4afc6dedcca2a"
+    },
+    {
+      "path": "historical/pr269/trust/runtime/proof-carrying-state.test.cjs",
+      "bytes": 2318,
+      "gitBlobSha": "3ca54b4455fe5fdd75d8041d7ba997e18af4c044",
+      "sha256": "0e711b741f4af4f9ff87ea6d2240518ff32289f7a9f2db0470ef737835fc6ffa"
+    },
+    {
+      "path": "historical-boundaries.held-out.test.cjs",
+      "bytes": 3213,
+      "gitBlobSha": "fcfc856b5174e9f236ec77086193e1f5b9030c35",
+      "sha256": "8e1254e207ca1184d5c7b3e72a0e5cc5788b6e0f0c43038031755153a039f044"
+    },
+    {
+      "path": "identities.json",
+      "bytes": 14366,
+      "gitBlobSha": "f206aba44465708042855c9049beed91109e9825",
+      "sha256": "1a07e3d4e7ca330d281001c9623ca38238e994d6f7446476808466098eb170cf"
+    },
+    {
+      "path": "OWNER_DESIGN.md",
+      "bytes": 4358,
+      "gitBlobSha": "c6c1c115d4f5cf6e6dfd120227a3ee16e1fcda70",
+      "sha256": "21b5bb03394bdec5581ac75af67aa6cb0b7fc17d41967ced2fa9718501b98baa"
+    },
+    {
+      "path": "prepare-closure.cjs",
+      "bytes": 1667,
+      "gitBlobSha": "137139a12a0d2a498b6c1f21cac41e36fe6852e0",
+      "sha256": "c53bd8285812bc2d50dd4f9d394dfeee0e0445c778a4179b6c1999bc67415e0c"
+    },
+    {
+      "path": "prepare.cjs",
+      "bytes": 2547,
+      "gitBlobSha": "1e5cb7e65fd676c0c7229c103557d1616a9fc3d5",
+      "sha256": "d058452ec94366f8aa629bf8457083c3a36b729f2380c502207a97f237e5b566"
+    },
+    {
+      "path": "remote-records.json",
+      "bytes": 2615611,
+      "gitBlobSha": "721577a85d397377ec090691830a6568fe130f2a",
+      "sha256": "bbb04c44c53bc13c8f801a08f1397137351addf83394485591507138ed73de85"
+    },
+    {
+      "path": "run-held-outs.cjs",
+      "bytes": 585,
+      "gitBlobSha": "22d83ce280e6f21562432eae3f2ad04f7806f30c",
+      "sha256": "29ab246d7b3d99b12932e7c904b01aa68398de5566ecfd4b7989f25e3c5c03f1"
+    },
+    {
+      "path": "run-source-tests.cjs",
+      "bytes": 1180,
+      "gitBlobSha": "251fb4e494dde212a14f9008420486f641878727",
+      "sha256": "f4c04e55f896c9631de1fb4db8fc2d66239ac306ae8f0bad2854abb37b10a765"
+    },
+    {
+      "path": "seal.cjs",
+      "bytes": 8712,
+      "gitBlobSha": "fae6bc1f0e4bb1463c4bd98507ca94241f02e219",
+      "sha256": "914c4e0deef4958189ba8b9c181e0eaaab8452027080125ade906a2ba00ad8cc"
+    },
+    {
+      "path": "sources.json",
+      "bytes": 17436,
+      "gitBlobSha": "bf5f968769f5ff9d0dbfdbf36aa2a4bdba313bda",
+      "sha256": "e1f3b7a5c30a2898ee34cde386a013ebc617aab1a555ca33d614b00dad5b59f0"
+    }
+  ]
+}

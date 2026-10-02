@@ -1,0 +1,179 @@
+{
+  "reviewSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+  "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
+  "status": "HOLD_TWO_MATERIAL_P2",
+  "databaseEvidence": [
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-1DpOeW/state.sqlite",
+      "bytes": 163840,
+      "sha256": "c6a4b723349aebda784b58720ee4855d01aa79691e347cc64055adcda2a26243"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-3BM8ke/state.sqlite",
+      "bytes": 192512,
+      "sha256": "1839132492f4549f7b2d80f2b5cafde2b08fba090175d9dac0b074a038fee7f9"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-9emNVz/state.sqlite",
+      "bytes": 163840,
+      "sha256": "d7e9075f20392d215502e69004954f903d35cb9fb702134dd6d1fbfc35d4dfb4"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-amzx5J/state.sqlite",
+      "bytes": 192512,
+      "sha256": "a7a0f8c32801908bcc1d2509e016fd20dc9a78baff8086f71714074eab8f1ab5"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-C8JuEq/state.sqlite",
+      "bytes": 172032,
+      "sha256": "f93b422090bc68b465550a52b9bc032364b432e7303a9ee252ac70254db971ae"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-FcMPIq/state.sqlite",
+      "bytes": 192512,
+      "sha256": "aff908818adbbf3867274e437caa5ee789c72e1b39b2aa82079b3298470a77d5"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-G2J2sE/state.sqlite",
+      "bytes": 163840,
+      "sha256": "e754f20daff315218e58d0ce3a096e6bbad0d4d051c9558f7da09769790982fa"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-Hj0pOk/state.sqlite",
+      "bytes": 192512,
+      "sha256": "1097e739b810d024e86c1cbb0945fe034c1ac7be4b8f386443bdc1ff321dc533"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-jeu7vx/state.sqlite",
+      "bytes": 192512,
+      "sha256": "c2b9cf6265df9ad2d21a7d6ba014b5439f3c5a7674b2f4e48fd5bb55f90b6f3e"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-kWE0au/state.sqlite",
+      "bytes": 163840,
+      "sha256": "431ba1b978b91f0d5b575a6838fe3f4b36fd3bb8feb202e52205a9f79d0e4a61"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-nUEN9c/state.sqlite",
+      "bytes": 172032,
+      "sha256": "b01f21c9afeb7dc97a736e8694f080bfa01e037936ea5f3f381f0c59f8d19b1c"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-QtpWKR/state.sqlite",
+      "bytes": 163840,
+      "sha256": "b11180bd0238548c741a08f38c17bb6362b934abe222f18a8aee36d5a3d93fd6"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-T51ZF3/state.sqlite",
+      "bytes": 192512,
+      "sha256": "745bcc64018c172fc52bf6080b6114eda9715751fa192f1637bf24f061536802"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-YAC8Jj/state.sqlite",
+      "bytes": 172032,
+      "sha256": "ca82bd91e838b7ea91fa88f5384b813414c290fbc3aebb8825ee9fbed7df9416"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-YAYFbj/state.sqlite",
+      "bytes": 172032,
+      "sha256": "032755374502ec4c5b6dbebe93b952e83a8fdcffa0386f0939a663bceafe79f4"
+    },
+    {
+      "path": "work/trust_review/current-admission-fixtures/case-YuDXq0/state.sqlite",
+      "bytes": 163840,
+      "sha256": "0a482bd186de1afe476c934a8b5af1d679038e139e129d1af8832c69949eeccf"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "work/trust_review/current-admission-review.md",
+      "bytes": 3275,
+      "sha256": "fb7933a8ca235d4dbff4f3edaf1c0e449831bef47496354bda24902b83084e3f"
+    },
+    {
+      "path": "work/trust_review/current-admission-findings.json",
+      "bytes": 614241,
+      "sha256": "90c3b150bbb0b5092c2c676a0454dbc802eb71df009f51c12593cab914e91ccd"
+    },
+    {
+      "path": "work/trust_review/current-admission-identities.json",
+      "bytes": 2002,
+      "sha256": "df8b5350e1a278d41c28dac9241a8cc90098802bc28f131d44064e0a56c609a5"
+    },
+    {
+      "path": "work/trust_review/current-admission-golden-map.json",
+      "bytes": 17298,
+      "sha256": "420c5caf61d6f9e70fa48c9adda47cd192cac4400637d93b4f8a064e4bc29833"
+    },
+    {
+      "path": "work/trust_review/current-admission-customer-proof-scan.json",
+      "bytes": 854,
+      "sha256": "db6bfee6b41d6c6b096c3f0841ade31187382e603bc8d5f312e6fcace19c044f"
+    },
+    {
+      "path": "work/trust_review/current-admission-red-source-identities.json",
+      "bytes": 84386,
+      "sha256": "2c3b521e7b0d79cc3de18199b5741807a25a5dcdd594b727523bdc61c460f755"
+    },
+    {
+      "path": "work/trust_review/current-admission-matrix-snapshot.json",
+      "bytes": 42324,
+      "sha256": "711df3a9fa4920418b83f31e7e75307760b47c4f92125f5ecd2ad3240cca6ba5"
+    },
+    {
+      "path": "work/trust_review/current-admission.held-out.test.cjs",
+      "bytes": 11029,
+      "sha256": "1d1ee25970bcc66119a65ed1c634b98416b637645c672d8a3083564a88fc2259"
+    },
+    {
+      "path": "work/trust_review/current-admission-held-out.node22.tap",
+      "bytes": 6604,
+      "sha256": "eb027c2f06a760c3f19731ab4e9fcdac29d62559fafbfe381860950a542416a2"
+    },
+    {
+      "path": "work/trust_review/current-admission-held-out.run.json",
+      "bytes": 572,
+      "sha256": "a04d097af4460dadba05f8fc4d96acb785a3e1ce539038b373dcc2093fed4066"
+    },
+    {
+      "path": "work/trust_review/current-admission.observations.json",
+      "bytes": 556813,
+      "sha256": "4c9dd824856dc6894cf1ab2df4a015a94d7deb574b73f294728664950182449f"
+    },
+    {
+      "path": "work/trust_review/current-admission.initial.test.cjs",
+      "bytes": 10258,
+      "sha256": "2dfb8caff54a924c650c1b07a35eb19ca6ab426d19436cba941daf824b87a410"
+    },
+    {
+      "path": "work/trust_review/current-admission.initial.node22.tap",
+      "bytes": 6521,
+      "sha256": "528a7642529c8a469ff6af6eddbc09959b75ed08c067d206803e13452d45edc0"
+    },
+    {
+      "path": "work/trust_review/current-admission.initial.run.json",
+      "bytes": 572,
+      "sha256": "c8345aacde863428b71ba04b9e6174b7bcd745dc518e1b62cf3c0252faf10a69"
+    },
+    {
+      "path": "work/trust_review/current-admission.initial.observations.json",
+      "bytes": 171367,
+      "sha256": "3a7c8a85725812daec3a5f9b39a06eb3477e92aaf0d1daa872a2808240210332"
+    },
+    {
+      "path": "work/trust_review/run-current-admission-review.cjs",
+      "bytes": 2366,
+      "sha256": "af627ff1b2fef06b04ef2bd06550060141670411b2838d085ae659327230f9ef"
+    },
+    {
+      "path": "work/trust_review/seal-current-admission-review.cjs",
+      "bytes": 15579,
+      "sha256": "fb25ecae5603fc2dd14b3d2304beb1e8df97df17c48a367cce8e74b0da0ca5f3"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    }
+  ]
+}

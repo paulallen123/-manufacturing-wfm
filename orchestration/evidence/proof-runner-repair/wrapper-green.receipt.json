@@ -1,0 +1,27 @@
+{
+  "label": "wrapper-green",
+  "baseline": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "runtime": "v22.23.2",
+  "platform": "win32",
+  "startedAt": "2026-10-02T11:27:26.529Z",
+  "completedAt": "2026-10-02T11:27:28.378Z",
+  "exitCode": 0,
+  "command": [
+    "--experimental-sqlite",
+    "--test",
+    "--test-concurrency=1",
+    "scripts/current-candidate-role-browser-proof-server.test.mjs"
+  ],
+  "stats": {
+    "tests": 4,
+    "suites": 0,
+    "pass": 4,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 1762.5972
+  },
+  "logSha256": "91e0da7aebfc7f748c2799db87e67e874f9b1994ada344ac2fa82832ffa406fe",
+  "scope": "ISOLATED_SYNTHETIC_WRAPPER_LOOPBACK_ONLY; no browser/hosted/customer proof"
+}

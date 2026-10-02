@@ -1,0 +1,1090 @@
+[
+  {
+    "lane": "05",
+    "state": "FOUND",
+    "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "scope": "READ_ONLY_STATIC_SOURCE_ARCHAEOLOGY",
+    "implementationCreated": false,
+    "testsExecuted": [],
+    "runtimeWiredClaim": false,
+    "hostedClaim": false,
+    "providerClaim": false,
+    "rollback": "No source or remote changes occurred. Any future bounded adaptation must revert only its reviewed additions/coordination, preserving canonical learning assignments, evidence, role reconciliation, artefact events and authority. No full historical merge.",
+    "recordKind": "ENRICH_EXISTING_CAPABILITY",
+    "capabilityId": "product-033",
+    "existingClassification": "PORT",
+    "proposedClassification": "EVOLVE",
+    "canonicalOwner": "Training Twin + authoritative production-demand owner; no new mastery awards.",
+    "sourcePR": 230,
+    "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+    "source": {
+      "implementation": {
+        "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+        "path": "learning/runtime/skills-demand-intelligence.cjs",
+        "blob": "eb059a4be9cfc2d3b90c3e667e20453bda783378",
+        "bytes": 4315,
+        "sha256": "f7d2cc747d89c9b77a6c94ed8c8e431e94b0d2bdcdd7f024ea10c59ef356fe67",
+        "frozenBlob": null,
+        "byteIdenticalToFrozen": false,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+        "testsExecuted": false
+      },
+      "test": {
+        "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+        "path": "learning/runtime/skills-demand-intelligence.test.cjs",
+        "blob": "fc3a1f81908c06a5a677f5087d1442d37bcd2543",
+        "bytes": 1839,
+        "sha256": "a56ea4b289782dc721b1ad3da16ff4c30eecc028db4e98582aaf67b41921512c",
+        "frozenBlob": null,
+        "byteIdenticalToFrozen": false,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.test.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.test.cjs",
+        "testsExecuted": false
+      },
+      "declaredTestCases": 3,
+      "executedTestCases": 0
+    },
+    "newExecutableCapability": "Pure recommendation-only production-demand skill gap and training candidate ranking over Training Twin profiles; no scheduling or mastery write.",
+    "canonicalDependencies": [
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-twin.cjs",
+        "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "bytes": 4716,
+        "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+        "frozenBlob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "testsExecuted": false
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/adaptive-learning-engine.cjs",
+        "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "bytes": 29121,
+        "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+        "frozenBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "testsExecuted": false
+      }
+    ],
+    "staticAdmissionBlockers": [
+      {
+        "finding": "Duplicate personRef rows are counted individually, so one person can cover multiple required headcount slots.",
+        "evidence": {
+          "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+          "path": "learning/runtime/skills-demand-intelligence.cjs",
+          "blob": "eb059a4be9cfc2d3b90c3e667e20453bda783378",
+          "bytes": 4315,
+          "sha256": "f7d2cc747d89c9b77a6c94ed8c8e431e94b0d2bdcdd7f024ea10c59ef356fe67",
+          "frozenBlob": null,
+          "byteIdenticalToFrozen": false,
+          "mode": "100644",
+          "localEvidence": "work/inventory_edges/lane05-continuation/source/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "testsExecuted": false,
+          "line": 42,
+          "code": "const qualified=people.filter(p=>p.qualified).map(p=>p.personRef).sort();"
+        }
+      },
+      {
+        "finding": "Score is not required finite: Number(undefined) or Number(non-numeric) yields NaN, and the less-than comparison is false; MASTERED plus a future dueAt can pass this guard with an invalid score.",
+        "evidence": {
+          "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+          "path": "learning/runtime/skills-demand-intelligence.cjs",
+          "blob": "eb059a4be9cfc2d3b90c3e667e20453bda783378",
+          "bytes": 4315,
+          "sha256": "f7d2cc747d89c9b77a6c94ed8c8e431e94b0d2bdcdd7f024ea10c59ef356fe67",
+          "frozenBlob": null,
+          "byteIdenticalToFrozen": false,
+          "mode": "100644",
+          "localEvidence": "work/inventory_edges/lane05-continuation/source/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "testsExecuted": false,
+          "line": 12,
+          "code": "if(!item||String(item.status)!=='MASTERED'||Number(item.score)<minScore) return false;"
+        }
+      },
+      {
+        "finding": "requiredCount and minMasteryScore use Number coercion. Null requiredCount becomes0 and null threshold becomes0 instead of an explicit missing-value rejection.",
+        "evidence": {
+          "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+          "path": "learning/runtime/skills-demand-intelligence.cjs",
+          "blob": "eb059a4be9cfc2d3b90c3e667e20453bda783378",
+          "bytes": 4315,
+          "sha256": "f7d2cc747d89c9b77a6c94ed8c8e431e94b0d2bdcdd7f024ea10c59ef356fe67",
+          "frozenBlob": null,
+          "byteIdenticalToFrozen": false,
+          "mode": "100644",
+          "localEvidence": "work/inventory_edges/lane05-continuation/source/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "testsExecuted": false,
+          "line": 27,
+          "code": "const competencyKey=text(requirement.competencyKey,160),requiredCount=Number(requirement.requiredCount),at=iso(requirement.at,'requirement.at');"
+        }
+      },
+      {
+        "finding": "Person tenant/site assertions are optional; the canonical Training Twin profile itself has no tenant/site binding field. ContractVersion alone does not attest caller provenance.",
+        "evidence": {
+          "sourceSha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+          "path": "learning/runtime/skills-demand-intelligence.cjs",
+          "blob": "eb059a4be9cfc2d3b90c3e667e20453bda783378",
+          "bytes": 4315,
+          "sha256": "f7d2cc747d89c9b77a6c94ed8c8e431e94b0d2bdcdd7f024ea10c59ef356fe67",
+          "frozenBlob": null,
+          "byteIdenticalToFrozen": false,
+          "mode": "100644",
+          "localEvidence": "work/inventory_edges/lane05-continuation/source/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/07bc5218c183049a8d7ab884b15cca6ef38375ec/learning/runtime/skills-demand-intelligence.cjs",
+          "testsExecuted": false,
+          "line": 36,
+          "code": "if(person.tenant&&text(person.tenant,120)!==tenant) throw new Error('Cross-tenant person data denied.');"
+        }
+      }
+    ],
+    "testGaps": [
+      "Duplicate and normalized-colliding person IDs",
+      "Missing/nonfinite/negative score and malformed or null demand/threshold",
+      "Explicit tenant/site/source revision and freshness binding",
+      "Getter/proxy/serializer inert input, immutable detached output, size/time bounds"
+    ],
+    "remainingWork": [
+      "Adapt only a pure gap decision into the existing training owner after unique people, explicit finite fields and authenticated current source semantics are specified.",
+      "Retain executionPermitted:false and no mastery certification.",
+      "Independent adversarial review and exact assembly/UI/hosted proof remain unexecuted."
+    ]
+  },
+  {
+    "lane": "05",
+    "state": "FOUND",
+    "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "scope": "READ_ONLY_STATIC_SOURCE_ARCHAEOLOGY",
+    "implementationCreated": false,
+    "testsExecuted": [],
+    "runtimeWiredClaim": false,
+    "hostedClaim": false,
+    "providerClaim": false,
+    "rollback": "No source or remote changes occurred. Any future bounded adaptation must revert only its reviewed additions/coordination, preserving canonical learning assignments, evidence, role reconciliation, artefact events and authority. No full historical merge.",
+    "recordKind": "ENRICH_EXISTING_CAPABILITY",
+    "capabilityId": "product-036",
+    "existingClassification": "EVOLVE",
+    "proposedClassification": "EVOLVE",
+    "canonicalOwner": "Extend canonical training twin/delivery/artifact/mastery owners; maintain high-risk review and answer validation.",
+    "sourcePR": 232,
+    "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+    "sourceCorrection": "Initial inventory described eight added paired runtime modules. PR232 changed-path pagination proves seven new module/test pairs (14 files), not eight.",
+    "components": [
+      {
+        "component": "Learner error/assistance/retention display projection",
+        "classification": "EVOLVE",
+        "source": {
+          "implementation": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-learner-memory.cjs",
+            "blob": "74410e09cad0a268aaf95bbea1d2b8887d727b11",
+            "bytes": 3294,
+            "sha256": "ff77bd068d8c2700659be31b3eab9b425cae7f58952be346801400f60feed967",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+            "testsExecuted": false
+          },
+          "test": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-learner-memory.test.cjs",
+            "blob": "f25932640faa2bd7d21c5bd7d6b8c5c884fb6ace",
+            "bytes": 1736,
+            "sha256": "89a73919e8d30bf1440318cb68228340698eeaf96c299cc64524d8407d64176e",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.test.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.test.cjs",
+            "testsExecuted": false
+          },
+          "declaredTestCases": 3,
+          "executedTestCases": 0
+        },
+        "uniqueSemantics": "Common error frequency, assistance dependence and retrieval timestamps derived from existing assignment/evidence records; no new memory store needed.",
+        "blockers": [
+          {
+            "finding": "AUTHENTIC includes TEACH_BACK; independentSuccessCount and lastAuthenticPerformanceAt therefore label teach-back as independent authentic performance, unlike frozen mastery authority.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-learner-memory.cjs",
+              "blob": "74410e09cad0a268aaf95bbea1d2b8887d727b11",
+              "bytes": 3294,
+              "sha256": "ff77bd068d8c2700659be31b3eab9b425cae7f58952be346801400f60feed967",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+              "testsExecuted": false,
+              "line": 4,
+              "code": "const AUTHENTIC=new Set(['INDEPENDENT_TASK','OBSERVED_SUCCESS','TEACH_BACK']);"
+            }
+          },
+          {
+            "finding": "Score>=80 alone produces DEMONSTRATED; imported MASTERED status is trusted directly. Diagnostic labels must not create independent certification.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-learner-memory.cjs",
+              "blob": "74410e09cad0a268aaf95bbea1d2b8887d727b11",
+              "bytes": 3294,
+              "sha256": "ff77bd068d8c2700659be31b3eab9b425cae7f58952be346801400f60feed967",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+              "testsExecuted": false,
+              "line": 39,
+              "code": "if(authentic.length||score>=80) state='DEMONSTRATED';"
+            }
+          },
+          {
+            "finding": "Date and numeric fields are coerced and unbounded; duplicate evidence contributes repeated counts. There is no source revision or tenant/site assertion in this helper.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-learner-memory.cjs",
+              "blob": "74410e09cad0a268aaf95bbea1d2b8887d727b11",
+              "bytes": 3294,
+              "sha256": "ff77bd068d8c2700659be31b3eab9b425cae7f58952be346801400f60feed967",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-learner-memory.cjs",
+              "testsExecuted": false,
+              "line": 16,
+              "code": "const evidence=Array.isArray(input.evidence)?input.evidence:[];"
+            }
+          }
+        ],
+        "canonicalChoice": "Keep existing adaptive-learning-engine as sole score/mastery authority and use a bounded display-only projection of already scoped canonical evidence."
+      },
+      {
+        "component": "Coach intervention and modality decision",
+        "classification": "EVOLVE",
+        "source": {
+          "implementation": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-coach-orchestrator.cjs",
+            "blob": "5d8a156e0a8e98230c11cfde764d738137dff123",
+            "bytes": 2596,
+            "sha256": "84cad9f33d04ecfb5c20b569a4262ffef60fadfe99c7c6d6d75bf15bde306c12",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-coach-orchestrator.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-coach-orchestrator.cjs",
+            "testsExecuted": false
+          },
+          "test": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-coach-orchestrator.test.cjs",
+            "blob": "96f7ff87f47024d5774c9d85b8f42e2dc46f5019",
+            "bytes": 1017,
+            "sha256": "ac1824c8b49e0a9d1004c39fdf002f16eab34dcc8eab4ecb9e92b5b246eea042",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-coach-orchestrator.test.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-coach-orchestrator.test.cjs",
+            "testsExecuted": false
+          },
+          "declaredTestCases": 3,
+          "executedTestCases": 0
+        },
+        "uniqueSemantics": "Explicit independent test, spaced retrieval refresh and context-sensitive modality decisions; basic exposure/guide/practice/test recommendations already exist in Training Twin.",
+        "blockers": [
+          {
+            "finding": "masteryCanBeAwarded is a plan flag derived from independent-test and realTaskAvailable booleans, not independent observed success; never feed it into mastery mutation.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-coach-orchestrator.cjs",
+              "blob": "5d8a156e0a8e98230c11cfde764d738137dff123",
+              "bytes": 2596,
+              "sha256": "84cad9f33d04ecfb5c20b569a4262ffef60fadfe99c7c6d6d75bf15bde306c12",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-coach-orchestrator.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-coach-orchestrator.cjs",
+              "testsExecuted": false,
+              "line": 43,
+              "code": "masteryCanBeAwarded:['INDEPENDENT_TEST'].includes(intervention)&&realTask,"
+            }
+          },
+          {
+            "finding": "PR232 delivery infers realTaskAvailable from a capture route. A route is not an authenticated independent performance receipt.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-delivery-service.cjs",
+              "blob": "dd4b0c42dcc739ef5300c32cc5bd34a36cd195d1",
+              "bytes": 10816,
+              "sha256": "34098003921f62ed8b11500af4781e7ec0117264e785318a916a0746256d52b8",
+              "frozenBlob": "2631ccca1cf90c7b3db5b8f1ea20536af654be04",
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-delivery-service.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-delivery-service.cjs",
+              "testsExecuted": false,
+              "line": 92,
+              "code": "realTaskAvailable:Boolean(module.capture?.route)"
+            }
+          }
+        ],
+        "canonicalChoice": "Evolve existing Training Twin recommendation owner; do not create a second coach/mastery controller."
+      },
+      {
+        "component": "Source-bound authoring draft/receipt contract",
+        "classification": "EVOLVE",
+        "source": {
+          "implementation": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-authoring-contract.cjs",
+            "blob": "00e166ea99761b24a92b0e991bd177cd03819378",
+            "bytes": 4629,
+            "sha256": "ce854437fa28197e98f996b9623e61d62e41ed69401bb0992153669851b40fb1",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+            "testsExecuted": false
+          },
+          "test": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-authoring-contract.test.cjs",
+            "blob": "f5e64666e3a4d277775f3c244d6fc974224a106d",
+            "bytes": 1593,
+            "sha256": "9c6f1394f6091f7f559fb6be04b8f87187bf7da5979997048bdff80ea1c12725",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.test.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.test.cjs",
+            "testsExecuted": false
+          },
+          "declaredTestCases": 2,
+          "executedTestCases": 0
+        },
+        "uniqueSemantics": "Approved versioned source list digest, pedagogical required output and human-review gate for high-risk material.",
+        "blockers": [
+          {
+            "finding": "HIGH_RISK is an exported mutable Set; an importing caller can change membership despite the frozen exports object. Unknown risk strings also fall outside the set and autoPublishAllowed becomes true.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-authoring-contract.cjs",
+              "blob": "00e166ea99761b24a92b0e991bd177cd03819378",
+              "bytes": 4629,
+              "sha256": "ce854437fa28197e98f996b9623e61d62e41ed69401bb0992153669851b40fb1",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+              "testsExecuted": false,
+              "line": 60,
+              "code": "autoPublishAllowed:!HIGH_RISK.has(riskClass)"
+            }
+          },
+          {
+            "finding": "Job, target, source items and receipt content are not deeply detached/inert. Receipt validates metadata and content presence, not factual grounding or validated retrieval answers.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-authoring-contract.cjs",
+              "blob": "00e166ea99761b24a92b0e991bd177cd03819378",
+              "bytes": 4629,
+              "sha256": "ce854437fa28197e98f996b9623e61d62e41ed69401bb0992153669851b40fb1",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+              "testsExecuted": false,
+              "line": 53,
+              "code": "sourceRefsPerSection:true"
+            }
+          },
+          {
+            "finding": "Required output includes managerApplication and sourceRefsPerSection, but receipt validation does not check either requirement.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-authoring-contract.cjs",
+              "blob": "00e166ea99761b24a92b0e991bd177cd03819378",
+              "bytes": 4629,
+              "sha256": "ce854437fa28197e98f996b9623e61d62e41ed69401bb0992153669851b40fb1",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-authoring-contract.cjs",
+              "testsExecuted": false,
+              "line": 51,
+              "code": "managerApplication:true,"
+            }
+          }
+        ],
+        "canonicalChoice": "Bound draft contract under existing workflow/artifact owner, approved source producer and immutable policy. No LLM/model call or automatic publication was inspected or executed."
+      },
+      {
+        "component": "Training quality gate",
+        "classification": "EVOLVE",
+        "source": {
+          "implementation": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-quality-gate.cjs",
+            "blob": "f6ae7b9188d5424b21261c46bf3bdd942b591c26",
+            "bytes": 2263,
+            "sha256": "4551a25e260d00b1c77b6e6bcd4c466c476d0a0e291aa81aec3dac0f79744148",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.cjs",
+            "testsExecuted": false
+          },
+          "test": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-quality-gate.test.cjs",
+            "blob": "5869333c68ca4f30ac53d08c59a83225398110f8",
+            "bytes": 1371,
+            "sha256": "7b4dd6aa1b3ed7787e1e5e10a1315b833588fe6257e200517fdb09fd34e2f049",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.test.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.test.cjs",
+            "testsExecuted": false
+          },
+          "declaredTestCases": 2,
+          "executedTestCases": 0
+        },
+        "unchangedSourceDisposition": "REJECT_AS_AUTHORITY",
+        "blockers": [
+          {
+            "finding": "Privacy and secret safety pass unless explicitly false; omitted source state defaults NOT_REQUIRED; an arbitrary nonempty fingerprint plus caller artifactPublishable is accepted as exact identity.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-quality-gate.cjs",
+              "blob": "f6ae7b9188d5424b21261c46bf3bdd942b591c26",
+              "bytes": 2263,
+              "sha256": "4551a25e260d00b1c77b6e6bcd4c466c476d0a0e291aa81aec3dac0f79744148",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.cjs",
+              "testsExecuted": false,
+              "line": 22,
+              "code": "privacySafe:media.privacySafe!==false,"
+            }
+          },
+          {
+            "finding": "noPassiveMastery passes when exposureOnly is omitted; the direct quality contract does not require canonical evidencePolicy in that case.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-quality-gate.cjs",
+              "blob": "f6ae7b9188d5424b21261c46bf3bdd942b591c26",
+              "bytes": 2263,
+              "sha256": "4551a25e260d00b1c77b6e6bcd4c466c476d0a0e291aa81aec3dac0f79744148",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-quality-gate.cjs",
+              "testsExecuted": false,
+              "line": 14,
+              "code": "noPassiveMastery:module.exposureOnly!==false||module.evidencePolicy==='OBSERVED_INDEPENDENT_TASK_REQUIRED'||module.evidencePolicy==='NO_MASTERY_FROM_DELIVERY',"
+            }
+          }
+        ],
+        "canonicalChoice": "Reuse fail-closed exact canonical video/artifact validation. Quality concepts may evolve evidence projections only after explicit verified inputs; this helper must not replace publication admission."
+      },
+      {
+        "component": "Training factory stage planner",
+        "classification": "EVOLVE",
+        "source": {
+          "implementation": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-factory-orchestrator.cjs",
+            "blob": "5bdf49bcece78a91b28b4ebcc442eb762138632b",
+            "bytes": 3920,
+            "sha256": "e6924c652fb15145762bb749dbdf6165c5d6704dcd1186906563a15a2a65fa05",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.cjs",
+            "testsExecuted": false
+          },
+          "test": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-factory-orchestrator.test.cjs",
+            "blob": "d6b7d0211362908418b04a93a0d04ab0f72b6299",
+            "bytes": 1052,
+            "sha256": "f75549c195de8b319c3bcf8d117b8641bb312838ac431c2b1eb862ea00b4ffae",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.test.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.test.cjs",
+            "testsExecuted": false
+          },
+          "declaredTestCases": 3,
+          "executedTestCases": 0
+        },
+        "unchangedSourceDisposition": "REJECT_AS_AUTHORITY",
+        "blockers": [
+          {
+            "finding": "publishable requires no BLOCKED stage and quality PUBLISHABLE; unfinished AUTHOR READY does not block publishability when downstream asserted labels are ready. Stages are not exact receipt-bound dependencies.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-factory-orchestrator.cjs",
+              "blob": "5bdf49bcece78a91b28b4ebcc442eb762138632b",
+              "bytes": 3920,
+              "sha256": "e6924c652fb15145762bb749dbdf6165c5d6704dcd1186906563a15a2a65fa05",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.cjs",
+              "testsExecuted": false,
+              "line": 79,
+              "code": "publishable:blockers.length===0&&state(evidence.quality)==='PUBLISHABLE',"
+            }
+          },
+          {
+            "finding": "highRisk is a caller boolean, separate from source authoring policy. Standard-risk review passes immediately, and MANIFEST can be READY independently of completed authoring.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-factory-orchestrator.cjs",
+              "blob": "5bdf49bcece78a91b28b4ebcc442eb762138632b",
+              "bytes": 3920,
+              "sha256": "e6924c652fb15145762bb749dbdf6165c5d6704dcd1186906563a15a2a65fa05",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-factory-orchestrator.cjs",
+              "testsExecuted": false,
+              "line": 27,
+              "code": "const reviewed=!highRisk||state(evidence.humanReview)==='APPROVED';"
+            }
+          }
+        ],
+        "canonicalChoice": "No new dispatcher/worker/ledger. A future pure stage decision must compose canonical receipt, artifact and policy owners in dependency order."
+      }
+    ],
+    "divergingIntegrationSource": {
+      "path": "learning/runtime/training-twin.cjs",
+      "sourceBlob": "c52cd9640209f6e4898428b6bf43516e93698a8b",
+      "frozenBlob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+      "classification": "REJECT_WHOLE_REPLACEMENT",
+      "reason": "Historical Training Twin removes adaptive engine construction, assignment reconciliation and active-role filtering present in f32. Reading all stored assignments can surface retired former-role competencies. Only selected pure additions may be adapted onto current canonical owner.",
+      "sourceEvidence": {
+        "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+        "path": "learning/runtime/training-twin.cjs",
+        "blob": "c52cd9640209f6e4898428b6bf43516e93698a8b",
+        "bytes": 4965,
+        "sha256": "73e98895ed2647377d8b57aa871dec9551f6639c9f5793e6b62b6b76787aa752",
+        "frozenBlob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "byteIdenticalToFrozen": false,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-twin.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-twin.cjs",
+        "testsExecuted": false,
+        "line": 65,
+        "code": "const pref=preferencesFor(user),role=canonicalRole(user.role),rows=assignments.all(user.tenant,user.email);"
+      },
+      "frozenEvidence": {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-twin.cjs",
+        "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "bytes": 4716,
+        "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+        "frozenBlob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "testsExecuted": false,
+        "line": 64,
+        "code": "const active=new Set(learning.planForUser(user).all.map(item=>item.competencyKey));"
+      }
+    },
+    "canonicalDependencies": [
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/adaptive-learning-engine.cjs",
+        "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "bytes": 29121,
+        "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+        "frozenBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "testsExecuted": false
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-twin.cjs",
+        "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "bytes": 4716,
+        "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+        "frozenBlob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "testsExecuted": false
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-delivery-service.cjs",
+        "blob": "2631ccca1cf90c7b3db5b8f1ea20536af654be04",
+        "bytes": 9162,
+        "sha256": "1ce756258d9fa85eac69ec56583709209a611483d92726a0ebac3f6bfee3767c",
+        "frozenBlob": "2631ccca1cf90c7b3db5b8f1ea20536af654be04",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-delivery-service.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-delivery-service.cjs",
+        "testsExecuted": false
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-artifact-registry.cjs",
+        "blob": "68e2fcdae5940111d756b3537472ba5471a42053",
+        "bytes": 2685,
+        "sha256": "ada7240b44c6f426054ec17878e42532f74efca4a3071c0c39c09f77a2d3d46c",
+        "frozenBlob": "68e2fcdae5940111d756b3537472ba5471a42053",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-artifact-registry.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-artifact-registry.cjs",
+        "testsExecuted": false
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-workflow-manifest.cjs",
+        "blob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd",
+        "bytes": 24222,
+        "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0",
+        "frozenBlob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-workflow-manifest.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-workflow-manifest.cjs",
+        "testsExecuted": false
+      }
+    ],
+    "remainingWork": [
+      "Choose a single bounded pure component; retain existing canonical stores, role reconciliation and independent mastery.",
+      "Define immutable inert input and exact source/policy binding before copying any policy gate.",
+      "Adversarial/held-out source tests and authenticated caller/assembly/role UI/hosted/durability proof remain unexecuted."
+    ]
+  },
+  {
+    "lane": "05",
+    "state": "FOUND",
+    "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "scope": "READ_ONLY_STATIC_SOURCE_ARCHAEOLOGY",
+    "implementationCreated": false,
+    "testsExecuted": [],
+    "runtimeWiredClaim": false,
+    "hostedClaim": false,
+    "providerClaim": false,
+    "rollback": "No source or remote changes occurred. Any future bounded adaptation must revert only its reviewed additions/coordination, preserving canonical learning assignments, evidence, role reconciliation, artefact events and authority. No full historical merge.",
+    "recordKind": "ENRICH_EXISTING_CAPABILITY",
+    "capabilityId": "product-037",
+    "existingClassification": "EVOLVE",
+    "proposedClassification": "EVOLVE",
+    "canonicalOwner": "Canonical video/artifact contract owns exact release identity; synthetic brand voice only.",
+    "sourcePR": 232,
+    "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+    "components": [
+      {
+        "name": "Synthetic narration contract",
+        "classification": "EVOLVE",
+        "source": {
+          "implementation": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-voice-contract.cjs",
+            "blob": "cac8d28c05228dbe96b99664b33c012eb2c5f53c",
+            "bytes": 6558,
+            "sha256": "8e198017b7d33bbf4b3099fe6a2247561df1571f2faeaeb5744a0353f177afe8",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+            "testsExecuted": false
+          },
+          "test": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-voice-contract.test.cjs",
+            "blob": "db32b76c3f970b7e7db380e3f3c08cd1116f9bc6",
+            "bytes": 1838,
+            "sha256": "16035732101bf0d39324ff624edc1cc2a31abddc211277fee8ee537b2ab3d057",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.test.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.test.cjs",
+            "testsExecuted": false
+          },
+          "declaredTestCases": 3,
+          "executedTestCases": 0
+        },
+        "uniqueSemantics": "Segment text digest, synthetic-brand-only profile, narration job/receipt, timing intervals, PII/secret scan assertions and durable-versus-proof metadata states.",
+        "blockers": [
+          {
+            "finding": "Narration jobId binds profile.id but not full pace/pitch/pronunciation; changed profile settings with the same ID and segments collide under the current identity seed.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-voice-contract.cjs",
+              "blob": "cac8d28c05228dbe96b99664b33c012eb2c5f53c",
+              "bytes": 6558,
+              "sha256": "8e198017b7d33bbf4b3099fe6a2247561df1571f2faeaeb5744a0353f177afe8",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+              "testsExecuted": false,
+              "line": 69,
+              "code": "jobId:'narration-'+sha256(stable({artifactFingerprint,productSha,profileId:profile.id,textDigest})).slice(0,40),"
+            }
+          },
+          {
+            "finding": "validSha admits7-64 hex chars, not one exact Git source identity; missing sampleRateHz yields NaN and evades the less-than guard.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-voice-contract.cjs",
+              "blob": "cac8d28c05228dbe96b99664b33c012eb2c5f53c",
+              "bytes": 6558,
+              "sha256": "8e198017b7d33bbf4b3099fe6a2247561df1571f2faeaeb5744a0353f177afe8",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+              "testsExecuted": false,
+              "line": 107,
+              "code": "if(Number(receipt.sampleRateHz)<24000) errors.push('SAMPLE_RATE_TOO_LOW');"
+            }
+          },
+          {
+            "finding": "READY uses asserted durable plus HTTPS URL; actual stored content/hash, access, restart and media quality are not verified by this pure function.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-voice-contract.cjs",
+              "blob": "cac8d28c05228dbe96b99664b33c012eb2c5f53c",
+              "bytes": 6558,
+              "sha256": "8e198017b7d33bbf4b3099fe6a2247561df1571f2faeaeb5744a0353f177afe8",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-voice-contract.cjs",
+              "testsExecuted": false,
+              "line": 126,
+              "code": "const durable=receipt.durable===true&&/^https:\\/\\//.test(audioUrl);"
+            }
+          }
+        ]
+      },
+      {
+        "name": "1080p scene/media plan",
+        "classification": "EVOLVE",
+        "source": {
+          "implementation": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-media-plan.cjs",
+            "blob": "85b66d6fcc2b78998a1e920da1c245ee0e48ef0e",
+            "bytes": 2532,
+            "sha256": "856e3a09ad77cfabd4d45d89330f7ff9e68bf0cb2a3521165abb37e5b6015207",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-media-plan.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-media-plan.cjs",
+            "testsExecuted": false
+          },
+          "test": {
+            "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+            "path": "learning/runtime/training-media-plan.test.cjs",
+            "blob": "4932fbd42379d57f64e71e5441dec7d1659b629f",
+            "bytes": 820,
+            "sha256": "09929e08783a18fc9604fbe2f1c93e4b813f30c6d1adf84362a718f416626278",
+            "frozenBlob": null,
+            "byteIdenticalToFrozen": false,
+            "mode": "100644",
+            "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-media-plan.test.cjs",
+            "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-media-plan.test.cjs",
+            "testsExecuted": false
+          },
+          "declaredTestCases": 1,
+          "executedTestCases": 0
+        },
+        "dependencies": [
+          "Same-branch training-voice-contract; existing frozen workflow manifest/video/artifact contracts"
+        ],
+        "uniqueSemantics": "Intro/steps/recap narration,1080p/30fps plan, captions, accessibility and passive exposure boundary. This is a plan, not generated durable media.",
+        "blockers": [
+          {
+            "finding": "Module is gated on contractVersion/mode but not frozen artifactPublishable/capture admission as createVideoGenerationJob is; cannot use this plan as a publication or exact-capture proof.",
+            "evidence": {
+              "sourceSha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+              "path": "learning/runtime/training-media-plan.cjs",
+              "blob": "85b66d6fcc2b78998a1e920da1c245ee0e48ef0e",
+              "bytes": 2532,
+              "sha256": "856e3a09ad77cfabd4d45d89330f7ff9e68bf0cb2a3521165abb37e5b6015207",
+              "frozenBlob": null,
+              "byteIdenticalToFrozen": false,
+              "mode": "100644",
+              "localEvidence": "work/inventory_edges/lane05-continuation/source/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-media-plan.cjs",
+              "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/015d236d3cfdffc2bf352c7003298047fb602bd6/learning/runtime/training-media-plan.cjs",
+              "testsExecuted": false,
+              "line": 10,
+              "code": "if(module.mode!=='SHOW_ME') throw new Error('Media plans are generated from SHOW_ME modules.');"
+            }
+          }
+        ]
+      }
+    ],
+    "canonicalDependencies": [
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-video-contract.cjs",
+        "blob": "d3b97c4980e6be3ce6c014027a62f6e40bcdc77e",
+        "bytes": 7059,
+        "sha256": "b35061885cc6936a58eadb40033c744135f80143c1f0e927e45c491eedc27645",
+        "frozenBlob": "d3b97c4980e6be3ce6c014027a62f6e40bcdc77e",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-video-contract.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-video-contract.cjs",
+        "testsExecuted": false
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-artifact-registry.cjs",
+        "blob": "68e2fcdae5940111d756b3537472ba5471a42053",
+        "bytes": 2685,
+        "sha256": "ada7240b44c6f426054ec17878e42532f74efca4a3071c0c39c09f77a2d3d46c",
+        "frozenBlob": "68e2fcdae5940111d756b3537472ba5471a42053",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-artifact-registry.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-artifact-registry.cjs",
+        "testsExecuted": false
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-workflow-manifest.cjs",
+        "blob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd",
+        "bytes": 24222,
+        "sha256": "c083fed8e10f79e60282c25988cf8988b4cdfe1de6b9d8679ea550b2adc97da0",
+        "frozenBlob": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-workflow-manifest.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-workflow-manifest.cjs",
+        "testsExecuted": false
+      }
+    ],
+    "remainingWork": [
+      "Adapt compatible narration/media decisions to the existing release-bound artifact contract; no additional voice or media controller.",
+      "Full profile/content/source receipt identity, explicit finite sample rates, detached inert inputs and exact origin/source evidence are required.",
+      "No paid/model/voice provider call, actual render, durable artifact access, hosted or customer proof was performed."
+    ]
+  },
+  {
+    "lane": "05",
+    "state": "FOUND",
+    "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "scope": "READ_ONLY_STATIC_SOURCE_ARCHAEOLOGY",
+    "implementationCreated": false,
+    "testsExecuted": [],
+    "runtimeWiredClaim": false,
+    "hostedClaim": false,
+    "providerClaim": false,
+    "rollback": "No source or remote changes occurred. Any future bounded adaptation must revert only its reviewed additions/coordination, preserving canonical learning assignments, evidence, role reconciliation, artefact events and authority. No full historical merge.",
+    "recordKind": "ENRICH_EXISTING_CAPABILITIES",
+    "capabilityIds": [
+      "product-056",
+      "product-057"
+    ],
+    "classification": "ALREADY_CANONICAL",
+    "canonicalOwner": "Existing adaptive-learning-engine and Training Twin role-curriculum owner; same owner as product-056/057.",
+    "evidence": [
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/adaptive-learning-engine.cjs",
+        "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "bytes": 29121,
+        "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+        "frozenBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "testsExecuted": false,
+        "line": 349,
+        "code": "const independentSuccess = best.has('INDEPENDENT_TASK') || best.has('OBSERVED_SUCCESS');"
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/adaptive-learning-engine.cjs",
+        "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "bytes": 29121,
+        "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+        "frozenBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "testsExecuted": false,
+        "line": 351,
+        "code": "const mastered = !refreshPending && score >= 80 && independentSuccess && (!requiresTeachBack || best.has('TEACH_BACK'));"
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/adaptive-learning-engine.cjs",
+        "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "bytes": 29121,
+        "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+        "frozenBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "testsExecuted": false,
+        "line": 341,
+        "code": "if (!scenario || detail?.validationVersion !== 1 ||"
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/adaptive-learning-engine.cjs",
+        "blob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "bytes": 29121,
+        "sha256": "a0ed9fc2e5be74e2be54b43eefc88bb03a3d767f54ffbeb57783a2be4b74c132",
+        "frozenBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.cjs",
+        "testsExecuted": false,
+        "line": 326,
+        "code": "return assignmentsForUser.all(user.tenant, user.email).filter(row => eligible.has(row.competency_key));"
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-twin.cjs",
+        "blob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "bytes": 4716,
+        "sha256": "43baea0201be5849853b91f9365770cc4e916b5f7e8c7844d8f125ee67878be4",
+        "frozenBlob": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.cjs",
+        "testsExecuted": false,
+        "line": 64,
+        "code": "const active=new Set(learning.planForUser(user).all.map(item=>item.competencyKey));"
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-scenario-engine.cjs",
+        "blob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+        "bytes": 3742,
+        "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b",
+        "frozenBlob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-scenario-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-scenario-engine.cjs",
+        "testsExecuted": false,
+        "line": 61,
+        "code": "masteryAwarded:false,"
+      }
+    ],
+    "historicalPR79": {
+      "sourceSha": "95ec4589c5090e4e2b38ec3307280bb547e6e67d",
+      "source": {
+        "sourceSha": "95ec4589c5090e4e2b38ec3307280bb547e6e67d",
+        "path": "learning/runtime/adaptive-learning-engine.cjs",
+        "blob": "bb167a8fbe26ba68f51f78eec83c4c0140827d8d",
+        "bytes": 26777,
+        "sha256": "add373b153e3e078e651904f054f8d29d79f3b26353256fe7e46468805545545",
+        "frozenBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+        "byteIdenticalToFrozen": false,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/95ec4589c5090e4e2b38ec3307280bb547e6e67d/learning/runtime/adaptive-learning-engine.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/95ec4589c5090e4e2b38ec3307280bb547e6e67d/learning/runtime/adaptive-learning-engine.cjs",
+        "testsExecuted": false
+      },
+      "classification": "SUPERSEDED",
+      "reason": "Exact old PR79 module blob equals both __security_hold archival copies in frozen tree, not live frozen learning runtime. Current f32 has validation/independent-task/role-reconciliation repairs; do not restore the old implementation."
+    },
+    "testsAvailable": [
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/adaptive-learning-engine.test.cjs",
+        "blob": "89d2a54ab3cb945ba53f25a235b47d0e02737213",
+        "bytes": 21771,
+        "sha256": "b8b2e3f2f8418e6b5b9149b112a503b3000ee134719d99054d6f3af83e7b87dd",
+        "frozenBlob": "89d2a54ab3cb945ba53f25a235b47d0e02737213",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.test.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/adaptive-learning-engine.test.cjs",
+        "testsExecuted": false,
+        "declaredTestCases": 17,
+        "executedTestCases": 0
+      },
+      {
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "path": "learning/runtime/training-twin.test.cjs",
+        "blob": "1d85a35b09a521159abd66949e1bcfe905dfc8b7",
+        "bytes": 1742,
+        "sha256": "cfbcb674b3e43f4b12b92afc82348bd76d1fead478fc58973270ffadc4721e17",
+        "frozenBlob": "1d85a35b09a521159abd66949e1bcfe905dfc8b7",
+        "byteIdenticalToFrozen": true,
+        "mode": "100644",
+        "localEvidence": "work/inventory_edges/lane05-continuation/source/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.test.cjs",
+        "sourceUrl": "https://github.com/paulallen123/-manufacturing-wfm/blob/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/learning/runtime/training-twin.test.cjs",
+        "testsExecuted": false,
+        "declaredTestCases": 2,
+        "executedTestCases": 0
+      }
+    ],
+    "remainingWork": [
+      "Retain canonical code. This static inventory did not rerun role/security/source tests or prove runtime/hosted behaviour."
+    ]
+  }
+]

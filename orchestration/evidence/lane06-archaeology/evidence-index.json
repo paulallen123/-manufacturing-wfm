@@ -1,0 +1,68 @@
+[
+  {
+    "path": "evidence/01-native-server-source-tests.json",
+    "blob": "318279919d715237b1b3ef35ffa01469a45b330a",
+    "sha256": "f6c552c422548e82c145c964b42538c5be04b891cbdd815a04ac5fb8c37b8932",
+    "bytes": 795
+  },
+  {
+    "path": "evidence/01-native-server-source-tests.log",
+    "blob": "776f713b16742097fdc5e8ba7c4d23ce802c7d1d",
+    "sha256": "bcb0c6ae29810d65d33498f6fc55bcde15a8fa90deeff38acfada22478a5e96c",
+    "bytes": 4171
+  },
+  {
+    "path": "evidence/02-production-parity-refusal.json",
+    "blob": "8368cf14cd2e120c2b85da7585322b39976ea095",
+    "sha256": "91936c30e253284b3b87b3d519af70776918ca066b9d9dec4e727e879224d9c9",
+    "bytes": 181
+  },
+  {
+    "path": "evidence/02-production-parity-refusal.log",
+    "blob": "61fe9ae9a863fc84b4c94f480bed211046e815cb",
+    "sha256": "5f2261d3b4dbed663c57fc0baa57f2fc3d2f3eb5f2d0804e1e4ac117ebbecef7",
+    "bytes": 977
+  },
+  {
+    "path": "evidence/03-native-server-source-tests.json",
+    "blob": "510ead2fe28f6be0819454242fedd8dcb28c500b",
+    "sha256": "5ec163324d09dc0df9b2435482242903ca26622c52ca751c52ed243728d9cc95",
+    "bytes": 795
+  },
+  {
+    "path": "evidence/03-native-server-source-tests.log",
+    "blob": "97341d4e4bc5ecf6d956cf8cfda84156484d9cbe",
+    "sha256": "20141609bc63dba3758222cd9c4accde1cb05b91f5a8dc758cf0a860876b2e63",
+    "bytes": 1806
+  },
+  {
+    "path": "evidence/04-production-parity-refusal.json",
+    "blob": "8368cf14cd2e120c2b85da7585322b39976ea095",
+    "sha256": "91936c30e253284b3b87b3d519af70776918ca066b9d9dec4e727e879224d9c9",
+    "bytes": 181
+  },
+  {
+    "path": "evidence/04-production-parity-refusal.log",
+    "blob": "d5f507cbfc0a6004ea2cb8e6c1e2857de5b49a5b",
+    "sha256": "e11f96445f210b8cda12c496ce0e3f8beb95bd399e320a443a3cba41bc3389fd",
+    "bytes": 592
+  },
+  {
+    "path": "evidence/05-native-held-out-observations.json",
+    "blob": "e1776a4f2009ce3a079cfe80c00350445fb0159f",
+    "sha256": "51869d338202c0d5410079153df47af8356456698f849cc9df53bbff1a3d6b89",
+    "bytes": 709
+  },
+  {
+    "path": "evidence/05-native-held-out-red.json",
+    "blob": "84ec2be7017d5a92eb7ff89f99628031caff07dc",
+    "sha256": "3f248866691102721a576930415d24a3a6d003b985bf85e131da1e9fc47f8ac7",
+    "bytes": 449
+  },
+  {
+    "path": "evidence/05-native-held-out-red.log",
+    "blob": "834001a3de430ea8e2f03831d48e925b743df29e",
+    "sha256": "6dcef6d672cd8592c7985ad7e9cc5c553a9553e9e43544bca7eafa1e232cb578",
+    "bytes": 2307
+  }
+]

@@ -1,0 +1,153 @@
+{
+  "status": "BOUNDED_REPAIR_VERIFIED_NO_OPEN_P1_P2",
+  "identities": {
+    "verified": true,
+    "sharedOwner": {
+      "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\inert-finite-json.cjs",
+      "mode": "100644",
+      "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "bytes": 1981,
+      "owner": "lane01 bounded projection boundary repair",
+      "contract": "Detached dense finite inert JSON only; proxy rejection before reflection/read; descriptors before values; no accessor/serializer/overridden-array execution",
+      "frozenPathAbsent": true,
+      "newStateStore": false,
+      "publishExactlyOnce": true
+    },
+    "files": [
+      {
+        "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.cjs",
+        "mode": "100644",
+        "proposedBlob": "63aba27ccb0728d64bb98ccf1e715adf1148d199",
+        "sha256": "0913c7b2b482d08d4d6f99cee7d4a012d4c20393ea9649e0fad4e3866947597d",
+        "bytes": 14345,
+        "operation": "ADD_ADAPTED_PORT",
+        "sourceBlob": null
+      },
+      {
+        "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.test.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs",
+        "mode": "100644",
+        "proposedBlob": "33e9decb812c8d6d7b746212c2a15edbc6841e32",
+        "sha256": "81781e17cb8090b62f13d8f273e3435b2fe412fd21010af20eb48a63be409d58",
+        "bytes": 18245,
+        "operation": "ADD_ADAPTED_PORT",
+        "sourceBlob": null
+      },
+      {
+        "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\inert-finite-json.cjs",
+        "mode": "100644",
+        "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+        "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+        "bytes": 1981,
+        "operation": "ADD_ADAPTED_PORT",
+        "sourceBlob": null
+      },
+      {
+        "repositoryTargetPath": "implementation/runtime/inert-finite-json.test.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\inert-finite-json.test.cjs",
+        "mode": "100644",
+        "proposedBlob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+        "sha256": "9c4954f38bbd051cb57ecdc416c3a36658ef52d06795f20cba977f8e8a654fa5",
+        "bytes": 2371,
+        "operation": "ADD_ADAPTED_PORT",
+        "sourceBlob": null
+      },
+      {
+        "repositoryTargetPath": "policy/runtime/site-operating-context-projection.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.cjs",
+        "mode": "100644",
+        "proposedBlob": "25bc851531b57cceada5c79322a76bdbbda92331",
+        "sha256": "a81a5aa172f50ecbedc504088f726f0da88d58cd1a7a31d4fe0865bf1425b5de",
+        "bytes": 6810,
+        "sourceBlob": null,
+        "change": "ADD"
+      },
+      {
+        "repositoryTargetPath": "policy/runtime/site-operating-context-projection.test.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.test.cjs",
+        "mode": "100644",
+        "proposedBlob": "a7e7734fa172a0ff696e6d12af5c3c7f626c2f6b",
+        "sha256": "24ffd26e44eb88f832b315505eed8d6545f95c2f365f83f9670247277e340dbf",
+        "bytes": 8330,
+        "sourceBlob": null,
+        "change": "ADD"
+      }
+    ],
+    "countryCopy": {
+      "shipping": false,
+      "verificationOnly": true,
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
+    },
+    "frozenDependenciesUnchanged": {
+      "twin": 2,
+      "country": 13
+    }
+  },
+  "closedFindings": [
+    "COUNTRY-01",
+    "COUNTRY-02",
+    "TWIN-01",
+    "TWIN-02"
+  ],
+  "openFindings": [],
+  "executed": [
+    {
+      "name": "country-repair-held-out",
+      "tests": 15,
+      "pass": 15,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 357.2997,
+      "node": "v22.23.2",
+      "timeoutMs": 60000,
+      "networkGuard": true
+    },
+    {
+      "name": "twin-repair-held-out",
+      "tests": 31,
+      "pass": 31,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 188.6773,
+      "node": "v22.23.2",
+      "timeoutMs": 60000,
+      "networkGuard": true
+    },
+    {
+      "name": "twin-repair-source",
+      "tests": 73,
+      "pass": 73,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 257.2063,
+      "node": "v22.23.2",
+      "timeoutMs": 60000,
+      "networkGuard": true
+    },
+    {
+      "name": "country-repair-source",
+      "tests": 41,
+      "pass": 41,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 361.4768,
+      "node": "v22.23.2",
+      "timeoutMs": 60000,
+      "networkGuard": true
+    }
+  ],
+  "probeChanges": "Country original probe changed output filename only; Twin original probe changed bound source identity and output filename only. Original red source capsules, tests, observations and logs remain intact.",
+  "staticReview": "One shared detached dense finite inert JSON boundary rejects proxies before reflection, accessors/custom methods before values, nonfinite numbers, non-plain prototypes, sparse arrays, custom array properties and cycles. Twin factory and returned query option boundaries copy before destructuring; country copies before canonical normalization. No new state or execution authority.",
+  "shippingDependency": "Country requires lane01-owned implementation/runtime/inert-finite-json.cjs e38b912c9746f69a0dd3c1c991c25f2bbf4d3261 before/together admission, published exactly once. Country helper copy is verification-only.",
+  "limitations": [
+    "Local source contract review only; source suites are separate counts with frozen tests and must not be counted as new customer requirements.",
+    "No authenticated canonical source, UI/route, provider, main/live deployment, hosted/container or GoldenJourney proof.",
+    "Previously published future Twin f68 bytes had two P2s; this verdict applies only to final proposed repaired blobs listed here, not retroactively to f68."
+  ],
+  "provenBaseSha": null,
+  "convergenceBaseSha": null
+}

@@ -1,0 +1,32 @@
+{
+  "branch": "feature/vector-lane03-proof-retry-20261002",
+  "commit": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
+  "tree": "c5c74a207be7cac5c9b23d79e937cc9dd08d1b16",
+  "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "frozenPreserved": 1094,
+  "manifestPaths": 39,
+  "verified": true,
+  "runtimeWired": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "sourceSuite": {
+    "tests": 87,
+    "pass": 87,
+    "fail": 0,
+    "skip": 0
+  },
+  "independentHeldOut": {
+    "tests": 23,
+    "pass": 23,
+    "fail": 0,
+    "skip": 0
+  },
+  "qualifiedCanonicalComparison": {
+    "tests": 139,
+    "pass": 138,
+    "fail": 1,
+    "skip": 0,
+    "qualification": "Unchanged frozen Gusto Windows SQLite cleanup EBUSY; reproduced baseline-only, no blanket green."
+  },
+  "publishedAt": "2026-10-02T11:19:17.441Z"
+}

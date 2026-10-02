@@ -1,0 +1,30 @@
+{
+  "branch": "feature/vector-lane01-twin-projections-20261002",
+  "commit": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+  "tree": "071403827320c6afc7301479d9c2d7250b82585b",
+  "parent": "f68dff51c655da9fb68c7064c08e384a217b5314",
+  "verified": true,
+  "frozenPreserved": 1094,
+  "manifestPaths": 51,
+  "sourceTests": 73,
+  "independentHeldOut": 31,
+  "sharedBoundary": {
+    "owner": "LANE01",
+    "classification": "CANONICAL_OWNER_LANE01",
+    "paths": [
+      {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
+      },
+      {
+        "path": "implementation/runtime/inert-finite-json.test.cjs",
+        "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
+      }
+    ],
+    "countryCopyPurpose": "Identical canonical dependency paths ensure standalone branch executability; no competing owner"
+  },
+  "runtimeWired": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "publishedAt": "2026-10-02T11:22:05.627Z"
+}

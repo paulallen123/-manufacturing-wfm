@@ -1,0 +1,26 @@
+{
+  "scope": "Historical PR242 source behavior only; no native API, biometrics, permission/provider, current frozen deployment or customer execution",
+  "observations": [
+    {
+      "case": "disabled biometric preference",
+      "result": {
+        "ok": true,
+        "method": "device-policy"
+      },
+      "nativeAuthenticationCalls": 0
+    },
+    {
+      "case": "absent device assertion",
+      "status": 200,
+      "response": {
+        "status": "APPROVED_AND_VERIFIED",
+        "auditId": "mobdec-4c7bfaf72df741a203f1c6f0cc9f7143d8cdcc55",
+        "permitId": "fixture-permit",
+        "execution": {
+          "state": "VERIFIED"
+        }
+      },
+      "injectedPermitExecuteCalls": 2
+    }
+  ]
+}

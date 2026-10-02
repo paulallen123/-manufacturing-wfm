@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T10:49:20.107Z",
+  "updatedAt": "2026-10-02T12:00:19.738Z",
   "claim": "NOT_CUSTOMER_PROVEN",
   "exactCurrentTuple": {
     "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -603,7 +603,12 @@
       "fail": 1,
       "skip": 0,
       "evidence": "orchestration/evidence/ci19-browser/job26-build.log"
-    }
+    },
+    "currentReviewSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+    "core36": "HALTED_GREEN_NO_HEAVY_VALIDATION",
+    "runtime37": "HALTED_GREEN_NO_HEAVY_VALIDATION",
+    "core50": "SUCCESS_STATUS_UNCHANGED_TRIGGER_NO_VALIDATION_CLAIM",
+    "runtime51": "ACTUAL_UI_FOUR_ADMISSION_ONLY_STEPS_1S_NO_BUILD_OR_TESTS"
   },
   "invalidatedEvidence": [
     {
@@ -843,7 +848,7 @@
     {
       "branch": "feature/vector-lane01-twin-projections-20261002",
       "sha": "f68dff51c655da9fb68c7064c08e384a217b5314",
-      "tree": "c7a555208d740b871856df8992eee020f3ce2851",
+      "tree": "071403827320c6afc7301479d9c2d7250b82585b",
       "parents": [
         "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
       ],
@@ -856,7 +861,34 @@
         "mapped": 22,
         "independentHeldOuts": 12
       },
-      "runtimeCallerIntegrated": false
+      "runtimeCallerIntegrated": false,
+      "commit": "0a95032c3df82c0c5837558b38c90c7ad55ba346",
+      "parent": "f68dff51c655da9fb68c7064c08e384a217b5314",
+      "verified": true,
+      "frozenPreserved": 1094,
+      "manifestPaths": 51,
+      "sourceTests": 73,
+      "independentHeldOut": 31,
+      "sharedBoundary": {
+        "owner": "LANE01",
+        "classification": "CANONICAL_OWNER_LANE01",
+        "paths": [
+          {
+            "path": "implementation/runtime/inert-finite-json.cjs",
+            "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
+          },
+          {
+            "path": "implementation/runtime/inert-finite-json.test.cjs",
+            "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
+          }
+        ],
+        "countryCopyPurpose": "Identical canonical dependency paths ensure standalone branch executability; no competing owner"
+      },
+      "runtimeWired": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "publishedAt": "2026-10-02T11:22:05.627Z",
+      "claimBoundary": "Source-only; does not close any Golden Journey gate"
     },
     {
       "branch": "feature/vector-lane03-integration-authority-20261002",
@@ -878,6 +910,172 @@
         "staticCommands": 4
       },
       "runtimeCallerIntegrated": false
+    },
+    {
+      "branch": "feature/vector-lane02-country-context-20261002",
+      "commit": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
+      "tree": "9b5df1b5a8945c3b46fc79c5d76832fa67e3ca2a",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "verified": true,
+      "frozenPreserved": 1094,
+      "manifestPaths": 70,
+      "sourceTests": 41,
+      "independentHeldOut": 15,
+      "sharedBoundary": {
+        "owner": "LANE01",
+        "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+        "paths": [
+          {
+            "path": "implementation/runtime/inert-finite-json.cjs",
+            "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
+          },
+          {
+            "path": "implementation/runtime/inert-finite-json.test.cjs",
+            "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
+          }
+        ],
+        "countryCopyPurpose": "Identical canonical dependency paths ensure standalone branch executability; no competing owner"
+      },
+      "runtimeWired": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "publishedAt": "2026-10-02T11:22:05.655Z",
+      "runtimeCallerIntegrated": false,
+      "claimBoundary": "Source-only; does not close any Golden Journey gate"
+    },
+    {
+      "branch": "feature/vector-lane03-proof-retry-20261002",
+      "commit": "abc4b50efbf415bdb7b7495cc18a6ff40cbc3ae9",
+      "tree": "c5c74a207be7cac5c9b23d79e937cc9dd08d1b16",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "frozenPreserved": 1094,
+      "manifestPaths": 39,
+      "verified": true,
+      "runtimeWired": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "sourceSuite": {
+        "tests": 87,
+        "pass": 87,
+        "fail": 0,
+        "skip": 0
+      },
+      "independentHeldOut": {
+        "tests": 23,
+        "pass": 23,
+        "fail": 0,
+        "skip": 0
+      },
+      "qualifiedCanonicalComparison": {
+        "tests": 139,
+        "pass": 138,
+        "fail": 1,
+        "skip": 0,
+        "qualification": "Unchanged frozen Gusto Windows SQLite cleanup EBUSY; reproduced baseline-only, no blanket green."
+      },
+      "publishedAt": "2026-10-02T11:19:17.441Z",
+      "runtimeCallerIntegrated": false,
+      "claimBoundary": "Source-only; does not close any Golden Journey gate"
+    },
+    {
+      "branch": "feature/vector-lane07-cleanroom-safety-20261002",
+      "commit": "62e6931137fa931816752db4b2f8f163332198dc",
+      "parent": "f3322714142c68f39007a25a4dce41729b2f5959",
+      "tree": "92813acbbb429bd784835cb104e0496c85e9dee7",
+      "verified": true,
+      "frozenPreserved": 1094,
+      "manifestPaths": 48,
+      "source": {
+        "tests": 28,
+        "pass": 28,
+        "fail": 0,
+        "skip": 0
+      },
+      "canonical": {
+        "tests": 33,
+        "pass": 33,
+        "fail": 0,
+        "skip": 0
+      },
+      "independent": {
+        "tests": 34,
+        "pass": 34,
+        "fail": 0,
+        "skip": 0
+      },
+      "metricScope": {
+        "noteId": "CLEANROOM-N01",
+        "priority": "P3",
+        "aggregateScope": "ENTRY_ONLY",
+        "observedControlMinutes": "Sum of entry transition controlMinutes only; exits excluded from this aggregate.",
+        "observedControlCost": "Sum of entry transition controlCost only; exits excluded from this aggregate. Unknown entry economics remain null.",
+        "transitionRows": "Entry and exit rows retain individual controlMinutes/controlCost, including null unknown values.",
+        "example": {
+          "entryMinutes": 3,
+          "entryCost": 5,
+          "exitMinutes": 2,
+          "exitCost": 7,
+          "observedControlMinutes": 3,
+          "observedControlCost": 5
+        },
+        "semanticsSourceBlobs": [
+          "6231a401653d5f14410b20e29f5060b103954dcd",
+          "95f92f92d2b3f3a447259810aae315193bc1945f"
+        ],
+        "exclusions": [
+          "Total movement time or cost",
+          "Financial or realised savings proof",
+          "Customer proof",
+          "Sterility/contamination or quality proof"
+        ],
+        "callerAdmission": "PENDING; any caller/UI must explicitly convey entry-only scope before using these generic output names."
+      },
+      "runtimeWired": false,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "publishedAt": "2026-10-02T11:39:27.667Z",
+      "runtimeCallerIntegrated": false,
+      "claimBoundary": "Isolated future source only; no Golden gate closure",
+      "coordinationOnly": true,
+      "shippingChanges": 0,
+      "priorSourceTestsReused": 28,
+      "priorIndependentHeldOutReused": 34,
+      "parentUnchanged": 1141,
+      "deltaPaths": 7
+    },
+    {
+      "branch": "feature/vector-lane08-value-projection-20261002",
+      "commit": "0e752bc01ff134d67360768bc69b1b12951faac9",
+      "tree": "8abb0e12930b908420eae63f94b1596e31035f37",
+      "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "verified": true,
+      "frozenPreserved": 1094,
+      "manifestPaths": 65,
+      "shippingPaths": 4,
+      "sharedOwner": "LANE01",
+      "valueShippingBlobs": [
+        "80c9d72a90f6c0dab549b44ca6e2ce67810e4d3d",
+        "d031d2e352590f9c02400cf02af150461dc1feb5"
+      ],
+      "sharedDependencyBlobs": [
+        "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+        "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
+      ],
+      "owner": {
+        "pass": 33,
+        "total": 33
+      },
+      "independent": {
+        "pass": 32,
+        "total": 32
+      },
+      "runtimeWired": false,
+      "aggregateFinancialValue": null,
+      "provenBaseSha": null,
+      "convergenceBaseSha": null,
+      "publishedAt": "2026-10-02T11:44:15.736Z",
+      "runtimeCallerIntegrated": false,
+      "claimBoundary": "Isolated future source only; no Golden gate closure"
     }
   ],
   "freshHostedObservation": {
@@ -920,5 +1118,67 @@
     ],
     "observedAt": "2026-10-02T10:44:43.831Z",
     "role": "MANDATORY_PROOF_REPAIR_ON_SOLE_REVIEW_LINEAGE; Staffology holds remain"
+  },
+  "sourceOnlyProofRunner": {
+    "branch": "review/staffology-customer-proof-20261001",
+    "commit": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+    "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
+    "parent": "d387d5300f2de0906d8ea459e1bac610128236d9",
+    "verified": true,
+    "shipping": [
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "mode": "100644",
+        "blob": "3337ec236e64df9552f881fd5be40132f9794646",
+        "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+        "mode": "100644",
+        "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+        "preimageBlob": null
+      },
+      {
+        "path": "scripts/run-forge-ci.mjs",
+        "mode": "100644",
+        "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+        "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49"
+      }
+    ],
+    "parentUnchanged": 1105,
+    "fullTreeBlobs": 1108,
+    "priorProof03Preserved": true,
+    "allStaffologyPreserved": true,
+    "triggerChanged": false,
+    "sourceAdmitted": true,
+    "wholeRuntimeAdmission": false,
+    "affected": {
+      "pass": 113,
+      "total": 113,
+      "skip": 0,
+      "scope": "Local Windows"
+    },
+    "independent": {
+      "pass": 33,
+      "total": 33,
+      "regression": 4,
+      "scope": "Independent loopback/CI-control checks"
+    },
+    "reviewReportSha256": "5e1dc690f42596f73a281475dbe7140e34a2337b779abb7ed7415e0fc28eb663",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "publishedAt": "2026-10-02T11:41:19.678Z"
+  },
+  "coverageReview": "orchestration/evidence/proof-machinery-review.md",
+  "currentAdmissionAudit": {
+    "status": "OPEN",
+    "issues": [
+      "ADMISSION-01",
+      "ADMISSION-02"
+    ],
+    "tests": 8,
+    "pass": 3,
+    "fail": 5,
+    "customerProof": false
   }
 }

@@ -1,0 +1,131 @@
+{
+  "reviewSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "tree": "fab958ad86d794bd31caa876606f73c605417e6a",
+  "identities": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "blob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9",
+      "bytes": 4675,
+      "sha256": "a110c1bdba5ecad51469fb15a7b3066dd032950b6b85b704a05a58586eb2d3e5",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "blob": "2893a2891a4a562014d30680723aa96c91a063f5",
+      "bytes": 74202,
+      "sha256": "51363e71b691f94b647eeedf455e3296d6f9beee9fb10d3ccf258f269f5f7731",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "blob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+      "bytes": 5059,
+      "sha256": "6feddbe9a318eae12f79e0374d0bfa13fdace67fd610a6e26abd6a0c4a09205e",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "blob": "0a0c55a7545ca173163654adb641ba76b1d41f49",
+      "bytes": 2104,
+      "sha256": "09f9ad971fd85ac614c921d6dd8ccc4a556a36114fb46edf5f19d05711ca090f",
+      "mode": "100644"
+    },
+    {
+      "path": "tests/vector-payroll-release-proof.test.mjs",
+      "blob": "375ba391f40ea246f0343a309b267376419bd9f6",
+      "bytes": 2850,
+      "sha256": "c72275fc97065d04da2fea2673c822973cabe412ee89447c874ee90d26d7641f",
+      "mode": "100644"
+    },
+    {
+      "path": "tests/critical-proof-gates.test.cjs",
+      "blob": "622dd95bb25586076bc72203ea2eb16e3c861036",
+      "bytes": 2025,
+      "sha256": "eaddcb6a00b5b7c0906e754f56b489c4f5f461ce276f5d907779651f82b2cae1",
+      "mode": "100644"
+    },
+    {
+      "path": "Dockerfile.current-vector-browser-proof",
+      "blob": "839f203420543f2ead25b62973c4151177ed2a48",
+      "bytes": 726,
+      "sha256": "75f0fe2dced62ceb2ed1caf178e377cd0428e3619663adf6a6233b46e6131285",
+      "mode": "100644"
+    },
+    {
+      "path": ".circleci/config.yml",
+      "blob": "b8a0a884df12410d6ce420b61f598795d04680d1",
+      "bytes": 7920,
+      "sha256": "8beb3392b59f286ff01e6b40c21b08390ef14073b98953ca965ed9cfd0198679",
+      "mode": "100644"
+    },
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "blob": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+      "bytes": 4091,
+      "sha256": "f26baed0616b255d8aef4ff852e0af6207b8eb017de7d8c81086b67db934d8d0",
+      "mode": "100644"
+    }
+  ],
+  "inspectionOnly": true,
+  "executedTests": [],
+  "observedOmissions": [
+    "Wrapper calls roleProofResult with3arguments despite exported payrollJourney and existing4argument contract.",
+    "run-forge-ci invokes no implementation/runtime proof suite, though exact readiness receipt, one-day execution/controller/fencing and other implementation suites are present."
+  ],
+  "existingImplementationSuites": [
+    "implementation/runtime/agents-api-adapter.test.cjs",
+    "implementation/runtime/agents-api-bootstrap-route.test.cjs",
+    "implementation/runtime/configuration-inference-engine.test.cjs",
+    "implementation/runtime/implementation-active-controller.integration.test.cjs",
+    "implementation/runtime/implementation-digital-twin.test.cjs",
+    "implementation/runtime/implementation-learning-integration.test.cjs",
+    "implementation/runtime/implementation-work-controller.test.cjs",
+    "implementation/runtime/implementation-work-fencing.test.cjs",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "implementation/runtime/readiness-evidence-contract.test.cjs",
+    "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "implementation/runtime/tenant-environment-provisioner.test.cjs",
+    "implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs",
+    "implementation/runtime/zero-touch-customer-factory.test.cjs"
+  ],
+  "controlsToVerify": [
+    {
+      "scope": "Wrapper payroll propagation",
+      "requirements": [
+        "Same exact production wrapper bytes/import call exercised in child server with synthetic proof fixture dependency only. Keep authentic role result dependency unchanged.",
+        "Complete payroll makes scopedPayrollJourneyVerified true only, removes only corresponding scoped missing evidence.",
+        "Missing/tampered/duplicate/extra/empty team or release evidence leaves scopedPayrollJourneyVerified false. Revision/header/batch persistence/audit/fresh-login equality each negative tested.",
+        "PARTIAL, role fixture scope, endToEndVerified:false, productReady:false, missing server-audit/exact-backend/major-workflows remain; /ready503 and liveness200 match these boundaries."
+      ]
+    },
+    {
+      "scope": "Asset binding",
+      "requirements": [
+        "Optional omitted digests remains UNBOUND/exactAssetsVerified:false; strict omitted digests FAIL.",
+        "Invalid/tampered JS/CSS/workflow bytes or unavailable asset status FAIL independently.",
+        "Asset digest proof is three hosted front-end bytes only; supplied expectedSha must not promote exact backend binding.",
+        "Fixture tests use real loopback HTTP with no external/browser/provider requests; do not add a product fixture bypass."
+      ]
+    },
+    {
+      "scope": "CI admission",
+      "requirements": [
+        "Preserve process.execPath plus failing child status/signal/spawn handling and existing checks.",
+        "Exact mandatory implementation suites and new wrapper regression plus existing payroll contract occur in actually executed --test checks, not a comment/string-only declaration.",
+        "Source suite completion is local/CI behavior only; CI trigger halts remain separately qualified.",
+        "No claim that21 implementation readiness checks cover all27 mandatory GoldenJourney requirements."
+      ]
+    }
+  ],
+  "additionalPreexistingValidationQuestions": [
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "reason": "Set comparison does not explicitly require nonempty string team IDs or positive revisions. Producer currently obtains team IDs/revisions from asserted fixture backend/UI readbacks. Before introducing a general fixture evidence API, verify malformed ID/type/revision behavior; not executed and not asserted as a new repaired-wrapper defect here."
+    }
+  ],
+  "pending": "Review proposed exact3path bytes and execute bounded held-outs after parent seals manifest.",
+  "productReady": false,
+  "endToEndVerified": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null
+}

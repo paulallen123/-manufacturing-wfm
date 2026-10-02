@@ -1,0 +1,52 @@
+TAP version 13
+# (node:24540) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: assistant cannot turn a model tool call into execution authority
+ok 1 - assistant cannot turn a model tool call into execution authority
+  ---
+  duration_ms: 61.2641
+  type: 'test'
+  ...
+# Subtest: assistant rejects provider action ids outside live Vecta context
+ok 2 - assistant rejects provider action ids outside live Vecta context
+  ---
+  duration_ms: 33.4848
+  type: 'test'
+  ...
+# Subtest: push-to-talk transcription feeds the same bounded action proposal path
+ok 3 - push-to-talk transcription feeds the same bounded action proposal path
+  ---
+  duration_ms: 74.7967
+  type: 'test'
+  ...
+# (node:8776) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: mobile approval is audited and only executes a trusted stored plan
+ok 4 - mobile approval is audited and only executes a trusted stored plan
+  ---
+  duration_ms: 129.5423
+  type: 'test'
+  ...
+# (node:5960) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: fresh web login can mint a distinct revocable mobile bearer session
+ok 5 - fresh web login can mint a distinct revocable mobile bearer session
+  ---
+  duration_ms: 73.0528
+  type: 'test'
+  ...
+# Subtest: bearer token cannot mint another bearer token
+ok 6 - bearer token cannot mint another bearer token
+  ---
+  duration_ms: 42.653
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 340.6533

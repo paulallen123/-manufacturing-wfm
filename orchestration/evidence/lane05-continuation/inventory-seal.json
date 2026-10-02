@@ -1,0 +1,64 @@
+{
+  "verified": true,
+  "records": 4,
+  "newCapabilityIds": 0,
+  "sourceBlobIdentitiesVerified": 31,
+  "sourceCommitTreeModesVerified": 31,
+  "sourceTreeBindings": [
+    {
+      "pr": 79,
+      "sha": "95ec4589c5090e4e2b38ec3307280bb547e6e67d",
+      "tree": "63b4781145277e065e5a0de29050dd7d3a2983cf",
+      "truncated": false
+    },
+    {
+      "pr": 230,
+      "sha": "07bc5218c183049a8d7ab884b15cca6ef38375ec",
+      "tree": "13364cc9bff05d090ea00f2a6e75f19518957a0e",
+      "truncated": false
+    },
+    {
+      "pr": 232,
+      "sha": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+      "tree": "baca40f5e6616294fe7026d27f2cc9ae643d16a6",
+      "truncated": false
+    }
+  ],
+  "testsExecuted": 0,
+  "githubMutations": 0,
+  "sourceMutations": 0,
+  "files": [
+    {
+      "path": "work/inventory_edges/lane05-continuation/capabilities.json",
+      "bytes": 66315,
+      "sha256": "31eb923ff1e07785daa69b225dcc6fc907fa8eeac7cb12023327a553c684de81"
+    },
+    {
+      "path": "work/inventory_edges/lane05-continuation/sources.json",
+      "bytes": 27031,
+      "sha256": "0f9d981dad3ae00c89ae9ee651c1e59ab1c1a306a203ce2509fcdd20b1c95aa5"
+    },
+    {
+      "path": "work/inventory_edges/lane05-continuation/findings.md",
+      "bytes": 2249,
+      "sha256": "c648d15ab0e4a3da9b5462b27a3f70c76279b140f2be5c0d4cb995222c7103f4"
+    },
+    {
+      "path": "work/inventory_edges/lane05-continuation/pr-source-metadata.json",
+      "bytes": 4148556,
+      "sha256": "56c24a689ddba0a9b874fc621b08ec57f3b68816e0291a7652751416377fface"
+    },
+    {
+      "path": "work/inventory_edges/lane05-continuation/fetched-source-capsules.json",
+      "bytes": 233644,
+      "sha256": "3e557ad93fa87250c5c0a9ed78f2e2a520c1a80bd86e19ff1f77e7f5c309de79"
+    },
+    {
+      "path": "work/inventory_edges/lane05-continuation/source-tree-bindings.json",
+      "bytes": 17895,
+      "sha256": "7f014c190063fc64420e15f534e82ef5c27003a08a8e6eafa38de9f96c296356"
+    }
+  ],
+  "provenBaseSha": null,
+  "convergenceBaseSha": null
+}

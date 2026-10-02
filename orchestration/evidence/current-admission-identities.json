@@ -1,0 +1,49 @@
+{
+  "reviewSha": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+  "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
+  "parent": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "independentlyVerifiedLocalBlobs": [
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.cjs",
+      "mode": "100644",
+      "blob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+      "sha256": "114fd7acafcdf9b6fd02f1937a555eaf4609cbf1f613455f966c48ecb04cab1f",
+      "bytes": 5692,
+      "unchangedFromD387": true
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "mode": "100644",
+      "blob": "198978255a62a1297e6104f66f67373864534e3e",
+      "sha256": "80e4ba567780dc46090634998396dc6a7f2cb4906b2390c303d58e9066ff038b",
+      "bytes": 99725,
+      "unchangedFromD387": true
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "mode": "100644",
+      "blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "sha256": "8e80f72de9a10ed165aefd83c77b1a48fd9b07fe225ca164ffc0ef2180e78432",
+      "bytes": 12376,
+      "unchangedFromD387": true
+    },
+    {
+      "path": "implementation/runtime/implementation-work-controller.cjs",
+      "mode": "100644",
+      "blob": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+      "sha256": "4014c664863d4fa913cb39fe5b8d631bcd7f5144642c8e7dd4f7cc480fc9b714",
+      "bytes": 18652,
+      "unchangedFromD387": true
+    },
+    {
+      "path": "implementation/runtime/tenant-environment-provisioner.cjs",
+      "mode": "100644",
+      "blob": "ac9d322a5d2127402f67cd88834687ff88e4cbe2",
+      "sha256": "d0a22df604b3c73399fdc85b2f647e2f635c137e2a53b4c5cbe321edecf6581f",
+      "bytes": 5852,
+      "unchangedFromD387": true
+    }
+  ],
+  "remoteBindingQualification": "Parent supplied full remote1108-leaf verification receipt; reviewer rehashes unchanged d387/b51 local code, no separate remote refetch.",
+  "receiptSha256": "8e5f146d9d0f597ebcba9147d99612f52cdde99137c719e5d5de739e15622c40"
+}

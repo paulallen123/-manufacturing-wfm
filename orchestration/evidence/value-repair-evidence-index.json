@@ -1,0 +1,77 @@
+{
+  "shipping": [
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "80c9d72a90f6c0dab549b44ca6e2ce67810e4d3d",
+      "sha256": "29162500036ffe96756b5731dcdb875d81c534444a50ae51b335445403d3379c",
+      "bytes": 7363,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "operations/runtime/decision-outcome-evidence-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane08-value\\operations\\runtime\\decision-outcome-evidence-projection.test.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "d031d2e352590f9c02400cf02af150461dc1feb5",
+      "sha256": "e12393808201eb5d0503ac30c4d821b90f836fcf83c7b778c6e5201f3b8e9274",
+      "bytes": 8338,
+      "change": "ADD"
+    }
+  ],
+  "status": "BOUNDED_REPAIR_VERIFIED_NO_OPEN_P1_P2",
+  "evidence": [
+    {
+      "path": "work/trust_review/value-repair-review.md",
+      "bytes": 1792,
+      "sha256": "523e5781ba01bda5b874fc1659c44cf2330e55dea4dc4feafa3d3d3a4462f23d"
+    },
+    {
+      "path": "work/trust_review/value-repair-findings.json",
+      "bytes": 38843,
+      "sha256": "2219b86023565fa392cb3effeffb53e80ea91e7db16171414fb1116381765af8"
+    },
+    {
+      "path": "work/trust_review/value-repair-identities.json",
+      "bytes": 7692,
+      "sha256": "9c0f31610fc84476faf7699d2db687c1bd6ce15e535502a64de456c4d3e4a207"
+    },
+    {
+      "path": "work/trust_review/value-repair.held-out.test.cjs",
+      "bytes": 8618,
+      "sha256": "f19c2392a745e22b5bfb878acac4d01e2f4906616b6d3bdb84208071f300ebdf"
+    },
+    {
+      "path": "work/trust_review/value-repair-held-out.node22.tap",
+      "bytes": 6586,
+      "sha256": "479f7c1c420a3ad62bc57f1e811395f822e5bd7d12fdee71613a209d66d562b9"
+    },
+    {
+      "path": "work/trust_review/value-repair-held-out.run.json",
+      "bytes": 539,
+      "sha256": "7c02df6317c0c1c5da2306f433402048422403a3cb5ee1455182c1840eed1a6c"
+    },
+    {
+      "path": "work/trust_review/value-repair.observations.json",
+      "bytes": 28602,
+      "sha256": "5521cf39a1800560bad19d4a1e429d2f6f24a10971890c610816ed3c0a2414f7"
+    },
+    {
+      "path": "work/trust_review/run-value-repair-review.cjs",
+      "bytes": 3028,
+      "sha256": "95cdea26520e327745d466c606e97036b9b248e3b71467150e52468ddeaed6a9"
+    },
+    {
+      "path": "work/trust_review/seal-value-repair-review.cjs",
+      "bytes": 5659,
+      "sha256": "ade15a039635618004e7451ca2ae29ea1cfcafbc97fa225285c58b1e37ab7295"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    }
+  ]
+}

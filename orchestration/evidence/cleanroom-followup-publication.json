@@ -1,0 +1,18 @@
+{
+  "branch": "feature/vector-lane07-cleanroom-safety-20261002",
+  "commit": "62e6931137fa931816752db4b2f8f163332198dc",
+  "tree": "92813acbbb429bd784835cb104e0496c85e9dee7",
+  "parent": "f3322714142c68f39007a25a4dce41729b2f5959",
+  "verified": true,
+  "coordinationOnly": true,
+  "shippingChanges": 0,
+  "priorSourceTestsReused": 28,
+  "priorIndependentHeldOutReused": 34,
+  "frozenPreserved": 1094,
+  "parentUnchanged": 1141,
+  "deltaPaths": 7,
+  "runtimeWired": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "publishedAt": "2026-10-02T11:39:27.667Z"
+}

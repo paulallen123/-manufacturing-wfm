@@ -1,0 +1,187 @@
+[
+  {
+    "id": "edge06-native-mobile",
+    "lane": "06",
+    "state": "FOUND",
+    "classification": "EVOLVE",
+    "finding": "Actual Expo routes/API/secure-storage/recording/local-speech/biometric code exists, not a generic mock. 6 historical server tests pass with injected clients; 2 independent device-confirmation requirements fail on exact source. Native delivery remains incomplete and cannot replace frozen authentication/Autopilot.",
+    "gaps": [
+      "Client password /api/login conflicts with exact hosted frozen passkey bootstrap410 path",
+      "Biometric disabled preference returns ok:true with zero device authentication",
+      "Source broker issues injected execution permit without a bound fresh device assertion",
+      "Native branch changes identity/bootstrap/Autopilot predecessors; whole branch is incompatible with later frozen guards",
+      "Server/mobile assistant directly creates another provider-backed conversational path instead of reusing one approved operations agent",
+      "23 parity routes:1native3partial19missing; production source gate refuses22incomplete",
+      "No offline queue/cache/restart/device recovery implementation in inspected native subtree",
+      "No physical-device/OS/API accessibility/push/permission/store proof"
+    ],
+    "availableTests": [
+      "mobile-session-service.test.cjs",
+      "mobile-assistant-service.test.cjs",
+      "mobile-recommendation-service.test.cjs"
+    ],
+    "executedTests": {
+      "sourceSubsetPassed": 6,
+      "independentHeldOutPassed": 0,
+      "independentHeldOutFailed": 2,
+      "networkBlocked": true,
+      "scope": "Historical proposal source only"
+    },
+    "portDecision": "NO_PORT: needs real authenticated producer/authority owner design and native device-bound protocol, forbidden to substitute generic mock mobile or change current permissions/providers",
+    "sourceRefs": [
+      {
+        "pr": 242,
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/242",
+        "branch": "feature/vector-mobile-app-20260925",
+        "sha": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+        "path": "mobile/README.md",
+        "blob": "4b08051b4262c5c53d8a4b72d833355e397b1076"
+      }
+    ],
+    "proofScope": "SOURCE_ARCHAEOLOGY_ONLY",
+    "remainingWork": "Independent review and actual current producer/device/runtime/customer proof before integration",
+    "rollback": "No shipping product files changed. Discard read-only local artifacts; protect f32 and root-owned convergence lineage."
+  },
+  {
+    "id": "edge06-vecta-operations-bot",
+    "lane": "06",
+    "state": "FOUND",
+    "classification": "EVOLVE",
+    "finding": "Deep-read registered capability/SQL plan+audit/explain-offer-confirm-execute-source-verify flow and locale-bound browser speech fallback. Employee leave is a real existing workflow adapter; other initial actions are navigation. Frozen shell Ask/Help hooks refer to existing wfm-bot and lack these proposed tracked bot overlays.",
+    "gaps": [
+      "Converge into existing Ask/Help and typed leave/source verification ownership; do not create another assistant authority",
+      "Language provider/translation and browser speech support need actual device/locale/permission and interrupted-session proof",
+      "Hosted route/tenant/role/restart proof absent"
+    ],
+    "availableTests": [
+      "vector-operations-bot.test.cjs",
+      "vector-operations-bot.test.cjs (UX source assertions)"
+    ],
+    "executedTests": {
+      "executed": 0,
+      "reason": "This slice deep-read source; no provider/gateway/browser voice or full bot execution"
+    },
+    "portDecision": "NO_PORT in this batch: source acceptance does not establish compatible current assistant owner or independent live source verification",
+    "sourceRefs": [
+      {
+        "pr": 241,
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/241",
+        "branch": "feature/vector-operations-bot-voice-v1-20260925",
+        "sha": "00202a4801a4369a9803b3b7fed0fec44e44d208",
+        "path": "operations/runtime/vector-operations-bot.cjs",
+        "blob": "e1a7b675186b79b71d11bbb0e28adb72238c94f9"
+      }
+    ],
+    "proofScope": "SOURCE_ARCHAEOLOGY_ONLY",
+    "remainingWork": "Independent review and actual current producer/device/runtime/customer proof before integration",
+    "rollback": "No shipping product files changed. Discard read-only local artifacts; protect f32 and root-owned convergence lineage."
+  },
+  {
+    "id": "edge06-mobile-connections",
+    "lane": "06",
+    "state": "FOUND",
+    "classification": "EVOLVE",
+    "finding": "Existing PR243 source remains manager-mobile additive intent over canonical integration hub. Current frozen hub successor already differs; preserve canonical owner.",
+    "gaps": [
+      "No whole old hub replacement",
+      "No new mobile credential/permission entry or provider execution",
+      "Reconcile only after identity/current-role/device protocol is reviewed"
+    ],
+    "executedTests": {
+      "executed": 0
+    },
+    "portDecision": "EXCLUDED_DEEP_REVIEW: existing Lane03 canonical/fabric and cleanroom ownership; no overlapping edits",
+    "sourceRefs": [
+      {
+        "pr": 243,
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/243",
+        "branch": "feature/vecta-mobile-integrations-20260925",
+        "sha": "81c879b6f8d673948e4da2131f7198dfd5935513",
+        "path": "integration/runtime/autonomous-integration-hub.cjs",
+        "blob": "8ce29e983cce17334bbb5dc4528787a13d7c951c"
+      }
+    ],
+    "proofScope": "SOURCE_ARCHAEOLOGY_ONLY",
+    "remainingWork": "Independent review and actual current producer/device/runtime/customer proof before integration",
+    "rollback": "No shipping product files changed. Discard read-only local artifacts; protect f32 and root-owned convergence lineage."
+  },
+  {
+    "id": "edge06-mobile-mass-clock-design",
+    "lane": "06",
+    "state": "FOUND",
+    "classification": "RESEARCH_ONLY",
+    "finding": "Exact branch373fe8 recursive tree has only mobile design/plan, not named mobile/offline implementation. Plan has zero completed checkboxes. Approved spec explicitly favors responsive web/PWA first and later native packaging where browser limits are demonstrated.",
+    "gaps": [
+      "Registered-device encrypted ordered offline queue",
+      "Pending versus accepted clock acknowledgement",
+      "Revoked-device/sequence gaps/idempotent conflicting replay/clock drift holds",
+      "Restart and same-event fan-out to five authorised role projections",
+      "500-person burst and physical-tablet acceptance are unmeasured targets"
+    ],
+    "executedTests": {
+      "executed": 0
+    },
+    "portDecision": "NO_PORT: plan examples and architecture are not runtime implementation; reuse design in actual canonical clock/kiosk owner, not a new ledger/queue mock",
+    "sourceRefs": [
+      {
+        "branch": "feature/vector-mobile-mass-clocking-design",
+        "sha": "373fe8c59142c4e02483199a52bcc5a61d477723",
+        "path": "docs/superpowers/specs/2026-09-21-vector-mobile-mass-clocking-design.md",
+        "blob": "8bf60ad096338d8641d56cb5e5e84154dd6bb008",
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/373fe8c59142c4e02483199a52bcc5a61d477723/docs/superpowers/specs/2026-09-21-vector-mobile-mass-clocking-design.md"
+      }
+    ],
+    "proofScope": "SOURCE_ARCHAEOLOGY_ONLY",
+    "remainingWork": "Independent review and actual current producer/device/runtime/customer proof before integration",
+    "rollback": "No shipping product files changed. Discard read-only local artifacts; protect f32 and root-owned convergence lineage."
+  },
+  {
+    "id": "edge06-canonical-five-section-ui",
+    "lane": "06",
+    "state": "FOUND",
+    "classification": "ALREADY_CANONICAL",
+    "finding": "Exact frozen shell7d198 and CSSd1a940 verified. Ask/Help resolves current wfm-bot hooks, five-section responsive shell remains presentation owner.",
+    "gaps": [
+      "No proof inferred from responsive CSS or file existence",
+      "Native branch only has five explicit Stack routes, no complete role projection parity",
+      "Sealed inherited runtime routes outside tracked overlays were not executed/inspected here"
+    ],
+    "executedTests": {
+      "executed": 0
+    },
+    "portDecision": "PRESERVE_CURRENT_OWNER; no presentation replacement",
+    "sourceRefs": [
+      {
+        "pr": 136,
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/136",
+        "branch": "fix/vector-only-shell-mobile-20260919",
+        "sha": "e8e7e3b9a813b6bce9d18bdf10a885820963c8ab",
+        "path": "ux-overlay/vector-shell.js"
+      },
+      {
+        "pr": 137,
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/137",
+        "branch": "fix/vector-independent-loader-20260919",
+        "sha": "9414694953a1220d714cc4044d4a51431ab8fc58",
+        "path": "ux-overlay/vector-shell.css"
+      },
+      {
+        "pr": 198,
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/198",
+        "branch": "fix/vector-canonical-static-routes-20260920",
+        "sha": "acbbd487a2c5aff487dae8aeff6e6c9baa6fd653",
+        "path": "ux-overlay/vector-shell.js"
+      },
+      {
+        "pr": 200,
+        "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/200",
+        "branch": "fix/vector-desktop-overflow-20260920",
+        "sha": "7f604ee54615ad00ca649ec8e8e8bf74877755a7",
+        "path": "ux-overlay/vector-shell.js"
+      }
+    ],
+    "proofScope": "SOURCE_ARCHAEOLOGY_ONLY",
+    "remainingWork": "Independent review and actual current producer/device/runtime/customer proof before integration",
+    "rollback": "No shipping product files changed. Discard read-only local artifacts; protect f32 and root-owned convergence lineage."
+  }
+]

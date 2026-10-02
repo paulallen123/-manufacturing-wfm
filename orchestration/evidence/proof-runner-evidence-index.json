@@ -1,0 +1,107 @@
+{
+  "shipping": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9",
+      "blob": "3337ec236e64df9552f881fd5be40132f9794646",
+      "sha256": "ff57ddff67c3cfeda09b9bbf3214e4e8271db839b39e2a326148eda11d9e6d98",
+      "bytes": 4723,
+      "localPath": "work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.mjs"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": null,
+      "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "sha256": "6134bf22ffb289a9a1d74e95dc2706d6c4e56f095afb20ec1a8596503fa9f579",
+      "bytes": 7722,
+      "localPath": "work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.test.mjs"
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49",
+      "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "sha256": "5d20825acebf8032e19191a58c514bbfcec87842930727d8d3a658b151c673a3",
+      "bytes": 2768,
+      "localPath": "work/proof-runner-repair/source/scripts/run-forge-ci.mjs"
+    }
+  ],
+  "status": "BOUNDED_REPAIR_VERIFIED_NO_OPEN_P1_P2",
+  "evidence": [
+    {
+      "path": "work/trust_review/proof-runner-review.md",
+      "bytes": 2641,
+      "sha256": "5e1dc690f42596f73a281475dbe7140e34a2337b779abb7ed7415e0fc28eb663"
+    },
+    {
+      "path": "work/trust_review/proof-runner-findings.json",
+      "bytes": 12622,
+      "sha256": "8c171d43ef59dc9deafd17f7c2ef68fd1186ac9894429c857cb107935de5c7d6"
+    },
+    {
+      "path": "work/trust_review/proof-runner-identities.json",
+      "bytes": 5455,
+      "sha256": "4b578a9a35ff097702fb81b2db79c13ad91140243b7a3412b0b540d509d1eb26"
+    },
+    {
+      "path": "work/trust_review/proof-runner-source-identities.json",
+      "bytes": 52784,
+      "sha256": "0a6f85555b4aa3dccd33aeba38dcc4761ae33eba3784adf869ddb7f344c821be"
+    },
+    {
+      "path": "work/trust_review/proof-runner.held-out.test.mjs",
+      "bytes": 13580,
+      "sha256": "2208b1558647d502b76f13bd4c40d6258d3c3dab14303383742ac3b94a336b6e"
+    },
+    {
+      "path": "work/trust_review/proof-runner-held-out.node22.tap",
+      "bytes": 7106,
+      "sha256": "72fee47a992fc56bb16b07a0f5afac97274a966aa744d74136e7fb442e7a4ec7"
+    },
+    {
+      "path": "work/trust_review/proof-runner-held-out.run.json",
+      "bytes": 432,
+      "sha256": "15891fd24f65ff7febd4ca6dc4e8b4c021715f2eceefee92a62cf4f1746f6df9"
+    },
+    {
+      "path": "work/trust_review/proof-runner-source.node22.tap",
+      "bytes": 997,
+      "sha256": "10bc90bfd21c621f52664d776b8159461a06b6e38f063b0ceea3abf7b341e170"
+    },
+    {
+      "path": "work/trust_review/proof-runner-source.run.json",
+      "bytes": 478,
+      "sha256": "feeb99da3eeb0bfca0da28ff1998345ed8fe31f1c3e204d93571b8de9b5cf8cb"
+    },
+    {
+      "path": "work/trust_review/proof-runner.observations.json",
+      "bytes": 207589,
+      "sha256": "566e2f4c7dc3c85de88ceb717b772b54ad698c2aa2a9b035aa7ceb600408d60b"
+    },
+    {
+      "path": "work/trust_review/run-proof-runner-review.cjs",
+      "bytes": 2499,
+      "sha256": "6b4f7021403b3f306466e6d9810fba46cf50fe53bb6a0a27b4e88344aa1aba78"
+    },
+    {
+      "path": "work/trust_review/seal-proof-runner-review.cjs",
+      "bytes": 9226,
+      "sha256": "02e6f53be60978c7949dca2e8f49da5b23033f79de9772b61fed55e0a84520f4"
+    },
+    {
+      "path": "work/trust_review/proof-runner-baseline-inspection.json",
+      "bytes": 6444,
+      "sha256": "3b1d65a0cef23c0b213ebcccce728435323f286b5ce8743fb455220401e4e12e"
+    },
+    {
+      "path": "work/trust_review/inspect-proof-runner-baseline.cjs",
+      "bytes": 4498,
+      "sha256": "41c4629b5bac8388cd4345fd9323181898ee384aeeaffb3d43e6f0da5fd0fd87"
+    }
+  ]
+}

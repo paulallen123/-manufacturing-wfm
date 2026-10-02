@@ -1,0 +1,583 @@
+{
+  "scope": "Lane04 bounded source archaeology",
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "capabilities": [
+    {
+      "id": "product-031",
+      "capability": "Launch Autopilot stages, integration pathfinder and readiness adapter",
+      "lane": "Implementation",
+      "source_branch": "feature/vector-forge-launch-converged-20260923",
+      "head_sha": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "source_pr": 231,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/231",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing enterprise readiness + ImplementationWorkController + canonical Twin; existing integration evidence owner for route display",
+      "rationale": "Missing launch modules are useful references but four parallel SQLite collections and a second 14-gate READY state prevent a faithful drop-in. Paired readiness-adapter test has exact stored syntax error. Preserve existing gate and evidence authority.",
+      "evidence_paths": [
+        "implementation/runtime/launch-autopilot-controller.cjs",
+        "implementation/runtime/launch-autopilot-controller.test.cjs",
+        "implementation/runtime/launch-autopilot-readiness-adapter.cjs",
+        "implementation/runtime/launch-autopilot-readiness-adapter.test.cjs",
+        "implementation/runtime/launch-integration-pathfinder.cjs",
+        "implementation/runtime/launch-integration-pathfinder.test.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "implementation/runtime/launch-autopilot-controller.cjs",
+          "source_blob_sha": "88d6fc4145acb84d83365e803917358863b868b4",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 16869,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "implementation/runtime/launch-autopilot-controller.test.cjs",
+          "source_blob_sha": "9c91a672678a2c888f12d7a3f24fe3a3edbdc85d",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 5416,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "implementation/runtime/launch-autopilot-readiness-adapter.cjs",
+          "source_blob_sha": "473bb187ce3c1de3ff25467c1f2c91b95b3e8679",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 9605,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "implementation/runtime/launch-autopilot-readiness-adapter.test.cjs",
+          "source_blob_sha": "eee2bf8bd83d18988fecdad22161b5580ae5217c",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 7336,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "implementation/runtime/launch-integration-pathfinder.cjs",
+          "source_blob_sha": "57ff51bd468035cd8ea0cc5c497e67f65b9f7e4e",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 4848,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "implementation/runtime/launch-integration-pathfinder.test.cjs",
+          "source_blob_sha": "75048432f888358e86437b18853367da68f53a28",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 3246,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "implementation/runtime/launch-autopilot-controller.test.cjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "path": "implementation/runtime/launch-autopilot-controller.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        },
+        {
+          "path": "implementation/runtime/launch-autopilot-readiness-adapter.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": false
+        },
+        {
+          "path": "implementation/runtime/launch-integration-pathfinder.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        }
+      ],
+      "historical_test_claims_status": "Actual local historical source execution retained; not current frozen/runtime/customer proof",
+      "remaining_work": [
+        "Map advisory stages to canonical 21-gate readiness without new receipts/store",
+        "Require producer-authenticated integration evidence before descriptive route display",
+        "Repair stored reference test only in a later authorized isolated reuse proposal"
+      ],
+      "rollback_plan": "Shipping bytes changed=0; historical/reference and local evidence only. Future port must be independently reviewed and revertible without changing canonical authority.",
+      "claim_boundary": "FOUND source archaeology only; broad capability unfinished. Fixture-based source tests do not establish authenticity, customer readiness, hosted admission, realised value or causal truth.",
+      "previous_classification": "PORT",
+      "port_decision": "NO_PORT_SELECTED"
+    },
+    {
+      "id": "product-038",
+      "capability": "Constraint-aware manufacturing scheduling, repair, open-shift/swap and fairness",
+      "lane": "Workforce",
+      "source_branch": "feature/vector-scheduling-parity-evolution-20260923",
+      "head_sha": "5d129fa757d0959c81242be08f6674e5a8eccf05",
+      "source_pr": 233,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+      "classification": "ALREADY_CANONICAL",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing manufacturing-scheduling-engine and DecisionEpisode ranking",
+      "rationale": "Exact PR233 scheduling engine blob is byte-identical to frozen source; no port needed.",
+      "evidence_paths": [
+        "operations/runtime/manufacturing-scheduling-engine.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "operations/runtime/manufacturing-scheduling-engine.cjs",
+          "source_blob_sha": "63970553844acb634391e6b2db865905eb3c4947",
+          "frozen_blob_sha": "63970553844acb634391e6b2db865905eb3c4947",
+          "byte_identical_to_frozen": true
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "operations/runtime/manufacturing-scheduling-engine.test.cjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "Actual local historical source execution retained; not current frozen/runtime/customer proof",
+      "remaining_work": [
+        "Retain canonical scheduling engine; qualify customer configurations and production data separately"
+      ],
+      "rollback_plan": "Shipping bytes changed=0; historical/reference and local evidence only. Future port must be independently reviewed and revertible without changing canonical authority.",
+      "claim_boundary": "FOUND source archaeology only; broad capability unfinished. Fixture-based source tests do not establish authenticity, customer readiness, hosted admission, realised value or causal truth.",
+      "previous_classification": "ALREADY_CANONICAL",
+      "port_decision": "NO_PORT_SELECTED"
+    },
+    {
+      "id": "product-039",
+      "capability": "P50/P90 demand forecast and attendance reconciliation",
+      "lane": "Workforce / manufacturing",
+      "source_branch": "feature/vector-scheduling-parity-evolution-20260923",
+      "head_sha": "5d129fa757d0959c81242be08f6674e5a8eccf05",
+      "source_pr": 233,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+      "classification": "ALREADY_CANONICAL",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing manufacturing-demand-forecast and attendance reconciliation service",
+      "rationale": "Exact PR233 demand forecast blob is byte-identical to frozen source; forecast does not confer measured outcome or execution authority.",
+      "evidence_paths": [
+        "operations/runtime/manufacturing-demand-forecast.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "operations/runtime/manufacturing-demand-forecast.cjs",
+          "source_blob_sha": "c2a2700245e55155538dd06e86abe6c04444e058",
+          "frozen_blob_sha": "c2a2700245e55155538dd06e86abe6c04444e058",
+          "byte_identical_to_frozen": true
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "operations/runtime/manufacturing-demand-forecast.test.cjs"
+      ],
+      "tests_executed_by_inventory": [],
+      "historical_test_claims_status": "Actual local historical source execution retained; not current frozen/runtime/customer proof",
+      "remaining_work": [
+        "Retain canonical forecast; establish source quality and actual calibration evidence separately"
+      ],
+      "rollback_plan": "Shipping bytes changed=0; historical/reference and local evidence only. Future port must be independently reviewed and revertible without changing canonical authority.",
+      "claim_boundary": "FOUND source archaeology only; broad capability unfinished. Fixture-based source tests do not establish authenticity, customer readiness, hosted admission, realised value or causal truth.",
+      "previous_classification": "ALREADY_CANONICAL",
+      "port_decision": "NO_PORT_SELECTED"
+    },
+    {
+      "id": "product-040",
+      "capability": "Blocker Autopilot typed classification and alternate proof lanes",
+      "lane": "Autopilot / product evolution",
+      "source_branch": "feature/vector-blocker-autopilot-20260923",
+      "head_sha": "10ab0a8f31fb337b7311d3d84f4b6b20d5b3fd80",
+      "source_pr": 234,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/234",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing scripts/classify-proof-blocker.mjs and release/proof-lane-policy.json owner",
+      "rationale": "Typed reports, fingerprints and source comparison are useful; existing canonical classifier already covers principal causes. Historical alternate-lane selector lacks the frozen admission/live-runtime/failure-domain gates.",
+      "evidence_paths": [
+        "resilience/blocker-autopilot.cjs",
+        "resilience/blocker-autopilot.test.cjs",
+        "resilience/blocker-autopilot-policy.json"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "resilience/blocker-autopilot.cjs",
+          "source_blob_sha": "48e9c18e45291dd1f4cd0994a77306fe0f3c67bc",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 18602,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "resilience/blocker-autopilot.test.cjs",
+          "source_blob_sha": "4ca702b05da25ed58de19b77bffe3c88a5e76c58",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 10479,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "resilience/blocker-autopilot-policy.json",
+          "source_blob_sha": "ccc86504a1c1e9d377e13960909ae645d38a91c3",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 2034,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "resilience/blocker-autopilot.test.cjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "path": "resilience/blocker-autopilot.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        }
+      ],
+      "historical_test_claims_status": "Actual local historical source execution retained; not current frozen/runtime/customer proof",
+      "remaining_work": [
+        "Port only descriptive fingerprint comparison if an authenticated canonical report contract is selected",
+        "Keep promotion and lane admission under existing proof policy; no causal attribution from matching fingerprints alone"
+      ],
+      "rollback_plan": "Shipping bytes changed=0; historical/reference and local evidence only. Future port must be independently reviewed and revertible without changing canonical authority.",
+      "claim_boundary": "FOUND source archaeology only; broad capability unfinished. Fixture-based source tests do not establish authenticity, customer readiness, hosted admission, realised value or causal truth.",
+      "previous_classification": "EVOLVE",
+      "port_decision": "NO_PORT_SELECTED"
+    },
+    {
+      "id": "product-041",
+      "capability": "Simulation Passport, Decision Assurance and earned autonomy",
+      "lane": "Autopilot",
+      "source_branch": "feature/vector-frontier-t9-converged-20260923",
+      "head_sha": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "source_pr": 235,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/235",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "DecisionEpisode + Trust spine + existing Autopilot permit authority",
+      "rationale": "Useful model/calibration/validity/reproducibility descriptions; historical assurance derives competing BOUNDED_AUTO from caller declarations. Digest-invalid passport and rehashed invalid probability are accepted in held-outs.",
+      "evidence_paths": [
+        "operations/runtime/frontier-decision-control.cjs",
+        "operations/runtime/frontier-decision-control.test.cjs",
+        "operations/runtime/frontier-outcome-learning.cjs",
+        "operations/runtime/frontier-outcome-learning.test.cjs",
+        "operations/runtime/golden-industrial-loop.cjs",
+        "operations/runtime/golden-industrial-loop.test.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "operations/runtime/frontier-decision-control.cjs",
+          "source_blob_sha": "bbe90c21bbe926317efa8633369f3697508112d5",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 19109,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/frontier-decision-control.test.cjs",
+          "source_blob_sha": "893253f815127ea8ae8d9f01298461615a7661ea",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 8536,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/frontier-outcome-learning.cjs",
+          "source_blob_sha": "e39796d2fe214d93132c0e98ca5559af3b438c94",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 8578,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/frontier-outcome-learning.test.cjs",
+          "source_blob_sha": "95e0a31d17e829b80e7ca69a9288943d0cc19a32",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 10481,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/golden-industrial-loop.cjs",
+          "source_blob_sha": "eababcab86567382f1c2657dad933d03ee791450",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 11326,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/golden-industrial-loop.test.cjs",
+          "source_blob_sha": "22df945b94c34d25b9f9e55735a18ae7f6f8b55c",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 9588,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "operations/runtime/frontier-decision-control.test.cjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "path": "operations/runtime/frontier-decision-control.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        },
+        {
+          "path": "operations/runtime/frontier-outcome-learning.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        },
+        {
+          "path": "operations/runtime/golden-industrial-loop.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        }
+      ],
+      "historical_test_claims_status": "Actual local historical source execution retained; not current frozen/runtime/customer proof",
+      "remaining_work": [
+        "Define advisory simulation-inspection projection over actual canonical producer evidence",
+        "Reject invalid canonical content before deriving any descriptive output",
+        "Preserve option ranking and permits; no earned-autonomy engine in this batch"
+      ],
+      "rollback_plan": "Shipping bytes changed=0; historical/reference and local evidence only. Future port must be independently reviewed and revertible without changing canonical authority.",
+      "claim_boundary": "FOUND source archaeology only; broad capability unfinished. Fixture-based source tests do not establish authenticity, customer readiness, hosted admission, realised value or causal truth.",
+      "previous_classification": "EVOLVE",
+      "port_decision": "NO_PORT_SELECTED"
+    },
+    {
+      "id": "product-042",
+      "capability": "Golden industrial loop and causal outcome-learning foundation",
+      "lane": "Autopilot / verified value",
+      "source_branch": "feature/vector-frontier-t9-converged-20260923",
+      "head_sha": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "source_pr": 235,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/235",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing Autopilot execution verification + DecisionOutcomeProof + adaptive-learning owner",
+      "rationale": "Historical golden loop requires ACTION_KIND_TO_TYPE/registerSimulationPassport/registerFrontierAssurance/recordVerifiedOutcome absent from frozen engine. Whole stack would change canonical execution and outcome ownership.",
+      "evidence_paths": [
+        "operations/runtime/frontier-decision-control.cjs",
+        "operations/runtime/frontier-decision-control.test.cjs",
+        "operations/runtime/frontier-outcome-learning.cjs",
+        "operations/runtime/frontier-outcome-learning.test.cjs",
+        "operations/runtime/golden-industrial-loop.cjs",
+        "operations/runtime/golden-industrial-loop.test.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "operations/runtime/frontier-decision-control.cjs",
+          "source_blob_sha": "bbe90c21bbe926317efa8633369f3697508112d5",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 19109,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/frontier-decision-control.test.cjs",
+          "source_blob_sha": "893253f815127ea8ae8d9f01298461615a7661ea",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 8536,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/frontier-outcome-learning.cjs",
+          "source_blob_sha": "e39796d2fe214d93132c0e98ca5559af3b438c94",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 8578,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/frontier-outcome-learning.test.cjs",
+          "source_blob_sha": "95e0a31d17e829b80e7ca69a9288943d0cc19a32",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 10481,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/golden-industrial-loop.cjs",
+          "source_blob_sha": "eababcab86567382f1c2657dad933d03ee791450",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 11326,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "operations/runtime/golden-industrial-loop.test.cjs",
+          "source_blob_sha": "22df945b94c34d25b9f9e55735a18ae7f6f8b55c",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 9588,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity",
+        "Independent operational measurement and attribution"
+      ],
+      "tests_available": [
+        "operations/runtime/golden-industrial-loop.test.cjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "path": "operations/runtime/frontier-decision-control.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        },
+        {
+          "path": "operations/runtime/frontier-outcome-learning.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        },
+        {
+          "path": "operations/runtime/golden-industrial-loop.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        }
+      ],
+      "historical_test_claims_status": "Actual local historical source execution retained; not current frozen/runtime/customer proof",
+      "remaining_work": [
+        "Preserve verified lifecycle execution versus separately measured outcomes",
+        "Reuse chain descriptions only after authenticated producer binding; no causal/financial promotion truth from assertions",
+        "Do not overlap reviewed Lane08 outcome projection"
+      ],
+      "rollback_plan": "Shipping bytes changed=0; historical/reference and local evidence only. Future port must be independently reviewed and revertible without changing canonical authority.",
+      "claim_boundary": "FOUND source archaeology only; broad capability unfinished. Fixture-based source tests do not establish authenticity, customer readiness, hosted admission, realised value or causal truth.",
+      "previous_classification": "EVOLVE",
+      "port_decision": "NO_PORT_SELECTED"
+    },
+    {
+      "id": "product-051",
+      "capability": "Proof-carrying authority state exact source/release/scope binding",
+      "lane": "Autopilot / implementation",
+      "source_branch": "feature/vector-forge-proof-carrying-state-20260927",
+      "head_sha": "52cf683ae3f3c84cd8064fc599290f12d766f44e",
+      "source_pr": 269,
+      "source_pr_url": "https://github.com/paulallen123/-manufacturing-wfm/pull/269",
+      "classification": "EVOLVE",
+      "state": "FOUND",
+      "canonical_owner_candidate": "Existing Trust spine authority permits and release identity/evidence owners",
+      "rationale": "Digest envelope binds declared tenant/source/release/scope; it is not an authenticated grant. Supplied current actor/authority drift is not compared. A parallel authority kernel is rejected.",
+      "evidence_paths": [
+        "trust/runtime/proof-carrying-state.cjs",
+        "trust/runtime/proof-carrying-state.test.cjs"
+      ],
+      "evidence_blobs": [
+        {
+          "path": "trust/runtime/proof-carrying-state.cjs",
+          "source_blob_sha": "2c9497e88eb9eb0972687921df0d7bbfa3f16cee",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 5480,
+          "byte_identical_to_frozen": false
+        },
+        {
+          "path": "trust/runtime/proof-carrying-state.test.cjs",
+          "source_blob_sha": "3ca54b4455fe5fdd75d8041d7ba997e18af4c044",
+          "frozen_blob_sha": null,
+          "mode": "100644",
+          "bytes": 2318,
+          "byte_identical_to_frozen": false
+        }
+      ],
+      "dependencies": [
+        "Canonical tenant/source provenance",
+        "Existing role and execution-authority boundary",
+        "Exact candidate source/build identity"
+      ],
+      "tests_available": [
+        "trust/runtime/proof-carrying-state.test.cjs"
+      ],
+      "tests_executed_by_inventory": [
+        {
+          "path": "trust/runtime/proof-carrying-state.test.cjs",
+          "command": "official Node22.23.2 --require network-guard.cjs --test exact historical source closure",
+          "log": "evidence/01-historical-source-tests.log",
+          "scope": "historical source unit tests only",
+          "parsed": true
+        }
+      ],
+      "historical_test_claims_status": "Actual local historical source execution retained; not current frozen/runtime/customer proof",
+      "remaining_work": [
+        "Use release/scope binding concepts inside the canonical authority owner",
+        "Require actual grant authentication and explicit actor/authority revalidation",
+        "Do not duplicate authority or proof stores"
+      ],
+      "rollback_plan": "Shipping bytes changed=0; historical/reference and local evidence only. Future port must be independently reviewed and revertible without changing canonical authority.",
+      "claim_boundary": "FOUND source archaeology only; broad capability unfinished. Fixture-based source tests do not establish authenticity, customer readiness, hosted admission, realised value or causal truth.",
+      "previous_classification": "EVOLVE",
+      "port_decision": "NO_PORT_SELECTED"
+    }
+  ],
+  "duplicateIdsCreated": 0,
+  "sourceTests": {
+    "tests": 59,
+    "pass": 58,
+    "fail": 1,
+    "skipped": 0,
+    "failure": "Exact PR231 readiness-adapter paired test does not parse; genuine historical stored test defect"
+  },
+  "heldOuts": {
+    "tests": 4,
+    "pass": 1,
+    "fail": 3,
+    "skipped": 0,
+    "scope": "historical proposal source/convergence boundary, not serving-f32 defects"
+  },
+  "portDecision": "NO_PORT_SELECTED"
+}

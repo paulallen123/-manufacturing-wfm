@@ -1,0 +1,490 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "lock": {
+    "protectedFrozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "frozenTreeSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "provenBaseSha": null,
+    "convergenceBaseSha": null,
+    "shippingChangedBytes": 0,
+    "productEdits": false,
+    "githubWrites": false,
+    "providersExecuted": false,
+    "customerProof": false
+  },
+  "sourceIdentities": [
+    {
+      "n": 231,
+      "path": "implementation/runtime/launch-autopilot-controller.cjs",
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "sha": "88d6fc4145acb84d83365e803917358863b868b4",
+      "mode": "100644",
+      "bytes": 16869,
+      "local": "historical/pr231/implementation/runtime/launch-autopilot-controller.cjs",
+      "frozen": null
+    },
+    {
+      "n": 231,
+      "path": "implementation/runtime/launch-autopilot-controller.test.cjs",
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "sha": "9c91a672678a2c888f12d7a3f24fe3a3edbdc85d",
+      "mode": "100644",
+      "bytes": 5416,
+      "local": "historical/pr231/implementation/runtime/launch-autopilot-controller.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": 231,
+      "path": "implementation/runtime/launch-autopilot-readiness-adapter.cjs",
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "sha": "473bb187ce3c1de3ff25467c1f2c91b95b3e8679",
+      "mode": "100644",
+      "bytes": 9605,
+      "local": "historical/pr231/implementation/runtime/launch-autopilot-readiness-adapter.cjs",
+      "frozen": null
+    },
+    {
+      "n": 231,
+      "path": "implementation/runtime/launch-autopilot-readiness-adapter.test.cjs",
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "sha": "eee2bf8bd83d18988fecdad22161b5580ae5217c",
+      "mode": "100644",
+      "bytes": 7336,
+      "local": "historical/pr231/implementation/runtime/launch-autopilot-readiness-adapter.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": 231,
+      "path": "implementation/runtime/launch-integration-pathfinder.cjs",
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "sha": "57ff51bd468035cd8ea0cc5c497e67f65b9f7e4e",
+      "mode": "100644",
+      "bytes": 4848,
+      "local": "historical/pr231/implementation/runtime/launch-integration-pathfinder.cjs",
+      "frozen": null
+    },
+    {
+      "n": 231,
+      "path": "implementation/runtime/launch-integration-pathfinder.test.cjs",
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "sha": "75048432f888358e86437b18853367da68f53a28",
+      "mode": "100644",
+      "bytes": 3246,
+      "local": "historical/pr231/implementation/runtime/launch-integration-pathfinder.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": 234,
+      "path": "resilience/blocker-autopilot.cjs",
+      "head": "10ab0a8f31fb337b7311d3d84f4b6b20d5b3fd80",
+      "sha": "48e9c18e45291dd1f4cd0994a77306fe0f3c67bc",
+      "mode": "100644",
+      "bytes": 18602,
+      "local": "historical/pr234/resilience/blocker-autopilot.cjs",
+      "frozen": null
+    },
+    {
+      "n": 234,
+      "path": "resilience/blocker-autopilot.test.cjs",
+      "head": "10ab0a8f31fb337b7311d3d84f4b6b20d5b3fd80",
+      "sha": "4ca702b05da25ed58de19b77bffe3c88a5e76c58",
+      "mode": "100644",
+      "bytes": 10479,
+      "local": "historical/pr234/resilience/blocker-autopilot.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": 234,
+      "path": "resilience/blocker-autopilot-policy.json",
+      "head": "10ab0a8f31fb337b7311d3d84f4b6b20d5b3fd80",
+      "sha": "ccc86504a1c1e9d377e13960909ae645d38a91c3",
+      "mode": "100644",
+      "bytes": 2034,
+      "local": "historical/pr234/resilience/blocker-autopilot-policy.json",
+      "frozen": null
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/frontier-decision-control.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "bbe90c21bbe926317efa8633369f3697508112d5",
+      "mode": "100644",
+      "bytes": 19109,
+      "local": "historical/pr235/operations/runtime/frontier-decision-control.cjs",
+      "frozen": null
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/frontier-decision-control.test.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "893253f815127ea8ae8d9f01298461615a7661ea",
+      "mode": "100644",
+      "bytes": 8536,
+      "local": "historical/pr235/operations/runtime/frontier-decision-control.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/frontier-outcome-learning.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "e39796d2fe214d93132c0e98ca5559af3b438c94",
+      "mode": "100644",
+      "bytes": 8578,
+      "local": "historical/pr235/operations/runtime/frontier-outcome-learning.cjs",
+      "frozen": null
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/frontier-outcome-learning.test.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "95e0a31d17e829b80e7ca69a9288943d0cc19a32",
+      "mode": "100644",
+      "bytes": 10481,
+      "local": "historical/pr235/operations/runtime/frontier-outcome-learning.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/golden-industrial-loop.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "eababcab86567382f1c2657dad933d03ee791450",
+      "mode": "100644",
+      "bytes": 11326,
+      "local": "historical/pr235/operations/runtime/golden-industrial-loop.cjs",
+      "frozen": null
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/golden-industrial-loop.test.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "22df945b94c34d25b9f9e55735a18ae7f6f8b55c",
+      "mode": "100644",
+      "bytes": 9588,
+      "local": "historical/pr235/operations/runtime/golden-industrial-loop.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": 269,
+      "path": "trust/runtime/proof-carrying-state.cjs",
+      "head": "52cf683ae3f3c84cd8064fc599290f12d766f44e",
+      "sha": "2c9497e88eb9eb0972687921df0d7bbfa3f16cee",
+      "mode": "100644",
+      "bytes": 5480,
+      "local": "historical/pr269/trust/runtime/proof-carrying-state.cjs",
+      "frozen": null
+    },
+    {
+      "n": 269,
+      "path": "trust/runtime/proof-carrying-state.test.cjs",
+      "head": "52cf683ae3f3c84cd8064fc599290f12d766f44e",
+      "sha": "3ca54b4455fe5fdd75d8041d7ba997e18af4c044",
+      "mode": "100644",
+      "bytes": 2318,
+      "local": "historical/pr269/trust/runtime/proof-carrying-state.test.cjs",
+      "frozen": null
+    },
+    {
+      "n": null,
+      "path": "operations/runtime/autopilot-execution-engine.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "0b7541fe363d1071c9207ce349273a1e09414bbb",
+      "mode": "100644",
+      "bytes": 14858,
+      "local": "frozen/operations/runtime/autopilot-execution-engine.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "operations/runtime/autopilot-execution-engine.test.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "ed160d0319aaed36a3e99888316e6cfa6f524b2a",
+      "mode": "100644",
+      "bytes": 4567,
+      "local": "frozen/operations/runtime/autopilot-execution-engine.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "operations/runtime/decision-episode.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "mode": "100644",
+      "bytes": 8853,
+      "local": "frozen/operations/runtime/decision-episode.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "mode": "100644",
+      "bytes": 3042,
+      "local": "frozen/operations/runtime/decision-episode.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "mode": "100644",
+      "bytes": 7146,
+      "local": "frozen/operations/runtime/decision-outcome-proof.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "trust/runtime/vector-trust-spine.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "mode": "100644",
+      "bytes": 22881,
+      "local": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "implementation/runtime/implementation-work-controller.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+      "mode": "100644",
+      "bytes": 18652,
+      "local": "frozen/implementation/runtime/implementation-work-controller.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "implementation/runtime/implementation-work-controller.test.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "556ab49d55e0cfc5b85322e76a4e9b5a5312d70f",
+      "mode": "100644",
+      "bytes": 8651,
+      "local": "frozen/implementation/runtime/implementation-work-controller.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "implementation/runtime/zero-touch-customer-factory.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a28090fe6beef55e18106f380499233808cc693f",
+      "mode": "100644",
+      "bytes": 3330,
+      "local": "frozen/implementation/runtime/zero-touch-customer-factory.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "release/proof-lane-policy.json",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec",
+      "mode": "100644",
+      "bytes": 10575,
+      "local": "frozen/release/proof-lane-policy.json",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "release/proof-blocker-knowledge.json",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "e00749f70739cacece3f1ee6578d751006acebdb",
+      "mode": "100644",
+      "bytes": 16377,
+      "local": "frozen/release/proof-blocker-knowledge.json",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "scripts/classify-proof-blocker.mjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a2b41b042f2b977fdad5edf06332e85691fbff33",
+      "mode": "100644",
+      "bytes": 3842,
+      "local": "frozen/scripts/classify-proof-blocker.mjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "scripts/validate-proof-blocker-classifier.mjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "7f1fdc9536eea696e6eafa3c77d0fe75495c77e8",
+      "mode": "100644",
+      "bytes": 1359,
+      "local": "frozen/scripts/validate-proof-blocker-classifier.mjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "operations/runtime/manufacturing-scheduling-engine.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "63970553844acb634391e6b2db865905eb3c4947",
+      "mode": "100644",
+      "bytes": 26491,
+      "local": "frozen/operations/runtime/manufacturing-scheduling-engine.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": null,
+      "path": "operations/runtime/manufacturing-demand-forecast.cjs",
+      "head": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "c2a2700245e55155538dd06e86abe6c04444e058",
+      "mode": "100644",
+      "bytes": 6454,
+      "local": "frozen/operations/runtime/manufacturing-demand-forecast.cjs",
+      "verified935Copy": true
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/autopilot-execution-engine.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "3b62e576f1d34199b80b442c7173590d3c1a652a",
+      "mode": "100644",
+      "bytes": 38031,
+      "local": "historical/pr235/operations/runtime/autopilot-execution-engine.cjs",
+      "dependency": true,
+      "kind": "historical-new-fetch",
+      "frozen": "0b7541fe363d1071c9207ce349273a1e09414bbb"
+    },
+    {
+      "n": 231,
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "sha": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "mode": "100644",
+      "bytes": 5922,
+      "local": "historical/pr231/implementation/runtime/implementation-digital-twin.cjs",
+      "dependency": true,
+      "kind": "exact-equal-frozen-reuse",
+      "frozen": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa"
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/decision-episode.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "mode": "100644",
+      "bytes": 8853,
+      "local": "historical/pr235/operations/runtime/decision-episode.cjs",
+      "dependency": true,
+      "kind": "exact-equal-frozen-reuse",
+      "frozen": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4"
+    },
+    {
+      "n": 235,
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "sha": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "mode": "100644",
+      "bytes": 7146,
+      "local": "historical/pr235/operations/runtime/decision-outcome-proof.cjs",
+      "dependency": true,
+      "kind": "exact-equal-frozen-reuse",
+      "frozen": "bfe001bc1696dabef57da9732c15f22d55a77b60"
+    }
+  ],
+  "selected935Mismatches": [],
+  "prs": [
+    {
+      "number": 231,
+      "head": "784638a4e9aec23ed49c2b13f4bdec40dd8dcb18",
+      "branch": "feature/vector-forge-launch-converged-20260923",
+      "state": "open",
+      "merged": false,
+      "headTreePreviouslyRetained": true,
+      "truncated": false
+    },
+    {
+      "number": 233,
+      "head": "5d129fa757d0959c81242be08f6674e5a8eccf05",
+      "branch": "feature/vector-scheduling-parity-evolution-20260923",
+      "state": "open",
+      "merged": false,
+      "headTreePreviouslyRetained": true,
+      "truncated": false
+    },
+    {
+      "number": 234,
+      "head": "10ab0a8f31fb337b7311d3d84f4b6b20d5b3fd80",
+      "branch": "feature/vector-blocker-autopilot-20260923",
+      "state": "open",
+      "merged": false,
+      "headTreePreviouslyRetained": true,
+      "truncated": false
+    },
+    {
+      "number": 235,
+      "head": "57132f485045105dbc1afb3b03cf26ab75f1b615",
+      "branch": "feature/vector-frontier-t9-converged-20260923",
+      "state": "open",
+      "merged": false,
+      "headTreePreviouslyRetained": true,
+      "truncated": false
+    },
+    {
+      "number": 269,
+      "head": "52cf683ae3f3c84cd8064fc599290f12d766f44e",
+      "branch": "feature/vector-forge-proof-carrying-state-20260927",
+      "state": "open",
+      "merged": false,
+      "headTreePreviouslyRetained": true,
+      "truncated": false
+    }
+  ],
+  "byteIdenticalDuplicates": [
+    {
+      "originalPR": 231,
+      "copies": [
+        235,
+        269
+      ],
+      "paths": [
+        "implementation/runtime/launch-autopilot-controller.cjs",
+        "implementation/runtime/launch-autopilot-controller.test.cjs",
+        "implementation/runtime/launch-autopilot-readiness-adapter.cjs",
+        "implementation/runtime/launch-autopilot-readiness-adapter.test.cjs",
+        "implementation/runtime/launch-integration-pathfinder.cjs",
+        "implementation/runtime/launch-integration-pathfinder.test.cjs"
+      ]
+    },
+    {
+      "originalPR": 234,
+      "copies": [
+        235
+      ],
+      "paths": [
+        "resilience/blocker-autopilot.cjs",
+        "resilience/blocker-autopilot.test.cjs",
+        "resilience/blocker-autopilot-policy.json"
+      ]
+    }
+  ],
+  "coverage": {
+    "principalRemoteFiles": 17,
+    "extraHistoricalDependency": 1,
+    "equalFrozenDependencyCopies": 3,
+    "frozenComparisons": 15,
+    "notComprehensive": true,
+    "excluded": [
+      "current Staffology",
+      "current cleanroom/fabric",
+      "PR277",
+      "old PR79 enterprise comprehensive review",
+      "AskVector/planner-focus UI comprehensive review",
+      "providers/deployment/hosted customer truth"
+    ]
+  }
+}

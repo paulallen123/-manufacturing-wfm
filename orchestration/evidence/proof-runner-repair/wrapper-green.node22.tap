@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: wrapper preserves complete scoped payroll evidence without promoting customer readiness
+ok 1 - wrapper preserves complete scoped payroll evidence without promoting customer readiness
+  ---
+  duration_ms: 427.8248
+  type: 'test'
+  ...
+# Subtest: absent payroll evidence stays unverified through the wrapper
+ok 2 - absent payroll evidence stays unverified through the wrapper
+  ---
+  duration_ms: 469.7075
+  type: 'test'
+  ...
+# Subtest: a persisted payroll batch mismatch remains unverified through the wrapper
+ok 3 - a persisted payroll batch mismatch remains unverified through the wrapper
+  ---
+  duration_ms: 384.5831
+  type: 'test'
+  ...
+# Subtest: duplicate team signatures cannot substitute for distinct scoped team sign offs
+ok 4 - duplicate team signatures cannot substitute for distinct scoped team sign offs
+  ---
+  duration_ms: 333.9325
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1762.5972

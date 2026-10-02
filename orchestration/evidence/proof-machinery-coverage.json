@@ -1,0 +1,541 @@
+{
+  "schemaVersion": 1,
+  "scope": "READ_ONLY_EXISTING_PROOF_COVERAGE_NO_NEW_TEST_EXECUTION",
+  "review": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "tree": "fab958ad86d794bd31caa876606f73c605417e6a",
+  "frozenServingTuple": {
+    "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+    "tenant": "northstar-demo",
+    "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+    "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "observedAt": "2026-10-02T08:20:00.048Z"
+  },
+  "currentObservedHosted": {
+    "at": "2026-10-02T09:54:03.214004689Z",
+    "completed": 5,
+    "total": 21,
+    "fixtureOnly": true,
+    "customerProofComplete": false,
+    "productReady": false
+  },
+  "mandatoryGoldenCount": 27,
+  "implementationCount": 21,
+  "allGoldenUnproven": true,
+  "commands": {
+    "implementation": {
+      "command": "node --test implementation/runtime/one-day-enterprise-engine.test.cjs implementation/runtime/readiness-evidence-wrapper.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs implementation/runtime/implementation-work-controller.test.cjs",
+      "scope": "Real isolated SQLite/internal API fixture behavior; strict admission/current stored receipt revalidation, not hosted/customer.",
+      "requiredEnv": "Official Node22.23.2; contained TEMP/TMP; no provider/network effects."
+    },
+    "handoff": {
+      "command": "node scripts/implementation-source-handoff-proof.cjs",
+      "scope": "Synthetic Workday connection/records/internal token and real SQLite import/replay/tenant negatives; no provider discovery.",
+      "requiredEnv": "Official Node22.23.2; disposable proof database."
+    },
+    "localJourney": {
+      "command": "node scripts/run-local-vector-proof.mjs <fresh-evidence-dir>",
+      "scope": "Composition plus synthetic authenticated local API/SQLite and attendance/payroll controls; summary explicitly dockerAdmission=false,deployedJourney=false,externalProviderSubmission=false.",
+      "requiredEnv": "Official Node22.23.2; isolated composed runtime/DB."
+    },
+    "policy": {
+      "command": "node --test policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs",
+      "scope": "Canonical legal context contracts/test fixtures; no real customer policy acceptance."
+    },
+    "training": {
+      "command": "node --test learning/runtime/adaptive-learning-engine.test.cjs implementation/runtime/implementation-learning-integration.test.cjs",
+      "scope": "Learning assignment/task/teachback logic fixtures; not actual user mastery."
+    },
+    "scheduling": {
+      "command": "node --test operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs",
+      "scope": "Scheduling/reconciliation contracts and synthetic domain behavior."
+    },
+    "staffology": {
+      "command": "node --test integrations/staffology/independent/full-http-employee-journey.test.cjs",
+      "scope": "Exact composed synthetic employee/time/payroll/provider-readback journey if configured; current published bytes still have held native recovery repairs.",
+      "requiredEnv": "CANONICAL_SOURCE_DIR, WFM_RUNTIME, STAFFOLOGY_RUNTIME_MODE=full, WFM_BUILD_SOURCE_SHA, STAFFOLOGY_PRIVATE_EVIDENCE_DIR; isolated mock provider only.",
+      "additionalExistingFiles": [
+        "integrations/staffology/staffology-employee-persistence.test.cjs"
+      ]
+    },
+    "browser": {
+      "command": "node scripts/current-candidate-role-browser-proof-server.mjs",
+      "scope": "Hosted fixture role/browser leave/attendance/payroll checks; asset binding optional unless strict flag; wrapper remains PARTIAL/productReady=false.",
+      "requiredEnv": "Root-authorized VECTOR_PROOF_URL,WFM_EXPECTED_CANDIDATE_SHA,WFM_STAGING_PASSWORD; strict asset digests/flag needed for exact frontend bytes. Backend/deployment/run proof separate."
+    },
+    "outcomes": {
+      "command": "node --test operations/runtime/decision-outcome-proof.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/absence-recovery-shadow.test.cjs",
+      "scope": "Outcome/decision contract and fixture behavior; no measured actual customer value."
+    },
+    "autonomy": {
+      "command": "node scripts/run-portable-autonomy-proof.mjs --strict-runtime",
+      "scope": "Bounded simulated repair/resilience/controller validators; receipt customerMutation=false/productionMutation=false; not exercised hosted customer failure."
+    },
+    "rollback": {
+      "command": "node scripts/validate-canary-rollback-controller.mjs",
+      "scope": "Rollback controller contract scenarios and mock adapter facts; no actual hosted/customer rollback result."
+    },
+    "sourceCI": {
+      "command": "node scripts/run-forge-ci.mjs",
+      "scope": "Source validators and selected operations/policy tests; implementation proof-repair suites absent."
+    },
+    "docker": {
+      "command": "docker build --pull=false --progress=plain --target staffology-proof-evidence --build-arg RAILWAY_GIT_COMMIT_SHA=\"$CIRCLE_SHA1\" --output \"type=local,dest=<private-artifacts-outside-context>\" .",
+      "scope": "Existing discarded exact-source stage incl staffology; main Docker also executes implementation/proof admission. Actual bound image/log needed, not declaration.",
+      "requiredEnv": "Root chooses truthful admitted SHA/trigger; private export outside subsequent build context."
+    },
+    "scale": {
+      "command": "WFM_PROOF_ONESHOT=true WFM_CONFIG_ENGINE_PATH=<exact-config-engine> WFM_CONFIG_ENGINE_GIT_BLOB_SHA=d3688d27841a28d3b8801b7d4c63f254e8bf7edd node implementation/proof/cloud-scale-proof-runner.cjs",
+      "scope": "10000 synthetic employees/50 sites, exact config-engine blob, deterministic independent arithmetic, corruption controls. No server/provider/customer source."
+    },
+    "rehearsal": {
+      "command": "node scripts/run-completion-rehearsal.mjs --assert-orchestration",
+      "scope": "Static path/test-route+scenario rehearsal, simulationOnly=true/simulationCountsAsProof=false; can logPASS with actualBlockers. Not execution proof."
+    }
+  },
+  "mapping": [
+    {
+      "id": "secure-entry",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "identity-access",
+        "security-controls"
+      ],
+      "existingCommandIds": [
+        "browser",
+        "localJourney"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Session/role/tenant login negatives are targets; current customer sign-in/backend binding and real role flows still unproven.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "implementation",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "configuration-scope",
+        "tenant-environment"
+      ],
+      "existingCommandIds": [
+        "implementation",
+        "scale",
+        "handoff"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Existing run remains5/21; local bounded numeric/date repair is not new hosted run completion.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "integrations",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "source-systems"
+      ],
+      "existingCommandIds": [
+        "handoff",
+        "staffology"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Stored sandbox metadata0connections provides no fresh provider/customer authorization; synthetic clients only.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "source-discovery",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "source-systems"
+      ],
+      "existingCommandIds": [
+        "handoff"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Handoff seeds confirmed Workday metadata; it does not discover/authorize a real employer/source.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "workforce-import",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "people-data",
+        "live-data-import"
+      ],
+      "existingCommandIds": [
+        "handoff",
+        "staffology"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Synthetic import/checksum/idempotency is partial; authoritative real cohort/source counts and mapping required.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "reconciliation",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "people-data",
+        "historical-replay"
+      ],
+      "existingCommandIds": [
+        "handoff",
+        "localJourney",
+        "staffology"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Distinct canonical import/internal payroll/provider reconciliation scopes must be retained; no current customer acceptance.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "configuration",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "configuration-scope",
+        "organisation-model"
+      ],
+      "existingCommandIds": [
+        "implementation",
+        "scale"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Deterministic proposals against synthetic scale do not attest accepted customer/site configuration.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "policy-context",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "time-policies",
+        "absence-policies"
+      ],
+      "existingCommandIds": [
+        "policy",
+        "implementation"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Customer effective policy/legal source must be authoritative; repaired dates cannot certify rules or inferred balances.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "training-readiness",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "role-learning",
+        "privileged-competency",
+        "frontline-readiness"
+      ],
+      "existingCommandIds": [
+        "training"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Assignment gate is not mastery; actual privileged/frontline task evidence and teachback not present.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "go-live",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "scenario-validation",
+        "test-data-cleanup",
+        "live-data-import",
+        "privileged-competency",
+        "frontline-readiness"
+      ],
+      "existingCommandIds": [
+        "implementation"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "READY covers21requirements+blockingdecisions only; no automatic27-gate customer promotion guard in this engine.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "workforce-scheduling-action",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "scheduling"
+      ],
+      "existingCommandIds": [
+        "scheduling",
+        "localJourney"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Need actual allowed schedule action/state/audit and customer policy after reload/login on exact tuple.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "time-absence",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "clocking",
+        "time-policies",
+        "absence-policies"
+      ],
+      "existingCommandIds": [
+        "localJourney",
+        "browser"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Existing fixture action/correction controls strong but no applicable customer period/timezone/policy proof.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "approval",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "approvals"
+      ],
+      "existingCommandIds": [
+        "browser",
+        "localJourney"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Need real applicable current approver/delegate authority and exact approval/audit persisted outcome.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "payroll-downstream-action",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "payroll-mapping",
+        "historical-replay"
+      ],
+      "existingCommandIds": [
+        "staffology",
+        "localJourney"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Currentd387 is old held Staffology bytes; nativebf9 recovery truth defects remain until verified successor. Synthetic POST is not real provider acceptance.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "provider-readback",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "historical-replay"
+      ],
+      "existingCommandIds": [
+        "staffology"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Mock-provider independent readback exists; fresh authorized real provider receipt bound employer/cohort/period/config needed.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "downstream-reconciliation",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "historical-replay"
+      ],
+      "existingCommandIds": [
+        "staffology",
+        "localJourney"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Released internal batch and selected provider readback are partial targets; current/customer definitive truth still held.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "value-outcome-evidence",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [],
+      "existingCommandIds": [
+        "outcomes"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "No21 gate explicitly requires realised customer value; measured outcome/baseline/action attribution absent from current evidence.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "operational-problem",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [],
+      "existingCommandIds": [
+        "autonomy",
+        "outcomes"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Injected scenario contract exists; no current customer problem linked end-to-end to detection,repair and outcome receipt.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "detection",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [],
+      "existingCommandIds": [
+        "autonomy",
+        "outcomes"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Detection/scenario validators are local/simulated; actual current operational-event diagnosis not evidenced.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "repair",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "resilience"
+      ],
+      "existingCommandIds": [
+        "autonomy"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Repair authority/control contracts do not prove actual current problem repaired by admitted exact successor.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "recovery-verification",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "resilience"
+      ],
+      "existingCommandIds": [
+        "autonomy",
+        "staffology"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Current recovery audit/outcome P2s plus no actual hosted customer recovery verifier receipt.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "restart-persistence",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "resilience",
+        "tenant-environment"
+      ],
+      "existingCommandIds": [
+        "localJourney",
+        "staffology"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Isolated realSQLite restart controls are valuable; no exact live hosted restart/restore/audit survival claim.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "customer-quality-ui",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [],
+      "existingCommandIds": [
+        "browser"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Browser fixture scopes remainPARTIAL; no full customer-quality27-journey pack on exact backend/deployment.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "native-mobile",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [],
+      "existingCommandIds": [],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "No mobile/native proof test filename found in scoped source scan; generic browser/mobile layouts cannot substitute native acceptance.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "rollback",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "resilience"
+      ],
+      "existingCommandIds": [
+        "rollback",
+        "autonomy"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "Mock controller known-good rollback guards are targets; actual tagged backup/restore and postrollback current tuple proof missing.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "security-tenant-authority",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "security-controls",
+        "identity-access"
+      ],
+      "existingCommandIds": [
+        "localJourney",
+        "browser",
+        "staffology"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "CI unauth401/processUID is partial; full roles,tenant,current principal,authority and destructive applicable assertions still needed.",
+      "evidenceBinding": null
+    },
+    {
+      "id": "exact-source-build-runtime-binding",
+      "status": "NOT_PROVEN",
+      "implementationRequirementKeys": [
+        "tenant-environment"
+      ],
+      "existingCommandIds": [
+        "docker",
+        "browser"
+      ],
+      "coverage": "PARTIAL_TARGETS_OR_ABSENT_NO_CURRENT_CUSTOMER_PROOF",
+      "gap": "CircleCI runtimeidentity does seal/readback; standalone browser expectedSha only validates/echoes env,frontend asset bind is distinct from backend/deployment/run.",
+      "evidenceBinding": null
+    }
+  ],
+  "holds": [
+    {
+      "id": "PROOF-COVERAGE-21-VS27",
+      "kind": "ADMISSION_COVERAGE_HOLD",
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "reason": "operationalReady=(missing21.length===0 && blockingDecisions.length===0); no check of27Golden matrix or fullchain customer evidence. Engine readiness is not customerProofComplete."
+    },
+    {
+      "id": "PROOF-CI-EXECUTION",
+      "kind": "FALSE_GREEN_INTERPRETATION_HOLD",
+      "path": ".circleci/config.yml:9-12",
+      "reason": "Unchanged artifact/vector-proof-freeze.trigger halts both heavy jobs. d387 changes only3proof files overb851. source job does not list implementation suites; actual Docker execution on truthful admitted trigger and SHA must be evidenced."
+    },
+    {
+      "id": "PROOF-CURRENT-STAFFOLOGY",
+      "kind": "EXISTING_HOLD",
+      "reason": "Publishedd387 still old Staffology runtime; nativebf9 localHTTP green does not close TR09B/TR12 or actualLinux. CI26b851 actualfullHTTP403 preserved."
+    },
+    {
+      "id": "PROOF-BROWSER-BACKEND-BINDING",
+      "kind": "PARTIAL_OR_FALSE_SHA_LABEL",
+      "paths": [
+        "scripts/current-candidate-role-browser-proof.mjs",
+        "scripts/current-candidate-role-browser-proof-server.mjs",
+        "scripts/vector-proof-result.mjs"
+      ],
+      "reason": "expectedSha in standalone browser is syntaxchecked then echoed only; optional frontend digests cannot bind backendSHA/deployment/run. Wrapper honestly returnsPARTIAL/productReadyfalse and lists missingbackend. Wrapper calls roleProofResult without fourth payrollJourney argument, losing structured payroll verification despite actual fixture script checks."
+    },
+    {
+      "id": "PROOF-REHEARSAL-PASS",
+      "kind": "FALSE_GREEN_INTERPRETATION_HOLD",
+      "path": "scripts/run-completion-rehearsal.mjs",
+      "reason": "PASS is orchestration/static rehearsal and can coexist with actualBlockers;simulationOnlytrue,simulationCountsAsProoffalse. Must not close Golden gates."
+    },
+    {
+      "id": "PROOF-RECEIPT-ATTESTATION",
+      "kind": "PARTIAL_SCHEMA_AND_PROVENANCE",
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "reason": "Generic identity-access,scheduling,approvals,clocking,payroll-mapping,resilience have no per-kind strict result schema; trusted exact-boundPASS is not independent fullworkflow proof. Source-derived readiness lacks explicit source fixture/dataClass attestation. Current03strictfinite/date repair preserves authority but cannot authenticate external claims."
+    }
+  ],
+  "proof03": {
+    "shippingBlobs": [
+      "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "198978255a62a1297e6104f66f67373864534e3e",
+      "a94904b821126cc6155afd091d6acc4c8b1673e9"
+    ],
+    "effect": "finite numeric replay admission,actual policy date parsing,persisted matched-current replay/policy receipts lose authority without audit deletion.",
+    "existingExecutedEvidence": "work/trust_review/proof-gate-*;6/6heldout,52/52affected; no new execution here.",
+    "notEstablished": [
+      "Current21requirements complete",
+      "Golden27 customerjourney complete",
+      "Fresh provider/customer authority",
+      "Hosted/container/currentdeployment receipt"
+    ]
+  },
+  "matrixSnapshotSha256": "26e2a46587dcff480b6b0dc4153f34f0a0555ea31b3cc6d4f90c64bfa1bea574",
+  "limits": [
+    "No expensive tests,source/product edits,providers,GitHub,browser or deployment actions.",
+    "Selected source/path scan only,archivalsecurity_hold excluded; external executor/nonJS/generated producers may exist.",
+    "Existing commands are targets,not new CI scope or instructions to run live mutations.",
+    "Runtime/source binding beyond selected23 rehash relies on prior parent fulltree receipt."
+  ]
+}

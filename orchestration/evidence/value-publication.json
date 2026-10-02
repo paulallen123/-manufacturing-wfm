@@ -1,0 +1,32 @@
+{
+  "branch": "feature/vector-lane08-value-projection-20261002",
+  "commit": "0e752bc01ff134d67360768bc69b1b12951faac9",
+  "tree": "8abb0e12930b908420eae63f94b1596e31035f37",
+  "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "verified": true,
+  "frozenPreserved": 1094,
+  "manifestPaths": 65,
+  "shippingPaths": 4,
+  "sharedOwner": "LANE01",
+  "valueShippingBlobs": [
+    "80c9d72a90f6c0dab549b44ca6e2ce67810e4d3d",
+    "d031d2e352590f9c02400cf02af150461dc1feb5"
+  ],
+  "sharedDependencyBlobs": [
+    "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+    "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
+  ],
+  "owner": {
+    "pass": 33,
+    "total": 33
+  },
+  "independent": {
+    "pass": 32,
+    "total": 32
+  },
+  "runtimeWired": false,
+  "aggregateFinancialValue": null,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "publishedAt": "2026-10-02T11:44:15.736Z"
+}

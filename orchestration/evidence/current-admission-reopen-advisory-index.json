@@ -1,0 +1,14 @@
+﻿[
+    {
+        "path":  "work/trust_review/current-admission-reopen-advisory.md",
+        "sha256":  "c43b6950342573c5868942369c1cb43a74a5bcf0180d58fd9de0416744b31391"
+    },
+    {
+        "path":  "work/trust_review/current-admission-reopen-semantics.test.cjs",
+        "sha256":  "25454798753bbcd1a3bb7361955de84fef73675ca79f8c8efded6f6d181b1af0"
+    },
+    {
+        "path":  "work/trust_review/current-admission-reopen-semantics.node22.tap",
+        "sha256":  "151246daac9a327a703c4ec5b3175b8883e92944ae7e7387ff1fd60b60730fc5"
+    }
+]

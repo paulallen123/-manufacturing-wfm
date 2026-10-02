@@ -1,0 +1,16 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "operations/runtime/mobile-session-service.test.cjs",
+    "operations/runtime/mobile-assistant-service.test.cjs",
+    "operations/runtime/mobile-recommendation-service.test.cjs"
+  ],
+  "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane06-archaeology\\historical\\pr242",
+  "exitCode": 0,
+  "networkBlocked": true,
+  "scope": "Historical PR242 local source unit tests using source fixtures/injected clients; not current frozen source, native-device or provider proof",
+  "logSha256": "20141609bc63dba3758222cd9c4accde1cb05b91f5a8dc758cf0a860876b2e63"
+}

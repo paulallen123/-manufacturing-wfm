@@ -1,0 +1,41 @@
+{
+  "baselineSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "tree": "fab958ad86d794bd31caa876606f73c605417e6a",
+  "identities": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "mode": "100644",
+      "expected": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9",
+      "actual": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9",
+      "bytes": 4675
+    },
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "mode": "100644",
+      "expected": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+      "actual": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+      "bytes": 5059
+    },
+    {
+      "path": "scripts/vector-repair-regressions.test.mjs",
+      "mode": "100644",
+      "expected": "9b6cbf1b9832ea30a6758532c41594c4c1fe29ef",
+      "actual": "9b6cbf1b9832ea30a6758532c41594c4c1fe29ef",
+      "bytes": 5994
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "expected": "0a0c55a7545ca173163654adb641ba76b1d41f49",
+      "actual": "0a0c55a7545ca173163654adb641ba76b1d41f49",
+      "bytes": 2104
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "mode": "100644",
+      "expected": "7a54fb0864527d895847324f638696d789eb3997",
+      "actual": "7a54fb0864527d895847324f638696d789eb3997",
+      "bytes": 84642
+    }
+  ]
+}

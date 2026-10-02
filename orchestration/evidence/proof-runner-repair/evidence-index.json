@@ -1,0 +1,103 @@
+{
+  "baselineSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "evidence": [
+    {
+      "path": "DESIGN.md",
+      "bytes": 2128,
+      "sha256": "ee21e709839eb879cf76b0d1e4e9189197fa9a5adb2c555ddf04c73aecbc4aea"
+    },
+    {
+      "path": "baseline-identities.json",
+      "bytes": 1304,
+      "sha256": "14ebd20c07f70238b7a0c7a889b6c7fca423ba7af3b39ec9e01630a8259d7f0a"
+    },
+    {
+      "path": "shipping-manifest.json",
+      "bytes": 5606,
+      "sha256": "74070e464612f07e648a404b4330231f9c47685a16b96f8f9cd4e8275196ddc3"
+    },
+    {
+      "path": "wrapper-red.node22.tap",
+      "bytes": 2252,
+      "sha256": "42075706d68d7c237156aa88983ff714c79de68cd7e465a338989fd3540f59b8"
+    },
+    {
+      "path": "wrapper-red.receipt.json",
+      "bytes": 733,
+      "sha256": "149f137d18ee47f72aeec0519932a7a8de6b9f33e11d8a8c95a90c24c3d556f2"
+    },
+    {
+      "path": "wrapper-green.node22.tap",
+      "bytes": 998,
+      "sha256": "91e0da7aebfc7f748c2799db87e67e874f9b1994ada344ac2fa82832ffa406fe"
+    },
+    {
+      "path": "wrapper-green.receipt.json",
+      "bytes": 735,
+      "sha256": "bdd8e7661b702aa4f31e0831fd65e4192075abbd5ad8c9db058487b2e07ae0f4"
+    },
+    {
+      "path": "affected.node22.tap",
+      "bytes": 25606,
+      "sha256": "5383689c3dc8022b157423526bca7042166b32913a4c0edfa2a64caade2e42bc"
+    },
+    {
+      "path": "affected.receipt.json",
+      "bytes": 1287,
+      "sha256": "25493a354a8fef1a8b550098af7fe63bcc58a72e4aea0ba4079ce6273165da3c"
+    },
+    {
+      "path": "prepare.cjs",
+      "bytes": 1390,
+      "sha256": "7ed4194ec71d3aba822ac5415f0b4a2b25867f013a21dbfb14cf99453dd6a0db"
+    },
+    {
+      "path": "run.cjs",
+      "bytes": 1436,
+      "sha256": "a364fec116656dbcd1502dd997cf90bb075cdb569be87889a2e27d22d91bffde"
+    },
+    {
+      "path": "run-affected.cjs",
+      "bytes": 2293,
+      "sha256": "483a6b73133e89749ef34411a4a26da458a4a078ad75260efc3ce783cab670ac"
+    },
+    {
+      "path": "seal.cjs",
+      "bytes": 2851,
+      "sha256": "d4e2fb86bb457ee4636b1150338510b7eb3cdb2ddb4861807b764795e5162ad8"
+    }
+  ],
+  "shipping": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9",
+      "blob": "3337ec236e64df9552f881fd5be40132f9794646",
+      "sha256": "ff57ddff67c3cfeda09b9bbf3214e4e8271db839b39e2a326148eda11d9e6d98",
+      "bytes": 4723,
+      "localPath": "work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.mjs"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": null,
+      "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "sha256": "6134bf22ffb289a9a1d74e95dc2706d6c4e56f095afb20ec1a8596503fa9f579",
+      "bytes": 7722,
+      "localPath": "work/proof-runner-repair/source/scripts/current-candidate-role-browser-proof-server.test.mjs"
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49",
+      "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "sha256": "5d20825acebf8032e19191a58c514bbfcec87842930727d8d3a658b151c673a3",
+      "bytes": 2768,
+      "localPath": "work/proof-runner-repair/source/scripts/run-forge-ci.mjs"
+    }
+  ],
+  "sealedAt": "2026-10-02T11:31:52.029Z"
+}

@@ -1,0 +1,50 @@
+{
+  "branch": "review/staffology-customer-proof-20261001",
+  "commit": "b51f291a5f73ccccd828cab4ad7650efcc67c53f",
+  "tree": "66a12870dc92726712e7edb33f326f4cbb933a6a",
+  "parent": "d387d5300f2de0906d8ea459e1bac610128236d9",
+  "verified": true,
+  "shipping": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "mode": "100644",
+      "blob": "3337ec236e64df9552f881fd5be40132f9794646",
+      "preimageBlob": "6a78d2a2545d97bf3afedc27bcfb6237f7a0b7b9"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "mode": "100644",
+      "blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "preimageBlob": null
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "preimageBlob": "0a0c55a7545ca173163654adb641ba76b1d41f49"
+    }
+  ],
+  "parentUnchanged": 1105,
+  "fullTreeBlobs": 1108,
+  "priorProof03Preserved": true,
+  "allStaffologyPreserved": true,
+  "triggerChanged": false,
+  "sourceAdmitted": true,
+  "wholeRuntimeAdmission": false,
+  "affected": {
+    "pass": 113,
+    "total": 113,
+    "skip": 0,
+    "scope": "Local Windows"
+  },
+  "independent": {
+    "pass": 33,
+    "total": 33,
+    "regression": 4,
+    "scope": "Independent loopback/CI-control checks"
+  },
+  "reviewReportSha256": "5e1dc690f42596f73a281475dbe7140e34a2337b779abb7ed7415e0fc28eb663",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "publishedAt": "2026-10-02T11:41:19.678Z"
+}

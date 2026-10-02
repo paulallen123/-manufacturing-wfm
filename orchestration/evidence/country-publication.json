@@ -1,0 +1,30 @@
+{
+  "branch": "feature/vector-lane02-country-context-20261002",
+  "commit": "000a28ecf9e126c5d4385e89c3ff8bebb39dcac8",
+  "tree": "9b5df1b5a8945c3b46fc79c5d76832fa67e3ca2a",
+  "parent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "verified": true,
+  "frozenPreserved": 1094,
+  "manifestPaths": 70,
+  "sourceTests": 41,
+  "independentHeldOut": 15,
+  "sharedBoundary": {
+    "owner": "LANE01",
+    "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+    "paths": [
+      {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
+      },
+      {
+        "path": "implementation/runtime/inert-finite-json.test.cjs",
+        "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
+      }
+    ],
+    "countryCopyPurpose": "Identical canonical dependency paths ensure standalone branch executability; no competing owner"
+  },
+  "runtimeWired": false,
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "publishedAt": "2026-10-02T11:22:05.655Z"
+}

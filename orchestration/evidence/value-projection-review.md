@@ -1,0 +1,15 @@
+Independent Lane08 DecisionOutcome evidence projection review
+
+Hold: two material P2 findings on runtime9b0ccf4b7a6f9a074b711d0add1713686f3e8729 (6484bytes) and test4aec0277204a33f5ca06609a85e684730719125a (5712bytes), proposed100644 additions only. Both exact blob/SHA256/size identities, shared lane01 helpere38b912c9746f69a0dd3c1c991c25f2bbf4d3261,8 frozen comparison/dependency files and historical PR205 sourceebd801c481ddfbe623a6ad55bc3cb5071e924fac independently verified. Owner raw evidence hashes checked. Original11-file source capsule preserved for retained red probes.
+
+VALUE-01 P2 line46: divergent same episode/metric/class/window proofs evade conflict grouping when one window object uses {end,start} insertion order. Canonical digest sorts keys, so both digests are valid; raw JSON.stringify window grouping differentiates the same semantic window. Actual unique declarations2/conflicting declarations0; expected1 conflict containing both digests. Use validated semantic window scalars/stable key, retaining exact digest dedupe.
+
+VALUE-02 P2 lines21-33: nine rehashed invalid declarations are accepted and returned as content-consistent supplied claims. Incorrect/string/missing observed.predictionError; missing/Feb30/malformed observedAt; Feb30 or numeric financial window timestamps; simulation carrying GBP/window. Existing canonical producer emits a finite rounded prediction error, canonical ISO observed/window timestamps, and no simulation financial metadata. Validate these supplied fields and calendar shapes before grouping, preserving canonical absent simulation fields and all frozen contracts. Digest equality alone does not establish internal validity, authenticity or causality.
+
+Official Node22.23.2, network guard,60-second limits: held-outs32tests22pass10genuine behaviorfail0skip235.342ms; exact selected8+canonical13=21/21pass0skip238.6817ms. No import/harness failures. Raw tests/TAP/receipts/input+actual-result observations preserved. No product/provider/GitHub mutations. Passing hostile object/accessor/proxy/method probes confirm zero caller-code invocation and finite boundary. Counts are separate local scopes, not customer proof.
+
+P3 VALUE-N01: finance overlap indexing is limited to REALISED_FINANCIAL records although canonical operational records may carry finance refs. Cross-classification reference reuse produces no warning. Clarify scope before consumer admission; no finance allocation or unique attribution proof is claimed, so this is not a third material finding.
+
+Minimum bounded repairs: new projection plus its adjacent tests only. Keep unchanged DecisionOutcomeProof, DecisionEpisode, cash/UI owners and exact shared lane01 helper. The helper ships once by lane01 before/together integration; Lane08 mirror is verification-only.
+
+Source declarations remain unauthenticated supplied assertions. aggregateFinancialValue:null; no execution, learning, financial allocation, causal/actual savings proof or new store. Product019 IN_PROGRESS; runtime/customer/container/hosted/provider/GoldenJourney proof unproven. Proven/convergence locks remain null.
