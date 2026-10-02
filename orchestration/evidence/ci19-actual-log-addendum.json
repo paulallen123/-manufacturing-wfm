@@ -1,0 +1,21 @@
+{
+  "rawLogPath": "work/ci19-browser/job26-build.log",
+  "sha256": "c5ad82ffd7c176bbeba80c4e72e0d928696b00ccb5ab23a2c388fb5bd6db8f3d",
+  "retrieval": "Parent authenticated CircleCI UI download; reviewer did not operate browser.",
+  "parentBinding": {
+    "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+    "job": 26,
+    "platform": "Linux"
+  },
+  "reviewerReadRawSignature": {
+    "failedTest": 73,
+    "path": "/proof/integrations/staffology/independent/full-http-employee-journey.test.cjs:26:518",
+    "expected": 200,
+    "actual": 403,
+    "tests": 143,
+    "pass": 142,
+    "fail": 1,
+    "skip": 0
+  },
+  "qualification": "Previous unavailable-log evidence retained; availability limitation has changed. Raw signature supports403 at acquire-stage; mapping-options cause is supported by parent separate local probe. Bf9 actual Linux remains pending."
+}

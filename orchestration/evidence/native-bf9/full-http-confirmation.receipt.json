@@ -1,0 +1,32 @@
+{
+  "scope": "full-http",
+  "label": "full-http-confirmation",
+  "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+  "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+  "runtime": "v22.23.2",
+  "platform": "win32",
+  "startedAt": "2026-10-02T10:34:49.309Z",
+  "completedAt": "2026-10-02T10:35:11.651Z",
+  "exitCode": 0,
+  "command": [
+    "--experimental-sqlite",
+    "--test",
+    "--test-concurrency=1",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+  ],
+  "files": [
+    "integrations/staffology/independent/full-http-employee-journey.test.cjs"
+  ],
+  "stats": {
+    "tests": 1,
+    "suites": 0,
+    "pass": 1,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 22189.3069
+  },
+  "evidenceSha256": "8a6d259cd7bd11ec3d5fa358aa35e9638e4365ecaf4e35bf3a86066b47d292d4",
+  "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
+}

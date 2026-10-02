@@ -1,0 +1,308 @@
+{
+  "status": "REVIEW_COMPLETE_TWO_MATERIAL_P2_HOLD_PUBLICATION",
+  "nativeSource": {
+    "sha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+    "parent": "db041fe7f9c0bddbf53e637184548285849e5f74",
+    "tree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+    "rawCommitHashVerified": true,
+    "trackedPaths": 1107,
+    "allTrackedByteHashesAndModesRecomputed": true
+  },
+  "sourceBindings": [
+    {
+      "path": ".circleci/config.yml",
+      "mode": "100644",
+      "sha": "4e1211e401bb022bc9a10ce562f3778069977e08",
+      "bytes": 7995,
+      "sha256": "986bfb8e0aa1312a0dfa9e56670959272aa10213fdcf5c42ee8090e5717a9027"
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "mode": "100644",
+      "sha": "d705dd486bde5a5016b6205985d296e239d8c7e6",
+      "bytes": 14910,
+      "sha256": "e57a96b1c50c3ade8848416c595a716ffbc90564f35ae430b52ab176072f1058"
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "mode": "100644",
+      "sha": "fe29787b97dc1093f1753393a07d686f1832bd9c",
+      "bytes": 19363,
+      "sha256": "cc8b7a5522afef6691d0449dd80233772d31557fb0c67d27a937897a16794afe"
+    },
+    {
+      "path": "integrations/staffology/canonical-runtime-bridge.cjs",
+      "mode": "100644",
+      "sha": "503fd6e63c32b1e490e138da458c0437c5bf27cb",
+      "bytes": 12003,
+      "sha256": "be786702fd95136168457358980a21775617489192d99f6bb1b0811fb4016750"
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "mode": "100644",
+      "sha": "3d0a65db8e642841637016124619f309d63b48e4",
+      "bytes": 38003,
+      "sha256": "0065876e4bbf0511897890928b881665c1a0b886b9d071bbe7dcecd6c7f156c3"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "mode": "100644",
+      "sha": "82f8a63f543188e009a94d038596a41a88ce9416",
+      "bytes": 84716,
+      "sha256": "8f538eca18c425b84fbaedfecb307ddd1fecfe5e95277f5c9a62a99da83e2f72"
+    }
+  ],
+  "changedFrom695": [
+    {
+      "path": "integrations/staffology/REVIEW_5925613376_RESOLUTION.md",
+      "oldBlob": "e055303afc63581629bec7ebc0a69e64106e1015",
+      "newBlob": "3ff9877559d4779d19e8a8e37e0ffd9a8c7e4bf5",
+      "bytes": 84153,
+      "sha256": "122e5c0455d1bde12391f957918f71556388a30b3dd8f2ea0a063fd950a2a15a"
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "oldBlob": "98167c9abf05559c2c0b239116aabc63022fef79",
+      "newBlob": "d705dd486bde5a5016b6205985d296e239d8c7e6",
+      "bytes": 14910,
+      "sha256": "e57a96b1c50c3ade8848416c595a716ffbc90564f35ae430b52ab176072f1058"
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "oldBlob": "6d069d12458ba4841b2f7ea6c5a874cb014948d3",
+      "newBlob": "fe29787b97dc1093f1753393a07d686f1832bd9c",
+      "bytes": 19363,
+      "sha256": "cc8b7a5522afef6691d0449dd80233772d31557fb0c67d27a937897a16794afe"
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.test.cjs",
+      "oldBlob": "605a0b91d98fc751eaaed35681cb4c246831381f",
+      "newBlob": "48b82a29a5eb8fdc3d41ccb16402007599cfbf8e",
+      "bytes": 18378,
+      "sha256": "c3deb6f358e5eed79fb365b49ae9f1fad9bc64c2061bfe0ac0094756ed994854"
+    },
+    {
+      "path": "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+      "oldBlob": "23d91ff839bebb010d77aac103b142289e5f0657",
+      "newBlob": "d613b1cd56df7399ef82ba1d5321620517d25eee",
+      "bytes": 26406,
+      "sha256": "8a7cac2f8d949a00dfc9c31a128873375070099cf2b9a1bfe42895d83481bca2"
+    }
+  ],
+  "openFindings": [
+    {
+      "id": "TR-09B",
+      "priority": "P2",
+      "title": "Recovery blocked before dispatch is audited as recovery-dispatch",
+      "locations": [
+        {
+          "path": "integrations/staffology/canonical-production-boundaries.cjs",
+          "line": 68,
+          "blob": "fe29787b97dc1093f1753393a07d686f1832bd9c",
+          "reason": "mode is based on pre-reconcile absence of dispatchAttempt, even when reconcile returns without reserving or performing any dispatch."
+        },
+        {
+          "path": "integrations/staffology/canonical-operations.cjs",
+          "line": 37,
+          "blob": "d705dd486bde5a5016b6205985d296e239d8c7e6",
+          "reason": "Audit propagates this false mode."
+        }
+      ],
+      "observed": {
+        "id": "TR-09-NO-DISPATCH",
+        "response": {
+          "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+          "status": "retryable",
+          "code": "STAFFOLOGY_BASELINE_CHANGED",
+          "reconciled": false,
+          "approvalId": null
+        },
+        "coordinatorResult": {
+          "status": "retryable",
+          "code": "STAFFOLOGY_BASELINE_CHANGED",
+          "dispatchStarted": false,
+          "approvalId": null,
+          "mode": "recovery-dispatch"
+        },
+        "posts": 0,
+        "audit": {
+          "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+          "status": "retryable",
+          "code": "STAFFOLOGY_BASELINE_CHANGED",
+          "approvalId": null,
+          "mode": "recovery-dispatch"
+        },
+        "durableStatus": "uncertain",
+        "durableDispatch": null,
+        "consumedApprovals": 0
+      },
+      "expected": "A zero-POST, marker-less held recovery must have a truthful non-dispatch mode; original baseline and approval guards must remain intact.",
+      "impact": "Durable payroll recovery audit falsely represents a provider-write attempt; no unauthorized or duplicate dispatch occurred.",
+      "boundedRepair": "Classify from actual post-reconcile durable dispatch facts, distinguishing newly reserved dispatch, prior-marker readback and no dispatch."
+    },
+    {
+      "id": "TR-12",
+      "priority": "P2",
+      "title": "Definitive 403 in resumed dispatch is publicly retryable and marked undispatched",
+      "locations": [
+        {
+          "path": "integrations/staffology/staffology-adapter.cjs",
+          "line": 395,
+          "blob": "3d0a65db8e642841637016124619f309d63b48e4",
+          "reason": "Catch returns retryable with dispatchStarted:false for STAFFOLOGY_AUTH_REJECTED, despite durable rejected row and reserved dispatch marker."
+        },
+        {
+          "path": "integrations/staffology/canonical-operations.cjs",
+          "line": 37,
+          "blob": "d705dd486bde5a5016b6205985d296e239d8c7e6",
+          "reason": "Public recovery response and audit propagate retryable status."
+        }
+      ],
+      "observed": {
+        "id": "TR-02-RECOVERY-REJECTED",
+        "response": {
+          "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+          "status": "retryable",
+          "code": "STAFFOLOGY_AUTH_REJECTED",
+          "reconciled": false,
+          "approvalId": "faf4f1fa-ec41-4919-a44b-d6c9e4c22e9e"
+        },
+        "coordinatorResult": {
+          "status": "retryable",
+          "code": "STAFFOLOGY_AUTH_REJECTED",
+          "dispatchStarted": false,
+          "approvalId": "faf4f1fa-ec41-4919-a44b-d6c9e4c22e9e",
+          "mode": "recovery-dispatch"
+        },
+        "durableStatus": "rejected",
+        "posts": 1,
+        "audit": {
+          "deliveryId": "staffology:95b2414a7bc2e94af5e297948da81a05e4b8df7e2e81220c0ce486a33d95b9bf",
+          "status": "retryable",
+          "code": "STAFFOLOGY_AUTH_REJECTED",
+          "approvalId": "faf4f1fa-ec41-4919-a44b-d6c9e4c22e9e",
+          "mode": "recovery-dispatch"
+        },
+        "dispatchApprovalId": "faf4f1fa-ec41-4919-a44b-d6c9e4c22e9e",
+        "consumedApprovalId": "faf4f1fa-ec41-4919-a44b-d6c9e4c22e9e",
+        "repeatedRecoveryHeld": true
+      },
+      "expected": "status rejected and dispatchStarted true when actual resumed provider POST403 produced durable rejected row and consumed approval.",
+      "impact": "Operator recovery status and audit contradict durable terminal outcome and actual dispatch. Repeat recovery remains fenced; no second POST demonstrated.",
+      "boundedRepair": "Derive rejection/dispatch outcome from authoritative durable row/marker on reconcile failure; retain rejection, one-shot authority and no-replay guards."
+    }
+  ],
+  "priorFindingDispositions": [
+    {
+      "id": "TR-01",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Unchanged provider baseline resumes after expiration while retaining original observedAt evidence; changed unknown baseline metadata refuses POST and preserves original."
+    },
+    {
+      "id": "TR-02",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "401/403 POST durably rejected, never acknowledged;403 replay/recovery cannot dispatch another POST. New resumed-dispatch403 status defect is independently reported as TR-12; initial rejection and no-replay guard still pass."
+    },
+    {
+      "id": "TR-03",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Matching and seal-only controls configure; env/profile SHA mismatch against independent mounted seal rejected. Explicit local proof fallback is nonhosted only in source."
+    },
+    {
+      "id": "TR-04",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Valid unconsumed permit reused, expired/revoked permit replaced, once consumed cannot consume twice, legacy identity-less row fails closed."
+    },
+    {
+      "id": "TR-05",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Actual operations recovery derives delivery ID/digest from server-held payroll without browser digest; optional mismatch blocked at zeroPOST."
+    },
+    {
+      "id": "TR-06",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Email reassigned to another canonical person cannot consume original approval; person-less legacy approval refused."
+    },
+    {
+      "id": "TR-07",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Authority revoked while GET acquisition resolves causes zero stages/zero SQLite sink rows after exact current principal revalidation."
+    },
+    {
+      "id": "TR-08",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Seven sequential near30second virtual request durations reconcile under240second lease. Genuine ownership expiry refuses POST."
+    },
+    {
+      "id": "TR-09",
+      "status": "ORIGINAL_SUCCESSFUL_RECOVERY_REPAIRED_BUT_TR09B_P2_OPEN",
+      "evidence": "Successful resumed POST now returns/audits actual consumed approval and recovery-dispatch. Already-dispatched uncertain readback reuses original approval at zero additional POST. New pre-dispatch baseline-held case still produces false dispatch mode."
+    },
+    {
+      "id": "TR-10",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Actual UI action function in isolated VM retains key across lost response; rotates on mapping edit/explicit restage; concurrent click blocked. DOM/browser acceptance not executed."
+    },
+    {
+      "id": "TR-11",
+      "status": "REPAIRED_STATICALLY_VERIFIED",
+      "evidence": "CircleCI proof export/tee logs and artifact store now use absolute/tmp/circleci-runtime-artifacts outside subsequent Docker context. Docker/CI run not executed."
+    }
+  ],
+  "executed": {
+    "node": "v22.23.2",
+    "windows": true,
+    "networkGuard": true,
+    "realProviderRequests": 0,
+    "processTimeoutMs": 60000,
+    "behavior": {
+      "file": "held-out.native-bf9.node22.tap",
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 488.1321
+    },
+    "expandedRecovery": {
+      "file": "native-bf9-recovery.held-out.node22.tap",
+      "tests": 13,
+      "pass": 11,
+      "fail": 2,
+      "skip": 0,
+      "durationMs": 336.6408
+    },
+    "uiStatic": {
+      "file": "native-bf9-ui-ci.held-out.node22.tap",
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 143.7053
+    },
+    "overlap": "Original recovery10/10 is a subset of expanded13 (11pass/2fail); the added three cases are1pass/2fail. Original behavior10/10 plus UI/CI4/4; do not sum original recovery again."
+  },
+  "minimumShippingRepairScope": [
+    "integrations/staffology/canonical-production-boundaries.cjs",
+    "integrations/staffology/staffology-adapter.cjs",
+    "existing bounded regression tests"
+  ],
+  "limitations": [
+    "Local SQLite/mock-provider proof only; no hosted/container/customer/provider proof.",
+    "UI behavior extracts actual action into VM, not browser acceptance.",
+    "Initial verifier adapter accidentally retained695 source root; full blob check rejected it. Root path corrected before acceptance/tests; no mismatched source accepted.",
+    "Parent-owned fullHTTP155source/UI, persistence and serial fullHTTP results are separate executions, not reviewer test counts."
+  ],
+  "ciAdmission": {
+    "triggerUnchangedFrom695": true,
+    "proof": "Static hash compared below; root must use a truthful successor admission marker to run heavy CI.",
+    "actualLinuxOnBf9": "PENDING",
+    "trigger": {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "blob": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+      "unchangedFrom695": true,
+      "publishedB851Blob": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+      "guardPath": ".circleci/config.yml",
+      "guardLines": "9-12"
+    }
+  }
+}

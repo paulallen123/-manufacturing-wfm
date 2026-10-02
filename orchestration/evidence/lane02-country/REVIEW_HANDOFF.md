@@ -1,0 +1,9 @@
+# Lane02 isolated source review
+
+changes-manifest.json seals only2 shipping additions, exact mode100644 Git blobs/SHA256/bytes, frozen canonical twin dependency and12 verification-only files. reference/global-operating-context.mjs is exact PR205 source, never shipping. DESIGN.md and duplicate-comparison.json explain why legal rule specificity and competing hierarchy/storage are rejected.
+
+The new module imports the real repository-relative canonical twin path. API projectSiteOperatingContext requires full canonical revision and explicit tenant/site/known/effective instants; it returns detached deep-frozen display context/field and edge provenance/missing fields, plus timezone formatter. It neither invokes the jurisdiction graph nor replaces its policy composition. No defaults become authoritative context; localParts uses en formatting only when no locale exists and a verified timezone is present.
+
+Meaningful red:01-historical-red.log contains two actual source behavior failures (future metadata/unverified inheritance), not loader errors.04-exact-payload-red.log captures a real initial port defect where normalization hid raw payload modification. Final05-final-green.log:39/39 (15new+24canonical) under network guard on official Node22.23.2. Run work/lane02-country/run.cjs REVIEW-full full for replay; original red source is expected to remain0/2.
+
+Explicit runtime conditions: input must be a complete snapshot rather than a temporally incomplete collection; facet provenance must be authenticated by canonical producers, since digest identity and verified booleans are not source authorisation by themselves. No runtime facets/routes, jurisdiction certification, real-money currency conversion, region deployment or customer/hosted authority is claimed. Root alone admits reviewed bytes after current head revalidation; both proven/convergence locks stay null.

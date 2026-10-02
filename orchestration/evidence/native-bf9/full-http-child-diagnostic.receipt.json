@@ -1,0 +1,30 @@
+{
+  "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+  "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+  "runtime": "v22.23.2",
+  "platform": "win32",
+  "startedAt": "2026-10-02T10:33:49.629Z",
+  "completedAt": "2026-10-02T10:34:15.117Z",
+  "exitCode": 0,
+  "stats": {
+    "tests": 1,
+    "suites": 0,
+    "pass": 1,
+    "fail": 0,
+    "skipped": 0,
+    "duration_ms": 25348.6985
+  },
+  "sourceTestUnmodified": true,
+  "parentOnlySpawnObservation": true,
+  "args": [
+    "--experimental-sqlite",
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\ci19\\trace-test-spawn.cjs",
+    "--test",
+    "--test-reporter=tap",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+  ],
+  "privateDir": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-bf9\\private-evidence-TaVFPo",
+  "evidenceSha256": "3a8cfa7b28a53e6d3e32697dd81ecdf0f513b18ff08feae36db67e473ce11146",
+  "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_DIAGNOSTIC_ONLY"
+}

@@ -1,0 +1,13 @@
+Expanded independent Twin boundary review
+
+Two material P2 findings on exact mapped module1de8fbc5a90570aa52eec72e071caa05c7684ea9 (13976bytes),test5631485aae7ee3372122db8023d69494837eaabe and canonicalTwin5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa. Local blobs/SHA256 reverified against mapping manifest. Parent previously verified publication at futurebranchf68dff51c655da9fb68c7064c08e384a217b5314; this bounded review did not refetch remote tree. No main/live/admission claim. Original source+test+2dependencies copied to reviewer-owned frozen red capsule.
+
+TWIN-01 P2: canonical() raw input destructuring/read at29-39 calls canonical normalization/JSON clone/stable before safe input validation. Each factory accepts and executes input getters, revision.nodes getter, payloadtoJSON, proxy traps and overridden nodes.map. Returned graph/history/engineering query options similarly execute knownAt getter; history nodeIds.includes override executes. There are21 real unsafe-execution failures (15factory+6query),observed exact counters in observationsJSON; no actual provider/product mutation performed. Both entry and returned query-method boundaries must be guarded.
+
+TWIN-02 P2:35-39 exact identity/content checks collapse NaN and±Infinity to null via canonical stable/JSON normalization. Raw node.data.metadata:null replaced by each nonfinite value is accepted under unchanged revision by graph/history/engineering factories (9 failures). This probe changes unknown metadata, not finite feature inputs. Full canonical payload verification must reject nonfinite JSON numbers before normalization.
+
+OfficialNode22.23.2 targeted held-outs31tests1pass30fail0skip in204.8043ms,60-second limit,network forbidden. Positive control verifies all3 factories and queries still work with inert finite data and report executionAuthorityNONE. No expensive/unchanged suites rerun. Full executed probe and rawTAP retained.
+
+Minimum bounded repair:new mapped projection+focused tests only; descriptor-based inert finite JSON guard before all raw canonical input and query-option destructuring/array method calls,proxy detection,no accessor/toJSON/coercion/overridden method execution. Frozen canonicalTwin and sole state/authority ownership must remain unchanged.
+
+The earlier independent twin-fabric review lacked these classes; its historical evidence stays intact. Its no-open Twin finding conclusion is superseded by this targeted expansion. Fabric review is unchanged. Unwired future status does not waive these defects. No competing store, legal authority, provider request, deployment, hosted or customer proof is established. Both proven/convergence locks remain null.

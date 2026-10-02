@@ -1,0 +1,12 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "baselineTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "owner": "inventory_edges",
+  "lane": "lane03",
+  "capabilityId": "edge03-cont-transport-governed-proof-retry",
+  "runtimeWired": false,
+  "hostedProof": false,
+  "providerProof": false
+}

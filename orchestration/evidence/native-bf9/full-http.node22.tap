@@ -1,0 +1,29 @@
+TAP version 13
+# (node:17416) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart
+not ok 1 - strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart
+  ---
+  duration_ms: 13449.8351
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs:31:1'
+  failureType: 'testCodeFailure'
+  error: 'canonical server did not become healthy: '
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'fail'
+  stack: |-
+    start (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\bf9-src\integrations\staffology\independent\full-http-employee-journey.test.cjs:24:1188)
+    async TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\bf9-src\integrations\staffology\independent\full-http-employee-journey.test.cjs:35:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14065.1316

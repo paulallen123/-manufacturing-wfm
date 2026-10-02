@@ -1,0 +1,96 @@
+{
+  "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+  "tree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+  "evidence": [
+    {
+      "path": "work/trust_review/native-bf9-review.md",
+      "bytes": 4474,
+      "sha256": "b1c7f81e68dbc5e8fdc6246ba33797c6278a2e4fabec80e297d4bbab0627ce91"
+    },
+    {
+      "path": "work/trust_review/native-bf9-findings.json",
+      "bytes": 13333,
+      "sha256": "4eeb2297c817c0b2b30270dfbc41af3f9a3c256ab1545777c313381763b48001"
+    },
+    {
+      "path": "work/trust_review/native-bf9-source-verification.json",
+      "bytes": 305786,
+      "sha256": "8b139059f56d6149c26e4bdeb7da0cf42a17d81d14664ff7e1061f8259bfee08"
+    },
+    {
+      "path": "work/trust_review/verify-native-bf9.cjs",
+      "bytes": 2276,
+      "sha256": "76122238e6b21eb669be186ee0af07b9ac066cc1e1da7573a5ce0e1eb4d21221"
+    },
+    {
+      "path": "work/trust_review/held-out.native-bf9.test.cjs",
+      "bytes": 12947,
+      "sha256": "5ba2ba05eea655c0d4d142690c37c51c56817e4950f1f1a6d431e2e06e2a9171"
+    },
+    {
+      "path": "work/trust_review/held-out.native-bf9.node22.tap",
+      "bytes": 4342,
+      "sha256": "bb5264414fa9a97bbb838f73ad35e6a797a8d02fafb44997240be4d131af8b99"
+    },
+    {
+      "path": "work/trust_review/held-out.native-bf9.run.json",
+      "bytes": 594,
+      "sha256": "12721ec2258087d82fe7ea116747e6522d1bd5abcab74d9987cb1a90bc69bfb6"
+    },
+    {
+      "path": "work/trust_review/held-out.native-bf9.observations.json",
+      "bytes": 2761,
+      "sha256": "5716429e494bd3120debc983eb02a64adf141426708025cb1e4bdcad0a978511"
+    },
+    {
+      "path": "work/trust_review/native-bf9-recovery.held-out.test.cjs",
+      "bytes": 15361,
+      "sha256": "4498d5d6440ff0a43e3da0b5f106542b125a7409d29a2b7280f7969d34ef58c0"
+    },
+    {
+      "path": "work/trust_review/native-bf9-recovery.held-out.node22.tap",
+      "bytes": 7318,
+      "sha256": "abc8a440ac4bcba66170e19393e1f0a051fc55c1577a52cb79ccfa01d168e72f"
+    },
+    {
+      "path": "work/trust_review/native-bf9-recovery.held-out.run.json",
+      "bytes": 603,
+      "sha256": "4a5114f621d5be55ee67eca8885c357b3d831f2a3b6be424eb1422bf27c45986"
+    },
+    {
+      "path": "work/trust_review/native-bf9-recovery.observations.json",
+      "bytes": 3101,
+      "sha256": "0a027580855acb3dbccc64ddb86039db433477613a9c198c3057bbd32c69a43f"
+    },
+    {
+      "path": "work/trust_review/native-bf9-ui-ci.held-out.test.cjs",
+      "bytes": 3959,
+      "sha256": "c10873cff0c8fdb64df968c86ab994f4b245d20152a3d9d1189efdcc9a4a3c4f"
+    },
+    {
+      "path": "work/trust_review/native-bf9-ui-ci.held-out.node22.tap",
+      "bytes": 1016,
+      "sha256": "c34c73c389b3b561b822eeb8624258587b4f2cd64359633482b245ecfd9a6ee0"
+    },
+    {
+      "path": "work/trust_review/native-bf9-ui-ci.held-out.run.json",
+      "bytes": 600,
+      "sha256": "34fad884f68ec50ac9eb562b1778bcfe91670948b1e1de8fdd0605d289b00c05"
+    },
+    {
+      "path": "work/trust_review/run-native-bf9-review.cjs",
+      "bytes": 945,
+      "sha256": "77ea71843c665060be5fb13cc9a2f757f18993618831d72b56665473fbe9d418"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    },
+    {
+      "path": "work/trust_review/ci19-actual-log-addendum.json",
+      "bytes": 868,
+      "sha256": "1fb38d56ae13649e9188ed51f76a849318ec84cb11b10b635058bc84af01500b"
+    }
+  ]
+}

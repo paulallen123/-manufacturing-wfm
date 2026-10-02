@@ -1,0 +1,1163 @@
+{
+  "schemaVersion": 2,
+  "synthetic": true,
+  "actualExternalRequests": 0,
+  "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+  "binding": {
+    "tenant": "northstar-demo",
+    "implementationRunId": "offline-http-run-001",
+    "candidateSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+    "deploymentId": "offline-http-deployment-001",
+    "configurationId": "offline-http-configuration-001",
+    "employerId": "employer-001"
+  },
+  "tenant": "northstar-demo",
+  "period": "2026-09-14",
+  "syntheticAsOf": "2026-10-01T00:00:00Z",
+  "batchId": "B-7c9122aed5c3ed0d",
+  "batchChecksum": "8489433b02100829f00d748908def91b895aeedd19d2651261847eef15f91c05",
+  "delivery": {
+    "deliveryId": "staffology:eceb11f77eb90a3460cbcbfac17b93870e8ebaa253a9ef7b0547ea52991d7545",
+    "digest": "57d2314f76b5d0f81cd61f4bd199534dced51d740535313780e3072bc8ba4655",
+    "bindingDigest": "cb621c720d8729bfd6b272d59be3f4e2aa5a01e20fb3291cb5ce0194e753c304",
+    "payload": {
+      "basic": {
+        "code": "BASIC",
+        "hours": "1.2500",
+        "rate": "10.00"
+      },
+      "effectiveDate": "2026-09-14",
+      "employeeId": "employee-001",
+      "employerId": "employer-001",
+      "entryId": "entry-001",
+      "expectedBasicPay": "12.50",
+      "importBody": [
+        {
+          "basis": "Hourly",
+          "lines": [],
+          "payAmount": 10,
+          "payAmountMultiplier": 1.25,
+          "payCode": "BASIC",
+          "payrollCode": "PAY901"
+        }
+      ],
+      "mode": "hourly-basic-replacement",
+      "payrollCode": "PAY901",
+      "rounding": "exact-cent",
+      "run": {
+        "ordinal": 1,
+        "payPeriod": "Monthly",
+        "periodNumber": 9,
+        "taxYear": "Year2026",
+        "version": 0
+      },
+      "source": {
+        "batchId": "B-7c9122aed5c3ed0d",
+        "revision": "sha256:8489433b02100829f00d748908def91b895aeedd19d2651261847eef15f91c05",
+        "system": "VECTOR",
+        "tenant": "northstar-demo"
+      }
+    },
+    "status": "acknowledged",
+    "ownerWorker": "staffology-operation:superuser@northstar.example",
+    "fence": 1,
+    "dispatchAttempt": {
+      "approvalId": "569a16b3-49b8-47d9-9422-caa0fc10e4c8",
+      "baselineRunSha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048",
+      "baselineSha256": "243b9222bc57d470382800965f6d9e56bb0562e00e0077f50bd1915195110448",
+      "bindingDigest": "cb621c720d8729bfd6b272d59be3f4e2aa5a01e20fb3291cb5ce0194e753c304",
+      "deliveryId": "staffology:eceb11f77eb90a3460cbcbfac17b93870e8ebaa253a9ef7b0547ea52991d7545",
+      "digest": "57d2314f76b5d0f81cd61f4bd199534dced51d740535313780e3072bc8ba4655",
+      "request": {
+        "bodySha256": "3b92aecd1d72ca719781af4c8b60fe69cd7913246bbb40e190c6da8814456fe6",
+        "method": "POST",
+        "path": "/employers/employer-001/payrun/Monthly/importpay?ordinal=1&linesOnly=false&append=false&updateExisting=false&validateOnly=false"
+      }
+    },
+    "acknowledgement": {
+      "comparison": {
+        "baseline": {
+          "entrySha256": "243b9222bc57d470382800965f6d9e56bb0562e00e0077f50bd1915195110448",
+          "runSha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048"
+        },
+        "changes": [
+          {
+            "after": {
+              "present": true,
+              "type": "number",
+              "value": 1.25
+            },
+            "before": {
+              "present": true,
+              "type": "number",
+              "value": 10
+            },
+            "classification": "approved-basic-input",
+            "path": "/entry/payOptions/payAmountMultiplier"
+          },
+          {
+            "after": {
+              "present": true,
+              "type": "number",
+              "value": 1.25
+            },
+            "before": {
+              "present": true,
+              "type": "number",
+              "value": 10
+            },
+            "classification": "approved-basic-input",
+            "path": "/entry/payOptions/regularPayLines/0/multiplier"
+          },
+          {
+            "after": {
+              "present": true,
+              "type": "number",
+              "value": 12.5
+            },
+            "before": {
+              "present": true,
+              "type": "number",
+              "value": 100
+            },
+            "classification": "approved-basic-input",
+            "path": "/entry/payOptions/regularPayLines/0/value"
+          },
+          {
+            "after": {
+              "present": true,
+              "type": "number",
+              "value": 12.5
+            },
+            "before": {
+              "present": true,
+              "type": "number",
+              "value": 100
+            },
+            "classification": "approved-basic-input",
+            "path": "/entry/totals/basicPay"
+          }
+        ],
+        "matchesApprovedTransition": true,
+        "readback": {
+          "entrySha256": "0002ddaa910c51c5e6be6f5300ee7572f090a8c39c1b177acf27bbd903ac4066",
+          "runSha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048"
+        }
+      },
+      "financial": {
+        "sha256": "0002ddaa910c51c5e6be6f5300ee7572f090a8c39c1b177acf27bbd903ac4066",
+        "snapshot": {
+          "employee": {
+            "id": "employee-001"
+          },
+          "employmentDetails": {
+            "payrollCode": "PAY901"
+          },
+          "id": "entry-001",
+          "ordinal": 1,
+          "payOptions": {
+            "basis": "Hourly",
+            "payAmount": 10,
+            "payAmountMultiplier": 1.25,
+            "payCode": "BASIC",
+            "regularPayLines": [
+              {
+                "code": "BASIC",
+                "multiplier": 1.25,
+                "rate": 10,
+                "value": 12.5
+              }
+            ]
+          },
+          "payPeriod": "Monthly",
+          "payRunVersion": 0,
+          "period": 9,
+          "state": "Open",
+          "taxYear": "Year2026",
+          "totals": {
+            "basicPay": 12.5
+          }
+        }
+      },
+      "fullPayrollVerified": false,
+      "providerReference": "entry-001",
+      "run": {
+        "ordinal": 1,
+        "payPeriod": "Monthly",
+        "periodNumber": 9,
+        "taxYear": "Year2026",
+        "version": 0
+      },
+      "verification": "basic-pay-verified"
+    },
+    "uncertain": null,
+    "createdAt": 1790937307201,
+    "updatedAt": 1790937307265
+  },
+  "privateEvidence": [
+    {
+      "id": 1,
+      "deliveryId": "staffology:eceb11f77eb90a3460cbcbfac17b93870e8ebaa253a9ef7b0547ea52991d7545",
+      "phase": "baseline",
+      "body": {
+        "entry": {
+          "sha256": "243b9222bc57d470382800965f6d9e56bb0562e00e0077f50bd1915195110448",
+          "snapshot": {
+            "employee": {
+              "id": "employee-001"
+            },
+            "employmentDetails": {
+              "payrollCode": "PAY901"
+            },
+            "id": "entry-001",
+            "ordinal": 1,
+            "payOptions": {
+              "basis": "Hourly",
+              "payAmount": 10,
+              "payAmountMultiplier": 10,
+              "payCode": "BASIC",
+              "regularPayLines": [
+                {
+                  "code": "BASIC",
+                  "multiplier": 10,
+                  "rate": 10,
+                  "value": 100
+                }
+              ]
+            },
+            "payPeriod": "Monthly",
+            "payRunVersion": 0,
+            "period": 9,
+            "state": "Open",
+            "taxYear": "Year2026",
+            "totals": {
+              "basicPay": 100
+            }
+          }
+        },
+        "observedAt": "2026-10-02T10:35:07.241Z",
+        "phase": "baseline",
+        "provenance": {
+          "entryPath": "/employers/employer-001/payrun/Year2026/Monthly/9/entry-001",
+          "entryResponseSha256": "9c653466ce5846e5842f29860fb73535c30274ca093535b603fe733ee0ef7d72",
+          "openResponseSha256": "bdf276e255adf929e613a1cc331ce443216f9c9090a47f7f108c0f7128aaa536",
+          "origin": "https://api.staffology.co.uk",
+          "runPath": "/employers/employer-001/payrun/Year2026/Monthly/9",
+          "runResponseSha256": "ec76131e44405c361f4933e64905693b18b92296b1514f0afa4405e5016bb1a3"
+        },
+        "run": {
+          "sha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048",
+          "snapshot": {
+            "endDate": "2026-09-30",
+            "ordinal": 1,
+            "payPeriod": "Monthly",
+            "period": 9,
+            "startDate": "2026-09-01",
+            "state": "Open",
+            "taxYear": "Year2026",
+            "version": 0
+          }
+        }
+      },
+      "digest": "0ba8a303d899261b3fc63c426442fb9c148650b829ba9ef89c07c6924e997b09",
+      "createdAt": 1790937307242
+    },
+    {
+      "id": 2,
+      "deliveryId": "staffology:eceb11f77eb90a3460cbcbfac17b93870e8ebaa253a9ef7b0547ea52991d7545",
+      "phase": "readback",
+      "body": {
+        "entry": {
+          "sha256": "0002ddaa910c51c5e6be6f5300ee7572f090a8c39c1b177acf27bbd903ac4066",
+          "snapshot": {
+            "employee": {
+              "id": "employee-001"
+            },
+            "employmentDetails": {
+              "payrollCode": "PAY901"
+            },
+            "id": "entry-001",
+            "ordinal": 1,
+            "payOptions": {
+              "basis": "Hourly",
+              "payAmount": 10,
+              "payAmountMultiplier": 1.25,
+              "payCode": "BASIC",
+              "regularPayLines": [
+                {
+                  "code": "BASIC",
+                  "multiplier": 1.25,
+                  "rate": 10,
+                  "value": 12.5
+                }
+              ]
+            },
+            "payPeriod": "Monthly",
+            "payRunVersion": 0,
+            "period": 9,
+            "state": "Open",
+            "taxYear": "Year2026",
+            "totals": {
+              "basicPay": 12.5
+            }
+          }
+        },
+        "observedAt": "2026-10-02T10:35:07.258Z",
+        "phase": "readback",
+        "provenance": {
+          "entryPath": "/employers/employer-001/payrun/Year2026/Monthly/9/entry-001",
+          "entryResponseSha256": "3592582a45cbab1e73d82cd42fac927fe9699133793dd92dffaf6743be9ed527",
+          "openResponseSha256": "bdf276e255adf929e613a1cc331ce443216f9c9090a47f7f108c0f7128aaa536",
+          "origin": "https://api.staffology.co.uk",
+          "runPath": "/employers/employer-001/payrun/Year2026/Monthly/9",
+          "runResponseSha256": "ec76131e44405c361f4933e64905693b18b92296b1514f0afa4405e5016bb1a3"
+        },
+        "run": {
+          "sha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048",
+          "snapshot": {
+            "endDate": "2026-09-30",
+            "ordinal": 1,
+            "payPeriod": "Monthly",
+            "period": 9,
+            "startDate": "2026-09-01",
+            "state": "Open",
+            "taxYear": "Year2026",
+            "version": 0
+          }
+        }
+      },
+      "digest": "291827aee305e8ffc77388123c5b5cf8008946c80070c6cb3ff29bc886107fba",
+      "createdAt": 1790937307259
+    },
+    {
+      "id": 3,
+      "deliveryId": "staffology:eceb11f77eb90a3460cbcbfac17b93870e8ebaa253a9ef7b0547ea52991d7545",
+      "phase": "comparison",
+      "body": {
+        "comparison": {
+          "baseline": {
+            "entrySha256": "243b9222bc57d470382800965f6d9e56bb0562e00e0077f50bd1915195110448",
+            "runSha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048"
+          },
+          "changes": [
+            {
+              "after": {
+                "present": true,
+                "type": "number",
+                "value": 1.25
+              },
+              "before": {
+                "present": true,
+                "type": "number",
+                "value": 10
+              },
+              "classification": "approved-basic-input",
+              "path": "/entry/payOptions/payAmountMultiplier"
+            },
+            {
+              "after": {
+                "present": true,
+                "type": "number",
+                "value": 1.25
+              },
+              "before": {
+                "present": true,
+                "type": "number",
+                "value": 10
+              },
+              "classification": "approved-basic-input",
+              "path": "/entry/payOptions/regularPayLines/0/multiplier"
+            },
+            {
+              "after": {
+                "present": true,
+                "type": "number",
+                "value": 12.5
+              },
+              "before": {
+                "present": true,
+                "type": "number",
+                "value": 100
+              },
+              "classification": "approved-basic-input",
+              "path": "/entry/payOptions/regularPayLines/0/value"
+            },
+            {
+              "after": {
+                "present": true,
+                "type": "number",
+                "value": 12.5
+              },
+              "before": {
+                "present": true,
+                "type": "number",
+                "value": 100
+              },
+              "classification": "approved-basic-input",
+              "path": "/entry/totals/basicPay"
+            }
+          ],
+          "matchesApprovedTransition": true,
+          "readback": {
+            "entrySha256": "0002ddaa910c51c5e6be6f5300ee7572f090a8c39c1b177acf27bbd903ac4066",
+            "runSha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048"
+          }
+        },
+        "phase": "comparison"
+      },
+      "digest": "375c642931b62b5e7a9f38a29ecebbd55642e45028dc6e64005113573af3f0c3",
+      "createdAt": 1790937307263
+    }
+  ],
+  "cohort": [
+    {
+      "externalId": "employee-001",
+      "staffId": "ob-employee-001",
+      "payrollId": "PAY901"
+    },
+    {
+      "externalId": "employee-002",
+      "staffId": "ob-employee-002",
+      "payrollId": "PAY902"
+    }
+  ],
+  "providerRequests": [
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/employees",
+      "search": "?pageNum=0&pageSize=2"
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/employees/employee-001",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/employees/employee-002",
+      "search": ""
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/employees",
+      "search": "?pageNum=1&pageSize=2"
+    },
+    {
+      "method": "GET",
+      "path": "/open",
+      "search": "?employerId=employer-001"
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/payrun/Year2026/Monthly/9",
+      "search": "?ordinal=1&version=0"
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/payrun/Year2026/Monthly/9/entry-001",
+      "search": "?ordinal=1"
+    },
+    {
+      "method": "POST",
+      "path": "/employers/employer-001/payrun/Monthly/importpay",
+      "search": "?ordinal=1&linesOnly=false&append=false&updateExisting=false&validateOnly=false"
+    },
+    {
+      "method": "GET",
+      "path": "/open",
+      "search": "?employerId=employer-001"
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/payrun/Year2026/Monthly/9",
+      "search": "?ordinal=1&version=0"
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/payrun/Year2026/Monthly/9/entry-001",
+      "search": "?ordinal=1"
+    },
+    {
+      "method": "GET",
+      "path": "/open",
+      "search": "?employerId=employer-001"
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/payrun/Year2026/Monthly/9",
+      "search": "?ordinal=1&version=0"
+    },
+    {
+      "method": "GET",
+      "path": "/employers/employer-001/payrun/Year2026/Monthly/9/entry-001",
+      "search": "?ordinal=1"
+    }
+  ],
+  "providerRequestCount": 14,
+  "providerPostCount": 1,
+  "comparison": {
+    "expectedBasicPay": "12.50",
+    "matches": true,
+    "observedBasicPay": "12.50"
+  },
+  "providerReadback": {
+    "run": {
+      "sha256": "758b71e7a5afbc68baa698125996271657147adf15217d7bce5126583b083048",
+      "snapshot": {
+        "endDate": "2026-09-30",
+        "ordinal": 1,
+        "payPeriod": "Monthly",
+        "period": 9,
+        "startDate": "2026-09-01",
+        "state": "Open",
+        "taxYear": "Year2026",
+        "version": 0
+      }
+    },
+    "entry": {
+      "sha256": "0002ddaa910c51c5e6be6f5300ee7572f090a8c39c1b177acf27bbd903ac4066",
+      "snapshot": {
+        "employee": {
+          "id": "employee-001"
+        },
+        "employmentDetails": {
+          "payrollCode": "PAY901"
+        },
+        "id": "entry-001",
+        "ordinal": 1,
+        "payOptions": {
+          "basis": "Hourly",
+          "payAmount": 10,
+          "payAmountMultiplier": 1.25,
+          "payCode": "BASIC",
+          "regularPayLines": [
+            {
+              "code": "BASIC",
+              "multiplier": 1.25,
+              "rate": 10,
+              "value": 12.5
+            }
+          ]
+        },
+        "payPeriod": "Monthly",
+        "payRunVersion": 0,
+        "period": 9,
+        "state": "Open",
+        "taxYear": "Year2026",
+        "totals": {
+          "basicPay": 12.5
+        }
+      }
+    },
+    "provenance": {
+      "entryPath": "/employers/employer-001/payrun/Year2026/Monthly/9/entry-001",
+      "entryResponseSha256": "3592582a45cbab1e73d82cd42fac927fe9699133793dd92dffaf6743be9ed527",
+      "openResponseSha256": "bdf276e255adf929e613a1cc331ce443216f9c9090a47f7f108c0f7128aaa536",
+      "origin": "https://api.staffology.co.uk",
+      "runPath": "/employers/employer-001/payrun/Year2026/Monthly/9",
+      "runResponseSha256": "ec76131e44405c361f4933e64905693b18b92296b1514f0afa4405e5016bb1a3"
+    }
+  },
+  "reviewedEmployment": {
+    "rates": {
+      "ob-employee-001": [
+        {
+          "employee": "ob-employee-001",
+          "effectiveFrom": "2026-09-01",
+          "hourlyRate": 10,
+          "currency": "GBP",
+          "basis": "hourly",
+          "oncostPercent": 0,
+          "oncostHourly": 0,
+          "source": "explicit payroll rate",
+          "batch": "import-400b5d73c423ffeab64034f0bab1cba3"
+        }
+      ],
+      "ob-employee-002": [
+        {
+          "employee": "ob-employee-002",
+          "effectiveFrom": "2026-09-01",
+          "hourlyRate": 10,
+          "currency": "GBP",
+          "basis": "hourly",
+          "oncostPercent": 0,
+          "oncostHourly": 0,
+          "source": "explicit payroll rate",
+          "batch": "import-400b5d73c423ffeab64034f0bab1cba3"
+        }
+      ]
+    },
+    "contracts": {
+      "ob-employee-001": [
+        {
+          "id": "onb-contract-ob-employee-001-2026-09-01",
+          "effectiveFrom": "2026-09-01",
+          "type": "full_time",
+          "weeklyHours": 40,
+          "overtimeBasis": "custom",
+          "overtimeAfter": 40,
+          "holidayMethod": "regular",
+          "requireAcceptance": false
+        },
+        {
+          "id": "staffology-contract-ob-employee-001",
+          "name": "Staffology reviewed full-time contract",
+          "effectiveFrom": "2026-09-14",
+          "type": "full_time",
+          "weeklyHours": 40,
+          "fullTimeHours": 40,
+          "overtimeBasis": "custom",
+          "overtimeAfter": 40,
+          "overtimeMultiplier": 1.5,
+          "secondAfter": 48,
+          "secondMultiplier": 2,
+          "dailyBasis": "calendar_day",
+          "dailyAfter": null,
+          "dailyMultiplier": 1.5,
+          "nightMultiplier": 1.15,
+          "weekendMultiplier": 1,
+          "bankHolidayMultiplier": 2,
+          "stacking": "highest",
+          "premiumNightStart": "23:00",
+          "premiumNightEnd": "06:00",
+          "holidayMethod": "regular",
+          "holidayWeeks": 5.6,
+          "averageDaysPerWeek": 5,
+          "classificationEvidence": "",
+          "rolledUp": false,
+          "requireAcceptance": false,
+          "referenceWeeks": 17,
+          "agreementEvidence": "",
+          "optOut": false,
+          "optOutEvidence": "",
+          "jurisdiction": "GB-ENG",
+          "annualTarget": 1800,
+          "annualStart": "2026-01-01",
+          "annualCredits": "worked_only",
+          "revision": 3
+        }
+      ],
+      "ob-employee-002": [
+        {
+          "id": "onb-contract-ob-employee-002-2026-09-01",
+          "effectiveFrom": "2026-09-01",
+          "type": "full_time",
+          "weeklyHours": 40,
+          "overtimeBasis": "custom",
+          "overtimeAfter": 40,
+          "holidayMethod": "regular",
+          "requireAcceptance": false
+        },
+        {
+          "id": "staffology-contract-ob-employee-002",
+          "name": "Staffology reviewed full-time contract",
+          "effectiveFrom": "2026-09-14",
+          "type": "full_time",
+          "weeklyHours": 40,
+          "fullTimeHours": 40,
+          "overtimeBasis": "custom",
+          "overtimeAfter": 40,
+          "overtimeMultiplier": 1.5,
+          "secondAfter": 48,
+          "secondMultiplier": 2,
+          "dailyBasis": "calendar_day",
+          "dailyAfter": null,
+          "dailyMultiplier": 1.5,
+          "nightMultiplier": 1.15,
+          "weekendMultiplier": 1,
+          "bankHolidayMultiplier": 2,
+          "stacking": "highest",
+          "premiumNightStart": "23:00",
+          "premiumNightEnd": "06:00",
+          "holidayMethod": "regular",
+          "holidayWeeks": 5.6,
+          "averageDaysPerWeek": 5,
+          "classificationEvidence": "",
+          "rolledUp": false,
+          "requireAcceptance": false,
+          "referenceWeeks": 17,
+          "agreementEvidence": "",
+          "optOut": false,
+          "optOutEvidence": "",
+          "jurisdiction": "GB-ENG",
+          "annualTarget": 1800,
+          "annualStart": "2026-01-01",
+          "annualCredits": "worked_only",
+          "revision": 4
+        }
+      ]
+    }
+  },
+  "vector": {
+    "people": [
+      {
+        "id": "ONB-employee-001",
+        "sourceId": "employee-001",
+        "payrollId": "PAY901",
+        "name": "Alpha Synthetic",
+        "email": "staffology-http-1@example.invalid",
+        "manager": "m1",
+        "site": "Leeds",
+        "job": "Machine operator",
+        "startDate": "2026-09-01",
+        "contractType": "full_time",
+        "weeklyHours": 40,
+        "locale": "en-GB",
+        "selfReportedSkills": [],
+        "status": "ready_for_scheduling",
+        "revision": 6,
+        "staffId": "ob-employee-001",
+        "identityVerified": true,
+        "inviteExpiresAt": "2026-10-03T10:34:56.456Z"
+      },
+      {
+        "id": "ONB-employee-002",
+        "sourceId": "employee-002",
+        "payrollId": "PAY902",
+        "name": "Beta Synthetic",
+        "email": "staffology-http-2@example.invalid",
+        "manager": "m1",
+        "site": "Leeds",
+        "job": "Machine operator",
+        "startDate": "2026-09-01",
+        "contractType": "full_time",
+        "weeklyHours": 40,
+        "locale": "en-GB",
+        "selfReportedSkills": [],
+        "status": "ready_for_scheduling",
+        "revision": 6,
+        "staffId": "ob-employee-002",
+        "identityVerified": true,
+        "inviteExpiresAt": "2026-10-03T10:34:57.745Z"
+      }
+    ],
+    "staff": [
+      {
+        "id": "ob-employee-001",
+        "sourceId": "employee-001",
+        "payrollId": "PAY901",
+        "name": "Alpha Synthetic",
+        "manager": "m1",
+        "site": "Leeds",
+        "team": "Tamworth factory",
+        "job": "Machine operator",
+        "costRate": 10,
+        "start": "2026-09-01T06:00:00+00:00",
+        "finish": "2026-09-01T14:00:00+00:00",
+        "clockIn": null,
+        "clockOut": null,
+        "onBreak": false,
+        "sick": false,
+        "leave": false,
+        "deviceFresh": true,
+        "events": [],
+        "offDuty": true,
+        "onboardingReady": true
+      },
+      {
+        "id": "ob-employee-002",
+        "sourceId": "employee-002",
+        "payrollId": "PAY902",
+        "name": "Beta Synthetic",
+        "manager": "m1",
+        "site": "Leeds",
+        "team": "Tamworth factory",
+        "job": "Machine operator",
+        "costRate": 10,
+        "start": "2026-09-01T06:00:00+00:00",
+        "finish": "2026-09-01T14:00:00+00:00",
+        "clockIn": null,
+        "clockOut": null,
+        "onBreak": false,
+        "sick": false,
+        "leave": false,
+        "deviceFresh": true,
+        "events": [],
+        "offDuty": true,
+        "onboardingReady": true
+      }
+    ],
+    "integrationRecords": [
+      {
+        "record": 1,
+        "externalId": "employee-001",
+        "revision": "sha256:847b61f9793178173c448db06715a5676aa63d2da7e7d7dca12035b1b68184bf",
+        "operation": "upsert",
+        "status": "applied",
+        "reason": null,
+        "appliedRef": "ONB-B1"
+      },
+      {
+        "record": 2,
+        "externalId": "employee-002",
+        "revision": "sha256:c561e663314141a4ddbbb661d8a2c14b1c2ccf740089c17bee0846f5dda6850c",
+        "operation": "upsert",
+        "status": "applied",
+        "reason": null,
+        "appliedRef": "ONB-B1"
+      }
+    ],
+    "reconciliation": {
+      "ok": true,
+      "issues": [],
+      "employees": [
+        {
+          "employee": "ob-employee-001",
+          "expectedPence": 1250,
+          "exportPence": 1250,
+          "expectedMinutes": 75,
+          "exportMinutes": 75
+        },
+        {
+          "employee": "ob-employee-002",
+          "expectedPence": 0,
+          "exportPence": 0,
+          "expectedMinutes": 0,
+          "exportMinutes": 0
+        }
+      ],
+      "expectedGrossPence": 1250,
+      "exportGrossPence": 1250
+    }
+  },
+  "auditRows": [
+    {
+      "id": 2,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "rules-contract",
+      "detail": {
+        "version": 2,
+        "resultId": "e0"
+      },
+      "created_at": "2026-10-02T10:34:54.878Z"
+    },
+    {
+      "id": 3,
+      "tenant": "northstar-demo",
+      "actor": "integration:staffology-people",
+      "action": "integration-stage",
+      "detail": {
+        "id": "IG-muqttp4b-be21d4d42de0",
+        "provider": "staffology",
+        "objectType": "people",
+        "records": 2,
+        "valid": 2,
+        "held": 0,
+        "cursor": "pageNum:1",
+        "sourceVersion": "94de0f5f4953e29dbc813df56f8acc9ef36494ee3f95c672e366b21ad558446a"
+      },
+      "created_at": "2026-10-02T10:34:55.211Z"
+    },
+    {
+      "id": 5,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "integration-apply",
+      "detail": {
+        "id": "IG-muqttp4b-be21d4d42de0",
+        "connectorId": "staffology-people",
+        "provider": "staffology",
+        "objectType": "people",
+        "records": 2,
+        "outcomeId": "ONB-B1"
+      },
+      "created_at": "2026-10-02T10:34:55.770Z"
+    },
+    {
+      "id": 6,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "onboarding-review",
+      "detail": {
+        "version": 4,
+        "resultId": "ONB-B1"
+      },
+      "created_at": "2026-10-02T10:34:56.240Z"
+    },
+    {
+      "id": 7,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "onboarding-invite",
+      "detail": {
+        "id": "INV-c606ff568f4ab879",
+        "sourceId": "employee-001",
+        "expires": 1791023696456
+      },
+      "created_at": "2026-10-02T10:34:56.712Z"
+    },
+    {
+      "id": 8,
+      "tenant": "northstar-demo",
+      "actor": "invite:INV-c606ff568f4ab879",
+      "action": "onboarding-identity-verified",
+      "detail": {
+        "sourceId": "employee-001",
+        "email": "staffology-http-1@example.invalid"
+      },
+      "created_at": "2026-10-02T10:34:57.043Z"
+    },
+    {
+      "id": 9,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "onboarding-configure",
+      "detail": {
+        "version": 7,
+        "resultId": "ONB-employee-001"
+      },
+      "created_at": "2026-10-02T10:34:57.552Z"
+    },
+    {
+      "id": 10,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "onboarding-invite",
+      "detail": {
+        "id": "INV-7fd9f294b1053a89",
+        "sourceId": "employee-002",
+        "expires": 1791023697745
+      },
+      "created_at": "2026-10-02T10:34:57.897Z"
+    },
+    {
+      "id": 11,
+      "tenant": "northstar-demo",
+      "actor": "invite:INV-7fd9f294b1053a89",
+      "action": "onboarding-identity-verified",
+      "detail": {
+        "sourceId": "employee-002",
+        "email": "staffology-http-2@example.invalid"
+      },
+      "created_at": "2026-10-02T10:34:58.205Z"
+    },
+    {
+      "id": 12,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "onboarding-configure",
+      "detail": {
+        "version": 10,
+        "resultId": "ONB-employee-002"
+      },
+      "created_at": "2026-10-02T10:34:58.686Z"
+    },
+    {
+      "id": 13,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "cost-import-stage",
+      "detail": {
+        "version": 11,
+        "resultId": "import-400b5d73c423ffeab64034f0bab1cba3"
+      },
+      "created_at": "2026-10-02T10:34:59.179Z"
+    },
+    {
+      "id": 14,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "cost-import-apply",
+      "detail": {
+        "version": 12,
+        "resultId": "import-400b5d73c423ffeab64034f0bab1cba3"
+      },
+      "created_at": "2026-10-02T10:34:59.650Z"
+    },
+    {
+      "id": 15,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "onboarding-ready",
+      "detail": {
+        "version": 13,
+        "resultId": "ONB-employee-001"
+      },
+      "created_at": "2026-10-02T10:34:59.981Z"
+    },
+    {
+      "id": 16,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "onboarding-ready",
+      "detail": {
+        "version": 14,
+        "resultId": "ONB-employee-002"
+      },
+      "created_at": "2026-10-02T10:35:00.302Z"
+    },
+    {
+      "id": 17,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "rules-contract",
+      "detail": {
+        "version": 15,
+        "resultId": "ob-employee-001"
+      },
+      "created_at": "2026-10-02T10:35:00.613Z"
+    },
+    {
+      "id": 18,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "rules-contract",
+      "detail": {
+        "version": 16,
+        "resultId": "ob-employee-002"
+      },
+      "created_at": "2026-10-02T10:35:00.948Z"
+    },
+    {
+      "id": 19,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "time-source-ingest",
+      "detail": {
+        "version": 17,
+        "resultId": "2026-09-14"
+      },
+      "created_at": "2026-10-02T10:35:01.276Z"
+    },
+    {
+      "id": 20,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-check",
+      "detail": {
+        "version": 18,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:01.983Z"
+    },
+    {
+      "id": 21,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-check",
+      "detail": {
+        "version": 19,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:02.361Z"
+    },
+    {
+      "id": 22,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-check",
+      "detail": {
+        "version": 20,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:02.681Z"
+    },
+    {
+      "id": 23,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-check",
+      "detail": {
+        "version": 21,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:03.017Z"
+    },
+    {
+      "id": 24,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-check",
+      "detail": {
+        "version": 22,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:03.351Z"
+    },
+    {
+      "id": 25,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-check",
+      "detail": {
+        "version": 23,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:03.688Z"
+    },
+    {
+      "id": 26,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-check",
+      "detail": {
+        "version": 24,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:04.011Z"
+    },
+    {
+      "id": 27,
+      "tenant": "northstar-demo",
+      "actor": "m1",
+      "action": "review-sign",
+      "detail": {
+        "version": 25,
+        "resultId": "m1"
+      },
+      "created_at": "2026-10-02T10:35:04.336Z"
+    },
+    {
+      "id": 28,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "payroll-release",
+      "detail": {
+        "version": 26,
+        "resultId": "B-7c9122aed5c3ed0d"
+      },
+      "created_at": "2026-10-02T10:35:04.912Z"
+    },
+    {
+      "id": 32,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "staffology-payroll-operation",
+      "detail": {
+        "deliveryId": "staffology:eceb11f77eb90a3460cbcbfac17b93870e8ebaa253a9ef7b0547ea52991d7545",
+        "status": "reconciled",
+        "approvalId": "569a16b3-49b8-47d9-9422-caa0fc10e4c8",
+        "replayed": false,
+        "outcome": "initial"
+      },
+      "created_at": "2026-10-02T10:35:07.267Z"
+    },
+    {
+      "id": 33,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "staffology-payroll-operation",
+      "detail": {
+        "deliveryId": "staffology:eceb11f77eb90a3460cbcbfac17b93870e8ebaa253a9ef7b0547ea52991d7545",
+        "status": "reconciled",
+        "approvalId": null,
+        "replayed": true,
+        "outcome": "replayed"
+      },
+      "created_at": "2026-10-02T10:35:07.436Z"
+    },
+    {
+      "id": 34,
+      "tenant": "northstar-demo",
+      "actor": "d1",
+      "action": "staffology-payroll-readback",
+      "detail": {
+        "entryId": "entry-001",
+        "expectedBasicPay": "12.50",
+        "observedBasicPay": "12.50"
+      },
+      "created_at": "2026-10-02T10:35:09.009Z"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T10:00:44.986Z",
+  "updatedAt": "2026-10-02T10:53:29.122Z",
   "criticalPath": "Staffology repair admission -> exact runtime proof -> all mandatory hosted/customer gates -> immutable proven base -> convergence waves -> live verification",
   "items": [
     {
@@ -127,7 +127,7 @@
       "id": "TR-09",
       "type": "REPAIRABLE_CODE",
       "priority": "P2",
-      "status": "OPEN_REPAIR_REQUIRED",
+      "status": "ORIGINAL_POSITIVE_CASE_REPAIRED; TR-09B successorP2OPEN",
       "title": "Recovery dispatch omits the consumed approval from audit",
       "sourceSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
       "path": "integrations/staffology/canonical-operations.cjs",
@@ -136,7 +136,7 @@
       "nextAction": "Propagate the actual approval ID for recovery dispatch and record it in recovery audit, distinguishing read-only reconciliation from a new dispatch.",
       "evidence": "orchestration/evidence/trust-findings.json",
       "latestPublishedSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
-      "repairReportedNative": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e"
+      "repairReportedNative": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac"
     },
     {
       "id": "TR-10",
@@ -224,20 +224,23 @@
       "id": "CI-19",
       "type": "REPAIRABLE_RUNTIME_BUILD",
       "priority": "P1",
-      "status": "OPEN",
+      "status": "ROOT_CAUSE_EVIDENCED; successorLinuxrerunPENDING",
       "sourceSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
       "title": "New Pipeline19 runtime26 failed,core25 passed",
-      "evidence": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/26",
-      "nextAction": "Read actual failed build logs; distinguish older fixture patch headb851 from new unpublished695 authority/recovery fixes before rerun."
+      "evidence": "orchestration/evidence/ci19-browser/job26-build.log",
+      "nextAction": "Read actual failed build logs; distinguish older fixture patch headb851 from new unpublished695 authority/recovery fixes before rerun.",
+      "signature": "Exactb851143tests142pass1fail strictacquire-stage403"
     },
     {
       "id": "NATIVE695-HTTP-MAPPING",
       "type": "REPAIRABLE_PROOF_FIXTURE",
       "priority": "P1",
-      "status": "OPEN",
+      "status": "REPAIRED_NATIVE_BF9_LOCAL_PLAIN_HTTP_PASS; Linuxpending",
       "sourceSha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
       "title": "FullHTTP acquire-stage403: no accepted canonical contract-type/weekly-hours options before fixture acquisition",
-      "nextAction": "Sole source owner configures legitimate existing fixture contract through supported authenticated command; preserve mapping guards and all original failures."
+      "nextAction": "Sole source owner configures legitimate existing fixture contract through supported authenticated command; preserve mapping guards and all original failures.",
+      "repairReportedNative": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+      "evidence": "orchestration/evidence/native-bf9/full-http-confirmation.receipt.json"
     },
     {
       "id": "SUCCESSOR-CI-TRIGGER",
@@ -252,25 +255,74 @@
       "id": "PROOF-GATE-REPLAY-COERCION",
       "type": "MANDATORY_PROOF_INTEGRITY_REPAIR",
       "priority": "P1",
-      "status": "LOCAL_REPAIR_REVIEW_PENDING",
+      "status": "INDEPENDENTLY_REVIEWED_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
       "title": "Null/blank replay financial totals can satisfy frozen PASS; malformed persisted receipts need reopening",
-      "evidence": "orchestration/evidence/proof-gate-analysis/held-out-observations.json"
+      "evidence": "orchestration/evidence/proof-repair-admission.json",
+      "sourceSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+      "nextAction": "Preserve exact3blobs inlatercomposedStaffologycandidate; mandatorycurrentcontainer/hosted/customer revalidation"
     },
     {
       "id": "PROOF-GATE-IMPOSSIBLE-DATE",
       "type": "MANDATORY_PROOF_INTEGRITY_REPAIR",
       "priority": "P1",
-      "status": "LOCAL_REPAIR_REVIEW_PENDING",
+      "status": "INDEPENDENTLY_REVIEWED_SOURCE_ADMITTED_NOT_HOSTED_PROVEN",
       "title": "Calendar-impossible authoritative effective date can satisfy frozen PASS; malformed persisted receipts need reopening",
-      "evidence": "orchestration/evidence/proof-gate-analysis/held-out-observations.json"
+      "evidence": "orchestration/evidence/proof-repair-admission.json",
+      "sourceSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+      "nextAction": "Preserve exact3blobs inlatercomposedStaffologycandidate; mandatorycurrentcontainer/hosted/customer revalidation"
     },
     {
       "id": "SOURCE-OWNER-FOLLOWUP-CONFIRMATION",
       "type": "INTERMITTENT_BROWSER_TASK_ACCESS",
       "priority": "P2",
-      "status": "UNCONFIRMED",
+      "status": "PRIOR_FOLLOWUP_CONFIRMED_COMPLETED; NEW_FOLLOWUP_PREPARED_NOT_SUBMITTED",
       "title": "Follow-up staged and Submit clicked; task/source view stalls and backend acceptance remains unconfirmed",
-      "nextAction": "Recover existing task URL; confirm submitted message/running state. Do not blindly duplicate follow-up or spawn another Staffology worker."
+      "nextAction": "Recover sameexistingtaskcomposer; submit newTR09B/TR12requestonce andverifyacceptance; do not resend previousrequest"
+    },
+    {
+      "id": "TR-09B",
+      "type": "REPAIRABLE_CODE",
+      "priority": "P2",
+      "status": "OPEN_REPAIR_REQUIRED",
+      "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+      "title": "GET-only changed-baseline recovery falsely audited recovery-dispatch",
+      "nextAction": "Actual persistedpost-reconcile attempt classification; preserve zeroPOST/noapproval baseline refusal",
+      "evidence": "orchestration/evidence/native-bf9-findings.json"
+    },
+    {
+      "id": "TR-12",
+      "type": "REPAIRABLE_CODE",
+      "priority": "P2",
+      "status": "OPEN_REPAIR_REQUIRED",
+      "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+      "title": "Resumed403 durable rejection publicly reported retryable and undispatched",
+      "nextAction": "Reflect definitive durable rejection/current dispatch marker and actualapproval inresponse/audit; no resend",
+      "evidence": "orchestration/evidence/native-bf9-findings.json"
+    },
+    {
+      "id": "COUNTRY-PROJECTION-INERT-INPUT",
+      "priority": "P2",
+      "status": "LOCAL_OWNER_REPAIR_ACTIVE",
+      "type": "ISOLATED_FUTURE_COMPONENT",
+      "title": "Caller getters/proxies/overriddenmethods andnonfinitepayload accepted",
+      "nextAction": "Solecountryownerrepairs beforecanonicalTwin invocation; independentheldoutsagain beforepublication"
+    },
+    {
+      "id": "CUSTOMER-SCOPE-IDENTIFIERS",
+      "priority": "P1",
+      "status": "PENDING_USER_IDENTIFIERS",
+      "type": "EXTERNAL_CUSTOMER_PROOF_SCOPE",
+      "title": "Real customer/provider employer/cohort/period notestablished; fixturetenant notcustomerproof",
+      "nextAction": "Awaitpendinganswerwhileindependentcode/inventory continues"
+    },
+    {
+      "id": "TWIN-PROJECTION-INERT-EXACT-INPUT",
+      "priority": "P2",
+      "type": "ISOLATED_FUTURE_COMPONENT",
+      "status": "OPEN_REPAIR_REQUIRED",
+      "sourceSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+      "title": "All3twinfactories acceptcaller-code/nonfinitepayload; querygetters/historymethod alsoexecute",
+      "nextAction": "Samecanonicalprojectionowner repairs aftercountry; unchangedcanonicalTwin; expandedindependentreviewbeforepublishedupdate"
     }
   ]
 }

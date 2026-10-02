@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "paulallen123/-manufacturing-wfm",
-  "updatedAt": "2026-10-02T10:00:44.986Z",
+  "updatedAt": "2026-10-02T10:53:29.122Z",
   "baselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
   "provenBaseSha": null,
   "convergenceSha": null,
@@ -29,17 +29,18 @@
   "counts": {
     "capabilities": 166,
     "byClassification": {
-      "ALREADY_CANONICAL": 46,
+      "ALREADY_CANONICAL": 45,
       "PORT": 52,
-      "EVOLVE": 31,
+      "EVOLVE": 32,
       "RESEARCH_ONLY": 29,
       "SUPERSEDED": 6,
       "BLOCKED_EXTERNAL": 2
     },
     "byState": {
-      "FOUND": 137,
-      "IN_PROGRESS": 29
-    }
+      "FOUND": 134,
+      "IN_PROGRESS": 32
+    },
+    "total": 166
   },
   "coverageComplete": false,
   "coverageLimits": [
@@ -797,7 +798,22 @@
       ],
       "currentConvergenceSha": null,
       "liveSha": null,
-      "testsExecuted": [],
+      "testsExecuted": [
+        {
+          "scope": "Exact mandatory3path readiness proof-integrity repair",
+          "affected": {
+            "pass": 52,
+            "total": 52,
+            "skipped": 0
+          },
+          "heldOut": {
+            "pass": 6,
+            "total": 6
+          },
+          "evidence": "orchestration/evidence/proof-gate-review.md",
+          "binding": "3preimages+21dependencies sameatb851/currentd387"
+        }
+      ],
       "knownFailures": [],
       "relevantResearch": [],
       "uiLocation": null,
@@ -820,8 +836,8 @@
           "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/79"
         }
       ],
-      "classification": "ALREADY_CANONICAL",
-      "currentState": "FOUND",
+      "classification": "EVOLVE",
+      "currentState": "IN_PROGRESS",
       "currentImplementationLocation": [
         "implementation/runtime/one-day-enterprise-engine-core.cjs"
       ],
@@ -847,7 +863,7 @@
         "scripts/validate-autonomous-repair-canary-orchestrator.mjs",
         "scripts/validate-autonomous-repair-factory.mjs"
       ],
-      "currentImplementationSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "currentImplementationSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
       "provenance": {
         "evidence": [
           {
@@ -859,10 +875,42 @@
         ],
         "rationale": "Canonical files exist in frozen source; later repairs supersede source versions. Eight-hour claim remains target.",
         "sourceInventory": "orchestration/evidence/product-sources.json",
-        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory"
+        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory",
+        "mandatoryProofRepair": {
+          "branch": "review/staffology-customer-proof-20261001",
+          "sha": "d387d5300f2de0906d8ea459e1bac610128236d9",
+          "tree": "fab958ad86d794bd31caa876606f73c605417e6a",
+          "parent": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+          "shipping": [
+            {
+              "path": "implementation/runtime/readiness-evidence-contract.cjs",
+              "mode": "100644",
+              "sha": "073f0303e161b62ba46ee7115bdf0082259830a3",
+              "bytes": 12376,
+              "shipping": true
+            },
+            {
+              "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+              "mode": "100644",
+              "sha": "198978255a62a1297e6104f66f67373864534e3e",
+              "bytes": 99725,
+              "shipping": true
+            },
+            {
+              "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+              "mode": "100644",
+              "sha": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+              "bytes": 74763,
+              "shipping": true
+            }
+          ],
+          "observedAt": "2026-10-02T10:44:43.831Z",
+          "role": "MANDATORY_PROOF_REPAIR_ON_SOLE_REVIEW_LINEAGE; Staffology holds remain"
+        }
       },
       "remainingWork": [
-        "Retain canonical implementation; verify runtime assembly, full affected regression and hosted customer-like replay before readiness claim"
+        "Retain canonical implementation; verify runtime assembly, full affected regression and hosted customer-like replay before readiness claim",
+        "Exact composedcurrentcandidate/container/hosted proof; local repair doesnot complete broad readiness"
       ],
       "rollbackPath": "No product or remote mutation occurred. Future port must be isolated and revertible by its exact reviewed commit; retain old source/evidence and contain unconfirmed provider outcomes."
     },
@@ -1301,7 +1349,20 @@
           "review": "orchestration/evidence/twin-fabric-review.md"
         }
       ],
-      "knownFailures": [],
+      "knownFailures": [
+        {
+          "scope": "Publishedisolatedprojection expandedcaller-code/finitepayload boundary review",
+          "severity": "P2",
+          "state": "OPEN_REPAIR_REQUIRED",
+          "targetedTests": {
+            "pass": 1,
+            "total": 31,
+            "fail": 30
+          },
+          "sourceSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+          "claim": "Formerboundedreviewpassdoesnotcovernewheldouts"
+        }
+      ],
       "relevantResearch": [],
       "uiLocation": null,
       "integrationDependencies": [],
@@ -1384,6 +1445,7 @@
         }
       },
       "remainingWork": [
+        "Repair descriptor/proxy/querymethod/nonfinite payload boundary; independentretainednewheldoutsbeforefuturepublicationupdate",
         "Authenticated/current-provenance and role checked producer/consumer integration",
         "Bound input size/depth/CPU",
         "Exact integrated assembly/security/restart/recovery proof",
@@ -1424,7 +1486,20 @@
           "review": "orchestration/evidence/twin-fabric-review.md"
         }
       ],
-      "knownFailures": [],
+      "knownFailures": [
+        {
+          "scope": "Publishedisolatedprojection expandedcaller-code/finitepayload boundary review",
+          "severity": "P2",
+          "state": "OPEN_REPAIR_REQUIRED",
+          "targetedTests": {
+            "pass": 1,
+            "total": 31,
+            "fail": 30
+          },
+          "sourceSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+          "claim": "Formerboundedreviewpassdoesnotcovernewheldouts"
+        }
+      ],
       "relevantResearch": [],
       "uiLocation": null,
       "integrationDependencies": [],
@@ -1507,6 +1582,7 @@
         }
       },
       "remainingWork": [
+        "Repair descriptor/proxy/querymethod/nonfinite payload boundary; independentretainednewheldoutsbeforefuturepublicationupdate",
         "Authenticated/current-provenance and role checked producer/consumer integration",
         "Bound input size/depth/CPU",
         "Exact integrated assembly/security/restart/recovery proof",
@@ -1547,7 +1623,20 @@
           "review": "orchestration/evidence/twin-fabric-review.md"
         }
       ],
-      "knownFailures": [],
+      "knownFailures": [
+        {
+          "scope": "Publishedisolatedprojection expandedcaller-code/finitepayload boundary review",
+          "severity": "P2",
+          "state": "OPEN_REPAIR_REQUIRED",
+          "targetedTests": {
+            "pass": 1,
+            "total": 31,
+            "fail": 30
+          },
+          "sourceSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+          "claim": "Formerboundedreviewpassdoesnotcovernewheldouts"
+        }
+      ],
       "relevantResearch": [],
       "uiLocation": null,
       "integrationDependencies": [],
@@ -1630,6 +1719,7 @@
         }
       },
       "remainingWork": [
+        "Repair descriptor/proxy/querymethod/nonfinite payload boundary; independentretainednewheldoutsbeforefuturepublicationupdate",
         "Authenticated/current-provenance and role checked producer/consumer integration",
         "Bound input size/depth/CPU",
         "Exact integrated assembly/security/restart/recovery proof",
@@ -1771,7 +1861,7 @@
         }
       ],
       "classification": "PORT",
-      "currentState": "FOUND",
+      "currentState": "IN_PROGRESS",
       "currentImplementationLocation": [],
       "targetImplementationLocation": [
         "platform/factory-graph/global-operating-context.mjs"
@@ -1802,7 +1892,22 @@
         ],
         "rationale": "Absent source; synthetic1/12500-worker scenarios reported, not independently rerun.",
         "sourceInventory": "orchestration/evidence/product-sources.json",
-        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory"
+        "historicalTests": "PR body claims only; execution evidence not independently examined by this inventory",
+        "isolatedCountryPort": {
+          "manifest": "orchestration/evidence/lane02-country/changes-manifest.json",
+          "status": "REVIEW_FAILED_P2_REPAIR_ACTIVE",
+          "canonicalDependencies": 13,
+          "ownerTests": {
+            "pass": 39,
+            "total": 39
+          },
+          "reviewIds": [
+            "INPUT_CALLER_CODE",
+            "NONFINITE_PAYLOAD_EXACTNESS"
+          ],
+          "provenBaseSha": null,
+          "convergenceBaseSha": null
+        }
       },
       "remainingWork": [
         "Select canonical owner and map source dependencies",
@@ -15451,6 +15556,172 @@
           "evidenceSha256": "e6a64b5c9eba8b94b536f0e87b045f86b78edf4a82f6e73669ba1c6620001543",
           "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY",
           "evidence": "orchestration/evidence/native695/full-http.node22.tap"
+        },
+        {
+          "scope": "source",
+          "label": "source",
+          "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+          "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+          "runtime": "v22.23.2",
+          "platform": "win32",
+          "startedAt": "2026-10-02T10:32:08.859Z",
+          "completedAt": "2026-10-02T10:33:22.442Z",
+          "exitCode": 0,
+          "command": [
+            "--experimental-sqlite",
+            "--require",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "--test",
+            "--test-concurrency=1",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-connector.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-deployment-binding.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-mapping-preflight.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations-status.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-operations.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-production-boundaries.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\canonical-runtime-bridge.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\current-authority-recovery-held-out.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\docker-admission-contract.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\generated-provider-preload.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\succession-regressions.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent-boundaries.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5921699729-regressions.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\review-5925613376-regressions.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\sqlite-contract.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-adapter.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-staffology-controls.test.cjs",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\ux-overlay\\vector-settings-navigation.test.cjs"
+          ],
+          "files": [
+            "integrations/staffology/canonical-operations-connector.test.cjs",
+            "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+            "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+            "integrations/staffology/canonical-operations-status.test.cjs",
+            "integrations/staffology/canonical-operations.test.cjs",
+            "integrations/staffology/canonical-production-boundaries.test.cjs",
+            "integrations/staffology/canonical-runtime-bridge.test.cjs",
+            "integrations/staffology/independent/current-authority-recovery-held-out.test.cjs",
+            "integrations/staffology/independent/docker-admission-contract.test.cjs",
+            "integrations/staffology/independent/generated-provider-preload.test.cjs",
+            "integrations/staffology/independent/succession-regressions.test.cjs",
+            "integrations/staffology/independent-boundaries.test.cjs",
+            "integrations/staffology/review-5921699729-regressions.test.cjs",
+            "integrations/staffology/review-5925613376-regressions.test.cjs",
+            "integrations/staffology/sqlite-contract.test.cjs",
+            "integrations/staffology/staffology-adapter.test.cjs",
+            "ux-overlay/vector-staffology-controls.test.cjs",
+            "ux-overlay/vector-settings-navigation.test.cjs"
+          ],
+          "stats": {
+            "tests": 155,
+            "suites": 0,
+            "pass": 155,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 73405.9817
+          },
+          "evidenceSha256": "b6ca9e20c9e0fc36d3115e1d4e0a7a40903875a79646fee6f0443ccd94d5045b",
+          "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
+        },
+        {
+          "scope": "persistence",
+          "label": "persistence",
+          "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+          "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+          "runtime": "v22.23.2",
+          "platform": "win32",
+          "startedAt": "2026-10-02T10:32:08.825Z",
+          "completedAt": "2026-10-02T10:32:51.136Z",
+          "exitCode": 0,
+          "command": [
+            "--experimental-sqlite",
+            "--require",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+            "--test",
+            "--test-concurrency=1",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\staffology-employee-persistence.test.cjs"
+          ],
+          "files": [
+            "integrations/staffology/staffology-employee-persistence.test.cjs"
+          ],
+          "stats": {
+            "tests": 1,
+            "suites": 0,
+            "pass": 1,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 41970.5436
+          },
+          "evidenceSha256": "0c5e3566c9d948882d5492b212efb5442844f1cda5d34b04ea9181978ceb1f36",
+          "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
+        },
+        {
+          "scope": "full-http",
+          "label": "full-http",
+          "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+          "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+          "runtime": "v22.23.2",
+          "platform": "win32",
+          "startedAt": "2026-10-02T10:31:23.278Z",
+          "completedAt": "2026-10-02T10:31:37.477Z",
+          "exitCode": 1,
+          "command": [
+            "--experimental-sqlite",
+            "--test",
+            "--test-concurrency=1",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+          ],
+          "files": [
+            "integrations/staffology/independent/full-http-employee-journey.test.cjs"
+          ],
+          "stats": {
+            "tests": 1,
+            "suites": 0,
+            "pass": 0,
+            "fail": 1,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 14065.1316
+          },
+          "evidenceSha256": "12fb41b5db08322e40f1c931d54803165ba1bf7677486bb8d7735e97d3e25813",
+          "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
+        },
+        {
+          "scope": "full-http",
+          "label": "full-http-confirmation",
+          "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+          "sourceTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+          "runtime": "v22.23.2",
+          "platform": "win32",
+          "startedAt": "2026-10-02T10:34:49.309Z",
+          "completedAt": "2026-10-02T10:35:11.651Z",
+          "exitCode": 0,
+          "command": [
+            "--experimental-sqlite",
+            "--test",
+            "--test-concurrency=1",
+            "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\bf9-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs"
+          ],
+          "files": [
+            "integrations/staffology/independent/full-http-employee-journey.test.cjs"
+          ],
+          "stats": {
+            "tests": 1,
+            "suites": 0,
+            "pass": 1,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0,
+            "duration_ms": 22189.3069
+          },
+          "evidenceSha256": "8a6d259cd7bd11ec3d5fa358aa35e9638e4365ecaf4e35bf3a86066b47d292d4",
+          "proofScope": "ISOLATED_WINDOWS_COMPOSED_RUNTIME_ONLY"
         }
       ],
       "knownFailures": [
@@ -15519,6 +15790,23 @@
           "id": "NATIVE695-HTTP-MAPPING",
           "status": 403,
           "reason": "Fixture contractTypes/weeklyHours are empty before acquisition; configure actual accepted canonical fixture contracts through supported command"
+        },
+        {
+          "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+          "ids": [
+            "TR-09B",
+            "TR-12"
+          ],
+          "severity": "P2",
+          "scope": "Recovery audit/response factual truth",
+          "evidence": "orchestration/evidence/native-bf9-findings.json",
+          "admissionBlocked": true
+        },
+        {
+          "sourceSha": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+          "scope": "Windows local firststartup",
+          "state": "FAILURE_RETAINED; causeunestablished, subsequentunchangedtestsPASS",
+          "evidence": "orchestration/evidence/native-bf9/full-http.node22.tap"
         }
       ],
       "relevantResearch": [],
@@ -15598,7 +15886,7 @@
         "integrations\\staffology\\staffology-employee-persistence.test.cjs",
         "ux-overlay\\vector-staffology-controls.test.cjs"
       ],
-      "currentImplementationSha": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+      "currentImplementationSha": "d387d5300f2de0906d8ea459e1bac610128236d9",
       "provenance": {
         "publishedTree": "bc10211d06d1016b39a7b01f58a21596646c9acb",
         "publishedParent": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -15622,26 +15910,26 @@
         "transportNative": "1a98bb654c11714589c941091d50363bf65dc0ed",
         "latestRepairNative": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
         "latestRepairTree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
-        "latestRepairStatus": "EXACT1107FILE_TREE_VERIFIED_INDEPENDENT_REVIEW_TR09_OPEN",
+        "latestRepairStatus": "EXACT_TREE_REVIEWED; TR-09B/TR-12 P2 OPEN; new bounded follow-up PREPARED_NOT_SUBMITTED",
         "latestRepairVerification": {
-          "nativeCommit": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
-          "nativeParent": "2f8aa26ae40258d36e71f909d18cc46989f0e1fe",
-          "expectedTree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
-          "actualTree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+          "nativeCommit": "bf9f70e21364f00465a3bad40be6ffb1d1b732ac",
+          "nativeParent": "db041fe7f9c0bddbf53e637184548285849e5f74",
+          "expectedTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
+          "actualTree": "f386ab2f4726f8818848c15fcb3b4b1e44426b08",
           "fullTreeMatches": true,
           "files": 1107,
           "changedFrom935": 20,
           "verifiedAllTrackedBlobBytes": true,
           "baseSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
-          "patchSha256": "cad5f4306b42cb26fe77c49035e3b1eee370716f7db4fd5143a316197b494015"
+          "patchSha256": "a26d115848867a9b773068dbb09aa8579c2df8faa43d470462568c451874cf82"
         }
       },
       "remainingWork": [
-        "Retrieve completed bounded repairs through existing owner Copy patch",
-        "Independently verify native commit/parent/tree and full blob/mode fidelity",
-        "Review all11 findings and run meaningful held-outs plus canonical fullHTTP and affected gates",
-        "Publish only reviewed source; changed exact candidate requires new CI/build and hosted proof",
-        "Perform real authorised acquisition/reconciliation/person lifecycle and payroll/readback/recovery proof"
+        "Sameownerbounded TR-09B/TR-12 factualresponse/audit repair",
+        "Independent successor fulltree/exactbytes review and preserved safeguards",
+        "Compose onto currentreviewparent preserving3mandatoryproofblobs; truthful CItriggerdelta",
+        "ActualNode22.23.2 Linux/container andexacthosted/runtime proof",
+        "Real customer/provider/cohort/period binding and all mandatorycustomerGoldenJourney proof"
       ],
       "rollbackPath": "Retain immutable f32/current54e deployment and/data persistent state. No serving source changed by this checkpoint; any later repair candidate gets exact rollback tuple and migration proof."
     },
@@ -15663,7 +15951,7 @@
       ],
       "sourcePRs": [],
       "classification": "PORT",
-      "currentState": "FOUND",
+      "currentState": "IN_PROGRESS",
       "currentImplementationLocation": [
         "integration/runtime/provider-proof-retry-policy.cjs",
         "integration/runtime/provider-proof-maintenance-runner.cjs"
@@ -15759,7 +16047,20 @@
           "Staffology dispatch/recovery owner excluded; future API comparison required"
         ],
         "rationale": "New r17–r20 executable wrappers route adapter failures through shared transport policy, replacing adapter retry hints with bounded decisions. Both exact paths absent f32. r25 preserves final r20 runner and r19 policy blobs.",
-        "continuationEvidence": "orchestration/evidence/continuation-capabilities.json"
+        "continuationEvidence": "orchestration/evidence/continuation-capabilities.json",
+        "isolatedRetryPort": {
+          "moduleBlob": "46aae02be5d521aa0446aa3af9e615b19eea7f91",
+          "testBlob": "6c6ca54b31c1a59710cf55768ae092c59cab1a1d",
+          "review": "orchestration/evidence/retry-policy-review.md",
+          "sourcePass": 87,
+          "heldOutPass": 23,
+          "combinedPass": 138,
+          "combinedTotal": 139,
+          "combinedFailure": "Unchanged frozenGusto WindowsEBUSY cleanup; reproducedbaseline-only",
+          "runtimeWired": false,
+          "provenBaseSha": null,
+          "convergenceBaseSha": null
+        }
       }
     },
     {

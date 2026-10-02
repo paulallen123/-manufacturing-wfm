@@ -1,0 +1,550 @@
+{
+  "patchSha256": "a26d115848867a9b773068dbb09aa8579c2df8faa43d470462568c451874cf82",
+  "files": [
+    {
+      "path": ".circleci/config.yml",
+      "old": "33701f327a032fee5e508f71c5a03e3579e158b2",
+      "sha": "4e1211e401bb022bc9a10ce562f3778069977e08",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 7995
+    },
+    {
+      "path": "Dockerfile",
+      "old": "599653794a5dff8f87a15a8eab5610a73aa00d73",
+      "sha": "294403c5ab746726a250882833be323889bc608f",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 37308
+    },
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "old": "bc7a29394c9c6cbe611cf2506e1e4965ee8e9910",
+      "sha": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 4091
+    },
+    {
+      "path": "integrations/staffology/REVIEW_5925613376_RESOLUTION.md",
+      "old": "a7e55fa92f8e95608d2a394eaf54525422660927",
+      "sha": "3ff9877559d4779d19e8a8e37e0ffd9a8c7e4bf5",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 84153
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-connector.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "13cb585b30346387634d368028376cad463776df",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 4684
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "9cf541ec31c8aac6ec518dcc8f1ffadf43000f4d",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 2951
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "50c86ca5da5067257294a8738e483f48c4dfcc24",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 3471
+    },
+    {
+      "path": "integrations/staffology/canonical-operations-status.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "0abdeda0e90bca06edab9e1176bffd5e15f5a448",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 2083
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "d705dd486bde5a5016b6205985d296e239d8c7e6",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 14910
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "b957eac15def38619a44aa90b1a575b4ebdf888a",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 15259
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "old": "8486d97944f4cebce95c81f85a176e869f9d7a13",
+      "sha": "fe29787b97dc1093f1753393a07d686f1832bd9c",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 19363
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.test.cjs",
+      "old": "6afc35c5aa7f4f7393a0a5d3b47695fed2eda95d",
+      "sha": "48b82a29a5eb8fdc3d41ccb16402007599cfbf8e",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 18378
+    },
+    {
+      "path": "integrations/staffology/canonical-runtime-bridge.cjs",
+      "old": "adaadd97922edb42b9231e0b22fdd7c15a7a5af2",
+      "sha": "503fd6e63c32b1e490e138da458c0437c5bf27cb",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 12003
+    },
+    {
+      "path": "integrations/staffology/canonical-runtime-bridge.test.cjs",
+      "old": "09323175383979e208009ee2dc6de9c34070249c",
+      "sha": "b705f07f72366640d199ce2718e8643c50ee9818",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 6620
+    },
+    {
+      "path": "integrations/staffology/evidence/circleci-build-command-contract-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "467a3b7ac1686efead61cabf68ba0c17a02be64d",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 11138
+    },
+    {
+      "path": "integrations/staffology/evidence/circleci-pid1-uid-caller-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "bf92687efacae35002f6cce4d1f9e2745c318332",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1490
+    },
+    {
+      "path": "integrations/staffology/evidence/circleci-runtime-identity-caller-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "001c1f6ae0a492312b0277a82a71d34e10df8135",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1122
+    },
+    {
+      "path": "integrations/staffology/evidence/docker-admission-contract-green.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "4d2f87087a8c20068ad3dbfe7f6072d92de86211",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 347
+    },
+    {
+      "path": "integrations/staffology/evidence/docker-admission-contract-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "a24b8317f8f7dcdfe10808f557585d29b26fa29c",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 12871
+    },
+    {
+      "path": "integrations/staffology/evidence/docker-admission-direct-checkout-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "35d497edd419e54f0bd626d907d699a49e6ac8dd",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 23774
+    },
+    {
+      "path": "integrations/staffology/evidence/five-person-lifecycle-red.json",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "ab70fda634a0578f5b2a79c26845c1dcf0e245ca",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 709
+    },
+    {
+      "path": "integrations/staffology/evidence/full-http-payroll-command-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "a5ebddb00f54f84e041710ca22394bba3ee07262",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 393
+    },
+    {
+      "path": "integrations/staffology/evidence/full-http-period-collision-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "0187a2c132aa35e1e9696dc4b790213ca33435e7",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 317
+    },
+    {
+      "path": "integrations/staffology/evidence/full-http-private-evidence-custody-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "92a3da312f5d8cb65042b7428b2adcefe08ffdc8",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1055
+    },
+    {
+      "path": "integrations/staffology/evidence/full-http-provider-run-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "d585ac9fda6db2b08154ac8570228712e3f4d05b",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 479
+    },
+    {
+      "path": "integrations/staffology/evidence/full-http-team-blockers-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "bdfa82630a271b58620d45be6d6fcc7125632bb6",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 898
+    },
+    {
+      "path": "integrations/staffology/evidence/generated-provider-preload-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "9b26b3446ca16b3e1217e121aa7e2f77c9931877",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1757
+    },
+    {
+      "path": "integrations/staffology/evidence/hosted-deployment-profile-binding-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "06706961059af5e4df28816a4b47caa1bbf8ad8b",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 925
+    },
+    {
+      "path": "integrations/staffology/evidence/hosted-profile-missing-ingress-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "2055ce73fa182601ef49c773c413f10de13fc71a",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 516
+    },
+    {
+      "path": "integrations/staffology/evidence/hosted-root-startup-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "dd5182377b428ac2943667e3c49021a8e68ae6c1",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 626
+    },
+    {
+      "path": "integrations/staffology/evidence/hosted-settings-navigation-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "31b03fc953c531298f37930b9f96f294db12d36d",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 668
+    },
+    {
+      "path": "integrations/staffology/evidence/operation-replay-audit-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "096d860a4b418b5428e8431bc477e068e9023557",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 481
+    },
+    {
+      "path": "integrations/staffology/evidence/operation-trusted-scope-green.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "d1942557444024f2c50ed90783582cca0fd8d513",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1836
+    },
+    {
+      "path": "integrations/staffology/evidence/operation-trusted-scope-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "40fdbfcca5c9b013c01627b3b18f5780115de0a5",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 2440
+    },
+    {
+      "path": "integrations/staffology/evidence/pid1-uid-extra-field-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "d1f5dd0ef7cee7c6d2f86d886c983529ed032230",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 536
+    },
+    {
+      "path": "integrations/staffology/evidence/pid1-uid-leading-zero-red.log",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "c7b003a9254594833872cf8f38ef612a00a00450",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 689
+    },
+    {
+      "path": "integrations/staffology/evidence/shared-person-authority-green.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "0261e16a907bf9b37f2597cb98902d454223720e",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 2154
+    },
+    {
+      "path": "integrations/staffology/evidence/shared-person-authority-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "c80a407e28e6d0347671dada33a3549e2e261563",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1807
+    },
+    {
+      "path": "integrations/staffology/evidence/succession-held-out-green.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "4e8c9c35b1615e31ccd9ae95781a0cb89c7adb68",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1667
+    },
+    {
+      "path": "integrations/staffology/evidence/succession-held-out-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "fdcb9e7f9c02ba09e6106fb90dca658e31e685a1",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 2766
+    },
+    {
+      "path": "integrations/staffology/evidence/succession-independent-green.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "62cf6fa0bd0e579f04bedc90daac9d1908a2598d",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 998
+    },
+    {
+      "path": "integrations/staffology/evidence/succession-independent-red.tap",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "836d7208f0c0c9cd961a78eaadd657ea9f0ded6e",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 2066
+    },
+    {
+      "path": "integrations/staffology/independent-boundaries.test.cjs",
+      "old": "0a5e98cd8eeea8f91e7e23339570b795145e59cb",
+      "sha": "7ffa39b5991ad70e5a713668ae34a53eed562e75",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 13999
+    },
+    {
+      "path": "integrations/staffology/independent/current-authority-recovery-held-out.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "e0b102f934ae00623c0f77f601f8d0a94db99dd7",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 9499
+    },
+    {
+      "path": "integrations/staffology/independent/docker-admission-contract.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "0683258beb87567b33f6c6c62368aeb0f6774ca6",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 5956
+    },
+    {
+      "path": "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "d613b1cd56df7399ef82ba1d5321620517d25eee",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 26406
+    },
+    {
+      "path": "integrations/staffology/independent/generated-provider-preload.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "8dda45708d0d70c9df4b8b07f819e1699ec94d0b",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1249
+    },
+    {
+      "path": "integrations/staffology/independent/succession-regressions.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "fa30239892706e6402cfaf9a7f1fedec080d8b97",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 4134
+    },
+    {
+      "path": "integrations/staffology/review-5921699729-regressions.test.cjs",
+      "old": "ac773cfa3e7b2a416ec374dd5757935b1eb04d48",
+      "sha": "f76be48d6e87f43083c920c4bc7e48195af1ace9",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 4684
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "old": "f4baecff8ab82a6bc990b6404d14ed7cbd96bfaf",
+      "sha": "3d0a65db8e642841637016124619f309d63b48e4",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 38003
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.test.cjs",
+      "old": "01adb39a4ddb5776285d87ea51d3179ad1156c90",
+      "sha": "09e63932cc038e54da05345d52018e76d3cc7c67",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 21472
+    },
+    {
+      "path": "integrations/staffology/staffology-employee-persistence.test.cjs",
+      "old": "7b715d973339165b7eaf1081fab3a2f1514cad3e",
+      "sha": "73294c611ce4ea7e9a208a7ed10292b4211191d3",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 7698
+    },
+    {
+      "path": "integrations/staffology/test-support/sqlite-store-fixture.cjs",
+      "old": "7fde6d2892fb317a7958d79d7ba291b9f3c767cf",
+      "sha": "6436845fbad8b955939851a3706715bc17e1038c",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 3742
+    },
+    {
+      "path": "operations/runtime/autopilot-replay.regression.test.cjs",
+      "old": "512e1582de03ee1ddc403d62a9c1ec5b3a2ec481",
+      "sha": "bf73220166a2623385769d4f3e82a036aa05d478",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 7410
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.contract.test.cjs",
+      "old": "a5d0ffea8997030fb043fd9b4eee20e68538bc47",
+      "sha": "ba1cf23cabc6fee7003570a64b72c98036476646",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 2948
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "old": "bf673254e490d561db69d49d482418e5d55f613c",
+      "sha": "7249a5f9ce59139de9328f406ae3e2e25de2bfcc",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 16026
+    },
+    {
+      "path": "scripts/validate-deployment.mjs",
+      "old": "3b613cfa5eabfb08eecfe9a690b4b92c1aa246d9",
+      "sha": "a5d83b6d7270e97f18df9a2f083b40343ab93ebc",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 8565
+    },
+    {
+      "path": "scripts/validate-staffology-canonical-assembly.mjs",
+      "old": "7b3623687845057b29cf89ee2124d3355705828c",
+      "sha": "7256a48528618262ad424fbae4e481e209b6d1c7",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 4790
+    },
+    {
+      "path": "scripts/verify-runtime-process-uid.sh",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "2bcbd6552c4e493ea93b611efe85e972b69713e7",
+      "mode": "100755",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1363
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "old": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "sha": "08e3261a95804e400d0a742e38ac57ffef78438a",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 22438
+    },
+    {
+      "path": "security/runtime/hosted-application-user-guard.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "392d1f64ab4588922e877431a7b96d9b281399ea",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 454
+    },
+    {
+      "path": "security/runtime/hosted-application-user-guard.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "296efbbf7dcad80b00e379d53b06ef611a76ecc8",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 999
+    },
+    {
+      "path": "tests/runtime-process-uid.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "b2091aa37378f82b9f7115d5ee0af170de654aa7",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 2114
+    },
+    {
+      "path": "tests/vector-runtime-packaging.test.cjs",
+      "old": "6105b6fd0d5c1544c56177372621bddc4140ad38",
+      "sha": "54028aaf130581a2bd606a4a4226d2a3a4fd1ad7",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 8464
+    },
+    {
+      "path": "ux-overlay/vector-settings-navigation.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "106c7bc797d5a72546fc14841291eaac5eb65c1c",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 1991
+    },
+    {
+      "path": "ux-overlay/vector-shell.css",
+      "old": "d1a940383c5f64149660db2349b63de7d3834175",
+      "sha": "1cceb55991967d7d103b1b3d8c1c614505bb866d",
+      "mode": "100644",
+      "state": "BASELINE_ALREADY_TARGET",
+      "bytes": 43986
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "old": "7d19861571d1cf63a3cde32142e39f1e6fa84cf3",
+      "sha": "82f8a63f543188e009a94d038596a41a88ce9416",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 84716
+    },
+    {
+      "path": "ux-overlay/vector-staffology-controls.test.cjs",
+      "old": "0000000000000000000000000000000000000000",
+      "sha": "99d3141216567f5542574f4d10fa260c1d48c81d",
+      "mode": "100644",
+      "state": "RECONSTRUCTED_VERIFIED",
+      "bytes": 4189
+    }
+  ],
+  "missing": []
+}

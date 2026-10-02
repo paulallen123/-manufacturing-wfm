@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "lane": "09",
+  "reviewScope": "THREE_PATH_PROOF_INTEGRITY_REPAIR",
+  "frozenBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "verdict": "NO_MATERIAL_P1_OR_P2_OBSERVED_IN_BOUNDED_LOCAL_REPAIR",
+  "sourceVerified": true,
+  "files": [
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "mode": "100644",
+      "sourceBlob": "5a23037af19be20b0179c389dc3b5dc49f2c8b2f",
+      "proposedBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "bytes": 12376,
+      "sha256": "8e80f72de9a10ed165aefd83c77b1a48fd9b07fe225ca164ffc0ef2180e78432"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "mode": "100644",
+      "sourceBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+      "proposedBlob": "198978255a62a1297e6104f66f67373864534e3e",
+      "bytes": 99725,
+      "sha256": "80e4ba567780dc46090634998396dc6a7f2cb4906b2390c303d58e9066ff038b"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "mode": "100644",
+      "sourceBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+      "proposedBlob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+      "bytes": 74763,
+      "sha256": "6eba2b6a4e6a4c734e3c5878493b5bdfe2f24bf79f3aa5a8aaf5c36eb680e471"
+    }
+  ],
+  "unchangedDependenciesVerified": 21,
+  "findings": [],
+  "tests": {
+    "heldOut": {
+      "file": "proof-gate.final-green.node22.tap",
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1822.1322
+    },
+    "frozenControl": {
+      "file": "proof-gate.frozen-red.node22.tap",
+      "tests": 4,
+      "passed": 0,
+      "failed": 4,
+      "skipped": 0,
+      "durationMs": 1078.7977
+    },
+    "affected": {
+      "file": "proof-gate.affected.node22.tap",
+      "tests": 52,
+      "passed": 52,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 43818.9723
+    }
+  },
+  "observations": [
+    {
+      "kind": "historical-replay",
+      "invalid": true,
+      "exactCandidateBindingMatched": true,
+      "status": "REVALIDATION_REQUIRED",
+      "satisfied": false,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    },
+    {
+      "kind": "historical-replay",
+      "invalid": false,
+      "exactCandidateBindingMatched": true,
+      "status": "PASS",
+      "satisfied": true,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    },
+    {
+      "kind": "time-policies",
+      "invalid": true,
+      "exactCandidateBindingMatched": true,
+      "status": "REVALIDATION_REQUIRED",
+      "satisfied": false,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    },
+    {
+      "kind": "time-policies",
+      "invalid": false,
+      "exactCandidateBindingMatched": true,
+      "status": "PASS",
+      "satisfied": true,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    }
+  ],
+  "limitations": [
+    "No hosted, container, customer, provider or deployment proof.",
+    "Non-strict historical fixture behavior remains compatible; strictEvidence or hosted mode triggers persisted replay revalidation.",
+    "Policy effectiveDate is checked when supplied; missing date preserves existing non-customer producer contract.",
+    "Initial reviewer VM harness lacked URL and failed two tests; corrected harness and meaningful frozen-source control are retained separately.",
+    "Staffology native695 TR09 P2 and the parent-observed full-HTTP mapping failure are separate open issues."
+  ]
+}
