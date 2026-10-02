@@ -8,6 +8,7 @@ const os=require('node:os');
 
 const runtimeRoot=process.env.WFM_RUNTIME||path.resolve(__dirname,'../..');
 const Bridge=require('./canonical-runtime-bridge.cjs');
+const Operations=require('./canonical-operations.cjs');
 const IG=require(path.join(runtimeRoot,'lib/integration-gateway.cjs'));
 const W=require(path.join(runtimeRoot,'public/core.js'));
 const E=require(path.join(runtimeRoot,'lib/engine'));
@@ -31,7 +32,7 @@ test('reviewed Staffology employee import persists across restart without duplic
  t.after(()=>rmSync(directory,{recursive:true,force:true}));
  let db=new DatabaseSync(file);schema(db);
  const tenant='northstar-demo',actor={tenant,personId:'d1',email:'director@northstar.example',costs:true,permissions:['company.configure']};
- const cfg={id:'staffology-people',provider:'Staffology',tenant,scope:'d1',objectTypes:['people']};
+ const cfg={id:'staffology-people',provider:'staffology',tenant,scope:'d1',objectTypes:['people']},profile={binding:{tenant},connector:cfg};
  const state=seed();db.prepare('INSERT INTO tenants VALUES(?,?,?)').run(tenant,state.version,JSON.stringify(state));
  const load=()=>JSON.parse(db.prepare('SELECT state FROM tenants WHERE id=?').get(tenant).state);
  const integrations=IG.createStore(db);
@@ -41,13 +42,14 @@ test('reviewed Staffology employee import persists across restart without duplic
   if(!checked.canStage)throw Error(checked.errors.map(x=>x.message).join(' ')||'People record failed validation.');
   return checked.valid[0];
  };
- const runtime=Bridge.createRuntime({loadState:load,stagePeople:(currentActor,envelope,receipt)=>{
-  assert.equal(currentActor.tenant,cfg.tenant);
-  assert.equal(receipt.connectorId,cfg.id);
-  return integrations.stage(cfg,envelope,receipt.idempotencyKey,(_objectType,record)=>prepare(record));
+ const resolveConnector=(currentActor,receipt)=>Operations.stagingConnector({profile,configured:[],actor:currentActor,receipt});
+ const runtime=Bridge.createRuntime({loadState:load,assertStagePeople:resolveConnector,stagePeople:(currentActor,envelope,receipt)=>{
+  const scoped=resolveConnector(currentActor,receipt);
+  return integrations.stage(scoped,envelope,receipt.idempotencyKey,(_objectType,record)=>prepare(record));
  }});
  const acquisition={objectType:'people',paginationComplete:true,atomicProviderSnapshot:false,cursor:'cursor-1',sourceVersion:'staffology-revision-1',records:[{externalId:'employee-001',revision:'revision-1',operation:'upsert',data:{identity:{employeeId:'employee-001',payrollCode:'PAY001'},person:{firstName:'Jamie',lastName:'Taylor',email:'jamie.taylor@example.invalid'},employment:{effectiveFrom:'2026-10-01'}}}]};
- const receipt={approved:true,connectorId:cfg.id,idempotencyKey:'staffology-people-001',mappings:[{externalId:'employee-001',payrollId:'PAY001',managerId:'m1',site:'Tamworth',job:'Machine operator',contractType:'full_time',weeklyHours:37.5,language:'en-GB'}]};
+ const receipt={approved:true,connectorId:cfg.id,connectorScope:cfg.scope,idempotencyKey:'staffology-people-001',mappings:[{externalId:'employee-001',payrollId:'PAY001',managerId:'m1',site:'Tamworth',job:'Machine operator',contractType:'full_time',weeklyHours:37.5,language:'en-GB'}]};
+ runtime.assertEmployeeStaging(actor,receipt);
  const staged=runtime.stageEmployeeAcquisition(actor,acquisition,receipt);
  assert.equal(staged.status,'staged');assert.equal(staged.valid,1);assert.equal(staged.held,0);
  db.exec('BEGIN IMMEDIATE');

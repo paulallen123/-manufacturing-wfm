@@ -65,10 +65,12 @@ function peopleEnvelope(acquisition,receipt){
  return Object.freeze({objectType:'people',cursor:acquisition.cursor,sourceVersion:acquisition.sourceVersion,records});
 }
 
-function createRuntime({loadState,stagePeople=null,productionBoundaries=null}={}){
+function createRuntime({loadState,stagePeople=null,assertStagePeople=null,productionBoundaries=null}={}){
  if(typeof loadState!=='function')fail('Canonical payroll state loader is required.','STAFFOLOGY_CANONICAL_CONFIGURATION_INVALID',503);
  return Object.freeze({
   status(){const boundaryStatus=productionBoundaries?.status?.()||{productionDatabase:false,durableOneShotAuthority:false};return {...boundaryStatus,configured:Boolean(boundaryStatus.productionDatabase&&boundaryStatus.durableOneShotAuthority),activationAvailable:false,employeeImport:'reviewed-staging-only',payrollImport:'approval-required',claimBoundary:'Canonical store and authority are assembled but no provider route, client, credentials or worker is activated.'};},
+  assertEmployeeStaging(actor,receipt){if(typeof assertStagePeople!=='function')return true;assertStagePeople(actor,receipt);return true;},
+  employeeMappingOptions(actor){if(!actor?.tenant||!(actor.permissions||[]).includes('company.configure'))fail('Current company configuration permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);const state=loadState(actor.tenant),unique=values=>[...new Set(values.filter(value=>value!==undefined&&value!==null&&String(value).trim()).map(value=>String(value).trim()))].sort(),contracts=Object.values(state?.workRules?.contracts||{}).flat();return {managers:(state?.org||[]).filter(row=>row?.id&&row?.name).map(row=>({id:row.id,name:row.name})),sites:unique((state?.staff||[]).map(row=>row.site)),jobs:unique([...(state?.workRules?.jobs||[]).map(row=>row.name),...(state?.staff||[]).map(row=>row.job)]),contractTypes:unique(contracts.map(row=>row.type)),weeklyHours:unique(contracts.map(row=>row.weeklyHours))};},
   stageEmployeeAcquisition(actor,acquisition,receipt){if(typeof stagePeople!=='function')fail('Canonical employee staging boundary is unavailable.','STAFFOLOGY_EMPLOYEE_IMPORT_NOT_WIRED',503);return stagePeople(actor,peopleEnvelope(acquisition,receipt),receipt);},
   preparePayroll(actor,approval){if(!actor?.tenant||actor.tenant!==approval?.tenant||!(actor.permissions||[]).includes('payroll.export'))fail('Current payroll release permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);return preparePayrollInput(loadState(actor.tenant),approval);},
   coordinator(options){if(typeof productionBoundaries?.coordinator!=='function')fail('Production Staffology store and authority are not assembled.','STAFFOLOGY_PRODUCTION_STORE_REQUIRED',503);return productionBoundaries.coordinator(options);}
