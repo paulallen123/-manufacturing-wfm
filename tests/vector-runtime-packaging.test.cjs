@@ -25,6 +25,7 @@ test('local proof assembly includes the same required bootstrap dependencies', (
 
 test('local proof assembly includes absolute bootstrap runtime dependencies and training closure', () => {
   const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
+  assert.match(bootstrap, /onboardingMarkVerified:\s*require\(['"]\/app\/public\/onboarding-engine\.js['"]\)\.markVerified/, 'trusted onboarding callback must retain its literal canonical dependency');
   const absoluteRequires = Array.from(bootstrap.matchAll(/require\(['"]\/app\/([^'"]+)['"]\)/g), m => m[1]);
   const runtimeGroups = {
     'integration-runtime': 'integration',
@@ -40,6 +41,14 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
       continue;
     }
     const [runtimeGroup, ...rest] = required.split('/');
+    if (runtimeGroup === 'public' && rest.join('/') === 'onboarding-engine.js') {
+      assert.match(composer, /'public\/onboarding-engine\.js': 'c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e'/, 'ON must remain a pinned sealed-artifact dependency');
+      assert.match(composer, /package: 'b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a'/, 'canonical package manifest must be pinned');
+      assert.match(composer, /runtime: '8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce'/, 'canonical runtime manifest must be pinned');
+      assert.match(composer, /validateSealedRuntime\(output\)/, 'fresh extracted output must be checked before overlays');
+      assert.match(composer, /function composeStaffology\(runtime\) \{\s*validateSealedRuntime\(runtime\)/, 'existing extracted output must be checked before mutation');
+      continue;
+    }
     const sourceGroup = runtimeGroups[runtimeGroup];
     assert.ok(sourceGroup, `unmapped bootstrap runtime group: ${runtimeGroup}`);
     const file = rest.join('/');
@@ -122,4 +131,16 @@ test('packaged lifecycle router preserves the trusted Autopilot execution adapte
   assert.match(router, /getTrustedEvent\(input\s*=\s*\{\}\)/, 'packaged lifecycle router must expose trusted lifecycle readback');
   assert.match(router, /return lifecycle\.getTrustedEvent\(input\)/, 'trusted lifecycle readback must delegate to the authoritative guard');
   assert.match(bootstrap, /createAutopilotExecutionEngine\(\{[^}]*lifecycleAdapter\s*:\s*lifecycleGuard/s, 'hosted bootstrap must inject the same authoritative lifecycle guard into Autopilot');
+});
+
+
+test('packed public dependency guard refuses unknown, removed, obfuscated or unpinned imports',async t=>{
+ const {mkdtempSync,mkdirSync,copyFileSync,writeFileSync,rmSync}=fs,{tmpdir}=require('node:os'),{spawnSync}=require('node:child_process');
+ const literal="require('/app/public/onboarding-engine.js').markVerified",composerText=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8');
+ for(const [name,changeBootstrap,changeComposer]of[
+  ['unknown public alongside canonical ON',s=>s+"\nrequire('/app/public/unknown.js');\n",s=>s],
+  ['removed callback dependency',s=>s.replace(literal,'undefined'),s=>s],
+  ['obfuscated callback dependency',s=>s.replace(literal,"require('/app/public/'+'onboarding-engine.js').markVerified"),s=>s],
+  ['missing canonical ON digest',s=>s,s=>s.replace("'public/onboarding-engine.js': 'c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e'","'public/not-on.js': 'c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e'")]
+ ])await t.test(name,()=>{const dir=mkdtempSync(path.join(tmpdir(),'vector-public-guard-'));try{for(const p of ['tests/vector-runtime-packaging.test.cjs','learning/runtime/training-delivery-service.cjs']){mkdirSync(path.dirname(path.join(dir,p)),{recursive:true});copyFileSync(path.join(root,p),path.join(dir,p));}mkdirSync(path.join(dir,'security/runtime'),{recursive:true});mkdirSync(path.join(dir,'scripts'));writeFileSync(path.join(dir,'security/runtime/bootstrap.cjs'),changeBootstrap(bootstrap));writeFileSync(path.join(dir,'scripts/compose-vector-local-runtime.mjs'),changeComposer(composerText));const result=spawnSync(process.execPath,['--test','--test-name-pattern=local proof assembly includes absolute bootstrap runtime dependencies and training closure',path.join(dir,'tests/vector-runtime-packaging.test.cjs')],{encoding:'utf8',timeout:10000,env:{...process.env,NODE_TEST_CONTEXT:undefined}});assert.match(result.stdout,/^# tests 1$/m,'child must execute the actual selected guard');assert.notEqual(result.status,0,'invalid public dependency mapping must fail');}finally{rmSync(dir,{recursive:true,force:true});}});
 });
