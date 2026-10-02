@@ -1,0 +1,33 @@
+{
+  "scope": "Railway read-only hosted proof refresh",
+  "checks": {
+    "latestTimestampMatches": true,
+    "latestObservedTupleMatches": true,
+    "latestReadinessMatches": true,
+    "fixtureOnly": true,
+    "productionNotApproved": true,
+    "customerProofIncomplete": true
+  },
+  "files": [
+    {
+      "path": "readback.json",
+      "bytes": 6746,
+      "sha256": "496e2443947eb2417ed0eaf10587e3a493f39cfd183f19def02f3fc9e97ffae5"
+    },
+    {
+      "path": "logs.json",
+      "bytes": 43269,
+      "sha256": "c59aae7e7c321ca65e37603c7d2c180eab295a30d258cd324a52e063991982dc"
+    },
+    {
+      "path": "observations.json",
+      "bytes": 5852,
+      "sha256": "a877bf2182aec649f98812442f8038c0b86d3da05dc89b9c39039a5fe314c4ec"
+    },
+    {
+      "path": "summary.md",
+      "bytes": 1766,
+      "sha256": "717036dde2a6949ecd305e560bc1998e38fa054c5657b4bb039af0d95adf97a8"
+    }
+  ]
+}

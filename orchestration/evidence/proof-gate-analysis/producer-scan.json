@@ -1,0 +1,1446 @@
+[
+  {
+    "path": "__security_hold_7b6f9d22e1__/implementation/runtime/implementation-learning-integration.test.cjs",
+    "expectedBlob": "5083f7b290ebe2460a0846fe4e3187e8f9f94ff6",
+    "actualBlob": "5083f7b290ebe2460a0846fe4e3187e8f9f94ff6",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 12,
+        "text": "createOneDayEnterpriseEngine,"
+      },
+      {
+        "line": 97,
+        "text": "const implementation = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 105,
+        "text": "learningSummaryProvider: tenant => learning.summaryForTenant(tenant)"
+      },
+      {
+        "line": 116,
+        "text": "implementationInternal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },"
+      },
+      {
+        "line": 147,
+        "text": "'/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 232,
+        "text": "'/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 250,
+        "text": "'/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 260,
+        "text": "'/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 307,
+        "text": "'/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 331,
+        "text": "'/api/implementation/autonomous/status'"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_7b6f9d22e1__/implementation/runtime/one-day-enterprise-engine-core.cjs",
+    "expectedBlob": "0baf58781a329792b50ebf5e7b91725ffc52543f",
+    "actualBlob": "0baf58781a329792b50ebf5e7b91725ffc52543f",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 6,
+        "text": "const PREFIX = '/api/implementation/autonomous';"
+      },
+      {
+        "line": 7,
+        "text": "const INTERNAL_HEADER = 'x-wfm-implementation-internal';"
+      },
+      {
+        "line": 122,
+        "text": "function createOneDayEnterpriseEngine(options = {}) {"
+      },
+      {
+        "line": 166,
+        "text": "const learningSummaryProvider = typeof options.learningSummaryProvider === 'function'"
+      },
+      {
+        "line": 167,
+        "text": "? options.learningSummaryProvider"
+      },
+      {
+        "line": 351,
+        "text": "if (learningSummaryProvider) {"
+      },
+      {
+        "line": 352,
+        "text": "try { learningSummary = learningSummaryProvider(run.tenant); } catch {}"
+      },
+      {
+        "line": 863,
+        "text": "createOneDayEnterpriseEngine,"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_7b6f9d22e1__/implementation/runtime/one-day-enterprise-engine.cjs",
+    "expectedBlob": "31354c83f4cbe1d36465193399b598f879369678",
+    "actualBlob": "31354c83f4cbe1d36465193399b598f879369678",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 8,
+        "text": "const EVIDENCE_PATH = '/api/implementation/autonomous/evidence';"
+      },
+      {
+        "line": 9,
+        "text": "const INTERNAL_HEADER = 'x-wfm-implementation-internal';"
+      },
+      {
+        "line": 56,
+        "text": "function createOneDayEnterpriseEngine(options = {}) {"
+      },
+      {
+        "line": 57,
+        "text": "const engine = core.createOneDayEnterpriseEngine(options);"
+      },
+      {
+        "line": 107,
+        "text": "createOneDayEnterpriseEngine,"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_7b6f9d22e1__/implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "expectedBlob": "38bc9c89fa5f9acc5662a00f7eee709874f40fd2",
+    "actualBlob": "38bc9c89fa5f9acc5662a00f7eee709874f40fd2",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 11,
+        "text": "const { createOneDayEnterpriseEngine, REQUIREMENTS } = require('./one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 43,
+        "text": "const engine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 60,
+        "text": "internal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },"
+      },
+      {
+        "line": 121,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 154,
+        "text": "f.engine, token, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 159,
+        "text": "f.engine, token, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 171,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 191,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 203,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 217,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 243,
+        "text": "f.engine, f.tokens.employee, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 271,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 278,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 287,
+        "text": "f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 298,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 307,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 322,
+        "text": "f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 328,
+        "text": "f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 335,
+        "text": "'/api/implementation/autonomous/invitation?token=' + encodeURIComponent(invitation.token)"
+      },
+      {
+        "line": 354,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 371,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 402,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/proposal',"
+      },
+      {
+        "line": 420,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 443,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/proposal',"
+      },
+      {
+        "line": 456,
+        "text": "f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 463,
+        "text": "f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 482,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 490,
+        "text": "f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 496,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 502,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 511,
+        "text": "f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope'"
+      },
+      {
+        "line": 518,
+        "text": "f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/scope'"
+      },
+      {
+        "line": 531,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 540,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 576,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 577,
+        "text": "{ runId: run.runId, kind: 'security-controls', status: 'PASS', confidence: 1 }"
+      },
+      {
+        "line": 582,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_7b6f9d22e1__/implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "expectedBlob": "94f2b7b688b66e3d8ffec05624ffe0453d988234",
+    "actualBlob": "94f2b7b688b66e3d8ffec05624ffe0453d988234",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 10,
+        "text": "const { createOneDayEnterpriseEngine } = require('./one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 30,
+        "text": "req.url = '/api/implementation/autonomous/evidence';"
+      },
+      {
+        "line": 31,
+        "text": "req.headers = { 'x-wfm-implementation-internal': token };"
+      },
+      {
+        "line": 49,
+        "text": "const engine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 75,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 89,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 113,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_7b6f9d22e1__/implementation/ui/implementation-journey.js",
+    "expectedBlob": "a558fc10036acb82f3c79bc99d07fe6e3c0ba32e",
+    "actualBlob": "a558fc10036acb82f3c79bc99d07fe6e3c0ba32e",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 4,
+        "text": "const IMPL='/api/implementation/autonomous';"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_7b6f9d22e1__/security/runtime/bootstrap.cjs",
+    "expectedBlob": "5ebb005cb26394ce4f338e96bc3891f86308072e",
+    "actualBlob": "5ebb005cb26394ce4f338e96bc3891f86308072e",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 11,
+        "text": "const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 60,
+        "text": "return requestPath(req).startsWith('/api/implementation/autonomous');"
+      },
+      {
+        "line": 302,
+        "text": "implementationEngine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 304,
+        "text": "learningSummaryProvider: tenant => {"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_one_day_enterprise__/implementation/runtime/implementation-learning-integration.test.cjs",
+    "expectedBlob": "5083f7b290ebe2460a0846fe4e3187e8f9f94ff6",
+    "actualBlob": "5083f7b290ebe2460a0846fe4e3187e8f9f94ff6",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 12,
+        "text": "createOneDayEnterpriseEngine,"
+      },
+      {
+        "line": 97,
+        "text": "const implementation = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 105,
+        "text": "learningSummaryProvider: tenant => learning.summaryForTenant(tenant)"
+      },
+      {
+        "line": 116,
+        "text": "implementationInternal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },"
+      },
+      {
+        "line": 147,
+        "text": "'/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 232,
+        "text": "'/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 250,
+        "text": "'/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 260,
+        "text": "'/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 307,
+        "text": "'/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 331,
+        "text": "'/api/implementation/autonomous/status'"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_one_day_enterprise__/implementation/runtime/one-day-enterprise-engine-core.cjs",
+    "expectedBlob": "0baf58781a329792b50ebf5e7b91725ffc52543f",
+    "actualBlob": "0baf58781a329792b50ebf5e7b91725ffc52543f",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 6,
+        "text": "const PREFIX = '/api/implementation/autonomous';"
+      },
+      {
+        "line": 7,
+        "text": "const INTERNAL_HEADER = 'x-wfm-implementation-internal';"
+      },
+      {
+        "line": 122,
+        "text": "function createOneDayEnterpriseEngine(options = {}) {"
+      },
+      {
+        "line": 166,
+        "text": "const learningSummaryProvider = typeof options.learningSummaryProvider === 'function'"
+      },
+      {
+        "line": 167,
+        "text": "? options.learningSummaryProvider"
+      },
+      {
+        "line": 351,
+        "text": "if (learningSummaryProvider) {"
+      },
+      {
+        "line": 352,
+        "text": "try { learningSummary = learningSummaryProvider(run.tenant); } catch {}"
+      },
+      {
+        "line": 863,
+        "text": "createOneDayEnterpriseEngine,"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_one_day_enterprise__/implementation/runtime/one-day-enterprise-engine.cjs",
+    "expectedBlob": "31354c83f4cbe1d36465193399b598f879369678",
+    "actualBlob": "31354c83f4cbe1d36465193399b598f879369678",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 8,
+        "text": "const EVIDENCE_PATH = '/api/implementation/autonomous/evidence';"
+      },
+      {
+        "line": 9,
+        "text": "const INTERNAL_HEADER = 'x-wfm-implementation-internal';"
+      },
+      {
+        "line": 56,
+        "text": "function createOneDayEnterpriseEngine(options = {}) {"
+      },
+      {
+        "line": 57,
+        "text": "const engine = core.createOneDayEnterpriseEngine(options);"
+      },
+      {
+        "line": 107,
+        "text": "createOneDayEnterpriseEngine,"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_one_day_enterprise__/implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "expectedBlob": "38bc9c89fa5f9acc5662a00f7eee709874f40fd2",
+    "actualBlob": "38bc9c89fa5f9acc5662a00f7eee709874f40fd2",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 11,
+        "text": "const { createOneDayEnterpriseEngine, REQUIREMENTS } = require('./one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 43,
+        "text": "const engine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 60,
+        "text": "internal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },"
+      },
+      {
+        "line": 121,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 154,
+        "text": "f.engine, token, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 159,
+        "text": "f.engine, token, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 171,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 191,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 203,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 217,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 243,
+        "text": "f.engine, f.tokens.employee, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 271,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 278,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 287,
+        "text": "f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 298,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 307,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 322,
+        "text": "f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 328,
+        "text": "f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 335,
+        "text": "'/api/implementation/autonomous/invitation?token=' + encodeURIComponent(invitation.token)"
+      },
+      {
+        "line": 354,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 371,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 402,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/proposal',"
+      },
+      {
+        "line": 420,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 443,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/proposal',"
+      },
+      {
+        "line": 456,
+        "text": "f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 463,
+        "text": "f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 482,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 490,
+        "text": "f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 496,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 502,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 511,
+        "text": "f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope'"
+      },
+      {
+        "line": 518,
+        "text": "f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/scope'"
+      },
+      {
+        "line": 531,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 540,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 576,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 577,
+        "text": "{ runId: run.runId, kind: 'security-controls', status: 'PASS', confidence: 1 }"
+      },
+      {
+        "line": 582,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_one_day_enterprise__/implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "expectedBlob": "94f2b7b688b66e3d8ffec05624ffe0453d988234",
+    "actualBlob": "94f2b7b688b66e3d8ffec05624ffe0453d988234",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 10,
+        "text": "const { createOneDayEnterpriseEngine } = require('./one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 30,
+        "text": "req.url = '/api/implementation/autonomous/evidence';"
+      },
+      {
+        "line": 31,
+        "text": "req.headers = { 'x-wfm-implementation-internal': token };"
+      },
+      {
+        "line": 49,
+        "text": "const engine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 75,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 89,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 113,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_one_day_enterprise__/implementation/ui/implementation-journey.js",
+    "expectedBlob": "a558fc10036acb82f3c79bc99d07fe6e3c0ba32e",
+    "actualBlob": "a558fc10036acb82f3c79bc99d07fe6e3c0ba32e",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 4,
+        "text": "const IMPL='/api/implementation/autonomous';"
+      }
+    ]
+  },
+  {
+    "path": "__security_hold_one_day_enterprise__/security/runtime/bootstrap.cjs",
+    "expectedBlob": "5ebb005cb26394ce4f338e96bc3891f86308072e",
+    "actualBlob": "5ebb005cb26394ce4f338e96bc3891f86308072e",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 11,
+        "text": "const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 60,
+        "text": "return requestPath(req).startsWith('/api/implementation/autonomous');"
+      },
+      {
+        "line": 302,
+        "text": "implementationEngine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 304,
+        "text": "learningSummaryProvider: tenant => {"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/agents-api-bootstrap-route.cjs",
+    "expectedBlob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+    "actualBlob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 6,
+        "text": "const BOOTSTRAP_PATH = '/api/implementation/autonomous/agents/bootstrap';"
+      },
+      {
+        "line": 7,
+        "text": "const INTERNAL_HEADER = 'x-wfm-implementation-internal';"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/agents-api-bootstrap-route.test.cjs",
+    "expectedBlob": "bf4c652c4b9e0a7efc1b6780b3cb35c08cba3b04",
+    "actualBlob": "bf4c652c4b9e0a7efc1b6780b3cb35c08cba3b04",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 19,
+        "text": "req.headers = token ? { 'x-wfm-implementation-internal': token } : {};"
+      },
+      {
+        "line": 70,
+        "text": "await f.route.handleRequest(request('POST','/api/implementation/autonomous/agents/bootstrap',{runId:'run-1',tenant:'northstar-demo'},'internal-token'),res);"
+      },
+      {
+        "line": 89,
+        "text": "await f.route.handleRequest(request('POST','/api/implementation/autonomous/agents/bootstrap',{runId:'run-1',tenant:'northstar-demo'},'wrong'),res);"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/implementation-active-controller.integration.test.cjs",
+    "expectedBlob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+    "actualBlob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 11,
+        "text": "const { createOneDayEnterpriseEngine } = require('./one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 79,
+        "text": "const engine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 93,
+        "text": "internal: { 'x-wfm-implementation-internal': 'worker-token' },"
+      },
+      {
+        "line": 104,
+        "text": "const result=await call(f.engine,null,'POST','/api/implementation/autonomous/work/claim',"
+      },
+      {
+        "line": 115,
+        "text": "const result=await call(f.engine,null,'POST','/api/implementation/autonomous/work/result',"
+      },
+      {
+        "line": 125,
+        "text": "const activated=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 131,
+        "text": "engine=createOneDayEnterpriseEngine({dbPath:f.dbPath,internalToken:'worker-token',"
+      },
+      {
+        "line": 138,
+        "text": "const refused=await call(engine,null,'POST','/api/implementation/autonomous/work/claim',{...body,...changed},headers);"
+      },
+      {
+        "line": 145,
+        "text": "const claim=await call(engine,null,'POST','/api/implementation/autonomous/work/claim',body,headers);"
+      },
+      {
+        "line": 150,
+        "text": "const duplicate=await call(engine,null,'POST','/api/implementation/autonomous/work/claim',body,headers);"
+      },
+      {
+        "line": 154,
+        "text": "const stale=await call(engine,null,'POST','/api/implementation/autonomous/work/result',{...result,fence:job.fence+1},headers);"
+      },
+      {
+        "line": 156,
+        "text": "const accepted=await call(engine,null,'POST','/api/implementation/autonomous/work/result',result,headers);"
+      },
+      {
+        "line": 167,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 190,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/work/status',"
+      },
+      {
+        "line": 220,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 236,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 249,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 252,
+        "text": "kind: 'tenant-environment',"
+      },
+      {
+        "line": 262,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/work/status',"
+      },
+      {
+        "line": 286,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 308,
+        "text": "f.engine, f.token, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 319,
+        "text": "f.engine, f.token, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 345,
+        "text": "f.engine, f.token, 'POST', '/api/implementation/autonomous/decision',"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/implementation-learning-integration.test.cjs",
+    "expectedBlob": "8cf9548bffa76eee0c808a6e3c9bb6b29b204896",
+    "actualBlob": "8cf9548bffa76eee0c808a6e3c9bb6b29b204896",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 12,
+        "text": "createOneDayEnterpriseEngine,"
+      },
+      {
+        "line": 97,
+        "text": "const implementation = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 107,
+        "text": "learningSummaryProvider: tenant => learning.summaryForTenant(tenant)"
+      },
+      {
+        "line": 120,
+        "text": "implementationInternal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },"
+      },
+      {
+        "line": 198,
+        "text": "'/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 277,
+        "text": "'/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 295,
+        "text": "'/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 305,
+        "text": "'/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 352,
+        "text": "'/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 376,
+        "text": "'/api/implementation/autonomous/status'"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+    "expectedBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+    "actualBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 17,
+        "text": "const PREFIX = '/api/implementation/autonomous';"
+      },
+      {
+        "line": 18,
+        "text": "const INTERNAL_HEADER = 'x-wfm-implementation-internal';"
+      },
+      {
+        "line": 265,
+        "text": "function createOneDayEnterpriseEngine(options = {}) {"
+      },
+      {
+        "line": 344,
+        "text": "const learningSummaryProvider = typeof options.learningSummaryProvider === 'function'"
+      },
+      {
+        "line": 345,
+        "text": "? options.learningSummaryProvider"
+      },
+      {
+        "line": 938,
+        "text": "if (learningSummaryProvider) {"
+      },
+      {
+        "line": 939,
+        "text": "try { learningSummary = learningSummaryProvider(run.tenant); } catch {}"
+      },
+      {
+        "line": 2162,
+        "text": "createOneDayEnterpriseEngine,"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine.cjs",
+    "expectedBlob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+    "actualBlob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 9,
+        "text": "const EVIDENCE_PATH = '/api/implementation/autonomous/evidence';"
+      },
+      {
+        "line": 10,
+        "text": "const INTERNAL_HEADER = 'x-wfm-implementation-internal';"
+      },
+      {
+        "line": 57,
+        "text": "function createOneDayEnterpriseEngine(options = {}) {"
+      },
+      {
+        "line": 58,
+        "text": "const engine = core.createOneDayEnterpriseEngine(options);"
+      },
+      {
+        "line": 156,
+        "text": "createOneDayEnterpriseEngine,"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "expectedBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+    "actualBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 11,
+        "text": "const { createOneDayEnterpriseEngine, REQUIREMENTS } = require('./one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 78,
+        "text": "const engine = createOneDayEnterpriseEngine(engineOptions);"
+      },
+      {
+        "line": 89,
+        "text": "internal: { 'x-wfm-implementation-internal': 'implementation-worker-test-token' },"
+      },
+      {
+        "line": 194,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 227,
+        "text": "f.engine, token, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 232,
+        "text": "f.engine, token, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 263,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 288,
+        "text": "const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 310,
+        "text": "const accepted = await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 311,
+        "text": "{runId:run.runId,kind:'identity-access',status:'PASS',confidence:1,source:'hosted-proof',"
+      },
+      {
+        "line": 318,
+        "text": "restarted=createOneDayEnterpriseEngine({dbPath:f.dbPath,requireCandidateBinding:true,candidateSha,deploymentId:'deployment-next',notificationRetryPollMs:0});"
+      },
+      {
+        "line": 319,
+        "text": "const status=await call(restarted,f.tokens.manager,'GET','/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 337,
+        "text": "const denied = await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 338,
+        "text": "{runId:run.runId,kind:'identity-access',status:'PASS',confidence:1,source:'hosted-proof',detail},f.internal);"
+      },
+      {
+        "line": 342,
+        "text": "const accepted = await call(f.engine,null,'POST','/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 343,
+        "text": "{runId:run.runId,kind:'identity-access',status:'PASS',confidence:1,source:'hosted-proof',"
+      },
+      {
+        "line": 357,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 369,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 383,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 434,
+        "text": "'/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 459,
+        "text": "f.engine, f.tokens.employee, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 488,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 499,
+        "text": "f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 518,
+        "text": "const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 522,
+        "text": "const repeated = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 544,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 571,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',"
+      },
+      {
+        "line": 589,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 606,
+        "text": "const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed', event, f.contractWebhook);"
+      },
+      {
+        "line": 607,
+        "text": "const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed', event, f.contractWebhook);"
+      },
+      {
+        "line": 628,
+        "text": "results.push(await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal));"
+      },
+      {
+        "line": 665,
+        "text": "const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 670,
+        "text": "const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 697,
+        "text": "const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 700,
+        "text": "const recovering = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 710,
+        "text": "const final = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 712,
+        "text": "const exhausted = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 729,
+        "text": "const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 734,
+        "text": "restarted = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 751,
+        "text": "restarted, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 773,
+        "text": "const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 783,
+        "text": "restarted = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 816,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 842,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 852,
+        "text": "const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 876,
+        "text": "const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 884,
+        "text": "const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 890,
+        "text": "const repeated = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);"
+      },
+      {
+        "line": 926,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal"
+      },
+      {
+        "line": 933,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',"
+      },
+      {
+        "line": 941,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',"
+      },
+      {
+        "line": 953,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',"
+      },
+      {
+        "line": 959,
+        "text": "const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 990,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal"
+      },
+      {
+        "line": 996,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',"
+      },
+      {
+        "line": 1003,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',"
+      },
+      {
+        "line": 1012,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/notification-recovery/resume',"
+      },
+      {
+        "line": 1018,
+        "text": "const status = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 1039,
+        "text": "const denied = await call(f.engine, null, 'GET', '/api/implementation/autonomous/preflight');"
+      },
+      {
+        "line": 1043,
+        "text": "f.engine, null, 'GET', '/api/implementation/autonomous/preflight', undefined, f.internal"
+      },
+      {
+        "line": 1070,
+        "text": "ready.engine, null, 'GET', '/api/implementation/autonomous/preflight', undefined, ready.internal"
+      },
+      {
+        "line": 1083,
+        "text": "sharedSecretFallback.engine, null, 'GET', '/api/implementation/autonomous/preflight', undefined,"
+      },
+      {
+        "line": 1099,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 1106,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated',"
+      },
+      {
+        "line": 1117,
+        "text": "f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 1128,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 1137,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 1152,
+        "text": "f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 1158,
+        "text": "f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 1165,
+        "text": "'/api/implementation/autonomous/invitation?token=' + encodeURIComponent(invitation.token)"
+      },
+      {
+        "line": 1184,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 1201,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 1232,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/proposal',"
+      },
+      {
+        "line": 1250,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 1273,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/proposal',"
+      },
+      {
+        "line": 1286,
+        "text": "f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/status'"
+      },
+      {
+        "line": 1297,
+        "text": "f.engine, f.tokens.bravo, 'POST', '/api/implementation/autonomous/decision',"
+      },
+      {
+        "line": 1316,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 1324,
+        "text": "f.engine, f.tokens.employee, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 1330,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 1336,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 1345,
+        "text": "f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/scope'"
+      },
+      {
+        "line": 1352,
+        "text": "f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/scope'"
+      },
+      {
+        "line": 1365,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/start',"
+      },
+      {
+        "line": 1374,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',"
+      },
+      {
+        "line": 1410,
+        "text": "f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 1411,
+        "text": "{ runId: run.runId, kind: 'security-controls', status: 'PASS', confidence: 1 }"
+      },
+      {
+        "line": 1416,
+        "text": "f.engine, null, 'POST', '/api/implementation/autonomous/evidence',"
+      },
+      {
+        "line": 1457,
+        "text": "const engine = createOneDayEnterpriseEngine(options);"
+      },
+      {
+        "line": 1461,
+        "text": "const second = createOneDayEnterpriseEngine(options);"
+      },
+      {
+        "line": 1540,
+        "text": "const before = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      },
+      {
+        "line": 1546,
+        "text": "const pass = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {"
+      },
+      {
+        "line": 1547,
+        "text": "runId: run.runId, kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 1555,
+        "text": "const failure = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {"
+      },
+      {
+        "line": 1556,
+        "text": "runId: run.runId, kind: 'tenant-environment', status: 'FAIL', confidence: 1,"
+      },
+      {
+        "line": 1564,
+        "text": "const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/evidence', {"
+      },
+      {
+        "line": 1565,
+        "text": "runId: run.runId, kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 1569,
+        "text": "const reopened = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');"
+      }
+    ]
+  },
+  {
+    "path": "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "expectedBlob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+    "actualBlob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 10,
+        "text": "const { createOneDayEnterpriseEngine } = require('./one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 30,
+        "text": "req.url = '/api/implementation/autonomous/evidence';"
+      },
+      {
+        "line": 31,
+        "text": "req.headers = { 'x-wfm-implementation-internal': token };"
+      },
+      {
+        "line": 49,
+        "text": "const engine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 78,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 92,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      },
+      {
+        "line": 116,
+        "text": "runId: 'run-1', kind: 'tenant-environment', status: 'PASS', confidence: 1,"
+      }
+    ]
+  },
+  {
+    "path": "implementation/ui/implementation-journey.js",
+    "expectedBlob": "28816397006f1aa8b6e916a3ebda95bb7cc110f0",
+    "actualBlob": "28816397006f1aa8b6e916a3ebda95bb7cc110f0",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 4,
+        "text": "const IMPL='/api/implementation/autonomous';"
+      }
+    ]
+  },
+  {
+    "path": "operations/runtime/t9-customer-guardian.test.cjs",
+    "expectedBlob": "1a3b2ff9171fa418c9d27abcc69b2cdfc955e4d0",
+    "actualBlob": "1a3b2ff9171fa418c9d27abcc69b2cdfc955e4d0",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 10,
+        "text": "test('repeated pattern becomes proposal only',async()=>{const f=fx(),g=createT9CustomerGuardian({dbPath:f.dbPath,tickMs:5000});for(let i=0;i<3;i++){g.observeHttpCompletion({req:req(f.token,'/api/implementation/autonomous/run'),statusCode:500,durationMs:20});await g.drainAllForTes"
+      }
+    ]
+  },
+  {
+    "path": "scripts/implementation-source-handoff-proof.cjs",
+    "expectedBlob": "e93e5ce697302e92910834fa7fdbf9ac19489e0e",
+    "actualBlob": "e93e5ce697302e92910834fa7fdbf9ac19489e0e",
+    "exactFrozen": true,
+    "hits": [
+      {
+        "line": 12,
+        "text": "const { createOneDayEnterpriseEngine } = require('../implementation/runtime/one-day-enterprise-engine-core.cjs');"
+      },
+      {
+        "line": 200,
+        "text": "let implementation = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 253,
+        "text": "implementation = createOneDayEnterpriseEngine({"
+      }
+    ]
+  },
+  {
+    "path": "security/runtime/bootstrap.cjs",
+    "expectedBlob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+    "actualBlob": "08e3261a95804e400d0a742e38ac57ffef78438a",
+    "exactFrozen": false,
+    "hits": [
+      {
+        "line": 19,
+        "text": "const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');"
+      },
+      {
+        "line": 110,
+        "text": "return requestPath(req).startsWith('/api/implementation/autonomous');"
+      },
+      {
+        "line": 383,
+        "text": "implementationEngine = createOneDayEnterpriseEngine({"
+      },
+      {
+        "line": 385,
+        "text": "learningSummaryProvider: tenant => {"
+      }
+    ]
+  }
+]

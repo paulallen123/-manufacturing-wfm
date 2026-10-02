@@ -1,0 +1,526 @@
+{
+  "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baseline_tree": {
+    "sha": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+    "truncated": false,
+    "entries": 1217
+  },
+  "scope": "Continuation source archaeology; no additional implementation",
+  "original_inventory_snapshot": {
+    "record_count": 92,
+    "capabilities_sha256": "f28e9c2c387192d85a3724c002633997cb56bdf6837345c7169c2560c596cfc8",
+    "sources_sha256": "6d970143e153d646654fb3f7efe4e73c601a31ee9878521403cc8f18c1b8fbe9",
+    "mutated_by_this_worker": false
+  },
+  "all_state_pr_listing": {
+    "page_counts": [
+      100,
+      100,
+      64,
+      0
+    ],
+    "total": 264,
+    "empty_terminal_page": true,
+    "index_only": true,
+    "latest_staffology_lane_reviewed": false
+  },
+  "previously_unexamined_selected_prs": [
+    {
+      "number": 247,
+      "state": "closed",
+      "merged_at": "2026-09-26T12:40:17Z",
+      "sha": "73333e035105e529c94bac156d70d3c8f6f8565c",
+      "changed_file_count": 1,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 94,
+      "state": "closed",
+      "merged_at": null,
+      "sha": "a58d94aff06dcce3c0e1f51f28d2c0fc1222e6ea",
+      "changed_file_count": 2,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 89,
+      "state": "closed",
+      "merged_at": null,
+      "sha": "0b6c18201726d8d99261a32a4a83e2c4a3c8cd7d",
+      "changed_file_count": 4,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 81,
+      "state": "open",
+      "merged_at": null,
+      "sha": "b26c53be9cbab948adf800896186f11947f6fa92",
+      "changed_file_count": 6,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 78,
+      "state": "open",
+      "merged_at": null,
+      "sha": "324f267e8cfc9efe2069a2ab86051eaa6fecd520",
+      "changed_file_count": 3,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 77,
+      "state": "open",
+      "merged_at": null,
+      "sha": "129cf7cb9653a4e91805e6a7866caf48eada4c31",
+      "changed_file_count": 4,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 74,
+      "state": "open",
+      "merged_at": null,
+      "sha": "3e02d8fef8354dbf84d4e689ea5f270787383668",
+      "changed_file_count": 6,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 73,
+      "state": "open",
+      "merged_at": null,
+      "sha": "8cebc651cf447af4aab145a1837c1a288567e6e7",
+      "changed_file_count": 7,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 68,
+      "state": "open",
+      "merged_at": null,
+      "sha": "0064f6d030efd59ebaa95214fbe40c83f6cd96b5",
+      "changed_file_count": 4,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 61,
+      "state": "open",
+      "merged_at": null,
+      "sha": "7dd2cad38753abbe09bd156c9e3e1ee2a978d922",
+      "changed_file_count": 8,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 59,
+      "state": "open",
+      "merged_at": null,
+      "sha": "465fb51e5aa4c84f70d9d78d02b9e2ba14fcde23",
+      "changed_file_count": 8,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 58,
+      "state": "open",
+      "merged_at": null,
+      "sha": "04d4d05d57389548048a4cfa913f996c231ccedc",
+      "changed_file_count": 8,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    },
+    {
+      "number": 53,
+      "state": "open",
+      "merged_at": null,
+      "sha": "e29184d39d7dc0068bc8dcb0f9376c104bf7b8e9",
+      "changed_file_count": 3,
+      "page_size": 100,
+      "complete_because_last_page_below_100": true
+    }
+  ],
+  "exact_branch_trees": [
+    {
+      "branch": "automation/integration-proof-worker-20260919-r12",
+      "sha": "f5086cd59f4275519b024117f4abe0c363d30813",
+      "tree_sha": "775bcb111cd06836409b337ed5082a35232964f5",
+      "entries": 148,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-claim-expiry-r13",
+      "sha": "c1571d42fe0b28a7c46e99ea8d223a79a415e964",
+      "tree_sha": "4c0f0437f5a75e2d53838eb8f3e86293004dd912",
+      "entries": 148,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-maintenance-health-r14",
+      "sha": "4dc940799763c28e5a492a470a2b2177eb0e3a19",
+      "tree_sha": "5cf480c17fd6b9f0fd75945375f3cd869b2f56b0",
+      "entries": 148,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-reconcile-health-r15",
+      "sha": "b9698ec0816ba6286a29af3174987bc77a9602c3",
+      "tree_sha": "b11d0c141976ce0800b0ba1532f317f3fdfc48af",
+      "entries": 148,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-uncertain-reconciliation-r16",
+      "sha": "574bdce2fc98a5caa619760ca350c0a58d46b7db",
+      "tree_sha": "05daac29f5c94d078ac8e81b7e323667ad3fddf7",
+      "entries": 148,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-provider-neutral-retry-r17",
+      "sha": "43f25e5f4a0e964e662c744cac1d996f2edc17de",
+      "tree_sha": "49aa373f820c205d175c4687374a58daa1121c8e",
+      "entries": 152,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-durable-retry-window-r18",
+      "sha": "54e628b338a96490be3f7dff14e170e250fc3630",
+      "tree_sha": "184b74f2ffc7c7aa74339de5b48b3e5cb2d78dc3",
+      "entries": 152,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-retry-window-restart-r19",
+      "sha": "8651991558ffe3b3d14dd480a349228a45e73c5a",
+      "tree_sha": "9f0603353edf6134439a87188cd8085379eb2d45",
+      "entries": 152,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-first-failure-r20",
+      "sha": "aa95114ae8bd26de436f82a8fba6b2e3d263183b",
+      "tree_sha": "bc3c7ea163e7c8e80570f5ee179bc3697220df64",
+      "entries": 152,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-retry-exhaustion-health-r21",
+      "sha": "a9c8d4f3aa0f960ce1acb9608e43818dca433dea",
+      "tree_sha": "c80dc35ae51cd5a1110f30b7d1d727bb11a56353",
+      "entries": 154,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-retry-health-wiring-r22",
+      "sha": "d83e70f639b3c0adde6963da5459886554eaf291",
+      "tree_sha": "53a891275e7462b1e2daa313a5097c8a59fc6cca",
+      "entries": 155,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-cross-transport-recovery-r23",
+      "sha": "d360d19372790d46510d861561f0ee2c043cd769",
+      "tree_sha": "d0ff9c68d1f47a0144f6badd4eb69f87415c1a10",
+      "entries": 156,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-readonly-identity-recovery-r24",
+      "sha": "a2a7f6a63a3d7d67dd340628140670c16dcd3711",
+      "tree_sha": "0f729a6bf59c9aebc718c62ac6c687c8a7df947f",
+      "entries": 159,
+      "truncated": false
+    },
+    {
+      "branch": "automation/integration-setup-reference-hardening-r25",
+      "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+      "tree_sha": "6a5c2122f5ac99795d6d7eb4357a7e9b1ecbb722",
+      "entries": 159,
+      "truncated": false
+    },
+    {
+      "branch": "autonomy/passwordless-proof-runner-20260928",
+      "sha": "36eef82a589926e2a88e2e80a03610402db0d10b",
+      "tree_sha": "d9218a2104bbdd83aa1d4a03b859b266d2ff83a1",
+      "entries": 1127,
+      "truncated": false
+    },
+    {
+      "branch": "autonomy/passwordless-exact-candidate-20260928-2234",
+      "sha": "b7fdf0f6aad6b441bfae1881ace30b61b56a2a2e",
+      "tree_sha": "d9218a2104bbdd83aa1d4a03b859b266d2ff83a1",
+      "entries": 1127,
+      "truncated": false
+    },
+    {
+      "branch": "autonomy/passkey-webauthn",
+      "sha": "12adcfd086f9dfd3f67181a1bd544b47855de998",
+      "tree_sha": "7c42d5d059c5caaa307e7713342f8da5a989d45d",
+      "entries": 109,
+      "truncated": false
+    }
+  ],
+  "integration_final_comparison": {
+    "source_sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+    "paths": 45,
+    "absent": 39,
+    "identical": 4,
+    "different": 2
+  },
+  "overlapping_helper_versions": [
+    {
+      "path": "integration/runtime/provider-proof-maintenance-ledger.cjs",
+      "sources": [
+        {
+          "branch": "automation/integration-proof-worker-20260919-r12",
+          "sha": "f5086cd59f4275519b024117f4abe0c363d30813",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-claim-expiry-r13",
+          "sha": "c1571d42fe0b28a7c46e99ea8d223a79a415e964",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-maintenance-health-r14",
+          "sha": "4dc940799763c28e5a492a470a2b2177eb0e3a19",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-reconcile-health-r15",
+          "sha": "b9698ec0816ba6286a29af3174987bc77a9602c3",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-uncertain-reconciliation-r16",
+          "sha": "574bdce2fc98a5caa619760ca350c0a58d46b7db",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-provider-neutral-retry-r17",
+          "sha": "43f25e5f4a0e964e662c744cac1d996f2edc17de",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-durable-retry-window-r18",
+          "sha": "54e628b338a96490be3f7dff14e170e250fc3630",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-retry-window-restart-r19",
+          "sha": "8651991558ffe3b3d14dd480a349228a45e73c5a",
+          "blob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f"
+        },
+        {
+          "branch": "automation/integration-first-failure-r20",
+          "sha": "aa95114ae8bd26de436f82a8fba6b2e3d263183b",
+          "blob": "b28e3e3c4784a68b32296d313620be61b2d2892f"
+        },
+        {
+          "branch": "automation/integration-retry-exhaustion-health-r21",
+          "sha": "a9c8d4f3aa0f960ce1acb9608e43818dca433dea",
+          "blob": "b28e3e3c4784a68b32296d313620be61b2d2892f"
+        },
+        {
+          "branch": "automation/integration-retry-health-wiring-r22",
+          "sha": "d83e70f639b3c0adde6963da5459886554eaf291",
+          "blob": "b28e3e3c4784a68b32296d313620be61b2d2892f"
+        },
+        {
+          "branch": "automation/integration-cross-transport-recovery-r23",
+          "sha": "d360d19372790d46510d861561f0ee2c043cd769",
+          "blob": "b28e3e3c4784a68b32296d313620be61b2d2892f"
+        },
+        {
+          "branch": "automation/integration-readonly-identity-recovery-r24",
+          "sha": "a2a7f6a63a3d7d67dd340628140670c16dcd3711",
+          "blob": "b28e3e3c4784a68b32296d313620be61b2d2892f"
+        },
+        {
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "blob": "b28e3e3c4784a68b32296d313620be61b2d2892f"
+        }
+      ]
+    },
+    {
+      "path": "integration/runtime/provider-proof-retry-policy.cjs",
+      "sources": [
+        {
+          "branch": "automation/integration-provider-neutral-retry-r17",
+          "sha": "43f25e5f4a0e964e662c744cac1d996f2edc17de",
+          "blob": "c368815e0f8b615d1223369cc2bb7ad0eafbee0a"
+        },
+        {
+          "branch": "automation/integration-durable-retry-window-r18",
+          "sha": "54e628b338a96490be3f7dff14e170e250fc3630",
+          "blob": "f4b3b93a4a18fb75f155cd6f8d55aff41c206d3b"
+        },
+        {
+          "branch": "automation/integration-retry-window-restart-r19",
+          "sha": "8651991558ffe3b3d14dd480a349228a45e73c5a",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b"
+        },
+        {
+          "branch": "automation/integration-first-failure-r20",
+          "sha": "aa95114ae8bd26de436f82a8fba6b2e3d263183b",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b"
+        },
+        {
+          "branch": "automation/integration-retry-exhaustion-health-r21",
+          "sha": "a9c8d4f3aa0f960ce1acb9608e43818dca433dea",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b"
+        },
+        {
+          "branch": "automation/integration-retry-health-wiring-r22",
+          "sha": "d83e70f639b3c0adde6963da5459886554eaf291",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b"
+        },
+        {
+          "branch": "automation/integration-cross-transport-recovery-r23",
+          "sha": "d360d19372790d46510d861561f0ee2c043cd769",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b"
+        },
+        {
+          "branch": "automation/integration-readonly-identity-recovery-r24",
+          "sha": "a2a7f6a63a3d7d67dd340628140670c16dcd3711",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b"
+        },
+        {
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b"
+        }
+      ]
+    },
+    {
+      "path": "integration/runtime/provider-proof-maintenance-runner.cjs",
+      "sources": [
+        {
+          "branch": "automation/integration-provider-neutral-retry-r17",
+          "sha": "43f25e5f4a0e964e662c744cac1d996f2edc17de",
+          "blob": "a74a6a88393cd94e59bb863fd0cbeb8e9e3a2465"
+        },
+        {
+          "branch": "automation/integration-durable-retry-window-r18",
+          "sha": "54e628b338a96490be3f7dff14e170e250fc3630",
+          "blob": "a74a6a88393cd94e59bb863fd0cbeb8e9e3a2465"
+        },
+        {
+          "branch": "automation/integration-retry-window-restart-r19",
+          "sha": "8651991558ffe3b3d14dd480a349228a45e73c5a",
+          "blob": "0f9f19b66c54c7f09e179c86f3dd39c218864dbc"
+        },
+        {
+          "branch": "automation/integration-first-failure-r20",
+          "sha": "aa95114ae8bd26de436f82a8fba6b2e3d263183b",
+          "blob": "94ecd27e67efab1978a4a1b7918c034d7591e664"
+        },
+        {
+          "branch": "automation/integration-retry-exhaustion-health-r21",
+          "sha": "a9c8d4f3aa0f960ce1acb9608e43818dca433dea",
+          "blob": "94ecd27e67efab1978a4a1b7918c034d7591e664"
+        },
+        {
+          "branch": "automation/integration-retry-health-wiring-r22",
+          "sha": "d83e70f639b3c0adde6963da5459886554eaf291",
+          "blob": "94ecd27e67efab1978a4a1b7918c034d7591e664"
+        },
+        {
+          "branch": "automation/integration-cross-transport-recovery-r23",
+          "sha": "d360d19372790d46510d861561f0ee2c043cd769",
+          "blob": "94ecd27e67efab1978a4a1b7918c034d7591e664"
+        },
+        {
+          "branch": "automation/integration-readonly-identity-recovery-r24",
+          "sha": "a2a7f6a63a3d7d67dd340628140670c16dcd3711",
+          "blob": "94ecd27e67efab1978a4a1b7918c034d7591e664"
+        },
+        {
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "blob": "94ecd27e67efab1978a4a1b7918c034d7591e664"
+        }
+      ]
+    },
+    {
+      "path": "integration/runtime/maintenance-retry-health.cjs",
+      "sources": [
+        {
+          "branch": "automation/integration-retry-exhaustion-health-r21",
+          "sha": "a9c8d4f3aa0f960ce1acb9608e43818dca433dea",
+          "blob": "4abae8aa50a86b83d25a1bf27b9779f7a89c53f3"
+        },
+        {
+          "branch": "automation/integration-retry-health-wiring-r22",
+          "sha": "d83e70f639b3c0adde6963da5459886554eaf291",
+          "blob": "4abae8aa50a86b83d25a1bf27b9779f7a89c53f3"
+        },
+        {
+          "branch": "automation/integration-cross-transport-recovery-r23",
+          "sha": "d360d19372790d46510d861561f0ee2c043cd769",
+          "blob": "4abae8aa50a86b83d25a1bf27b9779f7a89c53f3"
+        },
+        {
+          "branch": "automation/integration-readonly-identity-recovery-r24",
+          "sha": "a2a7f6a63a3d7d67dd340628140670c16dcd3711",
+          "blob": "4abae8aa50a86b83d25a1bf27b9779f7a89c53f3"
+        },
+        {
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "blob": "4abae8aa50a86b83d25a1bf27b9779f7a89c53f3"
+        }
+      ]
+    },
+    {
+      "path": "integration/runtime/customer-setup-readiness.cjs",
+      "sources": [
+        {
+          "branch": "automation/integration-readonly-identity-recovery-r24",
+          "sha": "a2a7f6a63a3d7d67dd340628140670c16dcd3711",
+          "blob": "202b5ee17702f2b3be0ea33fd71b1dfdb8e2b5f3"
+        },
+        {
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "blob": "784191a44fab7c11b8fa662f11edc8f582f68574"
+        }
+      ]
+    }
+  ],
+  "raw_source_snapshots": 66,
+  "raw_source_snapshots_git_blob_verified": 66,
+  "raw_source_snapshot_failures": [],
+  "new_records": 14,
+  "classifications": {
+    "PORT": 5,
+    "EVOLVE": 9
+  },
+  "status_policy": "All new records FOUND; classification is disposition, not stage completion.",
+  "tests_executed_for_continuation": false,
+  "workflows_executed": false,
+  "product_runtime_assembled": false,
+  "hosted_or_provider_proof": false,
+  "coverage_gaps": [
+    "264 PRs enumerated by all-state listing, but only13 new PR changed-file lists and17 selected branch trees inspected; enumeration is not executable coverage.",
+    "Initial437 branch-name snapshot remains the original inventory. This continuation pins17 heads; no claim that all437 heads or every newly created branch were inspected.",
+    "Source snapshots exist for66 selected files, all verified to exact Git blob bytes. Inspection concentrates on new retry/setup helpers, selected tests and diagnostic executables; not every source family is semantically audited.",
+    "Git modes100644 are confirmed for integration tree entries. Diagnostic refs record mode=null because changed-file API/blob content do not establish Git tree mode; do not assume it.",
+    "Older passwordless proof-runner branches inspected by exact full trees only; missing old WebAuthn UX assets and differing auth modules not semantically evaluated against current packaged entry flow. No duplicate capability record added.",
+    "PR89/94 rollback changed-file paths compared against frozen blobs; no missing exact executable paths. Differing supervisor semantics were not fully diffed, so absorption/supersession is not certified by this continuation.",
+    "PR247 diagnostics only adds bootstrap change; current frozen bootstrap already differs. No isolated new capability is claimed because the historic diagnostic delta has not been semantically extracted.",
+    "Canonical overlaps checked through frozen runtime-identity,identity-survival-guard,live-role-rendered-ui-proof source and frozen complete tree. Existing future Staffology source/review and unpublished root work excluded.",
+    "Available unit fixtures and self-test modes listed but not executed by this archaeology task. Prior lane03 helper port546 tests and independent review are separate evidence, not tests of these new continuation capabilities.",
+    "No live browser, physical mobile device, workflows, Railway/provider requests, deploys, or GitHub writes. No sequential integration/runtime/adversarial/hosted proof; all new statuses remain FOUND."
+  ],
+  "artifacts": {
+    "capabilities_sha256": "41e2d1605ec00b4dcebb80b9b21f1d119c4c0f442ff48947ee6ff2642860545d",
+    "sources_sha256": "6e18e571c27a2bf662b58ef0ed1ca20a0bf4c62136d0296e4fa8a478e1d5b869",
+    "findings_sha256": "51c6be5ce97346477f0a15af6e8831c980e1e98358f61628eb30ba49bb663491"
+  }
+}

@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "lane": "05",
+  "scope": "BOUNDED_PROOF_INTEGRITY_REPAIR",
+  "frozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "state": "IN_PROGRESS",
+  "componentProofState": "TESTED",
+  "proofScope": "ISOLATED_LOCAL_SOURCE_CONTRACT_ONLY",
+  "files": [
+    {
+      "repositoryTargetPath": "implementation/runtime/readiness-evidence-contract.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\readiness-evidence-contract.cjs",
+      "mode": "100644",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceBlob": "5a23037af19be20b0179c389dc3b5dc49f2c8b2f",
+      "sourceBytes": 11748,
+      "proposedBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "proposedSha256": "8e80f72de9a10ed165aefd83c77b1a48fd9b07fe225ca164ffc0ef2180e78432",
+      "proposedBytes": 12376,
+      "netByteDelta": 628
+    },
+    {
+      "repositoryTargetPath": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\one-day-enterprise-engine-core.cjs",
+      "mode": "100644",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+      "sourceBytes": 99344,
+      "proposedBlob": "198978255a62a1297e6104f66f67373864534e3e",
+      "proposedSha256": "80e4ba567780dc46090634998396dc6a7f2cb4906b2390c303d58e9066ff038b",
+      "proposedBytes": 99725,
+      "netByteDelta": 381
+    },
+    {
+      "repositoryTargetPath": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\one-day-enterprise-engine.test.cjs",
+      "mode": "100644",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sourceBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+      "sourceBytes": 69592,
+      "proposedBlob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+      "proposedSha256": "6eba2b6a4e6a4c734e3c5878493b5bdfe2f24bf79f3aa5a8aaf5c36eb680e471",
+      "proposedBytes": 74763,
+      "netByteDelta": 5171
+    }
+  ],
+  "shippingTargets": [
+    "implementation/runtime/readiness-evidence-contract.cjs",
+    "implementation/runtime/one-day-enterprise-engine-core.cjs",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs"
+  ],
+  "netByteDelta": 6180,
+  "unchangedDependencies": [
+    {
+      "path": "implementation/runtime/agents-api-adapter.cjs",
+      "blob": "f74648e2a10aa4240dc109bb67414b9bed48e892",
+      "bytes": 19606,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/agents-api-adapter.test.cjs",
+      "blob": "b7ce5d81a67501bd6eef81dcc12d84881d8b41ae",
+      "bytes": 8686,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/agents-api-bootstrap-route.cjs",
+      "blob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+      "bytes": 7937,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/agents-api-bootstrap-route.test.cjs",
+      "blob": "bf4c652c4b9e0a7efc1b6780b3cb35c08cba3b04",
+      "bytes": 11085,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/configuration-inference-engine.cjs",
+      "blob": "d3688d27841a28d3b8801b7d4c63f254e8bf7edd",
+      "bytes": 11506,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/configuration-inference-engine.test.cjs",
+      "blob": "8961de2ae2c10c3022519a3e1c5931f7e316a543",
+      "bytes": 5691,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/implementation-active-controller.integration.test.cjs",
+      "blob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+      "bytes": 15722,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "bytes": 5922,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+      "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+      "bytes": 3631,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/implementation-learning-integration.test.cjs",
+      "blob": "8cf9548bffa76eee0c808a6e3c9bb6b29b204896",
+      "bytes": 12376,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/implementation-work-controller.cjs",
+      "blob": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+      "bytes": 18652,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/implementation-work-controller.test.cjs",
+      "blob": "556ab49d55e0cfc5b85322e76a4e9b5a5312d70f",
+      "bytes": 8651,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/implementation-work-fencing.test.cjs",
+      "blob": "767cf3eba7e110cc15501e2b71bfe3ac08aef0db",
+      "bytes": 12583,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.cjs",
+      "blob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+      "bytes": 5692,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.test.cjs",
+      "blob": "bc7c5f8e8afae681b28cfae756098363b10526a3",
+      "bytes": 4308,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+      "blob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+      "bytes": 5240,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/tenant-environment-provisioner.cjs",
+      "blob": "ac9d322a5d2127402f67cd88834687ff88e4cbe2",
+      "bytes": 5852,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/tenant-environment-provisioner.test.cjs",
+      "blob": "98c5a5c3a3b531e5b20fbba62f2c00f70e4fd286",
+      "bytes": 4592,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs",
+      "blob": "faca30a92f883ea3eef3868fddfe72a8cf7ab6fd",
+      "bytes": 1569,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/zero-touch-customer-factory.cjs",
+      "blob": "a28090fe6beef55e18106f380499233808cc693f",
+      "bytes": 3330,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    },
+    {
+      "path": "implementation/runtime/zero-touch-customer-factory.test.cjs",
+      "blob": "cc3c8afee78acf158d65b1fa7bc2da7eed0b722f",
+      "bytes": 1659,
+      "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+    }
+  ],
+  "tests": {
+    "runtime": "v22.23.2",
+    "focusedPassed": 4,
+    "affectedPassed": 52,
+    "affectedFailed": 0,
+    "receipts": [
+      {
+        "path": "evidence/01-focused-red.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "--test-name-pattern=strict replay proof|customer policy date",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null,
+        "logSha256": "781dfc5d358eb279471882529c363d72fa6b8f30008e1388b8a8f4fde52576b8",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/02-focused-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "--test-name-pattern=strict replay proof|customer policy date",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null,
+        "logSha256": "17eb15e6af1f95f9fc5f14b658d800c84ad93b7e370d0b453d3cb398d2168e59",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/03-focused-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "--test-name-pattern=strict replay proof|customer policy date",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null,
+        "logSha256": "825e6c3883a2d6d8992112daa5d17eeba7f0063ebbc9ca882c9486a4030e07d6",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/04-affected-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+          "implementation/runtime/implementation-active-controller.integration.test.cjs",
+          "implementation/runtime/implementation-work-controller.test.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null,
+        "logSha256": "09169f61d7e64598a361bbb358c62290ae93e8b827ad84481f7ad4e9109057d0",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/05-focused-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "--test-name-pattern=strict replay proof|customer policy date",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null,
+        "logSha256": "ce892c683089dda7d580a6c8d5156db0dee5943884138c308daefe799bce7361",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/06-affected-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+          "implementation/runtime/implementation-active-controller.integration.test.cjs",
+          "implementation/runtime/implementation-work-controller.test.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null,
+        "logSha256": "0cca40c57e78fedea077abce4c4930b455ec6651c5253bf7f547787b9efb0084",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/07-persisted-red.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "--test-name-pattern=strict replay proof|customer policy date|persisted malformed",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null,
+        "logSha256": "ce1f907a9928b564f70354770928753ef90f40f89a2abd45e36542c18d27482c",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/08-focused-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "--test-name-pattern=strict replay proof|customer policy date|persisted malformed",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null,
+        "logSha256": "05cd8ef2c3dede593dbd3cd49600662696aaa30c445d99a534472b6f52da46fc",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/09-affected-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+          "implementation/runtime/implementation-active-controller.integration.test.cjs",
+          "implementation/runtime/implementation-work-controller.test.cjs"
+        ],
+        "exitCode": 1,
+        "signal": null,
+        "logSha256": "326e8af0e239c302fb1e0e139f62e0aa1ca23fc9320abd33c4adf87fc09e355c",
+        "customerProof": false
+      },
+      {
+        "path": "evidence/10-affected-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--test",
+          "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+          "implementation/runtime/implementation-active-controller.integration.test.cjs",
+          "implementation/runtime/implementation-work-controller.test.cjs"
+        ],
+        "exitCode": 0,
+        "signal": null,
+        "logSha256": "7ea02d68687147ba820fe5487e576e758f3878e2159f3cc7ba0144e16a5da09b",
+        "customerProof": false
+      }
+    ]
+  },
+  "limitations": [
+    "No hosted execution or customer proof, provider/model/browser/GitHub/deployment action",
+    "Integration into current review head requires root identity revalidation and independent review",
+    "Strict historical receipt revalidation applies only explicit strictEvidence or WFM_HOSTED_STAGING true; nonstrict core fixture compatibility retained",
+    "Policy producers that omit effectiveDate remain under existing effectiveDated/source contract; supplied impossible dates cannot pass",
+    "Receipt fields remain trusted worker assertions rather than cryptographic calculation proofs; authorisation/provenance remains required",
+    "All capsule dependency copies are verification inputs only; do not publish them"
+  ],
+  "rollback": "Revert only the3target paths in single review lineage; preserve audit evidence and red/green logs. No frozen release mutation.",
+  "sharedProductSourceChangedBytes": 0
+}

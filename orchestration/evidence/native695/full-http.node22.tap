@@ -1,0 +1,36 @@
+TAP version 13
+# (node:29528) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart
+not ok 1 - strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart
+  ---
+  duration_ms: 3984.8831
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\integrations\\staffology\\independent\\full-http-employee-journey.test.cjs:31:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    POST /api/integrations/staffology/employees/acquire-stage returned 403: {"error":"Employee mapping is outside the current canonical manager, site, job, contract or weekly-hours options."}
+    
+    403 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\native-src\integrations\staffology\independent\full-http-employee-journey.test.cjs:26:518
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\native-src\integrations\staffology\independent\full-http-employee-journey.test.cjs:40:15)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6098.4047

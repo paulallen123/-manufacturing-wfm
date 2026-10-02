@@ -1,0 +1,228 @@
+TAP version 13
+# Subtest: composer preserves the absent-directory canonical caller contract
+not ok 1 - composer preserves the absent-directory canonical caller contract
+  ---
+  duration_ms: 92.5945
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\scripts\\compose-vector-local-runtime.contract.test.cjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Canonical composition failed. Actual stderr:
+    node:internal/child_process:1120
+        result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                       ^
+    
+    <ref *1> Error: spawnSync tar ENOENT
+        at Object.spawnSync (node:internal/child_process:1120:20)
+        at spawnSync (node:child_process:902:24)
+        at execFileSync (node:child_process:945:15)
+        at file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/native-src/scripts/compose-vector-local-runtime.mjs:85:15
+        at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+        at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+        at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+      errno: -4058,
+      code: 'ENOENT',
+      syscall: 'spawnSync tar',
+      path: 'tar',
+      spawnargs: [
+        '-tzf',
+        'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\artifact\\wfm-0.6.76-hosted-staging-rc1.tar.gz'
+      ],
+      error: [Circular *1],
+      status: null,
+      signal: null,
+      output: null,
+      pid: 0,
+      stdout: undefined,
+      stderr: undefined
+    }
+    
+    Node.js v22.23.2
+    
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    Object.spawnSync (node:internal/child_process:1120:20)
+    spawnSync (node:child_process:902:24)
+    execFileSync (node:child_process:945:15)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/native-src/scripts/compose-vector-local-runtime.mjs:85:15
+    ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\native-src\scripts\compose-vector-local-runtime.contract.test.cjs:16:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: composer preserves the extracted-runtime container caller contract
+ok 2 - composer preserves the extracted-runtime container caller contract
+  ---
+  duration_ms: 382.407
+  type: 'test'
+  ...
+# Subtest: PID 1 UID proof admits only a fully dropped application process
+not ok 3 - PID 1 UID proof admits only a fully dropped application process
+  ---
+  duration_ms: 4.2339
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\tests\\runtime-process-uid.test.cjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    null !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\native-src\tests\runtime-process-uid.test.cjs:5:151)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: PID 1 UID proof fails closed for any root identity
+not ok 4 - PID 1 UID proof fails closed for any root identity
+  ---
+  duration_ms: 2.1618
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\tests\\runtime-process-uid.test.cjs:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    null !== 66
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 66
+  actual: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\native-src\tests\runtime-process-uid.test.cjs:6:210)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: PID 1 UID proof fails closed for missing, malformed, extra-field or duplicate evidence
+not ok 5 - PID 1 UID proof fails closed for missing, malformed, extra-field or duplicate evidence
+  ---
+  duration_ms: 1.532
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\tests\\runtime-process-uid.test.cjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    null !== 65
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 65
+  actual: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\native-src\tests\runtime-process-uid.test.cjs:7:419)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: PID 1 UID proof rejects noncanonical or out-of-range values before string-safe root checks
+not ok 6 - PID 1 UID proof rejects noncanonical or out-of-range values before string-safe root checks
+  ---
+  duration_ms: 1.3564
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\native-src\\tests\\runtime-process-uid.test.cjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    null !== 65
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 65
+  actual: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\native-src\tests\runtime-process-uid.test.cjs:8:387)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: the final Docker stage includes every relative bootstrap dependency
+ok 7 - the final Docker stage includes every relative bootstrap dependency
+  ---
+  duration_ms: 3.2996
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes the same required bootstrap dependencies
+ok 8 - local proof assembly includes the same required bootstrap dependencies
+  ---
+  duration_ms: 0.5263
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes absolute bootstrap runtime dependencies and training closure
+ok 9 - local proof assembly includes absolute bootstrap runtime dependencies and training closure
+  ---
+  duration_ms: 1.5037
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes scheduling runtime dependency closure
+ok 10 - local proof assembly includes scheduling runtime dependency closure
+  ---
+  duration_ms: 0.7222
+  type: 'test'
+  ...
+# Subtest: retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+ok 11 - retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+  ---
+  duration_ms: 172.2716
+  type: 'test'
+  ...
+# Subtest: legacy local-data writes are redirected outside immutable app root
+ok 12 - legacy local-data writes are redirected outside immutable app root
+  ---
+  duration_ms: 0.9751
+  type: 'test'
+  ...
+# Subtest: integration fabric runtime retains its source-relative loader layout
+ok 13 - integration fabric runtime retains its source-relative loader layout
+  ---
+  duration_ms: 1.1111
+  type: 'test'
+  ...
+# Subtest: packaged lifecycle router preserves the trusted Autopilot execution adapter
+ok 14 - packaged lifecycle router preserves the trusted Autopilot execution adapter
+  ---
+  duration_ms: 0.5925
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 9
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 962.67

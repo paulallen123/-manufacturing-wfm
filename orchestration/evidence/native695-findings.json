@@ -1,0 +1,202 @@
+{
+  "status": "REVIEW_COMPLETE_WITH_ONE_OPEN_MATERIAL_P2_HOLD_PUBLICATION",
+  "nativeSource": {
+    "sha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
+    "parent": "2f8aa26ae40258d36e71f909d18cc46989f0e1fe",
+    "tree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+    "rawCommitHashVerified": true,
+    "trackedPaths": 1107,
+    "allTrackedByteHashesAndModesRecomputed": true
+  },
+  "sourceBindings": [
+    {
+      "path": ".circleci/config.yml",
+      "mode": "100644",
+      "sha": "4e1211e401bb022bc9a10ce562f3778069977e08",
+      "bytes": 7995,
+      "sha256": "986bfb8e0aa1312a0dfa9e56670959272aa10213fdcf5c42ee8090e5717a9027"
+    },
+    {
+      "path": "integrations/staffology/canonical-operations.cjs",
+      "mode": "100644",
+      "sha": "98167c9abf05559c2c0b239116aabc63022fef79",
+      "bytes": 14897,
+      "sha256": "8929e1360229e060d50241b6d4ca4dae7adfbdca94284430244dd01236f74c0a"
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "mode": "100644",
+      "sha": "6d069d12458ba4841b2f7ea6c5a874cb014948d3",
+      "bytes": 19210,
+      "sha256": "bdfc12d353a14de049591aa2c5fac9ede3ebf51ca0a14fc40c6e15189fa52ebb"
+    },
+    {
+      "path": "integrations/staffology/canonical-runtime-bridge.cjs",
+      "mode": "100644",
+      "sha": "503fd6e63c32b1e490e138da458c0437c5bf27cb",
+      "bytes": 12003,
+      "sha256": "be786702fd95136168457358980a21775617489192d99f6bb1b0811fb4016750"
+    },
+    {
+      "path": "integrations/staffology/staffology-adapter.cjs",
+      "mode": "100644",
+      "sha": "3d0a65db8e642841637016124619f309d63b48e4",
+      "bytes": 38003,
+      "sha256": "0065876e4bbf0511897890928b881665c1a0b886b9d071bbe7dcecd6c7f156c3"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "mode": "100644",
+      "sha": "82f8a63f543188e009a94d038596a41a88ce9416",
+      "bytes": 84716,
+      "sha256": "8f538eca18c425b84fbaedfecb307ddd1fecfe5e95277f5c9a62a99da83e2f72"
+    }
+  ],
+  "openFindings": [
+    {
+      "id": "TR-09",
+      "priority": "P2",
+      "status": "OPEN_ON_EXACT_NATIVE695",
+      "title": "Pre-dispatch recovery records null consumed approval and falsely labels provider write read-only",
+      "sourceSha": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
+      "tree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+      "locations": [
+        {
+          "path": "integrations/staffology/canonical-production-boundaries.cjs",
+          "line": 68,
+          "blob": "6d069d12458ba4841b2f7ea6c5a874cb014948d3",
+          "reason": "recover snapshots stored before coordinator.reconcile; after reconcile reserves/consumes new dispatch, wrapper returns stored.dispatchAttempt?.approvalId from stale snapshot."
+        },
+        {
+          "path": "integrations/staffology/canonical-operations.cjs",
+          "line": 37,
+          "blob": "98167c9abf05559c2c0b239116aabc63022fef79",
+          "reason": "Recovery audit unconditionally mode:read-only-reconciliation and passes null approvalId although resumed recovery performs one POST."
+        }
+      ],
+      "reproduction": [
+        "Create real SQLite durable delivery with immutable baseline and provably no dispatch by denying initial authorisation.",
+        "Advance virtual clock beyond lease; call actual Operations.recover with exact server-held payroll approval/deliveryId and no browser digest.",
+        "Actual Boundaries+Adapter consume fresh approval, record immutable marker and perform one injected synthetic POST; reconciliation acknowledges.",
+        "Database dispatch marker/consumed authority have same nonempty approvalID. Response and staffology-payroll-recovery audit approvalId are null; audit mode is read-only-reconciliation."
+      ],
+      "proof": {
+        "test": "native695-recovery.held-out.test.cjs",
+        "rawTap": "native695-recovery.final.node22.tap",
+        "observations": "native695-recovery.observations.json",
+        "failingTests": 2
+      },
+      "impact": "Payroll provider-write recovery is misrepresented in the durable audit and cannot directly identify its consumed approval from that event, impairing exact recovery/authority proof. Actual row remains fenced and marker retains approval; no duplicate or unauthorized POST demonstrated.",
+      "boundedRepair": "Reread actual final dispatch marker/approval after recovery and propagate it into response/audit. Classify recovery from actual recorded facts so a resumed dispatch is distinguishable from readback-only reconciliation. Keep exact scope, current principal, one-shot approval, baseline and ownership guards.",
+      "requiredHeldOutPass": [
+        "Recovery audit/response approvalId equals actual newly consumed dispatch marker.",
+        "Resumed dispatch recovery is not labelled read-only; existing uncertain dispatch readback does not POST and retains original approval identity."
+      ]
+    }
+  ],
+  "priorFindingDispositions": [
+    {
+      "id": "TR-01",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Unchanged provider baseline resumes after expiration while retaining original observedAt evidence; changed unknown baseline metadata refuses POST and preserves original."
+    },
+    {
+      "id": "TR-02",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "401/403 POST durably rejected, never acknowledged;403 replay/recovery cannot dispatch another POST."
+    },
+    {
+      "id": "TR-03",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Matching and seal-only controls configure; env/profile SHA mismatch against independent mounted seal rejected. Explicit local proof fallback is nonhosted only in source."
+    },
+    {
+      "id": "TR-04",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Valid unconsumed permit reused, expired/revoked permit replaced, once consumed cannot consume twice, legacy identity-less row fails closed."
+    },
+    {
+      "id": "TR-05",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Actual operations recovery derives delivery ID/digest from server-held payroll without browser digest; optional mismatch blocked at zeroPOST."
+    },
+    {
+      "id": "TR-06",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Email reassigned to another canonical person cannot consume original approval; person-less legacy approval refused."
+    },
+    {
+      "id": "TR-07",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Authority revoked while GET acquisition resolves causes zero stages/zero SQLite sink rows after exact current principal revalidation."
+    },
+    {
+      "id": "TR-08",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Seven sequential near30second virtual request durations reconcile under240second lease. Genuine ownership expiry refuses POST."
+    },
+    {
+      "id": "TR-09",
+      "status": "PARTIALLY_REPAIRED_STILL_OPEN_P2",
+      "evidence": "Existing dispatch marker now stores consumed approval ID, but provably-undispatched recovery creates new dispatch after wrapper captured old row; response/audit approvalId null and audit mode incorrectly read-only."
+    },
+    {
+      "id": "TR-10",
+      "status": "REPAIRED_LOCALLY_REPRODUCED",
+      "evidence": "Actual UI action function in isolated VM retains key across lost response; rotates on mapping edit/explicit restage; concurrent click blocked. DOM/browser acceptance not executed."
+    },
+    {
+      "id": "TR-11",
+      "status": "REPAIRED_STATICALLY_VERIFIED",
+      "evidence": "CircleCI proof export/tee logs and artifact store now use absolute/tmp/circleci-runtime-artifacts outside subsequent Docker context. Docker/CI run not executed."
+    }
+  ],
+  "executed": {
+    "node": "v22.23.2",
+    "windows": true,
+    "providerRequestsActual": 0,
+    "originalInvariantsOnRepairedInterfaces": {
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 421.4396
+    },
+    "additionalRecoveryAndAuthority": {
+      "tests": 10,
+      "pass": 8,
+      "fail": 2,
+      "skip": 0,
+      "durationMs": 370.981
+    },
+    "uiBehaviorAndStaticCI": {
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 155.8362
+    }
+  },
+  "testAdaptations": [
+    "Native probe copy points to independently byte/tree-verified native-src instead of935 snapshot.",
+    "Configuration fixture supplies explicit sealed read hook matching new source contract; separate matching/seal-only/mismatch process mount tests remain.",
+    "Definitive401/403 rejection now throws as intended; test captures code and verifies actual durable rejected status, no receipt/no false acknowledgement.",
+    "Original935 test files/TAP/red observations retained unchanged."
+  ],
+  "limitations": [
+    "In-process injected clients and real Node SQLite, not live provider.",
+    "TR-07 stage uses real adapter/operations/boundaries/runtimebridge and independent SQLite persistence sink; not entire integration store.",
+    "UI heldout executes actual extracted action function with controlled DOM/network collaborators, not browser/role acceptance.",
+    "TR-11 static destination checks, not executed CircleCI/Docker/context-build proof.",
+    "Root owns separate exact composition/full suites; this report does not claim their pending results, hosted/customer/deployment/recovery proof."
+  ],
+  "coordinatorAdmissionCondition": {
+    "currentPublishedParent": "b851a660892ad6d4e278ad0f88550a2c6d91fcfa",
+    "native695TriggerBlob": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+    "publishedB851TriggerBlob": "51d25a33842903473f34ef6d8b87ba15f611b5a3",
+    "unchangedTriggerHaltsHeavyProof": true,
+    "guardPath": ".circleci/config.yml",
+    "guardLines": "9-12",
+    "required": "A transport over currently publishedb851 needs a truthful successor admission trigger delta. Preserve gate and actual remote parent; verify jobs executed rather than treating a halted-job success status as test proof."
+  }
+}

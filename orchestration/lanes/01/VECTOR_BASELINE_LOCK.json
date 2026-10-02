@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-02T08:49:16.121Z",
+  "observedAt": "2026-10-02T10:00:44.986Z",
   "provenBaseSha": null,
   "convergenceBaseSha": null,
   "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -47,8 +47,17 @@
   ],
   "currentHead": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
   "lastRebase": null,
-  "testsExecuted": [],
+  "testsExecuted": [
+    {
+      "mapped": 22,
+      "independentHeldOuts": 12
+    }
+  ],
   "currentTask": "Inspect/port compatible read-only Twin projections",
   "admissionAllowed": false,
-  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
+  "isolatedFutureBranch": "feature/vector-lane01-twin-projections-20261002",
+  "isolatedFutureSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+  "isolatedFutureTree": "c7a555208d740b871856df8992eee020f3ce2851",
+  "componentProofState": "TESTED"
 }

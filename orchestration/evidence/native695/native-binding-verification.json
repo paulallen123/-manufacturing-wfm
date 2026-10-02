@@ -1,0 +1,12 @@
+{
+  "nativeCommit": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
+  "nativeParent": "2f8aa26ae40258d36e71f909d18cc46989f0e1fe",
+  "expectedTree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+  "actualTree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+  "fullTreeMatches": true,
+  "files": 1107,
+  "changedFrom935": 20,
+  "verifiedAllTrackedBlobBytes": true,
+  "baseSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+  "patchSha256": "cad5f4306b42cb26fe77c49035e3b1eee370716f7db4fd5143a316197b494015"
+}

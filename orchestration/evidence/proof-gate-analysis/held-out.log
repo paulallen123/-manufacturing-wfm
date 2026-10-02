@@ -1,0 +1,24 @@
+node.exe : (node:29592) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+At line:2 char:1
++ & work/tools/node22/node.exe work/proof-gate-analysis/held-out.cjs >  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:29592) Ex...nge at any time:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "runtime": "v22.23.2",
+  "reproductions": [
+    {
+      "id": "REPLAY_NULL_TOTALS",
+      "status": 200,
+      "satisfied": true
+    },
+    {
+      "id": "POLICY_INVALID_CALENDAR_DATE",
+      "status": 200,
+      "satisfied": true
+    }
+  ],
+  "customerProof": false
+}

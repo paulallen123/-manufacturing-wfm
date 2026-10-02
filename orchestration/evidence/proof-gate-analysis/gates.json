@@ -1,0 +1,668 @@
+{
+  "schemaVersion": 1,
+  "frozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "tuple": {
+    "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+    "tenant": "northstar-demo",
+    "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+    "origin": "https://vector-customer-ready-candidate-production.up.railway.app",
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "observedAt": "2026-10-02T08:20:00.048Z"
+  },
+  "recordedObservation": {
+    "state": "SLA_MISSED",
+    "operationalReady": false,
+    "completedRequirements": 5,
+    "totalRequirements": 21,
+    "openRequirements": [
+      {
+        "key": "tenant-environment",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "identity-access",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "time-policies",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "absence-policies",
+        "status": "WARN"
+      },
+      {
+        "key": "scheduling",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "approvals",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "clocking",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "payroll-mapping",
+        "status": "MISSING"
+      },
+      {
+        "key": "historical-replay",
+        "status": "MISSING"
+      },
+      {
+        "key": "security-controls",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "resilience",
+        "status": "REVALIDATION_REQUIRED"
+      },
+      {
+        "key": "scenario-validation",
+        "status": "MISSING"
+      },
+      {
+        "key": "test-data-cleanup",
+        "status": "MISSING"
+      },
+      {
+        "key": "live-data-import",
+        "status": "MISSING"
+      },
+      {
+        "key": "privileged-competency",
+        "status": "MISSING"
+      },
+      {
+        "key": "frontline-readiness",
+        "status": "MISSING"
+      }
+    ],
+    "activeWorkerLeases": 0
+  },
+  "observedAt": "2026-10-02T08:20:00.048Z",
+  "claim": "NOT_CUSTOMER_PROVEN",
+  "sourceIdentities": [
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+      "actualBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+      "bytes": 99344,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+      "actualBlob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+      "bytes": 5692,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "5a23037af19be20b0179c389dc3b5dc49f2c8b2f",
+      "actualBlob": "5a23037af19be20b0179c389dc3b5dc49f2c8b2f",
+      "bytes": 11748,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/implementation-work-controller.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+      "actualBlob": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+      "bytes": 18652,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/tenant-environment-provisioner.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "ac9d322a5d2127402f67cd88834687ff88e4cbe2",
+      "actualBlob": "ac9d322a5d2127402f67cd88834687ff88e4cbe2",
+      "bytes": 5852,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/agents-api-bootstrap-route.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+      "actualBlob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+      "bytes": 7937,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+      "actualBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+      "bytes": 69592,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+      "actualBlob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+      "bytes": 5240,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/implementation-active-controller.integration.test.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+      "actualBlob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+      "bytes": 15722,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/runtime/configuration-inference-engine.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "d3688d27841a28d3b8801b7d4c63f254e8bf7edd",
+      "actualBlob": "d3688d27841a28d3b8801b7d4c63f254e8bf7edd",
+      "bytes": 11506,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/proof/cloud-scale-proof-runner.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "3e6efa9a7a866c3b58053c1ec84341a73332f775",
+      "actualBlob": "3e6efa9a7a866c3b58053c1ec84341a73332f775",
+      "bytes": 10230,
+      "exactFrozen": true
+    },
+    {
+      "path": "integration/runtime/autonomous-integration-hub.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "actualBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+      "bytes": 61466,
+      "exactFrozen": true
+    },
+    {
+      "path": "learning/runtime/adaptive-learning-engine.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+      "actualBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+      "bytes": 29121,
+      "exactFrozen": true
+    },
+    {
+      "path": "implementation/ui/implementation-journey.js",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "28816397006f1aa8b6e916a3ebda95bb7cc110f0",
+      "actualBlob": "28816397006f1aa8b6e916a3ebda95bb7cc110f0",
+      "bytes": 33111,
+      "exactFrozen": true
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "0165b9a5207eeb870e2690c4da6456ec8457db7e",
+      "actualBlob": "0165b9a5207eeb870e2690c4da6456ec8457db7e",
+      "bytes": 12863,
+      "exactFrozen": true
+    },
+    {
+      "path": "scripts/implementation-source-handoff-proof.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "e93e5ce697302e92910834fa7fdbf9ac19489e0e",
+      "actualBlob": "e93e5ce697302e92910834fa7fdbf9ac19489e0e",
+      "bytes": 12957,
+      "exactFrozen": true
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "expectedBlob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "actualBlob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+      "acquisition": "DIRECT_FROZEN_GITHUB_FETCH",
+      "local935Blob": "08e3261a95804e400d0a742e38ac57ffef78438a",
+      "exactFrozen": true,
+      "inspectedScope": "lines375-410 learningSummaryProvider only; current935 bootstrap excluded"
+    }
+  ],
+  "authentication": {
+    "managerRoutes": "current unexpired session resolved by users tenant; core requireManager denies employee, permits other roles; verify applicable role permissions in outer runtime separately",
+    "internalEvidence": "configured WFM_IMPLEMENTATION_INTERNAL_TOKEN; x-wfm-implementation-internal; trusted run lookup; no credential values inspected",
+    "workClaimResult": "internal token plus trusted bound worker header/token, tenant/run/owner,candidate/deployment,lease token,fence,intentDigest; result effect != evidence",
+    "learning": "self practice requires own session/role assignment; internal bootstrap/evidence use WFM_LEARNING_INTERNAL_TOKEN; manager analytics denied employee",
+    "contract": "contract-signed requires dedicated webhook secret; scope/start/decision tenant bound"
+  },
+  "durableState": "WFM_DB SQLite /data/vector.sqlite serving contract; implementation runs/scope/decisions/evidence/events and work jobs/receipts; status recompute and learning summary mutate internal reconcile/assignment state, so hosted reads are root-owned",
+  "gates": [
+    {
+      "key": "configuration-scope",
+      "label": "Customer implementation scope",
+      "minConfidence": 1,
+      "budgetMinutes": 5,
+      "dependsOn": [],
+      "observedStatus": "COMPLETED_INFERRED_BY_COMPLEMENT",
+      "observationBasis": "5/21 count plus16 open keys; exact PASS detail/confidence not retained in current proof matrix",
+      "classification": "CUSTOMER_INPUT",
+      "producer": "customer/contract scope -> core.normaliseScope+handleScope/handleContractSigned",
+      "durableState": "implementation_scope",
+      "admission": "Required normalized company/countries/sites/count/systems/features; observed counts/sites must not conflict with accepted canonical import.",
+      "nextAction": "Read existing authenticated scope and reconcile declared employer/cohort/sites with customer-authorised source counts; do not infer customer country/company from fixture.",
+      "sourceRefs": "core:1666-1734,readiness:944-999",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "tenant-environment",
+      "label": "Tenant environment",
+      "minConfidence": 0.99,
+      "budgetMinutes": 15,
+      "dependsOn": [
+        "configuration-scope"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "core.executeTenantEnvironmentEffect -> tenant-environment-provisioner; independent external verifier -> evidence",
+      "durableState": "implementation_tenant_environments; implementation_evidence",
+      "admission": "Nonfixture zero-human cloud-runtime health/isolation/durable proof bound tenant/run/SHA/deployment; fresh verifier identity and server digest attestation. Provisioning effect alone cannot close.",
+      "nextAction": "Independent verifier on exact admitted deployment checks health, tenant negative tests and durable restart; record current receipt only after actual verification.",
+      "sourceRefs": "core:520-560,tenant validation:654-678,evidence:1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "identity-access",
+      "label": "Identity and access",
+      "minConfidence": 0.99,
+      "budgetMinutes": 20,
+      "dependsOn": [
+        "tenant-environment"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "external trusted worker/evidence; product secure-entry/session and role APIs are test targets",
+      "durableState": "users,sessions,implementation_evidence",
+      "admission": "Generic PASS confidence+exact candidate/deployment binding; no kind-specific strict detail schema implemented.",
+      "nextAction": "Exercise authorised and unauthorised roles/tenant identity on exact deployment, attach underlying results rather than a bare PASS.",
+      "sourceRefs": "core:271-309,561-596,1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "source-systems",
+      "label": "Authoritative source systems",
+      "minConfidence": 0.95,
+      "budgetMinutes": 45,
+      "dependsOn": [
+        "identity-access"
+      ],
+      "observedStatus": "COMPLETED_INFERRED_BY_COMPLEMENT",
+      "observationBasis": "5/21 count plus16 open keys; exact PASS detail/confidence not retained in current proof matrix",
+      "classification": "PROVIDER_AUTHORITY_INPUT",
+      "producer": "integration hub discovery/confirm/connect/authorise/sync -> canonicalSourceSummaryForTenant; optional external evidence",
+      "durableState": "integration_candidates,connections,mappings,canonical_batches,canonical_people; implementation_evidence",
+      "admission": "Current ACTIVE confirmed authoritative-for-people connection, credentialRef, people.read, matching mapping and positive unique canonical rows derives PASS; explicit strict receipt requires discovered/authorised/connected nonfixture providers.",
+      "nextAction": "Existing5/21 alone does not establish fresh provider acceptance: inspect accepted batch source class/company/scope and authorisation receipts; actual provider/customer approval remains root-owned.",
+      "sourceRefs": "core:860-915,999-1039; integration hub:600-655",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "people-data",
+      "label": "People data and hierarchy",
+      "minConfidence": 0.99,
+      "budgetMinutes": 30,
+      "dependsOn": [
+        "source-systems"
+      ],
+      "observedStatus": "COMPLETED_INFERRED_BY_COMPLEMENT",
+      "observationBasis": "5/21 count plus16 open keys; exact PASS detail/confidence not retained in current proof matrix",
+      "classification": "CUSTOMER_DATA_INPUT",
+      "producer": "integration hub canonical people -> core derived readiness",
+      "durableState": "integration_canonical_people,batches",
+      "admission": "Positive unique employee keys and exact stored record count, current authorised connection.",
+      "nextAction": "Check customer-authorised cohort count and selected mapping/batch integrity; fixture people cannot prove customer import.",
+      "sourceRefs": "core:860-915,1013-1028",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "organisation-model",
+      "label": "Sites, departments and cost structure",
+      "minConfidence": 0.98,
+      "budgetMinutes": 30,
+      "dependsOn": [
+        "people-data"
+      ],
+      "observedStatus": "COMPLETED_INFERRED_BY_COMPLEMENT",
+      "observationBasis": "5/21 count plus16 open keys; exact PASS detail/confidence not retained in current proof matrix",
+      "classification": "CUSTOMER_DATA_INPUT",
+      "producer": "canonical people location+department sets -> derived readiness",
+      "durableState": "integration_canonical_people,batches",
+      "admission": "At least one site and department; derived confidence0.99 clears0.98 threshold.",
+      "nextAction": "Validate sites/cost-centres against declared customer scope; no invented organisation rows.",
+      "sourceRefs": "core:1028-1046",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "time-policies",
+      "label": "Time, break and overtime policies",
+      "minConfidence": 0.995,
+      "budgetMinutes": 45,
+      "dependsOn": [
+        "people-data"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "CUSTOMER_POLICY_AUTHORITY_INPUT",
+      "producer": "manager decision time-policy-authority -> customerPolicyEvidence; trusted external policy evidence",
+      "durableState": "implementation_decisions,evidence,events",
+      "admission": "Authoritative traced/effective-dated nonfixture source, no unresolved/unknown rules; verified breaks/overtime/working-time/timezone; current binding.",
+      "nextAction": "Obtain customer-authorised effective policy answers and exercise DST/break/overtime cases; invalid-date defect is locally reproduced and separate repair capsule.",
+      "sourceRefs": "core:633-787,1980-2024; strict contract:20-40,117-126",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "absence-policies",
+      "label": "Absence and leave policies",
+      "minConfidence": 0.99,
+      "budgetMinutes": 30,
+      "dependsOn": [
+        "people-data"
+      ],
+      "observedStatus": "WARN",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "CUSTOMER_POLICY_AUTHORITY_INPUT",
+      "producer": "manager decision absence-policy-authority -> customerPolicyEvidence; trusted external policy evidence",
+      "durableState": "implementation_decisions,evidence,events",
+      "admission": "Authoritative leave-year/entitlement/approvals/types; zero unresolved/unknown rules; opening balance cannot be fictional and must have verified source if used.",
+      "nextAction": "Read WARN detail and pending policy question; customer must confirm real rules/opening balances before evidence.",
+      "sourceRefs": "core:633-787,1980-2024; strict contract:128-143",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "scheduling",
+      "label": "Shift patterns and scheduling rules",
+      "minConfidence": 0.99,
+      "budgetMinutes": 45,
+      "dependsOn": [
+        "organisation-model",
+        "time-policies"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "external trusted worker/evidence; scheduling product APIs are test targets",
+      "durableState": "implementation_evidence; work_jobs/receipts",
+      "admission": "Generic PASS confidence+binding; depends on organisation/time gates for worker plan.",
+      "nextAction": "Run constraint/coverage and role/tenant negative scenarios using authorised cohort, after policy/org authority; root verifies actual receipts.",
+      "sourceRefs": "core:21-43,1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "approvals",
+      "label": "Approval and delegation rules",
+      "minConfidence": 0.99,
+      "budgetMinutes": 30,
+      "dependsOn": [
+        "organisation-model",
+        "identity-access"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "external trusted worker/evidence; approval product APIs are test targets",
+      "durableState": "implementation_evidence; work_jobs/receipts",
+      "admission": "Generic PASS confidence+binding; dependency org+identity.",
+      "nextAction": "Run employee request, manager/delegate approval and unauthorised negative role paths on admitted deployment.",
+      "sourceRefs": "core:21-43,1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "clocking",
+      "label": "Clocking and device rules",
+      "minConfidence": 0.99,
+      "budgetMinutes": 30,
+      "dependsOn": [
+        "identity-access",
+        "time-policies"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "external trusted worker/evidence; clocking product APIs are test targets",
+      "durableState": "implementation_evidence; work_jobs/receipts",
+      "admission": "Generic PASS confidence+binding; identity+time dependencies.",
+      "nextAction": "Exercise approved clocking method, duplicate/offline/timezone/tenant cases using actual applicable customer policy.",
+      "sourceRefs": "core:21-43,1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "payroll-mapping",
+      "label": "Payroll mappings",
+      "minConfidence": 0.995,
+      "budgetMinutes": 45,
+      "dependsOn": [
+        "source-systems",
+        "people-data",
+        "time-policies"
+      ],
+      "observedStatus": "MISSING",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "CUSTOMER_PAYROLL_INPUT",
+      "producer": "external trusted worker/evidence; authoritative payroll mapping producer not found in frozen generic caller scan",
+      "durableState": "implementation_evidence; integration mapping/domain payroll state",
+      "admission": "Generic PASS confidence+binding; .995 threshold; source+people+time dependencies.",
+      "nextAction": "Require selected real employer/cohort/period/earning-code mapping and allowed operation. Existing source-owner Staffology task exclusively owns implementation.",
+      "sourceRefs": "core:21-43,1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "historical-replay",
+      "label": "Historical replay and reconciliation",
+      "minConfidence": 0.995,
+      "budgetMinutes": 60,
+      "dependsOn": [
+        "payroll-mapping",
+        "time-policies"
+      ],
+      "observedStatus": "MISSING",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "CUSTOMER_PAYROLL_INPUT_AND_PRODUCT_DEFECT",
+      "producer": "external independent replay; cloud-scale-proof-runner produces synthetic arithmetic results but does not POST gate evidence",
+      "durableState": "implementation_evidence",
+      "admission": "Declared synthetic-scale/sandbox/customer-authorised class, independent calculation, equal finite totals and zero variance; frozen validator wrongly accepts null/blank coercion.",
+      "nextAction": "Use approved replay period and independent authoritative expected calculation. Synthetic replay useful locally but no customer acceptance. Root must admit bounded fix before relying on gate.",
+      "sourceRefs": "strict contract:147-153; core generic evidence:1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "security-controls",
+      "label": "Security and tenant isolation",
+      "minConfidence": 1,
+      "budgetMinutes": 30,
+      "dependsOn": [
+        "tenant-environment",
+        "identity-access"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "external cloud verifier -> trusted evidence",
+      "durableState": "implementation_evidence",
+      "admission": "cloudRuntime true, isolation true, >=1 negative cross-tenant test, zero criticalFailures, exact binding.",
+      "nextAction": "Independent tenant/role negative checks on exact admitted deployment; health200 and signed login alone do not establish all controls.",
+      "sourceRefs": "strict contract:156-161",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "resilience",
+      "label": "Recovery and failure handling",
+      "minConfidence": 0.99,
+      "budgetMinutes": 30,
+      "dependsOn": [
+        "source-systems",
+        "security-controls"
+      ],
+      "observedStatus": "REVALIDATION_REQUIRED",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "external trusted worker/evidence; resilience runtime test targets",
+      "durableState": "implementation_evidence; work_jobs/receipts",
+      "admission": "Generic PASS confidence+binding, source+security dependencies.",
+      "nextAction": "Root performs bounded restart/recovery/durable-state/outage exercise with retained receipt; NEVER restart policy is configuration, not verified resilience.",
+      "sourceRefs": "core:21-43,1735-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "scenario-validation",
+      "label": "Rigorous end-to-end scenario testing",
+      "minConfidence": 1,
+      "budgetMinutes": 60,
+      "dependsOn": [
+        "scheduling",
+        "approvals",
+        "clocking",
+        "historical-replay",
+        "security-controls",
+        "resilience"
+      ],
+      "observedStatus": "MISSING",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FRESH_HOSTED_PROOF",
+      "producer": "external cloud scenario executor -> trusted evidence",
+      "durableState": "implementation_evidence",
+      "admission": "cloudRuntime true; labeled testDataClass; total>0 integer; passed===total; criticalFailures0.",
+      "nextAction": "Run complete applicable role/scenario suite on exact candidate, preserving test-class distinction and full failures; current partial executor checks cannot satisfy.",
+      "sourceRefs": "strict contract:164-167; core:1799-1810",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "test-data-cleanup",
+      "label": "Test data removed and environment reset",
+      "minConfidence": 1,
+      "budgetMinutes": 20,
+      "dependsOn": [
+        "scenario-validation"
+      ],
+      "observedStatus": "MISSING",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "FIXTURE_CLEANUP_REQUIRED",
+      "producer": "external scoped cleanup operation -> trusted evidence",
+      "durableState": "implementation_evidence; customer tables touched only by authorised root workflow",
+      "admission": "remainingTestRows0 and liveRowsTouched0; current binding.",
+      "nextAction": "Inventory exact tagged fixture rows first; scoped cleanup only after scenario proof, retain zero-live-row-touch receipt. Never infer from empty screen.",
+      "sourceRefs": "core:1808-1813",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "live-data-import",
+      "label": "Live data imported and reconciled",
+      "minConfidence": 1,
+      "budgetMinutes": 45,
+      "dependsOn": [
+        "test-data-cleanup",
+        "people-data",
+        "organisation-model",
+        "payroll-mapping"
+      ],
+      "observedStatus": "MISSING",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "CUSTOMER_DATA_AND_AUTHORITY_INPUT",
+      "producer": "external authoritative import receipt; canonical import from integration hub is upstream evidence only",
+      "durableState": "implementation_evidence; canonical/domain source rows",
+      "admission": "Nonfixture, zero-human, authoritative source; sourceCount integer>=0/imported===sourceCount/invalid0/checksumMatchtrue; current binding.",
+      "nextAction": "After cleanup use approved real cohort/mapping and verify counts/checksums, customer source class and authority; sourceCount0 algebraic PASS is not positive customer import proof.",
+      "sourceRefs": "strict contract:170-175; core:1810-1823",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "role-learning",
+      "label": "Role learning journeys generated",
+      "minConfidence": 0.99,
+      "budgetMinutes": 15,
+      "dependsOn": [
+        "people-data"
+      ],
+      "observedStatus": "COMPLETED_INFERRED_BY_COMPLEMENT",
+      "observationBasis": "5/21 count plus16 open keys; exact PASS detail/confidence not retained in current proof matrix",
+      "classification": "TRAINING_ASSIGNMENT",
+      "producer": "bootstrap injected adaptiveLearning.summaryForTenant -> ensureAssignments; learning internal bootstrap and user plan routes",
+      "durableState": "learning_assignments,evidence,feature_changes,users",
+      "admission": "users>0 and assignments>=users derives PASS; assignment is not competence.",
+      "nextAction": "Inspect actual authorised users and role curricula; ensure applicable roles assigned without synthesising mastery.",
+      "sourceRefs": "frozen bootstrap:381-392; learning:300-322,401-432; core:1046-1057",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "privileged-competency",
+      "label": "Managers/admins certified for privileged tasks",
+      "minConfidence": 0.99,
+      "budgetMinutes": 90,
+      "dependsOn": [
+        "role-learning",
+        "time-policies",
+        "scheduling",
+        "payroll-mapping",
+        "security-controls"
+      ],
+      "observedStatus": "MISSING",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "GENUINE_TRAINING_INPUT",
+      "producer": "adaptive learning trusted task receipts and self practice -> recomputeAssignment -> summaryForTenant",
+      "durableState": "learning_assignments,evidence",
+      "admission": "All current nonemployee critical assignments MASTERED; score>=80 plus independent/observed task and required teachback; assignment alone does not pass.",
+      "nextAction": "Actual manager/admin/privileged users complete guided practice and independent tasks/teachback; trusted worker records real success only. No bulk fake receipts.",
+      "sourceRefs": "learning:324-358,401-421,436-470; core:1057-1066",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "key": "frontline-readiness",
+      "label": "Frontline users certified for first use",
+      "minConfidence": 0.99,
+      "budgetMinutes": 20,
+      "dependsOn": [
+        "role-learning",
+        "absence-policies",
+        "scheduling",
+        "clocking"
+      ],
+      "observedStatus": "MISSING",
+      "observationBasis": "RECORDED_OPEN_REQUIREMENT",
+      "classification": "GENUINE_TRAINING_INPUT",
+      "producer": "adaptive learning task evidence -> summaryForTenant fullyCertified",
+      "durableState": "learning_assignments,evidence",
+      "admission": "All assigned current role competencies mastered, not just frontline employee subset.",
+      "nextAction": "Complete applicable learning for actual current users; investigate outstanding assignment IDs from summary rather than auto certify.",
+      "sourceRefs": "learning:401-421; core:1066-1075",
+      "proofState": "NOT_CUSTOMER_PROVEN"
+    }
+  ],
+  "coverage": {
+    "requirementsMapped": 21,
+    "frozenScriptCallerScan": "JS/CJS/MJS/TS blobs scanned; no non-test generic evidence/work claim/result producer found. External deployed executor, generated artifacts and non-JS runtimes not inspected.",
+    "sourceExcluded": "all current Staffology implementation; frozen bootstrap read only learning injection lines375-410; security-hold duplicates are archival hits, excluded production ownership",
+    "hostedActionsExecuted": 0,
+    "providersExecuted": 0,
+    "productBytesChanged": 0
+  },
+  "defects": [
+    {
+      "id": "REPLAY_NULL_TOTALS",
+      "state": "REPRODUCED_ON_FROZEN",
+      "evidence": "held-out-observations.json",
+      "repair": "../proof-gate-repair"
+    },
+    {
+      "id": "POLICY_INVALID_CALENDAR_DATE",
+      "state": "REPRODUCED_ON_FROZEN",
+      "evidence": "held-out-observations.json",
+      "repair": "../proof-gate-repair"
+    }
+  ],
+  "uncertainties": [
+    "REVALIDATION_REQUIRED alone does not reveal mismatched field: old detail/binding reason must be read on exact current status",
+    "Gusto stored metadata sandbox configured but0connections cannot prove discovery/authorisation or expected employer acceptance",
+    "Presence of worker env names and0active leases does not prove executable worker health",
+    "Canonical derived source has no explicit fixture/data class in summary; producer/company/provenance must be audited separately before customer claim",
+    "Generic gate schemas accept trusted assertions; proof admission must inspect attached independent results, not bare PASS",
+    "No current external quota call made; usage_limit_exceeded is prior reported unresolved metadata, not newly reproduced"
+  ]
+}

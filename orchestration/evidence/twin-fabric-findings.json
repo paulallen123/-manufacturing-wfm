@@ -1,0 +1,623 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "status": "BOUNDED_LOCAL_REVIEW_COMPLETE",
+  "openP1P2Findings": 0,
+  "findings": [
+    {
+      "id": "FABRIC-P2-01",
+      "severity": "P2",
+      "status": "RESOLVED_IN_ISOLATED_REVIEWED_CANDIDATE",
+      "title": "Array clone executes untrusted accessor before rejection",
+      "originalSourceSha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff",
+      "example": {
+        "path": "integration-fabric/runtime/field-projection-authority.mjs",
+        "originalBlob": "44fb52f5213ca002c2bb87ab27b0ab84ff57eabf",
+        "originalLines": "20-24",
+        "repairedBlob": "e8677fb11cc3c8a2ee3b5e8daab59a4e91011692",
+        "repairedLines": "20-29"
+      },
+      "affectedHelpers": [
+        "change-signal-reconciliation.mjs",
+        "effective-dated-workforce-authority.mjs",
+        "field-projection-authority.mjs",
+        "managed-task-ingress-authority.mjs",
+        "manufacturing-observation-authority.mjs",
+        "mutable-poll-window-authority.mjs",
+        "opaque-page-chain-authority.mjs",
+        "presence-signal-reconciliation.mjs",
+        "rotating-oauth-transition.mjs",
+        "shift-time-authority.mjs",
+        "workday-worker-evidence-authority.mjs"
+      ],
+      "reproduction": "Object.defineProperty(array,\"0\",{enumerable:true,get(){calls++;return \"sentinel\";}}); constructor({reviewerUntrustedArray:array}). Original map reads accessor once before throwing; repaired constructors reject with calls=0.",
+      "riskScope": "Executable in-process JavaScript inputs only; JSON-parsed data cannot contain an accessor. No application caller or live exploit demonstrated.",
+      "proof": "fabric-boundary-expanded.test.mjs: all eleven constructor accessor probes fail original frozen helper copies and pass reviewed correction."
+    },
+    {
+      "id": "FABRIC-P2-02",
+      "severity": "P2",
+      "status": "RESOLVED_IN_ISOLATED_REVIEWED_CANDIDATE",
+      "title": "Read authority permits destination origin confusion",
+      "originalSourceSha": "70f0657a018b3d33763bd8ad873bb4c1187eb5ff",
+      "locations": [
+        {
+          "path": "integration-fabric/runtime/field-projection-authority.mjs",
+          "originalBlob": "44fb52f5213ca002c2bb87ab27b0ab84ff57eabf",
+          "originalLines": "85-90",
+          "repairedBlob": "e8677fb11cc3c8a2ee3b5e8daab59a4e91011692"
+        },
+        {
+          "path": "integration-fabric/runtime/provider-capability-authority.mjs",
+          "originalBlob": "77b556d71f9265807315921c41e3a6e3626c0ebd",
+          "originalLines": "20-31,53-54",
+          "repairedBlob": "d696f7a14f6094d5d8bf3000d724b16655445e60"
+        }
+      ],
+      "reproduction": "Original field/capability authority approves //outside.example.invalid/read under exact approved.example.invalid host; WHATWG new URL resolves outside. Original exactHost https://approved.example.invalid@outside.example.invalid is admitted although URL origin is outside.",
+      "riskScope": "Pure helper contract could mislead a future dispatcher; no provider dispatcher/caller is wired in this port and no network request was made.",
+      "proof": "Frozen original positives fail independent rejection invariants; current scheme-relative/backslash/control and exact origin userinfo/path/query/fragment negatives pass."
+    }
+  ],
+  "sourceBindings": {
+    "twin": [
+      {
+        "path": "implementation/runtime/twin-read-only-projections.cjs",
+        "bytes": 13976,
+        "blob": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+        "sha256": "9ec289df97a3c74ab23a396b83ae6276bf8cba9139a80a7a2f214bef715c7e1e"
+      },
+      {
+        "path": "implementation/runtime/twin-read-only-projections.test.cjs",
+        "bytes": 14630,
+        "blob": "5631485aae7ee3372122db8023d69494837eaabe",
+        "sha256": "caba10a363e645afd93ab5ee633dcb92829dbd84bbc483643d0e6cecfa731471"
+      }
+    ],
+    "canonical": [
+      {
+        "path": "implementation/runtime/implementation-digital-twin.cjs",
+        "bytes": 5922,
+        "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+        "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d"
+      },
+      {
+        "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+        "bytes": 3631,
+        "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+        "sha256": "2cca63ab29e419f90cbe02e43cf0b4d1e444eebba04d9aef0365d502f1662461"
+      }
+    ],
+    "fabric": [
+      {
+        "path": "integration-fabric/runtime/azure-iot-operations-keyframe-authority.mjs",
+        "bytes": 16362,
+        "blob": "dccea6c8f39389d4e14bd1fcaf38352b58d29a76",
+        "sha256": "3c929a06656f9ada93c991e5edc3e5d035201e7b994fc87568ecb99d6943a511",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "dccea6c8f39389d4e14bd1fcaf38352b58d29a76"
+      },
+      {
+        "path": "integration-fabric/runtime/azure-iot-operations-keyframe-authority.test.mjs",
+        "bytes": 14111,
+        "blob": "be6ba9f0c13fe2e8409d593c70dd7a8ec71c697c",
+        "sha256": "3079767481089841d058e7b60d40d45589a8aaf3a4b2438651247d2d0bb29a97",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "be6ba9f0c13fe2e8409d593c70dd7a8ec71c697c"
+      },
+      {
+        "path": "integration-fabric/runtime/managed-task-ingress-authority.mjs",
+        "bytes": 11048,
+        "blob": "cf6e7846b9c42aa6b829d5e14e8a3d5364e5afc0",
+        "sha256": "baa80a4280a05013a70eab9d6cbd996799302c77ca03a53067eb4649f90b847b",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "f61067781164795c2b744c2497678dd9f77af3ce"
+      },
+      {
+        "path": "integration-fabric/runtime/managed-task-ingress-authority.test.mjs",
+        "bytes": 7810,
+        "blob": "2d30bdbfc14c07c188ff22e07034bc9fc8e42378",
+        "sha256": "27af3c1ad1206be2dbc20b58b78e99d1b137609bdad34e1f6eafbb3755407813",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "7a58d3271a5e042e651820bd13ab0d5c9008b166"
+      },
+      {
+        "path": "integration-fabric/runtime/managed-export-authority.mjs",
+        "bytes": 11171,
+        "blob": "81cdb6fce967baf5c9474de448c7ff0f5e0da172",
+        "sha256": "46115cef7d456a8ce6a388e95b8dc483b8b2a73af48153d691839cf91cbf8a21",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "81cdb6fce967baf5c9474de448c7ff0f5e0da172"
+      },
+      {
+        "path": "integration-fabric/runtime/managed-export-authority.test.mjs",
+        "bytes": 6764,
+        "blob": "fa4f745372645c07df09eecd9929e26898a36973",
+        "sha256": "be3ebb9f47dd9602b759b94f0bcdf2f522178a7e6d163156b9a28a677562b3dc",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "fa4f745372645c07df09eecd9929e26898a36973"
+      },
+      {
+        "path": "integration-fabric/runtime/azure-workflow-delivery-authority.mjs",
+        "bytes": 16390,
+        "blob": "a1632bff718cfb12815ec58e99df30ca556f6d66",
+        "sha256": "ee48d4fd1dbe2e2390969a813088fba6dafc88191616b59bfd31c4092907cb44",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "a1632bff718cfb12815ec58e99df30ca556f6d66"
+      },
+      {
+        "path": "integration-fabric/runtime/azure-workflow-delivery-authority.test.mjs",
+        "bytes": 13228,
+        "blob": "7dbe1f585deeec030ddfad7aa0b0172e67b8108d",
+        "sha256": "72ae76cb779840976a26dca5d9213ef8a9356ae2b62e90b21126788bb271796b",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "7dbe1f585deeec030ddfad7aa0b0172e67b8108d"
+      },
+      {
+        "path": "integration-fabric/runtime/capped-projection-chain-authority.mjs",
+        "bytes": 12761,
+        "blob": "efd1d54d26137f7a8c56e61b413cb721c348f2d3",
+        "sha256": "b4c58223f30fe5652adee437bc1d01977df2d4f097c8c52f53e05c7251ec894f",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "efd1d54d26137f7a8c56e61b413cb721c348f2d3"
+      },
+      {
+        "path": "integration-fabric/runtime/capped-projection-chain-authority.test.mjs",
+        "bytes": 8746,
+        "blob": "a0ca5bfeb66ad3c1891aab5508ad4171b811e72f",
+        "sha256": "b346dfd5477ed967e9687ffd772d1eeee72d542e38663a491f64b522d9317c9b",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "a0ca5bfeb66ad3c1891aab5508ad4171b811e72f"
+      },
+      {
+        "path": "integration-fabric/runtime/effective-dated-workforce-authority.mjs",
+        "bytes": 11953,
+        "blob": "a66fe3a3f81868d58e7496162364ff47d786667d",
+        "sha256": "6c92682863738c1c044d356a10bc6e41d7576e7958b0edf154e80fb98e6d7ab4",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "4febf9054e079255b367723815b43b19917ad558"
+      },
+      {
+        "path": "integration-fabric/runtime/effective-dated-workforce-authority.test.mjs",
+        "bytes": 8723,
+        "blob": "ab67a86a348aa99c13a18be51a6f18b1756a2fa3",
+        "sha256": "2fcbb465717372a13a0f34cda171f57e1617285f6adace22cae77bd6454a94f6",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "3ffdd36c9790d6c31084d2baff09d24f784af422"
+      },
+      {
+        "path": "integration-fabric/runtime/industrial-sample-window-authority.mjs",
+        "bytes": 29457,
+        "blob": "d1b0f44fa2a0ccd71867ff0cce9f8b47ccb9b9c3",
+        "sha256": "93284171d2fde1936a7b7c079f44498eb221244369b205bfd43d4f23647fd2ec",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "d1b0f44fa2a0ccd71867ff0cce9f8b47ccb9b9c3"
+      },
+      {
+        "path": "integration-fabric/runtime/industrial-sample-window-authority.test.mjs",
+        "bytes": 14888,
+        "blob": "7270fdeb24ff1655945f5eab50f9524423374d45",
+        "sha256": "8980bed4a7260dc1e0fbaeeb2f01f98237e33bea5f89c3928426f70b0f611d8b",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "7270fdeb24ff1655945f5eab50f9524423374d45"
+      },
+      {
+        "path": "integration-fabric/runtime/integration-instance-observation-authority.mjs",
+        "bytes": 14319,
+        "blob": "aa1aabda8bbc070252d6ca321751f07ac35541ff",
+        "sha256": "75b6df74b5f9d0aa87105814de5bbe844f821144c9a7c2c535a90b363352ab6a",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "aa1aabda8bbc070252d6ca321751f07ac35541ff"
+      },
+      {
+        "path": "integration-fabric/runtime/integration-instance-observation-authority.test.mjs",
+        "bytes": 11015,
+        "blob": "04a5b582e1e0cf26384e48efad6d22277d92ab76",
+        "sha256": "b2edd4ffad06f4defc49102b6f1cbc2344cb53d2f068ece36885f957f3673088",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "04a5b582e1e0cf26384e48efad6d22277d92ab76"
+      },
+      {
+        "path": "integration-fabric/runtime/explicit-execution-context-authority.mjs",
+        "bytes": 11777,
+        "blob": "f4c9a4eb522f5b7084f7adc1f9c7aa052142b542",
+        "sha256": "25b4d6fdd3c5573fe3a975632886a4e520322de6efb88b44fe5d5a2a88734e21",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "f4c9a4eb522f5b7084f7adc1f9c7aa052142b542"
+      },
+      {
+        "path": "integration-fabric/runtime/explicit-execution-context-authority.test.mjs",
+        "bytes": 8235,
+        "blob": "b243f733496d95888315bfb3df2a30bb32285f76",
+        "sha256": "b126bd178a1bdc992db95aba6e02237299a5eb43662b00b3901bb2d8ce44a7fd",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "b243f733496d95888315bfb3df2a30bb32285f76"
+      },
+      {
+        "path": "integration-fabric/runtime/event-snapshot-recovery-authority.mjs",
+        "bytes": 12593,
+        "blob": "b70e2bd4a9d1909d1c8d868d7e148dce7d88f776",
+        "sha256": "9a6153cdba870e3bb2aa9d5b39dc9a1ba4cf14f0218d846708fc24e4285a643e",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "b70e2bd4a9d1909d1c8d868d7e148dce7d88f776"
+      },
+      {
+        "path": "integration-fabric/runtime/event-snapshot-recovery-authority.test.mjs",
+        "bytes": 9275,
+        "blob": "2fb98dc5d9ef8ad1f0c1cc96b4de1b7c551c456c",
+        "sha256": "c533811f1f6f0dee09a3b279ad7cd7bf0f74bb9963ad0bad45ce7af2972dee28",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "2fb98dc5d9ef8ad1f0c1cc96b4de1b7c551c456c"
+      },
+      {
+        "path": "integration-fabric/runtime/change-signal-reconciliation.mjs",
+        "bytes": 12387,
+        "blob": "ade65ce0830bd21031fb7dc37e9b2f7b2560c318",
+        "sha256": "b20b6d95f530eaad93915cb0e4f1db5917e775b3f7b0a55b20786e39431b1901",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "3964fe35b008d5f63a0b69122b7721162227b2ea"
+      },
+      {
+        "path": "integration-fabric/runtime/change-signal-reconciliation.test.mjs",
+        "bytes": 8878,
+        "blob": "e8ce406b04ddde3b2523976f8db525e94454b266",
+        "sha256": "f7f46fe48385cc74952578c4d7c708b956cc79155c582ff08cc17e1d1888f2c2",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "8e83f89f1747eff8e2921f1f9c3ccc35e3a8043b"
+      },
+      {
+        "path": "integration-fabric/runtime/field-projection-authority.mjs",
+        "bytes": 15045,
+        "blob": "e8677fb11cc3c8a2ee3b5e8daab59a4e91011692",
+        "sha256": "3cc9b309d0582de94569f099d33a729bf2bc51d1e32c769981aba336c78d187c",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "44fb52f5213ca002c2bb87ab27b0ab84ff57eabf"
+      },
+      {
+        "path": "integration-fabric/runtime/field-projection-authority.test.mjs",
+        "bytes": 11728,
+        "blob": "f35824591afaa92fe3ab279cc1866bba12fbcc55",
+        "sha256": "71082a078e3a53cc5a830134edbc7049ce652c8e4ef9709d8e37c9fbd3164583",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "71a801bb83d2455d4c89f1a7c3bacec53763f1b4"
+      },
+      {
+        "path": "integration-fabric/runtime/capability-paged-read-authority.mjs",
+        "bytes": 12856,
+        "blob": "900eb27486e3a44cf51244a6d194b2018cb698fc",
+        "sha256": "0ef5c357da0747a6cab9fa37b9e906514945dc05018ce4c0e8fc9e9df0a62ef0",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "900eb27486e3a44cf51244a6d194b2018cb698fc"
+      },
+      {
+        "path": "integration-fabric/runtime/capability-paged-read-authority.test.mjs",
+        "bytes": 7672,
+        "blob": "75c46637815045542f228227959d1e68d21e6b78",
+        "sha256": "f034541f82875509f7a60a56738621ab9a52e6e8973e7f79b878d811e8d3320c",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "75c46637815045542f228227959d1e68d21e6b78"
+      },
+      {
+        "path": "integration-fabric/runtime/webhook-replay-snapshot-authority.mjs",
+        "bytes": 22210,
+        "blob": "3663d8f5d3b1f3a28d02263c3f6c91be5ac6da88",
+        "sha256": "5ee53bca84cd7c257aa2d0c29f4ec4b2ad7e6972e95290a98e09925cc7426e19",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "3663d8f5d3b1f3a28d02263c3f6c91be5ac6da88"
+      },
+      {
+        "path": "integration-fabric/runtime/webhook-replay-snapshot-authority.test.mjs",
+        "bytes": 14580,
+        "blob": "ea58201dbff3f53fcaf7012cd9e8dc27a0fdd8ff",
+        "sha256": "3fffcccc4203bcd9ed77924e2bd546e3468ad2c2447bfed4d52bd0d9c81a471f",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "ea58201dbff3f53fcaf7012cd9e8dc27a0fdd8ff"
+      },
+      {
+        "path": "integration-fabric/runtime/partition-offset-window-authority.mjs",
+        "bytes": 13481,
+        "blob": "e229f4611606f2eb6278110b3b7ef66b6c74bd60",
+        "sha256": "3aa3a13c9c55f11490dab4d41e6f3e077e6703e1be9dacfc773006660c69043b",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "e229f4611606f2eb6278110b3b7ef66b6c74bd60"
+      },
+      {
+        "path": "integration-fabric/runtime/partition-offset-window-authority.test.mjs",
+        "bytes": 10184,
+        "blob": "704044c05b883cc1229d621e80a7bffd10802ef0",
+        "sha256": "89f3b95e49cbf68d923557ad682473c652d9967a2f34e119b0fb3fd6c821be46",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "704044c05b883cc1229d621e80a7bffd10802ef0"
+      },
+      {
+        "path": "integration-fabric/runtime/manufacturing-observation-authority.mjs",
+        "bytes": 12749,
+        "blob": "47ed7e5c51c316b1cce9d0d30c757f5229d1ff66",
+        "sha256": "48da11cf69d486261fe576f7c595b26ee37259c58cadc165c51095cfed5e1df6",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "57ee5d695665d5c550fdadd34152bb0ae6d5be20"
+      },
+      {
+        "path": "integration-fabric/runtime/manufacturing-observation-authority.test.mjs",
+        "bytes": 10090,
+        "blob": "4a3556f213e10a8c09328b1201eff219dce629fb",
+        "sha256": "ac052843d6855fb3a6b894efbae2707e0c20f8ac2f51a45a928e0038c70e65bf",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "0e29cec32d7a4ac32a69a9000217f8cb3f7edb09"
+      },
+      {
+        "path": "integration-fabric/runtime/rotating-oauth-transition.mjs",
+        "bytes": 10520,
+        "blob": "2eaffd3e44b72f4d0afa602c87e9390e3af1a38e",
+        "sha256": "a086fc42712db27d2cbf3d8def656a19a5a2558f2a364696167e57b3e4446a77",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "01ac083b6e3283514887f48d692b0119180d9490"
+      },
+      {
+        "path": "integration-fabric/runtime/rotating-oauth-transition.test.mjs",
+        "bytes": 6476,
+        "blob": "74cb6d4422faab853b95dc6e3b4a53f1225fb248",
+        "sha256": "0bf491fc927ce8c6b598a1cadb0bba21d4da921ca9817443bd08b6af5fa33e64",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "4f7aa4e5fc786d049987edc4a33ac9401d7a73de"
+      },
+      {
+        "path": "integration-fabric/runtime/opaque-page-chain-authority.mjs",
+        "bytes": 11030,
+        "blob": "2b85b38621fae9b4f251b77e638ca9359b5fb49f",
+        "sha256": "9b37c69c27c6f4657c65df23e175b39fd73b1c3cf2d405d9e89c61a8e2430686",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "97b3a21eaf11c81be0f6091162fcd7305842b807"
+      },
+      {
+        "path": "integration-fabric/runtime/opaque-page-chain-authority.test.mjs",
+        "bytes": 8104,
+        "blob": "1228942e4aaf8c7c5f82c10befddab457a622d7c",
+        "sha256": "a9633b606d27a5617b21bfbd24eafdfdbed91843bbe84a4b963db096470e7068",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "0a686732c5d770728e366521242612c714bf3a99"
+      },
+      {
+        "path": "integration-fabric/runtime/mutable-poll-window-authority.mjs",
+        "bytes": 15161,
+        "blob": "62b5fe388cfc60fcb2d64b80a676f2794460b249",
+        "sha256": "97e73c28492926c658bee82cae5d73ad48c5af680b6b8472b3cd0c0efe97e51c",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "1b53b7246abb9aed36ebae6dd23da2e310861831"
+      },
+      {
+        "path": "integration-fabric/runtime/mutable-poll-window-authority.test.mjs",
+        "bytes": 14194,
+        "blob": "6771b64047227780615584fd1ac726abe35df7d8",
+        "sha256": "06d07a97ea96b103b55f0e7a1e72effb2c7f3d662bcd985deed0a097ba62867c",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "0baf47bc31bab0c002d4f0d8a4d3cef73de3eeab"
+      },
+      {
+        "path": "integration-fabric/runtime/provider-capability-authority.mjs",
+        "bytes": 5067,
+        "blob": "d696f7a14f6094d5d8bf3000d724b16655445e60",
+        "sha256": "728214cfc5df65643b4193facd3a7009395f02d014622fc864b92c7ca5559308",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "77b556d71f9265807315921c41e3a6e3626c0ebd"
+      },
+      {
+        "path": "integration-fabric/runtime/provider-capability-authority.test.mjs",
+        "bytes": 4907,
+        "blob": "454706f1ff1b6b8b82f524c17d88e4e2c40d4c33",
+        "sha256": "83537dbe7b251f281eb13414623b07176757dbac8001bd5b741664a6fa0f7ee7",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "6efd636bec2374cbf48b6d07e683741699e44506"
+      },
+      {
+        "path": "integration-fabric/runtime/presence-signal-reconciliation.mjs",
+        "bytes": 13698,
+        "blob": "67c3a0642400ddf482a547072a5ff7482d40c0a0",
+        "sha256": "22498a99c59486e480a8a545c5808e125cb572ca108f02ed2554433d455073ac",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "713d2807615f6c6bfb7b45dfb06d11335bccbeee"
+      },
+      {
+        "path": "integration-fabric/runtime/presence-signal-reconciliation.test.mjs",
+        "bytes": 9839,
+        "blob": "4507e8fc4d186664895dd70040560e04214e3ac1",
+        "sha256": "0f3563cd671b7485f9853e9f3cd0ff82abac54f1d13bdd9623d1ea8ab67b7e34",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "17a4aac891f6453761e543410b93d8b56ae05620"
+      },
+      {
+        "path": "integration-fabric/runtime/payroll-run-coverage-authority.mjs",
+        "bytes": 21951,
+        "blob": "16a2c27b2703246965245eacb63a39ecc94c1b2f",
+        "sha256": "eb51877925034121cf5488696b69f670bab18be3ce47d6d9c9b997ff0b925ae4",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "16a2c27b2703246965245eacb63a39ecc94c1b2f"
+      },
+      {
+        "path": "integration-fabric/runtime/payroll-run-coverage-authority.test.mjs",
+        "bytes": 12704,
+        "blob": "484d87056dd25338a952b4284adc8e8bc746a6ef",
+        "sha256": "9353853b39a87b6e2c2e5231efc1eb1b0ff3e7ccf2b8d93a70514ff100020a74",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "484d87056dd25338a952b4284adc8e8bc746a6ef"
+      },
+      {
+        "path": "integration-fabric/runtime/stable-offset-window-authority.mjs",
+        "bytes": 9578,
+        "blob": "0bc7e0766fa44f74513f5e81d1d2dbc08f8cc6c0",
+        "sha256": "8cee44cc941870f509d6d4b09d6b41124973a001ab3ac47c7fd53fe552bb69cb",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "0bc7e0766fa44f74513f5e81d1d2dbc08f8cc6c0"
+      },
+      {
+        "path": "integration-fabric/runtime/stable-offset-window-authority.test.mjs",
+        "bytes": 6159,
+        "blob": "bb4c93a566c6c8eb91c098b14b7d509a2f8ce36e",
+        "sha256": "bc760e745bbeda69511eadbb6237628ccf8fe716b1121d3d9e910daaa1462372",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "bb4c93a566c6c8eb91c098b14b7d509a2f8ce36e"
+      },
+      {
+        "path": "integration-fabric/runtime/shift-time-authority.mjs",
+        "bytes": 13536,
+        "blob": "417b63f8ca1ba20777f02c824b8d6417fc3e0d06",
+        "sha256": "01eca21588c56aebd1fa5c7df32d999d0c9b66685c6b64325187a8f621a4cad1",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "9e7d4aa4732c17c6c027de6301e793a18fb9f7e4"
+      },
+      {
+        "path": "integration-fabric/runtime/shift-time-authority.test.mjs",
+        "bytes": 10285,
+        "blob": "67a9649d1fa219b4ca7b52836de99076275d75db",
+        "sha256": "d1e317b59bd27d688c0f7b2e432b7bf238acac9a0731f6bffcc0530e0d7af889",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "7e6dc32c856e1d4271ee76658d5c7ad45bdef2ae"
+      },
+      {
+        "path": "integration-fabric/runtime/workday-worker-evidence-authority.mjs",
+        "bytes": 7575,
+        "blob": "bb48d1629da5d961bb4c6a3db996e90922fcb489",
+        "sha256": "7a4ce1e13983247d5d4f1be585ed65f64d07832d72ddf0b70f86ebdc2b9367fe",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "07233b33b014866c2ca372943384625d4fbfa871"
+      },
+      {
+        "path": "integration-fabric/runtime/workday-worker-evidence-authority.test.mjs",
+        "bytes": 9499,
+        "blob": "3eebaef68dc4bab30ec023a5e2246349c6166945",
+        "sha256": "0bfeccea8ddebd888813da5427992456ccbd1e63a38fcaac67952b018ce913ef",
+        "classification": "PORT_WITH_BOUNDED_AUTHORITY_CORRECTION",
+        "sourceBlob": "17a6b196a213e6f72768989c6c77ffc027a9d527"
+      },
+      {
+        "path": "integration-fabric/runtime/industrial-batch-window-authority.test.mjs",
+        "bytes": 11355,
+        "blob": "aa1182ec8e53c11dd75ae3bcabe821135a1bd243",
+        "sha256": "a762f89fde06283a819daa39e8ef1d11b4dab57f1838b3e6f3773748baf39507",
+        "classification": "SOURCE_IDENTICAL_PORT",
+        "sourceBlob": "aa1182ec8e53c11dd75ae3bcabe821135a1bd243"
+      },
+      {
+        "path": "integration-fabric/research-overlays/2026-09-20-1251.json",
+        "bytes": 7682,
+        "blob": "267bc0fa399c934fa34cdf5b4adf09a3936bcde5",
+        "sha256": "ce5c854983cb84d890fe5dc0780e0a7a5df069772ace72660ac727ae245ddfc8",
+        "classification": "BOUNDED_CONSERVATIVE_METADATA_REPAIR",
+        "sourceBlob": "be88c16301ee83ff8409ee85d8e3c583106c833e"
+      },
+      {
+        "path": "integration-fabric/runtime/acadia-discovery-evidence.test.mjs",
+        "bytes": 4540,
+        "blob": "46df256e50103e5831ea9b401271e449e6fc3fa2",
+        "sha256": "fa6b026357bf36c2a63f4aaeb465d57152aac760c1163bba47e12bb3c6c7287d",
+        "classification": "BOUNDED_CONSERVATIVE_METADATA_REPAIR",
+        "sourceBlob": "01134260bafefd02801f5024de5c4a59dd15691c"
+      }
+    ],
+    "manifestIdentities": [
+      {
+        "path": "changes-manifest.json",
+        "bytes": 10873,
+        "blob": "b534dae65f5603898f910c4b0f0758ce749f4f0a",
+        "sha256": "3cfbce70dae96b3746d7d10e04c3a093a77b9b91f7ecc64c4948924edc1f09cb"
+      },
+      {
+        "path": "final-shipping-manifest.json",
+        "bytes": 32440,
+        "blob": "d6d4afd9f11d93b5861d008e4270127471b5d76a",
+        "sha256": "c0adedddad9534adc816884982f39f97ef4ebef6ee6150a49335eb7e00b82935"
+      },
+      {
+        "path": "authority-repair-manifest.json",
+        "bytes": 16707,
+        "blob": "3c045d6b772b277cd74db4819a76b00b1461f9db",
+        "sha256": "e2132b3460d93a2f0d5f668aa5a1c180c690ac74fa08f02507ccb953e3453dbe"
+      }
+    ]
+  },
+  "executed": {
+    "node": "v22.23.2",
+    "providerRequests": 0,
+    "heldOutMapped": {
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 200.0697
+    },
+    "expandedFrozenRed": {
+      "tests": 31,
+      "pass": 3,
+      "fail": 28,
+      "skip": 0,
+      "durationMs": 454.7557
+    },
+    "expandedRepairedGreen": {
+      "tests": 31,
+      "pass": 31,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 178.5415
+    },
+    "acadiaCorrected": {
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 1262.8377
+    },
+    "twinMappedSuite": {
+      "tests": 22,
+      "pass": 22,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 235.6343
+    },
+    "fabricFinalSuite": {
+      "tests": 546,
+      "pass": 546,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 6224.4862
+    },
+    "static": [
+      {
+        "exitCode": 0,
+        "script": "validate"
+      },
+      {
+        "exitCode": 0,
+        "script": "build-plan"
+      },
+      {
+        "exitCode": 0,
+        "script": "conformance"
+      },
+      {
+        "exitCode": 0,
+        "script": "build-connector-registry"
+      }
+    ]
+  },
+  "sourceIdentity": {
+    "shippingFabricPaths": 53,
+    "shippingFabricBytes": 616346,
+    "authorityCorrectionPaths": 24,
+    "sourceIdenticalRemainingAdditions": 27,
+    "preservedFrozenBaselinePaths": 142,
+    "unchangedSourceBaselinePaths": 140
+  },
+  "admissionConditions": [
+    "Authenticated application tenant and role checks must precede projections/helpers; canonical digest validates content identity rather than trusted provenance attestation.",
+    "Twin nodeById/graph arrays/history orderedEvents/dataQuality expose the complete validated supplied snapshot. Temporal replay methods filter knownAt; callers must not treat full collections as a historical or role-filtered response.",
+    "Bound input depth, size and CPU before untrusted application usage; reviewed twin functions do not provide a runtime scale admission gate.",
+    "Pure helper policy and input fingerprints do not prove server-held authority/current credentials or actual provider destination. Future callers must bind trusted current tenant/provenance/credential policy and destination; candidate outputs must not promote checkpoint, payroll, qualification or execution authority.",
+    "Run an exact integrated assembly and root-owned runtime/customer/restart/recovery/rollback/security acceptance before promotion. No wiring, hosted, provider or customer proof was executed in this review."
+  ],
+  "limitations": [
+    "Windows local Node execution, no Docker/hosted/provider/customer request. Network APIs denied in parent test processes and explicit Acadia guard children; existing repository suite child scripts are reviewed local conformance commands.",
+    "Initial Acadia reviewer harness had two wrong assumptions (bare status suffix and raw catalog rather than compiled registry); initial failures preserved and reviewer test corrected without product changes.",
+    "Static review covers dependency closure and side-effect/store absence of selected helpers; deepest independent adversarial checks cover eleven inert clones, field/capability destinations and twin tenant/time/math. Passing repository tests are not an exhaustive independent audit."
+  ]
+}

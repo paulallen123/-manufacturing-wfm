@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-02T08:58:03.144Z",
+  "observedAt": "2026-10-02T10:00:44.986Z",
   "provenBaseSha": null,
   "convergenceBaseSha": null,
   "inspectionBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
@@ -340,9 +340,19 @@
       "fail": 2,
       "result": "144 passed;2 files blocked by required composed-runtime environment, not reproduced CircleCI assertions",
       "evidence": "orchestration/evidence/staffology-node22.23.2.tap"
+    },
+    {
+      "suite": 546,
+      "expandedProbes": 31,
+      "acadia": 3,
+      "staticCommands": 4
     }
   ],
   "currentTask": "Repair current Staffology proof path; disjoint future helper port",
   "admissionAllowed": false,
-  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review."
+  "mandatoryRebase": "After exact customer proof or any new canonical head: fetch,compare,rebase/cherry-pick,current targeted regressions and independent review.",
+  "isolatedFutureBranch": "feature/vector-lane03-integration-authority-20261002",
+  "isolatedFutureSha": "462d1b68b2adc2258750209a87d1895155c54f35",
+  "isolatedFutureTree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
+  "componentProofState": "TESTED"
 }

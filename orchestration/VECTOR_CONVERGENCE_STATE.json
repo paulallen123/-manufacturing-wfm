@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-02T08:58:03.144Z",
+  "updatedAt": "2026-10-02T10:00:44.986Z",
   "programmeStatus": "RUNNING",
   "completionClaim": false,
   "phase": "Protect current proof candidate; repair blockers; inventory and isolated future ports",
@@ -66,9 +66,9 @@
       "id": "01",
       "name": "CANONICAL CORE & DIGITAL TWIN",
       "owner": "inventory_product isolated canonical Twin projection port",
-      "status": "ACTIVE",
+      "status": "ISOLATED_SOURCE_REVIEWED",
       "lock": "orchestration/lanes/01/VECTOR_BASELINE_LOCK.json",
-      "activeTask": "Inspect/port compatible read-only Twin projections"
+      "activeTask": "Future port published; runtime caller/current integrated admission outstanding"
     },
     {
       "id": "02",
@@ -97,10 +97,10 @@
     {
       "id": "05",
       "name": "IMPLEMENTATION & AUTONOMOUS SUPPORT",
-      "owner": "Commander assigned canonical domain; no duplicate worker",
-      "status": "INVENTORIED_NOT_IMPLEMENTING",
+      "owner": "inventory_product sole bounded proof-integrity repair owner",
+      "status": "ACTIVE",
       "lock": "orchestration/lanes/05/VECTOR_BASELINE_LOCK.json",
-      "activeTask": null
+      "activeTask": "Reject coercible historical totals and impossible authoritative policy dates, including persisted malformed receipts"
     },
     {
       "id": "06",
@@ -135,16 +135,118 @@
       "activeTask": "Held-out reproductions and independent repair review"
     }
   ],
-  "nextAction": "Retrieve and independently review the existing Staffology task repair output, verify native commit/tree and run held-outs before publishing a new exact source candidate.",
+  "nextAction": "Verify existing source-owner follow-up acceptance; repair TR-09 recovery approval/mode plus authentic fullHTTP fixture contract setup and successor trigger delta before publication.",
   "promotionRule": "Only exact current customer proof establishes PROVEN_BASE_SHA and then convergence/vector-next. Historic branches supply capability, not ancestry.",
   "sourceOwnerLatest": {
     "nativeCommit": "695de94bd7f738cad7e0a1f8dbf110ce60f8098e",
     "parent": "2f8aa26ae40258d36e71f909d18cc46989f0e1fe",
     "tree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
-    "status": "COMPLETED_OUTPUT_REPORTED; bytes not yet extracted/independently admitted",
+    "status": "EXTRACTED_EXACT_TREE_INDEPENDENTLY_REVIEWED; TR-09 P2 OPEN; successor follow-up Submit clicked but backend acceptance unconfirmed",
     "reportedNode": "22.22.2",
     "reportedPasses": 158,
     "reportedFullHTTP": "UNPASSED",
-    "reportedContainer": "UNPASSED"
+    "reportedContainer": "UNPASSED",
+    "nativeParent": "2f8aa26ae40258d36e71f909d18cc46989f0e1fe",
+    "expectedTree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+    "actualTree": "d15e660484c5bef8bb1e09ba7a1cb9cbd7414bb0",
+    "fullTreeMatches": true,
+    "files": 1107,
+    "changedFrom935": 20,
+    "verifiedAllTrackedBlobBytes": true,
+    "baseSha": "93513c250e3f0105a1fd019bf63a5a1674970b98",
+    "patchSha256": "cad5f4306b42cb26fe77c49035e3b1eee370716f7db4fd5143a316197b494015",
+    "taskURL": "https://chatgpt.com/codex/cloud/tasks/task_e_6abe6bda82608327ae169f2d17c39f94",
+    "followupAcceptance": "UNCONFIRMED",
+    "tests": {
+      "sourceUI": {
+        "tests": 153,
+        "suites": 0,
+        "pass": 153,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 3762.7777
+      },
+      "persistence": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 1780.0796
+      },
+      "fullHTTP": {
+        "tests": 1,
+        "suites": 0,
+        "pass": 0,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 6098.4047
+      }
+    },
+    "fullHTTPFailure": "Acquire-stage403: canonical contractTypes/weeklyHours empty before reviewed fixture contract configuration",
+    "publicationAdmitted": false
+  },
+  "futureSourceBranches": [
+    {
+      "branch": "feature/vector-lane01-twin-projections-20261002",
+      "sha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+      "tree": "c7a555208d740b871856df8992eee020f3ce2851",
+      "parents": [
+        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      ],
+      "baseBlobsUnchanged": 1094,
+      "shippingPaths": 2,
+      "shippingBytes": 28606,
+      "totalAddedPaths": 39,
+      "totalTreeBlobs": 1133,
+      "tests": {
+        "mapped": 22,
+        "independentHeldOuts": 12
+      },
+      "runtimeCallerIntegrated": false
+    },
+    {
+      "branch": "feature/vector-lane03-integration-authority-20261002",
+      "sha": "462d1b68b2adc2258750209a87d1895155c54f35",
+      "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
+      "parents": [
+        "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      ],
+      "baseBlobsUnchanged": 1092,
+      "allowedBaseModifications": 2,
+      "shippingPaths": 53,
+      "shippingBytes": 616346,
+      "totalAddedPaths": 105,
+      "totalTreeBlobs": 1199,
+      "tests": {
+        "suite": 546,
+        "expandedProbes": 31,
+        "acadia": 3,
+        "staticCommands": 4
+      },
+      "runtimeCallerIntegrated": false
+    }
+  ],
+  "freshHostedObservation": {
+    "at": "2026-10-02T09:54:03.214004689Z",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+    "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+    "tenant": "northstar-demo",
+    "completed": 5,
+    "total": 21,
+    "state": "SLA_MISSED",
+    "activeLeases": 0,
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "customerProofComplete": false,
+    "productReady": false,
+    "evidence": "orchestration/evidence/hosted-refresh/summary.md"
   }
 }

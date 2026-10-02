@@ -1,0 +1,119 @@
+{
+  "scope": "ISOLATED_SYNTHETIC_NEGATIVE_REPRODUCTION_ONLY",
+  "candidate": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "deployment": "ISOLATED-NONHOSTED",
+  "observations": [
+    {
+      "id": "REPLAY_NULL_TOTALS",
+      "httpStatus": 200,
+      "input": {
+        "exactCandidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+        "exactTargetDeploymentId": "ISOLATED-NONHOSTED",
+        "dataClass": "synthetic-scale",
+        "independentCalculation": true,
+        "expectedTotal": null,
+        "calculatedTotal": "",
+        "unexplainedVariance": null
+      },
+      "gate": {
+        "key": "historical-replay",
+        "label": "Historical replay and reconciliation",
+        "minConfidence": 0.995,
+        "budgetMinutes": 60,
+        "dependsOn": [
+          "payroll-mapping",
+          "time-policies"
+        ],
+        "status": "PASS",
+        "confidence": 1,
+        "satisfied": true,
+        "source": "isolated-negative-reproduction",
+        "observedAt": "2026-10-02T09:40:30.953Z",
+        "detail": {
+          "exactCandidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "exactTargetDeploymentId": "ISOLATED-NONHOSTED",
+          "dataClass": "synthetic-scale",
+          "independentCalculation": true,
+          "expectedTotal": null,
+          "calculatedTotal": "",
+          "unexplainedVariance": null
+        },
+        "evidenceBinding": {
+          "status": "MATCHED",
+          "reason": null,
+          "expected": {
+            "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "deploymentId": "ISOLATED-NONHOSTED",
+            "tenant": "alpha",
+            "runId": "1c397166-c26b-4a66-bfcd-b966c44d5f69"
+          },
+          "observed": {
+            "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "deploymentId": "ISOLATED-NONHOSTED"
+          }
+        }
+      }
+    },
+    {
+      "id": "POLICY_INVALID_CALENDAR_DATE",
+      "httpStatus": 200,
+      "input": {
+        "authoritativeConfirmation": true,
+        "sourceRef": "ISOLATED-NO-CUSTOMER-POLICY",
+        "effectiveDate": "2026-99-99",
+        "unresolvedRules": 0,
+        "unknownPolicyFields": 0,
+        "breakRulesVerified": true,
+        "overtimeRulesVerified": true,
+        "workingTimeRulesVerified": true,
+        "timeZoneVerified": true
+      },
+      "gate": {
+        "key": "time-policies",
+        "label": "Time, break and overtime policies",
+        "minConfidence": 0.995,
+        "budgetMinutes": 45,
+        "dependsOn": [
+          "people-data"
+        ],
+        "status": "PASS",
+        "confidence": 1,
+        "satisfied": true,
+        "source": "customer-authorised-policy-confirmation",
+        "observedAt": "2026-10-02T09:40:30.981Z",
+        "detail": {
+          "exactCandidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "exactTargetDeploymentId": "ISOLATED-NONHOSTED",
+          "tenant": "alpha",
+          "runId": "1c397166-c26b-4a66-bfcd-b966c44d5f69",
+          "fixtureOnly": false,
+          "evidenceClass": "customer-authorised",
+          "sourceAuthoritative": true,
+          "sourceRef": "ISOLATED-NO-CUSTOMER-POLICY",
+          "effectiveDated": true,
+          "effectiveDate": "2026-99-99",
+          "unresolvedRules": 0,
+          "unknownPolicyFields": 0,
+          "breakRulesVerified": true,
+          "overtimeRulesVerified": true,
+          "workingTimeRulesVerified": true,
+          "timeZoneVerified": true
+        },
+        "evidenceBinding": {
+          "status": "MATCHED",
+          "reason": null,
+          "expected": {
+            "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "deploymentId": "ISOLATED-NONHOSTED",
+            "tenant": "alpha",
+            "runId": "1c397166-c26b-4a66-bfcd-b966c44d5f69"
+          },
+          "observed": {
+            "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+            "deploymentId": "ISOLATED-NONHOSTED"
+          }
+        }
+      }
+    }
+  ]
+}

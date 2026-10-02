@@ -1,0 +1,94 @@
+{
+  "artifacts": [
+    {
+      "name": "native695-review.md",
+      "bytes": 5090,
+      "sha256": "0b77fb9e4ef30c46ff0d68bbee2dec04fbca030bd3689309f4fe9e225d3abbfc"
+    },
+    {
+      "name": "native695-findings.json",
+      "bytes": 9964,
+      "sha256": "149cfe59b6bcdb827ee8c04d20571666b13daa604ce02de3e03c36f495e66718"
+    },
+    {
+      "name": "native695-source-verification.json",
+      "bytes": 305786,
+      "sha256": "bd2552ac367311bfdd570cccf39466134bbd6a463e2070791a9e63c024bcd266"
+    },
+    {
+      "name": "held-out.native695.test.cjs",
+      "bytes": 12948,
+      "sha256": "daacd36a80dac19572613281fe1b03000aa51d43a0c1374e8ee62aa101e49156"
+    },
+    {
+      "name": "held-out.native695.node22.tap",
+      "bytes": 8846,
+      "sha256": "f7883001176590245dab2e51c51df10b8088c4bc4724f7c94c332795ea2d90ed"
+    },
+    {
+      "name": "held-out.native695.observations.json",
+      "bytes": 2761,
+      "sha256": "ec933dd4871d946d69b8a85e59c5de2b90659cbdd0337bda8a57a40db6e75f19"
+    },
+    {
+      "name": "held-out.native695.run.json",
+      "bytes": 144,
+      "sha256": "6a4a8f8c2fc40c14febdb0bea28ae107d0f5c2508529d1dbf7ab14c43d03752e"
+    },
+    {
+      "name": "native695-recovery.held-out.test.cjs",
+      "bytes": 11290,
+      "sha256": "dbfb546f24f10ad615a273f2dfb8b50af41ddc34bd93e5288f4faab430cfbef2"
+    },
+    {
+      "name": "native695-recovery.node22.tap",
+      "bytes": 8504,
+      "sha256": "e7e5ea0d88fafaa383cf2b512f4099751022fbc97b7769fb654f961284b8fe48"
+    },
+    {
+      "name": "native695-recovery.expanded.node22.tap",
+      "bytes": 8842,
+      "sha256": "d2f754bffff19c8a01b308bdd7280a60cfdbad2ab68aa6669a47b484d6b5f55c"
+    },
+    {
+      "name": "native695-recovery.final.node22.tap",
+      "bytes": 9784,
+      "sha256": "9eb0cf1d9571e22dfdc0364565e6535fcd32cbb6dd0c9b88a542bb417548686e"
+    },
+    {
+      "name": "native695-recovery.observations.json",
+      "bytes": 826,
+      "sha256": "914eb15237f83bdcefdd4e6bba17aa34af922412ecca3ac7d7c4cfcb9d1a10be"
+    },
+    {
+      "name": "native695-recovery.final.run.json",
+      "bytes": 115,
+      "sha256": "42af79cda7cfddc83cb109b1bdc40aa83d0643c481e2f84190641a59bd59510d"
+    },
+    {
+      "name": "native695-ui-ci.held-out.test.cjs",
+      "bytes": 3965,
+      "sha256": "52f048588620b5c389d841020a75548dc344ab78489c82ef8ea56f6258009c04"
+    },
+    {
+      "name": "native695-ui-ci.node22.tap",
+      "bytes": 2104,
+      "sha256": "f26e3afd40412f13545b60e4afeafeccbaec198621f47f436539403c6742810e"
+    },
+    {
+      "name": "native695-ui-ci.run.json",
+      "bytes": 115,
+      "sha256": "ab0ec8438cd96215e299bcea0e27769e674f54f6c8fe5da880053162b9e847f7"
+    },
+    {
+      "name": "verify-native695.cjs",
+      "bytes": 2275,
+      "sha256": "53492818a58333105c1a344ca905adff8337972a0406b4af8b973ed37f7aead1"
+    },
+    {
+      "name": "build-native695-probes.cjs",
+      "bytes": 2707,
+      "sha256": "78ae2abaea1d80f9bc89539561eb44f109b07f07dcd59ddc2fcfbabbb29e0082"
+    }
+  ]
+}

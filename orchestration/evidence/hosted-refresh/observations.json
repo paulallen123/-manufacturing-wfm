@@ -1,0 +1,151 @@
+{
+  "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+  "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+  "historicalTuple": {
+    "observedAt": "2026-10-02T08:20:00.000Z",
+    "source": "Inherited root evidence; preserved without being overwritten by fresh readback",
+    "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+    "executorDeploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+    "executorCodeSha256": "9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438",
+    "tenant": "northstar-demo",
+    "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "completedRequirements": 5,
+    "totalRequirements": 21
+  },
+  "latest": {
+    "logTimestamp": "2026-10-02T09:54:03.214004689Z",
+    "executorStartedAt": "2026-10-02T09:53:51.466Z",
+    "executorUpdatedAt": "2026-10-02T09:53:53.686Z",
+    "executorCodeSha256": "9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438",
+    "executorDeploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+    "observed": {
+      "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e"
+    },
+    "expected": {
+      "tenant": "northstar-demo",
+      "runId": "09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e",
+      "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810"
+    },
+    "health": {
+      "status": 200,
+      "release": "0.6.76-hosted-staging-rc1",
+      "candidateSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "fixtureOnly": true,
+      "productionApproved": false
+    },
+    "bootstrapStatus": 200,
+    "scopeStatus": 200,
+    "implementationStatus": 200,
+    "implementation": {
+      "state": "SLA_MISSED",
+      "operationalReady": false,
+      "completedRequirements": 5,
+      "totalRequirements": 21,
+      "openRequirements": [
+        {
+          "key": "tenant-environment",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "identity-access",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "time-policies",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "absence-policies",
+          "status": "WARN"
+        },
+        {
+          "key": "scheduling",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "approvals",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "clocking",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "payroll-mapping",
+          "status": "MISSING"
+        },
+        {
+          "key": "historical-replay",
+          "status": "MISSING"
+        },
+        {
+          "key": "security-controls",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "resilience",
+          "status": "REVALIDATION_REQUIRED"
+        },
+        {
+          "key": "scenario-validation",
+          "status": "MISSING"
+        },
+        {
+          "key": "test-data-cleanup",
+          "status": "MISSING"
+        },
+        {
+          "key": "live-data-import",
+          "status": "MISSING"
+        },
+        {
+          "key": "privileged-competency",
+          "status": "MISSING"
+        },
+        {
+          "key": "frontline-readiness",
+          "status": "MISSING"
+        }
+      ],
+      "activeWorkerLeases": 0
+    },
+    "scopedChecksPassed": true,
+    "customerProofComplete": false,
+    "productReady": false,
+    "status": "passwordless-proof-runner-partial",
+    "deploymentReadbackSource": "authenticated implementation status: current native binding",
+    "providerMetadataBoundary": {
+      "acquiredAt": "2026-10-02T06:58:50.375Z",
+      "scope": "Stored application metadata only; no fresh provider authorization or data acceptance",
+      "connectionCount": 0,
+      "freshProviderProof": false
+    }
+  },
+  "comparisonToHistorical": {
+    "sameCandidate": true,
+    "sameDeployment": true,
+    "sameRun": true,
+    "sameTenant": true,
+    "sameCodeHash": true,
+    "sameCompletedRequirements": true
+  },
+  "newlyObservedExternalDeployedApplicationHeads": [],
+  "gaps": [
+    "Railway SUCCESS is deployment metadata, not whole customer proof or production approval.",
+    "Current readiness is read from existing executor log reporting authenticated native status; worker did not issue a new application/browser/provider call.",
+    "Existing executor code SHA256 is log self-report corroborating historical identity; OCI digest and live filesystem code were not independently read.",
+    "Logs were narrowly filtered and time-bounded. First proof query limit80 returned81 records, so earlier08:20–08:31 entries were not covered by that capped result; independent final windows returned8and3 entries below cap.",
+    "OpenAI/OpenAI-case/lowercase/usage/error application queries returned0; no current usage-limit error surfaced in06:58–09:52:27 window. This is not proof of provider health/budget or absence of errors outside matching logs.",
+    "Final executor tail extends to09:54:39 query end; error-query window was not extended past09:52:27.",
+    "Gusto snapshot acquired06:58:50.375Z is explicitly stored application metadata with zero connection rows; neither configuration nor zero rows establishes genuine provider authorization/data proof.",
+    "Only deployed app head observed remains f32; GitHub review/future branches were not refreshed in this Railway-only task.",
+    "No physical mobile/browser, hosted task completion, direct runtimeUID/filesystem, workflow, restart or complete21requirement proof obtained."
+  ]
+}

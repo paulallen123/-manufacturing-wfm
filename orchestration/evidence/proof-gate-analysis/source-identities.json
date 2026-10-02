@@ -1,0 +1,140 @@
+[
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+    "actualBlob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+    "bytes": 99344,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+    "actualBlob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+    "bytes": 5692,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/readiness-evidence-contract.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "5a23037af19be20b0179c389dc3b5dc49f2c8b2f",
+    "actualBlob": "5a23037af19be20b0179c389dc3b5dc49f2c8b2f",
+    "bytes": 11748,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/implementation-work-controller.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+    "actualBlob": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+    "bytes": 18652,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/tenant-environment-provisioner.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "ac9d322a5d2127402f67cd88834687ff88e4cbe2",
+    "actualBlob": "ac9d322a5d2127402f67cd88834687ff88e4cbe2",
+    "bytes": 5852,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/agents-api-bootstrap-route.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+    "actualBlob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+    "bytes": 7937,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+    "actualBlob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+    "bytes": 69592,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+    "actualBlob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+    "bytes": 5240,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/implementation-active-controller.integration.test.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+    "actualBlob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+    "bytes": 15722,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/runtime/configuration-inference-engine.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "d3688d27841a28d3b8801b7d4c63f254e8bf7edd",
+    "actualBlob": "d3688d27841a28d3b8801b7d4c63f254e8bf7edd",
+    "bytes": 11506,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/proof/cloud-scale-proof-runner.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "3e6efa9a7a866c3b58053c1ec84341a73332f775",
+    "actualBlob": "3e6efa9a7a866c3b58053c1ec84341a73332f775",
+    "bytes": 10230,
+    "exactFrozen": true
+  },
+  {
+    "path": "integration/runtime/autonomous-integration-hub.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+    "actualBlob": "af327965343ce1f84e75111ac6bd8c92a2685433",
+    "bytes": 61466,
+    "exactFrozen": true
+  },
+  {
+    "path": "learning/runtime/adaptive-learning-engine.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+    "actualBlob": "fedd6efdd2a406c8f04b3690201e44977749fcdc",
+    "bytes": 29121,
+    "exactFrozen": true
+  },
+  {
+    "path": "implementation/ui/implementation-journey.js",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "28816397006f1aa8b6e916a3ebda95bb7cc110f0",
+    "actualBlob": "28816397006f1aa8b6e916a3ebda95bb7cc110f0",
+    "bytes": 33111,
+    "exactFrozen": true
+  },
+  {
+    "path": "security/runtime/proof-runner-auth.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "0165b9a5207eeb870e2690c4da6456ec8457db7e",
+    "actualBlob": "0165b9a5207eeb870e2690c4da6456ec8457db7e",
+    "bytes": 12863,
+    "exactFrozen": true
+  },
+  {
+    "path": "scripts/implementation-source-handoff-proof.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "e93e5ce697302e92910834fa7fdbf9ac19489e0e",
+    "actualBlob": "e93e5ce697302e92910834fa7fdbf9ac19489e0e",
+    "bytes": 12957,
+    "exactFrozen": true
+  },
+  {
+    "path": "security/runtime/bootstrap.cjs",
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+    "expectedBlob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+    "actualBlob": "9be4ea8a17bb8a00db734e27cdb3aa60acafe1fe",
+    "acquisition": "DIRECT_FROZEN_GITHUB_FETCH",
+    "local935Blob": "08e3261a95804e400d0a742e38ac57ffef78438a",
+    "exactFrozen": true,
+    "inspectedScope": "lines375-410 learningSummaryProvider only; current935 bootstrap excluded"
+  }
+]

@@ -1,0 +1,339 @@
+{
+  "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+  "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+  "queries": [
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "types": [
+          "deploy"
+        ],
+        "startDate": "2026-10-02T08:20:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 80,
+        "name": "executor-proof",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "filter": "proof"
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "serviceId": "fc72219b-ee7c-4b84-8d94-1a14cf7d6e78",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 81
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "types": [
+          "deploy"
+        ],
+        "startDate": "2026-10-02T08:20:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 80,
+        "name": "app-readiness",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "filter": "readiness"
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 0
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "types": [
+          "deploy"
+        ],
+        "startDate": "2026-10-02T08:20:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 80,
+        "name": "app-openai",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "filter": "OpenAI"
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 0
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "types": [
+          "deploy"
+        ],
+        "startDate": "2026-10-02T08:20:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 80,
+        "name": "executor-openai",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "filter": "OpenAI"
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "serviceId": "fc72219b-ee7c-4b84-8d94-1a14cf7d6e78",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 0
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "types": [
+          "deploy"
+        ],
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "startDate": "2026-10-02T06:58:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 12,
+        "filter": "openai"
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 0
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "types": [
+          "deploy"
+        ],
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "startDate": "2026-10-02T06:58:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 12,
+        "filter": "usage"
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 0
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "types": [
+          "deploy"
+        ],
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "startDate": "2026-10-02T06:58:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 12,
+        "filter": "error"
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "54e96e40-5fc2-428b-b96d-7453a5fa1810",
+        "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 0
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "types": [
+          "deploy"
+        ],
+        "filter": "proof",
+        "startDate": "2026-10-02T09:45:00.000Z",
+        "endDate": "2026-10-02T09:52:27.000Z",
+        "limit": 20
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "serviceId": "fc72219b-ee7c-4b84-8d94-1a14cf7d6e78",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 8
+    },
+    {
+      "request": {
+        "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "types": [
+          "deploy"
+        ],
+        "filter": "proof",
+        "startDate": "2026-10-02T09:52:00.000Z",
+        "endDate": "2026-10-02T09:54:39.000Z",
+        "limit": 10
+      },
+      "result": {
+        "scope": "deployment",
+        "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+        "serviceId": "fc72219b-ee7c-4b84-8d94-1a14cf7d6e78",
+        "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "status": "SUCCESS"
+      },
+      "returnedEntries": 3
+    }
+  ],
+  "exactTail": {
+    "scope": "deployment",
+    "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+    "serviceId": "fc72219b-ee7c-4b84-8d94-1a14cf7d6e78",
+    "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+    "status": "SUCCESS",
+    "deploy": [
+      {
+        "timestamp": "2026-10-02T09:52:02.507062157Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:51:51.427Z\",\"updatedAt\":\"2026-10-02T09:51:53.617Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:52:52.809141642Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:52:51.454Z\",\"updatedAt\":\"2026-10-02T09:52:52.628Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:54:03.214004689Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:53:51.466Z\",\"updatedAt\":\"2026-10-02T09:53:53.686Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      }
+    ]
+  },
+  "earlierWindow": {
+    "scope": "deployment",
+    "deploymentId": "0255e65b-e501-4f83-9c04-8433ccf15471",
+    "serviceId": "fc72219b-ee7c-4b84-8d94-1a14cf7d6e78",
+    "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+    "status": "SUCCESS",
+    "deploy": [
+      {
+        "timestamp": "2026-10-02T09:45:02.151770747Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:44:51.242Z\",\"updatedAt\":\"2026-10-02T09:44:52.228Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:46:02.446492529Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:45:51.266Z\",\"updatedAt\":\"2026-10-02T09:45:54.659Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:47:02.431373579Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:46:51.294Z\",\"updatedAt\":\"2026-10-02T09:46:53.230Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:48:02.672485351Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:47:51.322Z\",\"updatedAt\":\"2026-10-02T09:47:53.214Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:49:02.596797187Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:48:51.350Z\",\"updatedAt\":\"2026-10-02T09:48:54.896Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:50:02.607016797Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:49:51.368Z\",\"updatedAt\":\"2026-10-02T09:49:53.686Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:51:02.499004212Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:50:51.398Z\",\"updatedAt\":\"2026-10-02T09:50:53.388Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      },
+      {
+        "timestamp": "2026-10-02T09:52:02.507062157Z",
+        "severity": "info",
+        "message": "VECTOR_PASSWORDLESS_EXECUTOR_PARTIAL {\"ok\":true,\"status\":\"passwordless-proof-runner-partial\",\"scopedChecksPassed\":true,\"customerProofComplete\":false,\"productReady\":false,\"startedAt\":\"2026-10-02T09:51:51.427Z\",\"updatedAt\":\"2026-10-02T09:51:53.617Z\",\"executorCodeSha256\":\"9fe6397209f8ee9c4c1b8d493534d3032193f5022e7fb637db9f6ff2d83d4438\",\"gustoMetadata\":{\"acquiredAt\":\"2026-10-02T06:58:50.375Z\",\"scope\":\"Stored application metadata only; no fresh provider authorization or data acceptance\",\"configurationHttpStatus\":200,\"statusHttpStatus\":200,\"available\":true,\"configuration\":{\"configured\":true,\"environment\":\"sandbox\",\"expectedCompanyUuid\":\"49d3bf95-5b5b-4251-89d8-1b614e47e676\",\"missingConfiguration\":[]},\"gustoConnectionCount\":0,\"connections\":[]},\"origin\":\"https://vector-customer-ready-candidate-production.up.railway.app\",\"email\":\"manager@northstar.example\",\"authMethod\":\"proof-runner-signed\",\"actor\":{\"email\":\"manager@northstar.example\",\"tenant\":\"northstar-demo\",\"personId\":\"m1\",\"personnelId\":null,\"role\":\"manager\",\"costs\":true,\"permissions\":[]},\"observed\":{\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"deploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\",\"tenant\":\"northstar-demo\",\"runId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\"},\"deploymentReadbackSource\":\"authenticated implementation status: current native binding\",\"health\":{\"status\":200,\"release\":\"0.6.76-hosted-staging-rc1\",\"candidateSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"fixtureOnly\":true,\"productionApproved\":false},\"bootstrapStatus\":200,\"scopeStatus\":200,\"implementationStatus\":200,\"implementation\":{\"state\":\"SLA_MISSED\",\"operationalReady\":false,\"completedRequirements\":5,\"totalRequirements\":21,\"openRequirements\":[{\"key\":\"tenant-environment\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"identity-access\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"time-policies\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"absence-policies\",\"status\":\"WARN\"},{\"key\":\"scheduling\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"approvals\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"clocking\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"payroll-mapping\",\"status\":\"MISSING\"},{\"key\":\"historical-replay\",\"status\":\"MISSING\"},{\"key\":\"security-controls\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"resilience\",\"status\":\"REVALIDATION_REQUIRED\"},{\"key\":\"scenario-validation\",\"status\":\"MISSING\"},{\"key\":\"test-data-cleanup\",\"status\":\"MISSING\"},{\"key\":\"live-data-import\",\"status\":\"MISSING\"},{\"key\":\"privileged-competency\",\"status\":\"MISSING\"},{\"key\":\"frontline-readiness\",\"status\":\"MISSING\"}],\"activeWorkerLeases\":0},\"expectedTenant\":\"northstar-demo\",\"expectedRunId\":\"09c83c6c-ddc6-4ba7-b8aa-adaa5d80295e\",\"expectedSha\":\"f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560\",\"expectedDeploymentId\":\"54e96e40-5fc2-428b-b96d-7453a5fa1810\"}",
+        "attributes": [
+          {
+            "key": "level",
+            "value": "\"info\""
+          }
+        ]
+      }
+    ]
+  },
+  "noMatchingErrorLogClaims": "Empty filtered result sets only; not evidence of OpenAI availability, absence of errors, or provider/business proof."
+}

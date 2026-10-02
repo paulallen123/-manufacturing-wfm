@@ -1,0 +1,971 @@
+{
+  "schema_version": 1,
+  "scope": "new continuation records only; initial92 untouched",
+  "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "status_policy": "FOUND only; no continuation tests/runtime/provider proof executed",
+  "capabilities": [
+    {
+      "id": "edge03-cont-transport-governed-proof-retry",
+      "lane": "03",
+      "title": "Transport-governed provider maintenance retry execution",
+      "classification": "PORT",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical integration runtime admission owner",
+      "source_refs": [
+        {
+          "pr": null,
+          "pr_state": "branch-only",
+          "merged_at": null,
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "path": "integration/runtime/provider-proof-retry-policy.cjs",
+          "blob": "178f63e41e53b494bd99db98164b741f4776226b",
+          "mode": "100644",
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7b87bbc6c255996ced001de746628352cfb62c9b/integration/runtime/provider-proof-retry-policy.cjs"
+        },
+        {
+          "pr": null,
+          "pr_state": "branch-only",
+          "merged_at": null,
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "path": "integration/runtime/provider-proof-maintenance-runner.cjs",
+          "blob": "94ecd27e67efab1978a4a1b7918c034d7591e664",
+          "mode": "100644",
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7b87bbc6c255996ced001de746628352cfb62c9b/integration/runtime/provider-proof-maintenance-runner.cjs"
+        }
+      ],
+      "implementation_paths": [
+        "integration/runtime/provider-proof-retry-policy.cjs",
+        "integration/runtime/provider-proof-maintenance-runner.cjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "integration/runtime/provider-proof-retry-policy.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "178f63e41e53b494bd99db98164b741f4776226b",
+          "comparison": "ABSENT"
+        },
+        {
+          "path": "integration/runtime/provider-proof-maintenance-runner.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "94ecd27e67efab1978a4a1b7918c034d7591e664",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "integration/runtime/provider-proof-retry-policy.test.cjs",
+          "integration/runtime/provider-proof-maintenance-runner.test.cjs"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0
+      },
+      "dependencies": [
+        "integration/runtime/transport-runtime-policy.cjs",
+        "integration/runtime/provider-proof-maintenance-worker.cjs",
+        "integration/runtime/provider-proof-maintenance-ledger.cjs",
+        "Exact reviewed connection/transport, durable task key and trusted execution context"
+      ],
+      "remaining_work": [
+        "Admit into existing canonical dispatcher after comparing current retry contracts; do not introduce a competing executor.",
+        "Prove auth expiry, rate limits, duplicate-sensitive operation keys, invalid policy and terminal failures without provider calls."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial edge03-activation-maintenance (worker existed there; this adds governed retry wrapper)",
+        "Staffology dispatch/recovery owner excluded; future API comparison required"
+      ],
+      "rationale": "New r17–r20 executable wrappers route adapter failures through shared transport policy, replacing adapter retry hints with bounded decisions. Both exact paths absent f32. r25 preserves final r20 runner and r19 policy blobs.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge03-cont-durable-first-failure-budget",
+      "lane": "03",
+      "title": "Retry elapsed budget anchored to the first durable provider failure",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical integration runtime admission owner",
+      "source_refs": [
+        {
+          "pr": null,
+          "pr_state": "branch-only",
+          "merged_at": null,
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "path": "integration/runtime/provider-proof-maintenance-ledger.cjs",
+          "blob": "b28e3e3c4784a68b32296d313620be61b2d2892f",
+          "mode": "100644",
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7b87bbc6c255996ced001de746628352cfb62c9b/integration/runtime/provider-proof-maintenance-ledger.cjs"
+        }
+      ],
+      "implementation_paths": [
+        "integration/runtime/provider-proof-maintenance-ledger.cjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "integration/runtime/provider-proof-maintenance-ledger.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "b28e3e3c4784a68b32296d313620be61b2d2892f",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "integration/runtime/provider-proof-maintenance-ledger.test.cjs",
+          "integration/runtime/provider-proof-maintenance-runner.test.cjs"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0,
+        "source_declared_literal_tests": 10
+      },
+      "dependencies": [
+        "Existing canonical durable store ownership",
+        "Node SQLite transaction/claim contracts",
+        "integration/runtime/provider-proof-maintenance-runner.cjs"
+      ],
+      "remaining_work": [
+        "Reuse current durable store and migrate only equivalent first-failure metadata; do not create another canonical ledger.",
+        "Independently prove restart/reopen, concurrent claim expiry, tampered task, exact first failure and elapsed-window exhaustion."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial edge03-activation-maintenance durable ledger",
+        "edge03-cont-transport-governed-proof-retry"
+      ],
+      "rationale": "r20 adds first_failure_ms persisted using COALESCE at retry completion and exposed to the governed runner. This is a new delta over initial r15 ledger blob91d66..., not another inventory of its old scheduling capability. f32 exact path absent.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge03-cont-retry-exhaustion-health",
+      "lane": "03",
+      "title": "Retry exhaustion distinguishes still-trusted proof from mandatory pause",
+      "classification": "PORT",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical integration runtime admission owner",
+      "source_refs": [
+        {
+          "pr": null,
+          "pr_state": "branch-only",
+          "merged_at": null,
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "path": "integration/runtime/maintenance-retry-health.cjs",
+          "blob": "4abae8aa50a86b83d25a1bf27b9779f7a89c53f3",
+          "mode": "100644",
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7b87bbc6c255996ced001de746628352cfb62c9b/integration/runtime/maintenance-retry-health.cjs"
+        }
+      ],
+      "implementation_paths": [
+        "integration/runtime/maintenance-retry-health.cjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "integration/runtime/maintenance-retry-health.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "4abae8aa50a86b83d25a1bf27b9779f7a89c53f3",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "integration/runtime/maintenance-retry-health.test.cjs",
+          "integration/runtime/maintenance-retry-health-integration.test.cjs"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0
+      },
+      "dependencies": [
+        "integration/runtime/connection-health-summary.cjs",
+        "integration/runtime/provider-proof-lifecycle.cjs",
+        "Exact current provider proof trust/expiry"
+      ],
+      "remaining_work": [
+        "Adapt into canonical health owner; preserve trusted-proof-only continuation and required reconciliation after expiry.",
+        "Independently verify paused/degraded UI cannot override runtime admission."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial edge03-activation-maintenance health summary"
+      ],
+      "rationale": "New r21 helper maps retry-budget/window exhaustion to DEGRADED only with a currently trusted proof, otherwise ATTENTION_REQUIRED/canSync=false. r22 wires it into summary; module absent f32.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge03-cont-protected-setup-readiness",
+      "lane": "03",
+      "title": "Connection setup readiness requires metadata and a protected credential reference",
+      "classification": "PORT",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical integration runtime admission owner",
+      "source_refs": [
+        {
+          "pr": null,
+          "pr_state": "branch-only",
+          "merged_at": null,
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "path": "integration/runtime/customer-setup-readiness.cjs",
+          "blob": "784191a44fab7c11b8fa662f11edc8f582f68574",
+          "mode": "100644",
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7b87bbc6c255996ced001de746628352cfb62c9b/integration/runtime/customer-setup-readiness.cjs"
+        }
+      ],
+      "implementation_paths": [
+        "integration/runtime/customer-setup-readiness.cjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "integration/runtime/customer-setup-readiness.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "784191a44fab7c11b8fa662f11edc8f582f68574",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "integration/runtime/customer-setup-readiness.test.cjs"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0,
+        "source_declared_literal_tests": 6
+      },
+      "dependencies": [
+        "integration/runtime/transport-runtime-policy.cjs",
+        "integration/runtime/connection-proof-gate.cjs",
+        "Canonical credential reference broker and setup UI"
+      ],
+      "remaining_work": [
+        "Compare reference syntax and canonical setup requirements; avoid a second connection catalogue.",
+        "Verify raw-secret rejection/redaction, empty collection metadata, identity and read-only database setup without provider requests."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial edge03-safe-connection-contract",
+        "Initial edge06-mobile-connections credential/setup flow"
+      ],
+      "rationale": "New r24 setup assessment and r25 hardening reject opaque/raw credentialRef and raw secret fields; mapping/business rules remain separate and activation approval explicit. Exact path absent f32.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge03-cont-cross-transport-recovery-regressions",
+      "lane": "03",
+      "title": "Executable recovery regressions across enterprise transports and read-only identity",
+      "classification": "PORT",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical integration runtime admission owner",
+      "source_refs": [
+        {
+          "pr": null,
+          "pr_state": "branch-only",
+          "merged_at": null,
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "path": "integration/runtime/cross-transport-recovery-integration.test.cjs",
+          "blob": "95a4c07a8705d14686447dcbe650a46b59e24b98",
+          "mode": "100644",
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7b87bbc6c255996ced001de746628352cfb62c9b/integration/runtime/cross-transport-recovery-integration.test.cjs"
+        },
+        {
+          "pr": null,
+          "pr_state": "branch-only",
+          "merged_at": null,
+          "branch": "automation/integration-setup-reference-hardening-r25",
+          "sha": "7b87bbc6c255996ced001de746628352cfb62c9b",
+          "path": "integration/runtime/read-only-identity-recovery-integration.test.cjs",
+          "blob": "8e7be7c9ea06d0ddbecde6cbee7b90fb807793ed",
+          "mode": "100644",
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7b87bbc6c255996ced001de746628352cfb62c9b/integration/runtime/read-only-identity-recovery-integration.test.cjs"
+        }
+      ],
+      "implementation_paths": [
+        "integration/runtime/cross-transport-recovery-integration.test.cjs",
+        "integration/runtime/read-only-identity-recovery-integration.test.cjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "integration/runtime/cross-transport-recovery-integration.test.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "95a4c07a8705d14686447dcbe650a46b59e24b98",
+          "comparison": "ABSENT"
+        },
+        {
+          "path": "integration/runtime/read-only-identity-recovery-integration.test.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "8e7be7c9ea06d0ddbecde6cbee7b90fb807793ed",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "integration/runtime/cross-transport-recovery-integration.test.cjs",
+          "integration/runtime/read-only-identity-recovery-integration.test.cjs"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0,
+        "parameterized_transports": [
+          "queue-stream",
+          "secure-file",
+          "on-prem-agent",
+          "ipaas",
+          "read-only-db",
+          "identity"
+        ]
+      },
+      "dependencies": [
+        "integration/runtime/connection-proof-gate.cjs",
+        "integration/runtime/provider-proof-lifecycle.cjs",
+        "integration/runtime/connection-health-summary.cjs",
+        "integration/runtime/provider-proof-retry-policy.cjs"
+      ],
+      "remaining_work": [
+        "Map regressions onto admitted canonical APIs and execute after dependency closure.",
+        "Add adversarial held-outs for spoofed current-proof trust and future/missing retry anchors."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial activation/maintenance capability",
+        "Continuation retry and health primitives"
+      ],
+      "rationale": "r23 tests queue-stream, secure-file, on-prem-agent and iPaaS; r24 adds read-only-db/identity plus reauthorization/write rejection. Both executable suites absent f32. Source declares loops; counts not claimed executed.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-credential-workflow-validator",
+      "lane": "09",
+      "title": "Credential workflow registry and preflight ordering validator",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 58,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-secret-browser-policy-20260918",
+          "sha": "04d4d05d57389548048a4cfa913f996c231ccedc",
+          "path": "scripts/validate-workflow-security.mjs",
+          "blob": "dd4dafd379e538d7fc90da436d0489ae61b6ac6c",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/04d4d05d57389548048a4cfa913f996c231ccedc/scripts/validate-workflow-security.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "scripts/validate-workflow-security.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "scripts/validate-workflow-security.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "dd4dafd379e538d7fc90da436d0489ae61b6ac6c",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "scripts/validate-workflow-security.mjs --self-test"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0
+      },
+      "dependencies": [
+        "reliability/workflow-credential-policy.json",
+        "Canonical workflow security owner",
+        ".github/workflows/"
+      ],
+      "remaining_work": [
+        "Adapt declared credentials and action/runner policies to current reviewed workflows; old registry cannot assert current policy.",
+        "Replace brittle text/indent scanning or prove supported YAML grammar with meaningful negatives."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "PR53 earlier validator blob91f34... superseded within this source family",
+        "Initial release authority/posture owner"
+      ],
+      "rationale": "PR58 extends PR53 diagnostics with explicit secret consumption registry, credential scope and browser preflight-before-secret step checks. File absent f32; useful safety logic, but source enforces historical private-repository trigger restrictions and workflow strings.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-browser-credential-preflight",
+      "lane": "09",
+      "title": "Browser version floor before retrieval of provider credentials",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 73,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-r5-provider-browser-floor-20260918",
+          "sha": "8cebc651cf447af4aab145a1837c1a288567e6e7",
+          "path": "scripts/browser-security-floor.mjs",
+          "blob": "578184107eebc2b8fd40a168a0b2ee40c034fb77",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/8cebc651cf447af4aab145a1837c1a288567e6e7/scripts/browser-security-floor.mjs"
+        },
+        {
+          "pr": 73,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-r5-provider-browser-floor-20260918",
+          "sha": "8cebc651cf447af4aab145a1837c1a288567e6e7",
+          "path": "scripts/validate-provider-browser-credential-order.mjs",
+          "blob": "84156e2f7900f85cd518a6d60b1cc438d6fc2b00",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/8cebc651cf447af4aab145a1837c1a288567e6e7/scripts/validate-provider-browser-credential-order.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "scripts/browser-security-floor.mjs",
+        "scripts/validate-provider-browser-credential-order.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "scripts/browser-security-floor.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "578184107eebc2b8fd40a168a0b2ee40c034fb77",
+          "comparison": "ABSENT"
+        },
+        {
+          "path": "scripts/validate-provider-browser-credential-order.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "84156e2f7900f85cd518a6d60b1cc438d6fc2b00",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "scripts/browser-security-floor.mjs --self-test",
+          "resilience/browser-security-floor.json"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0,
+        "fixture_cases_available": 6
+      },
+      "dependencies": [
+        "Current official browser security policy",
+        "Reviewed provider credential harness"
+      ],
+      "remaining_work": [
+        "Revalidate an authoritative current security floor before reuse; historic153.0.8010.47 is only source data.",
+        "Adapt Linux which and retired Cycle10 proof paths; keep credential retrieval after successful preflight."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "PR58 earlier browser helper e2d705...",
+        "Initial retired UX shells"
+      ],
+      "rationale": "New validator blocks provider credential access before approved Chrome version check. PR73 has six regression vectors and stronger provider-order check over PR58. Both paths absent f32; not a browser/live verification.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-runtime-artifact-comparator",
+      "lane": "09",
+      "title": "Sealed-image runtime hash comparison fails closed on configured drift",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 59,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-runtime-attestation-20260918",
+          "sha": "465fb51e5aa4c84f70d9d78d02b9e2ba14fcde23",
+          "path": "security/runtime/runtime-attestation.cjs",
+          "blob": "fcbfa3639b48f5b5e46eeb8ce29f8b81a094f348",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/465fb51e5aa4c84f70d9d78d02b9e2ba14fcde23/security/runtime/runtime-attestation.cjs"
+        },
+        {
+          "pr": 59,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-runtime-attestation-20260918",
+          "sha": "465fb51e5aa4c84f70d9d78d02b9e2ba14fcde23",
+          "path": "scripts/validate-runtime-attestation.mjs",
+          "blob": "7e971361c67d2b0c175df7433aa5cc3d4ac746ce",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/465fb51e5aa4c84f70d9d78d02b9e2ba14fcde23/scripts/validate-runtime-attestation.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "security/runtime/runtime-attestation.cjs",
+        "scripts/validate-runtime-attestation.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "security/runtime/runtime-attestation.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "fcbfa3639b48f5b5e46eeb8ce29f8b81a094f348",
+          "comparison": "ABSENT"
+        },
+        {
+          "path": "scripts/validate-runtime-attestation.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "7e971361c67d2b0c175df7433aa5cc3d4ac746ce",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "security/runtime/runtime-attestation.test.cjs"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0
+      },
+      "dependencies": [
+        "Canonical runtime identity owner",
+        "Image sealing/build manifest proof",
+        "/app/security-runtime/runtime-sha256"
+      ],
+      "remaining_work": [
+        "Integrate any missing comparison into existing runtime identity owner; never add another source-of-truth hash.",
+        "Prove actual artifact origin and sealed-file creation, not just equal caller-supplied digest strings."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "security/runtime/runtime-identity.cjs frozen blob3408551239cd1c822b8912dfa00952cd51b3f826",
+        "Initial artifact binding and runtime identity/source admission"
+      ],
+      "rationale": "Standalone exact SHA256 normalisation/timingSafeEqual comparator and artifact validator are absent f32. Frozen canonical runtime-identity.cjs already binds build source SHA to configured candidate; compare complementary artifact semantics before adaptation.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-composite-deployment-comparator",
+      "lane": "09",
+      "title": "Composed deployment artifact identity comparator",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 61,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-composite-provenance-20260918",
+          "sha": "7dd2cad38753abbe09bd156c9e3e1ee2a978d922",
+          "path": "security/runtime/deployment-attestation.cjs",
+          "blob": "cc599d4a0824abf41bf69f6c8149fb63808ab1dd",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/7dd2cad38753abbe09bd156c9e3e1ee2a978d922/security/runtime/deployment-attestation.cjs"
+        }
+      ],
+      "implementation_paths": [
+        "security/runtime/deployment-attestation.cjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "security/runtime/deployment-attestation.cjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "cc599d4a0824abf41bf69f6c8149fb63808ab1dd",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "security/runtime/deployment-attestation.test.cjs"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0
+      },
+      "dependencies": [
+        "Canonical runtime/artifact identity owner",
+        "Image build composition and /app/security-runtime/deployment-sha256"
+      ],
+      "remaining_work": [
+        "Define canonical composition digest alongside existing artifact bindings; prevent duplicate authority.",
+        "Prove overlay/dependency changes alter sealed identity, then execute mismatch/malformed/missing artifact tests."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Continuation runtime artifact comparator",
+        "Initial authoritative artifact binding"
+      ],
+      "rationale": "Module compares exact configured deployment SHA256 against a sealed image file. Exact path absent f32; equality alone is not full artifact-origin proof. PR61 is distinct from runtime source identity but must converge with one canonical owner.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-deploy-contract-diagnostics",
+      "lane": "09",
+      "title": "Static deployment workflow and proof environment contract diagnostics",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 68,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-railway-proof-admission-20260918",
+          "sha": "0064f6d030efd59ebaa95214fbe40c83f6cd96b5",
+          "path": "scripts/validate-railway-deploy-workflows.mjs",
+          "blob": "484fa686cfebf91d0764fbfef5964064b169749f",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/0064f6d030efd59ebaa95214fbe40c83f6cd96b5/scripts/validate-railway-deploy-workflows.mjs"
+        },
+        {
+          "pr": 68,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-railway-proof-admission-20260918",
+          "sha": "0064f6d030efd59ebaa95214fbe40c83f6cd96b5",
+          "path": "scripts/validate-railway-proof-env.mjs",
+          "blob": "f2008d0d08742943746a7be30d26a984e76abee2",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/0064f6d030efd59ebaa95214fbe40c83f6cd96b5/scripts/validate-railway-proof-env.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "scripts/validate-railway-deploy-workflows.mjs",
+        "scripts/validate-railway-proof-env.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "scripts/validate-railway-deploy-workflows.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "484fa686cfebf91d0764fbfef5964064b169749f",
+          "comparison": "ABSENT"
+        },
+        {
+          "path": "scripts/validate-railway-proof-env.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "f2008d0d08742943746a7be30d26a984e76abee2",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [],
+        "executed_by_worker": false,
+        "executed_count": 0
+      },
+      "dependencies": [
+        "Canonical deployment/proof admission owner",
+        "Current deployment manifest/workflow configuration"
+      ],
+      "remaining_work": [
+        "Replace historic name/path/environment contracts with current canonical declarations.",
+        "Add meaningful fixture tests for missing image/runtime/public-origin requirements; static scan cannot authorize deployment."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial release authority posture",
+        "Continuation proof-surface classifier"
+      ],
+      "rationale": "New scripts validate deployment workflow and local proof env metadata. Exact paths absent f32; old Docker/runtime environment contracts require adaptation. No provider, Railway or deployment operation performed.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge06-cont-role-render-oracle",
+      "lane": "06",
+      "title": "Role evidence convergence rejects known generic-shell false greens",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical Vector role UX proof owner",
+      "source_refs": [
+        {
+          "pr": 74,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-role-render-convergence-20260918",
+          "sha": "3e02d8fef8354dbf84d4e689ea5f270787383668",
+          "path": "scripts/validate-role-render-evidence.mjs",
+          "blob": "d76d544852d6da5d0a42f8a0c979f4e0cf8be022",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/3e02d8fef8354dbf84d4e689ea5f270787383668/scripts/validate-role-render-evidence.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "scripts/validate-role-render-evidence.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "scripts/validate-role-render-evidence.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "d76d544852d6da5d0a42f8a0c979f4e0cf8be022",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "scripts/test-role-render-admission.mjs",
+          "reliability/fixtures/role-render-convergence.json"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0
+      },
+      "dependencies": [
+        "reliability/role-render-admission-policy.json",
+        "Canonical live-role-rendered-ui-proof evidence schema"
+      ],
+      "remaining_work": [
+        "Adapt current role identities/evidence schemas and known generic-shell hashes.",
+        "Require provenance-bound collected role evidence; source validates supplied JSON and must not independently grant browser/hosted proof."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "scripts/live-role-rendered-ui-proof.mjs frozen blob3f59057bea131883ff0486ee3cec12003abaa1a8",
+        "Initial canonical five-section UI proof"
+      ],
+      "rationale": "New pure JSON validator cross-correlates context and diagnostic role identity, authenticated bootstrap, generic DOM hash, DOM size and interactive controls. Frozen live-role-rendered-ui-proof already exists; this is an oracle adaptation, not another browser runner.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-hosted-cookie-oracle",
+      "lane": "09",
+      "title": "Hosted authentication harness Secure-cookie oracle diagnostics",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 77,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-hosted-auth-harness-20260918",
+          "sha": "129cf7cb9653a4e91805e6a7866caf48eada4c31",
+          "path": "scripts/validate-hosted-auth-harness.mjs",
+          "blob": "59f717efd6319b6a1b012c5558c420d474f2445d",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/129cf7cb9653a4e91805e6a7866caf48eada4c31/scripts/validate-hosted-auth-harness.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "scripts/validate-hosted-auth-harness.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "scripts/validate-hosted-auth-harness.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "59f717efd6319b6a1b012c5558c420d474f2445d",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "reliability/fixtures/hosted-auth-harness.json"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0,
+        "fixture_cases_available": 6
+      },
+      "dependencies": [
+        "Canonical auth proof harness owner",
+        "Current supported YAML/shell grammar"
+      ],
+      "remaining_work": [
+        "Prove semantic coverage beyond regex patterns; avoid permission to replay arbitrary auth cookies.",
+        "Run supplied six fixture cases and adversarial multiline/header variants against current harness."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial passkey/proof-runner authentication owners"
+      ],
+      "rationale": "Regex scanner identifies plain loopback Secure-cookie jar false reds, requires Set-Cookie/Secure proof before explicit isolated loopback replay and rejects external plain HTTP cookie replay. File absent f32; import runs CLI usage branch unless adapted.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-ci-preexecution-classifier",
+      "lane": "09",
+      "title": "CI pre-execution failure classification preserves unavailable product evidence",
+      "classification": "PORT",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 78,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-ci-preexecution-classifier-20260918",
+          "sha": "324f267e8cfc9efe2069a2ab86051eaa6fecd520",
+          "path": "scripts/classify-ci-preexecution.mjs",
+          "blob": "121feea55c43f8c18bc3f48c1539ef0bd40eba9f",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/324f267e8cfc9efe2069a2ab86051eaa6fecd520/scripts/classify-ci-preexecution.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "scripts/classify-ci-preexecution.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "scripts/classify-ci-preexecution.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "121feea55c43f8c18bc3f48c1539ef0bd40eba9f",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "reliability/fixtures/ci-preexecution-classifier.json"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0,
+        "fixture_cases_available": 7
+      },
+      "dependencies": [
+        "Exact candidate/workflow/job metadata from canonical proof collector"
+      ],
+      "remaining_work": [
+        "Execute seven fixtures and validate malformed/missing runner metadata; classifiers cannot turn any failure into a release pass.",
+        "Adapt CLI side effects before importing into proof registry; keep NOT_EVALUATED evidence explicitly unavailable."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial proof integrity registry"
+      ],
+      "rationale": "Source separates runnerless zero-step failure from executed failure, correlates repeated/systemic runs, and retains fail-closed release gate. Exact path absent f32; no CI execution status was inferred from branch module presence.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    },
+    {
+      "id": "edge09-cont-proof-surface-classifier",
+      "lane": "09",
+      "title": "Redacted deployment metadata detects proof-surface admission drift",
+      "classification": "EVOLVE",
+      "status": "FOUND",
+      "canonical_owner_candidate": "canonical security/proof admission owner",
+      "source_refs": [
+        {
+          "pr": 81,
+          "pr_state": "open",
+          "merged_at": null,
+          "branch": "autonomy/reliability-railway-proof-surface-20260918",
+          "sha": "b26c53be9cbab948adf800896186f11947f6fa92",
+          "path": "scripts/railway-proof-surface-classifier.mjs",
+          "blob": "3841d1cdf285fa416690b3273d81cca9121309c3",
+          "mode": null,
+          "url": "https://github.com/paulallen123/-manufacturing-wfm/blob/b26c53be9cbab948adf800896186f11947f6fa92/scripts/railway-proof-surface-classifier.mjs"
+        }
+      ],
+      "implementation_paths": [
+        "scripts/railway-proof-surface-classifier.mjs"
+      ],
+      "inventory_evidence_paths": [
+        "work/inventory_edges/continuation/sources.json",
+        "work/inventory_edges/continuation/coverage.json"
+      ],
+      "baseline_comparison": [
+        {
+          "path": "scripts/railway-proof-surface-classifier.mjs",
+          "baseline_sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+          "baseline_blob": null,
+          "baseline_path_present": false,
+          "source_blob": "3841d1cdf285fa416690b3273d81cca9121309c3",
+          "comparison": "ABSENT"
+        }
+      ],
+      "tests": {
+        "available": [
+          "tests/railway-proof-surface-fixtures.json"
+        ],
+        "executed_by_worker": false,
+        "executed_count": 0,
+        "fixture_cases_available": 6
+      },
+      "dependencies": [
+        "resilience/railway-proof-surface-policy.json",
+        "Trusted current snapshot collector and canonical proof registry"
+      ],
+      "remaining_work": [
+        "Treat all output as diagnostics until snapshot provenance/freshness/candidate/runtime identity is independently bound.",
+        "Update legacy password/env names and current Docker/health/restart contracts; no live admission from configuration alone."
+      ],
+      "rollback": "Keep f32 frozen; future isolated successor only. Default execution authority off and keep affected operations contained on uncertainty.",
+      "overlaps": [
+        "Initial proof integrity/artifact admission owner",
+        "Continuation deploy contract diagnostics"
+      ],
+      "rationale": "Six supplied fixtures diagnose case-folded variable collisions, public undeployed domains, staged changes and missing Docker/health/source/restart metadata. Paths absent f32. Source can_count_as_hosted_proof is too weak as authority because arbitrary JSON has no origin/freshness/exact candidate proof.",
+      "proof_boundary": "Source archaeology only. Available fixtures and historical branch test titles are not independently executed tests, current runtime admission or hosted/provider proof."
+    }
+  ]
+}

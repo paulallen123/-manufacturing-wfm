@@ -4718,6 +4718,22 @@
       "capabilityIds": [],
       "inspection": "FOUND",
       "fullCapabilityCoverage": false
+    },
+    {
+      "name": "feature/vector-lane01-twin-projections-20261002",
+      "headSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+      "tree": "c7a555208d740b871856df8992eee020f3ce2851",
+      "parentSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "ISOLATED_FUTURE_SOURCE; no release/proof authority",
+      "observedAt": "2026-10-02T10:00:44.986Z"
+    },
+    {
+      "name": "feature/vector-lane03-integration-authority-20261002",
+      "headSha": "462d1b68b2adc2258750209a87d1895155c54f35",
+      "tree": "df91c1de39ed486f4cdecf70202046a3d6c4d3c0",
+      "parentSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "role": "ISOLATED_FUTURE_SOURCE; no release/proof authority",
+      "observedAt": "2026-10-02T10:00:44.986Z"
     }
   ],
   "prs": [
@@ -8159,5 +8175,6 @@
     "152 unique registry records include one deduplicated proof-carrying-state family. Source-level canonical disposition never grants execution/proof/live status.",
     "Provider catalogue81 known paths /212IDs is partial; no provider-certification inference."
   ],
-  "latestReviewRefreshAt": "2026-10-02T08:58:03.144Z"
+  "latestReviewRefreshAt": "2026-10-02T08:58:03.144Z",
+  "continuationCoverage": "orchestration/evidence/continuation-coverage.json"
 }
