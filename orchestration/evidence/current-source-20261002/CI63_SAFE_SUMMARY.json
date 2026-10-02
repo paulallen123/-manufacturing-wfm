@@ -1,0 +1,330 @@
+{
+  "scope": "ISOLATED_SOURCE_CI63_ONLY_NOT_CURRENT_SHARED_RELEASE_OR_HOSTED_IMAGE",
+  "sourceSha": "15399789a4601fad2be5d3e32dd56618c1608384",
+  "tree": "a88c1ccb4579b45eb35ecc69e2e7d5e5f3c0ed2c",
+  "pipeline": 63,
+  "workflow": "90e39b38-ee7d-46f9-b13c-9ddd01f7bc96",
+  "core": {
+    "job": 98,
+    "status": "SUCCESS",
+    "authTests": 86,
+    "forgeGroups": [
+      5,
+      146,
+      45
+    ],
+    "allZeroFailSkip": true,
+    "Node": "QUIET_ZERO_BYTES_CONFIGURED22.23.2_ASSERTION_UI_SUCCESS_NO_PRINTED_VERSION"
+  },
+  "runtime": {
+    "job": 99,
+    "status": "SUCCESS",
+    "buildGroups": [
+      {
+        "tests": 20,
+        "pass": 20,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 107,
+        "pass": 107,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 154,
+        "pass": 154,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 31,
+        "pass": 31,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 34,
+        "pass": 34,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 1198,
+        "pass": 1198,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 348,
+        "pass": 348,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 13,
+        "pass": 13,
+        "fail": 0,
+        "skip": 0
+      }
+    ],
+    "sourceRepair3Verified": true,
+    "originalTwoUnixCallerContractsActualLinuxPass": true,
+    "narrowPackedONAndGuardControlsActualPass": true
+  },
+  "records": [
+    {
+      "job": 98,
+      "step": "node",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "groups": []
+    },
+    {
+      "job": 98,
+      "step": "auth",
+      "bytes": 19631,
+      "sha256": "5b0aaaa334a738f0f41ccfcc6391b8e3276c53c98fc342986b4ff8af0d959b55",
+      "groups": [
+        {
+          "tests": 86,
+          "pass": 86,
+          "fail": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    {
+      "job": 98,
+      "step": "forge",
+      "bytes": 41075,
+      "sha256": "b1d63cca0fb957a433bb61889fd09b7d13fe42fc93d0b5e2c6dd5da860149768",
+      "groups": [
+        {
+          "tests": 5,
+          "pass": 5,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 146,
+          "pass": 146,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 45,
+          "pass": 45,
+          "fail": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    {
+      "job": 99,
+      "step": "build",
+      "bytes": 665763,
+      "sha256": "7cf9c6cb27455479fe99720aa2ebed52b18d14373532392dd77c42af0bdf755b",
+      "groups": [
+        {
+          "tests": 20,
+          "pass": 20,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 107,
+          "pass": 107,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 154,
+          "pass": 154,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 18,
+          "pass": 18,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 31,
+          "pass": 31,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 34,
+          "pass": 34,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 3,
+          "pass": 3,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 2,
+          "pass": 2,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 1198,
+          "pass": 1198,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 348,
+          "pass": 348,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 13,
+          "pass": 13,
+          "fail": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    {
+      "job": 99,
+      "step": "auth-image-module",
+      "bytes": 9218,
+      "sha256": "adb5ffec4697580a83410ed2fd02bfe2942a7daaa5fe903f58b54fe7f7b87c68",
+      "groups": []
+    },
+    {
+      "job": 99,
+      "step": "security",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "groups": []
+    },
+    {
+      "job": 99,
+      "step": "http",
+      "bytes": 1093,
+      "sha256": "9ae6616ed360cec9f4f47a8456b3b9708fc700e18e05c0af2b9cf489f93a1dec",
+      "groups": []
+    }
+  ],
+  "images": {
+    "application": {
+      "digest": "sha256:d376a58ea0d115d8290489aa59b1fbb8196022101af0fee780ec1d05f16e0099",
+      "tag": "vector-forge-ci:15399789a4601fad2be5d3e32dd56618c1608384"
+    },
+    "proof": {
+      "digest": "sha256:cac586316a8b6291d9178b64dea93d087bc3c768ece371ddd2c2982a1ef31013",
+      "tag": "vector-role-auth-ci:15399789a4601fad2be5d3e32dd56618c1608384"
+    }
+  },
+  "applicationNode": "SOURCE_RECIPE_PINS22.23.2_BOOKWORM_NO_NEW_RAW_APPLICATION_PRINTED_VERSION",
+  "moduleSmoke": {
+    "scope": "PACKAGING_MODULE_SMOKE_ONLY",
+    "node": "v24.20.0",
+    "SQLite": true,
+    "network": "TWO_NETWORK_NONE_CONTAINER_SMOKE_INVOCATIONS_BUILD_NPM_ACQUISITION_NOT_NETWORK_DISABLED",
+    "modules": [
+      {
+        "path": "scripts/current-candidate-role-browser-proof.mjs",
+        "blob": "a0f029f62f05e308f0a985b58029de50f181ea34"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "blob": "3337ec236e64df9552f881fd5be40132f9794646"
+      },
+      {
+        "path": "scripts/vector-proof-result.mjs",
+        "blob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0"
+      },
+      {
+        "path": "security/runtime/proof-runner-auth.cjs",
+        "blob": "0165b9a5207eeb870e2690c4da6456ec8457db7e"
+      }
+    ],
+    "signedSessionExecuted": false,
+    "ChromiumExecuted": false,
+    "HTTPSExecuted": false,
+    "hostedCustomerProof": false
+  },
+  "security": "QUIET_ZERO_BYTES_UI_SUCCESS_AND_UNCHANGED_SOURCE_ASSERTION_NO_RAW_NAMED_CHECKS",
+  "http": {
+    "scope": "ISOLATED_LOOPBACK_SYNTHETIC_FIXTURE",
+    "checks": [
+      "health-ready",
+      "runtime-identity-build-file-matched",
+      "root-page",
+      "bootstrap-unauthenticated-401",
+      "demand-unauthenticated-401"
+    ],
+    "UID": {
+      "real": 1000,
+      "effective": 1000,
+      "saved": 1000,
+      "filesystem": 1000
+    },
+    "UIDSourceBlob": "2bcbd6552c4e493ea93b611efe85e972b69713e7",
+    "healthFlags": {
+      "fixtureOnly": true,
+      "hosted": true,
+      "productionApproved": false,
+      "pilotReady": false
+    },
+    "initialConnectionResets": 9,
+    "subsequentNamedChecksPass": true,
+    "signedHTTPS": false,
+    "Chromium": false
+  },
+  "countsNonadditiveNotSummed": true,
+  "priorCI57FailedSourcePreserved": true,
+  "priorCI54SafeSummaryUnchanged": true,
+  "collectorSetupQualificationsRetained": true,
+  "originalArtifactPayloadCustody": "SEPARATE_NOT_COMPLETED",
+  "reviewerTests": 0,
+  "remoteActions": 0,
+  "sourceEdits": 0,
+  "sharedReleaseAuthority": false,
+  "hostedImageEquivalence": false,
+  "customerProof": false,
+  "all27GoldenGates": "NOT_PROVEN",
+  "publication": "ONLY_SAFE_SUMMARY_REPORT_HASH_METADATA_NOT_RAW_OR_PRIVATE_RECEIPTS"
+}

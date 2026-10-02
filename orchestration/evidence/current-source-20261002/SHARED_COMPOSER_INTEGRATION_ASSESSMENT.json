@@ -1,0 +1,295 @@
+{
+  "scope": "READ_ONLY_SOURCE_INTEGRATION_ASSESSMENT_NO_CANDIDATE_OR_TEST_EXECUTION",
+  "observedCommit": "74533ed802fa20ab35b811b316194a2614af009b",
+  "observedTree": "254a26eef33ae2b77559b8761bed0b757872d155",
+  "parents": [
+    "42fe08035ae7e2f0033e3029213332bf56402c75"
+  ],
+  "externalComposer": {
+    "path": "scripts/compose-vector-local-runtime.mjs",
+    "mode": "100644",
+    "blob": "163b3336216b5f9aa01324d16d9042bd857c5177",
+    "bytes": 17158,
+    "sha256": "32292493b7749d7925f721ed665f9110bfbd1248556d515fe5530688ef249b7e"
+  },
+  "reviewedComposer": {
+    "blob": "333a4376152e2c631cad7bc26c6b684b92b33d30",
+    "bytes": 16645,
+    "sha256": "d2d5e305cd56499e6db88ae98f5b669be4d816a97eb2d0b1de40a844985cb720",
+    "sourceBase": "c7b12b09112adc54edd29084774d5f75e4ef881f"
+  },
+  "baselineComposer": {
+    "blob": "7249a5f9ce59139de9328f406ae3e2e25de2bfcc",
+    "equalsA3": true
+  },
+  "bindings": [
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "mode": "100644",
+      "externalBlob": "163b3336216b5f9aa01324d16d9042bd857c5177",
+      "c7Blob": "7249a5f9ce59139de9328f406ae3e2e25de2bfcc",
+      "a3Blob": "7249a5f9ce59139de9328f406ae3e2e25de2bfcc",
+      "externalEqualsC7": false,
+      "externalEqualsA3": false
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.contract.test.cjs",
+      "mode": "100644",
+      "externalBlob": "ba1cf23cabc6fee7003570a64b72c98036476646",
+      "c7Blob": "ba1cf23cabc6fee7003570a64b72c98036476646",
+      "a3Blob": "ba1cf23cabc6fee7003570a64b72c98036476646",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "tests/vector-runtime-packaging.test.cjs",
+      "mode": "100644",
+      "externalBlob": "54028aaf130581a2bd606a4a4226d2a3a4fd1ad7",
+      "c7Blob": "54028aaf130581a2bd606a4a4226d2a3a4fd1ad7",
+      "a3Blob": "54028aaf130581a2bd606a4a4226d2a3a4fd1ad7",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "mode": "100644",
+      "externalBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "c7Blob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "a3Blob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "externalBlob": "294403c5ab746726a250882833be323889bc608f",
+      "c7Blob": "294403c5ab746726a250882833be323889bc608f",
+      "a3Blob": "294403c5ab746726a250882833be323889bc608f",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": ".circleci/config.yml",
+      "mode": "100644",
+      "externalBlob": "e44d8a5d533e0dd90c069c2af87354c8992cbc8f",
+      "c7Blob": "e44d8a5d533e0dd90c069c2af87354c8992cbc8f",
+      "a3Blob": "e44d8a5d533e0dd90c069c2af87354c8992cbc8f",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "externalBlob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "c7Blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "a3Blob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "mode": "100644",
+      "externalBlob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+      "c7Blob": "701bf2113853794dc606eb02c6ef4b4a9ea76c10",
+      "a3Blob": "02dd8e181f6fe51497a2b0ce5eb7e9b0cbd48c80",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "mode": "100644",
+      "externalBlob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+      "c7Blob": "3e3d9b41bd2c0d11e6efc7a0bb8e9819c1f1c60d",
+      "a3Blob": "fc66391e1c812b96e7a9ab362b8afb28b04061bd",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "mode": "100644",
+      "externalBlob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "c7Blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "a3Blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "mode": "100644",
+      "externalBlob": "b736e153d621daeec4915fbe8627885b6496ff00",
+      "c7Blob": "a0f029f62f05e308f0a985b58029de50f181ea34",
+      "a3Blob": "b736e153d621daeec4915fbe8627885b6496ff00",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.auth.test.mjs",
+      "mode": "100644",
+      "externalBlob": "7eea454421ef8a0948e75672996f2c4a9384b591",
+      "c7Blob": "e98a8570d397f99d7d7188eefe4e4947dae25175",
+      "a3Blob": "7eea454421ef8a0948e75672996f2c4a9384b591",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "mode": "100644",
+      "externalBlob": "3337ec236e64df9552f881fd5be40132f9794646",
+      "c7Blob": "3337ec236e64df9552f881fd5be40132f9794646",
+      "a3Blob": "3337ec236e64df9552f881fd5be40132f9794646",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "mode": "100644",
+      "externalBlob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "c7Blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "a3Blob": "e8c79eb3e51e50b5df156486c72921703e21efac",
+      "externalEqualsC7": true,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "security/runtime/passkey-auth.cjs",
+      "mode": "100644",
+      "externalBlob": "36051648093203901e5b8c7a91dd7b990c8558c5",
+      "c7Blob": "4bbfb060a941f9f83bcc3d1ff1a3060dd3a3ba35",
+      "a3Blob": "36051648093203901e5b8c7a91dd7b990c8558c5",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "security/runtime/passkey-auth.test.cjs",
+      "mode": "100644",
+      "externalBlob": "e09ba3b2a8f8ce91a42f855752946ad8e518ea14",
+      "c7Blob": "707f3ab4868e25447e22f31db7ac4d6097df451b",
+      "a3Blob": "e09ba3b2a8f8ce91a42f855752946ad8e518ea14",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "security/runtime/bootstrap.cjs",
+      "mode": "100644",
+      "externalBlob": "08e3261a95804e400d0a742e38ac57ffef78438a",
+      "c7Blob": "31b224973ee05be604c11126cd14a49263ab4046",
+      "a3Blob": "08e3261a95804e400d0a742e38ac57ffef78438a",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "security/runtime/bootstrap-proof-runner-wiring.test.cjs",
+      "mode": "100644",
+      "externalBlob": "878403b2ed74b5b79f6b7a185eb00c0f3893e045",
+      "c7Blob": "b526e14de89f2c3b5330347c87476ad4bfc57141",
+      "a3Blob": "878403b2ed74b5b79f6b7a185eb00c0f3893e045",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    },
+    {
+      "path": "security/runtime/passkey-ui.js",
+      "mode": "100644",
+      "externalBlob": "5787480cf17b8c42e1a740561b8b5760881a246e",
+      "c7Blob": "f2136d2a8a8fc4c22d4ded225b5d8f87f55787ce",
+      "a3Blob": "5787480cf17b8c42e1a740561b8b5760881a246e",
+      "externalEqualsC7": false,
+      "externalEqualsA3": true
+    }
+  ],
+  "anchorCounts": [
+    {
+      "name": "existing original ON pin",
+      "occurrences": 1,
+      "line": 15
+    },
+    {
+      "name": "validation declaration",
+      "occurrences": 1,
+      "line": 20
+    },
+    {
+      "name": "package parse",
+      "occurrences": 1,
+      "line": 21
+    },
+    {
+      "name": "runtime manifest bytes",
+      "occurrences": 1,
+      "line": 22
+    },
+    {
+      "name": "fresh extraction",
+      "occurrences": 1,
+      "line": 99
+    }
+  ],
+  "externalChanges": {
+    "originalONPinAlreadyPresent": true,
+    "payrollNormalisePatch": true,
+    "oneCharacterSafePayrollCodeAllowed": true,
+    "sourceIdRuleRetained": true,
+    "assembledONReceiptAdded": true,
+    "details": "External composeStaffology validates original sealed ON then applies two anchored ON replacements and records final hash; this is an intentional assembled dependency change, not identical final ON bytes."
+  },
+  "textualIntegration": {
+    "result": "ADDITIVE_ANCHORS_UNAMBIGUOUS_BUT_NOT_IMPLEMENTED",
+    "duplicateIdenticalONPin": "REUSE_EXISTING_ENTRY_DO_NOT_ADD_AGAIN",
+    "missingReviewedSubparts": [
+      "Fixed exact PACKAGE_MANIFEST digest",
+      "Fixed exact RUNTIME_MANIFEST digest",
+      "Fresh validation immediately after extraction before overlays"
+    ],
+    "mustPreserve": [
+      "Entire external payrollValidator and anchored ON rewrite block",
+      "External assembledFiles.onboarding digest row",
+      "Every external unrelated owner/module/UI/integration source and mode",
+      "Existing Docker archive-absent extracted-output caller",
+      "Literal bootstrap trusted ON callback once separately approved employee5 is reconciled"
+    ],
+    "wholeFileReplacement": "UNSAFE_WOULD_DELETE_EXTERNAL_PAYROLL_REPAIR_AND_ASSEMBLED_ON_RECEIPT"
+  },
+  "semanticIntegration": {
+    "result": "CONTRACT_CONFLICT_REQUIRES_EXISTING_OWNER_RECONCILIATION_BEFORE_INTEGRATION",
+    "finalONOriginalPin": "c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e",
+    "externalDerivedON": {
+      "sha256": "a9ec1ee9782636b9ac564aae487d36378597aa7e756088b3f96b79da5d896744",
+      "gitBlob": "8149b4d598dd24a4df26459ebf6cb81ac8f4b4ff",
+      "bytes": 15471,
+      "qualification": "READ_ONLY_IN_MEMORY_SOURCE_TRANSFORMATION_EXPECTATION_NOT_EXECUTED_RUNTIME_OR_CANONICAL_APPROVAL;NO_DERIVED_MODULE_SAVED"
+    },
+    "incompatibleReviewedTests": [
+      "PACKED_ON exact Docker extracted-output contract needs no archive and retains ON bytes",
+      "PACKED_ON fresh actual canonical composition retains ON and provenance binding"
+    ],
+    "reason": "Reviewed positives require final ON unchanged/c06; external source intentionally modifies final ON. Reusing these positive assertions or claiming prior component/CI coverage unchanged would be false. Original sealed input pins remain compatible, but approved transformed output/provenance contract needs explicit binding.",
+    "callbackBridge": "Employee tests use original packed ON. Actual imported assembled ON would have an altered normalise path; markVerified/body preservation and real employee/invitation interaction need current composed-dependency validation before customer claim.",
+    "guardPrerequisite": "New reviewed packaging guard requires literal onboardingMarkVerified callback. External bootstrap is exact old A3 and lacks employee callback; guard-alone port fails by design until employee5 is reconciled."
+  },
+  "GoldenPrerequisites": {
+    "START4": "ALL4_EXTERNAL_BLOBS_EXACT_A3_PREIMAGES_NOT_REVIEWED_START_SUCCESSORS",
+    "employee5": "ALL5_EXTERNAL_BLOBS_EXACT_A3_PREIMAGES_NOT_REVIEWED_EMPLOYEE_SUCCESSORS",
+    "metadataOnly": "Matching preimages support bounded source reuse review, not live runtime/product proof.",
+    "steps": [
+      "Resolve one execution/publication owner and reread current exact shared head before any mutation",
+      "Reconcile reviewed START4 and employee5 as bounded additions preserving external owner/UI/Agents/integration changes",
+      "Preserve external ON payroll repair while adding exact manifest pins and early fresh validation, deduplicating identical ON pin",
+      "Bind original sealed ON input separately from exact approved transformed ON output/provenance; revise conflicting adjacent positives by existing owner only without weakening bad-input refusals",
+      "Validate employee callback with actual current composed ON and retained source/current-role/tenant/passkey transaction authority",
+      "Independent source/composition review and fresh exact-source full Linux CI on resulting single tuple; no inherited CI63/745 source proof",
+      "Golden customer/hosted/device/input authority remains separately required"
+    ]
+  },
+  "limitations": {
+    "runtimeExecuted": false,
+    "testsExecuted": 0,
+    "newCandidateCreated": false,
+    "patchCreated": false,
+    "GitHubWrites": 0,
+    "CITriggers": 0,
+    "hostedActions": 0,
+    "accessConfigWrites": 0,
+    "providerActions": 0,
+    "StaffologyOwnerContacted": false,
+    "servedSourceOrImageEquivalence": "NOT_ESTABLISHED_BY_THIS_SOURCE_AUDIT",
+    "legalOrCustomerAuthority": "NONE_INFERRED"
+  }
+}
