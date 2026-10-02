@@ -1,0 +1,298 @@
+TAP version 13
+# Subtest: episode is deterministic regardless of option order
+ok 1 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 25.1294
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 2 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.8944
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 3 - do-nothing option is mandatory
+  ---
+  duration_ms: 0.8739
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 4 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 2.524
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 5 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 1.2819
+  type: 'test'
+  ...
+# Subtest: explicit source fixture yields physical1.75-hour shortage with complete declared binding
+ok 6 - explicit source fixture yields physical1.75-hour shortage with complete declared binding
+  ---
+  duration_ms: 7.9578
+  type: 'test'
+  ...
+# Subtest: projection states its assumption and grants no rank, finance, authenticity or execution
+ok 7 - projection states its assumption and grants no rank, finance, authenticity or execution
+  ---
+  duration_ms: 1.201
+  type: 'test'
+  ...
+# Subtest: arrival before stockout yields no shortage
+ok 8 - arrival before stockout yields no shortage
+  ---
+  duration_ms: 0.9209
+  type: 'test'
+  ...
+# Subtest: arrival beyond production end caps shortage inside declared window
+ok 9 - arrival beyond production end caps shortage inside declared window
+  ---
+  duration_ms: 0.6853
+  type: 'test'
+  ...
+# Subtest: remaining declared demand caps shortage without inflating duration or cost
+ok 10 - remaining declared demand caps shortage without inflating duration or cost
+  ---
+  duration_ms: 0.5726
+  type: 'test'
+  ...
+# Subtest: enough inventory for all declared demand yields no in-window stockout
+ok 11 - enough inventory for all declared demand yields no in-window stockout
+  ---
+  duration_ms: 0.6427
+  type: 'test'
+  ...
+# Subtest: safety stock reduces usable inventory and zero inventory starts shortage at production start
+ok 12 - safety stock reduces usable inventory and zero inventory starts shortage at production start
+  ---
+  duration_ms: 0.7568
+  type: 'test'
+  ...
+# Subtest: zero declared requirement is a bounded zero-shortage scenario
+ok 13 - zero declared requirement is a bounded zero-shortage scenario
+  ---
+  duration_ms: 0.6183
+  type: 'test'
+  ...
+# Subtest: canonical-equivalent inert input key order retains exact scenario digest
+ok 14 - canonical-equivalent inert input key order retains exact scenario digest
+  ---
+  duration_ms: 1.3198
+  type: 'test'
+  ...
+# Subtest: revision and asOf changes remain visible in scenario identity
+ok 15 - revision and asOf changes remain visible in scenario identity
+  ---
+  duration_ms: 1.8974
+  type: 'test'
+  ...
+# Subtest: future inventory.observedAt is rejected before physical output
+ok 16 - future inventory.observedAt is rejected before physical output
+  ---
+  duration_ms: 1.0128
+  type: 'test'
+  ...
+# Subtest: future inventory.effectiveAt is rejected before physical output
+ok 17 - future inventory.effectiveAt is rejected before physical output
+  ---
+  duration_ms: 0.3842
+  type: 'test'
+  ...
+# Subtest: future arrival.observedAt is rejected before physical output
+ok 18 - future arrival.observedAt is rejected before physical output
+  ---
+  duration_ms: 0.2844
+  type: 'test'
+  ...
+# Subtest: future arrival.effectiveAt is rejected before physical output
+ok 19 - future arrival.effectiveAt is rejected before physical output
+  ---
+  duration_ms: 0.1905
+  type: 'test'
+  ...
+# Subtest: cancelled inventory is rejected
+ok 20 - cancelled inventory is rejected
+  ---
+  duration_ms: 0.3035
+  type: 'test'
+  ...
+# Subtest: cancelled arrival is rejected
+ok 21 - cancelled arrival is rejected
+  ---
+  duration_ms: 0.2314
+  type: 'test'
+  ...
+# Subtest: all quantity/rate units must equal the fully bound scenario unit
+ok 22 - all quantity/rate units must equal the fully bound scenario unit
+  ---
+  duration_ms: 0.3554
+  type: 'test'
+  ...
+# Subtest: invalid on-hand quantity 2400 cannot be silently coerced
+ok 23 - invalid on-hand quantity 2400 cannot be silently coerced
+  ---
+  duration_ms: 0.3785
+  type: 'test'
+  ...
+# Subtest: invalid on-hand quantity null cannot be silently coerced
+ok 24 - invalid on-hand quantity null cannot be silently coerced
+  ---
+  duration_ms: 0.249
+  type: 'test'
+  ...
+# Subtest: invalid on-hand quantity true cannot be silently coerced
+ok 25 - invalid on-hand quantity true cannot be silently coerced
+  ---
+  duration_ms: 0.1862
+  type: 'test'
+  ...
+# Subtest: invalid on-hand quantity -1 cannot be silently coerced
+ok 26 - invalid on-hand quantity -1 cannot be silently coerced
+  ---
+  duration_ms: 0.1738
+  type: 'test'
+  ...
+# Subtest: invalid on-hand quantity NaN cannot be silently coerced
+ok 27 - invalid on-hand quantity NaN cannot be silently coerced
+  ---
+  duration_ms: 0.144
+  type: 'test'
+  ...
+# Subtest: invalid on-hand quantity Infinity cannot be silently coerced
+ok 28 - invalid on-hand quantity Infinity cannot be silently coerced
+  ---
+  duration_ms: 0.1342
+  type: 'test'
+  ...
+# Subtest: invalid on-hand quantity -Infinity cannot be silently coerced
+ok 29 - invalid on-hand quantity -Infinity cannot be silently coerced
+  ---
+  duration_ms: 0.1266
+  type: 'test'
+  ...
+# Subtest: finite arithmetic overflow is refused rather than emitted as Infinity/null
+ok 30 - finite arithmetic overflow is refused rather than emitted as Infinity/null
+  ---
+  duration_ms: 0.4379
+  type: 'test'
+  ...
+# Subtest: finite ratio overflow is refused rather than emitted as unbounded hours
+ok 31 - finite ratio overflow is refused rather than emitted as unbounded hours
+  ---
+  duration_ms: 0.3276
+  type: 'test'
+  ...
+# Subtest: positive demand ratio underflow cannot silently erase a declared requirement
+not ok 32 - positive demand ratio underflow cannot silently erase a declared requirement
+  ---
+  duration_ms: 1.0388
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:22:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:22:213)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: positive window consumption underflow cannot silently erase physical shortage quantity
+not ok 33 - positive window consumption underflow cannot silently erase physical shortage quantity
+  ---
+  duration_ms: 0.4255
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:23:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:282)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: representable subnormal quantities retain a positive capped physical shortage
+ok 34 - representable subnormal quantities retain a positive capped physical shortage
+  ---
+  duration_ms: 0.7757
+  type: 'test'
+  ...
+# Subtest: zero or negative rates cannot manufacture valid coverage
+ok 35 - zero or negative rates cannot manufacture valid coverage
+  ---
+  duration_ms: 1.1011
+  type: 'test'
+  ...
+# Subtest: calendar-invalid or noncanonical UTC time 2026-02-30T05:55:00.000Z is rejected
+ok 36 - calendar-invalid or noncanonical UTC time 2026-02-30T05:55:00.000Z is rejected
+  ---
+  duration_ms: 0.7176
+  type: 'test'
+  ...
+# Subtest: calendar-invalid or noncanonical UTC time 2026-09-18T05:55:00+00:00 is rejected
+ok 37 - calendar-invalid or noncanonical UTC time 2026-09-18T05:55:00+00:00 is rejected
+  ---
+  duration_ms: 0.3838
+  type: 'test'
+  ...
+# Subtest: calendar-invalid or noncanonical UTC time 1770000000000 is rejected
+ok 38 - calendar-invalid or noncanonical UTC time 1770000000000 is rejected
+  ---
+  duration_ms: 0.311
+  type: 'test'
+  ...
+# Subtest: production window must be ordered and cannot replay past demand from a current snapshot
+ok 39 - production window must be ordered and cannot replay past demand from a current snapshot
+  ---
+  duration_ms: 0.8062
+  type: 'test'
+  ...
+# Subtest: complete tenant/site/source version/revision/evidence binding is mandatory
+ok 40 - complete tenant/site/source version/revision/evidence binding is mandatory
+  ---
+  duration_ms: 2.2008
+  type: 'test'
+  ...
+# Subtest: returned physical output is deeply frozen, detached and cannot contaminate later scenarios
+ok 41 - returned physical output is deeply frozen, detached and cannot contaminate later scenarios
+  ---
+  duration_ms: 1.2761
+  type: 'test'
+  ...
+# Subtest: input accessors and proxies execute no caller code
+ok 42 - input accessors and proxies execute no caller code
+  ---
+  duration_ms: 0.672
+  type: 'test'
+  ...
+# Subtest: nested serializers and overridden array methods execute no caller code
+ok 43 - nested serializers and overridden array methods execute no caller code
+  ---
+  duration_ms: 0.6746
+  type: 'test'
+  ...
+1..43
+# tests 43
+# suites 0
+# pass 41
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 248.6104

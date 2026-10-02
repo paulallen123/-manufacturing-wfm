@@ -1,0 +1,84 @@
+{
+  "manifestSha256": "2d500e8d2ece0a5a10e6a95725f8e625ebb6cbd1aa7484676ba772e0bcd28ac6",
+  "verified": true,
+  "files": [
+    {
+      "path": "operations/runtime/material-shortage-projection.cjs",
+      "blob": "e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
+      "bytes": 5877,
+      "sha256": "ed4c1e9921124c41e5226f992b586d5b8a1e75c99213a11cfd63864b6fcacf89"
+    },
+    {
+      "path": "operations/runtime/material-shortage-projection.test.cjs",
+      "blob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4",
+      "bytes": 9233,
+      "sha256": "e8ce78f1dbc8dbb86a3fdb4cde727a0799a78c1b5334483b0bbf2f2854fb6c08"
+    },
+    {
+      "path": "implementation/runtime/inert-finite-json.cjs",
+      "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "bytes": 1981,
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980"
+    },
+    {
+      "path": "frozen/implementation/runtime/implementation-digital-twin.cjs",
+      "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "bytes": 5922,
+      "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.cjs",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853,
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.test.cjs",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "bytes": 3042,
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-outcome-proof.cjs",
+      "blob": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "bytes": 7146,
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4"
+    },
+    {
+      "path": "frozen/operations/runtime/demand-decision-service.cjs",
+      "blob": "aa838770ff375e18dfdaca05bdf73d950f671fa5",
+      "bytes": 12785,
+      "sha256": "e34a1294a103b9ca960cbdb69c103d0ba734e5a591aa5a5229a5c59071d9bad6"
+    },
+    {
+      "path": "frozen/operations/runtime/realtime-event-service.cjs",
+      "blob": "f1012b311ca06750641d221e63b3ac7f091465bd",
+      "bytes": 7540,
+      "sha256": "4e2b6188251f5c1a5487698bb3dffccc35bad5dfac01b1c168f8758edbd92b94"
+    },
+    {
+      "path": "frozen/operations/runtime/manufacturing-scheduling-engine.cjs",
+      "blob": "63970553844acb634391e6b2db865905eb3c4947",
+      "bytes": 26491,
+      "sha256": "cbb15a3f5e560f44a325f487a1615e34883043cd40fc3ba574239f3b94c8ec4e"
+    },
+    {
+      "path": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "blob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "bytes": 22881,
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45"
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853,
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39"
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "bytes": 3042,
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),lane=path.join(root,'work/lane07-materials'),hash=b=>crypto.createHash('sha256').update(b).digest('hex'),blob=b=>crypto.createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');
+const ownerIndex=JSON.parse(fs.readFileSync(path.join(lane,'evidence-index.json'))),verified=[];
+for(const f of ownerIndex.files){const b=fs.readFileSync(path.join(lane,f.path));assert.equal(hash(b),f.sha256,f.path);assert.equal(b.length,f.bytes,f.path);assert.equal(blob(b),f.gitBlobSha,f.path);verified.push({...f,verified:true});}
+fs.writeFileSync(path.join(__dirname,'materials-owner-custody.json'),JSON.stringify({evidenceIndexSha256:hash(fs.readFileSync(path.join(lane,'evidence-index.json'))),files:verified},null,2)+'\n');
+const artifacts=[];function add(p){const b=fs.readFileSync(p);artifacts.push({path:path.relative(root,p).replaceAll('\\','/'),bytes:b.length,sha256:hash(b)});}function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);e.isDirectory()?walk(p):add(p);}}
+for(const name of ['materials-review.md','materials-findings.json','materials-identities.json','materials-owner-custody.json','materials.held-out.test.cjs','run-materials-review.cjs','seal-materials-review.cjs','materials-held-out.node22.tap','materials-held-out.run.json','materials-affected.node22.tap','materials-affected.run.json','network-guard.cjs'])add(path.join(__dirname,name));
+walk(path.join(__dirname,'materials-reviewed-source'));
+for(const p of ['evidence/02-historical-boundaries.log','evidence/05-numeric-underflow-red.log','evidence/07-archived-numeric-red-replay.log','archive-pre-numeric-repair/identity.json']){const dst=path.join(__dirname,'materials-owner-evidence',p);fs.mkdirSync(path.dirname(dst),{recursive:true});fs.copyFileSync(path.join(lane,p),dst);add(dst);}
+fs.writeFileSync(path.join(__dirname,'materials-evidence-index.json'),JSON.stringify({runtimeBlob:'e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a',testBlob:'a24b7f4580969aaef0f802891e10bc3c0c16e1f4',ownerArtifactsVerified:verified.length,artifacts},null,2)+'\n');
+for(const name of ['materials-review.md','materials-findings.json','materials-evidence-index.json'])console.log(JSON.stringify({path:name,sha256:hash(fs.readFileSync(path.join(__dirname,name)))}));

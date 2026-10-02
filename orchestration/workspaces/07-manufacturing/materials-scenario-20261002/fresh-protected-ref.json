@@ -1,0 +1,7 @@
+{
+  "ref": "refs/heads/release/vector-customer-ready-candidate-20260925",
+  "sha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "readbackUtc": "2026-10-02 13:17:48 UTC",
+  "method": "github_fetch_commit resolved named branch",
+  "note": "Tree is independently recomputed from exact recorded frozen snapshot; this connector response does not provide a tree field."
+}

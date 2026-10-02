@@ -1,0 +1,79 @@
+{
+  "shared": {
+    "owner": "LANE01",
+    "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+    "paths": [
+      {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+        "bytes": 1981
+      },
+      {
+        "path": "implementation/runtime/inert-finite-json.test.cjs",
+        "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+        "bytes": 2371
+      }
+    ],
+    "oneOwnerOnePath": true,
+    "standalonePurpose": "Exact same helper path/blob/test pair included only because frozen base lacks dependency; no Twin/Country/value source or competing store."
+  },
+  "frozen": [
+    {
+      "repositoryTargetPath": "operations/runtime/decision-episode.cjs",
+      "mode": "100644",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    }
+  ],
+  "comparison": [
+    {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "mode": "100644",
+      "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "bytes": 5922
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "mode": "100644",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "mode": "100644",
+      "blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "bytes": 3042
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "mode": "100644",
+      "blob": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "bytes": 7146
+    },
+    {
+      "path": "operations/runtime/demand-decision-service.cjs",
+      "mode": "100644",
+      "blob": "aa838770ff375e18dfdaca05bdf73d950f671fa5",
+      "bytes": 12785
+    },
+    {
+      "path": "operations/runtime/realtime-event-service.cjs",
+      "mode": "100644",
+      "blob": "f1012b311ca06750641d221e63b3ac7f091465bd",
+      "bytes": 7540
+    },
+    {
+      "path": "operations/runtime/manufacturing-scheduling-engine.cjs",
+      "mode": "100644",
+      "blob": "63970553844acb634391e6b2db865905eb3c4947",
+      "bytes": 26491
+    },
+    {
+      "path": "trust/runtime/vector-trust-spine.cjs",
+      "mode": "100644",
+      "blob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "bytes": 22881
+    }
+  ]
+}

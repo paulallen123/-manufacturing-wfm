@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "lane": "07",
+  "capabilityId": "product-004",
+  "classification": "EVOLVE",
+  "state": "IN_PROGRESS",
+  "componentProofState": "TESTED",
+  "proofScope": "ISOLATED_LOCAL_DECLARED_SCENARIO_SOURCE_CONTRACT_ONLY",
+  "frozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "frozenTreeSha": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "parentApproval": "Root explicitly approved EXTRACTION_DESIGN.md before implementation, requiring complete source version/revision/tenant/site/unit/asOf binding",
+  "sourcePR": 75,
+  "sourceSha": "a472a1601eebf57ea273076ca0754911901c515c",
+  "sourceBranch": "frontier/manufacturing-event-cost-v1",
+  "sourcePath": "src/frontier/delivery-disruption.mjs",
+  "sourceBlob": "7d03f0a69da25cd93013955aad92bbc7202f6a68",
+  "historicalDependency": {
+    "path": "src/frontier/manufacturing-event-graph.mjs",
+    "blob": "6cebf2a2c9dcb93cc323c1f2ef7c380e0f40a69c",
+    "shipping": false
+  },
+  "canonicalOwner": "Existing operations/DecisionEpisode input projection; canonical ranking/execution/value authority unchanged",
+  "files": [
+    {
+      "repositoryTargetPath": "operations/runtime/material-shortage-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
+      "sha256": "ed4c1e9921124c41e5226f992b586d5b8a1e75c99213a11cfd63864b6fcacf89",
+      "bytes": 5877,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "operations/runtime/material-shortage-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4",
+      "sha256": "e8ce78f1dbc8dbb86a3fdb4cde727a0799a78c1b5334483b0bbf2f2854fb6c08",
+      "bytes": 9233,
+      "change": "ADD"
+    }
+  ],
+  "shippingTargets": [
+    "operations/runtime/material-shortage-projection.cjs",
+    "operations/runtime/material-shortage-projection.test.cjs"
+  ],
+  "addedBytes": 15110,
+  "sharedProductChangedBytes": 0,
+  "requiredProposalDependencies": [
+    {
+      "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\implementation\\runtime\\inert-finite-json.cjs",
+      "mode": "100644",
+      "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "bytes": 1981,
+      "owner": "Lane01 sole reviewed inert-finite-json boundary",
+      "publishByThisLane": false,
+      "verificationOnlyMirror": true,
+      "integrationRequirement": "Exact single helper must ship once before/together integration; no standalone frozen-base capsule without dependency"
+    }
+  ],
+  "unchangedRuntimeDependencies": [
+    {
+      "repositoryTargetPath": "operations/runtime/decision-episode.cjs",
+      "mode": "100644",
+      "blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "bytes": 8853,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    }
+  ],
+  "frozenComparisonIdentities": [
+    {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "mode": "100644",
+      "bytes": 5922,
+      "local": "frozen/implementation/runtime/implementation-digital-twin.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "mode": "100644",
+      "bytes": 8853,
+      "local": "frozen/operations/runtime/decision-episode.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "mode": "100644",
+      "bytes": 3042,
+      "local": "frozen/operations/runtime/decision-episode.test.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "mode": "100644",
+      "bytes": 7146,
+      "local": "frozen/operations/runtime/decision-outcome-proof.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/demand-decision-service.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "aa838770ff375e18dfdaca05bdf73d950f671fa5",
+      "mode": "100644",
+      "bytes": 12785,
+      "local": "frozen/operations/runtime/demand-decision-service.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/realtime-event-service.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "f1012b311ca06750641d221e63b3ac7f091465bd",
+      "mode": "100644",
+      "bytes": 7540,
+      "local": "frozen/operations/runtime/realtime-event-service.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "operations/runtime/manufacturing-scheduling-engine.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "63970553844acb634391e6b2db865905eb3c4947",
+      "mode": "100644",
+      "bytes": 26491,
+      "local": "frozen/operations/runtime/manufacturing-scheduling-engine.cjs",
+      "verified935Copy": true
+    },
+    {
+      "path": "trust/runtime/vector-trust-spine.cjs",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "sha": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "mode": "100644",
+      "bytes": 22881,
+      "local": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "verified935Copy": true
+    }
+  ],
+  "sourceTests": {
+    "focused": 38,
+    "canonicalControls": 5,
+    "total": 43,
+    "pass": 43,
+    "fail": 0,
+    "skipped": 0,
+    "node": "22.23.2",
+    "networkGuard": "work/trust_review/network-guard.cjs",
+    "log": "evidence/08-final-source-contract-green.log"
+  },
+  "redEvidence": {
+    "originalHistoricalBoundary": {
+      "total": 5,
+      "pass": 1,
+      "fail": 4,
+      "log": "evidence/02-historical-boundaries.log"
+    },
+    "newSourceContract": {
+      "total": 40,
+      "pass": 5,
+      "fail": 35,
+      "log": "evidence/03b-new-contract-red.log",
+      "qualification": "Absent new source API, not serving product defect; initial03 accidental message-match pass superseded"
+    },
+    "actualNumericUnderflow": {
+      "total": 43,
+      "pass": 41,
+      "fail": 2,
+      "log": "evidence/05-numeric-underflow-red.log",
+      "replayLog": "evidence/07-archived-numeric-red-replay.log",
+      "archiveIdentity": {
+        "shipping": false,
+        "archiveReason": "Exact prior implementation reconstructed from recorded bounded patch; numeric red replay independently executable",
+        "runtimeBlob": "2c2d3928e66be6ae988bcc9e1bd00d2bcb5ed5a5",
+        "prior35TestBlob": "c678d9c808f8ee35178e4e3d2b07d2739f55119d",
+        "current38TestBlob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4"
+      }
+    }
+  },
+  "independentReview": "PENDING",
+  "runtimeRoutesWired": false,
+  "authenticProducerEstablished": false,
+  "hostedProof": false,
+  "customerProof": false,
+  "financialProof": false,
+  "causalProof": false,
+  "claimBoundary": "Explicit constant-rate declared scenario only. Evidence refs unauthenticated; no inferred arrival/receipt, ledger/ranking/finance/readiness/provider or runtime authority.",
+  "rollback": "Only two isolated ADD paths; root may exclude/revert their exact reviewed capsule without changing canonical engines/helper or protected frozen release.",
+  "remainingWork": [
+    "Independent review against exact final bytes",
+    "Root publish bounded reviewed source capsule with unchanged Lane01 dependency",
+    "Authentic producer and units/order-temporal semantics before any runtime wiring/customer proof"
+  ]
+}

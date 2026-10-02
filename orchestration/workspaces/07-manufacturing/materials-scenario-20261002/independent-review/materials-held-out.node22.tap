@@ -1,0 +1,274 @@
+TAP version 13
+# Subtest: physical scenario arithmetic, exact canonical digest and detached no-authority output
+ok 1 - physical scenario arithmetic, exact canonical digest and detached no-authority output
+  ---
+  duration_ms: 17.8059
+  type: 'test'
+  ...
+# Subtest: missing scoped tenant
+ok 2 - missing scoped tenant
+  ---
+  duration_ms: 0.3868
+  type: 'test'
+  ...
+# Subtest: missing scoped site
+ok 3 - missing scoped site
+  ---
+  duration_ms: 0.1951
+  type: 'test'
+  ...
+# Subtest: missing scoped material
+ok 4 - missing scoped material
+  ---
+  duration_ms: 0.1813
+  type: 'test'
+  ...
+# Subtest: missing scoped unit
+ok 5 - missing scoped unit
+  ---
+  duration_ms: 0.1986
+  type: 'test'
+  ...
+# Subtest: missing scoped asOf
+ok 6 - missing scoped asOf
+  ---
+  duration_ms: 0.1855
+  type: 'test'
+  ...
+# Subtest: missing source system
+ok 7 - missing source system
+  ---
+  duration_ms: 0.3028
+  type: 'test'
+  ...
+# Subtest: missing source version
+ok 8 - missing source version
+  ---
+  duration_ms: 0.2157
+  type: 'test'
+  ...
+# Subtest: missing source revision
+ok 9 - missing source revision
+  ---
+  duration_ms: 0.5139
+  type: 'test'
+  ...
+# Subtest: missing source evidenceRefs
+ok 10 - missing source evidenceRefs
+  ---
+  duration_ms: 0.5354
+  type: 'test'
+  ...
+# Subtest: inventory mixed unit
+ok 11 - inventory mixed unit
+  ---
+  duration_ms: 0.2992
+  type: 'test'
+  ...
+# Subtest: consumption mixed unit
+ok 12 - consumption mixed unit
+  ---
+  duration_ms: 0.172
+  type: 'test'
+  ...
+# Subtest: requirement mixed unit
+ok 13 - requirement mixed unit
+  ---
+  duration_ms: 0.1698
+  type: 'test'
+  ...
+# Subtest: future inventory observed
+ok 14 - future inventory observed
+  ---
+  duration_ms: 0.189
+  type: 'test'
+  ...
+# Subtest: future arrival effective
+ok 15 - future arrival effective
+  ---
+  duration_ms: 1.2205
+  type: 'test'
+  ...
+# Subtest: invalid calendar arrival
+ok 16 - invalid calendar arrival
+  ---
+  duration_ms: 0.2709
+  type: 'test'
+  ...
+# Subtest: timezone alternate
+ok 17 - timezone alternate
+  ---
+  duration_ms: 0.1705
+  type: 'test'
+  ...
+# Subtest: production before asOf
+ok 18 - production before asOf
+  ---
+  duration_ms: 0.2756
+  type: 'test'
+  ...
+# Subtest: unordered window
+ok 19 - unordered window
+  ---
+  duration_ms: 0.4764
+  type: 'test'
+  ...
+# Subtest: inactive inventory
+ok 20 - inactive inventory
+  ---
+  duration_ms: 0.229
+  type: 'test'
+  ...
+# Subtest: inactive arrival
+ok 21 - inactive arrival
+  ---
+  duration_ms: 0.2059
+  type: 'test'
+  ...
+# Subtest: string quantity
+ok 22 - string quantity
+  ---
+  duration_ms: 0.2405
+  type: 'test'
+  ...
+# Subtest: null safety
+ok 23 - null safety
+  ---
+  duration_ms: 0.2107
+  type: 'test'
+  ...
+# Subtest: negative quantity
+ok 24 - negative quantity
+  ---
+  duration_ms: 0.3754
+  type: 'test'
+  ...
+# Subtest: zero rate
+ok 25 - zero rate
+  ---
+  duration_ms: 0.2096
+  type: 'test'
+  ...
+# Subtest: nonfinite auxiliary metadata
+ok 26 - nonfinite auxiliary metadata
+  ---
+  duration_ms: 0.1615
+  type: 'test'
+  ...
+# Subtest: product overflow
+ok 27 - product overflow
+  ---
+  duration_ms: 0.1915
+  type: 'test'
+  ...
+# Subtest: ratio overflow
+ok 28 - ratio overflow
+  ---
+  duration_ms: 0.203
+  type: 'test'
+  ...
+# Subtest: cover underflow
+ok 29 - cover underflow
+  ---
+  duration_ms: 0.1945
+  type: 'test'
+  ...
+# Subtest: demand underflow
+ok 30 - demand underflow
+  ---
+  duration_ms: 0.1957
+  type: 'test'
+  ...
+# Subtest: window product underflow
+ok 31 - window product underflow
+  ---
+  duration_ms: 0.1926
+  type: 'test'
+  ...
+# Subtest: evidence refs101
+ok 32 - evidence refs101
+  ---
+  duration_ms: 0.3792
+  type: 'test'
+  ...
+# Subtest: blank evidence ref
+ok 33 - blank evidence ref
+  ---
+  duration_ms: 0.1837
+  type: 'test'
+  ...
+# Subtest: window and requirement independently cap shortage; zero demand has no in-window stockout
+ok 34 - window and requirement independently cap shortage; zero demand has no in-window stockout
+  ---
+  duration_ms: 0.8931
+  type: 'test'
+  ...
+# Subtest: arrival equal stockout bounds interval to zero without claiming actual replenishment
+ok 35 - arrival equal stockout bounds interval to zero without claiming actual replenishment
+  ---
+  duration_ms: 0.4927
+  type: 'test'
+  ...
+# Subtest: valid subnormal rates/quantities preserve represented positive shortage
+ok 36 - valid subnormal rates/quantities preserve represented positive shortage
+  ---
+  duration_ms: 0.4672
+  type: 'test'
+  ...
+# Subtest: evidence duplicates dedupe without changing full raw scenario identity
+ok 37 - evidence duplicates dedupe without changing full raw scenario identity
+  ---
+  duration_ms: 0.4933
+  type: 'test'
+  ...
+# Subtest: revision/unit/site and demand changes remain bound in digest and output
+ok 38 - revision/unit/site and demand changes remain bound in digest and output
+  ---
+  duration_ms: 0.4768
+  type: 'test'
+  ...
+# Subtest: top getter denied without caller execution
+ok 39 - top getter denied without caller execution
+  ---
+  duration_ms: 0.1965
+  type: 'test'
+  ...
+# Subtest: inventory getter denied without caller execution
+ok 40 - inventory getter denied without caller execution
+  ---
+  duration_ms: 0.1504
+  type: 'test'
+  ...
+# Subtest: refs-index getter denied without caller execution
+ok 41 - refs-index getter denied without caller execution
+  ---
+  duration_ms: 0.1521
+  type: 'test'
+  ...
+# Subtest: nested proxy and revoked proxy rejected before reflection
+ok 42 - nested proxy and revoked proxy rejected before reflection
+  ---
+  duration_ms: 0.2828
+  type: 'test'
+  ...
+# Subtest: serializers array methods sparse cycles and prototypes never execute
+ok 43 - serializers array methods sparse cycles and prototypes never execute
+  ---
+  duration_ms: 0.5671
+  type: 'test'
+  ...
+# Subtest: extra caller execution hints cannot grant readiness or finance authority
+ok 44 - extra caller execution hints cannot grant readiness or finance authority
+  ---
+  duration_ms: 0.3345
+  type: 'test'
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 192.6403

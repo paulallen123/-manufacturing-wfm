@@ -1,0 +1,26 @@
+[
+  {
+    "case": "future-observed",
+    "status": "recommend_recovery_options",
+    "ranked": 2,
+    "evidenceFailures": []
+  },
+  {
+    "case": "cancelled-inventory",
+    "status": "recommend_recovery_options",
+    "ranked": 2,
+    "evidenceFailures": []
+  },
+  {
+    "case": "future-receipt",
+    "status": "no_material_disruption_predicted",
+    "arrival": "2026-09-18T08:30:00.000Z",
+    "disruption": false
+  },
+  {
+    "case": "returned-aliasing",
+    "before": 2400,
+    "after": 999999,
+    "sameRecordedContentHash": true
+  }
+]

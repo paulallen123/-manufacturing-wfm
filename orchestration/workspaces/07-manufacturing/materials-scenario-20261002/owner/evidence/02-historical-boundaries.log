@@ -1,0 +1,123 @@
+TAP version 13
+# Subtest: current valid source fixture retains bounded workflow handoff and no direct actuation
+ok 1 - current valid source fixture retains bounded workflow handoff and no direct actuation
+  ---
+  duration_ms: 42.5359
+  type: 'test'
+  ...
+# Subtest: future-observed inventory is unavailable to a decision at the current as-of time
+not ok 2 - future-observed inventory is unavailable to a decision at the current as-of time
+  ---
+  duration_ms: 2.5781
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\materials-boundaries.held-out.test.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    evidence not observed yet cannot support present recommendations
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-materials/materials-boundaries.held-out.test.mjs:7:335)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: cancelled required inventory cannot support current recovery recommendations
+not ok 3 - cancelled required inventory cannot support current recovery recommendations
+  ---
+  duration_ms: 1.158
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\materials-boundaries.held-out.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    cancelled event must not become required evidence
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-materials/materials-boundaries.held-out.test.mjs:8:316)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a future receipt does not replace the current shipment ETA
+not ok 4 - a future receipt does not replace the current shipment ETA
+  ---
+  duration_ms: 1.5321
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\materials-boundaries.held-out.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    receipt unavailable at as-of must not erase the predicted shortage
+    + actual - expected
+    
+    + '2026-09-18T08:30:00.000Z'
+    - '2026-09-18T11:15:00.000Z'
+                  ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '2026-09-18T11:15:00.000Z'
+  actual: '2026-09-18T08:30:00.000Z'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-materials/materials-boundaries.held-out.test.mjs:9:508)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: returned event collection cannot mutate graph query results or its bound content
+not ok 5 - returned event collection cannot mutate graph query results or its bound content
+  ---
+  duration_ms: 1.4478
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\materials-boundaries.held-out.test.mjs:10:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    public event collection must not alter internal bound content
+    
+    999999 !== 2400
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2400
+  actual: 999999
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane07-materials/materials-boundaries.held-out.test.mjs:10:558)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 1
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 217.2213

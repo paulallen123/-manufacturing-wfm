@@ -1,0 +1,1509 @@
+TAP version 13
+# Subtest: episode is deterministic regardless of option order
+ok 1 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 23.7695
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 2 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.6087
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 3 - do-nothing option is mandatory
+  ---
+  duration_ms: 1.0397
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 4 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 3.4559
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 5 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 1.7458
+  type: 'test'
+  ...
+# Subtest: explicit source fixture yields physical1.75-hour shortage with complete declared binding
+not ok 6 - explicit source fixture yields physical1.75-hour shortage with complete declared binding
+  ---
+  duration_ms: 3.1103
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:6:123)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: projection states its assumption and grants no rank, finance, authenticity or execution
+not ok 7 - projection states its assumption and grants no rank, finance, authenticity or execution
+  ---
+  duration_ms: 0.3964
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:7:109)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: arrival before stockout yields no shortage
+not ok 8 - arrival before stockout yields no shortage
+  ---
+  duration_ms: 1.171
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:8:131)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: arrival beyond production end caps shortage inside declared window
+not ok 9 - arrival beyond production end caps shortage inside declared window
+  ---
+  duration_ms: 0.2559
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:9:155)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: remaining declared demand caps shortage without inflating duration or cost
+not ok 10 - remaining declared demand caps shortage without inflating duration or cost
+  ---
+  duration_ms: 0.2455
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:10:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:10:143)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: enough inventory for all declared demand yields no in-window stockout
+not ok 11 - enough inventory for all declared demand yields no in-window stockout
+  ---
+  duration_ms: 0.2237
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:11:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:11:142)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: safety stock reduces usable inventory and zero inventory starts shortage at production start
+not ok 12 - safety stock reduces usable inventory and zero inventory starts shortage at production start
+  ---
+  duration_ms: 0.2871
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:12:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: zero declared requirement is a bounded zero-shortage scenario
+not ok 13 - zero declared requirement is a bounded zero-shortage scenario
+  ---
+  duration_ms: 0.2064
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:13:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:13:127)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: canonical-equivalent inert input key order retains exact scenario digest
+not ok 14 - canonical-equivalent inert input key order retains exact scenario digest
+  ---
+  duration_ms: 0.8472
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:14:175)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: revision and asOf changes remain visible in scenario identity
+not ok 15 - revision and asOf changes remain visible in scenario identity
+  ---
+  duration_ms: 0.5363
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:15:100)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: future inventory.observedAt is rejected before physical output
+not ok 16 - future inventory.observedAt is rejected before physical output
+  ---
+  duration_ms: 1.0795
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:16:92'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /future|asOf/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:246
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: future inventory.effectiveAt is rejected before physical output
+not ok 17 - future inventory.effectiveAt is rejected before physical output
+  ---
+  duration_ms: 0.2999
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:16:92'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /future|asOf/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:246
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: future arrival.observedAt is rejected before physical output
+not ok 18 - future arrival.observedAt is rejected before physical output
+  ---
+  duration_ms: 0.2309
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:16:92'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /future|asOf/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:246
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: future arrival.effectiveAt is rejected before physical output
+not ok 19 - future arrival.effectiveAt is rejected before physical output
+  ---
+  duration_ms: 0.2144
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:16:92'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /future|asOf/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:246
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:16:235)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cancelled inventory is rejected
+not ok 20 - cancelled inventory is rejected
+  ---
+  duration_ms: 0.3362
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:17:44'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /active|cancelled|status/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:17:153
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:17:142)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:17:142)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cancelled arrival is rejected
+not ok 21 - cancelled arrival is rejected
+  ---
+  duration_ms: 0.3336
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:17:44'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /active|cancelled|status/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:17:153
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:17:142)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:17:142)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: all quantity/rate units must equal the fully bound scenario unit
+not ok 22 - all quantity/rate units must equal the fully bound scenario unit
+  ---
+  duration_ms: 0.2841
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:18:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /unit/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:18:143
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:18:132)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:18:132)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid on-hand quantity 2400 cannot be silently coerced
+not ok 23 - invalid on-hand quantity 2400 cannot be silently coerced
+  ---
+  duration_ms: 0.316
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:19:65'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|number|quantity|non.negative/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:217
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid on-hand quantity null cannot be silently coerced
+not ok 24 - invalid on-hand quantity null cannot be silently coerced
+  ---
+  duration_ms: 0.3247
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:19:65'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|number|quantity|non.negative/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:217
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid on-hand quantity true cannot be silently coerced
+not ok 25 - invalid on-hand quantity true cannot be silently coerced
+  ---
+  duration_ms: 0.2254
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:19:65'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|number|quantity|non.negative/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:217
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid on-hand quantity -1 cannot be silently coerced
+not ok 26 - invalid on-hand quantity -1 cannot be silently coerced
+  ---
+  duration_ms: 0.209
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:19:65'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|number|quantity|non.negative/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:217
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid on-hand quantity NaN cannot be silently coerced
+not ok 27 - invalid on-hand quantity NaN cannot be silently coerced
+  ---
+  duration_ms: 0.2332
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:19:65'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|number|quantity|non.negative/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:217
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid on-hand quantity Infinity cannot be silently coerced
+not ok 28 - invalid on-hand quantity Infinity cannot be silently coerced
+  ---
+  duration_ms: 0.2202
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:19:65'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|number|quantity|non.negative/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:217
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid on-hand quantity -Infinity cannot be silently coerced
+not ok 29 - invalid on-hand quantity -Infinity cannot be silently coerced
+  ---
+  duration_ms: 0.2344
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:19:65'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|number|quantity|non.negative/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:217
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:19:206)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: finite arithmetic overflow is refused rather than emitted as Infinity/null
+not ok 30 - finite arithmetic overflow is refused rather than emitted as Infinity/null
+  ---
+  duration_ms: 0.7219
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|overflow/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:20:252
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:20:241)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:20:241)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: finite ratio overflow is refused rather than emitted as unbounded hours
+not ok 31 - finite ratio overflow is refused rather than emitted as unbounded hours
+  ---
+  duration_ms: 0.882
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:21:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /finite|overflow/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:21:205
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:21:194)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:21:194)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: zero or negative rates cannot manufacture valid coverage
+not ok 32 - zero or negative rates cannot manufacture valid coverage
+  ---
+  duration_ms: 1.2269
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:22:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /positive|rate|perHour/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:22:154
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:22:143)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:22:143)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: calendar-invalid or noncanonical UTC time 2026-02-30T05:55:00.000Z is rejected
+not ok 33 - calendar-invalid or noncanonical UTC time 2026-02-30T05:55:00.000Z is rejected
+  ---
+  duration_ms: 0.552
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:23:91'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /UTC|ISO|timestamp|calendar/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:241
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:230)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:230)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: calendar-invalid or noncanonical UTC time 2026-09-18T05:55:00+00:00 is rejected
+not ok 34 - calendar-invalid or noncanonical UTC time 2026-09-18T05:55:00+00:00 is rejected
+  ---
+  duration_ms: 1.5225
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:23:91'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /UTC|ISO|timestamp|calendar/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:241
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:230)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:230)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: calendar-invalid or noncanonical UTC time 1770000000000 is rejected
+not ok 35 - calendar-invalid or noncanonical UTC time 1770000000000 is rejected
+  ---
+  duration_ms: 0.5421
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:23:91'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /UTC|ISO|timestamp|calendar/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:241
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:230)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:23:230)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: production window must be ordered and cannot replay past demand from a current snapshot
+not ok 36 - production window must be ordered and cannot replay past demand from a current snapshot
+  ---
+  duration_ms: 0.3615
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:24:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /window|end/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:24:182
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:24:171)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:24:171)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: complete tenant/site/source version/revision/evidence binding is mandatory
+not ok 37 - complete tenant/site/source version/revision/evidence binding is mandatory
+  ---
+  duration_ms: 0.3878
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:25:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /required|source|evidence|ISO|UTC|binding/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:25:307
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:25:296)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:25:296)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: returned physical output is deeply frozen, detached and cannot contaminate later scenarios
+not ok 38 - returned physical output is deeply frozen, detached and cannot contaminate later scenarios
+  ---
+  duration_ms: 0.1909
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:26:125)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: input accessors and proxies execute no caller code
+not ok 39 - input accessors and proxies execute no caller code
+  ---
+  duration_ms: 0.3441
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:27:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /inert|accessor|JSON/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:27:192
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:27:181)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:27:181)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: nested serializers and overridden array methods execute no caller code
+not ok 40 - nested serializers and overridden array methods execute no caller code
+  ---
+  duration_ms: 0.3172
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane07-materials\\operations\\runtime\\material-shortage-projection.test.cjs:28:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /inert|JSON/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: material projection API missing\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'undefined'\n" +
+      "- 'function'\n"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: |-
+    material projection API missing
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  stack: |-
+    project (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:3:32)
+    C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:28:179
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:28:168)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane07-materials\operations\runtime\material-shortage-projection.test.cjs:28:168)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 5
+# fail 35
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 205.9252

@@ -1,0 +1,40 @@
+{
+  "scope": "historical PR75 only",
+  "independentlyReviewed": false,
+  "frozenServingDefectsClaimed": false,
+  "sourceHead": "a472a1601eebf57ea273076ca0754911901c515c",
+  "findings": [
+    {
+      "id": "MATERIALS-SOURCE-01",
+      "state": "REPRODUCED_LOCALLY",
+      "case": "future-observed",
+      "status": "recommend_recovery_options",
+      "ranked": 2,
+      "evidenceFailures": []
+    },
+    {
+      "id": "MATERIALS-SOURCE-02",
+      "state": "REPRODUCED_LOCALLY",
+      "case": "cancelled-inventory",
+      "status": "recommend_recovery_options",
+      "ranked": 2,
+      "evidenceFailures": []
+    },
+    {
+      "id": "MATERIALS-SOURCE-03",
+      "state": "REPRODUCED_LOCALLY",
+      "case": "future-receipt",
+      "status": "no_material_disruption_predicted",
+      "arrival": "2026-09-18T08:30:00.000Z",
+      "disruption": false
+    },
+    {
+      "id": "MATERIALS-SOURCE-04",
+      "state": "REPRODUCED_LOCALLY",
+      "case": "returned-aliasing",
+      "before": 2400,
+      "after": 999999,
+      "sameRecordedContentHash": true
+    }
+  ]
+}

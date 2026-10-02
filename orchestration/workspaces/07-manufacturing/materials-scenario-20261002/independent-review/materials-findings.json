@@ -1,0 +1,13 @@
+{
+  "component":"product-004 declared material-shortage projection",
+  "runtimeBlob":"e6c2cd64ddc27b8113061e61b7ef4e3dbf0c796a",
+  "testBlob":"a24b7f4580969aaef0f802891e10bc3c0c16e1f4",
+  "canonicalHelperBlob":"e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+  "canonicalDigestBlob":"a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+  "verdict":"NO_MATERIAL_P1_P2_REPRODUCED_IN_DECLARED_UNWIRED_SCENARIO_SCOPE",
+  "findings":[],
+  "actualExecutions":{"heldOut":{"tests":44,"pass":44,"fail":0,"skip":0,"durationMs":192.6403},"affectedSourceAndFrozenControls":{"tests":43,"pass":43,"fail":0,"skip":0,"durationMs":345.0831},"node":"22.23.2","networkBlocked":true,"timeoutMs":60000},
+  "sourceSnapshots":13,
+  "qualifications":["Caller-declared bindings and refs are unauthenticated.","Expected arrival bounds an interval; no receipt or replenishment inferred.","Actual source freshness and ERP/logistics semantics remain producer-owned.","External intake byte/depth/CPU bounds are pending.","No full repository, Linux/container, provider, hosted or customer proof."],
+  "productState":"IN_PROGRESS","runtimeWired":false,"customerProof":false,"provenBaseSha":null,"convergenceBaseSha":null,"reviewerProductSourceEdits":false
+}

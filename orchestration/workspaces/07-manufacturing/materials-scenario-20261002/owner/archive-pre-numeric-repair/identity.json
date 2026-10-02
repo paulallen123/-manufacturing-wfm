@@ -1,0 +1,7 @@
+{
+  "shipping": false,
+  "archiveReason": "Exact prior implementation reconstructed from recorded bounded patch; numeric red replay independently executable",
+  "runtimeBlob": "2c2d3928e66be6ae988bcc9e1bd00d2bcb5ed5a5",
+  "prior35TestBlob": "c678d9c808f8ee35178e4e3d2b07d2739f55119d",
+  "current38TestBlob": "a24b7f4580969aaef0f802891e10bc3c0c16e1f4"
+}

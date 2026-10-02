@@ -1,0 +1,107 @@
+TAP version 13
+# Subtest: episode is deterministic regardless of option order
+ok 1 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 48.0606
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 2 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.5857
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 3 - do-nothing option is mandatory
+  ---
+  duration_ms: 0.9576
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 4 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 1.5337
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 5 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 0.9518
+  type: 'test'
+  ...
+# DELIVERY_DISRUPTION_BENCHMARK={"disruptions":1632,"knownValuable":1235,"foundValuable":1234,"discovery":0.9991902834008097,"unsafeRecommended":0,"directActuation":0,"staleRecommended":0}
+# Subtest: predicts a late-delivery stockout and ranks the strongest safe recovery
+ok 6 - predicts a late-delivery stockout and ranks the strongest safe recovery
+  ---
+  duration_ms: 34.0702
+  type: 'test'
+  ...
+# Subtest: on-time arrival produces no disruption and no recommendation
+ok 7 - on-time arrival produces no disruption and no recommendation
+  ---
+  duration_ms: 1.2742
+  type: 'test'
+  ...
+# Subtest: idempotent replay is ignored, conflicting replay fails closed
+ok 8 - idempotent replay is ignored, conflicting replay fails closed
+  ---
+  duration_ms: 3.2652
+  type: 'test'
+  ...
+# Subtest: out-of-order ETA revisions use the highest revision deterministically
+ok 9 - out-of-order ETA revisions use the highest revision deterministically
+  ---
+  duration_ms: 2.1727
+  type: 'test'
+  ...
+# Subtest: cross-tenant or cross-site events are rejected
+ok 10 - cross-tenant or cross-site events are rejected
+  ---
+  duration_ms: 0.7793
+  type: 'test'
+  ...
+# Subtest: stale shipment evidence blocks action recommendations
+ok 11 - stale shipment evidence blocks action recommendations
+  ---
+  duration_ms: 1.0424
+  type: 'test'
+  ...
+# Subtest: unsafe or directly actuating recovery options are rejected
+ok 12 - unsafe or directly actuating recovery options are rejected
+  ---
+  duration_ms: 1.3599
+  type: 'test'
+  ...
+# Subtest: negative or malformed economics fail closed
+ok 13 - negative or malformed economics fail closed
+  ---
+  duration_ms: 1.0355
+  type: 'test'
+  ...
+# Subtest: same authoritative input has the same reproducibility hash
+ok 14 - same authoritative input has the same reproducibility hash
+  ---
+  duration_ms: 4.801
+  type: 'test'
+  ...
+# Subtest: event graph records duplicate replay in evidence hash without changing logical event count
+ok 15 - event graph records duplicate replay in evidence hash without changing logical event count
+  ---
+  duration_ms: 2.5242
+  type: 'test'
+  ...
+# Subtest: 2,000 scenario benchmark finds safe valuable recoveries without direct actuation
+ok 16 - 2,000 scenario benchmark finds safe valuable recoveries without direct actuation
+  ---
+  duration_ms: 763.7481
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 983.6348
