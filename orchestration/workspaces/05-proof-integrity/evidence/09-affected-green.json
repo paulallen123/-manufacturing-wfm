@@ -1,0 +1,14 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--test",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "implementation/runtime/implementation-active-controller.integration.test.cjs",
+    "implementation/runtime/implementation-work-controller.test.cjs"
+  ],
+  "exitCode": 1,
+  "signal": null,
+  "logSha256": "326e8af0e239c302fb1e0e139f62e0aa1ca23fc9320abd33c4adf87fc09e355c",
+  "customerProof": false
+}

@@ -1,0 +1,19 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\one-day-enterprise-engine.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\readiness-evidence-wrapper.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\implementation-active-controller.integration.test.cjs",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\implementation-work-controller.test.cjs"
+  ],
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "timeoutMs": 60000,
+  "logSha256": "e2ee39538fbdb61887be7ca6e923b8bff702645ea89fa523871424cfcda01518",
+  "networkGuard": true,
+  "hostedCustomerProof": false
+}

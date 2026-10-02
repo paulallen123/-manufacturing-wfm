@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "frozenBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "sourceBlobs": [
+    "073f0303e161b62ba46ee7115bdf0082259830a3",
+    "198978255a62a1297e6104f66f67373864534e3e",
+    "a94904b821126cc6155afd091d6acc4c8b1673e9"
+  ],
+  "evidence": [
+    {
+      "path": "work/trust_review/proof-gate-review.md",
+      "bytes": 3354,
+      "sha256": "0f3d3b4bc583de1ec7330d5b5273c41a1814b4cc0c08021b1e4315f95f39a1ac"
+    },
+    {
+      "path": "work/trust_review/proof-gate-findings.json",
+      "bytes": 4130,
+      "sha256": "ca3319ef71648441c4cbf790c128e226cd235eabb8636e0f1713ddacf4b2d84d"
+    },
+    {
+      "path": "work/trust_review/proof-gate-source-identities.json",
+      "bytes": 1045,
+      "sha256": "764ff0c95091da5a5222f761934553522407260538638e8f22adf0cba22d7385"
+    },
+    {
+      "path": "work/trust_review/proof-gate.held-out.test.cjs",
+      "bytes": 6571,
+      "sha256": "a7fc83bb3981898c5e848deac9c309bb26ad249748e39462aa848aa4f115d0c3"
+    },
+    {
+      "path": "work/trust_review/proof-gate.four-tests.snapshot.cjs",
+      "bytes": 6355,
+      "sha256": "3bb015a043a8212bc49c26bbea9d716a9d55126a7f7d700cefd757bcebfc3530"
+    },
+    {
+      "path": "work/trust_review/proof-gate.final-green.node22.tap",
+      "bytes": 3720,
+      "sha256": "dad7e9d02f0ef3d5f3dddc13301c0d82d128e8952aade669f4384140c5748d38"
+    },
+    {
+      "path": "work/trust_review/proof-gate.final-green.run.json",
+      "bytes": 113,
+      "sha256": "52ce1f4a2fb3ef305bf1a194890fd7f8afc4aa20547b86bfc1f4db54c8f6231d"
+    },
+    {
+      "path": "work/trust_review/proof-gate.frozen-red.node22.tap",
+      "bytes": 9802,
+      "sha256": "86f80ce9d2336b32ecf97cf301a074917c9421cdaf0e14e412cfe3e047ac0c52"
+    },
+    {
+      "path": "work/trust_review/proof-gate.frozen-red.run.json",
+      "bytes": 113,
+      "sha256": "c46f717c20605ae06719fa221b525a974cd60fb0f7712ea9c0498d4c5346d702"
+    },
+    {
+      "path": "work/trust_review/proof-gate.observations.json",
+      "bytes": 1562,
+      "sha256": "e25772abf8ed927d16b916410c1b38109d14691318d93e410bb5f446d575fba9"
+    },
+    {
+      "path": "work/trust_review/proof-gate.initial-harness-error.node22.tap",
+      "bytes": 5922,
+      "sha256": "17875187c715d12d5616b87552805c07e81b321217e06c846231bd11fa81a233"
+    },
+    {
+      "path": "work/trust_review/proof-gate.corrected.node22.tap",
+      "bytes": 2818,
+      "sha256": "591350acd834bd1c7e0088950b2f7a3bf994e352a2333df2c5a28ce8ffc333cc"
+    },
+    {
+      "path": "work/trust_review/proof-gate.affected.node22.tap",
+      "bytes": 12958,
+      "sha256": "e2ee39538fbdb61887be7ca6e923b8bff702645ea89fa523871424cfcda01518"
+    },
+    {
+      "path": "work/trust_review/proof-gate.affected.run.json",
+      "bytes": 1122,
+      "sha256": "cb90d87fb17c7ec6aaa4f141f29d34b42b34464b76882f6e302d95b24da46deb"
+    },
+    {
+      "path": "work/trust_review/run-proof-gate-affected.cjs",
+      "bytes": 1316,
+      "sha256": "ef96e99f6d0ee2882d1f411c9dbc842c8eb961062b81588803d3f8ca81463dd9"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    },
+    {
+      "path": "work/trust_review/proof-gate.review-diff.txt",
+      "bytes": 8373,
+      "sha256": "e02f95be992e15d9a918fa41db323ef86734f94c40019a08471818420dafb2c3"
+    },
+    {
+      "path": "work/trust_review/proof-gate-diff.cjs",
+      "bytes": 1144,
+      "sha256": "a2f27947fbd5f0906229bada85896a86b3cfb015ef0dc8862952df8bd6738799"
+    },
+    {
+      "path": "work/trust_review/verify-proof-gate.cjs",
+      "bytes": 1937,
+      "sha256": "b9700a9b3efb16682cbcf7297e3632a67b017779f8dd440a5daeaf64f71233a1"
+    }
+  ]
+}

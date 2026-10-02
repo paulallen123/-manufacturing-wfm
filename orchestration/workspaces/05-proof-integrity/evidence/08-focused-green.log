@@ -1,0 +1,36 @@
+TAP version 13
+# (node:29824) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+ok 1 - strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+  ---
+  duration_ms: 375.1149
+  type: 'test'
+  ...
+# Subtest: persisted malformed historical-replay receipt loses authority but remains auditable
+ok 2 - persisted malformed historical-replay receipt loses authority but remains auditable
+  ---
+  duration_ms: 286.0088
+  type: 'test'
+  ...
+# Subtest: persisted malformed time-policies receipt loses authority but remains auditable
+ok 3 - persisted malformed time-policies receipt loses authority but remains auditable
+  ---
+  duration_ms: 306.5244
+  type: 'test'
+  ...
+# Subtest: customer policy date rejects impossible days and malformed timestamps without resolving authority
+ok 4 - customer policy date rejects impossible days and malformed timestamps without resolving authority
+  ---
+  duration_ms: 385.7308
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1516.8278

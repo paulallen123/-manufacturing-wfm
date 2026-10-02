@@ -1,0 +1,33 @@
+TAP version 13
+# (node:27520) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+ok 1 - strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+  ---
+  duration_ms: 362.2998
+  type: 'test'
+  ...
+# Subtest: customer policy date rejects impossible days and malformed timestamps without resolving authority
+not ok 2 - customer policy date rejects impossible days and malformed timestamps without resolving authority
+  ---
+  duration_ms: 231.0555
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\one-day-enterprise-engine.test.cjs:1601:1'
+  failureType: 'testCodeFailure'
+  error: 'no such column: key'
+  code: 'ERR_SQLITE_ERROR'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\proof-gate-repair\implementation\runtime\one-day-enterprise-engine.test.cjs:1613:27)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 712.8888

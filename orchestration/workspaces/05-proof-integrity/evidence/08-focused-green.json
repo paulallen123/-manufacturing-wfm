@@ -1,0 +1,12 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--test",
+    "--test-name-pattern=strict replay proof|customer policy date|persisted malformed",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs"
+  ],
+  "exitCode": 0,
+  "signal": null,
+  "logSha256": "05cd8ef2c3dede593dbd3cd49600662696aaa30c445d99a534472b6f52da46fc",
+  "customerProof": false
+}

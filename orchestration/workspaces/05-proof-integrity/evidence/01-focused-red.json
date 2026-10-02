@@ -1,0 +1,12 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--test",
+    "--test-name-pattern=strict replay proof|customer policy date",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs"
+  ],
+  "exitCode": 1,
+  "signal": null,
+  "logSha256": "781dfc5d358eb279471882529c363d72fa6b8f30008e1388b8a8f4fde52576b8",
+  "customerProof": false
+}

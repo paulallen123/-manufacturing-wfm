@@ -12,7 +12,7 @@ const {
 const { DatabaseSync } = require('node:sqlite');
 const { createImplementationWorkController } = require('./implementation-work-controller.cjs');
 const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
-const { validateStrictReadinessEvidence } = require('./readiness-evidence-contract.cjs');
+const { validateStrictReadinessEvidence, validEffectiveDate } = require('./readiness-evidence-contract.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -740,7 +740,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     const sourceRef = compact(answer.sourceRef, 300);
     const effectiveDate = compact(answer.effectiveDate, 40);
-    if (!sourceRef || !/^\d{4}-\d{2}-\d{2}(?:$|T)/.test(effectiveDate)) {
+    if (!sourceRef || !validEffectiveDate(effectiveDate)) {
       const error = new Error('Policy confirmation requires a traceable sourceRef and effectiveDate.');
       error.statusCode = 409;
       throw error;
@@ -1064,7 +1064,11 @@ function createOneDayEnterpriseEngine(options = {}) {
       const policyValidationError = !derived && row?.status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(requirement.key)
         ? validateStrictReadinessEvidence(requirement.key, 'PASS', detail || {})
         : null;
-      const status = evidenceBinding?.reason || tenantValidationError || policyValidationError
+      const replayValidationError = (options.strictEvidence === true || process.env.WFM_HOSTED_STAGING === 'true') &&
+        !derived && row?.status === 'PASS' && requirement.key === 'historical-replay'
+        ? validateStrictReadinessEvidence(requirement.key, 'PASS', detail || {})
+        : null;
+      const status = evidenceBinding?.reason || tenantValidationError || policyValidationError || replayValidationError
         ? 'REVALIDATION_REQUIRED'
         : (derived?.status || row?.status || 'MISSING');
       const confidence = derived ? derived.confidence : (row ? Number(row.confidence) : 0);
@@ -1077,7 +1081,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         observedAt: derived ? nowIso() : (row?.created_at || null),
         detail,
         ...(evidenceBinding ? { evidenceBinding } : {}),
-        ...(tenantValidationError || policyValidationError ? { evidenceValidation: { reason: tenantValidationError || policyValidationError } } : {})
+        ...(tenantValidationError || policyValidationError || replayValidationError ? { evidenceValidation: { reason: tenantValidationError || policyValidationError || replayValidationError } } : {})
       };
     });
 
@@ -2163,4 +2167,3 @@ module.exports = {
   REQUIREMENTS,
   criticalPathRemainingMinutes
 };
-

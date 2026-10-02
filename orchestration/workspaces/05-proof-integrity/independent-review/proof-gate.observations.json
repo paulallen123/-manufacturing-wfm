@@ -1,0 +1,65 @@
+{
+  "node": "v22.23.2",
+  "observations": [
+    {
+      "kind": "historical-replay",
+      "invalid": true,
+      "exactCandidateBindingMatched": true,
+      "status": "REVALIDATION_REQUIRED",
+      "satisfied": false,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    },
+    {
+      "kind": "historical-replay",
+      "invalid": false,
+      "exactCandidateBindingMatched": true,
+      "status": "PASS",
+      "satisfied": true,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    },
+    {
+      "kind": "time-policies",
+      "invalid": true,
+      "exactCandidateBindingMatched": true,
+      "status": "REVALIDATION_REQUIRED",
+      "satisfied": false,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    },
+    {
+      "kind": "time-policies",
+      "invalid": false,
+      "exactCandidateBindingMatched": true,
+      "status": "PASS",
+      "satisfied": true,
+      "originalReceiptRetained": true,
+      "auditTables": [
+        {
+          "name": "implementation_events",
+          "preservedRows": 6
+        }
+      ],
+      "actualEngineClosedAndReopened": true
+    }
+  ]
+}

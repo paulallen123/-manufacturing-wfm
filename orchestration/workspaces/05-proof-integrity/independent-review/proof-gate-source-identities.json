@@ -1,0 +1,29 @@
+{
+  "verified": true,
+  "frozenBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "files": [
+    {
+      "path": "implementation/runtime/readiness-evidence-contract.cjs",
+      "mode": "100644",
+      "bytes": 12376,
+      "blob": "073f0303e161b62ba46ee7115bdf0082259830a3",
+      "sha256": "8e80f72de9a10ed165aefd83c77b1a48fd9b07fe225ca164ffc0ef2180e78432"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+      "mode": "100644",
+      "bytes": 99725,
+      "blob": "198978255a62a1297e6104f66f67373864534e3e",
+      "sha256": "80e4ba567780dc46090634998396dc6a7f2cb4906b2390c303d58e9066ff038b"
+    },
+    {
+      "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+      "mode": "100644",
+      "bytes": 74763,
+      "blob": "a94904b821126cc6155afd091d6acc4c8b1673e9",
+      "sha256": "6eba2b6a4e6a4c734e3c5878493b5bdfe2f24bf79f3aa5a8aaf5c36eb680e471"
+    }
+  ],
+  "unchangedDependencies": 21,
+  "proofScope": "INDEPENDENT_LOCAL_SOURCE_IDENTITY_AND_ISOLATED_REVIEWER_FROZEN_CONTROL"
+}

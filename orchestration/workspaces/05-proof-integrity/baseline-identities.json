@@ -1,0 +1,146 @@
+[
+  {
+    "path": "implementation/runtime/agents-api-adapter.cjs",
+    "blob": "f74648e2a10aa4240dc109bb67414b9bed48e892",
+    "bytes": 19606,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/agents-api-adapter.test.cjs",
+    "blob": "b7ce5d81a67501bd6eef81dcc12d84881d8b41ae",
+    "bytes": 8686,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/agents-api-bootstrap-route.cjs",
+    "blob": "6754f16ffbbf42854c477b60ba867fb7d24030fa",
+    "bytes": 7937,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/agents-api-bootstrap-route.test.cjs",
+    "blob": "bf4c652c4b9e0a7efc1b6780b3cb35c08cba3b04",
+    "bytes": 11085,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/configuration-inference-engine.cjs",
+    "blob": "d3688d27841a28d3b8801b7d4c63f254e8bf7edd",
+    "bytes": 11506,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/configuration-inference-engine.test.cjs",
+    "blob": "8961de2ae2c10c3022519a3e1c5931f7e316a543",
+    "bytes": 5691,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/implementation-active-controller.integration.test.cjs",
+    "blob": "9a81b0cf6c3f8be27178da07f455f1cac9789db6",
+    "bytes": 15722,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/implementation-digital-twin.cjs",
+    "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+    "bytes": 5922,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+    "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+    "bytes": 3631,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/implementation-learning-integration.test.cjs",
+    "blob": "8cf9548bffa76eee0c808a6e3c9bb6b29b204896",
+    "bytes": 12376,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/implementation-work-controller.cjs",
+    "blob": "ecf740c788453b71036706a1c7dd99ca6470c9f8",
+    "bytes": 18652,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/implementation-work-controller.test.cjs",
+    "blob": "556ab49d55e0cfc5b85322e76a4e9b5a5312d70f",
+    "bytes": 8651,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/implementation-work-fencing.test.cjs",
+    "blob": "767cf3eba7e110cc15501e2b71bfe3ac08aef0db",
+    "bytes": 12583,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+    "blob": "7d38e289242826a46c9245099c33d1f217c03d7a",
+    "bytes": 99344,
+    "source": "DIRECT_FROZEN_GITHUB_FETCH"
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine.cjs",
+    "blob": "f73bca44d36401fddf3c944b0076f039df4e1a50",
+    "bytes": 5692,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+    "blob": "9399b74262e4c246056ee9fa8aceb5b2a5a5208f",
+    "bytes": 69592,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/readiness-evidence-contract.cjs",
+    "blob": "5a23037af19be20b0179c389dc3b5dc49f2c8b2f",
+    "bytes": 11748,
+    "source": "DIRECT_FROZEN_GITHUB_FETCH"
+  },
+  {
+    "path": "implementation/runtime/readiness-evidence-contract.test.cjs",
+    "blob": "bc7c5f8e8afae681b28cfae756098363b10526a3",
+    "bytes": 4308,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/readiness-evidence-wrapper.test.cjs",
+    "blob": "9eefa3518dcc4a61b793a63b114e3afa86b4d988",
+    "bytes": 5240,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/tenant-environment-provisioner.cjs",
+    "blob": "ac9d322a5d2127402f67cd88834687ff88e4cbe2",
+    "bytes": 5852,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/tenant-environment-provisioner.test.cjs",
+    "blob": "98c5a5c3a3b531e5b20fbba62f2c00f70e4fd286",
+    "bytes": 4592,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/zero-touch-customer-factory.boundaries.test.cjs",
+    "blob": "faca30a92f883ea3eef3868fddfe72a8cf7ab6fd",
+    "bytes": 1569,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/zero-touch-customer-factory.cjs",
+    "blob": "a28090fe6beef55e18106f380499233808cc693f",
+    "bytes": 3330,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  },
+  {
+    "path": "implementation/runtime/zero-touch-customer-factory.test.cjs",
+    "blob": "cc3c8afee78acf158d65b1fa7bc2da7eed0b722f",
+    "bytes": 1659,
+    "source": "FROZEN_TREE_VERIFIED_LOCAL_BYTES"
+  }
+]

@@ -1,0 +1,58 @@
+TAP version 13
+# (node:13844) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+not ok 1 - strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+  ---
+  duration_ms: 263.2345
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\one-day-enterprise-engine.test.cjs:1580:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    expectedTotal=null
+    
+    200 !== 409
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 409
+  actual: 200
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\proof-gate-repair\implementation\runtime\one-day-enterprise-engine.test.cjs:1588:16)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: customer policy date rejects impossible days and malformed timestamps without resolving authority
+not ok 2 - customer policy date rejects impossible days and malformed timestamps without resolving authority
+  ---
+  duration_ms: 301.7619
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\proof-gate-repair\\implementation\\runtime\\one-day-enterprise-engine.test.cjs:1601:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    2026-99-99
+    
+    200 !== 409
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 409
+  actual: 200
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\proof-gate-repair\implementation\runtime\one-day-enterprise-engine.test.cjs:1608:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 686.9108
