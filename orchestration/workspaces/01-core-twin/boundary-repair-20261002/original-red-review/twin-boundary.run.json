@@ -1,0 +1,16 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\twin-boundary.held-out.test.cjs"
+  ],
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "networkGuard": true,
+  "timeoutMs": 60000,
+  "logSha256": "f84340f255d657f2d435309b1613f496a655fadb24e51a8bd9eaf367bf44770f",
+  "customerProof": false
+}

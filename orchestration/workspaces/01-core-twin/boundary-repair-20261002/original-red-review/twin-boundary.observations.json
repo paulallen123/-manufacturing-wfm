@@ -1,0 +1,216 @@
+{
+  "node": "v22.23.2",
+  "sourceBlob": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+  "observations": [
+    {
+      "name": "projectTwinGraph input getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectTwinGraph revision getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 4,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectTwinGraph toJSON",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectTwinGraph proxy",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 14,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectTwinGraph nodes.map",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 2,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectTwinGraph nonfinite NaN",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectTwinGraph nonfinite Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectTwinGraph nonfinite -Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory input getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory revision getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 4,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory toJSON",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory proxy",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 14,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory nodes.map",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 2,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory nonfinite NaN",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory nonfinite Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectOperationalHistory nonfinite -Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory input getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory revision getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 4,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory toJSON",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory proxy",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 14,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory nodes.map",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 2,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory nonfinite NaN",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory nonfinite Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "projectEngineeringMemory nonfinite -Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "graph.relatedAt knownAt getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "history.eventsInWindow knownAt getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "history.incidentBundle knownAt getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+    },
+    {
+      "name": "engineering.revisionChain knownAt getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "engineering.similarTo knownAt getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "history nodeIds.includes override",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "sourceTwinRevision": null
+    }
+  ]
+}

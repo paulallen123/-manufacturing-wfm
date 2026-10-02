@@ -1,0 +1,330 @@
+{
+  "status": "EXPANDED_REVIEW_TWO_P2_ON_PREVIOUSLY_PUBLISHED_FUTURE_COMPONENT",
+  "sourceIdentities": {
+    "verified": true,
+    "parentReportedPublishedCommit": "f68dff51c655da9fb68c7064c08e384a217b5314",
+    "sourceFiles": [
+      {
+        "path": "implementation/runtime/twin-read-only-projections.cjs",
+        "mode": "100644",
+        "operation": "ADD_ADAPTED_PORT",
+        "bytes": 13976,
+        "gitBlobSha": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+        "sha256": "9ec289df97a3c74ab23a396b83ae6276bf8cba9139a80a7a2f214bef715c7e1e",
+        "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.cjs"
+      },
+      {
+        "path": "implementation/runtime/twin-read-only-projections.test.cjs",
+        "mode": "100644",
+        "operation": "ADD_BEHAVIOR_TESTS",
+        "bytes": 14630,
+        "gitBlobSha": "5631485aae7ee3372122db8023d69494837eaabe",
+        "sha256": "caba10a363e645afd93ab5ee633dcb92829dbd84bbc483643d0e6cecfa731471",
+        "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.test.cjs"
+      }
+    ],
+    "unchangedDependencies": [
+      {
+        "path": "implementation/runtime/implementation-digital-twin.cjs",
+        "mode": "100644",
+        "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+        "bytes": 5922,
+        "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d",
+        "sourceCheckout": "935 verified Staffology-only; bytes independently match frozen f32",
+        "copiedPath": "implementation\\runtime\\implementation-digital-twin.cjs"
+      },
+      {
+        "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+        "mode": "100644",
+        "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+        "bytes": 3631,
+        "sha256": "2cca63ab29e419f90cbe02e43cf0b4d1e444eebba04d9aef0365d502f1662461",
+        "sourceCheckout": "935 verified Staffology-only; bytes independently match frozen f32",
+        "copiedPath": "implementation\\runtime\\implementation-digital-twin.test.cjs"
+      }
+    ],
+    "qualification": "Local bytes reverified; previous parent publication binding used, no GitHub mutation or remote refetch."
+  },
+  "sourceSha": "f68dff51c655da9fb68c7064c08e384a217b5314",
+  "bindingQualification": "Parent previously verified future-branch publication; this review independently rehashes exact mapped local blobs/dependencies, no remote tree refetch.",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "findings": [
+    {
+      "id": "TWIN-01",
+      "priority": "P2",
+      "title": "Factory and query boundaries invoke caller supplied code",
+      "locations": [
+        {
+          "path": "implementation/runtime/twin-read-only-projections.cjs",
+          "blob": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+          "line": 29,
+          "reason": "canonical destructures and reads raw caller input, then invokes createTwinRevision/JSON clone/stable before an inert-input boundary."
+        },
+        {
+          "path": "implementation/runtime/twin-read-only-projections.cjs",
+          "blob": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+          "line": 60,
+          "reason": "relatedAt destructures raw query options; equivalent raw reads in eventsInWindow/incidentBundle/revisionChain/similarTo."
+        },
+        {
+          "path": "implementation/runtime/twin-read-only-projections.cjs",
+          "blob": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+          "line": 110,
+          "reason": "eventsInWindow invokes caller nodeIds.includes and kinds.includes."
+        }
+      ],
+      "observed": [
+        {
+          "name": "projectTwinGraph input getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectTwinGraph revision getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 4,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectTwinGraph toJSON",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectTwinGraph proxy",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 14,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectTwinGraph nodes.map",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 2,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory input getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory revision getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 4,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory toJSON",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory proxy",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 14,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory nodes.map",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 2,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory input getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory revision getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 4,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory toJSON",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory proxy",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 14,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory nodes.map",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 2,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "graph.relatedAt knownAt getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": null
+        },
+        {
+          "name": "history.eventsInWindow knownAt getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": null
+        },
+        {
+          "name": "history.incidentBundle knownAt getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "engineering.revisionChain knownAt getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": null
+        },
+        {
+          "name": "engineering.similarTo knownAt getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": null
+        },
+        {
+          "name": "history nodeIds.includes override",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "sourceTwinRevision": null
+        }
+      ],
+      "expected": "Reject non-inert input and query records/arrays without executing accessors, proxy traps, toJSON/coercion or overridden methods.",
+      "impact": "The read-only component invokes caller behavior before validating the boundary; counters demonstrate execution, no real mutation/network performed.",
+      "boundedRepair": "In new mapped projection only, strict descriptor-based inert finite-JSON copying before canonical() destructuring and every query option boundary, with proxy rejection and no caller array methods. Preserve frozen twin."
+    },
+    {
+      "id": "TWIN-02",
+      "priority": "P2",
+      "title": "Changed nonfinite raw payload accepted with unchanged null revision identity",
+      "locations": [
+        {
+          "path": "implementation/runtime/twin-read-only-projections.cjs",
+          "blob": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+          "line": 35,
+          "reason": "Canonical clone and stable serializer both collapse NaN/±Infinity to null; digest/raw-to-normalized equality checks accept altered metadata."
+        }
+      ],
+      "observed": [
+        {
+          "name": "projectTwinGraph nonfinite NaN",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectTwinGraph nonfinite Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectTwinGraph nonfinite -Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory nonfinite NaN",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory nonfinite Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectOperationalHistory nonfinite -Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory nonfinite NaN",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory nonfinite Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        },
+        {
+          "name": "projectEngineeringMemory nonfinite -Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "sourceTwinRevision": "c0d7d5adf65596a60b9c59a6d8b19db4264ba27360370722123fa207f9060c5b"
+        }
+      ],
+      "expected": "Reject nonfinite raw numeric payload anywhere in claimed complete canonical snapshot before normalization.",
+      "impact": "All three projections accept changed unknown metadata under the exact original null-based revision; no numeric feature/authority/provider behavior was claimed.",
+      "boundedRepair": "Finite JSON validation at new factory entry before normalization; retain exact canonical comparison and unchanged Twin."
+    }
+  ],
+  "executed": {
+    "node": "v22.23.2",
+    "networkGuard": true,
+    "timeoutMs": 60000,
+    "tests": 31,
+    "pass": 1,
+    "fail": 30,
+    "skip": 0,
+    "durationMs": 204.8043,
+    "breakdown": "15 factory caller-code failures+9 nonfinite failures+6 query caller-code failures;1 inert finite positive control."
+  },
+  "reviewDelta": "Earlier twin-fabric review did not cover these input-code/nonfinite classes. Historical report retained; its no-open Twin conclusion is qualified by this targeted expanded review. Fabric verdict not changed.",
+  "limitations": [
+    "Targeted local source only; no source suite rerun, main/live/provider/hosted claim or product edit.",
+    "Future component is unwired but that does not waive the evidenced defects.",
+    "Canonical complete snapshot authentication/current-role admission remains external; no new store/authority proposed."
+  ],
+  "redCapsule": "work/trust_review/twin-boundary-red-source (exact2shipping+2unchangeddeps)"
+}

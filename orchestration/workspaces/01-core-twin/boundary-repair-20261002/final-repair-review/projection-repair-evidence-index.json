@@ -1,0 +1,157 @@
+{
+  "shippingIdentities": [
+    {
+      "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.cjs",
+      "mode": "100644",
+      "proposedBlob": "63aba27ccb0728d64bb98ccf1e715adf1148d199",
+      "sha256": "0913c7b2b482d08d4d6f99cee7d4a012d4c20393ea9649e0fad4e3866947597d",
+      "bytes": 14345,
+      "operation": "ADD_ADAPTED_PORT",
+      "sourceBlob": null
+    },
+    {
+      "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs",
+      "mode": "100644",
+      "proposedBlob": "33e9decb812c8d6d7b746212c2a15edbc6841e32",
+      "sha256": "81781e17cb8090b62f13d8f273e3435b2fe412fd21010af20eb48a63be409d58",
+      "bytes": 18245,
+      "operation": "ADD_ADAPTED_PORT",
+      "sourceBlob": null
+    },
+    {
+      "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\inert-finite-json.cjs",
+      "mode": "100644",
+      "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "bytes": 1981,
+      "operation": "ADD_ADAPTED_PORT",
+      "sourceBlob": null
+    },
+    {
+      "repositoryTargetPath": "implementation/runtime/inert-finite-json.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\inert-finite-json.test.cjs",
+      "mode": "100644",
+      "proposedBlob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791",
+      "sha256": "9c4954f38bbd051cb57ecdc416c3a36658ef52d06795f20cba977f8e8a654fa5",
+      "bytes": 2371,
+      "operation": "ADD_ADAPTED_PORT",
+      "sourceBlob": null
+    },
+    {
+      "repositoryTargetPath": "policy/runtime/site-operating-context-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.cjs",
+      "mode": "100644",
+      "proposedBlob": "25bc851531b57cceada5c79322a76bdbbda92331",
+      "sha256": "a81a5aa172f50ecbedc504088f726f0da88d58cd1a7a31d4fe0865bf1425b5de",
+      "bytes": 6810,
+      "sourceBlob": null,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "policy/runtime/site-operating-context-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.test.cjs",
+      "mode": "100644",
+      "proposedBlob": "a7e7734fa172a0ff696e6d12af5c3c7f626c2f6b",
+      "sha256": "24ffd26e44eb88f832b315505eed8d6545f95c2f365f83f9670247277e340dbf",
+      "bytes": 8330,
+      "sourceBlob": null,
+      "change": "ADD"
+    }
+  ],
+  "reviewStatus": "BOUNDED_REPAIR_VERIFIED_NO_OPEN_P1_P2",
+  "evidence": [
+    {
+      "path": "work/trust_review/projection-repair-review.md",
+      "bytes": 1921,
+      "sha256": "f380a48a87fdcdf48cc441bd42013300049c9717b0aa04a3b6396e6891801f6b"
+    },
+    {
+      "path": "work/trust_review/projection-repair-findings.json",
+      "bytes": 6880,
+      "sha256": "b692ec43887f8379e369549ca03dafdd5f040072a2533f231683cb3b3867b50a"
+    },
+    {
+      "path": "work/trust_review/projection-repair-identities.json",
+      "bytes": 4201,
+      "sha256": "9ab3c568cc0dd559a298f8e49aa95014f54c8eae23ac1fc19d371bfd9304c2ff"
+    },
+    {
+      "path": "work/trust_review/run-projection-repair-review.cjs",
+      "bytes": 3503,
+      "sha256": "1546c1d26681092b18521fc3475b2177af866bc4b828976737cf79aa058b324b"
+    },
+    {
+      "path": "work/trust_review/seal-projection-repair-review.cjs",
+      "bytes": 5526,
+      "sha256": "f258b7b61fe50c443f35d9302bb680758724b216b495ec6f0024880879a41a3b"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    },
+    {
+      "path": "work/trust_review/country-projection-repair.held-out.test.cjs",
+      "bytes": 7444,
+      "sha256": "999f0b23b7c8eb1e9d2952616638ea86c6fbd194ae1c9815ffa87e09364b73c4"
+    },
+    {
+      "path": "work/trust_review/twin-boundary-repair.held-out.test.cjs",
+      "bytes": 5888,
+      "sha256": "427c39746f436088a8212084b674bbeee2eddaf7d74ae0b1fcf0e07906a177e7"
+    },
+    {
+      "path": "work/trust_review/country-projection-repair.observations.json",
+      "bytes": 1789,
+      "sha256": "dee3cb4ef507361d60e65e57ed7da967bd20a9654d565d716b579677d8fc8975"
+    },
+    {
+      "path": "work/trust_review/twin-boundary-repair.observations.json",
+      "bytes": 6683,
+      "sha256": "ac2fd31dc627b950a369f43632a50a1649c7a774bc8a0becf2fb69bbf8de1144"
+    },
+    {
+      "path": "work/trust_review/country-repair-held-out.node22.tap",
+      "bytes": 3301,
+      "sha256": "72ca3fe195863a36147186e3f6fe7499023d10bdcb46d9450d59b99729472bb4"
+    },
+    {
+      "path": "work/trust_review/country-repair-held-out.run.json",
+      "bytes": 552,
+      "sha256": "62388e0ef11a3a8b974c9b4a49465421c956c3ef4038490540ef6ac57ccbe06a"
+    },
+    {
+      "path": "work/trust_review/twin-repair-held-out.node22.tap",
+      "bytes": 6485,
+      "sha256": "30bca62c2b294f421ba6a0f0140b4affd35ca63a8b32a2346fc6e8826e5f8c3c"
+    },
+    {
+      "path": "work/trust_review/twin-repair-held-out.run.json",
+      "bytes": 547,
+      "sha256": "1479ac1aa8499cf028e306437b5d20f440d249c8d54ec5c61000ee71285ae59a"
+    },
+    {
+      "path": "work/trust_review/twin-repair-source.node22.tap",
+      "bytes": 14672,
+      "sha256": "fd5b54f93787eebd880538c1e09455fd51737557214a3bf0fe21c92a917fc230"
+    },
+    {
+      "path": "work/trust_review/twin-repair-source.run.json",
+      "bytes": 894,
+      "sha256": "97a92fe016a040cc0a8a5d46b6eb9ba13aff1ec8122071a743a3b393828e9029"
+    },
+    {
+      "path": "work/trust_review/country-repair-source.node22.tap",
+      "bytes": 8159,
+      "sha256": "e390abd9c2a675d1b18a8d7682f9e5d876b51cc01c753d3c4d75757ea06618bd"
+    },
+    {
+      "path": "work/trust_review/country-repair-source.run.json",
+      "bytes": 1565,
+      "sha256": "d9aee50a678d4b5b97f02752d78fd53c6d123a9a6675b85a268ed9025a5a3c09"
+    }
+  ]
+}

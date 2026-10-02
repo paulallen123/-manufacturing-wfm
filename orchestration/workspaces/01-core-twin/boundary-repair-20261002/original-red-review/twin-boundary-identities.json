@@ -1,0 +1,45 @@
+{
+  "verified": true,
+  "parentReportedPublishedCommit": "f68dff51c655da9fb68c7064c08e384a217b5314",
+  "sourceFiles": [
+    {
+      "path": "implementation/runtime/twin-read-only-projections.cjs",
+      "mode": "100644",
+      "operation": "ADD_ADAPTED_PORT",
+      "bytes": 13976,
+      "gitBlobSha": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+      "sha256": "9ec289df97a3c74ab23a396b83ae6276bf8cba9139a80a7a2f214bef715c7e1e",
+      "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.cjs"
+    },
+    {
+      "path": "implementation/runtime/twin-read-only-projections.test.cjs",
+      "mode": "100644",
+      "operation": "ADD_BEHAVIOR_TESTS",
+      "bytes": 14630,
+      "gitBlobSha": "5631485aae7ee3372122db8023d69494837eaabe",
+      "sha256": "caba10a363e645afd93ab5ee633dcb92829dbd84bbc483643d0e6cecfa731471",
+      "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.test.cjs"
+    }
+  ],
+  "unchangedDependencies": [
+    {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "mode": "100644",
+      "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "bytes": 5922,
+      "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d",
+      "sourceCheckout": "935 verified Staffology-only; bytes independently match frozen f32",
+      "copiedPath": "implementation\\runtime\\implementation-digital-twin.cjs"
+    },
+    {
+      "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+      "mode": "100644",
+      "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+      "bytes": 3631,
+      "sha256": "2cca63ab29e419f90cbe02e43cf0b4d1e444eebba04d9aef0365d502f1662461",
+      "sourceCheckout": "935 verified Staffology-only; bytes independently match frozen f32",
+      "copiedPath": "implementation\\runtime\\implementation-digital-twin.test.cjs"
+    }
+  ],
+  "qualification": "Local bytes reverified; previous parent publication binding used, no GitHub mutation or remote refetch."
+}

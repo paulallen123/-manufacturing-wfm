@@ -1,0 +1,69 @@
+{
+  "node": "v22.23.2",
+  "observations": [
+    {
+      "name": "input getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    },
+    {
+      "name": "revision nodes getter",
+      "accepted": false,
+      "error": "input.revision cannot contain accessors",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    },
+    {
+      "name": "payload toJSON",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    },
+    {
+      "name": "proxy revision",
+      "accepted": false,
+      "error": "input.revision requires inert JSON data",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    },
+    {
+      "name": "overridden nodes.map",
+      "accepted": false,
+      "error": "input.revision.nodes cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    },
+    {
+      "name": "nonfinite NaN",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    },
+    {
+      "name": "nonfinite Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    },
+    {
+      "name": "nonfinite -Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "revision": null,
+      "context": null
+    }
+  ]
+}

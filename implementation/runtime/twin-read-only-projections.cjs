@@ -3,6 +3,7 @@
 // Adapted PR205 query semantics. Canonical TwinRevision remains the sole state owner.
 // Import the existing canonical twin contract at its repository-relative location.
 const {createTwinRevision,stable}=require('./implementation-digital-twin.cjs');
+const {inertJsonCopy}=require('./inert-finite-json.cjs');
 
 function requireThat(condition,message){if(!condition)throw new Error(message);}
 function freeze(value){
@@ -45,12 +46,14 @@ function canonical({tenant,revision}={}){
   return freeze(reconstructed);
 }
 function header(revision){return {tenant:revision.tenant,sourceTwinRevision:revision.revision,executionAuthority:'NONE'};}
-function projectTwinGraph(input){
+function projectTwinGraph(input={}){
+  input=inertJsonCopy(input);
   const revision=canonical(input),nodes=new Map(revision.nodes.map(node=>[node.id,node]));
   return Object.freeze({
     ...header(revision),nodes:revision.nodes,edges:revision.edges,
     nodeById(id){return nodes.get(id)||null;},
-    relatedAt(from,relation,{at,knownAt}={}){
+    relatedAt(from,relation,options={}){
+      const {at,knownAt}=inertJsonCopy(options);
       const atMs=time(at,'at'),knownMs=time(knownAt,'knownAt');
       const source=nodes.get(from);
       if(!source||time(source.observedAt,'source.observedAt')>knownMs)return Object.freeze([]);
@@ -70,6 +73,7 @@ function projectTwinGraph(input){
 }
 
 function projectOperationalHistory(input={}){
+  input=inertJsonCopy(input);
   const revision=canonical(input),lateAfterMs=input.lateAfterMs??60000;
   requireThat(Number.isFinite(lateAfterMs)&&lateAfterMs>=0,'lateAfterMs must be nonnegative');
   const nodes=new Set(revision.nodes.map(node=>node.id)),byId=new Map(),ordered=[];
@@ -90,7 +94,8 @@ function projectOperationalHistory(input={}){
   }
   ordered.sort((a,b)=>a.occurredMs-b.occurredMs||a.observedMs-b.observedMs||a.id.localeCompare(b.id));
   Object.freeze(ordered);
-  function eventsInWindow({from,to,knownAt,nodeIds,kinds}={}){
+  function eventsInWindow(options={}){
+    const {from,to,knownAt,nodeIds,kinds}=inertJsonCopy(options);
     const fromMs=time(from,'from'),toMs=time(to,'to'),knownMs=time(knownAt,'knownAt');
     requireThat(fromMs<=toMs,'Time window must be increasing');
     if(nodeIds!==undefined){requireThat(Array.isArray(nodeIds),'nodeIds must be an array');for(const id of nodeIds)requireThat(nodes.has(id),'Unknown canonical node filter');}
@@ -99,7 +104,8 @@ function projectOperationalHistory(input={}){
   }
   return Object.freeze({
     ...header(revision),orderedEvents:ordered,eventsInWindow,
-    incidentBundle({anchorEventId,beforeMs=900000,afterMs=900000,knownAt}={}){
+    incidentBundle(options={}){
+      const {anchorEventId,beforeMs=900000,afterMs=900000,knownAt}=inertJsonCopy(options);
       const knownMs=time(knownAt,'knownAt'),anchor=byId.get(anchorEventId);
       requireThat(anchor&&anchor.observedMs<=knownMs,'Anchor is not known at the requested observation time');
       requireThat(Number.isFinite(beforeMs)&&beforeMs>=0&&Number.isFinite(afterMs)&&afterMs>=0,'Incident window must be nonnegative');
@@ -135,6 +141,7 @@ function textSimilarity(left,right){
 }
 function exactSignal(left,right){return left&&right?(left===right?1:0):null;}
 function projectEngineeringMemory(input={}){
+  input=inertJsonCopy(input);
   const revision=canonical(input),byId=new Map();
   for(const node of revision.nodes){
     const facet=node.data.engineeringRecord;
@@ -177,13 +184,15 @@ function projectEngineeringMemory(input={}){
   }
   return Object.freeze({
     ...header(revision),records:Object.freeze([...byId.values()]),
-    revisionChain(id,{knownAt}={}){
+    revisionChain(id,options={}){
+      const {knownAt}=inertJsonCopy(options);
       const knownMs=time(knownAt,'knownAt'),result=[];
       let current=knownRecord(id,knownMs);
       while(current){result.push(current);current=current.previousRevisionId?knownRecord(current.previousRevisionId,knownMs):null;}
       return Object.freeze(result);
     },
-    similarTo(id,{knownAt,limit=10,minimumScore=0,excludeSamePart=true}={}){
+    similarTo(id,options={}){
+      const {knownAt,limit=10,minimumScore=0,excludeSamePart=true}=inertJsonCopy(options);
       const knownMs=time(knownAt,'knownAt'),query=knownRecord(id,knownMs);
       requireThat(Number.isInteger(limit)&&limit>0,'limit must be a positive integer');
       requireThat(Number.isFinite(minimumScore)&&minimumScore>=0&&minimumScore<=1,'minimumScore must be between0 and1');

@@ -1,0 +1,39 @@
+{
+  "comparison": [
+    {
+      "path": "integration-fabric/runtime/explicit-execution-context-authority.mjs",
+      "localEvidencePath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\source\\integration-fabric\\runtime\\explicit-execution-context-authority.mjs",
+      "blob": "f4c9a4eb522f5b7084f7adc1f9c7aa052142b542",
+      "reviewScope": "cloneInert contract only, read-only",
+      "exportedReusableHelper": false,
+      "proxyRejectedBeforeReflection": false,
+      "disposition": "REJECT_AS_SHARED_BOUNDARY",
+      "reason": "Accepts nonfinite numbers; proxy reads/reflection possible; private ESM helper and unrelated secret policy"
+    },
+    {
+      "path": "integration-fabric/runtime/field-projection-authority.mjs",
+      "localEvidencePath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\source\\integration-fabric\\runtime\\field-projection-authority.mjs",
+      "blob": "e8677fb11cc3c8a2ee3b5e8daab59a4e91011692",
+      "reviewScope": "cloneInert contract only, read-only",
+      "exportedReusableHelper": false,
+      "proxyRejectedBeforeReflection": false,
+      "disposition": "REJECT_AS_SHARED_BOUNDARY",
+      "reason": "Finite descriptor validation exists, but proxy reflection executes caller code; private ESM helper and unrelated secret policy"
+    },
+    {
+      "path": "integration-fabric/runtime/effective-dated-workforce-authority.mjs",
+      "localEvidencePath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane03-fabric\\source\\integration-fabric\\runtime\\effective-dated-workforce-authority.mjs",
+      "blob": "a66fe3a3f81868d58e7496162364ff47d786667d",
+      "reviewScope": "cloneInert contract only, read-only",
+      "exportedReusableHelper": false,
+      "proxyRejectedBeforeReflection": false,
+      "disposition": "REJECT_AS_SHARED_BOUNDARY",
+      "reason": "Finite descriptor validation exists, but proxy reflection executes caller code; private ESM helper and unrelated secret policy"
+    }
+  ],
+  "selectedOwner": "lane01 bounded projection boundary repair",
+  "selectedPath": "implementation/runtime/inert-finite-json.cjs",
+  "selectedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+  "frozenPathAbsent": true,
+  "scope": "Only two existing projection owners reuse this helper. No fabric helper or authority implementation changed."
+}

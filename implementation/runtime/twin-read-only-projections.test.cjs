@@ -178,3 +178,41 @@ test('projection rejects canonical provenance with no nonempty source identity',
   const revision=twin([record],[]);
   assert.throws(()=>api('projectTwinGraph')({tenant:'alpha',revision}),/source|required/i);
 });
+
+// Review regressions: no caller code may execute at a projection or query boundary.
+for(const name of ['projectTwinGraph','projectOperationalHistory','projectEngineeringMemory']){
+  for(const mutation of ['inputGetter','revisionGetter','toJSON','proxy','map'])test(name+' rejects '+mutation+' without caller execution',()=>{
+    let calls=0;const revision=twin(),input={tenant:'alpha',revision};
+    if(mutation==='inputGetter')Object.defineProperty(input,'revision',{get(){calls++;return revision;}});
+    if(mutation==='revisionGetter'){const nodes=revision.nodes;Object.defineProperty(revision,'nodes',{get(){calls++;return nodes;}});}
+    if(mutation==='toJSON')Object.defineProperty(revision.nodes[0].data,'toJSON',{value(){calls++;return {};}});
+    if(mutation==='proxy')input.revision=new Proxy(revision,{get(t,k,r){calls++;return Reflect.get(t,k,r);},ownKeys(t){calls++;return Reflect.ownKeys(t);}});
+    if(mutation==='map')Object.defineProperty(revision.nodes,'map',{value(fn){calls++;return Array.prototype.map.call(this,fn);}});
+    let rejected=false;try{api(name)(input);}catch{rejected=true;}
+    assert.equal(calls,0,'caller code must never execute');assert.equal(rejected,true,'executable input rejected');
+  });
+  for(const value of [NaN,Infinity,-Infinity])test(name+' rejects nonfinite metadata '+String(value)+' under a null digest',()=>{
+    const revision=twin([node('site','site',{metadata:null})],[]),digest=revision.revision;
+    revision.nodes[0].data.metadata=value;assert.equal(revision.revision,digest);
+    assert.throws(()=>api(name)({tenant:'alpha',revision}),/finite|JSON/i);
+  });
+}
+const queryBoundaries=[
+ ['graph',()=>api('projectTwinGraph')({tenant:'alpha',revision:twin()}),(v,o)=>v.relatedAt('site','proven-by',o),{at:'2026-09-20T10:15:00Z',knownAt:'2026-09-20T10:15:00Z'}],
+ ['history window',()=>api('projectOperationalHistory')({tenant:'alpha',revision:eventTwin(replayEvents())}),(v,o)=>v.eventsInWindow(o),{from:at,to:'2026-09-20T10:30:00Z',knownAt:'2026-09-20T10:30:00Z'}],
+ ['incident',()=>api('projectOperationalHistory')({tenant:'alpha',revision:eventTwin(replayEvents())}),(v,o)=>v.incidentBundle(o),{anchorEventId:'anchor',knownAt:'2026-09-20T10:30:00Z'}],
+ ['revision chain',()=>api('projectEngineeringMemory')({tenant:'alpha',revision:twin()}),(v,o)=>v.revisionChain('evidence',o),{knownAt:at}],
+ ['similarity',()=>api('projectEngineeringMemory')({tenant:'alpha',revision:twin()}),(v,o)=>v.similarTo('evidence',o),{knownAt:at}]
+];
+for(const [name,build,call,valid]of queryBoundaries)for(const mutation of ['getter','proxy','toJSON'])test(name+' query rejects '+mutation+' without caller execution',()=>{
+ const view=build();let calls=0,options={...valid};
+ if(mutation==='getter')Object.defineProperty(options,'knownAt',{get(){calls++;return valid.knownAt;}});
+ if(mutation==='proxy')options=new Proxy(options,{get(t,k,r){calls++;return Reflect.get(t,k,r);},ownKeys(t){calls++;return Reflect.ownKeys(t);}});
+ if(mutation==='toJSON')Object.defineProperty(options,'toJSON',{value(){calls++;return valid;}});
+ let rejected=false;try{call(view,options);}catch{rejected=true;}assert.equal(calls,0);assert.equal(rejected,true);
+});
+test('history rejects caller-owned includes method before filtering',()=>{
+ const view=api('projectOperationalHistory')({tenant:'alpha',revision:eventTwin(replayEvents())});let calls=0;const nodeIds=['evidence'];
+ Object.defineProperty(nodeIds,'includes',{value(){calls++;return true;}});
+ assert.throws(()=>view.eventsInWindow({from:at,to:'2026-09-20T10:30:00Z',knownAt:'2026-09-20T10:30:00Z',nodeIds}));assert.equal(calls,0);
+});

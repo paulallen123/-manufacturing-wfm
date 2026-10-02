@@ -1,0 +1,51 @@
+{
+  "sourceBlob": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+  "parentReportedPublication": "f68dff51c655da9fb68c7064c08e384a217b5314",
+  "evidence": [
+    {
+      "path": "work/trust_review/twin-boundary-review.md",
+      "bytes": 2666,
+      "sha256": "0d4624ed726bb68b353e989f0d4f99e53fbee368bcf66b6af2167e68d983f5f7"
+    },
+    {
+      "path": "work/trust_review/twin-boundary-findings.json",
+      "bytes": 13667,
+      "sha256": "d2e0194353eecacd9e552e166c16ac14a8d97491ac483e490d38893c398f9f87"
+    },
+    {
+      "path": "work/trust_review/twin-boundary-identities.json",
+      "bytes": 2001,
+      "sha256": "dbb805ac7dcca71f6932c0c03523ba22262e659859b529675d7cfa90643e8788"
+    },
+    {
+      "path": "work/trust_review/twin-boundary.held-out.test.cjs",
+      "bytes": 5881,
+      "sha256": "053b67ef7117652c8da063ad6b6d8d58386a40d596cc0887e35aba24d0df3663"
+    },
+    {
+      "path": "work/trust_review/twin-boundary.held-out.node22.tap",
+      "bytes": 33568,
+      "sha256": "f84340f255d657f2d435309b1613f496a655fadb24e51a8bd9eaf367bf44770f"
+    },
+    {
+      "path": "work/trust_review/twin-boundary.run.json",
+      "bytes": 540,
+      "sha256": "dc934a96799e3d39ae529a54dc50aa2d221dd2456e9769a10d93891496626c1d"
+    },
+    {
+      "path": "work/trust_review/twin-boundary.observations.json",
+      "bytes": 6759,
+      "sha256": "7fd6940339bde06af4bd398c0f53db5090f75512ae2f1e98e2892b006bfa14cf"
+    },
+    {
+      "path": "work/trust_review/run-twin-boundary-review.cjs",
+      "bytes": 1766,
+      "sha256": "a4c33a2cab5279962750ba1ad38e2d9de2e21fd6acebbc61b7cff5449a863e34"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    }
+  ]
+}

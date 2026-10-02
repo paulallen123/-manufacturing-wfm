@@ -1,0 +1,14 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "implementation/runtime/implementation-digital-twin.test.cjs",
+    "implementation/runtime/twin-read-only-projections.test.cjs",
+    "implementation/runtime/inert-finite-json.test.cjs"
+  ],
+  "exitCode": 0,
+  "networkBlocked": true,
+  "logSha256": "e4a3afd7d7b793b68377782acb44be01a7ba1579cca383d25f47064c442616d6"
+}

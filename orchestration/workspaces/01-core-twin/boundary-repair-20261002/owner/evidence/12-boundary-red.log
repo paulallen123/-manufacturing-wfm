@@ -1,0 +1,1067 @@
+TAP version 13
+# Subtest: typed graph preserves canonical IDs/types and revision without execution authority
+ok 1 - typed graph preserves canonical IDs/types and revision without execution authority
+  ---
+  duration_ms: 21.8344
+  type: 'test'
+  ...
+# Subtest: cross-tenant graph, nested node and edge provenance are rejected before normalisation
+ok 2 - cross-tenant graph, nested node and edge provenance are rejected before normalisation
+  ---
+  duration_ms: 1.2025
+  type: 'test'
+  ...
+# Subtest: missing and tampered revision or unsupported type fail closed
+ok 3 - missing and tampered revision or unsupported type fail closed
+  ---
+  duration_ms: 1.3112
+  type: 'test'
+  ...
+# Subtest: projection is detached and recursively immutable and does not mutate the canonical revision
+ok 4 - projection is detached and recursively immutable and does not mutate the canonical revision
+  ---
+  duration_ms: 1.2929
+  type: 'test'
+  ...
+# Subtest: relation traversal uses known time and half-open effective windows
+ok 5 - relation traversal uses known time and half-open effective windows
+  ---
+  duration_ms: 1.6391
+  type: 'test'
+  ...
+# Subtest: projection rejects invalid provenance and inverted relationship validity
+ok 6 - projection rejects invalid provenance and inverted relationship validity
+  ---
+  duration_ms: 0.8324
+  type: 'test'
+  ...
+# Subtest: history sorts by occurrence but excludes telemetry learned after knownAt
+ok 7 - history sorts by occurrence but excludes telemetry learned after knownAt
+  ---
+  duration_ms: 1.2683
+  type: 'test'
+  ...
+# Subtest: incident bundles cannot disclose an anchor not observed at the requested time
+ok 8 - incident bundles cannot disclose an anchor not observed at the requested time
+  ---
+  duration_ms: 0.8608
+  type: 'test'
+  ...
+# Subtest: history rejects ambiguous event IDs and invalid or cross-tenant provenance
+ok 9 - history rejects ambiguous event IDs and invalid or cross-tenant provenance
+  ---
+  duration_ms: 1.6314
+  type: 'test'
+  ...
+# Subtest: history snapshots cannot be altered and filters remain within canonical nodes
+ok 10 - history snapshots cannot be altered and filters remain within canonical nodes
+  ---
+  duration_ms: 0.995
+  type: 'test'
+  ...
+# Subtest: engineering similarity is evidence-backed, hand-ranked and as-known-at scoped
+ok 11 - engineering similarity is evidence-backed, hand-ranked and as-known-at scoped
+  ---
+  duration_ms: 2.3243
+  type: 'test'
+  ...
+# Subtest: engineering lineage follows canonical nodes and rejects dangling, cross-part and cyclic predecessors
+ok 12 - engineering lineage follows canonical nodes and rejects dangling, cross-part and cyclic predecessors
+  ---
+  duration_ms: 2.2769
+  type: 'test'
+  ...
+# Subtest: engineering facets reject malformed evidence and vectors before querying
+ok 13 - engineering facets reject malformed evidence and vectors before querying
+  ---
+  duration_ms: 2.374
+  type: 'test'
+  ...
+# Subtest: large finite vectors retain a valid cosine score without overflow
+ok 14 - large finite vectors retain a valid cosine score without overflow
+  ---
+  duration_ms: 0.9669
+  type: 'test'
+  ...
+# Subtest: incomparable feature dimensions and absent signals fail closed
+ok 15 - incomparable feature dimensions and absent signals fail closed
+  ---
+  duration_ms: 1.1182
+  type: 'test'
+  ...
+# Subtest: engineering results are detached, immutable and bounded by validated query options
+ok 16 - engineering results are detached, immutable and bounded by validated query options
+  ---
+  duration_ms: 1.2405
+  type: 'test'
+  ...
+# Subtest: relation traversal excludes a source outside its own effective validity
+ok 17 - relation traversal excludes a source outside its own effective validity
+  ---
+  duration_ms: 0.4445
+  type: 'test'
+  ...
+# Subtest: projection rejects canonical provenance with no nonempty source identity
+ok 18 - projection rejects canonical provenance with no nonempty source identity
+  ---
+  duration_ms: 0.3063
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects inputGetter without caller execution
+not ok 19 - projectTwinGraph rejects inputGetter without caller execution
+  ---
+  duration_ms: 1.5971
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectTwinGraph rejects revisionGetter without caller execution
+not ok 20 - projectTwinGraph rejects revisionGetter without caller execution
+  ---
+  duration_ms: 0.7612
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    4 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectTwinGraph rejects toJSON without caller execution
+not ok 21 - projectTwinGraph rejects toJSON without caller execution
+  ---
+  duration_ms: 0.7762
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectTwinGraph rejects proxy without caller execution
+not ok 22 - projectTwinGraph rejects proxy without caller execution
+  ---
+  duration_ms: 0.4516
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    14 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 14
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectTwinGraph rejects map without caller execution
+not ok 23 - projectTwinGraph rejects map without caller execution
+  ---
+  duration_ms: 0.4922
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectTwinGraph rejects nonfinite metadata NaN under a null digest
+not ok 24 - projectTwinGraph rejects nonfinite metadata NaN under a null digest
+  ---
+  duration_ms: 0.4027
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectTwinGraph rejects nonfinite metadata Infinity under a null digest
+not ok 25 - projectTwinGraph rejects nonfinite metadata Infinity under a null digest
+  ---
+  duration_ms: 0.2912
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectTwinGraph rejects nonfinite metadata -Infinity under a null digest
+not ok 26 - projectTwinGraph rejects nonfinite metadata -Infinity under a null digest
+  ---
+  duration_ms: 0.2624
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects inputGetter without caller execution
+not ok 27 - projectOperationalHistory rejects inputGetter without caller execution
+  ---
+  duration_ms: 0.5417
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects revisionGetter without caller execution
+not ok 28 - projectOperationalHistory rejects revisionGetter without caller execution
+  ---
+  duration_ms: 0.7084
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    4 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects toJSON without caller execution
+not ok 29 - projectOperationalHistory rejects toJSON without caller execution
+  ---
+  duration_ms: 0.7927
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects proxy without caller execution
+not ok 30 - projectOperationalHistory rejects proxy without caller execution
+  ---
+  duration_ms: 0.4386
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    14 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 14
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects map without caller execution
+not ok 31 - projectOperationalHistory rejects map without caller execution
+  ---
+  duration_ms: 0.3411
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite metadata NaN under a null digest
+not ok 32 - projectOperationalHistory rejects nonfinite metadata NaN under a null digest
+  ---
+  duration_ms: 0.2346
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite metadata Infinity under a null digest
+not ok 33 - projectOperationalHistory rejects nonfinite metadata Infinity under a null digest
+  ---
+  duration_ms: 0.2142
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite metadata -Infinity under a null digest
+not ok 34 - projectOperationalHistory rejects nonfinite metadata -Infinity under a null digest
+  ---
+  duration_ms: 0.2083
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects inputGetter without caller execution
+not ok 35 - projectEngineeringMemory rejects inputGetter without caller execution
+  ---
+  duration_ms: 0.4017
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects revisionGetter without caller execution
+not ok 36 - projectEngineeringMemory rejects revisionGetter without caller execution
+  ---
+  duration_ms: 0.3263
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    4 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects toJSON without caller execution
+not ok 37 - projectEngineeringMemory rejects toJSON without caller execution
+  ---
+  duration_ms: 0.4057
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects proxy without caller execution
+not ok 38 - projectEngineeringMemory rejects proxy without caller execution
+  ---
+  duration_ms: 0.7907
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    14 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 14
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects map without caller execution
+not ok 39 - projectEngineeringMemory rejects map without caller execution
+  ---
+  duration_ms: 0.6341
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:184:81'
+  failureType: 'testCodeFailure'
+  error: |-
+    caller code must never execute
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:192:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite metadata NaN under a null digest
+not ok 40 - projectEngineeringMemory rejects nonfinite metadata NaN under a null digest
+  ---
+  duration_ms: 0.4042
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite metadata Infinity under a null digest
+not ok 41 - projectEngineeringMemory rejects nonfinite metadata Infinity under a null digest
+  ---
+  duration_ms: 0.2538
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite metadata -Infinity under a null digest
+not ok 42 - projectEngineeringMemory rejects nonfinite metadata -Infinity under a null digest
+  ---
+  duration_ms: 0.2376
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:194:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:197:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: graph query rejects getter without caller execution
+not ok 43 - graph query rejects getter without caller execution
+  ---
+  duration_ms: 0.7628
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: graph query rejects proxy without caller execution
+not ok 44 - graph query rejects proxy without caller execution
+  ---
+  duration_ms: 0.631
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: graph query rejects toJSON without caller execution
+not ok 45 - graph query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.464
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:95)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: history window query rejects getter without caller execution
+not ok 46 - history window query rejects getter without caller execution
+  ---
+  duration_ms: 0.5232
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: history window query rejects proxy without caller execution
+not ok 47 - history window query rejects proxy without caller execution
+  ---
+  duration_ms: 0.4977
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    5 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 5
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: history window query rejects toJSON without caller execution
+not ok 48 - history window query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.4066
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:95)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: incident query rejects getter without caller execution
+not ok 49 - incident query rejects getter without caller execution
+  ---
+  duration_ms: 0.5514
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: incident query rejects proxy without caller execution
+not ok 50 - incident query rejects proxy without caller execution
+  ---
+  duration_ms: 0.5449
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: incident query rejects toJSON without caller execution
+not ok 51 - incident query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.9277
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:95)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: revision chain query rejects getter without caller execution
+not ok 52 - revision chain query rejects getter without caller execution
+  ---
+  duration_ms: 0.4466
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: revision chain query rejects proxy without caller execution
+not ok 53 - revision chain query rejects proxy without caller execution
+  ---
+  duration_ms: 0.3364
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: revision chain query rejects toJSON without caller execution
+ok 54 - revision chain query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.2713
+  type: 'test'
+  ...
+# Subtest: similarity query rejects getter without caller execution
+not ok 55 - similarity query rejects getter without caller execution
+  ---
+  duration_ms: 0.4017
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: similarity query rejects proxy without caller execution
+not ok 56 - similarity query rejects proxy without caller execution
+  ---
+  duration_ms: 0.3385
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:207:103'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:212:73)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: similarity query rejects toJSON without caller execution
+ok 57 - similarity query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.2743
+  type: 'test'
+  ...
+# Subtest: history rejects caller-owned includes method before filtering
+not ok 58 - history rejects caller-owned includes method before filtering
+  ---
+  duration_ms: 0.4955
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\twin-read-only-projections.test.cjs:214:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\implementation\runtime\twin-read-only-projections.test.cjs:217:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 20
+# fail 38
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 227.7043
