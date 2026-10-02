@@ -44,3 +44,9 @@ review_vector_ci49_docker_contract=2026-10-02T15:52:31.527Z parent0354f827bd101c
 review_vector_ci49_contract_revision2=2026-10-02T15:56:53.513Z unpublished-revision1-heldout-inline-extra-build-and-commented-blob-check-closed-by-total-invocation-count-plus-exact-active-line-contracts; same0354-parent-and-cold-exact-source-non-deploy-CI-required
 
 review_vector_first_customer_passkey=2026-10-02 parent02508d0557f7573303809e4fcfab3c53edf3b223; combine-exact-PR293-login-eight-blobs-head11572013877a637257f9aed7f53242e2df04395f; existing-candidate-and-integration-source-preserved; actual-customer-enrolment-required-not-signed-fixture; 143of143-local-node22.23.2-security-auth-controls; one-fresh-exact-CIRCLE_SHA1-non-deploy-build; no-real-grant-or-provider-operation; prior-marker-records-historical
+
+# START01 configured first-run declaration source admission
+prepared-parent=a3e17ebfbcd3e667e17a560e619df2634892e9a5
+prepared-product-overlay=6cc685a8abf2d885792af36ab55ffa09e1e9c577
+scope=non-deploy-exact-current-source-ci
+# Current CIRCLE_SHA1 must execute both existing admission jobs; a halt is not proof.
