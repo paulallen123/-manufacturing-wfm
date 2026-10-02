@@ -1961,6 +1961,54 @@ function createOneDayEnterpriseEngine(options = {}) {
     return writeJson(res, 200, { job, workPlan: workController.plan(run.id, run.tenant) });
   }
 
+  async function handleWorkExecute(req, res) {
+    const body = await readJson(req);
+    const ownerId = requireWorkOwner(req, res, body);
+    if (!ownerId) return true;
+    const run = runForInternalWork(body);
+    if (!run) return writeJson(res, 404, { error: 'Implementation run not found.' });
+    const jobId = compact(body.jobId, 100);
+    const intentDigest = compact(body.intentDigest, 80);
+    if (!jobId || !/^[0-9a-f]{64}$/.test(intentDigest)) {
+      return writeJson(res, 400, { error: 'jobId and exact intentDigest are required.' });
+    }
+    const claimed = workController.plan(run.id, run.tenant).jobs.find(job => job.id === jobId);
+    if (!claimed || claimed.requirementKey !== 'tenant-environment' || claimed.intentDigest !== intentDigest) {
+      return writeJson(res, 409, { error: 'Only the exact claimed tenant-environment intent may be executed.' });
+    }
+    const scopeRow = scopeByRun.get(run.id, run.tenant);
+    if (!scopeRow) return writeJson(res, 409, { error: 'Validated implementation scope is required.' });
+    const scope = JSON.parse(scopeRow.scope_json);
+    const before = tenantEnvironmentProvisioner.statusForTenant(run.tenant);
+    let environment = null;
+    const result = workController.executeLocalEffect({
+      jobId, runId: run.id, tenant: run.tenant, intentDigest, ownerId,
+      fence: body.fence, leaseToken: body.leaseToken
+    }, () => {
+      environment = tenantEnvironmentProvisioner.provision({ tenant: run.tenant, runId: run.id, scope });
+      return {
+        environmentId: environment.environmentId,
+        namespace: environment.namespace,
+        configurationDigest: environment.configurationDigest,
+        trigger: 'registered-worker'
+      };
+    });
+    const revalidated = Boolean(before && environment &&
+      before.environmentId === environment.environmentId &&
+      before.runId === environment.runId &&
+      before.configurationDigest === environment.configurationDigest &&
+      before.state === 'READY' && environment.state === 'READY');
+    record(run.id, run.tenant, 'TENANT_ENVIRONMENT_EFFECT_RECORDED', {
+      environmentId: environment.environmentId,
+      configurationDigest: environment.configurationDigest,
+      trigger: 'registered-worker', revalidated, evidenceRequired: true
+    });
+    return writeJson(res, 200, {
+      result, environment, revalidated, evidenceRequired: true,
+      readiness: recompute(run)
+    });
+  }
+
   async function handleWorkResult(req, res) {
     const body = await readJson(req);
     const ownerId = requireWorkOwner(req, res, body);
@@ -1974,6 +2022,13 @@ function createOneDayEnterpriseEngine(options = {}) {
     const outcome = compact(body.outcome || body.status, 80).toUpperCase();
     if (!jobId || !/^[0-9a-f]{64}$/.test(intentDigest)) {
       return writeJson(res, 400, { error: 'jobId and exact intentDigest are required.' });
+    }
+    const submittedJob = workController.plan(run.id, run.tenant).jobs.find(job => job.id === jobId);
+    if (['EFFECT_RECORDED', 'PASS_EFFECT', 'COMPLETED'].includes(outcome) &&
+        submittedJob?.requirementKey === 'tenant-environment') {
+      return writeJson(res, 409, {
+        error: 'Tenant-environment effects must be executed through the fenced worker execution route.'
+      });
     }
 
     let result;
@@ -2172,6 +2227,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/work/claim') {
         if (!requireInternal(req, res)) return true;
         return await handleWorkClaim(req, res);
+      }
+      if (req.method === 'POST' && path === PREFIX + '/work/execute') {
+        if (!requireInternal(req, res)) return true;
+        return await handleWorkExecute(req, res);
       }
       if (req.method === 'POST' && path === PREFIX + '/work/result') {
         if (!requireInternal(req, res)) return true;

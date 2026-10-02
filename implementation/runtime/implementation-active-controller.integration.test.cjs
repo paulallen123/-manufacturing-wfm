@@ -154,9 +154,82 @@ test('registered worker routes enforce exact scope, private claim tokens and res
     const stale=await call(engine,null,'POST','/api/implementation/autonomous/work/result',{...result,fence:job.fence+1},headers);
     assert.equal(stale.status,409);
     const accepted=await call(engine,null,'POST','/api/implementation/autonomous/work/result',result,headers);
-    assert.equal(accepted.status,200);assert.equal(accepted.body.evidenceRequired,true);
-    assert.equal(accepted.body.result.job.status,'AWAITING_EVIDENCE');
-    assert.equal(accepted.body.readiness.operationalReady,false);
+    assert.equal(accepted.status,409);
+    assert.match(accepted.body.error,/execution route/i);
+    const dbAfter=new DatabaseSync(f.dbPath);
+    assert.equal(dbAfter.prepare('SELECT COUNT(*) count FROM implementation_work_receipts WHERE job_id=?').get(job.id).count,1);
+    assert.equal(dbAfter.prepare('SELECT status FROM implementation_work_jobs WHERE id=?').get(job.id).status,'RUNNING');
+    dbAfter.close();
+  } finally {engine?.close();f.close();}
+});
+
+test('registered worker executes only its live fenced tenant-environment claim and awaits independent evidence', async () => {
+  const f=fixture(); let engine;
+  try {
+    const activated=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',
+      {tenant:'alpha',contractRef:'worker-execute',recipientEmail:'manager@alpha',scope:scopeFixture()},f.internal);
+    const runId=activated.body.implementation.runId;
+    const originalEnvironment=activated.body.implementation.tenantEnvironment;
+    f.engine.close();
+    const candidateSha='c'.repeat(40), deploymentId='deployment-c';
+    engine=createOneDayEnterpriseEngine({dbPath:f.dbPath,internalToken:'worker-token',
+      workOwnerId:'canonical-executor',workOwnerToken:'w'.repeat(32),workOwnerTenant:'alpha',workOwnerRunId:runId,
+      candidateSha,deploymentId,requireCandidateBinding:true});
+    const headers={...f.internal,'x-wfm-implementation-worker':'w'.repeat(32)};
+    const binding={runId,tenant:'alpha',candidateSha,deploymentId,requirementKey:'tenant-environment'};
+    let db=new DatabaseSync(f.dbPath);
+    db.prepare("UPDATE implementation_work_jobs SET status='PENDING' WHERE run_id=? AND requirement_key='tenant-environment'").run(runId);
+    const eventCountBefore=db.prepare('SELECT COUNT(*) count FROM tenant_environment_events WHERE tenant=?').get('alpha').count;
+    const receiptCountBefore=db.prepare('SELECT COUNT(*) count FROM implementation_work_receipts').get().count;
+    db.close();
+    const claim=await call(engine,null,'POST','/api/implementation/autonomous/work/claim',binding,headers);
+    const job=claim.body.job;
+    const execute={...binding,jobId:job.id,intentDigest:job.intentDigest,
+      fence:job.fence,leaseToken:job.leaseToken};
+    for(const stale of [
+      {...execute,fence:job.fence+1},
+      {...execute,leaseToken:'0'.repeat(64)},
+      {...execute,intentDigest:'0'.repeat(64)},
+      {...execute,ownerId:'another-worker'},
+      {...execute,candidateSha:'d'.repeat(40)},
+      {...execute,deploymentId:'deployment-other'}
+    ]) {
+      const refused=await call(engine,null,'POST','/api/implementation/autonomous/work/execute',stale,headers);
+      assert.equal(refused.status,409);
+    }
+    db=new DatabaseSync(f.dbPath);
+    db.prepare('UPDATE implementation_work_jobs SET lease_until_ms=? WHERE id=?').run(Date.now()-1,job.id);
+    db.close();
+    assert.equal((await call(engine,null,'POST','/api/implementation/autonomous/work/execute',execute,headers)).status,409);
+    db=new DatabaseSync(f.dbPath);
+    db.prepare('UPDATE implementation_work_jobs SET lease_until_ms=? WHERE id=?').run(Date.now()+60_000,job.id);
+    db.prepare('UPDATE implementation_scope SET scope_json=? WHERE run_id=?').run(
+      JSON.stringify({...scopeFixture(),priorities:'Changed only inside the rolled-back effect'}),runId);
+    db.exec("CREATE TRIGGER reject_worker_effect_receipt BEFORE INSERT ON implementation_work_receipts BEGIN SELECT RAISE(ABORT,'receipt rejected'); END;");
+    db.close();
+    assert.equal((await call(engine,null,'POST','/api/implementation/autonomous/work/execute',execute,headers)).status,500);
+    db=new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT configuration_digest FROM tenant_environments WHERE tenant=?').get('alpha').configuration_digest,
+      originalEnvironment.configurationDigest);
+    assert.equal(db.prepare('SELECT status FROM implementation_work_jobs WHERE id=?').get(job.id).status,'RUNNING');
+    db.exec('DROP TRIGGER reject_worker_effect_receipt');
+    db.prepare('UPDATE implementation_scope SET scope_json=? WHERE run_id=?').run(JSON.stringify(scopeFixture()),runId);
+    db.close();
+    const executed=await call(engine,null,'POST','/api/implementation/autonomous/work/execute',execute,headers);
+    assert.equal(executed.status,200);
+    assert.equal(executed.body.revalidated,true);
+    assert.equal(executed.body.environment.environmentId,originalEnvironment.environmentId);
+    assert.equal(executed.body.environment.configurationDigest,originalEnvironment.configurationDigest);
+    assert.equal(executed.body.result.job.status,'AWAITING_EVIDENCE');
+    assert.equal(executed.body.evidenceRequired,true);
+    assert.equal(executed.body.readiness.operationalReady,false);
+    assert.equal(executed.body.readiness.requirements.find(x=>x.key==='tenant-environment').satisfied,false);
+    db=new DatabaseSync(f.dbPath);
+    assert.equal(db.prepare('SELECT COUNT(*) count FROM tenant_environment_events WHERE tenant=?').get('alpha').count,eventCountBefore);
+    assert.equal(db.prepare('SELECT COUNT(*) count FROM implementation_work_receipts').get().count,receiptCountBefore+1);
+    db.close();
+    // A completed claim is never executed again, even with its original token.
+    assert.equal((await call(engine,null,'POST','/api/implementation/autonomous/work/execute',execute,headers)).status,409);
   } finally {engine?.close();f.close();}
 });
 
