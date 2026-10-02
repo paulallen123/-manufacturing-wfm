@@ -354,7 +354,7 @@ http.createServer = function guardedCreateServer(listener) {
     proofRunnerAuth = createProofRunnerAuth({ dbPath: process.env.WFM_DB });
   }
   if (hosted && !passkeyAuth) {
-    passkeyAuth = createPasskeyAuth({ dbPath: process.env.WFM_DB });
+    passkeyAuth = createPasskeyAuth({ dbPath: process.env.WFM_DB, onboardingMarkVerified: require('/app/public/onboarding-engine.js').markVerified });
   }
 
   if (!integrationHub && !integrationHubInitError && process.env.WFM_DB) {
@@ -477,6 +477,13 @@ http.createServer = function guardedCreateServer(listener) {
       res.setHeader('Content-Type','application/json; charset=utf-8');
       res.setHeader('Cache-Control','no-store');
       res.end(JSON.stringify({error:'Use your passkey to sign in.',signInPath:'/'}));
+      return;
+    }
+    if (passkeyAuth && req.method === 'POST' && requestPath(req) === '/api/onboarding/accept') {
+      res.statusCode = 410;
+      res.setHeader('Content-Type','application/json; charset=utf-8');
+      res.setHeader('Cache-Control','no-store');
+      res.end(JSON.stringify({error:'Use your workforce invitation to create a passkey.',signInPath:'/'}));
       return;
     }
     if (await ownerAccessRecovery.handleRequest(req, res)) return;

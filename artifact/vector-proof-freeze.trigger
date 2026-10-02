@@ -50,3 +50,6 @@ prepared-parent=a3e17ebfbcd3e667e17a560e619df2634892e9a5
 prepared-product-overlay=6cc685a8abf2d885792af36ab55ffa09e1e9c577
 scope=non-deploy-exact-current-source-ci
 # Current CIRCLE_SHA1 must execute both existing admission jobs; a halt is not proof.
+
+# Employee first-run passkey source admission
+review_vector_employee_first_run=2026-10-02 parent9f529d222118b7770e6fa0011ea35eea4f49fce7; employee5-source-only-on-existing-auth-owner; exact-product-overlay5181b7f547c8cafe7bd01c489a7e21be7f14b531; retain-START4-and-parent-mandatory-proof-bindings; local277of277-combined-union-overlaps-employee54-within133; independent-component-and-transport-review-pending; one-fresh-exact-CIRCLE_SHA1-non-deploy-CI-required; no-hosted-customer-invitation-provider-or-session-activation; prior-marker-records-historical
