@@ -265,8 +265,10 @@ async function readJson(req, maxBytes = 256 * 1024) {
 function createOneDayEnterpriseEngine(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const requireCandidateBinding = options.requireCandidateBinding === true || process.env.WFM_HOSTED_STAGING === 'true';
-  const candidateSha = String(options.candidateSha ?? process.env.WFM_CANDIDATE_SHA ?? '').trim();
-  const deploymentId = String(options.deploymentId ?? process.env.RAILWAY_DEPLOYMENT_ID ?? '').trim();
+  const configuredCandidateSha = options.candidateSha ?? process.env.WFM_CANDIDATE_SHA ?? '';
+  const configuredDeploymentId = options.deploymentId ?? process.env.RAILWAY_DEPLOYMENT_ID ?? '';
+  const candidateSha = String(configuredCandidateSha).trim();
+  const deploymentId = String(configuredDeploymentId).trim();
 
   function evidenceBindingFor(detail, run) {
     if (!requireCandidateBinding) return null;
@@ -674,6 +676,28 @@ function createOneDayEnterpriseEngine(options = {}) {
       return 'Tenant-environment evidence lacks a current server validation receipt.';
     }
     return null;
+  }
+
+  // Configuration is a declaration of this process and its applied tenant state,
+  // independent of proof receipts. It does not attest a platform deployment.
+  function configuredImplementationContextFor(run, environment) {
+    const identity = value => typeof value === 'string' && value.length > 0 && value.length <= 160 &&
+      !/[\s\x00-\x1f\x7f-\x9f]/u.test(value);
+    if (typeof configuredCandidateSha !== 'string' || !/^[0-9a-f]{40}$/.test(configuredCandidateSha) ||
+        !identity(configuredDeploymentId) || !identity(run.tenant) || !identity(run.id) ||
+        !environment || environment.state !== 'READY' || environment.runId !== run.id ||
+        environment.isolation?.tenant !== run.tenant || !identity(environment.environmentId) ||
+        !/^tenant_[0-9a-f]{24}$/.test(environment.namespace || '') ||
+        environment.isolation?.namespace !== environment.namespace ||
+        !/^[0-9a-f]{64}$/.test(environment.configurationDigest || '')) return null;
+    const context = configurationContextFor(run);
+    if (!context?.applied || context.configurationDigest !== environment.configurationDigest) return null;
+    const stored = db.prepare('SELECT configuration_json,configuration_digest FROM tenant_environments WHERE tenant=? AND run_id=?').get(run.tenant, run.id);
+    if (!stored || typeof stored.configuration_json !== 'string' || stored.configuration_digest !== environment.configurationDigest ||
+        sha256(stored.configuration_json) !== stored.configuration_digest) return null;
+    return { scope: 'CONFIGURED_DECLARATION', candidateSha: configuredCandidateSha, deploymentId: configuredDeploymentId,
+      tenant: run.tenant, runId: run.id, configurationDigest: environment.configurationDigest,
+      environmentId: environment.environmentId, namespace: environment.namespace, applied: true, platformDeploymentVerified: false };
   }
 
   function configurationContextFor(run) {
@@ -1193,6 +1217,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       scopeCaptured: Boolean(customerScope),
       customerScope,
       tenantEnvironment,
+      configuredImplementationContext: configuredImplementationContextFor(run, tenantEnvironmentState),
       notificationRecovery: notificationRecoveryForRun(run)
     };
     readiness.workPlan = workController.reconcile({ runId: run.id, tenant: run.tenant, readiness });

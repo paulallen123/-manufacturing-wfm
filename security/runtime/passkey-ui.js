@@ -6,10 +6,19 @@
   const ownerRecovery=document.getElementById('owner-recovery-code');
   let busy=false;
   const query=new URLSearchParams(location.search);
-  const invitation=query.get('implementation_invite')||new URLSearchParams(location.hash.slice(1)).get('implementation_invite')||'';
+  const fragment=new URLSearchParams(location.hash.slice(1));
+  const implementationValues=[...query.getAll('implementation_invite'),...fragment.getAll('implementation_invite')];
+  const onboardingValues=fragment.getAll('onboarding_invite');
+  const invitation=implementationValues[0]||'',onboardingInvitation=onboardingValues[0]||'';
+  const hasInvitation=query.has('implementation_invite')||fragment.has('implementation_invite')||query.has('onboarding_invite')||fragment.has('onboarding_invite');
+  const invalidAuthority=query.has('onboarding_invite')||implementationValues.length>1||onboardingValues.length>1||
+    implementationValues.length+onboardingValues.length>1||!!ownerRecovery&&hasInvitation||
+    implementationValues.length===1&&!/^[A-Za-z0-9_-]{32,128}$/.test(invitation)||
+    onboardingValues.length===1&&!/^[0-9a-f]{64}$/.test(onboardingInvitation);
   const next=()=>invitation?'/?implementation_invite='+encodeURIComponent(invitation):'/';
   // Keep invitation authority out of subsequent referrers and page URLs.
-  if(invitation)history.replaceState(null,'',location.pathname);
+  if(hasInvitation)history.replaceState(null,'',location.pathname);
+  if(invalidAuthority){status.textContent='This invitation is invalid or combines different access setup methods. Open the original invitation again.';signIn.disabled=true;enroll.disabled=true;signIn.hidden=true;enroll.hidden=true;return;}
   async function request(route,body,prefix='/api/passkeys/') {
     const response=await fetch(prefix+route,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body||{})});
     const result=await response.json();if(!response.ok)throw new Error(result.error||'Please try again.');return result;
@@ -18,7 +27,7 @@
     if(busy)return;busy=true;
     signIn.disabled=true;enroll.disabled=true;status.textContent=register?'Follow your device’s instructions to create your passkey.':'Follow your device’s instructions to sign in.';
     try {
-      const authority=register?(ownerRecovery?{ownerRecovery:ownerRecovery.value}:invitation?{invitation}:{}):{};
+      const authority=register?(ownerRecovery?{ownerRecovery:ownerRecovery.value}:onboardingInvitation?{onboardingInvitation}:invitation?{invitation}:{}):{};
       if(register&&ownerRecovery&&!/^[A-Za-z0-9_-]{43}$/.test(authority.ownerRecovery))throw new Error('Enter the one-time access setup code provided by your environment owner.');
       if(register&&ownerRecovery)await request('owner-access-recovery',{token:authority.ownerRecovery},'/api/');
       if(!window.PublicKeyCredential)throw new Error('This browser does not support passkeys. Open VECTOR in a current browser on your phone or computer.');
@@ -36,6 +45,7 @@
     const ready=()=>{enroll.disabled=busy||!/^[A-Za-z0-9_-]{43}$/.test(ownerRecovery.value);};
     ownerRecovery.addEventListener('input',ready);ready();return;
   }
+  if(onboardingInvitation){signIn.hidden=true;enroll.hidden=false;document.getElementById('heading').textContent='Set up your employee access';document.getElementById('intro').textContent='Create a passkey for your invited employee account.';return;}
   if(invitation){document.getElementById('heading').textContent='Set up your secure access';document.getElementById('intro').textContent='Create a passkey for your invited account. Then you can continue your implementation.';enroll.hidden=false;}
   fetch('/api/passkeys/status',{credentials:'same-origin'}).then(r=>r.json()).then(data=>{
     if(data.canEnroll){enroll.hidden=false;enroll.textContent=data.credentialCount?'Add another passkey':'Set up a passkey';document.getElementById('continue').hidden=false;document.getElementById('intro').textContent='Add a passkey on another device or security key so you have a second way to sign in.';}
