@@ -193,12 +193,17 @@ function createOwnerAccessRecovery({ env = process.env, clock = Date.now } = {})
         if (req.headers.origin !== grant.origin || (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site'] !== 'same-origin')) throw denied();
         if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] || '') || req.headers['content-encoding']) throw denied(415);
         if (Number(req.headers['content-length'] || 0) > 4096) throw denied(413);
-        if (grant.purpose === 'first-passkey') return respond(res,410,{error:'Use secure passkey setup to create your first passkey.'});
         const input = await readBody(req);
+        if (grant.purpose === 'first-passkey' && (!input || Array.isArray(input) || Object.keys(input).join(',') !== 'token')) return respond(res,410,{error:'Use secure passkey setup to create your first passkey.'});
         // Environment revocation/rotation during an in-flight body read must also fail closed.
         const current = configuration(env, clock());
         if (!current || JSON.stringify(current) !== JSON.stringify(grant)) throw denied();
-        applyReset(current, input, clock);
+        if (current.purpose === 'first-passkey') {
+          const db = new DatabaseSync(current.dbPath);
+          try { authorizeFirstOwnerPasskey({env,db,token:input.token,now:clock(),origin:current.origin,dbPath:current.dbPath}); } finally { db.close(); }
+          // Explicit, code-authorised preparation clears this browser's stale
+          // cookies only. It neither consumes the grant nor changes DB sessions.
+        } else { applyReset(current, input, clock); }
         res.setHeader('Set-Cookie', [
           'wfm_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0',
           'wfm_staging_restore=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'

@@ -310,18 +310,18 @@ function ownerSetupUi(t, {cancel=false,code='A'.repeat(43)}={}) {
   const elements=Object.fromEntries(['status','sign-in','enroll','heading','intro','continue','owner-recovery-code'].map(id=>[id,{hidden:id==='enroll',disabled:false,value:id==='owner-recovery-code'?code:'',textContent:'',events:{},addEventListener(event,fn){this.events[event]=fn;}}]));
   const context={document:{getElementById(id){return elements[id];}},location:{search:'',hash:'',pathname:'/access-recovery',replace(url){navigations.push(url);}},history:{replaceState(){throw Error('Recovery code must not enter the URL');}},URLSearchParams,window:{PublicKeyCredential:{}},SimpleWebAuthnBrowser:{async startRegistration(){if(cancel){const e=Error('cancelled');e.name='NotAllowedError';throw e;}return {id:'synthetic-browser-ui-only'};}},fetch:async(url,init)=>{calls.push({url,body:init?.body?JSON.parse(init.body):null});return{ok:true,async json(){return url.includes('status')?{canEnroll:false}:{challenge:'browser-ui-test'};}};}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'passkey-ui.js'),'utf8'),context);
-  return{elements,calls,navigations};
+  return{elements,calls,navigations,context};
 }
 test('shared owner setup UI sends the privately typed code only to same-origin enrolment and clears it on success',async t=>{
   const u=ownerSetupUi(t);assert.equal(u.elements['sign-in'].hidden,true);assert.equal(u.elements.enroll.hidden,false);
   await u.elements.enroll.events.click();
-  assert.deepEqual(u.calls.map(x=>x.url),['/api/passkeys/register/options','/api/passkeys/register/verify']);
-  assert.equal(u.calls[0].body.ownerRecovery,'A'.repeat(43));assert.equal(u.calls[1].body.ownerRecovery,'A'.repeat(43));
+  assert.deepEqual(u.calls.map(x=>x.url),['/api/owner-access-recovery','/api/passkeys/register/options','/api/passkeys/register/verify']);
+  assert.equal(u.calls[0].body.token,'A'.repeat(43));assert.equal(u.calls[1].body.ownerRecovery,'A'.repeat(43));assert.equal(u.calls[2].body.ownerRecovery,'A'.repeat(43));
   assert.equal(u.elements['owner-recovery-code'].value,'');assert.deepEqual(u.navigations,['/']);
 });
 test('shared owner setup UI contains cancellation without a verification request or false success',async t=>{
   const u=ownerSetupUi(t,{cancel:true});await u.elements.enroll.events.click();
-  assert.equal(u.calls.length,1);assert.equal(u.navigations.length,0);
+  assert.equal(u.calls.length,2);assert.equal(u.navigations.length,0);
   assert.match(u.elements.status.textContent,/Passkey setup was cancelled/);assert.equal(u.elements.enroll.disabled,false);
 });
 test('shared owner setup UI rejects missing setup code before any request',async t=>{
@@ -356,4 +356,16 @@ test('first-passkey purpose refuses replacement credentials and durably revoked 
   assert.equal((await firstOwnerOptions(f)).statusCode,401);
   f.db.prepare('UPDATE passkey_credentials SET revoked_at=? WHERE tenant=?').run(Date.now(),'northstar-demo');
   assert.equal((await firstOwnerOptions(f)).statusCode,401);
+});
+
+
+test('editing setup code cannot enable a duplicate ceremony while a request is pending',async t=>{
+  const u=ownerSetupUi(t);let release;const gate=new Promise(resolve=>{release=resolve;});let n=0;
+  u.context.fetch=async(url,init)=>{u.calls.push({url,body:JSON.parse(init.body)});if(++n===1)await gate;return{ok:true,async json(){return{challenge:'ui-only'};}};};
+  const pending=u.elements.enroll.events.click();
+  try {
+    u.elements['owner-recovery-code'].events.input();assert.equal(u.elements.enroll.disabled,true);
+    const duplicate=u.elements.enroll.events.click();assert.equal(u.calls.length,1);
+    release();await Promise.all([pending,duplicate]);assert.equal(u.calls.length,3);assert.deepEqual(u.navigations,['/']);
+  } finally {release();await pending;}
 });
