@@ -1,0 +1,396 @@
+{
+  "scope": "ISOLATED_745_INTEGRATED_SOURCE_CI67_ONLY_NOT_HOSTED_IMAGE_OR_CUSTOMER_PROOF",
+  "sourceSha": "9b721d2a06d6eca766c182cb63e98130fc15e8b6",
+  "tree": "3501ebfcf17f82e6ce6126ae4b30ea2e39d5a58b",
+  "pipeline": 67,
+  "workflow": "26097740-4519-4fe9-8153-0202e721de62",
+  "core": {
+    "job": 105,
+    "status": "SUCCESS",
+    "authTests": 86,
+    "forgeGroups": [
+      5,
+      146,
+      45
+    ],
+    "allZeroFailSkip": true,
+    "Node": "QUIET_ZERO_BYTES_CONFIGURED22.23.2_ASSERTION_UI_SUCCESS_NO_PRINTED_VERSION"
+  },
+  "runtime": {
+    "job": 106,
+    "status": "SUCCESS",
+    "buildGroups": [
+      {
+        "tests": 21,
+        "pass": 21,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 108,
+        "pass": 108,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 159,
+        "pass": 159,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 31,
+        "pass": 31,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 34,
+        "pass": 34,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 1198,
+        "pass": 1198,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 351,
+        "pass": 351,
+        "fail": 0,
+        "skip": 0
+      },
+      {
+        "tests": 13,
+        "pass": 13,
+        "fail": 0,
+        "skip": 0
+      }
+    ],
+    "sourceIntegrated12Verified": true,
+    "actualComposedONTitlePass": true,
+    "originalTwoUnixCallerContractsActualLinuxPass": true,
+    "narrowPackedONAndGuardControlsActualPass": true
+  },
+  "records": [
+    {
+      "job": 105,
+      "step": "node",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "groups": []
+    },
+    {
+      "job": 105,
+      "step": "auth",
+      "bytes": 19626,
+      "sha256": "884821f1cdff4ebb0fe4de2e52ff5cfc5f4ef5f9f93274d7f092915f5d740e37",
+      "groups": [
+        {
+          "tests": 86,
+          "pass": 86,
+          "fail": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    {
+      "job": 105,
+      "step": "forge",
+      "bytes": 41032,
+      "sha256": "cfe3b8b9c0c7a3aaf085579491535d99bdf1197cd4264db1360fc480f2dfd0c6",
+      "groups": [
+        {
+          "tests": 5,
+          "pass": 5,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 146,
+          "pass": 146,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 45,
+          "pass": 45,
+          "fail": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    {
+      "job": 106,
+      "step": "build",
+      "bytes": 669145,
+      "sha256": "466ff6fb645455ef2d51a9475cef37b7b35876cecd376ca7141acb365ec5843c",
+      "groups": [
+        {
+          "tests": 21,
+          "pass": 21,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 108,
+          "pass": 108,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 159,
+          "pass": 159,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 18,
+          "pass": 18,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 31,
+          "pass": 31,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 34,
+          "pass": 34,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 3,
+          "pass": 3,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 1,
+          "pass": 1,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 2,
+          "pass": 2,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 1198,
+          "pass": 1198,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 351,
+          "pass": 351,
+          "fail": 0,
+          "skipped": 0
+        },
+        {
+          "tests": 13,
+          "pass": 13,
+          "fail": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    {
+      "job": 106,
+      "step": "auth-image-module",
+      "bytes": 9520,
+      "sha256": "3b3f01ebbaa7635d3867fe75d9ac3474c1539ca607d08b15033372e4d3f2ec98",
+      "groups": []
+    },
+    {
+      "job": 106,
+      "step": "security",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "groups": []
+    },
+    {
+      "job": 106,
+      "step": "http",
+      "bytes": 1078,
+      "sha256": "33c3fb3fe5dcb0245f6fe9f96373d32a42a125a90df677b358b2ca0e5e432788",
+      "groups": []
+    }
+  ],
+  "targetedSourceAssertions": {
+    "scope": "ACTUAL_PASSED_LITERAL_SOURCE_ASSERTIONS_ONLY",
+    "selected": [
+      {
+        "path": "security/runtime/passkey-auth.test.cjs",
+        "sourceBlob": "f4b4209c3311dd3aa56070dbc463d63eb7043147",
+        "mode": "100644",
+        "title": "INTEGRATION745 actual composed ON accepts one-character payroll while employee passkey authority stays canonical",
+        "actualPassedOccurrences": 1
+      },
+      {
+        "path": "scripts/compose-vector-local-runtime.contract.test.cjs",
+        "sourceBlob": "aa95693249ea9d076a924612f3582bb446d45eba",
+        "mode": "100644",
+        "title": "composer preserves the absent-directory canonical caller contract",
+        "actualPassedOccurrences": 1
+      },
+      {
+        "path": "scripts/compose-vector-local-runtime.contract.test.cjs",
+        "sourceBlob": "aa95693249ea9d076a924612f3582bb446d45eba",
+        "mode": "100644",
+        "title": "composer preserves the extracted-runtime container caller contract",
+        "actualPassedOccurrences": 1
+      },
+      {
+        "path": "scripts/compose-vector-local-runtime.contract.test.cjs",
+        "sourceBlob": "aa95693249ea9d076a924612f3582bb446d45eba",
+        "mode": "100644",
+        "title": "PACKED_ON exact Docker extracted-output contract binds sealed input and transformed ON without archive",
+        "actualPassedOccurrences": 1
+      },
+      {
+        "path": "scripts/compose-vector-local-runtime.contract.test.cjs",
+        "sourceBlob": "aa95693249ea9d076a924612f3582bb446d45eba",
+        "mode": "100644",
+        "title": "PACKED_ON fresh actual canonical composition binds transformed ON and original archive provenance",
+        "actualPassedOccurrences": 1
+      },
+      {
+        "path": "tests/vector-runtime-packaging.test.cjs",
+        "sourceBlob": "57e6ba459b20d993d98af21fe2493340fd225ffb",
+        "mode": "100644",
+        "title": "packed public dependency guard refuses unknown, removed, obfuscated or unpinned imports",
+        "actualPassedOccurrences": 1
+      }
+    ],
+    "pinAssertions": {
+      "sealedInputSha256": "c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e",
+      "assembledOutputSha256": "a9ec1ee9782636b9ac564aae487d36378597aa7e756088b3f96b79da5d896744",
+      "sourcePaths": [
+        {
+          "path": "scripts/compose-vector-local-runtime.contract.test.cjs",
+          "blob": "aa95693249ea9d076a924612f3582bb446d45eba",
+          "mode": "100644"
+        },
+        {
+          "path": "scripts/compose-vector-local-runtime.mjs",
+          "blob": "c53ebb40b0037201812a3e4d6a725abc792a679a",
+          "mode": "100644"
+        }
+      ],
+      "qualification": "Pins taken from exact source assertions whose literal test titles passed. Not values printed by runtime; no independent output-byte custody claimed."
+    },
+    "qualification": "Occurrences are not extra unique tests or full component denominators. Table/dynamic controls remain covered by actual suite stream and source review."
+  },
+  "images": {
+    "application": {
+      "digest": "sha256:b17977d7729c3bfeb18fe57911f15490f4199207a90e3db85b05a93f38afb5b1",
+      "tag": "vector-forge-ci:9b721d2a06d6eca766c182cb63e98130fc15e8b6"
+    },
+    "proof": {
+      "digest": "sha256:64200c51f0ec652843d0f8fef9adddca0ba8a3d265be8ca4ebcefdda1ab6a7b2",
+      "tag": "vector-role-auth-ci:9b721d2a06d6eca766c182cb63e98130fc15e8b6"
+    }
+  },
+  "applicationNode": "SOURCE_RECIPE_PINS22.23.2_BOOKWORM_NO_NEW_RAW_APPLICATION_PRINTED_VERSION",
+  "moduleSmoke": {
+    "scope": "PACKAGING_MODULE_SMOKE_ONLY",
+    "node": "v24.20.0",
+    "SQLite": true,
+    "network": "TWO_NETWORK_NONE_CONTAINER_SMOKE_INVOCATIONS_BUILD_NPM_ACQUISITION_NOT_NETWORK_DISABLED",
+    "modules": [
+      {
+        "path": "scripts/current-candidate-role-browser-proof.mjs",
+        "blob": "a0f029f62f05e308f0a985b58029de50f181ea34"
+      },
+      {
+        "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+        "blob": "3337ec236e64df9552f881fd5be40132f9794646"
+      },
+      {
+        "path": "scripts/vector-proof-result.mjs",
+        "blob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0"
+      },
+      {
+        "path": "security/runtime/proof-runner-auth.cjs",
+        "blob": "0165b9a5207eeb870e2690c4da6456ec8457db7e"
+      }
+    ],
+    "signedSessionExecuted": false,
+    "ChromiumExecuted": false,
+    "HTTPSExecuted": false,
+    "hostedCustomerProof": false
+  },
+  "security": "QUIET_ZERO_BYTES_UI_SUCCESS_AND_UNCHANGED_SOURCE_ASSERTION_NO_RAW_NAMED_CHECKS",
+  "http": {
+    "scope": "ISOLATED_LOOPBACK_SYNTHETIC_FIXTURE",
+    "checks": [
+      "health-ready",
+      "runtime-identity-build-file-matched",
+      "root-page",
+      "bootstrap-unauthenticated-401",
+      "demand-unauthenticated-401"
+    ],
+    "UID": {
+      "real": 1000,
+      "effective": 1000,
+      "saved": 1000,
+      "filesystem": 1000
+    },
+    "UIDSourceBlob": "2bcbd6552c4e493ea93b611efe85e972b69713e7",
+    "healthFlags": {
+      "fixtureOnly": true,
+      "hosted": true,
+      "productionApproved": false,
+      "pilotReady": false
+    },
+    "initialConnectionResets": 8,
+    "subsequentNamedChecksPass": true,
+    "signedHTTPS": false,
+    "Chromium": false
+  },
+  "countsNonadditiveNotSummed": true,
+  "priorCI57FailedSourcePreserved": true,
+  "priorCI54SafeSummaryUnchanged": true,
+  "collectorSetupQualificationsRetained": "CORE_PENDING_CUTOFF_HISTORICAL_CURRENT_SEVEN_LOG_INDEX_AUTHORITATIVE_NO_NEW_COLLECTOR_ERROR",
+  "originalArtifactPayloadCustody": "SEPARATE_FROM_RAW_STEP_DOWNLOAD_CUSTODY_NOT_ASSUMED",
+  "reviewerTests": 0,
+  "remoteActions": 0,
+  "sourceEdits": 0,
+  "sharedReleaseAuthority": false,
+  "hostedImageEquivalence": false,
+  "customerProof": false,
+  "all27GoldenGates": "NOT_PROVEN",
+  "publication": "ONLY_SAFE_SUMMARY_REPORT_HASH_METADATA_NOT_RAW_OR_PRIVATE_RECEIPTS"
+}

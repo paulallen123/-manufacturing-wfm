@@ -1,56 +1,61 @@
 {
-  "observedAt": "2026-10-02 19:15:04 UTC",
-  "scope": "CURRENT_ROOT_SOURCE_AND_COORDINATION_ONLY_NOT_CONVERGED",
+  "observedAt": "2026-10-02T20:13:07.929Z",
+  "scope": "CURRENT_ROOT_ISOLATED_SOURCE_AND_CI67_COORDINATION_NOT_HOSTED_OR_CUSTOMER_CONVERGENCE",
   "previousCoordinationPublication": {
-    "observedAt": "2026-10-02 18:38:46 UTC",
+    "observedAt": "2026-10-02 19:22:50 UTC",
     "branch": "orchestration/vector-convergence-20261002",
-    "parent": "21639e29431e5a310817fe942537f428c391fb68",
-    "commit": "5305fd8e3c1e15fab468cd8163c80b316bee65c5",
-    "tree": "decbed93212707794573353b4eeb0e88eebba728",
-    "delta": [
-      {
-        "path": "NEXT_EXECUTION.md",
-        "before": "fb4c48b3cde96a398d397e2074159cdf52730889",
-        "after": "449b7a7bfb4200f51e5168b68b0ef90773a57317"
-      },
-      {
-        "path": "orchestration/evidence/current-source-20261002/CURRENT_ROOT_RECEIPT.json",
-        "before": null,
-        "after": "5b2353b40113275737de6b5f4ba26c92a1a107ca"
-      }
-    ],
+    "commit": "d515fd4a906bce3ee5b9ded6e8b231f061bad27a",
+    "parent": "5305fd8e3c1e15fab468cd8163c80b316bee65c5",
+    "tree": "7864ce426424d814b1b5cd37cc3afa15109479fe",
+    "paths": 5,
+    "parentLeaves": 1446,
+    "leaves": 1449,
     "unchangedParentLeaves": 1444,
-    "refReadbackVerified": true,
     "force": false,
-    "coordinationRefUpdate": 1,
-    "productCanonicalRefUpdates": 0,
-    "hostedChanges": 0,
-    "customerProof": false
-  },
-  "sourcePublication": {
-    "observedAt": "2026-10-02 18:56:21 UTC",
-    "branch": "feature/vector-golden-employee-passkey-20261002",
-    "pullRequest": 295,
-    "commit": "15399789a4601fad2be5d3e32dd56618c1608384",
-    "parent": "c7b12b09112adc54edd29084774d5f75e4ef881f",
-    "tree": "a88c1ccb4579b45eb35ecc69e2e7d5e5f3c0ed2c",
-    "pathsThisCommit": 5,
-    "parentUnchangedLeaves": 1110,
-    "ownerTargetedComposerControls": 16,
-    "ownerPackagingControls": 13,
-    "independentControls": 10,
-    "countsNotAdditive": true,
-    "oldUnixCallerContractsLocallyUnexecuted": 2,
-    "sourceReviewSha256": "3e762fb1062178fd860fa136dcebfd443aba4dbb581a845e9857bc1db1e9d054",
-    "transportReviewSha256": "91c3b1c3e7ded85750374d9768067b11c0f4696359dcb4e7da0689605ae47c27",
-    "force": false,
-    "commitRefAndFullTreeReadbackVerified": true,
-    "freshCIRequiredAndPendingAtPublication": true,
-    "priorCI57FailurePreserved": true,
+    "fullTreeAndCommitAndRefReadbackVerified": true,
+    "coordinationRefUpdates": 1,
     "productCanonicalRefUpdates": 0,
     "hostedChanges": 0,
     "accessChanges": 0,
-    "customerProof": false
+    "customerProof": false,
+    "integratedSourceState": "IN_PROGRESS_LOCAL_NOT_CI63_SOURCE",
+    "all27RootGoldenGates": "NOT_PROVEN"
+  },
+  "sourcePublication": {
+    "observedAt": "2026-10-02 19:50:41 UTC",
+    "branch": "feature/vector-golden-integrated-74533-20261002",
+    "commit": "9b721d2a06d6eca766c182cb63e98130fc15e8b6",
+    "parent": "74533ed802fa20ab35b811b316194a2614af009b",
+    "tree": "3501ebfcf17f82e6ce6126ae4b30ea2e39d5a58b",
+    "paths": 14,
+    "modified": 13,
+    "added": 1,
+    "parentUnchangedLeaves": 1099,
+    "reviewSourceSha256": "fa4fa700dafadb565f0b506ac8f18010145cb3836243b58fe4d64d9d8acc9eb2",
+    "reviewTransportSha256": "c6befa57e4f7ce1efc87cfea5c07cf37bcfac5b8a8f1649d5b854ff349d0a19f",
+    "sourceTests": {
+      "START": 40,
+      "composition": 138,
+      "independent": 12,
+      "nonadditiveAcrossPackets": true
+    },
+    "remoteFullTreeCommitAndBranchReadbackVerified": true,
+    "newBranchOnly": true,
+    "ciRequiredAndPendingAtPublication": true,
+    "priorCI63Source": "15399789a4601fad2be5d3e32dd56618c1608384",
+    "priorCI63NotReusedForThisSource": true,
+    "productCanonicalRefUpdates": 0,
+    "hostedChanges": 0,
+    "accessChanges": 0,
+    "customerProof": false,
+    "pullRequest": {
+      "number": 296,
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/296",
+      "draft": true,
+      "base": "74533ed802fa20ab35b811b316194a2614af009b",
+      "head": "9b721d2a06d6eca766c182cb63e98130fc15e8b6",
+      "files": 14
+    }
   },
   "ci63": {
     "sourceSha": "15399789a4601fad2be5d3e32dd56618c1608384",
@@ -81,7 +86,8 @@
     },
     "countsOverlapNotAdditive": true,
     "customerProof": false,
-    "safeCustodyScope": "ISOLATED_SOURCE_CI63_ONLY_NOT_CURRENT_SHARED_RELEASE_OR_HOSTED_IMAGE"
+    "safeCustodyScope": "ISOLATED_SOURCE_CI63_ONLY_NOT_CURRENT_SHARED_RELEASE_OR_HOSTED_IMAGE",
+    "qualification": "Historical isolated source15399789 CI; not reused for integrated9b candidate"
   },
   "priorCI57": {
     "sourceSha": "c7b12b09112adc54edd29084774d5f75e4ef881f",
@@ -94,6 +100,122 @@
     "finalImageAndModuleAndSecurityAndHttp": "NOT_EXECUTED"
   },
   "sharedControllerObservation": {
+    "refObservedAt": "2026-10-02 20:02:09 UTC",
+    "review": "74533ed802fa20ab35b811b316194a2614af009b",
+    "release": "74533ed802fa20ab35b811b316194a2614af009b",
+    "hosting": {
+      "observedAt": "2026-10-02 19:53:25 UTC",
+      "scope": "READ_ONLY_HOSTING_METADATA_OTHER_CONTROLLER_NOT_APPROVAL",
+      "deployments": [
+        {
+          "id": "26d019bf-a90c-48f4-82a3-753ca45d03e5",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-02T19:11:46.360Z",
+          "updatedAt": "2026-10-02T19:18:20.119Z",
+          "snapshotId": "10fdfde1-c582-4794-9084-e79768524dda",
+          "source": "74533ed802fa20ab35b811b316194a2614af009b",
+          "branch": "release/vector-customer-ready-candidate-20260925"
+        },
+        {
+          "id": "3035103f-92f1-46af-a65d-6c68b31561d6",
+          "status": "SKIPPED",
+          "createdAt": "2026-10-02T19:11:44.652Z",
+          "updatedAt": "2026-10-02T19:11:44.652Z",
+          "snapshotId": null,
+          "source": "74533ed802fa20ab35b811b316194a2614af009b",
+          "branch": "release/vector-customer-ready-candidate-20260925"
+        }
+      ],
+      "rootHostedWrites": 0,
+      "currentRuntimeTenant": null,
+      "currentRuntimeRun": null,
+      "currentImageEquivalence": false,
+      "customerProof": false
+    },
+    "scope": "READ_ONLY_OTHER_CONTROLLER_METADATA_NOT_CUSTOMER_OR_DEPLOYMENT_APPROVAL",
+    "currentImageEquivalence": false,
+    "currentRuntimeTenant": null,
+    "currentRuntimeRun": null,
+    "rootCanonicalOrHostedWrites": 0,
+    "customerProof": false
+  },
+  "rootHostedJourneyExecuted": false,
+  "rootCanonicalProductWrites": 0,
+  "rootHostedAccessProviderWrites": 0,
+  "missing": [
+    "One agreed execution owner before shared product/release/hosted changes; other controller remains active",
+    "Actual customer tenant and role actors, provider environment, employer, full employee-ID cohort and payroll period, with operation limits",
+    "Coherent database backup and verified isolated restore, startup effects and rollback/compensation binding",
+    "Private user passkey handoff and exact existing executor/source/image/deployment/configuration/tenant/run/actor binding"
+  ],
+  "authorizedContinuingWrites": [
+    "Reviewed isolated source branches and draft PR metadata",
+    "Safe coordination metadata"
+  ],
+  "all27GoldenGates": "NOT_PROVEN_IN_ROOT_REGISTRY",
+  "implementationRequirementsSeparate": 21,
+  "provenBaseSha": null,
+  "liveCustomerSha": null,
+  "convergenceBaseSha": null,
+  "deadlineAchieved": false,
+  "resourceExhaustionClaimed": false,
+  "integration": {
+    "state": "REVIEWED_ISOLATED_DRAFT_AND_FRESH_CI67_SUCCESS_NOT_SHARED_RELEASE_OR_HOSTED",
+    "baseCommit": "74533ed802fa20ab35b811b316194a2614af009b",
+    "commit": "9b721d2a06d6eca766c182cb63e98130fc15e8b6",
+    "tree": "3501ebfcf17f82e6ce6126ae4b30ea2e39d5a58b",
+    "pullRequest": 296,
+    "sourcePaths": 12,
+    "transportPaths": 14,
+    "parentUnchangedLeaves": 1099,
+    "sourceReviewSha256": "fa4fa700dafadb565f0b506ac8f18010145cb3836243b58fe4d64d9d8acc9eb2",
+    "transportReviewSha256": "c6befa57e4f7ce1efc87cfea5c07cf37bcfac5b8a8f1649d5b854ff349d0a19f",
+    "STARTControls": 40,
+    "compositionControls": 138,
+    "independentControls": 12,
+    "countsNotAddedAcrossHistoricalPackets": true,
+    "sealedInputSha256": "c06b354826747387fe14763dba5cef681ae08a1cf64d83d2fb54c1b13338476e",
+    "assembledOutputSha256": "a9ec1ee9782636b9ac564aae487d36378597aa7e756088b3f96b79da5d896744",
+    "preservedExternalPayrollTransformationAndReceipt": true,
+    "previousCI63NotClaimedForIntegratedSource": true
+  },
+  "ci67": {
+    "sourceSha": "9b721d2a06d6eca766c182cb63e98130fc15e8b6",
+    "tree": "3501ebfcf17f82e6ce6126ae4b30ea2e39d5a58b",
+    "pipeline": 67,
+    "workflow": "26097740-4519-4fe9-8153-0202e721de62",
+    "coreJob": 105,
+    "runtimeJob": 106,
+    "coreStatus": "SUCCESS",
+    "runtimeStatus": "SUCCESS",
+    "countsNonadditiveNotSummed": true,
+    "actualComposedONAndOriginalLinuxCallersAndGuardsPassed": true,
+    "independentSafeMetadataReview": {
+      "safeSha256": "978d928a0fc81de5e58dff2bbd007a430d8a621fd61487e9dc95b29f46bef8fa",
+      "reviewSha256": "70ef9f08a817a4b28be1d8f8fed0e3d6c0604c29389faaf0e2b741cc4ca21a27",
+      "safeRepositoryPath": "orchestration/evidence/current-source-20261002/CI67_SAFE_SUMMARY.json",
+      "reviewRepositoryPath": "orchestration/evidence/current-source-20261002/CI67_INDEPENDENT_REVIEW.md"
+    },
+    "images": {
+      "application": {
+        "digest": "sha256:b17977d7729c3bfeb18fe57911f15490f4199207a90e3db85b05a93f38afb5b1",
+        "tag": "vector-forge-ci:9b721d2a06d6eca766c182cb63e98130fc15e8b6"
+      },
+      "proof": {
+        "digest": "sha256:64200c51f0ec652843d0f8fef9adddca0ba8a3d265be8ca4ebcefdda1ab6a7b2",
+        "tag": "vector-role-auth-ci:9b721d2a06d6eca766c182cb63e98130fc15e8b6"
+      }
+    },
+    "moduleScope": "PACKAGING_MODULE_SMOKE_ONLY",
+    "signedSessionExecuted": false,
+    "ChromiumExecuted": false,
+    "HTTPSExecuted": false,
+    "httpScope": "ISOLATED_LOOPBACK_SYNTHETIC_FIXTURE",
+    "originalArtifactPayloadCustody": "SEPARATE_FROM_RAW_STEP_DOWNLOAD_CUSTODY_NOT_ASSUMED",
+    "hostedImageEquivalence": false,
+    "customerProof": false
+  },
+  "previousSharedControllerObservation": {
     "observedAt": "2026-10-02 19:11:55 UTC",
     "scope": "READ_ONLY_SHARED_CONTROLLER_OBSERVATION_NOT_APPROVAL",
     "review": "74533ed802fa20ab35b811b316194a2614af009b",
@@ -181,35 +303,5 @@
     "currentRuntimeRun": null,
     "rootCanonicalOrHostedWrites": 0,
     "customerProof": false
-  },
-  "rootHostedJourneyExecuted": false,
-  "rootCanonicalProductWrites": 0,
-  "rootHostedAccessProviderWrites": 0,
-  "missing": [
-    "Execution owner reconciliation before shared target writes",
-    "Integration of reviewed START/employee/packed-onboarding fixes with current shared source; preserve other owner changes and renew review/CI",
-    "Actual customer tenant and role actors, provider environment, employer, full employee cohort and payroll period",
-    "Coherent database backup and isolated restore verification, startup and rollback binding",
-    "Private user passkey handoff and exact existing executor/source/deployment/configuration/tenant/run/actor binding"
-  ],
-  "authorizedContinuingWrites": [
-    "Reviewed isolated source branches and draft PR metadata",
-    "Safe coordination metadata"
-  ],
-  "all27GoldenGates": "NOT_PROVEN_IN_ROOT_REGISTRY",
-  "implementationRequirementsSeparate": 21,
-  "provenBaseSha": null,
-  "liveCustomerSha": null,
-  "convergenceBaseSha": null,
-  "deadlineAchieved": false,
-  "resourceExhaustionClaimed": false,
-  "integration": {
-    "state": "IN_PROGRESS_ISOLATED_LOCAL_SOURCE_ONLY",
-    "baseCommit": "74533ed802fa20ab35b811b316194a2614af009b",
-    "basis": "Exact shared source at read-only observation cutoff; current controller ownership still unanswered",
-    "requires": "Preserve external payroll transformation and receipt, distinguish sealed input from assembled output, validate actual composed onboarding callback, independent review and fresh exact-source CI",
-    "previousCI63NotClaimedForIntegratedSource": true,
-    "readOnlyAssessmentSha256": "66e1e66ed6b686cdde12cc8777a349f59c73f65f577ecd49cfe12760f4e46e96",
-    "readOnlyAssessmentRepositoryPath": "orchestration/evidence/current-source-20261002/SHARED_COMPOSER_INTEGRATION_ASSESSMENT.json"
   }
 }
