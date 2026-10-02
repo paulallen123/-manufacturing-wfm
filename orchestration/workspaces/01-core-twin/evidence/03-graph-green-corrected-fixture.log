@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: revision is deterministic regardless of input ordering
+ok 1 - revision is deterministic regardless of input ordering
+  ---
+  duration_ms: 21.9033
+  type: 'test'
+  ...
+# Subtest: integration degradation propagates impact to proof, readiness and role learning
+ok 2 - integration degradation propagates impact to proof, readiness and role learning
+  ---
+  duration_ms: 3.178
+  type: 'test'
+  ...
+# Subtest: cross-tenant comparison is denied
+ok 3 - cross-tenant comparison is denied
+  ---
+  duration_ms: 2.4464
+  type: 'test'
+  ...
+# Subtest: unknown edge target fails closed
+ok 4 - unknown edge target fails closed
+  ---
+  duration_ms: 0.5792
+  type: 'test'
+  ...
+# Subtest: typed graph preserves canonical IDs/types and revision without execution authority
+ok 5 - typed graph preserves canonical IDs/types and revision without execution authority
+  ---
+  duration_ms: 22.9534
+  type: 'test'
+  ...
+# Subtest: cross-tenant graph, nested node and edge provenance are rejected before normalisation
+ok 6 - cross-tenant graph, nested node and edge provenance are rejected before normalisation
+  ---
+  duration_ms: 1.4231
+  type: 'test'
+  ...
+# Subtest: missing and tampered revision or unsupported type fail closed
+ok 7 - missing and tampered revision or unsupported type fail closed
+  ---
+  duration_ms: 1.3219
+  type: 'test'
+  ...
+# Subtest: projection is detached and recursively immutable and does not mutate the canonical revision
+ok 8 - projection is detached and recursively immutable and does not mutate the canonical revision
+  ---
+  duration_ms: 2.106
+  type: 'test'
+  ...
+# Subtest: relation traversal uses known time and half-open effective windows
+ok 9 - relation traversal uses known time and half-open effective windows
+  ---
+  duration_ms: 2.5043
+  type: 'test'
+  ...
+# Subtest: projection rejects invalid provenance and inverted relationship validity
+ok 10 - projection rejects invalid provenance and inverted relationship validity
+  ---
+  duration_ms: 1.3274
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 204.6702

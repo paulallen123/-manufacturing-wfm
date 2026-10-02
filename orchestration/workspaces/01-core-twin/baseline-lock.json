@@ -1,0 +1,41 @@
+{
+  "sourcePR": 205,
+  "sourceBranch": "evolution/factory-evidence-kernel-20260920-1146",
+  "sourceSha": "65fc59dadba377bce5fc68a88dc536261a5e68be",
+  "frozenBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "state": "IN_PROGRESS",
+  "portMode": "READ_ONLY_CANONICAL_TWIN_PROJECTIONS",
+  "wholeSourceDisposition": "REJECT",
+  "reason": "The original graph and engineering-memory constructors accept independent entity/record collections and do not require tenant-scoped canonical TwinRevision identity. Whole constructors are incompatible with a single canonical state owner.",
+  "sourceFiles": [
+    {
+      "path": "platform/factory-graph/factory-graph-kernel.mjs",
+      "mode": "100644",
+      "blob": "0c7733e4773f71eae4af7dcbc07f6b48a3bd8083"
+    },
+    {
+      "path": "platform/factory-graph/engineering-memory.mjs",
+      "mode": "100644",
+      "blob": "3c29817cc403cdbec9ae75b7fb8830a07de7b947"
+    },
+    {
+      "path": "platform/factory-graph/operational-history.mjs",
+      "mode": "100644",
+      "blob": "e55c802c9632ccb6a7feab157c93c265ba7f20ad"
+    }
+  ],
+  "canonicalDependencies": [
+    {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "mode": "100644",
+      "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa"
+    },
+    {
+      "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+      "mode": "100644",
+      "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f"
+    }
+  ]
+}

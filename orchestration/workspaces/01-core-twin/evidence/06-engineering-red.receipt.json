@@ -1,0 +1,11 @@
+{
+  "command": [
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+    "--test"
+  ],
+  "cwd": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin",
+  "nodeVersion": "v22.23.2",
+  "exitCode": 1,
+  "signal": null,
+  "error": null
+}

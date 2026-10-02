@@ -1,0 +1,89 @@
+TAP version 13
+# Subtest: TWIN control: exact canonical revision provenance and authority are preserved
+ok 1 - TWIN control: exact canonical revision provenance and authority are preserved
+  ---
+  duration_ms: 21.0945
+  type: 'test'
+  ...
+# {"id":"TWIN-CANONICAL","sourceTwinRevision":"40ae6cfd9274b200451d52061365407eb8791ea853e50bc36dd52c7f3da1dbba","authority":"NONE"}
+# Subtest: TWIN: recomputed cross-tenant node and tampered digest are rejected
+ok 2 - TWIN: recomputed cross-tenant node and tampered digest are rejected
+  ---
+  duration_ms: 1.0256
+  type: 'test'
+  ...
+# Subtest: TWIN: source/output aliasing cannot change revision data or expose mutable nested state
+ok 3 - TWIN: source/output aliasing cannot change revision data or expose mutable nested state
+  ---
+  duration_ms: 0.5746
+  type: 'test'
+  ...
+# Subtest: TWIN: replay methods cannot learn late events or reveal an unknown anchor
+ok 4 - TWIN: replay methods cannot learn late events or reveal an unknown anchor
+  ---
+  duration_ms: 1.1537
+  type: 'test'
+  ...
+# {"id":"TWIN-TIME","knownEarlyCount":0,"knownLaterCount":1}
+# Subtest: TWIN: extreme finite and subnormal vectors retain stable hand-computable cosine
+ok 5 - TWIN: extreme finite and subnormal vectors retain stable hand-computable cosine
+  ---
+  duration_ms: 1.8961
+  type: 'test'
+  ...
+# {"id":"TWIN-MATH","results":[{"id":"tiny","score":1},{"id":"orthogonal","score":0}]}
+# Subtest: TWIN: future engineering records are invisible and future lineage is rejected
+ok 6 - TWIN: future engineering records are invisible and future lineage is rejected
+  ---
+  duration_ms: 1.9638
+  type: 'test'
+  ...
+# Subtest: TWIN: invalid/zero/nonmatching vectors fail closed rather than emit NaN ranking
+ok 7 - TWIN: invalid/zero/nonmatching vectors fail closed rather than emit NaN ranking
+  ---
+  duration_ms: 1.7494
+  type: 'test'
+  ...
+# Subtest: FABRIC controls: ordinary route is allowed; tenant and operation drift stay blocked
+ok 8 - FABRIC controls: ordinary route is allowed; tenant and operation drift stay blocked
+  ---
+  duration_ms: 3.9702
+  type: 'test'
+  ...
+# Subtest: FABRIC P2 inert data: array getter must never execute before being rejected
+ok 9 - FABRIC P2 inert data: array getter must never execute before being rejected
+  ---
+  duration_ms: 1.1454
+  type: 'test'
+  ...
+# {"id":"FABRIC-GETTER","calls":0,"error":"policy.allowedFields[0] contains executable or hidden data"}
+# Subtest: FABRIC P2 destination: field read plan must reject scheme-relative host escape
+ok 10 - FABRIC P2 destination: field read plan must reject scheme-relative host escape
+  ---
+  duration_ms: 0.6698
+  type: 'test'
+  ...
+# {"id":"FABRIC-FIELD-ORIGIN","admitted":false,"approved":"https://approved.example.invalid","resolved":null,"error":"routePath must be one exact path"}
+# Subtest: FABRIC P2 destination: capability authority must reject scheme-relative host escape
+ok 11 - FABRIC P2 destination: capability authority must reject scheme-relative host escape
+  ---
+  duration_ms: 0.3475
+  type: 'test'
+  ...
+# {"id":"FABRIC-CAPABILITY-ORIGIN","allowed":false,"approved":"https://approved.example.invalid","resolved":"https://outside.example.invalid"}
+# Subtest: FABRIC P2 destination: capability exactHost must reject credentials/userinfo hostname confusion
+ok 12 - FABRIC P2 destination: capability exactHost must reject credentials/userinfo hostname confusion
+  ---
+  duration_ms: 0.2101
+  type: 'test'
+  ...
+# {"id":"FABRIC-CAPABILITY-USERINFO","allowed":false,"exactHost":"https://approved.example.invalid@outside.example.invalid","actualOrigin":"https://outside.example.invalid"}
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 200.0697

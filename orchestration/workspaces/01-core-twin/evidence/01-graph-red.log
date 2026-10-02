@@ -1,0 +1,206 @@
+TAP version 13
+# Subtest: revision is deterministic regardless of input ordering
+ok 1 - revision is deterministic regardless of input ordering
+  ---
+  duration_ms: 57.8562
+  type: 'test'
+  ...
+# Subtest: integration degradation propagates impact to proof, readiness and role learning
+ok 2 - integration degradation propagates impact to proof, readiness and role learning
+  ---
+  duration_ms: 2.5832
+  type: 'test'
+  ...
+# Subtest: cross-tenant comparison is denied
+ok 3 - cross-tenant comparison is denied
+  ---
+  duration_ms: 2.3068
+  type: 'test'
+  ...
+# Subtest: unknown edge target fails closed
+ok 4 - unknown edge target fails closed
+  ---
+  duration_ms: 0.3229
+  type: 'test'
+  ...
+# Subtest: typed graph preserves canonical IDs/types and revision without execution authority
+not ok 5 - typed graph preserves canonical IDs/types and revision without execution authority
+  ---
+  duration_ms: 41.5126
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\twin-projections.test.cjs:13:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing read-only behavior: projectTwinGraph
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    api (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:7:27)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:14:30)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: cross-tenant graph, nested node and edge provenance are rejected before normalisation
+not ok 6 - cross-tenant graph, nested node and edge provenance are rejected before normalisation
+  ---
+  duration_ms: 0.5708
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\twin-projections.test.cjs:21:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing read-only behavior: projectTwinGraph
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    api (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:7:27)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:22:17)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: missing and tampered revision or unsupported type fail closed
+not ok 7 - missing and tampered revision or unsupported type fail closed
+  ---
+  duration_ms: 0.336
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\twin-projections.test.cjs:28:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing read-only behavior: projectTwinGraph
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    api (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:7:27)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:29:17)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projection is detached and recursively immutable and does not mutate the canonical revision
+not ok 8 - projection is detached and recursively immutable and does not mutate the canonical revision
+  ---
+  duration_ms: 0.6353
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\twin-projections.test.cjs:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing read-only behavior: projectTwinGraph
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    api (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:7:27)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:36:62)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: relation traversal uses known time and half-open effective windows
+not ok 9 - relation traversal uses known time and half-open effective windows
+  ---
+  duration_ms: 0.5082
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\twin-projections.test.cjs:44:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing read-only behavior: projectTwinGraph
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    api (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:7:27)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:45:17)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: projection rejects invalid provenance and inverted relationship validity
+not ok 10 - projection rejects invalid provenance and inverted relationship validity
+  ---
+  duration_ms: 0.3222
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\twin-projections.test.cjs:52:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing read-only behavior: projectTwinGraph
+    + actual - expected
+    
+    + 'undefined'
+    - 'function'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'function'
+  actual: 'undefined'
+  operator: 'strictEqual'
+  stack: |-
+    api (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:7:27)
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane01-twin\twin-projections.test.cjs:53:17)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 4
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 290.3467

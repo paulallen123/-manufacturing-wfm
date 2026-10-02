@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: revision is deterministic regardless of input ordering
+ok 1 - revision is deterministic regardless of input ordering
+  ---
+  duration_ms: 19.2864
+  type: 'test'
+  ...
+# Subtest: integration degradation propagates impact to proof, readiness and role learning
+ok 2 - integration degradation propagates impact to proof, readiness and role learning
+  ---
+  duration_ms: 2.1391
+  type: 'test'
+  ...
+# Subtest: cross-tenant comparison is denied
+ok 3 - cross-tenant comparison is denied
+  ---
+  duration_ms: 1.6561
+  type: 'test'
+  ...
+# Subtest: unknown edge target fails closed
+ok 4 - unknown edge target fails closed
+  ---
+  duration_ms: 0.2464
+  type: 'test'
+  ...
+# Subtest: typed graph preserves canonical IDs/types and revision without execution authority
+ok 5 - typed graph preserves canonical IDs/types and revision without execution authority
+  ---
+  duration_ms: 21.1379
+  type: 'test'
+  ...
+# Subtest: cross-tenant graph, nested node and edge provenance are rejected before normalisation
+ok 6 - cross-tenant graph, nested node and edge provenance are rejected before normalisation
+  ---
+  duration_ms: 1.399
+  type: 'test'
+  ...
+# Subtest: missing and tampered revision or unsupported type fail closed
+ok 7 - missing and tampered revision or unsupported type fail closed
+  ---
+  duration_ms: 1.0809
+  type: 'test'
+  ...
+# Subtest: projection is detached and recursively immutable and does not mutate the canonical revision
+ok 8 - projection is detached and recursively immutable and does not mutate the canonical revision
+  ---
+  duration_ms: 1.6781
+  type: 'test'
+  ...
+# Subtest: relation traversal uses known time and half-open effective windows
+ok 9 - relation traversal uses known time and half-open effective windows
+  ---
+  duration_ms: 0.9064
+  type: 'test'
+  ...
+# Subtest: projection rejects invalid provenance and inverted relationship validity
+ok 10 - projection rejects invalid provenance and inverted relationship validity
+  ---
+  duration_ms: 0.8077
+  type: 'test'
+  ...
+# Subtest: history sorts by occurrence but excludes telemetry learned after knownAt
+ok 11 - history sorts by occurrence but excludes telemetry learned after knownAt
+  ---
+  duration_ms: 1.2453
+  type: 'test'
+  ...
+# Subtest: incident bundles cannot disclose an anchor not observed at the requested time
+ok 12 - incident bundles cannot disclose an anchor not observed at the requested time
+  ---
+  duration_ms: 0.871
+  type: 'test'
+  ...
+# Subtest: history rejects ambiguous event IDs and invalid or cross-tenant provenance
+ok 13 - history rejects ambiguous event IDs and invalid or cross-tenant provenance
+  ---
+  duration_ms: 2.2403
+  type: 'test'
+  ...
+# Subtest: history snapshots cannot be altered and filters remain within canonical nodes
+ok 14 - history snapshots cannot be altered and filters remain within canonical nodes
+  ---
+  duration_ms: 0.9762
+  type: 'test'
+  ...
+# Subtest: engineering similarity is evidence-backed, hand-ranked and as-known-at scoped
+ok 15 - engineering similarity is evidence-backed, hand-ranked and as-known-at scoped
+  ---
+  duration_ms: 2.8248
+  type: 'test'
+  ...
+# Subtest: engineering lineage follows canonical nodes and rejects dangling, cross-part and cyclic predecessors
+ok 16 - engineering lineage follows canonical nodes and rejects dangling, cross-part and cyclic predecessors
+  ---
+  duration_ms: 2.9021
+  type: 'test'
+  ...
+# Subtest: engineering facets reject malformed evidence and vectors before querying
+ok 17 - engineering facets reject malformed evidence and vectors before querying
+  ---
+  duration_ms: 1.412
+  type: 'test'
+  ...
+# Subtest: large finite vectors retain a valid cosine score without overflow
+ok 18 - large finite vectors retain a valid cosine score without overflow
+  ---
+  duration_ms: 0.7212
+  type: 'test'
+  ...
+# Subtest: incomparable feature dimensions and absent signals fail closed
+ok 19 - incomparable feature dimensions and absent signals fail closed
+  ---
+  duration_ms: 1.3475
+  type: 'test'
+  ...
+# Subtest: engineering results are detached, immutable and bounded by validated query options
+ok 20 - engineering results are detached, immutable and bounded by validated query options
+  ---
+  duration_ms: 1.7917
+  type: 'test'
+  ...
+# Subtest: relation traversal excludes a source outside its own effective validity
+ok 21 - relation traversal excludes a source outside its own effective validity
+  ---
+  duration_ms: 0.3819
+  type: 'test'
+  ...
+# Subtest: projection rejects canonical provenance with no nonempty source identity
+ok 22 - projection rejects canonical provenance with no nonempty source identity
+  ---
+  duration_ms: 0.295
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 202.5108

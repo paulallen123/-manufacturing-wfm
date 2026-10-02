@@ -1,0 +1,258 @@
+{
+  "state": "IN_PROGRESS",
+  "proofScope": "ISOLATED_LOCAL_SOURCE_CONTRACT_ONLY",
+  "portMode": "READ_ONLY_CANONICAL_TWIN_PROJECTIONS",
+  "frozenBaseSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "sourcePR": 205,
+  "sourceBranch": "evolution/factory-evidence-kernel-20260920-1146",
+  "sourceSha": "65fc59dadba377bce5fc68a88dc536261a5e68be",
+  "sourceFiles": [
+    {
+      "path": "platform/factory-graph/factory-graph-kernel.mjs",
+      "mode": "100644",
+      "blob": "0c7733e4773f71eae4af7dcbc07f6b48a3bd8083"
+    },
+    {
+      "path": "platform/factory-graph/engineering-memory.mjs",
+      "mode": "100644",
+      "blob": "3c29817cc403cdbec9ae75b7fb8830a07de7b947"
+    },
+    {
+      "path": "platform/factory-graph/operational-history.mjs",
+      "mode": "100644",
+      "blob": "e55c802c9632ccb6a7feab157c93c265ba7f20ad"
+    }
+  ],
+  "wholeSourceDisposition": "REJECT",
+  "addedProductAndTestBytes": 28606,
+  "changedCanonicalProductBytes": 0,
+  "files": [
+    {
+      "path": "implementation/runtime/twin-read-only-projections.cjs",
+      "mode": "100644",
+      "operation": "ADD_ADAPTED_PORT",
+      "bytes": 13976,
+      "gitBlobSha": "1de8fbc5a90570aa52eec72e071caa05c7684ea9",
+      "sha256": "9ec289df97a3c74ab23a396b83ae6276bf8cba9139a80a7a2f214bef715c7e1e",
+      "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.cjs"
+    },
+    {
+      "path": "implementation/runtime/twin-read-only-projections.test.cjs",
+      "mode": "100644",
+      "operation": "ADD_BEHAVIOR_TESTS",
+      "bytes": 14630,
+      "gitBlobSha": "5631485aae7ee3372122db8023d69494837eaabe",
+      "sha256": "caba10a363e645afd93ab5ee633dcb92829dbd84bbc483643d0e6cecfa731471",
+      "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.test.cjs"
+    }
+  ],
+  "unchangedFrozenDependencies": [
+    {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "mode": "100644",
+      "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "bytes": 5922,
+      "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d",
+      "sourceCheckout": "935 verified Staffology-only; bytes independently match frozen f32",
+      "copiedPath": "implementation\\runtime\\implementation-digital-twin.cjs"
+    },
+    {
+      "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+      "mode": "100644",
+      "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+      "bytes": 3631,
+      "sha256": "2cca63ab29e419f90cbe02e43cf0b4d1e444eebba04d9aef0365d502f1662461",
+      "sourceCheckout": "935 verified Staffology-only; bytes independently match frozen f32",
+      "copiedPath": "implementation\\runtime\\implementation-digital-twin.test.cjs"
+    }
+  ],
+  "executed": {
+    "nodeVersion": "v22.23.2",
+    "command": "node --test (cwd work/lane01-twin)",
+    "totalTests": 22,
+    "newTests": 18,
+    "unchangedCanonicalTests": 4,
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "finalReceipt": "evidence/11-mapped-final-green.receipt.json",
+    "redSequences": [
+      "01-graph-red:4 pass/6 fail",
+      "04-history-red:10 pass/4 fail",
+      "06-engineering-red:14 pass/6 fail",
+      "08-boundary-review-red:20 pass/2 fail"
+    ],
+    "retainedFailedGreenAttempt": "02-graph-green was9 pass/1 fixture error: invalid timestamp fixture referenced a removed node; corrected fixture then03-graph-green-corrected-fixture10/10",
+    "finalLog": "evidence/11-mapped-final-green.log"
+  },
+  "logIdentities": [
+    {
+      "path": "evidence/01-graph-red.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 17500,
+      "gitBlobSha": "86034273bd350f32497a08214129c9442ff2a809",
+      "sha256": "a404f551b272cc6229cc6bbcd6117b1fcf432a4b80c1dcf09dd03425227b6853"
+    },
+    {
+      "path": "evidence/02-graph-green.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 6972,
+      "gitBlobSha": "6f38a570344ae498c255efc3a14bcec07173690b",
+      "sha256": "ea242293e7e156ee4436e1d5ceb92424d982d639cfc28a2e5d0692702cacf7b3"
+    },
+    {
+      "path": "evidence/03-graph-green-corrected-fixture.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 2121,
+      "gitBlobSha": "eba6896d74cc80cf7a13cad1c041bcbc7ce36bf1",
+      "sha256": "2e5d8168061eced92c7c4900d0dda7477d8e011e2e52f5ad704352267278ffb7"
+    },
+    {
+      "path": "evidence/04-history-red.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 7406,
+      "gitBlobSha": "2d26250b00cafe5c5e9f2b83329b667efb167f02",
+      "sha256": "011916476995fb0926d2be3d96b83702f4df17b936838ff27eca201c04374a0f"
+    },
+    {
+      "path": "evidence/05-history-green.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 3004,
+      "gitBlobSha": "41b52cefbce1dc2b47db52e06a910dd588205aa5",
+      "sha256": "81b1200cb6d5a13653ae250d9f1758909bc26d7b62d6d136a6f46d3c19889498"
+    },
+    {
+      "path": "evidence/06-engineering-red.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 10949,
+      "gitBlobSha": "31d84de126efc349bfa2cf106a0a8e6d29b051b5",
+      "sha256": "c282da495f5938e57749d32356c7470c0c475c1263e971b47787ece4df1ec69b"
+    },
+    {
+      "path": "evidence/07-engineering-green.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 4336,
+      "gitBlobSha": "66531638bfc5b83733260bacbcab30f695ec8fa1",
+      "sha256": "4878109c575e224fe97da2c3b035cd6861b4a76b218dcffa67b0ed5d232df767"
+    },
+    {
+      "path": "evidence/08-boundary-review-red.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 7098,
+      "gitBlobSha": "6adb3a4ee2df589f10012610c5e5dcf3406c8935",
+      "sha256": "635e0bb28d1076b1fe6e4387b6c44163f2c7c05982e3e5f6ec03b0cdda1d2868"
+    },
+    {
+      "path": "evidence/09-final-green.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 4761,
+      "gitBlobSha": "74a0292e6f68a64e0d2a9e4f772b495f5b473f84",
+      "sha256": "fe801a64d09b95286a4d2fb0d3b3d4153b73b3c6d1c512787354c53d3e1a1e94"
+    },
+    {
+      "path": "evidence/10-canonical-layout-green.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 4758,
+      "gitBlobSha": "5b8f9fddacd0b1fd5ee9e5dc2d86ff3157ca1ec4",
+      "sha256": "f30679facc94947b7702f19059a1499bb724f8ae7ee2f9712599a6015545c7a0"
+    },
+    {
+      "path": "evidence/11-mapped-final-green.log",
+      "mode": "100644",
+      "operation": "RETAIN_EXECUTED_LOG",
+      "bytes": 4763,
+      "gitBlobSha": "65de4262cc0b2c6ac95d31daca17672d9c99bab2",
+      "sha256": "db33bc40249780ddf7102d4148e786e4caf946f04aec35d23d0013cc3f6c3bfa"
+    }
+  ],
+  "remainingIntegrationReview": [
+    "Independent review must resolve final mapped source/test bytes and rerun held-outs; canonical import mapping is complete",
+    "Read-only source unit proof only; no authenticated app consumer or provider authority demonstrated",
+    "Review embedded canonical evidence producer contracts for operationalEvents and engineeringRecord facets",
+    "The revision digest binds content but is not a signature or trusted-source attestation; authenticated tenant/role binding belongs to existing application owners",
+    "Projection uses strict UTC ISO timestamps and source/target/relation half-open validity; review these semantics before app integration",
+    "Bound inputs/outputs, depth, event/record/vector sizes, CPU and scale before accepting untrusted inputs; this batch has no large-scale or resource-admission proof",
+    "No OCR/CAD/GD&T extraction, new node types, forecasts, planners, savings, causal inference or execution authority",
+    "Exact integrated build/security/role UI/hosted/restart/rollback proof still required; no release/customer-ready claim"
+  ],
+  "rollback": "Remove the isolated ADD_ADAPTED_PORT and test files or discard work/lane01-twin; canonical source has zero changed bytes. No provider side effects or persisted state exist in this batch.",
+  "remoteMutation": false,
+  "sharedSourceMutation": false,
+  "deployment": false,
+  "providerRequests": false,
+  "paidOrModelChanges": false,
+  "componentProofState": "TESTED",
+  "broadCapabilityStates": {
+    "typedFactoryGraph": "IN_PROGRESS",
+    "operationalHistory": "IN_PROGRESS",
+    "engineeringMemory": "IN_PROGRESS"
+  },
+  "importMapping": {
+    "repositoryTargetPath": "implementation/runtime/twin-read-only-projections.cjs",
+    "requireExpression": "require('./implementation-digital-twin.cjs')",
+    "existingDependencyRepositoryPath": "implementation/runtime/implementation-digital-twin.cjs",
+    "existingDependencyLocalPath": "implementation/runtime/implementation-digital-twin.cjs",
+    "existingDependencyBlobSha": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+    "publishDependency": false,
+    "newDependencyStore": false
+  },
+  "nonshippingArchiveFiles": [
+    {
+      "path": "archive-pre-mapping/changes-manifest.json.snapshot",
+      "mode": "100644",
+      "operation": "NONSHIPPING_PRE_MAPPING_SNAPSHOT",
+      "bytes": 7358,
+      "gitBlobSha": "2495753a7f40798dfe622a7682381d62e47e8492",
+      "sha256": "5ca916add712a5868cd6effd1acfcb8e25685dcf7141ee365eac4c7b335ee2f9"
+    },
+    {
+      "path": "archive-pre-mapping/implementation-digital-twin.cjs.snapshot",
+      "mode": "100644",
+      "operation": "NONSHIPPING_PRE_MAPPING_SNAPSHOT",
+      "bytes": 5922,
+      "gitBlobSha": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "sha256": "8cf6d51d77d01091e73b2f4621a672e3c953f170e0f154bf9966c32cc57a1f3d"
+    },
+    {
+      "path": "archive-pre-mapping/implementation-digital-twin.test.cjs.snapshot",
+      "mode": "100644",
+      "operation": "NONSHIPPING_PRE_MAPPING_SNAPSHOT",
+      "bytes": 3631,
+      "gitBlobSha": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+      "sha256": "2cca63ab29e419f90cbe02e43cf0b4d1e444eebba04d9aef0365d502f1662461"
+    },
+    {
+      "path": "archive-pre-mapping/twin-read-only-projections.cjs.snapshot",
+      "mode": "100644",
+      "operation": "NONSHIPPING_PRE_MAPPING_SNAPSHOT",
+      "bytes": 13985,
+      "gitBlobSha": "7980defb1f87d0f29a9aa803e2379583763aa239",
+      "sha256": "ad7d8795b3923ccffc6b1bf8ac6b420f8710dea5a47ba9f59a397e583a8d6fa7"
+    },
+    {
+      "path": "archive-pre-mapping/twin-read-only-projections.test.cjs.snapshot",
+      "mode": "100644",
+      "operation": "NONSHIPPING_PRE_MAPPING_SNAPSHOT",
+      "bytes": 14647,
+      "gitBlobSha": "143d4cc76b8fb3a233c373715d6625c18cec035f",
+      "sha256": "c2b5c0280a299aacb6ada21d658d2584c6f139421992b39a0625079dd52b1c64"
+    }
+  ],
+  "shipFiles": [
+    "implementation/runtime/twin-read-only-projections.cjs",
+    "implementation/runtime/twin-read-only-projections.test.cjs"
+  ]
+}
