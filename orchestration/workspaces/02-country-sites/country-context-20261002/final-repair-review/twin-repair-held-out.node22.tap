@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: projectTwinGraph input getter invokes no caller code
+ok 1 - projectTwinGraph input getter invokes no caller code
+  ---
+  duration_ms: 19.9504
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph revision field getter invokes no caller code
+ok 2 - projectTwinGraph revision field getter invokes no caller code
+  ---
+  duration_ms: 0.6049
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph payload toJSON invokes no caller code
+ok 3 - projectTwinGraph payload toJSON invokes no caller code
+  ---
+  duration_ms: 0.7966
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph proxy invokes no caller code
+ok 4 - projectTwinGraph proxy invokes no caller code
+  ---
+  duration_ms: 0.4033
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph array map override invokes no caller code
+ok 5 - projectTwinGraph array map override invokes no caller code
+  ---
+  duration_ms: 0.659
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects nonfinite NaN payload under unchanged null revision
+ok 6 - projectTwinGraph rejects nonfinite NaN payload under unchanged null revision
+  ---
+  duration_ms: 0.4446
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects nonfinite Infinity payload under unchanged null revision
+ok 7 - projectTwinGraph rejects nonfinite Infinity payload under unchanged null revision
+  ---
+  duration_ms: 0.4151
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects nonfinite -Infinity payload under unchanged null revision
+ok 8 - projectTwinGraph rejects nonfinite -Infinity payload under unchanged null revision
+  ---
+  duration_ms: 0.398
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory input getter invokes no caller code
+ok 9 - projectOperationalHistory input getter invokes no caller code
+  ---
+  duration_ms: 0.9379
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory revision field getter invokes no caller code
+ok 10 - projectOperationalHistory revision field getter invokes no caller code
+  ---
+  duration_ms: 0.7022
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory payload toJSON invokes no caller code
+ok 11 - projectOperationalHistory payload toJSON invokes no caller code
+  ---
+  duration_ms: 0.4826
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory proxy invokes no caller code
+ok 12 - projectOperationalHistory proxy invokes no caller code
+  ---
+  duration_ms: 0.2158
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory array map override invokes no caller code
+ok 13 - projectOperationalHistory array map override invokes no caller code
+  ---
+  duration_ms: 0.3114
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite NaN payload under unchanged null revision
+ok 14 - projectOperationalHistory rejects nonfinite NaN payload under unchanged null revision
+  ---
+  duration_ms: 0.2427
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite Infinity payload under unchanged null revision
+ok 15 - projectOperationalHistory rejects nonfinite Infinity payload under unchanged null revision
+  ---
+  duration_ms: 0.2401
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite -Infinity payload under unchanged null revision
+ok 16 - projectOperationalHistory rejects nonfinite -Infinity payload under unchanged null revision
+  ---
+  duration_ms: 0.2322
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory input getter invokes no caller code
+ok 17 - projectEngineeringMemory input getter invokes no caller code
+  ---
+  duration_ms: 0.4938
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory revision field getter invokes no caller code
+ok 18 - projectEngineeringMemory revision field getter invokes no caller code
+  ---
+  duration_ms: 0.2133
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory payload toJSON invokes no caller code
+ok 19 - projectEngineeringMemory payload toJSON invokes no caller code
+  ---
+  duration_ms: 0.2598
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory proxy invokes no caller code
+ok 20 - projectEngineeringMemory proxy invokes no caller code
+  ---
+  duration_ms: 0.1883
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory array map override invokes no caller code
+ok 21 - projectEngineeringMemory array map override invokes no caller code
+  ---
+  duration_ms: 0.3066
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite NaN payload under unchanged null revision
+ok 22 - projectEngineeringMemory rejects nonfinite NaN payload under unchanged null revision
+  ---
+  duration_ms: 0.5315
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite Infinity payload under unchanged null revision
+ok 23 - projectEngineeringMemory rejects nonfinite Infinity payload under unchanged null revision
+  ---
+  duration_ms: 0.515
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite -Infinity payload under unchanged null revision
+ok 24 - projectEngineeringMemory rejects nonfinite -Infinity payload under unchanged null revision
+  ---
+  duration_ms: 0.5958
+  type: 'test'
+  ...
+# Subtest: graph.relatedAt query option getter invokes no caller code
+ok 25 - graph.relatedAt query option getter invokes no caller code
+  ---
+  duration_ms: 3.6284
+  type: 'test'
+  ...
+# Subtest: history.eventsInWindow query option getter invokes no caller code
+ok 26 - history.eventsInWindow query option getter invokes no caller code
+  ---
+  duration_ms: 1.31
+  type: 'test'
+  ...
+# Subtest: history.incidentBundle query option getter invokes no caller code
+ok 27 - history.incidentBundle query option getter invokes no caller code
+  ---
+  duration_ms: 1.0238
+  type: 'test'
+  ...
+# Subtest: engineering.revisionChain query option getter invokes no caller code
+ok 28 - engineering.revisionChain query option getter invokes no caller code
+  ---
+  duration_ms: 1.6079
+  type: 'test'
+  ...
+# Subtest: engineering.similarTo query option getter invokes no caller code
+ok 29 - engineering.similarTo query option getter invokes no caller code
+  ---
+  duration_ms: 1.1217
+  type: 'test'
+  ...
+# Subtest: history query array includes override invokes no caller code
+ok 30 - history query array includes override invokes no caller code
+  ---
+  duration_ms: 1.8645
+  type: 'test'
+  ...
+# Subtest: inert finite source and query controls work without authority
+ok 31 - inert finite source and query controls work without authority
+  ---
+  duration_ms: 5.8592
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 188.6773

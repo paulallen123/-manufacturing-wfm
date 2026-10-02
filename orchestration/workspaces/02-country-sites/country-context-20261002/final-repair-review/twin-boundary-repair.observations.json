@@ -1,0 +1,216 @@
+{
+  "node": "v22.23.2",
+  "sourceBlob": "63aba27ccb0728d64bb98ccf1e715adf1148d199",
+  "observations": [
+    {
+      "name": "projectTwinGraph input getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectTwinGraph revision getter",
+      "accepted": false,
+      "error": "input.revision cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectTwinGraph toJSON",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectTwinGraph proxy",
+      "accepted": false,
+      "error": "input.revision requires inert JSON data",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectTwinGraph nodes.map",
+      "accepted": false,
+      "error": "input.revision.nodes cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectTwinGraph nonfinite NaN",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectTwinGraph nonfinite Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectTwinGraph nonfinite -Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory input getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory revision getter",
+      "accepted": false,
+      "error": "input.revision cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory toJSON",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory proxy",
+      "accepted": false,
+      "error": "input.revision requires inert JSON data",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory nodes.map",
+      "accepted": false,
+      "error": "input.revision.nodes cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory nonfinite NaN",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory nonfinite Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectOperationalHistory nonfinite -Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory input getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory revision getter",
+      "accepted": false,
+      "error": "input.revision cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory toJSON",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory proxy",
+      "accepted": false,
+      "error": "input.revision requires inert JSON data",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory nodes.map",
+      "accepted": false,
+      "error": "input.revision.nodes cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory nonfinite NaN",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory nonfinite Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "projectEngineeringMemory nonfinite -Infinity",
+      "accepted": false,
+      "error": "input.revision.nodes.0.data.metadata requires finite JSON numbers",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "graph.relatedAt knownAt getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "history.eventsInWindow knownAt getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "history.incidentBundle knownAt getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "engineering.revisionChain knownAt getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "engineering.similarTo knownAt getter",
+      "accepted": false,
+      "error": "input cannot contain accessors",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    },
+    {
+      "name": "history nodeIds.includes override",
+      "accepted": false,
+      "error": "input.nodeIds cannot contain hidden non-JSON properties",
+      "userCodeCalls": 0,
+      "sourceTwinRevision": null
+    }
+  ]
+}

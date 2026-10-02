@@ -1,0 +1,44 @@
+[
+  {
+    "capabilityId": "product-020",
+    "sourcePR": 205,
+    "sourceSha": "65fc59dadba377bce5fc68a88dc536261a5e68be",
+    "sourcePath": "platform/factory-graph/global-operating-context.mjs",
+    "sourceBlob": "a301440db86c643d7bf3760169aa4760a51a125a",
+    "classification": "PORT",
+    "state": "IN_PROGRESS",
+    "ported": "Pure display inheritance/locale/timezone and DST parts over canonical TwinRevision only",
+    "rejected": "most-specific-wins effectivePolicies; independent factory graph entities/store/hierarchy authority",
+    "rationale": "Frozen canonical policy graph has typed protective composition; known/effective provenance and no hindsight added by bounded port"
+  },
+  {
+    "capabilityId": "product-035",
+    "sourcePR": 230,
+    "classification": "SUPERSEDED",
+    "state": "FOUND",
+    "canonicalOwner": "frozen country-policy-pack-registry/jurisdiction-policy-graph",
+    "rationale": "later richer verified/bitemporal/protective modules retained unchanged"
+  },
+  {
+    "capabilityId": "product-052",
+    "sourcePR": 271,
+    "classification": "EVOLVE",
+    "state": "IN_PROGRESS",
+    "canonicalOwner": "preservation-locked implementation/readiness-evidence-contract and reviewed3proof repair paths",
+    "rationale": "excluded from this lane02 batch; no overlapping target edits"
+  },
+  {
+    "capabilityId": "product-058",
+    "classification": "ALREADY_CANONICAL",
+    "state": "FOUND",
+    "canonicalOwner": "jurisdiction-policy-graph/global-site-policy-preflight/authoritative-source-registry/regulatory-change-candidate",
+    "rationale": "policy/context/legal source owners preserved; verified effective policy already exists, inherited display formatter absent"
+  },
+  {
+    "capabilityId": "lane01-twin-projections",
+    "classification": "DUPLICATE",
+    "state": "IN_PROGRESS",
+    "canonicalOwner": "implementation/runtime/twin-read-only-projections.cjs",
+    "rationale": "generic graph/history/engineering memory APIs have no globalContext/Intl/localParts display API; new module imports canonical twin only, not lane01 proposal"
+  }
+]

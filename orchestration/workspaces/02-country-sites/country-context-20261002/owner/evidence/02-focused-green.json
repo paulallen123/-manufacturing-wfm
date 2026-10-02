@@ -1,0 +1,15 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "policy/runtime/site-operating-context-projection.test.cjs"
+  ],
+  "exitCode": 0,
+  "error": null,
+  "signal": null,
+  "networkBlocked": true,
+  "sourceOnly": true,
+  "logSha256": "0ddafff414536993508ecada81e0ef4ae79909cb3c716b280ec9eb0060a0266d"
+}

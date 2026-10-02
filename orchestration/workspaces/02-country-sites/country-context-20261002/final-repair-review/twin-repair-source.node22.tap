@@ -1,0 +1,448 @@
+TAP version 13
+# Subtest: revision is deterministic regardless of input ordering
+ok 1 - revision is deterministic regardless of input ordering
+  ---
+  duration_ms: 26.1058
+  type: 'test'
+  ...
+# Subtest: integration degradation propagates impact to proof, readiness and role learning
+ok 2 - integration degradation propagates impact to proof, readiness and role learning
+  ---
+  duration_ms: 3.7921
+  type: 'test'
+  ...
+# Subtest: cross-tenant comparison is denied
+ok 3 - cross-tenant comparison is denied
+  ---
+  duration_ms: 0.9271
+  type: 'test'
+  ...
+# Subtest: unknown edge target fails closed
+ok 4 - unknown edge target fails closed
+  ---
+  duration_ms: 0.264
+  type: 'test'
+  ...
+# Subtest: finite JSON is copied without aliasing, with special property names preserved as data
+ok 5 - finite JSON is copied without aliasing, with special property names preserved as data
+  ---
+  duration_ms: 1.7577
+  type: 'test'
+  ...
+# Subtest: null-prototype JSON objects and repeated noncyclic references are finite inert data
+ok 6 - null-prototype JSON objects and repeated noncyclic references are finite inert data
+  ---
+  duration_ms: 0.422
+  type: 'test'
+  ...
+# Subtest: reject accessor without executing caller code
+ok 7 - reject accessor without executing caller code
+  ---
+  duration_ms: 0.4637
+  type: 'test'
+  ...
+# Subtest: reject proxy without executing caller code
+ok 8 - reject proxy without executing caller code
+  ---
+  duration_ms: 0.1508
+  type: 'test'
+  ...
+# Subtest: reject revokedProxy without executing caller code
+ok 9 - reject revokedProxy without executing caller code
+  ---
+  duration_ms: 0.1424
+  type: 'test'
+  ...
+# Subtest: reject serializer without executing caller code
+ok 10 - reject serializer without executing caller code
+  ---
+  duration_ms: 0.1458
+  type: 'test'
+  ...
+# Subtest: reject arrayMethod without executing caller code
+ok 11 - reject arrayMethod without executing caller code
+  ---
+  duration_ms: 0.4235
+  type: 'test'
+  ...
+# Subtest: reject arrayAccessor without executing caller code
+ok 12 - reject arrayAccessor without executing caller code
+  ---
+  duration_ms: 0.1734
+  type: 'test'
+  ...
+# Subtest: reject arraySubclass without executing caller code
+ok 13 - reject arraySubclass without executing caller code
+  ---
+  duration_ms: 0.4135
+  type: 'test'
+  ...
+# Subtest: reject objectSubclass without executing caller code
+ok 14 - reject objectSubclass without executing caller code
+  ---
+  duration_ms: 1.5883
+  type: 'test'
+  ...
+# Subtest: reject every non-JSON primitive, hidden and symbol property, cycle and sparse array
+ok 15 - reject every non-JSON primitive, hidden and symbol property, cycle and sparse array
+  ---
+  duration_ms: 1.0271
+  type: 'test'
+  ...
+# Subtest: typed graph preserves canonical IDs/types and revision without execution authority
+ok 16 - typed graph preserves canonical IDs/types and revision without execution authority
+  ---
+  duration_ms: 23.6558
+  type: 'test'
+  ...
+# Subtest: cross-tenant graph, nested node and edge provenance are rejected before normalisation
+ok 17 - cross-tenant graph, nested node and edge provenance are rejected before normalisation
+  ---
+  duration_ms: 1.3942
+  type: 'test'
+  ...
+# Subtest: missing and tampered revision or unsupported type fail closed
+ok 18 - missing and tampered revision or unsupported type fail closed
+  ---
+  duration_ms: 1.6167
+  type: 'test'
+  ...
+# Subtest: projection is detached and recursively immutable and does not mutate the canonical revision
+ok 19 - projection is detached and recursively immutable and does not mutate the canonical revision
+  ---
+  duration_ms: 1.7132
+  type: 'test'
+  ...
+# Subtest: relation traversal uses known time and half-open effective windows
+ok 20 - relation traversal uses known time and half-open effective windows
+  ---
+  duration_ms: 1.0552
+  type: 'test'
+  ...
+# Subtest: projection rejects invalid provenance and inverted relationship validity
+ok 21 - projection rejects invalid provenance and inverted relationship validity
+  ---
+  duration_ms: 0.9674
+  type: 'test'
+  ...
+# Subtest: history sorts by occurrence but excludes telemetry learned after knownAt
+ok 22 - history sorts by occurrence but excludes telemetry learned after knownAt
+  ---
+  duration_ms: 1.3518
+  type: 'test'
+  ...
+# Subtest: incident bundles cannot disclose an anchor not observed at the requested time
+ok 23 - incident bundles cannot disclose an anchor not observed at the requested time
+  ---
+  duration_ms: 0.9465
+  type: 'test'
+  ...
+# Subtest: history rejects ambiguous event IDs and invalid or cross-tenant provenance
+ok 24 - history rejects ambiguous event IDs and invalid or cross-tenant provenance
+  ---
+  duration_ms: 2.7732
+  type: 'test'
+  ...
+# Subtest: history snapshots cannot be altered and filters remain within canonical nodes
+ok 25 - history snapshots cannot be altered and filters remain within canonical nodes
+  ---
+  duration_ms: 1.2233
+  type: 'test'
+  ...
+# Subtest: engineering similarity is evidence-backed, hand-ranked and as-known-at scoped
+ok 26 - engineering similarity is evidence-backed, hand-ranked and as-known-at scoped
+  ---
+  duration_ms: 2.7189
+  type: 'test'
+  ...
+# Subtest: engineering lineage follows canonical nodes and rejects dangling, cross-part and cyclic predecessors
+ok 27 - engineering lineage follows canonical nodes and rejects dangling, cross-part and cyclic predecessors
+  ---
+  duration_ms: 2.811
+  type: 'test'
+  ...
+# Subtest: engineering facets reject malformed evidence and vectors before querying
+ok 28 - engineering facets reject malformed evidence and vectors before querying
+  ---
+  duration_ms: 1.7205
+  type: 'test'
+  ...
+# Subtest: large finite vectors retain a valid cosine score without overflow
+ok 29 - large finite vectors retain a valid cosine score without overflow
+  ---
+  duration_ms: 1.1035
+  type: 'test'
+  ...
+# Subtest: incomparable feature dimensions and absent signals fail closed
+ok 30 - incomparable feature dimensions and absent signals fail closed
+  ---
+  duration_ms: 1.5985
+  type: 'test'
+  ...
+# Subtest: engineering results are detached, immutable and bounded by validated query options
+ok 31 - engineering results are detached, immutable and bounded by validated query options
+  ---
+  duration_ms: 2.3779
+  type: 'test'
+  ...
+# Subtest: relation traversal excludes a source outside its own effective validity
+ok 32 - relation traversal excludes a source outside its own effective validity
+  ---
+  duration_ms: 1.0261
+  type: 'test'
+  ...
+# Subtest: projection rejects canonical provenance with no nonempty source identity
+ok 33 - projection rejects canonical provenance with no nonempty source identity
+  ---
+  duration_ms: 0.5937
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects inputGetter without caller execution
+ok 34 - projectTwinGraph rejects inputGetter without caller execution
+  ---
+  duration_ms: 0.3667
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects revisionGetter without caller execution
+ok 35 - projectTwinGraph rejects revisionGetter without caller execution
+  ---
+  duration_ms: 0.1894
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects toJSON without caller execution
+ok 36 - projectTwinGraph rejects toJSON without caller execution
+  ---
+  duration_ms: 0.2157
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects proxy without caller execution
+ok 37 - projectTwinGraph rejects proxy without caller execution
+  ---
+  duration_ms: 0.1635
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects map without caller execution
+ok 38 - projectTwinGraph rejects map without caller execution
+  ---
+  duration_ms: 0.2172
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects nonfinite metadata NaN under a null digest
+ok 39 - projectTwinGraph rejects nonfinite metadata NaN under a null digest
+  ---
+  duration_ms: 0.3374
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects nonfinite metadata Infinity under a null digest
+ok 40 - projectTwinGraph rejects nonfinite metadata Infinity under a null digest
+  ---
+  duration_ms: 0.2266
+  type: 'test'
+  ...
+# Subtest: projectTwinGraph rejects nonfinite metadata -Infinity under a null digest
+ok 41 - projectTwinGraph rejects nonfinite metadata -Infinity under a null digest
+  ---
+  duration_ms: 0.1745
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects inputGetter without caller execution
+ok 42 - projectOperationalHistory rejects inputGetter without caller execution
+  ---
+  duration_ms: 0.1592
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects revisionGetter without caller execution
+ok 43 - projectOperationalHistory rejects revisionGetter without caller execution
+  ---
+  duration_ms: 0.1568
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects toJSON without caller execution
+ok 44 - projectOperationalHistory rejects toJSON without caller execution
+  ---
+  duration_ms: 0.193
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects proxy without caller execution
+ok 45 - projectOperationalHistory rejects proxy without caller execution
+  ---
+  duration_ms: 0.1471
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects map without caller execution
+ok 46 - projectOperationalHistory rejects map without caller execution
+  ---
+  duration_ms: 0.2063
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite metadata NaN under a null digest
+ok 47 - projectOperationalHistory rejects nonfinite metadata NaN under a null digest
+  ---
+  duration_ms: 0.1858
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite metadata Infinity under a null digest
+ok 48 - projectOperationalHistory rejects nonfinite metadata Infinity under a null digest
+  ---
+  duration_ms: 0.1771
+  type: 'test'
+  ...
+# Subtest: projectOperationalHistory rejects nonfinite metadata -Infinity under a null digest
+ok 49 - projectOperationalHistory rejects nonfinite metadata -Infinity under a null digest
+  ---
+  duration_ms: 0.1666
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects inputGetter without caller execution
+ok 50 - projectEngineeringMemory rejects inputGetter without caller execution
+  ---
+  duration_ms: 0.2495
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects revisionGetter without caller execution
+ok 51 - projectEngineeringMemory rejects revisionGetter without caller execution
+  ---
+  duration_ms: 0.1714
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects toJSON without caller execution
+ok 52 - projectEngineeringMemory rejects toJSON without caller execution
+  ---
+  duration_ms: 0.2022
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects proxy without caller execution
+ok 53 - projectEngineeringMemory rejects proxy without caller execution
+  ---
+  duration_ms: 0.1473
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects map without caller execution
+ok 54 - projectEngineeringMemory rejects map without caller execution
+  ---
+  duration_ms: 0.1928
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite metadata NaN under a null digest
+ok 55 - projectEngineeringMemory rejects nonfinite metadata NaN under a null digest
+  ---
+  duration_ms: 0.1667
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite metadata Infinity under a null digest
+ok 56 - projectEngineeringMemory rejects nonfinite metadata Infinity under a null digest
+  ---
+  duration_ms: 0.1649
+  type: 'test'
+  ...
+# Subtest: projectEngineeringMemory rejects nonfinite metadata -Infinity under a null digest
+ok 57 - projectEngineeringMemory rejects nonfinite metadata -Infinity under a null digest
+  ---
+  duration_ms: 0.1706
+  type: 'test'
+  ...
+# Subtest: graph query rejects getter without caller execution
+ok 58 - graph query rejects getter without caller execution
+  ---
+  duration_ms: 0.5117
+  type: 'test'
+  ...
+# Subtest: graph query rejects proxy without caller execution
+ok 59 - graph query rejects proxy without caller execution
+  ---
+  duration_ms: 0.3492
+  type: 'test'
+  ...
+# Subtest: graph query rejects toJSON without caller execution
+ok 60 - graph query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.4041
+  type: 'test'
+  ...
+# Subtest: history window query rejects getter without caller execution
+ok 61 - history window query rejects getter without caller execution
+  ---
+  duration_ms: 1.1098
+  type: 'test'
+  ...
+# Subtest: history window query rejects proxy without caller execution
+ok 62 - history window query rejects proxy without caller execution
+  ---
+  duration_ms: 0.4067
+  type: 'test'
+  ...
+# Subtest: history window query rejects toJSON without caller execution
+ok 63 - history window query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.3912
+  type: 'test'
+  ...
+# Subtest: incident query rejects getter without caller execution
+ok 64 - incident query rejects getter without caller execution
+  ---
+  duration_ms: 0.4377
+  type: 'test'
+  ...
+# Subtest: incident query rejects proxy without caller execution
+ok 65 - incident query rejects proxy without caller execution
+  ---
+  duration_ms: 0.3738
+  type: 'test'
+  ...
+# Subtest: incident query rejects toJSON without caller execution
+ok 66 - incident query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.5075
+  type: 'test'
+  ...
+# Subtest: revision chain query rejects getter without caller execution
+ok 67 - revision chain query rejects getter without caller execution
+  ---
+  duration_ms: 0.4259
+  type: 'test'
+  ...
+# Subtest: revision chain query rejects proxy without caller execution
+ok 68 - revision chain query rejects proxy without caller execution
+  ---
+  duration_ms: 0.3422
+  type: 'test'
+  ...
+# Subtest: revision chain query rejects toJSON without caller execution
+ok 69 - revision chain query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.3475
+  type: 'test'
+  ...
+# Subtest: similarity query rejects getter without caller execution
+ok 70 - similarity query rejects getter without caller execution
+  ---
+  duration_ms: 0.408
+  type: 'test'
+  ...
+# Subtest: similarity query rejects proxy without caller execution
+ok 71 - similarity query rejects proxy without caller execution
+  ---
+  duration_ms: 0.3373
+  type: 'test'
+  ...
+# Subtest: similarity query rejects toJSON without caller execution
+ok 72 - similarity query rejects toJSON without caller execution
+  ---
+  duration_ms: 0.3898
+  type: 'test'
+  ...
+# Subtest: history rejects caller-owned includes method before filtering
+ok 73 - history rejects caller-owned includes method before filtering
+  ---
+  duration_ms: 0.5024
+  type: 'test'
+  ...
+1..73
+# tests 73
+# suites 0
+# pass 73
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 257.2063

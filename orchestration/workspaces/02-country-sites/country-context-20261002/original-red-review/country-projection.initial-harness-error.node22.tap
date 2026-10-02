@@ -1,0 +1,274 @@
+TAP version 13
+# Subtest: known/effective edge boundaries exclude future and validTo endpoint with provenance retained
+ok 1 - known/effective edge boundaries exclude future and validTo endpoint with provenance retained
+  ---
+  duration_ms: 201.04
+  type: 'test'
+  ...
+# Subtest: future parent node and future target node cannot leak current display fields
+ok 2 - future parent node and future target node cannot leak current display fields
+  ---
+  duration_ms: 1.2875
+  type: 'test'
+  ...
+# Subtest: ambiguity, cyclic hierarchy and unverified/blank provenance fail closed
+ok 3 - ambiguity, cyclic hierarchy and unverified/blank provenance fail closed
+  ---
+  duration_ms: 2.7335
+  type: 'test'
+  ...
+# Subtest: cross-tenant items, forged digests and malformed canonical records fail closed
+not ok 4 - cross-tenant items, forged digests and malformed canonical records fail closed
+  ---
+  duration_ms: 4.2132
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:17:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:20:98)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: UTC instants reject impossible or local times and DST fall preserves distinct offsets
+ok 5 - UTC instants reject impossible or local times and DST fall preserves distinct offsets
+  ---
+  duration_ms: 6.3727
+  type: 'test'
+  ...
+# Subtest: no guessed timeZone, invalid locale errors, and display fields confer no legal authority
+ok 6 - no guessed timeZone, invalid locale errors, and display fields confer no legal authority
+  ---
+  duration_ms: 3.1907
+  type: 'test'
+  ...
+# Subtest: output is detached/deep frozen and projection has no implicit clock or dispatch
+ok 7 - output is detached/deep frozen and projection has no implicit clock or dispatch
+  ---
+  duration_ms: 1.1298
+  type: 'test'
+  ...
+# Subtest: projection input getter cannot execute caller code
+not ok 8 - projection input getter cannot execute caller code
+  ---
+  duration_ms: 1.2894
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:35:211)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: canonical revision field getter cannot execute caller code
+not ok 9 - canonical revision field getter cannot execute caller code
+  ---
+  duration_ms: 1.7925
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:36:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:36:244)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payload toJSON cannot execute before canonical validation
+not ok 10 - payload toJSON cannot execute before canonical validation
+  ---
+  duration_ms: 1.634
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:37:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:37:292)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proxy revision cannot execute traps before canonical validation
+not ok 11 - proxy revision cannot execute traps before canonical validation
+  ---
+  duration_ms: 1.1447
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:38:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    13 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 13
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:38:252)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: overridden array map cannot execute before canonical validation
+not ok 12 - overridden array map cannot execute before canonical validation
+  ---
+  duration_ms: 0.7852
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:39:270)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: raw nonfinite payload NaN cannot hide behind unchanged null digest
+not ok 13 - raw nonfinite payload NaN cannot hide behind unchanged null digest
+  ---
+  duration_ms: 0.8046
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:40:45'
+  failureType: 'testCodeFailure'
+  error: |-
+    Exact canonical payload binding must reject non-JSON numeric replacement
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:40:298)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: raw nonfinite payload Infinity cannot hide behind unchanged null digest
+not ok 14 - raw nonfinite payload Infinity cannot hide behind unchanged null digest
+  ---
+  duration_ms: 0.6148
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:40:45'
+  failureType: 'testCodeFailure'
+  error: |-
+    Exact canonical payload binding must reject non-JSON numeric replacement
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:40:298)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: raw nonfinite payload -Infinity cannot hide behind unchanged null digest
+not ok 15 - raw nonfinite payload -Infinity cannot hide behind unchanged null digest
+  ---
+  duration_ms: 0.7554
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\country-projection.held-out.test.cjs:40:45'
+  failureType: 'testCodeFailure'
+  error: |-
+    Exact canonical payload binding must reject non-JSON numeric replacement
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\trust_review\country-projection.held-out.test.cjs:40:298)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 6
+# fail 9
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 381.4163

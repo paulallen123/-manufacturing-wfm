@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: inherited display context is detached, field-provenanced and has no policy authority
+ok 1 - inherited display context is detached, field-provenanced and has no policy authority
+  ---
+  duration_ms: 35.799
+  type: 'test'
+  ...
+# Subtest: future parent knowledge cannot enter earlier site context
+ok 2 - future parent knowledge cannot enter earlier site context
+  ---
+  duration_ms: 2.8341
+  type: 'test'
+  ...
+# Subtest: future effective parents cannot enter earlier site context
+ok 3 - future effective parents cannot enter earlier site context
+  ---
+  duration_ms: 1.526
+  type: 'test'
+  ...
+# Subtest: selected unverified context and unverified hierarchy fail closed
+ok 4 - selected unverified context and unverified hierarchy fail closed
+  ---
+  duration_ms: 1.1601
+  type: 'test'
+  ...
+# Subtest: half-open parent validity permits successive parents, never overlap by list order
+ok 5 - half-open parent validity permits successive parents, never overlap by list order
+  ---
+  duration_ms: 1.3528
+  type: 'test'
+  ...
+# Subtest: hierarchy cycles fail closed
+ok 6 - hierarchy cycles fail closed
+  ---
+  duration_ms: 1.0316
+  type: 'test'
+  ...
+# Subtest: nonorganisation parent type cannot provide display context
+ok 7 - nonorganisation parent type cannot provide display context
+  ---
+  duration_ms: 0.6012
+  type: 'test'
+  ...
+# Subtest: wrong tenant, node/edge tenant tampering and revision mutation rejected
+ok 8 - wrong tenant, node/edge tenant tampering and revision mutation rejected
+  ---
+  duration_ms: 0.884
+  type: 'test'
+  ...
+# Subtest: site identity is required, must exist, be a site and known/effective at query
+ok 9 - site identity is required, must exist, be a site and known/effective at query
+  ---
+  duration_ms: 1.1037
+  type: 'test'
+  ...
+# Subtest: invalid display fields rejected rather than silently normalized into authority
+ok 10 - invalid display fields rejected rather than silently normalized into authority
+  ---
+  duration_ms: 5.46
+  type: 'test'
+  ...
+# Subtest: unknown policy-like fields are not inherited
+ok 11 - unknown policy-like fields are not inherited
+  ---
+  duration_ms: 1.8464
+  type: 'test'
+  ...
+# Subtest: explicit UTC timestamps are strict, require actual calendar instants and no implicit clock
+ok 12 - explicit UTC timestamps are strict, require actual calendar instants and no implicit clock
+  ---
+  duration_ms: 2.7685
+  type: 'test'
+  ...
+# Subtest: DST and opposite offset sites format verified local civil time from explicit instants
+ok 13 - DST and opposite offset sites format verified local civil time from explicit instants
+  ---
+  duration_ms: 4.9474
+  type: 'test'
+  ...
+# Subtest: missing timezone is explicit and cannot format by guessing
+ok 14 - missing timezone is explicit and cannot format by guessing
+  ---
+  duration_ms: 0.8795
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 190.482

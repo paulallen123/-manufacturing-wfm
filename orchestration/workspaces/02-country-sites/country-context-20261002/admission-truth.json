@@ -1,0 +1,35 @@
+{
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "parentSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "baseTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "componentStatus": "TESTED_AND_INDEPENDENTLY_REVIEWED_LOCAL_SCOPE",
+  "broadCapabilities": "IN_PROGRESS",
+  "runtimeWired": false,
+  "hostedProof": false,
+  "providerProof": false,
+  "canonicalAdmission": "PENDING",
+  "wholeRuntimeAssembly": "PENDING",
+  "branchSuggestion": "feature/vector-lane02-country-context-20261002",
+  "sourceSuite": 41,
+  "independentHeldOut": 15,
+  "reviewStatus": "BOUNDED_REPAIR_VERIFIED_NO_OPEN_P1_P2",
+  "priorPublishedTwinHolds": "f68 P2 holds close only on exact repaired blobs, not retroactively on f68",
+  "sharedBoundary": {
+    "owner": "LANE01",
+    "classification": "CANONICAL_DEPENDENCY_OWNED_LANE01",
+    "paths": [
+      {
+        "path": "implementation/runtime/inert-finite-json.cjs",
+        "blob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261"
+      },
+      {
+        "path": "implementation/runtime/inert-finite-json.test.cjs",
+        "blob": "b417a98fc62e24240a78b2f7e95a5c9a88c16791"
+      }
+    ],
+    "countryCopyPurpose": "Identical canonical dependency paths ensure standalone branch executability; no competing owner"
+  },
+  "historicalEvidenceTruth": "Owner manifests were sealed before final review and retain PENDING_NEW_BYTES; this final truth record binds independent review to listed exact shipping identities."
+}

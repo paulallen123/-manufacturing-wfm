@@ -1,0 +1,244 @@
+TAP version 13
+# Subtest: revision is deterministic regardless of input ordering
+ok 1 - revision is deterministic regardless of input ordering
+  ---
+  duration_ms: 40.7237
+  type: 'test'
+  ...
+# Subtest: integration degradation propagates impact to proof, readiness and role learning
+ok 2 - integration degradation propagates impact to proof, readiness and role learning
+  ---
+  duration_ms: 4.9642
+  type: 'test'
+  ...
+# Subtest: cross-tenant comparison is denied
+ok 3 - cross-tenant comparison is denied
+  ---
+  duration_ms: 1.6339
+  type: 'test'
+  ...
+# Subtest: unknown edge target fails closed
+ok 4 - unknown edge target fails closed
+  ---
+  duration_ms: 0.4559
+  type: 'test'
+  ...
+# Subtest: verified official snapshot becomes current evidence
+ok 5 - verified official snapshot becomes current evidence
+  ---
+  duration_ms: 5.6742
+  type: 'test'
+  ...
+# Subtest: stale source cannot silently remain usable
+ok 6 - stale source cannot silently remain usable
+  ---
+  duration_ms: 0.7813
+  type: 'test'
+  ...
+# Subtest: unverified retrieval cannot enter authoritative evidence
+ok 7 - unverified retrieval cannot enter authoritative evidence
+  ---
+  duration_ms: 1.2488
+  type: 'test'
+  ...
+# Subtest: source metadata never grants execution authority
+ok 8 - source metadata never grants execution authority
+  ---
+  duration_ms: 0.9426
+  type: 'test'
+  ...
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 9 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 35.8788
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 10 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 0.8346
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 11 - verified pack requires provenance
+  ---
+  duration_ms: 1.0702
+  type: 'test'
+  ...
+# Subtest: complete known site becomes advisory-ready with zero routine customer rule entry
+ok 12 - complete known site becomes advisory-ready with zero routine customer rule entry
+  ---
+  duration_ms: 7.9392
+  type: 'test'
+  ...
+# Subtest: unknown organisational facts create only targeted exception questions
+ok 13 - unknown organisational facts create only targeted exception questions
+  ---
+  duration_ms: 2.5666
+  type: 'test'
+  ...
+# Subtest: worker temporarily located in unsupported country blocks only that worker policy coverage
+ok 14 - worker temporarily located in unsupported country blocks only that worker policy coverage
+  ---
+  duration_ms: 3.3378
+  type: 'test'
+  ...
+# Subtest: preflight never grants execution or customer mutation authority
+ok 15 - preflight never grants execution or customer mutation authority
+  ---
+  duration_ms: 1.5383
+  type: 'test'
+  ...
+# Subtest: bitemporal resolution distinguishes legal validity from what VECTOR knew
+ok 16 - bitemporal resolution distinguishes legal validity from what VECTOR knew
+  ---
+  duration_ms: 7.7172
+  type: 'test'
+  ...
+# Subtest: mandatory ceilings compose to the strictest applicable rule across layers
+ok 17 - mandatory ceilings compose to the strictest applicable rule across layers
+  ---
+  duration_ms: 1.6336
+  type: 'test'
+  ...
+# Subtest: customer policy cannot weaken a mandatory ceiling
+ok 18 - customer policy cannot weaken a mandatory ceiling
+  ---
+  duration_ms: 1.4638
+  type: 'test'
+  ...
+# Subtest: collective agreement scope does not leak to workers outside that agreement
+ok 19 - collective agreement scope does not leak to workers outside that agreement
+  ---
+  duration_ms: 3.6854
+  type: 'test'
+  ...
+# Subtest: verified exceptions never silently weaken the base rule
+ok 20 - verified exceptions never silently weaken the base rule
+  ---
+  duration_ms: 1.5835
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 21 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 2.3175
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 22 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 2.1751
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 23 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 0.8269
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 24 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.3239
+  type: 'test'
+  ...
+# Subtest: inherited display context is detached, field-provenanced and has no policy authority
+ok 25 - inherited display context is detached, field-provenanced and has no policy authority
+  ---
+  duration_ms: 42.5624
+  type: 'test'
+  ...
+# Subtest: future parent knowledge cannot enter earlier site context
+ok 26 - future parent knowledge cannot enter earlier site context
+  ---
+  duration_ms: 1.0828
+  type: 'test'
+  ...
+# Subtest: future effective parents cannot enter earlier site context
+ok 27 - future effective parents cannot enter earlier site context
+  ---
+  duration_ms: 0.9642
+  type: 'test'
+  ...
+# Subtest: selected unverified context and unverified hierarchy fail closed
+ok 28 - selected unverified context and unverified hierarchy fail closed
+  ---
+  duration_ms: 1.4006
+  type: 'test'
+  ...
+# Subtest: half-open parent validity permits successive parents, never overlap by list order
+ok 29 - half-open parent validity permits successive parents, never overlap by list order
+  ---
+  duration_ms: 2.316
+  type: 'test'
+  ...
+# Subtest: hierarchy cycles fail closed
+ok 30 - hierarchy cycles fail closed
+  ---
+  duration_ms: 0.5983
+  type: 'test'
+  ...
+# Subtest: nonorganisation parent type cannot provide display context
+ok 31 - nonorganisation parent type cannot provide display context
+  ---
+  duration_ms: 0.7508
+  type: 'test'
+  ...
+# Subtest: wrong tenant, node/edge tenant tampering and revision mutation rejected
+ok 32 - wrong tenant, node/edge tenant tampering and revision mutation rejected
+  ---
+  duration_ms: 1.001
+  type: 'test'
+  ...
+# Subtest: claimed revision cannot hide raw payload changes behind canonical normalization
+ok 33 - claimed revision cannot hide raw payload changes behind canonical normalization
+  ---
+  duration_ms: 1.0855
+  type: 'test'
+  ...
+# Subtest: site identity is required, must exist, be a site and known/effective at query
+ok 34 - site identity is required, must exist, be a site and known/effective at query
+  ---
+  duration_ms: 1.8349
+  type: 'test'
+  ...
+# Subtest: invalid display fields rejected rather than silently normalized into authority
+ok 35 - invalid display fields rejected rather than silently normalized into authority
+  ---
+  duration_ms: 5.7133
+  type: 'test'
+  ...
+# Subtest: unknown policy-like fields are not inherited
+ok 36 - unknown policy-like fields are not inherited
+  ---
+  duration_ms: 0.8769
+  type: 'test'
+  ...
+# Subtest: explicit UTC timestamps are strict, require actual calendar instants and no implicit clock
+ok 37 - explicit UTC timestamps are strict, require actual calendar instants and no implicit clock
+  ---
+  duration_ms: 2.1286
+  type: 'test'
+  ...
+# Subtest: DST and opposite offset sites format verified local civil time from explicit instants
+ok 38 - DST and opposite offset sites format verified local civil time from explicit instants
+  ---
+  duration_ms: 4.398
+  type: 'test'
+  ...
+# Subtest: missing timezone is explicit and cannot format by guessing
+ok 39 - missing timezone is explicit and cannot format by guessing
+  ---
+  duration_ms: 1.1442
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 39
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 345.0835

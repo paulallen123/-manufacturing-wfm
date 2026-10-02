@@ -1,0 +1,66 @@
+{
+  "sourceBlob": "94cbaa406f4096b15813de2f6d62d0d7e432333b",
+  "testBlob": "b91dd209ef070fc60c73a53739cdf5bcd62cbeab",
+  "evidence": [
+    {
+      "path": "work/trust_review/country-projection-review.md",
+      "bytes": 3321,
+      "sha256": "37af1129e02fc364262247d99b8ee69e95b6249a31135ef536b3a87deaac5824"
+    },
+    {
+      "path": "work/trust_review/country-projection-findings.json",
+      "bytes": 11921,
+      "sha256": "2e3462fdd5f2c0c6a024692041f078a59880805c7d7d2a9d1492eaa58d397198"
+    },
+    {
+      "path": "work/trust_review/country-projection-identities.json",
+      "bytes": 4413,
+      "sha256": "a6102fe83eefe3425cd66da44e25ba50e057ba1e7cdf937ce9d6b0bab40b3d7f"
+    },
+    {
+      "path": "work/trust_review/country-projection.held-out.test.cjs",
+      "bytes": 7437,
+      "sha256": "975e397efccc1b9bac01c5f9ce240bdf1931ce72a59da98b5050952000afcdf6"
+    },
+    {
+      "path": "work/trust_review/country-projection.held-out.node22.tap",
+      "bytes": 10753,
+      "sha256": "5938902a412f63d2b3bde63e634112248cf8d35ad811fcb23a3fa40c0599b160"
+    },
+    {
+      "path": "work/trust_review/country-projection.held-out.run.json",
+      "bytes": 545,
+      "sha256": "6548895568e1e414df85b54169abd80cd9b005c4e4f27cfde695e1188f9811b1"
+    },
+    {
+      "path": "work/trust_review/country-projection.source-suite.node22.tap",
+      "bytes": 7743,
+      "sha256": "19d9957729e843a961aa68759926de40c6d1f53bef6d100422b6f910e153bc0c"
+    },
+    {
+      "path": "work/trust_review/country-projection.source-suite.run.json",
+      "bytes": 1565,
+      "sha256": "77eb6294907b36132ba475fe9b1e662e316df902c2c6ad97573acf406898d9fc"
+    },
+    {
+      "path": "work/trust_review/country-projection.observations.json",
+      "bytes": 2852,
+      "sha256": "2b30d775a30dd41f033cad431a47a1021bdfb2411e53e5943812e8181bd433a6"
+    },
+    {
+      "path": "work/trust_review/country-projection.initial-harness-error.node22.tap",
+      "bytes": 11597,
+      "sha256": "8dbbf142f99ee3597932d7a68a4375cbea2d8ff7b5be446072d404f9d2245c25"
+    },
+    {
+      "path": "work/trust_review/run-country-review.cjs",
+      "bytes": 2181,
+      "sha256": "36b918ab67cd3c9b1f1d1338ef0608038b73e41c7818a009ad4481eb51f4cb2c"
+    },
+    {
+      "path": "work/trust_review/network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "node": "v22.23.2",
+  "observations": [
+    {
+      "name": "input getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    },
+    {
+      "name": "revision nodes getter",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 4,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    },
+    {
+      "name": "payload toJSON",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 1,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    },
+    {
+      "name": "proxy revision",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 13,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    },
+    {
+      "name": "overridden nodes.map",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 2,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    },
+    {
+      "name": "nonfinite NaN",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    },
+    {
+      "name": "nonfinite Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    },
+    {
+      "name": "nonfinite -Infinity",
+      "accepted": true,
+      "error": null,
+      "userCodeCalls": 0,
+      "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+      "context": {
+        "countryCode": "GB",
+        "locale": "en-GB",
+        "timeZone": "Europe/London",
+        "currency": "EUR"
+      }
+    }
+  ]
+}

@@ -1,0 +1,301 @@
+{
+  "status": "TWO_MATERIAL_P2_HOLD_LOCAL_PORT_ADMISSION",
+  "workBaselineSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "sourceIdentities": {
+    "verified": true,
+    "files": [
+      {
+        "repositoryTargetPath": "policy/runtime/site-operating-context-projection.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.cjs",
+        "mode": "100644",
+        "sourceBlob": null,
+        "proposedBlob": "94cbaa406f4096b15813de2f6d62d0d7e432333b",
+        "sha256": "ea984aa1f7ef12450501c383e9f5210d12ccaf195c2381a4ff517ba68eaa3691",
+        "bytes": 6695,
+        "change": "ADD"
+      },
+      {
+        "repositoryTargetPath": "policy/runtime/site-operating-context-projection.test.cjs",
+        "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.test.cjs",
+        "mode": "100644",
+        "sourceBlob": null,
+        "proposedBlob": "b91dd209ef070fc60c73a53739cdf5bcd62cbeab",
+        "sha256": "b210ccd5291f0336f0088ed903c613a4245fa4aac9ae139580e851a480f90eab",
+        "bytes": 6557,
+        "change": "ADD"
+      }
+    ],
+    "canonicalDependency": {
+      "path": "implementation/runtime/implementation-digital-twin.cjs",
+      "mode": "100644",
+      "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+      "bytes": 5922,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    "verificationOnlyDependencies": [
+      {
+        "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+        "mode": "100644",
+        "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+        "bytes": 3631,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+        "mode": "100644",
+        "blob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+        "bytes": 4591,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "mode": "100644",
+        "blob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+        "bytes": 1559,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/country-policy-pack-registry.cjs",
+        "mode": "100644",
+        "blob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+        "bytes": 5407,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+        "mode": "100644",
+        "blob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+        "bytes": 1555,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/global-site-policy-preflight.cjs",
+        "mode": "100644",
+        "blob": "4f18cffc150935e760c914a216c97c0700e23e44",
+        "bytes": 4295,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+        "mode": "100644",
+        "blob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+        "bytes": 2439,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+        "mode": "100644",
+        "blob": "7f58c8ac9289311a8837e899af200ec785563987",
+        "bytes": 10225,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "mode": "100644",
+        "blob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+        "bytes": 4010,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/regulatory-change-candidate.cjs",
+        "mode": "100644",
+        "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+        "bytes": 3281,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+        "mode": "100644",
+        "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+        "bytes": 1881,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      },
+      {
+        "path": "release/global-sites-policy-architecture.json",
+        "mode": "100644",
+        "blob": "2e4be4a8ff792bfd1b75438ecfa5c74970708938",
+        "bytes": 3931,
+        "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+      }
+    ],
+    "referenceBlob": "a301440db86c643d7bf3760169aa4760a51a125a"
+  },
+  "findings": [
+    {
+      "id": "COUNTRY-01",
+      "priority": "P2",
+      "title": "Projection invokes caller code before validating canonical input",
+      "locations": [
+        {
+          "path": "policy/runtime/site-operating-context-projection.cjs",
+          "blob": "94cbaa406f4096b15813de2f6d62d0d7e432333b",
+          "line": 30,
+          "reason": "Input destructuring/property reads and canonical createTwinRevision/JSON clone/stable operate directly on caller records and arrays."
+        }
+      ],
+      "actual": [
+        {
+          "name": "input getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        },
+        {
+          "name": "revision nodes getter",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 4,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        },
+        {
+          "name": "payload toJSON",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 1,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        },
+        {
+          "name": "proxy revision",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 13,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        },
+        {
+          "name": "overridden nodes.map",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 2,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        }
+      ],
+      "expected": "Reject non-inert records/arrays without invoking any accessor, proxy trap, custom map/toJSON or coercion method.",
+      "impact": "Read-only display projection accepts and executes caller supplied behavior before any integrity boundary. Demonstrated counters, not actual product/provider mutations.",
+      "boundedRepair": "Strict descriptor-based finite JSON copy at new projection entry, with proxy detection and no input methods, before any destructuring/property reads or canonical dependency call. Preserve frozen twin bytes."
+    },
+    {
+      "id": "COUNTRY-02",
+      "priority": "P2",
+      "title": "Nonfinite raw payload changes retain canonical null digest and pass exact binding",
+      "locations": [
+        {
+          "path": "policy/runtime/site-operating-context-projection.cjs",
+          "blob": "94cbaa406f4096b15813de2f6d62d0d7e432333b",
+          "line": 35,
+          "reason": "Canonical stable encodes NaN and ±Infinity as null; canonical JSON clone also normalizes them to null, so digest and raw-to-snapshot stable comparisons both pass."
+        }
+      ],
+      "actual": [
+        {
+          "name": "nonfinite NaN",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        },
+        {
+          "name": "nonfinite Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        },
+        {
+          "name": "nonfinite -Infinity",
+          "accepted": true,
+          "error": null,
+          "userCodeCalls": 0,
+          "revision": "9ee16d0c35f48c7cec5bdea2433889e7e1ab4c6baab141253eaa62bfff070984",
+          "context": {
+            "countryCode": "GB",
+            "locale": "en-GB",
+            "timeZone": "Europe/London",
+            "currency": "EUR"
+          }
+        }
+      ],
+      "expected": "Reject nonfinite numeric values anywhere in claimed complete canonical payload before normalization.",
+      "impact": "Purported exact raw payload verification accepts a modified non-JSON snapshot under unchanged revision identity. Demonstrated metadata null replacement; display fields themselves unchanged.",
+      "boundedRepair": "Reject nonfinite numeric data as part of inert finite JSON validation before canonical normalization; meaningful nonfinite replacement regressions. No canonical/store modification required."
+    }
+  ],
+  "executed": {
+    "node": "v22.23.2",
+    "networkGuard": true,
+    "timeoutMs": 60000,
+    "heldOut": {
+      "file": "country-projection.held-out.node22.tap",
+      "tests": 15,
+      "pass": 7,
+      "fail": 8,
+      "skip": 0,
+      "durationMs": 183.66
+    },
+    "sourceSuite": {
+      "file": "country-projection.source-suite.node22.tap",
+      "tests": 39,
+      "pass": 39,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 345.0835
+    }
+  },
+  "passingBoundaries": [
+    "Known/effective node and parent edge exclusion; half-open interval exact endpoint; source/verification provenance",
+    "Parent ambiguity and cycles reject; cross-tenant or digest tampering rejects",
+    "Strict UTC calendar checks, DST fall distinct offsets, invalid locale and missing timeZone fail closed",
+    "Detached frozen output; no implicit clock; legal/policy-like fields excluded; executionAuthority=false/customerMutation=false"
+  ],
+  "scope": "ISOLATED_LOCAL_UNWIRED_SOURCE_ONLY",
+  "limitations": [
+    "No facet producer, route, browser, hosted, customer, jurisdiction, exchange-rate or deployment proof.",
+    "Canonical verified booleans/digests require authenticated upstream provenance and complete snapshot assembly.",
+    "One initial malformed-input probe mistakenly substituted base for null via reviewer helper; initial harness log retained, fixed explicit-null input now passes. Eight remaining failures are executed behavioral negatives."
+  ],
+  "frozenRedCapsule": "work/trust_review/country-projection-red-source (two exact proposed shipping files and13 unchanged verification dependencies)"
+}

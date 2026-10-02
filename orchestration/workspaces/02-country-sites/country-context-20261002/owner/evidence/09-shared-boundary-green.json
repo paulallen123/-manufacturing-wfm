@@ -1,0 +1,21 @@
+{
+  "node": "v22.23.2",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "policy/runtime/site-operating-context-projection.test.cjs",
+    "implementation/runtime/implementation-digital-twin.test.cjs",
+    "policy/runtime/authoritative-policy-source-registry.test.cjs",
+    "policy/runtime/country-policy-pack-registry.test.cjs",
+    "policy/runtime/global-site-policy-preflight.test.cjs",
+    "policy/runtime/jurisdiction-policy-graph.test.cjs",
+    "policy/runtime/regulatory-change-candidate.test.cjs"
+  ],
+  "exitCode": 0,
+  "error": null,
+  "signal": null,
+  "networkBlocked": true,
+  "sourceOnly": true,
+  "logSha256": "7acbc94deea819aa219e36734874583099385af4cf2e4bd41eef2c6102fb971c"
+}

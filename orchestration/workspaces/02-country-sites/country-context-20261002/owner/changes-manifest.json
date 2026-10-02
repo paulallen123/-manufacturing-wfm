@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "lane": "02",
+  "capabilityId": "product-020",
+  "canonicalOwner": "Country/site display context projection over existing ImplementationDigitalTwin; legal policy composition remains jurisdiction-policy-graph",
+  "sourcePR": 205,
+  "sourceBranch": "evolution/factory-evidence-kernel-20260920-1146",
+  "sourceSha": "65fc59dadba377bce5fc68a88dc536261a5e68be",
+  "sourcePath": "platform/factory-graph/global-operating-context.mjs",
+  "sourceBlob": "a301440db86c643d7bf3760169aa4760a51a125a",
+  "frozenSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "provenBaseSha": null,
+  "convergenceBaseSha": null,
+  "classification": "PORT",
+  "state": "IN_PROGRESS",
+  "componentProofState": "TESTED",
+  "proofScope": "ISOLATED_LOCAL_SOURCE_CONTRACT_ONLY",
+  "files": [
+    {
+      "repositoryTargetPath": "policy/runtime/site-operating-context-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.cjs",
+      "mode": "100644",
+      "proposedBlob": "25bc851531b57cceada5c79322a76bdbbda92331",
+      "sha256": "a81a5aa172f50ecbedc504088f726f0da88d58cd1a7a31d4fe0865bf1425b5de",
+      "bytes": 6810,
+      "sourceBlob": null,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "policy/runtime/site-operating-context-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.test.cjs",
+      "mode": "100644",
+      "proposedBlob": "a7e7734fa172a0ff696e6d12af5c3c7f626c2f6b",
+      "sha256": "24ffd26e44eb88f832b315505eed8d6545f95c2f365f83f9670247277e340dbf",
+      "bytes": 8330,
+      "sourceBlob": null,
+      "change": "ADD"
+    }
+  ],
+  "shippingTargets": [
+    "policy/runtime/site-operating-context-projection.cjs",
+    "policy/runtime/site-operating-context-projection.test.cjs"
+  ],
+  "addedBytes": 15140,
+  "sharedProductChangedBytes": 0,
+  "canonicalDependency": {
+    "path": "implementation/runtime/implementation-digital-twin.cjs",
+    "mode": "100644",
+    "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+    "bytes": 5922,
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+  },
+  "verificationOnlyDependencies": [
+    {
+      "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+      "mode": "100644",
+      "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+      "bytes": 3631,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "mode": "100644",
+      "blob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "bytes": 4591,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "mode": "100644",
+      "blob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "bytes": 1559,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "mode": "100644",
+      "blob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "bytes": 5407,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "mode": "100644",
+      "blob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "bytes": 1555,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "mode": "100644",
+      "blob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "bytes": 4295,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "mode": "100644",
+      "blob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "bytes": 2439,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "mode": "100644",
+      "blob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "bytes": 10225,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "mode": "100644",
+      "blob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "bytes": 4010,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "mode": "100644",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "bytes": 3281,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "mode": "100644",
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "bytes": 1881,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "release/global-sites-policy-architecture.json",
+      "mode": "100644",
+      "blob": "2e4be4a8ff792bfd1b75438ecfa5c74970708938",
+      "bytes": 3931,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    }
+  ],
+  "tests": {
+    "runtime": "v22.23.2",
+    "networkBlocked": true,
+    "focused": 17,
+    "canonicalAffected": 24,
+    "totalPassed": 41,
+    "totalFailed": 0,
+    "receipts": [
+      {
+        "path": "evidence/01-historical-red.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "historical-controls.mjs"
+        ],
+        "exitCode": 1,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "8a3d7bf3943804a34ec004d13009a08849b789cdde5294bcf5c9d0c0b0bf9161"
+      },
+      {
+        "path": "evidence/02-focused-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "policy/runtime/site-operating-context-projection.test.cjs"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "0ddafff414536993508ecada81e0ef4ae79909cb3c716b280ec9eb0060a0266d"
+      },
+      {
+        "path": "evidence/03-affected-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "policy/runtime/site-operating-context-projection.test.cjs",
+          "implementation/runtime/implementation-digital-twin.test.cjs",
+          "policy/runtime/authoritative-policy-source-registry.test.cjs",
+          "policy/runtime/country-policy-pack-registry.test.cjs",
+          "policy/runtime/global-site-policy-preflight.test.cjs",
+          "policy/runtime/jurisdiction-policy-graph.test.cjs",
+          "policy/runtime/regulatory-change-candidate.test.cjs"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "9c4dc47531f7a43c2c762b7441a0fc581869e6d28de30ce9c281c8579bfd207d"
+      },
+      {
+        "path": "evidence/04-exact-payload-red.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "policy/runtime/site-operating-context-projection.test.cjs"
+        ],
+        "exitCode": 1,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "d754ef180a1d02ee569386e73429d59eb459054de1a83561b7bd33d3d3cd7c70"
+      },
+      {
+        "path": "evidence/05-final-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "policy/runtime/site-operating-context-projection.test.cjs",
+          "implementation/runtime/implementation-digital-twin.test.cjs",
+          "policy/runtime/authoritative-policy-source-registry.test.cjs",
+          "policy/runtime/country-policy-pack-registry.test.cjs",
+          "policy/runtime/global-site-policy-preflight.test.cjs",
+          "policy/runtime/jurisdiction-policy-graph.test.cjs",
+          "policy/runtime/regulatory-change-candidate.test.cjs"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "91cd8b66291f8a2f4462eee8748d42e0ff55f47c8360ca3b6576e6753e5b5071"
+      },
+      {
+        "path": "evidence/06-review-boundary-red.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "policy/runtime/site-operating-context-projection.test.cjs"
+        ],
+        "exitCode": 1,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "346a78bd4a5f4e250d56a8e36793f4ec259d574faebe7a05fb2cefb69571c372"
+      },
+      {
+        "path": "evidence/07-boundary-focused-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "policy/runtime/site-operating-context-projection.test.cjs"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "b0315d5eabb9aecd824885d38213e22a9b244250d8205412362c2cf63ccb7066"
+      },
+      {
+        "path": "evidence/08-boundary-affected-green.json",
+        "node": "v22.23.2",
+        "args": [
+          "--require",
+          "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+          "--test",
+          "policy/runtime/site-operating-context-projection.test.cjs",
+          "implementation/runtime/implementation-digital-twin.test.cjs",
+          "policy/runtime/authoritative-policy-source-registry.test.cjs",
+          "policy/runtime/country-policy-pack-registry.test.cjs",
+          "policy/runtime/global-site-policy-preflight.test.cjs",
+          "policy/runtime/jurisdiction-policy-graph.test.cjs",
+          "policy/runtime/regulatory-change-candidate.test.cjs"
+        ],
+        "exitCode": 0,
+        "error": null,
+        "signal": null,
+        "networkBlocked": true,
+        "sourceOnly": true,
+        "logSha256": "0e1d6451c8079adf9854b2544cc7dd4b50e47291aa1c7b05e85e8041d8f03628"
+      }
+    ],
+    "meaningfulRedControls": [
+      "historical source returned future GBP before knownAt, source returned unverified Europe/London (0/2)",
+      "first new projection normalized raw org ID whitespace behind unchanged digest; focused14/15 then exact canonical payload comparison fixes it",
+      "Independent executable-object/proxy/serializer/array-method and nonfinite-null alias findings; own focused source15/17 before boundary,17/17 after, all41affected after shared mapping"
+    ],
+    "finalLog": "evidence/09-shared-boundary-green.log",
+    "finalReceipt": "evidence/09-shared-boundary-green.json"
+  },
+  "inputs": "Complete canonical tenant revision; explicit siteId/knownAt/effectiveAt; verified PARENT_OF edges and node.data.globalContext facts",
+  "authority": {
+    "executionAuthority": false,
+    "customerMutation": false,
+    "legalPolicyContext": null
+  },
+  "remainingWork": [
+    "Independent source/held-out review",
+    "Authenticated canonical globalContext/PARENT_OF facet producers and full snapshot assembly",
+    "Scope/input/CPU admission at eventual runtime boundary",
+    "Role/customer UI and hosted exact deployment/restart proof",
+    "Currency/country/data-region codes remain display labels, not legal/exchange-rate/deployment certification"
+  ],
+  "exclusions": [
+    "Worker jurisdiction override resolver",
+    "Legal rule inheritance/most-specific-wins",
+    "New graph or policy store",
+    "Routes/provider/network/model/paid/deployment mutations",
+    "Staffology and reviewed proof-repair targets"
+  ],
+  "rollback": "Omit/revert country two paths; shared helper remains lane01-owned and may be removed only when neither projection uses it. Canonical twin/policy unchanged.",
+  "publication": "LOCAL_ONLY_UNADMITTED",
+  "requiredProposalDependencies": [
+    {
+      "repositoryTargetPath": "implementation/runtime/inert-finite-json.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane01-twin\\implementation\\runtime\\inert-finite-json.cjs",
+      "mode": "100644",
+      "proposedBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+      "sha256": "ece8dc9d2aff5779b8f22183f63ea9e6d320e582f9a41da5c5842501e6f88980",
+      "bytes": 1981,
+      "owner": "lane01 bounded projection boundary repair",
+      "contract": "Detached dense finite inert JSON only; proxy rejection before reflection/read; descriptors before values; no accessor/serializer/overridden-array execution",
+      "frozenPathAbsent": true,
+      "newStateStore": false,
+      "publishExactlyOnce": true,
+      "publishByThisLane": false,
+      "verificationOnlyLocalMirror": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\implementation\\runtime\\inert-finite-json.cjs",
+      "integrationRequirement": "Apply exact lane01-owned shared helper before or together with country; do not claim standalone frozen-base executability without dependency"
+    }
+  ],
+  "boundaryRepair": {
+    "priorModuleBlob": "94cbaa406f4096b15813de2f6d62d0d7e432333b",
+    "priorTestBlob": "b91dd209ef070fc60c73a53739cdf5bcd62cbeab",
+    "sharedHelperBlob": "e38b912c9746f69a0dd3c1c991c25f2bbf4d3261",
+    "independentReview": "PENDING_NEW_BYTES",
+    "archive": "archive-pre-boundary"
+  },
+  "boundaryEvidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\evidence\\06-review-boundary-red.log",
+      "blob": "d7bb5e1379c3ecb1581e67cb86291d3be7ebbebb",
+      "sha256": "346a78bd4a5f4e250d56a8e36793f4ec259d574faebe7a05fb2cefb69571c372",
+      "bytes": 5469
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\evidence\\09-shared-boundary-green.log",
+      "blob": "210d9a90076a1a6333f0e193b7f8aa0d79ea6e45",
+      "sha256": "7acbc94deea819aa219e36734874583099385af4cf2e4bd41eef2c6102fb971c",
+      "bytes": 8166
+    }
+  ]
+}

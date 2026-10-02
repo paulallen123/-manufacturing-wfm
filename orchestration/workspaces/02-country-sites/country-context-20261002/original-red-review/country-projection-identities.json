@@ -1,0 +1,119 @@
+{
+  "verified": true,
+  "files": [
+    {
+      "repositoryTargetPath": "policy/runtime/site-operating-context-projection.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "94cbaa406f4096b15813de2f6d62d0d7e432333b",
+      "sha256": "ea984aa1f7ef12450501c383e9f5210d12ccaf195c2381a4ff517ba68eaa3691",
+      "bytes": 6695,
+      "change": "ADD"
+    },
+    {
+      "repositoryTargetPath": "policy/runtime/site-operating-context-projection.test.cjs",
+      "localPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane02-country\\policy\\runtime\\site-operating-context-projection.test.cjs",
+      "mode": "100644",
+      "sourceBlob": null,
+      "proposedBlob": "b91dd209ef070fc60c73a53739cdf5bcd62cbeab",
+      "sha256": "b210ccd5291f0336f0088ed903c613a4245fa4aac9ae139580e851a480f90eab",
+      "bytes": 6557,
+      "change": "ADD"
+    }
+  ],
+  "canonicalDependency": {
+    "path": "implementation/runtime/implementation-digital-twin.cjs",
+    "mode": "100644",
+    "blob": "5dab25c63eb6f9c2f0c26c426d3df0e4f7990cfa",
+    "bytes": 5922,
+    "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+  },
+  "verificationOnlyDependencies": [
+    {
+      "path": "implementation/runtime/implementation-digital-twin.test.cjs",
+      "mode": "100644",
+      "blob": "0cc0cb40268df49c9e99c2e6d2eb5a1f6941722f",
+      "bytes": 3631,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "mode": "100644",
+      "blob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "bytes": 4591,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "mode": "100644",
+      "blob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "bytes": 1559,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "mode": "100644",
+      "blob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "bytes": 5407,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "mode": "100644",
+      "blob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "bytes": 1555,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "mode": "100644",
+      "blob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "bytes": 4295,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "mode": "100644",
+      "blob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "bytes": 2439,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "mode": "100644",
+      "blob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "bytes": 10225,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "mode": "100644",
+      "blob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "bytes": 4010,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "mode": "100644",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "bytes": 3281,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "mode": "100644",
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "bytes": 1881,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    },
+    {
+      "path": "release/global-sites-policy-architecture.json",
+      "mode": "100644",
+      "blob": "2e4be4a8ff792bfd1b75438ecfa5c74970708938",
+      "bytes": 3931,
+      "sourceSha": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+    }
+  ],
+  "referenceBlob": "a301440db86c643d7bf3760169aa4760a51a125a"
+}

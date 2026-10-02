@@ -1,0 +1,66 @@
+'use strict';
+// Read-only display projection; canonical TwinRevision remains the sole input store.
+const {createTwinRevision,digest,stable}=require('../../implementation/runtime/implementation-digital-twin.cjs');
+const {inertJsonCopy}=require('../../implementation/runtime/inert-finite-json.cjs');
+const ORGANISATION_TYPES=new Set(['tenant','legal-entity','site','department','line']);
+const FIELDS=['countryCode','locale','timeZone','currency','unitSystem','dataRegion'];
+function utc(value,label){
+  if(typeof value!=='string')throw Error(label+' requires an explicit UTC ISO instant');
+  const match=/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,3}))?Z$/.exec(value);
+  const ms=Date.parse(value);
+  if(!match||!Number.isFinite(ms)||new Date(ms).toISOString()!==match[1]+'.'+(match[2]||'').padEnd(3,'0')+'Z')throw Error(label+' requires a valid UTC ISO instant');
+  return ms;
+}
+function freeze(value){if(value&&typeof value==='object'){for(const child of Object.values(value))freeze(child);Object.freeze(value);}return value;}
+function contextFields(input,label){
+  if(input===undefined)return{};
+  if(!input||typeof input!=='object'||Array.isArray(input))throw Error(label+' globalContext must be an object');
+  const result={};
+  for(const field of FIELDS){
+    if(!Object.hasOwn(input,field))continue;
+    const value=input[field];if(typeof value!=='string'||!value.trim()||value!==value.trim())throw Error(label+' '+field+' must be nonempty text');
+    if(field==='countryCode'&&!/^[A-Z]{2}$/.test(value))throw Error(label+' countryCode requires an alpha-2 display code');
+    if(field==='currency'&&!/^[A-Z]{3}$/.test(value))throw Error(label+' currency requires an uppercase display code');
+    if(field==='unitSystem'&&!['metric','imperial','mixed'].includes(value))throw Error(label+' unitSystem is invalid');
+    try{if(field==='locale'){result[field]=Intl.getCanonicalLocales(value)[0];continue;}if(field==='timeZone'){result[field]=new Intl.DateTimeFormat('en',{timeZone:value}).resolvedOptions().timeZone;continue;}}catch{throw Error(label+' '+field+' is invalid');}
+    result[field]=value;
+  }return result;
+}
+function projectSiteOperatingContext(input={}){
+  input=inertJsonCopy(input);
+  const {revision,tenant,siteId}=input;
+  if(typeof tenant!=='string'||!tenant.trim()||tenant!==revision?.tenant)throw Error('Projection tenant binding mismatch');
+  if(!revision||!Array.isArray(revision.nodes)||!Array.isArray(revision.edges)||typeof revision.revision!=='string')throw Error('Complete canonical revision required');
+  for(const item of [...revision.nodes,...revision.edges])if(item?.tenant!==tenant)throw Error('Cross-tenant revision item denied');
+  const snapshot=createTwinRevision(revision);if(snapshot.revision!==revision.revision)throw Error('Canonical revision digest mismatch');
+  if(stable({tenant:revision.tenant,nodes:revision.nodes,edges:revision.edges})!==stable({tenant:snapshot.tenant,nodes:snapshot.nodes,edges:snapshot.edges}))throw Error('Canonical revision payload mismatch');
+  const known=utc(input.knownAt,'knownAt'),effective=utc(input.effectiveAt,'effectiveAt');
+  const nodes=new Map(snapshot.nodes.map(n=>[n.id,n]));
+  const eligible=(item,label)=>utc(item.observedAt,label+'.observedAt')<=known&&(!item.effectiveAt||utc(item.effectiveAt,label+'.effectiveAt')<=effective);
+  const site=nodes.get(siteId);if(!site||site.type!=='site')throw Error('Explicit existing site required');
+  if(!eligible(site,'site'))throw Error('site is unavailable at query time');
+  const parents=new Map();
+  for(const edge of snapshot.edges){if(edge.relation!=='PARENT_OF')continue;
+    const label='PARENT_OF '+edge.from+' '+edge.to;
+    const validFrom=edge.data?.validFrom==null?null:utc(edge.data.validFrom,label+'.validFrom');
+    const validTo=edge.data?.validTo==null?null:utc(edge.data.validTo,label+'.validTo');
+    if(validFrom!=null&&validTo!=null&&validTo<=validFrom)throw Error(label+' validity interval is invalid');
+    if(!eligible(edge,label)||(validFrom!=null&&effective<validFrom)||(validTo!=null&&effective>=validTo))continue;
+    const parent=nodes.get(edge.from),child=nodes.get(edge.to);if(!eligible(parent,'parent')||!eligible(child,'child'))continue;
+    if(!parents.has(edge.to))parents.set(edge.to,[]);parents.get(edge.to).push(edge);
+  }
+  const lineage=[],links=[],seen=new Set();let current=site;
+  while(current){if(seen.has(current.id))throw Error('Organisation hierarchy cycle');seen.add(current.id);
+    if(!ORGANISATION_TYPES.has(current.type))throw Error('PARENT_OF requires organisation node types');
+    if(current.verified!==true)throw Error('Selected organisation context must be verified');
+    if(!current.source.trim())throw Error('Selected context requires source provenance');lineage.push(current);
+    const edges=parents.get(current.id)||[];if(edges.length>1)throw Error('Active parent is ambiguous');
+    if(!edges.length)break;const e=edges[0];if(e.verified!==true||!e.source.trim())throw Error('Selected hierarchy must be verified and source-backed');links.push(e);current=nodes.get(e.from);
+  }
+  lineage.reverse();links.reverse();const context={},fieldProvenance={};
+  for(const n of lineage){const fields=contextFields(n.data.globalContext,n.id);for(const[field,value]of Object.entries(fields)){context[field]=value;fieldProvenance[field]={nodeId:n.id,source:n.source,observedAt:n.observedAt,effectiveAt:n.effectiveAt};}}
+  const payload={contractVersion:'VECTOR_SITE_OPERATING_CONTEXT_PROJECTION_V1',tenant,siteId,revision:snapshot.revision,knownAt:new Date(known).toISOString(),effectiveAt:new Date(effective).toISOString(),lineage:lineage.map(n=>n.id),context,fieldProvenance,hierarchyProvenance:links.map(e=>({from:e.from,to:e.to,source:e.source,observedAt:e.observedAt,effectiveAt:e.effectiveAt,validFrom:e.data?.validFrom||null,validTo:e.data?.validTo||null})),missingFields:['countryCode','timeZone'].filter(f=>!context[f]),policyContext:null,executionAuthority:false,customerMutation:false,claimBoundary:'Verified display context projection only. Country codes, currencies and data-region labels do not establish legal coverage, exchange rates, regional deployment or execution authority.'};
+  freeze(payload);
+  return Object.freeze({...payload,projectionDigest:digest(payload),localParts(instant){const ms=utc(instant,'instant');if(!context.timeZone)throw Error('No verified timeZone is resolved');const parts=new Intl.DateTimeFormat(context.locale||'en',{timeZone:context.timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23',timeZoneName:'shortOffset'}).formatToParts(new Date(ms));return freeze(Object.fromEntries(parts.filter(p=>p.type!=='literal').map(p=>[p.type,p.value])));}});
+}
+module.exports=Object.freeze({projectSiteOperatingContext});
