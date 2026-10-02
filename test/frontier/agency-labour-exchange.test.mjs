@@ -179,3 +179,51 @@ test('5,000 synthetic candidates never select an ineligible worker', () => {
   }
   assert.ok(selected > 300);
 });
+
+for(const id of [undefined,null,'','  ',7])test('unidentified worker '+String(id)+' cannot count as preferred coverage',()=>{
+  const input=baseInput();input.candidates=[worker(id,'A1')];
+  assert.throws(()=>planAgencyLabourFulfilment(input),/worker.*identity/i);
+  assert.equal(evaluateAgencyCandidate(input.candidates[0],input.request,input.agencies[0]).eligible,false);
+});
+for(const pair of [['W1','W1'],['W1',' W1 ']])test('duplicate normalized worker population '+pair.join('/')+' is rejected rather than double-filled',()=>{
+  const input=baseInput();input.candidates=[worker(pair[0],'A1'),worker(pair[1],'A2')];
+  assert.throws(()=>planAgencyLabourFulfilment(input),/duplicate.*worker/i);
+});
+test('empty population and one distinct worker retain explicit coverage gaps',()=>{
+  const input=baseInput();input.candidates=[];
+  const empty=planAgencyLabourFulfilment(input);
+  assert.equal(empty.preferredCoverageCount,0);assert.equal(empty.gapCount,2);
+  input.candidates=[worker('W1','A1')];
+  const partial=planAgencyLabourFulfilment(input);
+  assert.equal(partial.preferredCoverageCount,1);assert.equal(partial.gapCount,1);
+  assert.deepEqual(partial.selectedWorkers.map(x=>x.workerId),['W1']);
+});
+for(const mutation of ['response-worker','candidate-worker','candidate-supplier','evaluated-supplier','evaluated-request','missing-response-worker','missing-candidate-worker','missing-evaluated-request'])test('alternative acceptance rejects '+mutation+' identity drift',()=>{
+  const input=baseInput(),plan=planAgencyLabourFulfilment(input);
+  const response={requestId:'REQ-100',agencyId:'A2',action:'propose_alternative',workerId:'W9'};
+  const alternative={candidate:worker('W9','A2'),request:structuredClone(input.request),agency:input.agencies[1],policy:input.policy};
+  if(mutation==='response-worker')response.workerId='UNRELATED';
+  if(mutation==='candidate-worker')alternative.candidate.workerId='UNRELATED';
+  if(mutation==='candidate-supplier')alternative.candidate.agencyId='A1';
+  if(mutation==='evaluated-supplier')alternative.agency=input.agencies[0];
+  if(mutation==='evaluated-request')alternative.request.requestId='UNRELATED';
+  if(mutation==='missing-response-worker')delete response.workerId;
+  if(mutation==='missing-candidate-worker')delete alternative.candidate.workerId;
+  if(mutation==='missing-evaluated-request')delete alternative.request.requestId;
+  assert.equal(validateAgencyResponse(plan,response,alternative).valid,false);
+});
+test('worker or request mismatch is rejected before eligibility touches its unrelated request',()=>{
+  const input=baseInput(),plan=planAgencyLabourFulfilment(input);
+  const response={requestId:'REQ-100',agencyId:'A2',action:'propose_alternative',workerId:'UNRELATED'};
+  assert.equal(validateAgencyResponse(plan,response,{candidate:worker('W9','A2'),request:null,agency:input.agencies[1],policy:input.policy}).valid,false);
+});
+test('matching alternative IDs still require eligibility and grant only handoff',()=>{
+  const input=baseInput(),plan=planAgencyLabourFulfilment(input);
+  const response={requestId:'REQ-100',agencyId:'A2',action:'propose_alternative',workerId:'W9'};
+  const alternative={candidate:worker('W9','A2'),request:input.request,agency:input.agencies[1],policy:input.policy};
+  assert.equal(validateAgencyResponse(plan,response,alternative).valid,true);
+  alternative.candidate.restCompliant=false;
+  const rejected=validateAgencyResponse(plan,response,alternative);
+  assert.equal(rejected.valid,false);assert.ok(rejected.failures.includes('alternative_working_time_or_rest_not_confirmed'));
+  assert.equal(plan.authorityBoundary,'agency_request_handoff_only_no_schedule_payroll_or_invoice_mutation');
+});

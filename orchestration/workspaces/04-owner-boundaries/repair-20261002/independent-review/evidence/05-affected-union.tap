@@ -1,0 +1,438 @@
+TAP version 13
+# Subtest: practice scenario reuses Shadow Decision Episode and cannot execute
+ok 1 - practice scenario reuses Shadow Decision Episode and cannot execute
+  ---
+  duration_ms: 43.8294
+  type: 'test'
+  ...
+# Subtest: scenario answer gives feedback but never awards mastery
+ok 2 - scenario answer gives feedback but never awards mastery
+  ---
+  duration_ms: 4.0053
+  type: 'test'
+  ...
+# (node:27772) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: cold-starts on a fresh database without pre-created decision tables
+ok 3 - cold-starts on a fresh database without pre-created decision tables
+  ---
+  duration_ms: 104.7774
+  type: 'test'
+  ...
+# Subtest: requires current context and reversible plan
+ok 4 - requires current context and reversible plan
+  ---
+  duration_ms: 90.8084
+  type: 'test'
+  ...
+# Subtest: executes verifies and is idempotent
+ok 5 - executes verifies and is idempotent
+  ---
+  duration_ms: 81.829
+  type: 'test'
+  ...
+# Subtest: failed verification rolls back or contains
+ok 6 - failed verification rolls back or contains
+  ---
+  duration_ms: 91.1783
+  type: 'test'
+  ...
+# Subtest: episode is deterministic regardless of option order
+ok 7 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 35.4361
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 8 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 1.0533
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 9 - do-nothing option is mandatory
+  ---
+  duration_ms: 2.8864
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 10 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 1.6046
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 11 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 1.6185
+  type: 'test'
+  ...
+# Subtest: individually finite weights cannot overflow the objective total into null scores
+ok 12 - individually finite weights cannot overflow the objective total into null scores
+  ---
+  duration_ms: 0.596
+  type: 'test'
+  ...
+# Subtest: finite opposite-sign predictions cannot overflow the ranking range
+ok 13 - finite opposite-sign predictions cannot overflow the ranking range
+  ---
+  duration_ms: 0.7629
+  type: 'test'
+  ...
+# Subtest: large finite weights and representable ranges preserve benefit ordering and SHADOW
+ok 14 - large finite weights and representable ranges preserve benefit ordering and SHADOW
+  ---
+  duration_ms: 2.1925
+  type: 'test'
+  ...
+# Subtest: equal and missing weighted predictions preserve existing ranking results
+ok 15 - equal and missing weighted predictions preserve existing ranking results
+  ---
+  duration_ms: 1.7901
+  type: 'test'
+  ...
+# Subtest: exported ranking cannot return nonfinite arithmetic for invalid totals or accumulated scores
+ok 16 - exported ranking cannot return nonfinite arithmetic for invalid totals or accumulated scores
+  ---
+  duration_ms: 2.1203
+  type: 'test'
+  ...
+# Subtest: simulation can never become learning-eligible or verified value
+ok 17 - simulation can never become learning-eligible or verified value
+  ---
+  duration_ms: 48.9154
+  type: 'test'
+  ...
+# Subtest: operational proof requires independent baseline and result evidence
+ok 18 - operational proof requires independent baseline and result evidence
+  ---
+  duration_ms: 4.5977
+  type: 'test'
+  ...
+# Subtest: cost improvement maps lower actual cost to positive learning delta
+ok 19 - cost improvement maps lower actual cost to positive learning delta
+  ---
+  duration_ms: 4.021
+  type: 'test'
+  ...
+# Subtest: realised financial value requires finance evidence currency and a bounded window
+ok 20 - realised financial value requires finance evidence currency and a bounded window
+  ---
+  duration_ms: 2.3127
+  type: 'test'
+  ...
+# Subtest: non-financial KPI cannot be labelled realised financial value
+ok 21 - non-financial KPI cannot be labelled realised financial value
+  ---
+  duration_ms: 1.5405
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 22 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 2.7897
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 23 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 3.1771
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 24 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 1.041
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 25 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.5701
+  type: 'test'
+  ...
+# Subtest: invalid confidence NaN cannot avoid candidate review
+ok 26 - invalid confidence NaN cannot avoid candidate review
+  ---
+  duration_ms: 0.7891
+  type: 'test'
+  ...
+# Subtest: invalid confidence Infinity cannot avoid candidate review
+ok 27 - invalid confidence Infinity cannot avoid candidate review
+  ---
+  duration_ms: 0.315
+  type: 'test'
+  ...
+# Subtest: invalid confidence -Infinity cannot avoid candidate review
+ok 28 - invalid confidence -Infinity cannot avoid candidate review
+  ---
+  duration_ms: 0.4653
+  type: 'test'
+  ...
+# Subtest: invalid confidence -0.01 cannot avoid candidate review
+ok 29 - invalid confidence -0.01 cannot avoid candidate review
+  ---
+  duration_ms: 2.2331
+  type: 'test'
+  ...
+# Subtest: invalid confidence 1.01 cannot avoid candidate review
+ok 30 - invalid confidence 1.01 cannot avoid candidate review
+  ---
+  duration_ms: 0.8274
+  type: 'test'
+  ...
+# Subtest: invalid confidence 2 cannot avoid candidate review
+ok 31 - invalid confidence 2 cannot avoid candidate review
+  ---
+  duration_ms: 0.9256
+  type: 'test'
+  ...
+# Subtest: invalid confidence NaN cannot avoid candidate review
+ok 32 - invalid confidence NaN cannot avoid candidate review
+  ---
+  duration_ms: 0.4498
+  type: 'test'
+  ...
+# Subtest: invalid confidence Infinity cannot avoid candidate review
+ok 33 - invalid confidence Infinity cannot avoid candidate review
+  ---
+  duration_ms: 0.3889
+  type: 'test'
+  ...
+# Subtest: finite probability normalization, threshold and default retain review and authority contracts
+ok 34 - finite probability normalization, threshold and default retain review and authority contracts
+  ---
+  duration_ms: 1.5103
+  type: 'test'
+  ...
+# Subtest: unchanged snapshots remain NO_CHANGE without using an unrelated invalid confidence
+ok 35 - unchanged snapshots remain NO_CHANGE without using an unrelated invalid confidence
+  ---
+  duration_ms: 0.234
+  type: 'test'
+  ...
+# Subtest: selects proven eligible workers and creates a staged agency cascade
+ok 36 - selects proven eligible workers and creates a staged agency cascade
+  ---
+  duration_ms: 39.5016
+  type: 'test'
+  ...
+# Subtest: right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+ok 37 - right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+  ---
+  duration_ms: 0.8362
+  type: 'test'
+  ...
+# Subtest: industrial action replacement request is blocked before any worker ranking
+ok 38 - industrial action replacement request is blocked before any worker ranking
+  ---
+  duration_ms: 0.438
+  type: 'test'
+  ...
+# Subtest: sensitive attributes are ignored and cannot change ranking score
+ok 39 - sensitive attributes are ignored and cannot change ranking score
+  ---
+  duration_ms: 0.7409
+  type: 'test'
+  ...
+# Subtest: cheapest worker does not beat strongly evidenced better worker solely on price
+ok 40 - cheapest worker does not beat strongly evidenced better worker solely on price
+  ---
+  duration_ms: 2.5957
+  type: 'test'
+  ...
+# Subtest: high-risk request requires manager approval even when auto-dispatch policy is enabled
+ok 41 - high-risk request requires manager approval even when auto-dispatch policy is enabled
+  ---
+  duration_ms: 1.1515
+  type: 'test'
+  ...
+# Subtest: agency can confirm a preferred worker, but alternative worker must be revalidated
+ok 42 - agency can confirm a preferred worker, but alternative worker must be revalidated
+  ---
+  duration_ms: 1.8301
+  type: 'test'
+  ...
+# Subtest: invoice reconciliation catches hours rate and expense variance without touching worker pay
+ok 43 - invoice reconciliation catches hours rate and expense variance without touching worker pay
+  ---
+  duration_ms: 0.548
+  type: 'test'
+  ...
+# Subtest: identical evidence is deterministic
+ok 44 - identical evidence is deterministic
+  ---
+  duration_ms: 2.6747
+  type: 'test'
+  ...
+# Subtest: 5,000 synthetic candidates never select an ineligible worker
+ok 45 - 5,000 synthetic candidates never select an ineligible worker
+  ---
+  duration_ms: 622.0819
+  type: 'test'
+  ...
+# Subtest: unidentified worker undefined cannot count as preferred coverage
+ok 46 - unidentified worker undefined cannot count as preferred coverage
+  ---
+  duration_ms: 0.9148
+  type: 'test'
+  ...
+# Subtest: unidentified worker null cannot count as preferred coverage
+ok 47 - unidentified worker null cannot count as preferred coverage
+  ---
+  duration_ms: 0.421
+  type: 'test'
+  ...
+# Subtest: unidentified worker  cannot count as preferred coverage
+ok 48 - unidentified worker  cannot count as preferred coverage
+  ---
+  duration_ms: 0.2466
+  type: 'test'
+  ...
+# Subtest: unidentified worker    cannot count as preferred coverage
+ok 49 - unidentified worker    cannot count as preferred coverage
+  ---
+  duration_ms: 0.1722
+  type: 'test'
+  ...
+# Subtest: unidentified worker 7 cannot count as preferred coverage
+ok 50 - unidentified worker 7 cannot count as preferred coverage
+  ---
+  duration_ms: 0.2053
+  type: 'test'
+  ...
+# Subtest: duplicate normalized worker population W1/W1 is rejected rather than double-filled
+ok 51 - duplicate normalized worker population W1/W1 is rejected rather than double-filled
+  ---
+  duration_ms: 0.2982
+  type: 'test'
+  ...
+# Subtest: duplicate normalized worker population W1/ W1  is rejected rather than double-filled
+ok 52 - duplicate normalized worker population W1/ W1  is rejected rather than double-filled
+  ---
+  duration_ms: 0.195
+  type: 'test'
+  ...
+# Subtest: empty population and one distinct worker retain explicit coverage gaps
+ok 53 - empty population and one distinct worker retain explicit coverage gaps
+  ---
+  duration_ms: 0.7393
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects response-worker identity drift
+ok 54 - alternative acceptance rejects response-worker identity drift
+  ---
+  duration_ms: 0.6858
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects candidate-worker identity drift
+ok 55 - alternative acceptance rejects candidate-worker identity drift
+  ---
+  duration_ms: 0.5984
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects candidate-supplier identity drift
+ok 56 - alternative acceptance rejects candidate-supplier identity drift
+  ---
+  duration_ms: 0.5985
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects evaluated-supplier identity drift
+ok 57 - alternative acceptance rejects evaluated-supplier identity drift
+  ---
+  duration_ms: 0.5838
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects evaluated-request identity drift
+ok 58 - alternative acceptance rejects evaluated-request identity drift
+  ---
+  duration_ms: 0.5846
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects missing-response-worker identity drift
+ok 59 - alternative acceptance rejects missing-response-worker identity drift
+  ---
+  duration_ms: 0.6713
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects missing-candidate-worker identity drift
+ok 60 - alternative acceptance rejects missing-candidate-worker identity drift
+  ---
+  duration_ms: 0.6051
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects missing-evaluated-request identity drift
+ok 61 - alternative acceptance rejects missing-evaluated-request identity drift
+  ---
+  duration_ms: 0.5949
+  type: 'test'
+  ...
+# Subtest: worker or request mismatch is rejected before eligibility touches its unrelated request
+ok 62 - worker or request mismatch is rejected before eligibility touches its unrelated request
+  ---
+  duration_ms: 0.6218
+  type: 'test'
+  ...
+# Subtest: matching alternative IDs still require eligibility and grant only handoff
+ok 63 - matching alternative IDs still require eligibility and grant only handoff
+  ---
+  duration_ms: 1.0829
+  type: 'test'
+  ...
+# Subtest: valid current authoritative assurance permits ranking and exposes only privacy-minimised ledger evidence
+ok 64 - valid current authoritative assurance permits ranking and exposes only privacy-minimised ledger evidence
+  ---
+  duration_ms: 10.2309
+  type: 'test'
+  ...
+# Subtest: cheaper perfect-performance worker without current assurance gets score null and cannot outrank an authoritative worker
+ok 65 - cheaper perfect-performance worker without current assurance gets score null and cannot outrank an authoritative worker
+  ---
+  duration_ms: 2.9681
+  type: 'test'
+  ...
+# Subtest: conflict and every authoritative scope/evidence mismatch fail closed before ranking
+ok 66 - conflict and every authoritative scope/evidence mismatch fail closed before ranking
+  ---
+  duration_ms: 3.1669
+  type: 'test'
+  ...
+# Subtest: unavailable or throwing assurance reader fails closed and does not rank candidate
+ok 67 - unavailable or throwing assurance reader fails closed and does not rank candidate
+  ---
+  duration_ms: 1.4449
+  type: 'test'
+  ...
+# Subtest: PostgreSQL reader uses exact tenant, agency and worker scope and is read-only
+ok 68 - PostgreSQL reader uses exact tenant, agency and worker scope and is read-only
+  ---
+  duration_ms: 1.7005
+  type: 'test'
+  ...
+# Subtest: authoritative assignment fingerprint is identical to the signed refresh-token assignment claim
+ok 69 - authoritative assignment fingerprint is identical to the signed refresh-token assignment claim
+  ---
+  duration_ms: 2.8643
+  type: 'test'
+  ...
+# Subtest: 5,000 cheaper perfect-performance candidates without authoritative assurance never enter ranking
+ok 70 - 5,000 cheaper perfect-performance candidates without authoritative assurance never enter ranking
+  ---
+  duration_ms: 465.4195
+  type: 'test'
+  ...
+# Subtest: identical authoritative store state produces deterministic planner evidence
+ok 71 - identical authoritative store state produces deterministic planner evidence
+  ---
+  duration_ms: 2.477
+  type: 'test'
+  ...
+1..71
+# tests 71
+# suites 0
+# pass 71
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 968.7279

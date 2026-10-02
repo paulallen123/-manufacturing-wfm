@@ -16,6 +16,7 @@ function createRegulatoryChangeCandidate(input={}){
   const sites=Array.isArray(input.sites)?input.sites:[];
   const normalised=changes.map((c,i)=>({id:text(c.id,160)||'change-'+(i+1),domain:text(c.domain,80),summary:text(c.summary,500),effectiveFrom:text(c.effectiveFrom,80)||null,jurisdiction:text(c.jurisdiction,120),confidence:Number(c.confidence??0),sourceRefs:list(c.sourceRefs,20,300),ambiguity:text(c.ambiguity,40).toUpperCase()||'UNKNOWN'}));
   if(normalised.some(c=>!c.domain||!c.jurisdiction||!c.sourceRefs.length)) throw new Error('Every candidate change needs domain, jurisdiction and sourceRefs.');
+  if(normalised.some(c=>!Number.isFinite(c.confidence)||c.confidence<0||c.confidence>1)) throw new Error('Every candidate confidence must be finite and between 0 and 1.');
   const material=normalised.some(c=>MATERIAL_DOMAINS.has(c.domain)),ambiguous=normalised.some(c=>c.ambiguity!=='LOW'||c.confidence<0.95);
   const affectedSites=[]; for(const site of sites){const jurisdiction=text(site.jurisdiction||site.country,120);if(normalised.some(c=>c.jurisdiction===jurisdiction)) affectedSites.push(text(site.id,160));}
   const reviewRequired=material||ambiguous;

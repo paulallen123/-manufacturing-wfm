@@ -1,0 +1,26 @@
+{
+  "label": "03-independent-final-frozen-red",
+  "scope": "frozen",
+  "started": "2026-10-02T14:32:56.234Z",
+  "completed": "2026-10-02T14:32:56.569Z",
+  "node": "v22.23.2",
+  "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs"
+  ],
+  "exitCode": 1,
+  "error": null,
+  "summary": [
+    "# tests 69",
+    "# pass 33",
+    "# fail 36",
+    "# cancelled 0",
+    "# skipped 0",
+    "# todo 0",
+    "# duration_ms 244.0763"
+  ],
+  "qualification": "Local actual imported source functions with exact frozen dependencies, guarded against real network. Synthetic supplied authority/status/source references are unauthenticated fixtures; no provider/tenant/runtime proof."
+}

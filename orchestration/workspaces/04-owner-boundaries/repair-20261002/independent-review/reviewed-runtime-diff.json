@@ -1,0 +1,193 @@
+{
+  "operations/runtime/decision-episode.cjs": [
+    {
+      "operation": "ADD",
+      "line": 77,
+      "text": "  if(!Number.isFinite(total)) throw new Error('Objective total must be finite.');"
+    },
+    {
+      "operation": "ADD",
+      "line": 82,
+      "text": "  if(!Number.isFinite(objective.total)||objective.total<=0) throw new Error('Ranking objective total must be finite and positive.');"
+    },
+    {
+      "operation": "ADD",
+      "line": 91,
+      "text": "    const min=Math.min(...vals),max=Math.max(...vals),range=max-min;"
+    },
+    {
+      "operation": "ADD",
+      "line": 92,
+      "text": "    if(!Number.isFinite(min)||!Number.isFinite(max)||!Number.isFinite(range)) throw new Error(`Ranking range ${key} must be finite.`);"
+    },
+    {
+      "operation": "ADD",
+      "line": 93,
+      "text": "    ranges[key]={min,max,range};"
+    },
+    {
+      "operation": "REMOVE",
+      "line": 89,
+      "text": "    ranges[key]={min:Math.min(...vals),max:Math.max(...vals)};"
+    },
+    {
+      "operation": "ADD",
+      "line": 98,
+      "text": "      const {min,max,range}=ranges[key];"
+    },
+    {
+      "operation": "REMOVE",
+      "line": 94,
+      "text": "      const {min,max}=ranges[key];"
+    },
+    {
+      "operation": "ADD",
+      "line": 100,
+      "text": "      const normalized=max===min ? 1 : (BENEFIT_METRICS.has(key) ? (value-min)/range : (max-value)/range);"
+    },
+    {
+      "operation": "REMOVE",
+      "line": 96,
+      "text": "      const normalized=max===min ? 1 : (BENEFIT_METRICS.has(key) ? (value-min)/(max-min) : (max-value)/(max-min));"
+    },
+    {
+      "operation": "ADD",
+      "line": 102,
+      "text": "      if(!Number.isFinite(normalized)||!Number.isFinite(raw)) throw new Error('Ranking arithmetic must be finite.');"
+    },
+    {
+      "operation": "ADD",
+      "line": 106,
+      "text": "    if(!Number.isFinite(normalizedScore)||!Number.isFinite(score)) throw new Error('Ranking score must be finite.');"
+    }
+  ],
+  "src/frontier/agency-labour-exchange.mjs": [
+    {
+      "operation": "ADD",
+      "line": 13,
+      "text": "const workerIdentity = value => typeof value === 'string' && value.trim() ? value.trim() : null;"
+    },
+    {
+      "operation": "ADD",
+      "line": 80,
+      "text": "  if (!workerIdentity(worker.workerId)) failures.push('worker_identity_missing_or_invalid');"
+    },
+    {
+      "operation": "ADD",
+      "line": 189,
+      "text": "  const workerIdentities = new Set();"
+    },
+    {
+      "operation": "ADD",
+      "line": 190,
+      "text": "  for (const worker of candidates) {"
+    },
+    {
+      "operation": "ADD",
+      "line": 191,
+      "text": "    const identity = workerIdentity(worker?.workerId);"
+    },
+    {
+      "operation": "ADD",
+      "line": 192,
+      "text": "    if (!identity) throw new TypeError('Every supplied worker identity must be a non-empty string.');"
+    },
+    {
+      "operation": "ADD",
+      "line": 193,
+      "text": "    if (workerIdentities.has(identity)) throw new TypeError('Duplicate normalized worker identity in supplied population.');"
+    },
+    {
+      "operation": "ADD",
+      "line": 194,
+      "text": "    workerIdentities.add(identity);"
+    },
+    {
+      "operation": "ADD",
+      "line": 195,
+      "text": "  }"
+    },
+    {
+      "operation": "ADD",
+      "line": 351,
+      "text": "      const identityFailures = [];"
+    },
+    {
+      "operation": "ADD",
+      "line": 352,
+      "text": "      if (!workerIdentity(response.workerId) || !workerIdentity(alternative.candidate?.workerId) || response.workerId !== alternative.candidate.workerId)"
+    },
+    {
+      "operation": "ADD",
+      "line": 353,
+      "text": "        identityFailures.push('alternative_worker_identity_mismatch');"
+    },
+    {
+      "operation": "ADD",
+      "line": 354,
+      "text": "      if (!workerIdentity(response.agencyId) || !workerIdentity(alternative.agency?.agencyId) || !workerIdentity(alternative.candidate?.agencyId) || response.agencyId !== alternative.agency.agencyId || response.agencyId !== alternative.candidate.agencyId)"
+    },
+    {
+      "operation": "ADD",
+      "line": 355,
+      "text": "        identityFailures.push('alternative_supplier_identity_mismatch');"
+    },
+    {
+      "operation": "ADD",
+      "line": 356,
+      "text": "      if (!workerIdentity(response.requestId) || !workerIdentity(alternative.request?.requestId) || response.requestId !== alternative.request.requestId || alternative.request.requestId !== plan?.requestPack?.requestId)"
+    },
+    {
+      "operation": "ADD",
+      "line": 357,
+      "text": "        identityFailures.push('alternative_request_identity_mismatch');"
+    },
+    {
+      "operation": "ADD",
+      "line": 358,
+      "text": "      failures.push(...identityFailures);"
+    },
+    {
+      "operation": "ADD",
+      "line": 359,
+      "text": "      if (!identityFailures.length && !failures.length) {"
+    },
+    {
+      "operation": "ADD",
+      "line": 360,
+      "text": "        const evaluation = evaluateAgencyCandidate(alternative.candidate, alternative.request, alternative.agency, alternative.policy);"
+    },
+    {
+      "operation": "ADD",
+      "line": 361,
+      "text": "        if (!evaluation.eligible) failures.push(...evaluation.failures.map(failure => 'alternative_' + failure));"
+    },
+    {
+      "operation": "ADD",
+      "line": 362,
+      "text": "      }"
+    },
+    {
+      "operation": "REMOVE",
+      "line": 342,
+      "text": "      const evaluation = evaluateAgencyCandidate(alternative.candidate, alternative.request, alternative.agency, alternative.policy);"
+    },
+    {
+      "operation": "REMOVE",
+      "line": 343,
+      "text": "      if (!evaluation.eligible) failures.push(...evaluation.failures.map(failure => 'alternative_' + failure));"
+    },
+    {
+      "operation": "ADD",
+      "line": 412,
+      "text": ""
+    }
+  ],
+  "policy/runtime/regulatory-change-candidate.cjs": [
+    {
+      "operation": "ADD",
+      "line": 19,
+      "text": "  if(normalised.some(c=>!Number.isFinite(c.confidence)||c.confidence<0||c.confidence>1)) throw new Error('Every candidate confidence must be finite and between 0 and 1.');"
+    }
+  ]
+}

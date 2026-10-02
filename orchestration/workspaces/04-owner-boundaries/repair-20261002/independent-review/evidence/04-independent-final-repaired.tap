@@ -1,0 +1,424 @@
+TAP version 13
+# Subtest: ordinary scoring/digest exactly equal frozen canonical behavior
+ok 1 - ordinary scoring/digest exactly equal frozen canonical behavior
+  ---
+  duration_ms: 22.797
+  type: 'test'
+  ...
+# Subtest: ordinary episode is deterministic under option/objective property permutation
+ok 2 - ordinary episode is deterministic under option/objective property permutation
+  ---
+  duration_ms: 0.911
+  type: 'test'
+  ...
+# Subtest: hard gate feasible excludes superior option and cannot be selected
+ok 3 - hard gate feasible excludes superior option and cannot be selected
+  ---
+  duration_ms: 0.9216
+  type: 'test'
+  ...
+# Subtest: hard gate policyAllowed excludes superior option and cannot be selected
+ok 4 - hard gate policyAllowed excludes superior option and cannot be selected
+  ---
+  duration_ms: 0.3652
+  type: 'test'
+  ...
+# Subtest: hard gate hardConstraintsPassed excludes superior option and cannot be selected
+ok 5 - hard gate hardConstraintsPassed excludes superior option and cannot be selected
+  ---
+  duration_ms: 0.3231
+  type: 'test'
+  ...
+# Subtest: SHADOW selection remains nonexecuting and rejects claimed human authorization
+ok 6 - SHADOW selection remains nonexecuting and rejects claimed human authorization
+  ---
+  duration_ms: 0.5614
+  type: 'test'
+  ...
+# Subtest: opposite finite extrema reject overflowing throughputUnits range
+ok 7 - opposite finite extrema reject overflowing throughputUnits range
+  ---
+  duration_ms: 0.3893
+  type: 'test'
+  ...
+# Subtest: opposite finite extrema reject overflowing labourCost range
+ok 8 - opposite finite extrema reject overflowing labourCost range
+  ---
+  duration_ms: 0.2536
+  type: 'test'
+  ...
+# Subtest: finite objective weights reject overflowed sum before serialization
+ok 9 - finite objective weights reject overflowed sum before serialization
+  ---
+  duration_ms: 0.6191
+  type: 'test'
+  ...
+# Subtest: large representable extremes retain finite monotonic ranking
+ok 10 - large representable extremes retain finite monotonic ranking
+  ---
+  duration_ms: 0.8937
+  type: 'test'
+  ...
+# Subtest: equal and missing metric controls retain frozen contract
+ok 11 - equal and missing metric controls retain frozen contract
+  ---
+  duration_ms: 0.8204
+  type: 'test'
+  ...
+# Subtest: exported ranking rejects invalid total NaN
+ok 12 - exported ranking rejects invalid total NaN
+  ---
+  duration_ms: 0.2142
+  type: 'test'
+  ...
+# Subtest: exported ranking rejects invalid total Infinity
+ok 13 - exported ranking rejects invalid total Infinity
+  ---
+  duration_ms: 0.1599
+  type: 'test'
+  ...
+# Subtest: exported ranking rejects invalid total -Infinity
+ok 14 - exported ranking rejects invalid total -Infinity
+  ---
+  duration_ms: 0.0926
+  type: 'test'
+  ...
+# Subtest: exported ranking rejects invalid total 0
+ok 15 - exported ranking rejects invalid total 0
+  ---
+  duration_ms: 0.0935
+  type: 'test'
+  ...
+# Subtest: exported ranking rejects invalid total -1
+ok 16 - exported ranking rejects invalid total -1
+  ---
+  duration_ms: 0.0921
+  type: 'test'
+  ...
+# Subtest: exported ranking rejects overflowing weighted accumulation and final penalty
+ok 17 - exported ranking rejects overflowing weighted accumulation and final penalty
+  ---
+  duration_ms: 0.2733
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects NaN
+ok 18 - normalized confidence rejects NaN
+  ---
+  duration_ms: 0.5861
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects Infinity
+ok 19 - normalized confidence rejects Infinity
+  ---
+  duration_ms: 0.1529
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects -Infinity
+ok 20 - normalized confidence rejects -Infinity
+  ---
+  duration_ms: 0.1176
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects -0.001
+ok 21 - normalized confidence rejects -0.001
+  ---
+  duration_ms: 0.1317
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects 1.001
+ok 22 - normalized confidence rejects 1.001
+  ---
+  duration_ms: 0.1162
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects NaN
+ok 23 - normalized confidence rejects NaN
+  ---
+  duration_ms: 0.104
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects Infinity
+ok 24 - normalized confidence rejects Infinity
+  ---
+  duration_ms: 0.0984
+  type: 'test'
+  ...
+# Subtest: normalized confidence rejects not numeric
+ok 25 - normalized confidence rejects not numeric
+  ---
+  duration_ms: 0.1107
+  type: 'test'
+  ...
+# Subtest: legacy confidence undefined normalization and review gates
+ok 26 - legacy confidence undefined normalization and review gates
+  ---
+  duration_ms: 0.8258
+  type: 'test'
+  ...
+# Subtest: legacy confidence null normalization and review gates
+ok 27 - legacy confidence null normalization and review gates
+  ---
+  duration_ms: 0.2581
+  type: 'test'
+  ...
+# Subtest: legacy confidence  normalization and review gates
+ok 28 - legacy confidence  normalization and review gates
+  ---
+  duration_ms: 1.4414
+  type: 'test'
+  ...
+# Subtest: legacy confidence 0.95 normalization and review gates
+ok 29 - legacy confidence 0.95 normalization and review gates
+  ---
+  duration_ms: 0.3636
+  type: 'test'
+  ...
+# Subtest: legacy confidence false normalization and review gates
+ok 30 - legacy confidence false normalization and review gates
+  ---
+  duration_ms: 0.1931
+  type: 'test'
+  ...
+# Subtest: legacy confidence true normalization and review gates
+ok 31 - legacy confidence true normalization and review gates
+  ---
+  duration_ms: 0.1761
+  type: 'test'
+  ...
+# Subtest: legacy confidence 0 normalization and review gates
+ok 32 - legacy confidence 0 normalization and review gates
+  ---
+  duration_ms: 0.1684
+  type: 'test'
+  ...
+# Subtest: legacy confidence 1 normalization and review gates
+ok 33 - legacy confidence 1 normalization and review gates
+  ---
+  duration_ms: 0.1778
+  type: 'test'
+  ...
+# Subtest: legacy confidence 0.949999 normalization and review gates
+ok 34 - legacy confidence 0.949999 normalization and review gates
+  ---
+  duration_ms: 0.3509
+  type: 'test'
+  ...
+# Subtest: material payroll always requires review at confidence1
+ok 35 - material payroll always requires review at confidence1
+  ---
+  duration_ms: 0.2879
+  type: 'test'
+  ...
+# Subtest: material working-time always requires review at confidence1
+ok 36 - material working-time always requires review at confidence1
+  ---
+  duration_ms: 0.1195
+  type: 'test'
+  ...
+# Subtest: material safety always requires review at confidence1
+ok 37 - material safety always requires review at confidence1
+  ---
+  duration_ms: 0.1054
+  type: 'test'
+  ...
+# Subtest: material privacy always requires review at confidence1
+ok 38 - material privacy always requires review at confidence1
+  ---
+  duration_ms: 0.1005
+  type: 'test'
+  ...
+# Subtest: high-confidence ambiguous changes require review and stale source blocks
+ok 39 - high-confidence ambiguous changes require review and stale source blocks
+  ---
+  duration_ms: 0.2252
+  type: 'test'
+  ...
+# Subtest: unchanged snapshots retain NO_CHANGE early return without granting authority
+ok 40 - unchanged snapshots retain NO_CHANGE early return without granting authority
+  ---
+  duration_ms: 0.1382
+  type: 'test'
+  ...
+# Subtest: distinct/empty/partial populations retain honest unique-person coverage
+ok 41 - distinct/empty/partial populations retain honest unique-person coverage
+  ---
+  duration_ms: 4.8147
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker undefined
+ok 42 - whole population rejects missing/malformed worker undefined
+  ---
+  duration_ms: 0.515
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker null
+ok 43 - whole population rejects missing/malformed worker null
+  ---
+  duration_ms: 0.4228
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker ""
+ok 44 - whole population rejects missing/malformed worker ""
+  ---
+  duration_ms: 0.2428
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker "  "
+ok 45 - whole population rejects missing/malformed worker "  "
+  ---
+  duration_ms: 0.2676
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker 12
+ok 46 - whole population rejects missing/malformed worker 12
+  ---
+  duration_ms: 0.3771
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker {}
+ok 47 - whole population rejects missing/malformed worker {}
+  ---
+  duration_ms: 0.3422
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker false
+ok 48 - whole population rejects missing/malformed worker false
+  ---
+  duration_ms: 0.2691
+  type: 'test'
+  ...
+# Subtest: duplicate normalized identity rejects entire population "P1"
+ok 49 - duplicate normalized identity rejects entire population "P1"
+  ---
+  duration_ms: 0.2484
+  type: 'test'
+  ...
+# Subtest: duplicate normalized identity rejects entire population " P1 "
+ok 50 - duplicate normalized identity rejects entire population " P1 "
+  ---
+  duration_ms: 0.1669
+  type: 'test'
+  ...
+# Subtest: duplicate normalized identity rejects entire population "\\tP1\\n"
+ok 51 - duplicate normalized identity rejects entire population "\\tP1\\n"
+  ---
+  duration_ms: 0.1243
+  type: 'test'
+  ...
+# Subtest: null supplied worker rejects before handoff
+ok 52 - null supplied worker rejects before handoff
+  ---
+  duration_ms: 0.1803
+  type: 'test'
+  ...
+# Subtest: distinct valid whitespace identity is retained rather than silently renamed
+ok 53 - distinct valid whitespace identity is retained rather than silently renamed
+  ---
+  duration_ms: 0.8302
+  type: 'test'
+  ...
+# Subtest: invalid request retains fail-closed blocked result before population handoff
+ok 54 - invalid request retains fail-closed blocked result before population handoff
+  ---
+  duration_ms: 0.3022
+  type: 'test'
+  ...
+# Subtest: matching evaluated alternative passes genuine existing eligibility code
+ok 55 - matching evaluated alternative passes genuine existing eligibility code
+  ---
+  duration_ms: 1.2169
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects response worker missing
+ok 56 - alternative binding rejects response worker missing
+  ---
+  duration_ms: 1.6447
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects evaluated worker missing
+ok 57 - alternative binding rejects evaluated worker missing
+  ---
+  duration_ms: 0.9148
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects worker mismatch
+ok 58 - alternative binding rejects worker mismatch
+  ---
+  duration_ms: 0.7353
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects evaluated supplier mismatch
+ok 59 - alternative binding rejects evaluated supplier mismatch
+  ---
+  duration_ms: 0.7047
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects candidate supplier mismatch
+ok 60 - alternative binding rejects candidate supplier mismatch
+  ---
+  duration_ms: 0.7978
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects evaluated supplier missing
+ok 61 - alternative binding rejects evaluated supplier missing
+  ---
+  duration_ms: 0.6572
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects request mismatch
+ok 62 - alternative binding rejects request mismatch
+  ---
+  duration_ms: 0.5687
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects evaluated request missing
+ok 63 - alternative binding rejects evaluated request missing
+  ---
+  duration_ms: 0.6884
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects response request mismatch
+ok 64 - alternative binding rejects response request mismatch
+  ---
+  duration_ms: 0.5899
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects response supplier unplanned
+ok 65 - alternative binding rejects response supplier unplanned
+  ---
+  duration_ms: 1.1625
+  type: 'test'
+  ...
+# Subtest: matching IDs retain existing restCompliant hard gate
+ok 66 - matching IDs retain existing restCompliant hard gate
+  ---
+  duration_ms: 0.6861
+  type: 'test'
+  ...
+# Subtest: matching IDs retain existing siteReady hard gate
+ok 67 - matching IDs retain existing siteReady hard gate
+  ---
+  duration_ms: 0.5572
+  type: 'test'
+  ...
+# Subtest: matching IDs retain existing consentToShare hard gate
+ok 68 - matching IDs retain existing consentToShare hard gate
+  ---
+  duration_ms: 0.57
+  type: 'test'
+  ...
+# Subtest: network guard blocks real fetch without a provider request
+ok 69 - network guard blocks real fetch without a provider request
+  ---
+  duration_ms: 0.4495
+  type: 'test'
+  ...
+1..69
+# tests 69
+# suites 0
+# pass 69
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 234.7471

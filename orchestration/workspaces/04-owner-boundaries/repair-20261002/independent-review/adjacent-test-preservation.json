@@ -1,0 +1,20 @@
+[
+  {
+    "path": "operations/runtime/decision-episode.test.cjs",
+    "frozenTestBodyUnchanged": true,
+    "onlyExistingHeaderDelta": "Adds rankOptions to destructured require",
+    "newTestsAppended": true
+  },
+  {
+    "path": "test/frontier/agency-labour-exchange.test.mjs",
+    "frozenTestBodyUnchanged": true,
+    "onlyExistingHeaderDelta": "NONE",
+    "newTestsAppended": true
+  },
+  {
+    "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+    "frozenTestBodyUnchanged": true,
+    "onlyExistingHeaderDelta": "NONE",
+    "newTestsAppended": true
+  }
+]

@@ -1,0 +1,419 @@
+{"node":"v22.23.2","executable":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe","started":"2026-10-02T14:10:51.720Z","args":["--require","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","--test","test/frontier/agency-labour-exchange.test.mjs"],"networkGuard":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","exit":1,"error":null,"summary":["# tests 28","# pass 14","# fail 14","# skipped 0","# duration_ms 1074.907"]}
+TAP version 13
+# Subtest: selects proven eligible workers and creates a staged agency cascade
+ok 1 - selects proven eligible workers and creates a staged agency cascade
+  ---
+  duration_ms: 48.826
+  type: 'test'
+  ...
+# Subtest: right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+ok 2 - right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+  ---
+  duration_ms: 0.8419
+  type: 'test'
+  ...
+# Subtest: industrial action replacement request is blocked before any worker ranking
+ok 3 - industrial action replacement request is blocked before any worker ranking
+  ---
+  duration_ms: 0.7766
+  type: 'test'
+  ...
+# Subtest: sensitive attributes are ignored and cannot change ranking score
+ok 4 - sensitive attributes are ignored and cannot change ranking score
+  ---
+  duration_ms: 0.7334
+  type: 'test'
+  ...
+# Subtest: cheapest worker does not beat strongly evidenced better worker solely on price
+ok 5 - cheapest worker does not beat strongly evidenced better worker solely on price
+  ---
+  duration_ms: 2.1318
+  type: 'test'
+  ...
+# Subtest: high-risk request requires manager approval even when auto-dispatch policy is enabled
+ok 6 - high-risk request requires manager approval even when auto-dispatch policy is enabled
+  ---
+  duration_ms: 1.2224
+  type: 'test'
+  ...
+# Subtest: agency can confirm a preferred worker, but alternative worker must be revalidated
+ok 7 - agency can confirm a preferred worker, but alternative worker must be revalidated
+  ---
+  duration_ms: 1.4207
+  type: 'test'
+  ...
+# Subtest: invoice reconciliation catches hours rate and expense variance without touching worker pay
+ok 8 - invoice reconciliation catches hours rate and expense variance without touching worker pay
+  ---
+  duration_ms: 0.871
+  type: 'test'
+  ...
+# Subtest: identical evidence is deterministic
+ok 9 - identical evidence is deterministic
+  ---
+  duration_ms: 2.72
+  type: 'test'
+  ...
+# Subtest: 5,000 synthetic candidates never select an ineligible worker
+ok 10 - 5,000 synthetic candidates never select an ineligible worker
+  ---
+  duration_ms: 802.1805
+  type: 'test'
+  ...
+# Subtest: unidentified worker undefined cannot count as preferred coverage
+not ok 11 - unidentified worker undefined cannot count as preferred coverage
+  ---
+  duration_ms: 2.626
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:183:44'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:185:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unidentified worker null cannot count as preferred coverage
+not ok 12 - unidentified worker null cannot count as preferred coverage
+  ---
+  duration_ms: 0.8476
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:183:44'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:185:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unidentified worker  cannot count as preferred coverage
+not ok 13 - unidentified worker  cannot count as preferred coverage
+  ---
+  duration_ms: 1.248
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:183:44'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:185:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unidentified worker    cannot count as preferred coverage
+not ok 14 - unidentified worker    cannot count as preferred coverage
+  ---
+  duration_ms: 0.7649
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:183:44'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:185:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unidentified worker 7 cannot count as preferred coverage
+not ok 15 - unidentified worker 7 cannot count as preferred coverage
+  ---
+  duration_ms: 1.4035
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:183:44'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:185:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate normalized worker population W1/W1 is rejected rather than double-filled
+not ok 16 - duplicate normalized worker population W1/W1 is rejected rather than double-filled
+  ---
+  duration_ms: 0.8081
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:188:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:190:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate normalized worker population W1/ W1  is rejected rather than double-filled
+not ok 17 - duplicate normalized worker population W1/ W1  is rejected rather than double-filled
+  ---
+  duration_ms: 0.6368
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:188:47'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:190:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: empty population and one distinct worker retain explicit coverage gaps
+ok 18 - empty population and one distinct worker retain explicit coverage gaps
+  ---
+  duration_ms: 0.8159
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects response-worker identity drift
+not ok 19 - alternative acceptance rejects response-worker identity drift
+  ---
+  duration_ms: 1.426
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:201:205'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:213:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative acceptance rejects candidate-worker identity drift
+not ok 20 - alternative acceptance rejects candidate-worker identity drift
+  ---
+  duration_ms: 1.0863
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:201:205'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:213:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative acceptance rejects candidate-supplier identity drift
+ok 21 - alternative acceptance rejects candidate-supplier identity drift
+  ---
+  duration_ms: 0.7536
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects evaluated-supplier identity drift
+ok 22 - alternative acceptance rejects evaluated-supplier identity drift
+  ---
+  duration_ms: 0.679
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects evaluated-request identity drift
+not ok 23 - alternative acceptance rejects evaluated-request identity drift
+  ---
+  duration_ms: 1.3033
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:201:205'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:213:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative acceptance rejects missing-response-worker identity drift
+not ok 24 - alternative acceptance rejects missing-response-worker identity drift
+  ---
+  duration_ms: 0.9409
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:201:205'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:213:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative acceptance rejects missing-candidate-worker identity drift
+not ok 25 - alternative acceptance rejects missing-candidate-worker identity drift
+  ---
+  duration_ms: 0.8835
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:201:205'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:213:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative acceptance rejects missing-evaluated-request identity drift
+not ok 26 - alternative acceptance rejects missing-evaluated-request identity drift
+  ---
+  duration_ms: 1.0695
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:201:205'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:213:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: worker or request mismatch is rejected before eligibility touches its unrelated request
+not ok 27 - worker or request mismatch is rejected before eligibility touches its unrelated request
+  ---
+  duration_ms: 1.2512
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\test\\frontier\\agency-labour-exchange.test.mjs:215:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of null (reading 'startAt')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    evaluateAgencyCandidate (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/src/frontier/agency-labour-exchange.mjs:80:28)
+    validateAgencyResponse (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/src/frontier/agency-labour-exchange.mjs:342:26)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-repair/test/frontier/agency-labour-exchange.test.mjs:218:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: matching alternative IDs still require eligibility and grant only handoff
+ok 28 - matching alternative IDs still require eligibility and grant only handoff
+  ---
+  duration_ms: 1.3781
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 14
+# fail 14
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1074.907

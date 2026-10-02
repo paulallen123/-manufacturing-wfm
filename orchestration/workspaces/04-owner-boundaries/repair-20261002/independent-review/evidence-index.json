@@ -1,0 +1,611 @@
+{
+  "scope": "REVIEWER_OWNED_IMMUTABLE_SOURCE_AND_EXECUTION_EVIDENCE",
+  "files": [
+    {
+      "path": "adjacent-test-preservation.json",
+      "bytes": 569,
+      "sha256": "82959049f0c1f24d0f42c5e2fdb4f5a1d902ba6ce5715ac965f7cc9149bd1ccb",
+      "gitBlob": "ee518ca5782bd91e69e5064fd0db07e8a647c226"
+    },
+    {
+      "path": "evidence/01-independent-frozen-red.json",
+      "bytes": 1073,
+      "sha256": "0f3f42c162bc480474cb102775c80de0c21543da17cc6e8d8e2fe224a0d98a6b",
+      "gitBlob": "44b7530a88d29908146d9d0446f8a54715420d9f"
+    },
+    {
+      "path": "evidence/01-independent-frozen-red.tap",
+      "bytes": 45491,
+      "sha256": "0222d08782d222fdcca22d9d06d3cc5366e47cf1b15253885082b37520e4f408",
+      "gitBlob": "8d063b31045831f9303dc4cfd65c2dc4d40ad5cd"
+    },
+    {
+      "path": "evidence/02-independent-repaired.json",
+      "bytes": 1071,
+      "sha256": "a15fce0ae8315603360ea756827438a275fca41957ce780ebb249788a7b2d967",
+      "gitBlob": "d5c5f04e200cd9de3ef3b13789a75f62ca66fbf8"
+    },
+    {
+      "path": "evidence/02-independent-repaired.tap",
+      "bytes": 11871,
+      "sha256": "2efdf25424514eaf4559ec8713c1623f735d136eeeebf8e3d909e73e64b0bec2",
+      "gitBlob": "cbe772045350407226e5b355992706676e700f4e"
+    },
+    {
+      "path": "evidence/03-independent-final-frozen-red.json",
+      "bytes": 1080,
+      "sha256": "79568f70ab060ebb39ba46eae28fe34080848e025aec9e0cd4564263a26fd3ae",
+      "gitBlob": "e717b318ad7f3ed4532ab58b3951cb234185eaab"
+    },
+    {
+      "path": "evidence/03-independent-final-frozen-red.tap",
+      "bytes": 46146,
+      "sha256": "5d8476e18e3247334b9d41549f5500fe0cafb2f2b82c2db30c52d5246f7b6483",
+      "gitBlob": "25d141a4e6c5b6ecc333a60b8e8c6dea50034d3e"
+    },
+    {
+      "path": "evidence/04-independent-final-repaired.json",
+      "bytes": 1077,
+      "sha256": "210d896d4252a5173df326f869ff6314435feaa20bf8eecf5fcf83da90a174c4",
+      "gitBlob": "7ac6c49006dc806a1d393f657ece05be2d5018a1"
+    },
+    {
+      "path": "evidence/04-independent-final-repaired.tap",
+      "bytes": 12534,
+      "sha256": "6647bc05c3ef75c70ee6a696cd5716431433f871970a697bdbac31bfa11d1661",
+      "gitBlob": "1678491958d2bfef4d1a4182f5a520cc64e431f4"
+    },
+    {
+      "path": "evidence/05-affected-union.json",
+      "bytes": 1326,
+      "sha256": "3e8dc89bbd4d48cba7c086e19be9cd4f572b4fce0ec99f4af5e710b89cf0c91a",
+      "gitBlob": "f717c91cb9e53df2ac1c95b89d3a6592a8b10ab4"
+    },
+    {
+      "path": "evidence/05-affected-union.tap",
+      "bytes": 14867,
+      "sha256": "6291a5bfea4f7ac37085f1d072453805c019043a4c0547472cfb11b2a733d3fe",
+      "gitBlob": "6ed7baef1b7f73224d233e5769f4bb2661b416d2"
+    },
+    {
+      "path": "evidence/06-retained-probes.json",
+      "bytes": 957,
+      "sha256": "7dd172eca2e2039ed7c5ef2d015079a2f71e90b78d286f26a5d37b8c26221488",
+      "gitBlob": "f4516b5fa5f1838007bd5091f8227f37234cef5f"
+    },
+    {
+      "path": "evidence/06-retained-probes.tap",
+      "bytes": 3410,
+      "sha256": "5597f3f777f24f6cbe69bcfe6cd4dd641e531505fdcc72cc5889f0d2505e498a",
+      "gitBlob": "33f5520e517f94ec84d3239d3c322ea134384c9f"
+    },
+    {
+      "path": "findings.json",
+      "bytes": 1697,
+      "sha256": "653175ebc1758aae9bdfb83d12054e6729da1e41a19a7a44d8392a20be025326",
+      "gitBlob": "8b825a79f90d02dd41642adcf1c6f9eac5f8776f"
+    },
+    {
+      "path": "frozen/learning/runtime/training-scenario-engine.cjs",
+      "bytes": 3742,
+      "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b",
+      "gitBlob": "790743f3b11b495269ec05c4fb6bbfa07380c360"
+    },
+    {
+      "path": "frozen/learning/runtime/training-scenario-engine.test.cjs",
+      "bytes": 928,
+      "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476",
+      "gitBlob": "6842ec867a99c919fd2084c59cfad2842e96a511"
+    },
+    {
+      "path": "frozen/operations/runtime/autopilot-execution-engine.cjs",
+      "bytes": 14858,
+      "sha256": "556d0a6d31c2ccbebec12a52c5b2f1f18604d06a843ba2affbf3020376261c84",
+      "gitBlob": "0b7541fe363d1071c9207ce349273a1e09414bbb"
+    },
+    {
+      "path": "frozen/operations/runtime/autopilot-execution-engine.test.cjs",
+      "bytes": 4567,
+      "sha256": "b10c36700ca8289d6fdcfb7440fbb76221b99c59464d8c5ae6ea9744b3de9761",
+      "gitBlob": "ed160d0319aaed36a3e99888316e6cfa6f524b2a"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.cjs",
+      "bytes": 8853,
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39",
+      "gitBlob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-episode.test.cjs",
+      "bytes": 3042,
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3",
+      "gitBlob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-outcome-proof.cjs",
+      "bytes": 7146,
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4",
+      "gitBlob": "bfe001bc1696dabef57da9732c15f22d55a77b60"
+    },
+    {
+      "path": "frozen/operations/runtime/decision-outcome-proof.test.cjs",
+      "bytes": 4661,
+      "sha256": "d17a3f9a27959874013197f3dfc3052d43f64c69068cce024e8481b054a25cd4",
+      "gitBlob": "376e9d05751fa6bd749144a260416b8a6d9d7c7b"
+    },
+    {
+      "path": "frozen/policy/runtime/regulatory-change-candidate.cjs",
+      "bytes": 3281,
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041",
+      "gitBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a"
+    },
+    {
+      "path": "frozen/policy/runtime/regulatory-change-candidate.test.cjs",
+      "bytes": 1881,
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807",
+      "gitBlob": "d43879fe7db0028e521d443a38af1cbd0b306354"
+    },
+    {
+      "path": "frozen/release/proof-lane-policy.json",
+      "bytes": 10575,
+      "sha256": "e58c3cf199928601297222e8f4b87f5904a7cdec3531e211909b4476a20e7cc8",
+      "gitBlob": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec"
+    },
+    {
+      "path": "frozen/src/frontier/agency-labour-exchange.mjs",
+      "bytes": 19680,
+      "sha256": "567d7d709bc0cb7408dcfa86c084a279d4058bbe24040343fb9865f4c5bff86e",
+      "gitBlob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20"
+    },
+    {
+      "path": "frozen/src/frontier/agency-right-to-work-authoritative-planner.mjs",
+      "bytes": 13144,
+      "sha256": "0a6be6242732a15063c5e37aea478d1a1b4f6e82a7617592fa7116895717d860",
+      "gitBlob": "29c980600ac1042ecb74ace0d3241280d6c8abbf"
+    },
+    {
+      "path": "frozen/src/frontier/agency-right-to-work-lifecycle.mjs",
+      "bytes": 5102,
+      "sha256": "c3ef1ec5ef8f378c9afdca0c1a347a9744652a4673f2d1a9344025f78f6af4c1",
+      "gitBlob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc"
+    },
+    {
+      "path": "frozen/src/frontier/agency-right-to-work-refresh.mjs",
+      "bytes": 14017,
+      "sha256": "6121438a9a1c7ea3bb402b8b972102c28235fcc1dec1350eba0230fad852a7da",
+      "gitBlob": "5a2c2c3db3cdd3d52bcb6f4af95d86f706da8515"
+    },
+    {
+      "path": "frozen/src/frontier/agency-right-to-work.mjs",
+      "bytes": 14793,
+      "sha256": "20f23219151332439943554ce06373163110d5cc86b58a62171f94ddce20f98b",
+      "gitBlob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7"
+    },
+    {
+      "path": "frozen/src/frontier/agency-supplier-compliance.mjs",
+      "bytes": 6185,
+      "sha256": "794de11092b621e09c0cab0dadd51f7c5c393fb71ba0082a5e9fd601fc5d4274",
+      "gitBlob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9"
+    },
+    {
+      "path": "frozen/test/frontier/agency-labour-exchange.test.mjs",
+      "bytes": 10566,
+      "sha256": "709063281b6f939e99f26c81cc8b59243818f38ec10fd7594a4fa524768e4850",
+      "gitBlob": "66f05773412202a44e8fee68988a3d8e6d4753f3"
+    },
+    {
+      "path": "frozen/test/frontier/agency-right-to-work-authoritative-planner.test.mjs",
+      "bytes": 11854,
+      "sha256": "18fdafdb8d96eaba4adc2b7755537059845126fda257e992edf697c348075de0",
+      "gitBlob": "72b52e7490d60c47b2b93f5b826d33568056cb5a"
+    },
+    {
+      "path": "frozen/trust/runtime/vector-trust-spine.cjs",
+      "bytes": 22881,
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45",
+      "gitBlob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8"
+    },
+    {
+      "path": "independent.held-out.test.mjs",
+      "bytes": 13670,
+      "sha256": "8ff994506d06a1d47391dcb34a369279b9366bfc04a110f16d56302a8a712e07",
+      "gitBlob": "5675d24bfd6d5b8980ff17fcfaaf4e4fcd1fec2b"
+    },
+    {
+      "path": "network-guard.cjs",
+      "bytes": 465,
+      "sha256": "c31e08c2aa05b40e88ad164855d9f76a520c614b04eacbed2082733d689d7a5f",
+      "gitBlob": "aad42e823a4eaaf73dca85152f6756f75634e94b"
+    },
+    {
+      "path": "owner-evidence/baseline-lock.json",
+      "bytes": 463,
+      "sha256": "ba9c2641bf4b06ebde2ff09642148c5e63a14ce5a7c50e9c85fa6819c745793a",
+      "gitBlob": "60ae7b1b2663d06c1c28b530680f0819518080b2"
+    },
+    {
+      "path": "owner-evidence/capabilities.json",
+      "bytes": 21568,
+      "sha256": "7477087911b9e8576592d256ead369e189c1a480eb9f3e816bb27057c852c10a",
+      "gitBlob": "62dc9afbe639708dea6e3c8f4e3a6dee21604b66"
+    },
+    {
+      "path": "owner-evidence/DESIGN.md",
+      "bytes": 1513,
+      "sha256": "fdf2865f2ce4fcf2ab1239ea2ffe238e1b8a0be3230bb3dd3fce0ce4cd11c722",
+      "gitBlob": "5c8936d6d4493298ee0c033f76aad0d7b9268587"
+    },
+    {
+      "path": "owner-evidence/evidence-index.json",
+      "bytes": 5905,
+      "sha256": "17d9a07d104094e9fda3a1db7187b81f5a986751c9e6f1820121812ba5b2ef38",
+      "gitBlob": "91259a86a858be2c31750f7e180ba4e686b65e4c"
+    },
+    {
+      "path": "owner-evidence/evidence/01-decision-adjacent-red.json",
+      "bytes": 706,
+      "sha256": "fe7e5e373291f6ef9bcd8d65b42a13333f8de6b49b9cf07dc03d68136774e133",
+      "gitBlob": "85ad471d0fb7163ae16a06e413f6a7c0d60e7e98"
+    },
+    {
+      "path": "owner-evidence/evidence/01-decision-adjacent-red.log",
+      "bytes": 5375,
+      "sha256": "02a1fe5dfb6faa841953fc84c124c64a05da32e85e0c8e20fbb7f2f2ac922d80",
+      "gitBlob": "1d63f7ff298957a13c92c1db325489527262198e"
+    },
+    {
+      "path": "owner-evidence/evidence/02-decision-adjacent-green.json",
+      "bytes": 886,
+      "sha256": "f373eced6f2e8079a633d8e2c884893d0b14d8aec09b79884df7c9c3fb21724b",
+      "gitBlob": "3c929f384db01f73616e6236e8b9e8ba21e59585"
+    },
+    {
+      "path": "owner-evidence/evidence/02-decision-adjacent-green.log",
+      "bytes": 5130,
+      "sha256": "2ff91c254ea7cb6b1ca20508ae96beadbaf4d028d1838b5454abca445a5cd618",
+      "gitBlob": "2cd4ed86edc9c4a5ec20be3c7f0371452aa4e546"
+    },
+    {
+      "path": "owner-evidence/evidence/03-confidence-adjacent-red.json",
+      "bytes": 714,
+      "sha256": "5f95168cf3c611cb47728d1ef0c73fa3d76ef90bae2b6f7d6713311e08d3ec36",
+      "gitBlob": "154f5d659a52b2371cbafe818744ae96a31fff77"
+    },
+    {
+      "path": "owner-evidence/evidence/03-confidence-adjacent-red.log",
+      "bytes": 10674,
+      "sha256": "a3ddc28647ba9c4ec898ed9c841f672ad340891244abc2204a2a89f95d39742e",
+      "gitBlob": "1074d08f942fff0a9eda330173d659d0449eed2f"
+    },
+    {
+      "path": "owner-evidence/evidence/04-confidence-adjacent-green.json",
+      "bytes": 714,
+      "sha256": "7a5a7669f2249f94993bca48ced0fa1693255696c16c68affa801f05a6cc9e46",
+      "gitBlob": "4e0e567d1b7d9451a3cc60974a6fde874a0488cd"
+    },
+    {
+      "path": "owner-evidence/evidence/04-confidence-adjacent-green.log",
+      "bytes": 3445,
+      "sha256": "0d152cbf23f5dc72262b4d7d10563ced987bfe1effd28316633732306469d42f",
+      "gitBlob": "6edbcc94d35746809ce7150c0716a7a58272ba33"
+    },
+    {
+      "path": "owner-evidence/evidence/05-agency-adjacent-red.json",
+      "bytes": 709,
+      "sha256": "28cc7c4f56b4263d68321409664ef21268032d72cb88f9e7b55e6babd3f26fae",
+      "gitBlob": "f9af05d5f3faf69aa2e4460c0433b77fa1ba6692"
+    },
+    {
+      "path": "owner-evidence/evidence/05-agency-adjacent-red.log",
+      "bytes": 19935,
+      "sha256": "5cb7a08b32b6375b5b1fa0ed75fe95646fa7bed37bf20a5ec9927f56949e016f",
+      "gitBlob": "4efeba8f46aaf734bbf3d143e0a5d23690ef1c71"
+    },
+    {
+      "path": "owner-evidence/evidence/06-agency-adjacent-green.json",
+      "bytes": 781,
+      "sha256": "924d6d043d95e84fb6840f536961e395b197c5a40b495b5842641977c25c1000",
+      "gitBlob": "e2d81a61bd14d683a295ede037ba99c01528cfaa"
+    },
+    {
+      "path": "owner-evidence/evidence/06-agency-adjacent-green.log",
+      "bytes": 8634,
+      "sha256": "45f3de0fdfe583ed3f52cec48f2738ee9c6966d0029e65c6a2ec6f7fad7395e6",
+      "gitBlob": "aef28b9ab0d7cfc2ecd15b9539847f775facc0f2"
+    },
+    {
+      "path": "owner-evidence/evidence/07-retained-probes-green.json",
+      "bytes": 700,
+      "sha256": "637efbb430d362229957919e6b5cacfb2ef84b173ff8637b2673b489e421b257",
+      "gitBlob": "1885d3fd3b109337785f714804d4d4608f4ed201"
+    },
+    {
+      "path": "owner-evidence/evidence/07-retained-probes-green.log",
+      "bytes": 4023,
+      "sha256": "37723d96cc98b8453a183dfdd517d813559665b306eab3ad7c15c5bc55ec99ab",
+      "gitBlob": "e61284b20878476e0097f91f93159dd83dc2e575"
+    },
+    {
+      "path": "owner-evidence/evidence/08-affected-union-green.json",
+      "bytes": 1071,
+      "sha256": "01c18d545587469e2619696c1e17962a2247113922733c6d12053a5461ceafeb",
+      "gitBlob": "b1d94f85365c9c0b98e27e67fb7b34067ee2e2bd"
+    },
+    {
+      "path": "owner-evidence/evidence/08-affected-union-green.log",
+      "bytes": 15828,
+      "sha256": "81f6855f2c287784be99bdf3165b4d1c51efbfad34c381ae931f9cb395be494c",
+      "gitBlob": "7ae4a9891d29a105ce7105db13c81278be2f7f3c"
+    },
+    {
+      "path": "owner-evidence/evidence/original-red/01-frozen-source-tests.log",
+      "bytes": 5137,
+      "sha256": "be2cba894fc456f65af6f39c590bea1e99aa667cfed20f14dd2274a1a2ced5dd",
+      "gitBlob": "158ac5a0f10dd117b57f2efaaf72e5ffe660ca2a"
+    },
+    {
+      "path": "owner-evidence/evidence/original-red/02-frozen-boundary-observations.json",
+      "bytes": 2443,
+      "sha256": "44b2d4560a0e8184890c84cf13dffcf4e5dd5d86c30ed189e7495c1ccb241259",
+      "gitBlob": "864971e3ad019fad10df3458c37bb545010c91f7"
+    },
+    {
+      "path": "owner-evidence/evidence/original-red/02-frozen-boundary-red.log",
+      "bytes": 13220,
+      "sha256": "e479454e310009857b2c1d60992b458ac1066eac25aec894034586132a4031c0",
+      "gitBlob": "3f311089beedc7aa7adb96da37a80540c48b1c5e"
+    },
+    {
+      "path": "owner-evidence/evidence/original-red/frozen-boundaries.held-out.test.mjs",
+      "bytes": 10250,
+      "sha256": "5c9f3f871ca1cfeb4aa5aa777f1609756ea66a4ee7345bc03d462701f6a79bd6",
+      "gitBlob": "2ba69d44bb76da5d8b52bf570cb505c23fe53001"
+    },
+    {
+      "path": "owner-evidence/evidence/original-red/REPAIR_DESIGN_NOT_AUTHORISED.md",
+      "bytes": 4789,
+      "sha256": "0596f9024728ea238a9d7116b6c23cabbdc560d286a54bd8a17240489f9fe6d6",
+      "gitBlob": "2386a4e84c3c1a224395349019da0ca013847011"
+    },
+    {
+      "path": "owner-evidence/evidence/retained-probe-green-observations.json",
+      "bytes": 1889,
+      "sha256": "1ea195cec8b12e11fdf9fca1bc1452985d7328d311d19966eca0b39331a8e000",
+      "gitBlob": "5a67a04e9ffe1d9ae140efb15807b9ed161733c5"
+    },
+    {
+      "path": "owner-evidence/findings.md",
+      "bytes": 4486,
+      "sha256": "ecc9511cb4332c4635be36d68dd75e67b23afd702b411bdf0b682084e319043f",
+      "gitBlob": "ef1fbaf236baf0fab3a59a7ecf6172a4da99ceaf"
+    },
+    {
+      "path": "owner-evidence/frozen-inputs.json",
+      "bytes": 7715,
+      "sha256": "a2c2c0afa5967164d22e106e4cdf8562ee44a0da262eaa198332c6a30b48c514",
+      "gitBlob": "1ce9709bdc61d2413165c41a89da15ca6de0ab4a"
+    },
+    {
+      "path": "owner-evidence/manifest.json",
+      "bytes": 11993,
+      "sha256": "d234b5fd83a98a39aabfb13c2329cc988f5959adb279bdf4680ca20043bdb99c",
+      "gitBlob": "371a33367b239ef74dff7bcd4b1d3e0809c1fc59"
+    },
+    {
+      "path": "owner-evidence/prepare.cjs",
+      "bytes": 3377,
+      "sha256": "21dedb48f7f639dfc80fd71cb6a6bb34c23d384ad349cddde6d14753a363ba58",
+      "gitBlob": "45e22b1042d7bcc7ad16a76735adf83e40a49670"
+    },
+    {
+      "path": "owner-evidence/protected-ref-after.json",
+      "bytes": 491,
+      "sha256": "765d2a329d2de573fb4c65dc089e299dade3772c87b767b8343ee03f112423f3",
+      "gitBlob": "9d5df75ee90ab54b7cd8f1049f0463de6a6ba8ea"
+    },
+    {
+      "path": "owner-evidence/protected-ref-before.json",
+      "bytes": 491,
+      "sha256": "99985a62f50c11b033da8ff3dcfaace22fcead7679b1ac8bec4bf8a0a1538a86",
+      "gitBlob": "153a63099d706a12ac94258c1afb58e11e1c8d9f"
+    },
+    {
+      "path": "owner-evidence/results.json",
+      "bytes": 7691,
+      "sha256": "fb0d9729b81bc70d5a8ffca5dc02d5090de7c5fe5e472b3cb87221c9b86f03eb",
+      "gitBlob": "de6a4a6390224295af23bf7d87d5b25973d5c3af"
+    },
+    {
+      "path": "owner-evidence/retained-boundaries.held-out.test.mjs",
+      "bytes": 10210,
+      "sha256": "9a21147f01d77ba1dd3340acde7a6df34570a4356a1b1378dc7ad2d46414ed23",
+      "gitBlob": "272346f0a6a1b660a63e2a5f1261fe3f4435631a"
+    },
+    {
+      "path": "owner-evidence/run.cjs",
+      "bytes": 883,
+      "sha256": "9fe7a94313ba9fb2cfb46ffd00b4775828caa5cb697ebfdf0bc3982990abc6b3",
+      "gitBlob": "b4d5ba74975b2eaeb74eb4174d4231d565d86c41"
+    },
+    {
+      "path": "owner-evidence/seal.cjs",
+      "bytes": 6524,
+      "sha256": "64c93899d9ba0febc706763a3853e318d4c6de485a168cd7b8b356d2de0e7007",
+      "gitBlob": "ea2fe4cc9c948cc3e3f187d7df3297b37e65f101"
+    },
+    {
+      "path": "prepare-retained.cjs",
+      "bytes": 409,
+      "sha256": "765c1e8ad01a436a9f062740ff23f55ac5def80115adcd1bd6f953384d9939dc",
+      "gitBlob": "b635121c58fd9f7150fce8bde9263dbd384ba70a"
+    },
+    {
+      "path": "prepare.cjs",
+      "bytes": 3126,
+      "sha256": "889f03073853a112941a7de7f52d871aca5258de0a0f6d8cda4ad4f745a24544",
+      "gitBlob": "c8ef332259645cc78d687f62b31e07156ef9e5d0"
+    },
+    {
+      "path": "review.md",
+      "bytes": 4807,
+      "sha256": "8b62bc632122cc39cad9b2129ed4fcc91ce82089e26bd9c33e0f213644cf89c5",
+      "gitBlob": "087fb17aef353bfcb5afb2822e4fd4bbbc236624"
+    },
+    {
+      "path": "reviewed-runtime-diff.json",
+      "bytes": 6196,
+      "sha256": "29e17c7d83c6aa6304970f4faea589e79f696f13484848c6d24171287b581dff",
+      "gitBlob": "96b5f3eeb7562d0a8498c9092aa440fed456466e"
+    },
+    {
+      "path": "run.cjs",
+      "bytes": 1356,
+      "sha256": "a0701282db19ad0f50fa34846d3a9bad10a87b776d2608a9e40d6ea4d2d86c31",
+      "gitBlob": "1ac9a3051bfe6c69c8cd962939aabc8ad6afc088"
+    },
+    {
+      "path": "seal.cjs",
+      "bytes": 6227,
+      "sha256": "bfa385ad8241da7f4b2d341f6b795c30be88bca11b0cbbde8c58e700a2808374",
+      "gitBlob": "85783b7da13361c19fb5c2c28fe6f782a69f07cc"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 12395,
+      "sha256": "a0d4914d44cde014cb7f610dede59a43c84cb50652725af83c2da2a43d72fa52",
+      "gitBlob": "5eb642bb7db3d2b5fc53ec5cd526fb03d08fee61"
+    },
+    {
+      "path": "source/evidence/retained-probe-green-observations.json",
+      "bytes": 1889,
+      "sha256": "1ea195cec8b12e11fdf9fca1bc1452985d7328d311d19966eca0b39331a8e000",
+      "gitBlob": "5a67a04e9ffe1d9ae140efb15807b9ed161733c5"
+    },
+    {
+      "path": "source/learning/runtime/training-scenario-engine.cjs",
+      "bytes": 3742,
+      "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b",
+      "gitBlob": "790743f3b11b495269ec05c4fb6bbfa07380c360"
+    },
+    {
+      "path": "source/learning/runtime/training-scenario-engine.test.cjs",
+      "bytes": 928,
+      "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476",
+      "gitBlob": "6842ec867a99c919fd2084c59cfad2842e96a511"
+    },
+    {
+      "path": "source/operations/runtime/autopilot-execution-engine.cjs",
+      "bytes": 14858,
+      "sha256": "556d0a6d31c2ccbebec12a52c5b2f1f18604d06a843ba2affbf3020376261c84",
+      "gitBlob": "0b7541fe363d1071c9207ce349273a1e09414bbb"
+    },
+    {
+      "path": "source/operations/runtime/autopilot-execution-engine.test.cjs",
+      "bytes": 4567,
+      "sha256": "b10c36700ca8289d6fdcfb7440fbb76221b99c59464d8c5ae6ea9744b3de9761",
+      "gitBlob": "ed160d0319aaed36a3e99888316e6cfa6f524b2a"
+    },
+    {
+      "path": "source/operations/runtime/decision-episode.cjs",
+      "bytes": 9474,
+      "sha256": "364fa016b10db9af0964f6650e730def7e185129a2ccfa3f0ef6a32dadf8dc54",
+      "gitBlob": "3e433396cf483e7fb3af69a5b1a9739d2e94cccf"
+    },
+    {
+      "path": "source/operations/runtime/decision-episode.test.cjs",
+      "bytes": 5440,
+      "sha256": "3fb17cd25fa158b32182b9473ede3102c5e5dd4228f8854304feb1ef38a5988e",
+      "gitBlob": "5d7b891f9ab15bec4c0fd0691789d1aa59898c6a"
+    },
+    {
+      "path": "source/operations/runtime/decision-outcome-proof.cjs",
+      "bytes": 7146,
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4",
+      "gitBlob": "bfe001bc1696dabef57da9732c15f22d55a77b60"
+    },
+    {
+      "path": "source/operations/runtime/decision-outcome-proof.test.cjs",
+      "bytes": 4661,
+      "sha256": "d17a3f9a27959874013197f3dfc3052d43f64c69068cce024e8481b054a25cd4",
+      "gitBlob": "376e9d05751fa6bd749144a260416b8a6d9d7c7b"
+    },
+    {
+      "path": "source/policy/runtime/regulatory-change-candidate.cjs",
+      "bytes": 3453,
+      "sha256": "582fbe1ae967ce411a12a97faacb1ca1efeeced0315d6279431552caf07baf3b",
+      "gitBlob": "66a7e87b44868f5cde3a9e0c827dc40c007aae77"
+    },
+    {
+      "path": "source/policy/runtime/regulatory-change-candidate.test.cjs",
+      "bytes": 3220,
+      "sha256": "e5bbce38454ada0b05e32542e6193b8dd898baca223a6ff10158765f008bcc9c",
+      "gitBlob": "1ed517962df0bb7c35a0727734df4ee5f3a45bc5"
+    },
+    {
+      "path": "source/release/proof-lane-policy.json",
+      "bytes": 10575,
+      "sha256": "e58c3cf199928601297222e8f4b87f5904a7cdec3531e211909b4476a20e7cc8",
+      "gitBlob": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec"
+    },
+    {
+      "path": "source/retained-boundaries.held-out.test.mjs",
+      "bytes": 10210,
+      "sha256": "9a21147f01d77ba1dd3340acde7a6df34570a4356a1b1378dc7ad2d46414ed23",
+      "gitBlob": "272346f0a6a1b660a63e2a5f1261fe3f4435631a"
+    },
+    {
+      "path": "source/src/frontier/agency-labour-exchange.mjs",
+      "bytes": 21261,
+      "sha256": "5719d1467a7aaa86addcfcbd088da18943e2e2a337ca9bdd9901c42e6dbdd38e",
+      "gitBlob": "23cfbd4264cf012a845efe22eb22f1eb6afe1ffe"
+    },
+    {
+      "path": "source/src/frontier/agency-right-to-work-authoritative-planner.mjs",
+      "bytes": 13144,
+      "sha256": "0a6be6242732a15063c5e37aea478d1a1b4f6e82a7617592fa7116895717d860",
+      "gitBlob": "29c980600ac1042ecb74ace0d3241280d6c8abbf"
+    },
+    {
+      "path": "source/src/frontier/agency-right-to-work-lifecycle.mjs",
+      "bytes": 5102,
+      "sha256": "c3ef1ec5ef8f378c9afdca0c1a347a9744652a4673f2d1a9344025f78f6af4c1",
+      "gitBlob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc"
+    },
+    {
+      "path": "source/src/frontier/agency-right-to-work-refresh.mjs",
+      "bytes": 14017,
+      "sha256": "6121438a9a1c7ea3bb402b8b972102c28235fcc1dec1350eba0230fad852a7da",
+      "gitBlob": "5a2c2c3db3cdd3d52bcb6f4af95d86f706da8515"
+    },
+    {
+      "path": "source/src/frontier/agency-right-to-work.mjs",
+      "bytes": 14793,
+      "sha256": "20f23219151332439943554ce06373163110d5cc86b58a62171f94ddce20f98b",
+      "gitBlob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7"
+    },
+    {
+      "path": "source/src/frontier/agency-supplier-compliance.mjs",
+      "bytes": 6185,
+      "sha256": "794de11092b621e09c0cab0dadd51f7c5c393fb71ba0082a5e9fd601fc5d4274",
+      "gitBlob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9"
+    },
+    {
+      "path": "source/test/frontier/agency-labour-exchange.test.mjs",
+      "bytes": 14266,
+      "sha256": "44118143e463f741b6b4de2e682c991530dab6d7d7eb946e2e1d914a19131aa9",
+      "gitBlob": "e40ea4faf854efc1946849f02a74bac9590482f9"
+    },
+    {
+      "path": "source/test/frontier/agency-right-to-work-authoritative-planner.test.mjs",
+      "bytes": 11854,
+      "sha256": "18fdafdb8d96eaba4adc2b7755537059845126fda257e992edf697c348075de0",
+      "gitBlob": "72b52e7490d60c47b2b93f5b826d33568056cb5a"
+    },
+    {
+      "path": "source/trust/runtime/vector-trust-spine.cjs",
+      "bytes": 22881,
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45",
+      "gitBlob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8"
+    }
+  ]
+}

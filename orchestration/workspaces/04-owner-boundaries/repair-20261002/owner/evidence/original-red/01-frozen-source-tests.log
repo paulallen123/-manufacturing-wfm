@@ -1,0 +1,137 @@
+{"node":"v22.23.2","files":["C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\operations\\runtime\\decision-episode.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\learning\\runtime\\training-scenario-engine.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\policy\\runtime\\regulatory-change-candidate.test.cjs","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen\\test\\frontier\\agency-labour-exchange.test.mjs"],"networkGuard":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","exit":0,"error":null}
+TAP version 13
+# Subtest: practice scenario reuses Shadow Decision Episode and cannot execute
+ok 1 - practice scenario reuses Shadow Decision Episode and cannot execute
+  ---
+  duration_ms: 24.7005
+  type: 'test'
+  ...
+# Subtest: scenario answer gives feedback but never awards mastery
+ok 2 - scenario answer gives feedback but never awards mastery
+  ---
+  duration_ms: 2.7282
+  type: 'test'
+  ...
+# Subtest: episode is deterministic regardless of option order
+ok 3 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 30.3084
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 4 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.9704
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 5 - do-nothing option is mandatory
+  ---
+  duration_ms: 1.0558
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 6 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 2.4316
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 7 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 1.1764
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 8 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 2.2169
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 9 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 2.7214
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 10 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 0.8984
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 11 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.4253
+  type: 'test'
+  ...
+# Subtest: selects proven eligible workers and creates a staged agency cascade
+ok 12 - selects proven eligible workers and creates a staged agency cascade
+  ---
+  duration_ms: 26.3376
+  type: 'test'
+  ...
+# Subtest: right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+ok 13 - right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+  ---
+  duration_ms: 0.778
+  type: 'test'
+  ...
+# Subtest: industrial action replacement request is blocked before any worker ranking
+ok 14 - industrial action replacement request is blocked before any worker ranking
+  ---
+  duration_ms: 0.4354
+  type: 'test'
+  ...
+# Subtest: sensitive attributes are ignored and cannot change ranking score
+ok 15 - sensitive attributes are ignored and cannot change ranking score
+  ---
+  duration_ms: 0.662
+  type: 'test'
+  ...
+# Subtest: cheapest worker does not beat strongly evidenced better worker solely on price
+ok 16 - cheapest worker does not beat strongly evidenced better worker solely on price
+  ---
+  duration_ms: 1.8258
+  type: 'test'
+  ...
+# Subtest: high-risk request requires manager approval even when auto-dispatch policy is enabled
+ok 17 - high-risk request requires manager approval even when auto-dispatch policy is enabled
+  ---
+  duration_ms: 1.0968
+  type: 'test'
+  ...
+# Subtest: agency can confirm a preferred worker, but alternative worker must be revalidated
+ok 18 - agency can confirm a preferred worker, but alternative worker must be revalidated
+  ---
+  duration_ms: 1.2136
+  type: 'test'
+  ...
+# Subtest: invoice reconciliation catches hours rate and expense variance without touching worker pay
+ok 19 - invoice reconciliation catches hours rate and expense variance without touching worker pay
+  ---
+  duration_ms: 0.5935
+  type: 'test'
+  ...
+# Subtest: identical evidence is deterministic
+ok 20 - identical evidence is deterministic
+  ---
+  duration_ms: 2.5955
+  type: 'test'
+  ...
+# Subtest: 5,000 synthetic candidates never select an ineligible worker
+ok 21 - 5,000 synthetic candidates never select an ineligible worker
+  ---
+  duration_ms: 591.5136
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 826.3486

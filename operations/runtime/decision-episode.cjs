@@ -74,10 +74,12 @@ function normaliseObjective(objective={}){
   const uncertaintyPenalty=Number(objective.uncertaintyPenalty??0.15);
   if(!Number.isFinite(uncertaintyPenalty)||uncertaintyPenalty<0||uncertaintyPenalty>1)
     throw new Error('uncertaintyPenalty must be between 0 and 1.');
+  if(!Number.isFinite(total)) throw new Error('Objective total must be finite.');
   if(total<=0) throw new Error('At least one objective weight is required.');
   return {weights,total,uncertaintyPenalty};
 }
 function rankOptions(options,objective){
+  if(!Number.isFinite(objective.total)||objective.total<=0) throw new Error('Ranking objective total must be finite and positive.');
   const eligible=options.filter(o=>o.feasible&&o.policyAllowed&&o.hardConstraintsPassed);
   if(!eligible.length) return {ranked:[],recommendedOptionId:null,reason:'NO_ELIGIBLE_OPTIONS'};
   const weightedKeys=Object.entries(objective.weights).filter(([,w])=>w>0).map(([k])=>k);
@@ -86,18 +88,22 @@ function rankOptions(options,objective){
   const ranges={};
   for(const key of weightedKeys){
     const vals=complete.map(o=>o.prediction[key]);
-    ranges[key]={min:Math.min(...vals),max:Math.max(...vals)};
+    const min=Math.min(...vals),max=Math.max(...vals),range=max-min;
+    if(!Number.isFinite(min)||!Number.isFinite(max)||!Number.isFinite(range)) throw new Error(`Ranking range ${key} must be finite.`);
+    ranges[key]={min,max,range};
   }
   const ranked=complete.map(option=>{
     let raw=0;
     for(const key of weightedKeys){
-      const {min,max}=ranges[key];
+      const {min,max,range}=ranges[key];
       const value=option.prediction[key];
-      const normalized=max===min ? 1 : (BENEFIT_METRICS.has(key) ? (value-min)/(max-min) : (max-value)/(max-min));
+      const normalized=max===min ? 1 : (BENEFIT_METRICS.has(key) ? (value-min)/range : (max-value)/range);
       raw += normalized*objective.weights[key];
+      if(!Number.isFinite(normalized)||!Number.isFinite(raw)) throw new Error('Ranking arithmetic must be finite.');
     }
     const normalizedScore=raw/objective.total;
     const score=normalizedScore-(option.uncertainty*objective.uncertaintyPenalty);
+    if(!Number.isFinite(normalizedScore)||!Number.isFinite(score)) throw new Error('Ranking score must be finite.');
     return {optionId:option.id,score:Number(score.toFixed(8)),uncertainty:option.uncertainty};
   }).sort((a,b)=>b.score-a.score || a.uncertainty-b.uncertainty || a.optionId.localeCompare(b.optionId));
   return {ranked,recommendedOptionId:ranked[0]?.optionId||null,reason:'RANKED'};

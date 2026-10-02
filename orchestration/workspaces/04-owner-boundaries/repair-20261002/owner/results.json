@@ -1,0 +1,197 @@
+{
+  "scope": "OWNER_EXECUTION_ONLY",
+  "receipts": [
+    {
+      "file": "evidence/01-decision-adjacent-red.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:08:49.794Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "operations/runtime/decision-episode.test.cjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 1,
+      "error": null,
+      "summary": [
+        "# tests 10",
+        "# pass 7",
+        "# fail 3",
+        "# skipped 0",
+        "# duration_ms 477.3809"
+      ]
+    },
+    {
+      "file": "evidence/02-decision-adjacent-green.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:09:13.407Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "operations/runtime/decision-episode.test.cjs",
+        "learning/runtime/training-scenario-engine.test.cjs",
+        "operations/runtime/decision-outcome-proof.test.cjs",
+        "operations/runtime/autopilot-execution-engine.test.cjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 0,
+      "error": null,
+      "summary": [
+        "# tests 21",
+        "# pass 21",
+        "# fail 0",
+        "# skipped 0",
+        "# duration_ms 1206.9492"
+      ]
+    },
+    {
+      "file": "evidence/03-confidence-adjacent-red.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:09:45.366Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "policy/runtime/regulatory-change-candidate.test.cjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 1,
+      "error": null,
+      "summary": [
+        "# tests 14",
+        "# pass 6",
+        "# fail 8",
+        "# skipped 0",
+        "# duration_ms 2243.2656"
+      ]
+    },
+    {
+      "file": "evidence/04-confidence-adjacent-green.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:09:58.773Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "policy/runtime/regulatory-change-candidate.test.cjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 0,
+      "error": null,
+      "summary": [
+        "# tests 14",
+        "# pass 14",
+        "# fail 0",
+        "# skipped 0",
+        "# duration_ms 235.3573"
+      ]
+    },
+    {
+      "file": "evidence/05-agency-adjacent-red.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:10:51.720Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "test/frontier/agency-labour-exchange.test.mjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 1,
+      "error": null,
+      "summary": [
+        "# tests 28",
+        "# pass 14",
+        "# fail 14",
+        "# skipped 0",
+        "# duration_ms 1074.907"
+      ]
+    },
+    {
+      "file": "evidence/06-agency-adjacent-green.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:11:20.722Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "test/frontier/agency-labour-exchange.test.mjs",
+        "test/frontier/agency-right-to-work-authoritative-planner.test.mjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 0,
+      "error": null,
+      "summary": [
+        "# tests 36",
+        "# pass 36",
+        "# fail 0",
+        "# skipped 0",
+        "# duration_ms 922.5122"
+      ]
+    },
+    {
+      "file": "evidence/07-retained-probes-green.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:11:53.571Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "retained-boundaries.held-out.test.mjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 0,
+      "error": null,
+      "summary": [
+        "# tests 15",
+        "# pass 15",
+        "# fail 0",
+        "# skipped 0",
+        "# duration_ms 210.9763"
+      ]
+    },
+    {
+      "file": "evidence/08-affected-union-green.json",
+      "node": "v22.23.2",
+      "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+      "started": "2026-10-02T14:11:54.257Z",
+      "args": [
+        "--require",
+        "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+        "--test",
+        "operations/runtime/decision-episode.test.cjs",
+        "learning/runtime/training-scenario-engine.test.cjs",
+        "operations/runtime/decision-outcome-proof.test.cjs",
+        "operations/runtime/autopilot-execution-engine.test.cjs",
+        "policy/runtime/regulatory-change-candidate.test.cjs",
+        "test/frontier/agency-labour-exchange.test.mjs",
+        "test/frontier/agency-right-to-work-authoritative-planner.test.mjs"
+      ],
+      "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+      "exit": 0,
+      "error": null,
+      "summary": [
+        "# tests 71",
+        "# pass 71",
+        "# fail 0",
+        "# skipped 0",
+        "# duration_ms 1314.9466"
+      ]
+    }
+  ],
+  "retainedProbes": 15,
+  "finalAffectedTests": 71,
+  "skips": 0,
+  "networkGuard": "../trust_review/network-guard.cjs",
+  "node": "v22.23.2",
+  "independentReviewPending": true
+}

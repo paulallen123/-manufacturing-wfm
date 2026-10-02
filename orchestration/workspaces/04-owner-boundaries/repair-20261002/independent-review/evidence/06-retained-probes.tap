@@ -1,0 +1,100 @@
+TAP version 13
+# Subtest: canonical uncertainty rejects historical out-of-range probability analogue; SHADOW stays inert
+ok 1 - canonical uncertainty rejects historical out-of-range probability analogue; SHADOW stays inert
+  ---
+  duration_ms: 19.854
+  type: 'test'
+  ...
+# Subtest: canonical training scenario stays practice-only and awards no mastery
+ok 2 - canonical training scenario stays practice-only and awards no mastery
+  ---
+  duration_ms: 2.1691
+  type: 'test'
+  ...
+# Subtest: canonical authority owner already rejects actor drift; historical current-proof API is absent
+ok 3 - canonical authority owner already rejects actor drift; historical current-proof API is absent
+  ---
+  duration_ms: 12.9891
+  type: 'test'
+  ...
+# Subtest: finite objective weights cannot overflow into RANKED null scores
+ok 4 - finite objective weights cannot overflow into RANKED null scores
+  ---
+  duration_ms: 0.3114
+  type: 'test'
+  ...
+# Subtest: finite prediction range overflow cannot silently recommend the smaller benefit
+ok 5 - finite prediction range overflow cannot silently recommend the smaller benefit
+  ---
+  duration_ms: 0.4449
+  type: 'test'
+  ...
+# Subtest: change-candidate valid current, stale, material and low-confidence controls
+ok 6 - change-candidate valid current, stale, material and low-confidence controls
+  ---
+  duration_ms: 1.2249
+  type: 'test'
+  ...
+# Subtest: invalid change confidence NaN cannot obtain low-ambiguity review exemption
+ok 7 - invalid change confidence NaN cannot obtain low-ambiguity review exemption
+  ---
+  duration_ms: 0.3059
+  type: 'test'
+  ...
+# Subtest: invalid change confidence Infinity cannot obtain low-ambiguity review exemption
+ok 8 - invalid change confidence Infinity cannot obtain low-ambiguity review exemption
+  ---
+  duration_ms: 0.1486
+  type: 'test'
+  ...
+# Subtest: invalid change confidence 2 cannot obtain low-ambiguity review exemption
+ok 9 - invalid change confidence 2 cannot obtain low-ambiguity review exemption
+  ---
+  duration_ms: 0.3962
+  type: 'test'
+  ...
+# Subtest: valid labour population remains distinct and partial coverage does not overstate fill
+ok 10 - valid labour population remains distinct and partial coverage does not overstate fill
+  ---
+  duration_ms: 4.9978
+  type: 'test'
+  ...
+# Subtest: duplicate same-worker records cannot fill two requested people
+ok 11 - duplicate same-worker records cannot fill two requested people
+  ---
+  duration_ms: 0.4573
+  type: 'test'
+  ...
+# Subtest: missing worker identity cannot count as preferred coverage
+ok 12 - missing worker identity cannot count as preferred coverage
+  ---
+  duration_ms: 0.3543
+  type: 'test'
+  ...
+# Subtest: alternative response remains bound to the supplied evaluated worker identity
+ok 13 - alternative response remains bound to the supplied evaluated worker identity
+  ---
+  duration_ms: 1.4767
+  type: 'test'
+  ...
+# Subtest: alternative response supplier identity must match evaluated supplier and worker
+ok 14 - alternative response supplier identity must match evaluated supplier and worker
+  ---
+  duration_ms: 1.2201
+  type: 'test'
+  ...
+# Subtest: alternative response request identity must match evaluated request
+ok 15 - alternative response request identity must match evaluated request
+  ---
+  duration_ms: 1.8322
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 202.7757

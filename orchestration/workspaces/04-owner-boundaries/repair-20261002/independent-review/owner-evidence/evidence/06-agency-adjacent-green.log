@@ -1,0 +1,227 @@
+{"node":"v22.23.2","executable":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe","started":"2026-10-02T14:11:20.722Z","args":["--require","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","--test","test/frontier/agency-labour-exchange.test.mjs","test/frontier/agency-right-to-work-authoritative-planner.test.mjs"],"networkGuard":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","exit":0,"error":null,"summary":["# tests 36","# pass 36","# fail 0","# skipped 0","# duration_ms 922.5122"]}
+TAP version 13
+# Subtest: selects proven eligible workers and creates a staged agency cascade
+ok 1 - selects proven eligible workers and creates a staged agency cascade
+  ---
+  duration_ms: 24.9501
+  type: 'test'
+  ...
+# Subtest: right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+ok 2 - right-to-work, qualifications, rest, site readiness and AWR parity are hard gates
+  ---
+  duration_ms: 0.8264
+  type: 'test'
+  ...
+# Subtest: industrial action replacement request is blocked before any worker ranking
+ok 3 - industrial action replacement request is blocked before any worker ranking
+  ---
+  duration_ms: 0.7728
+  type: 'test'
+  ...
+# Subtest: sensitive attributes are ignored and cannot change ranking score
+ok 4 - sensitive attributes are ignored and cannot change ranking score
+  ---
+  duration_ms: 1.0892
+  type: 'test'
+  ...
+# Subtest: cheapest worker does not beat strongly evidenced better worker solely on price
+ok 5 - cheapest worker does not beat strongly evidenced better worker solely on price
+  ---
+  duration_ms: 2.3447
+  type: 'test'
+  ...
+# Subtest: high-risk request requires manager approval even when auto-dispatch policy is enabled
+ok 6 - high-risk request requires manager approval even when auto-dispatch policy is enabled
+  ---
+  duration_ms: 1.2201
+  type: 'test'
+  ...
+# Subtest: agency can confirm a preferred worker, but alternative worker must be revalidated
+ok 7 - agency can confirm a preferred worker, but alternative worker must be revalidated
+  ---
+  duration_ms: 1.4416
+  type: 'test'
+  ...
+# Subtest: invoice reconciliation catches hours rate and expense variance without touching worker pay
+ok 8 - invoice reconciliation catches hours rate and expense variance without touching worker pay
+  ---
+  duration_ms: 0.6334
+  type: 'test'
+  ...
+# Subtest: identical evidence is deterministic
+ok 9 - identical evidence is deterministic
+  ---
+  duration_ms: 3.2471
+  type: 'test'
+  ...
+# Subtest: 5,000 synthetic candidates never select an ineligible worker
+ok 10 - 5,000 synthetic candidates never select an ineligible worker
+  ---
+  duration_ms: 700.4856
+  type: 'test'
+  ...
+# Subtest: unidentified worker undefined cannot count as preferred coverage
+ok 11 - unidentified worker undefined cannot count as preferred coverage
+  ---
+  duration_ms: 1.2073
+  type: 'test'
+  ...
+# Subtest: unidentified worker null cannot count as preferred coverage
+ok 12 - unidentified worker null cannot count as preferred coverage
+  ---
+  duration_ms: 0.2827
+  type: 'test'
+  ...
+# Subtest: unidentified worker  cannot count as preferred coverage
+ok 13 - unidentified worker  cannot count as preferred coverage
+  ---
+  duration_ms: 0.1625
+  type: 'test'
+  ...
+# Subtest: unidentified worker    cannot count as preferred coverage
+ok 14 - unidentified worker    cannot count as preferred coverage
+  ---
+  duration_ms: 0.1501
+  type: 'test'
+  ...
+# Subtest: unidentified worker 7 cannot count as preferred coverage
+ok 15 - unidentified worker 7 cannot count as preferred coverage
+  ---
+  duration_ms: 0.1827
+  type: 'test'
+  ...
+# Subtest: duplicate normalized worker population W1/W1 is rejected rather than double-filled
+ok 16 - duplicate normalized worker population W1/W1 is rejected rather than double-filled
+  ---
+  duration_ms: 0.2651
+  type: 'test'
+  ...
+# Subtest: duplicate normalized worker population W1/ W1  is rejected rather than double-filled
+ok 17 - duplicate normalized worker population W1/ W1  is rejected rather than double-filled
+  ---
+  duration_ms: 0.1808
+  type: 'test'
+  ...
+# Subtest: empty population and one distinct worker retain explicit coverage gaps
+ok 18 - empty population and one distinct worker retain explicit coverage gaps
+  ---
+  duration_ms: 0.753
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects response-worker identity drift
+ok 19 - alternative acceptance rejects response-worker identity drift
+  ---
+  duration_ms: 0.7955
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects candidate-worker identity drift
+ok 20 - alternative acceptance rejects candidate-worker identity drift
+  ---
+  duration_ms: 0.7442
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects candidate-supplier identity drift
+ok 21 - alternative acceptance rejects candidate-supplier identity drift
+  ---
+  duration_ms: 0.6665
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects evaluated-supplier identity drift
+ok 22 - alternative acceptance rejects evaluated-supplier identity drift
+  ---
+  duration_ms: 0.6319
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects evaluated-request identity drift
+ok 23 - alternative acceptance rejects evaluated-request identity drift
+  ---
+  duration_ms: 0.6134
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects missing-response-worker identity drift
+ok 24 - alternative acceptance rejects missing-response-worker identity drift
+  ---
+  duration_ms: 0.7051
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects missing-candidate-worker identity drift
+ok 25 - alternative acceptance rejects missing-candidate-worker identity drift
+  ---
+  duration_ms: 0.6368
+  type: 'test'
+  ...
+# Subtest: alternative acceptance rejects missing-evaluated-request identity drift
+ok 26 - alternative acceptance rejects missing-evaluated-request identity drift
+  ---
+  duration_ms: 1.1108
+  type: 'test'
+  ...
+# Subtest: worker or request mismatch is rejected before eligibility touches its unrelated request
+ok 27 - worker or request mismatch is rejected before eligibility touches its unrelated request
+  ---
+  duration_ms: 0.7198
+  type: 'test'
+  ...
+# Subtest: matching alternative IDs still require eligibility and grant only handoff
+ok 28 - matching alternative IDs still require eligibility and grant only handoff
+  ---
+  duration_ms: 0.9686
+  type: 'test'
+  ...
+# Subtest: valid current authoritative assurance permits ranking and exposes only privacy-minimised ledger evidence
+ok 29 - valid current authoritative assurance permits ranking and exposes only privacy-minimised ledger evidence
+  ---
+  duration_ms: 8.6034
+  type: 'test'
+  ...
+# Subtest: cheaper perfect-performance worker without current assurance gets score null and cannot outrank an authoritative worker
+ok 30 - cheaper perfect-performance worker without current assurance gets score null and cannot outrank an authoritative worker
+  ---
+  duration_ms: 1.991
+  type: 'test'
+  ...
+# Subtest: conflict and every authoritative scope/evidence mismatch fail closed before ranking
+ok 31 - conflict and every authoritative scope/evidence mismatch fail closed before ranking
+  ---
+  duration_ms: 3.372
+  type: 'test'
+  ...
+# Subtest: unavailable or throwing assurance reader fails closed and does not rank candidate
+ok 32 - unavailable or throwing assurance reader fails closed and does not rank candidate
+  ---
+  duration_ms: 1.7051
+  type: 'test'
+  ...
+# Subtest: PostgreSQL reader uses exact tenant, agency and worker scope and is read-only
+ok 33 - PostgreSQL reader uses exact tenant, agency and worker scope and is read-only
+  ---
+  duration_ms: 2.3065
+  type: 'test'
+  ...
+# Subtest: authoritative assignment fingerprint is identical to the signed refresh-token assignment claim
+ok 34 - authoritative assignment fingerprint is identical to the signed refresh-token assignment claim
+  ---
+  duration_ms: 4.1204
+  type: 'test'
+  ...
+# Subtest: 5,000 cheaper perfect-performance candidates without authoritative assurance never enter ranking
+ok 35 - 5,000 cheaper perfect-performance candidates without authoritative assurance never enter ranking
+  ---
+  duration_ms: 528.2016
+  type: 'test'
+  ...
+# Subtest: identical authoritative store state produces deterministic planner evidence
+ok 36 - identical authoritative store state produces deterministic planner evidence
+  ---
+  duration_ms: 2.434
+  type: 'test'
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 36
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 922.5122

@@ -1,0 +1,21 @@
+{
+  "node": "v22.23.2",
+  "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+  "started": "2026-10-02T14:08:49.794Z",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+    "--test",
+    "operations/runtime/decision-episode.test.cjs"
+  ],
+  "networkGuard": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs",
+  "exit": 1,
+  "error": null,
+  "summary": [
+    "# tests 10",
+    "# pass 7",
+    "# fail 3",
+    "# skipped 0",
+    "# duration_ms 477.3809"
+  ]
+}

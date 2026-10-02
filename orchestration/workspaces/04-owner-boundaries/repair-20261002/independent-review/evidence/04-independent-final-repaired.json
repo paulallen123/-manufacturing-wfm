@@ -1,0 +1,26 @@
+{
+  "label": "04-independent-final-repaired",
+  "scope": "source",
+  "started": "2026-10-02T14:32:56.663Z",
+  "completed": "2026-10-02T14:32:56.987Z",
+  "node": "v22.23.2",
+  "executable": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe",
+  "args": [
+    "--require",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\network-guard.cjs",
+    "--test",
+    "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs"
+  ],
+  "exitCode": 0,
+  "error": null,
+  "summary": [
+    "# tests 69",
+    "# pass 69",
+    "# fail 0",
+    "# cancelled 0",
+    "# skipped 0",
+    "# todo 0",
+    "# duration_ms 234.7471"
+  ],
+  "qualification": "Local actual imported source functions with exact frozen dependencies, guarded against real network. Synthetic supplied authority/status/source references are unauthenticated fixtures; no provider/tenant/runtime proof."
+}

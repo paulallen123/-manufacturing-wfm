@@ -1,0 +1,270 @@
+{
+  "capsules": [
+    {
+      "sourceCapsule": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair",
+      "indexName": "evidence-index.json",
+      "sealName": null,
+      "subdir": "owner",
+      "artifactCount": 35,
+      "indexSha256": "17d9a07d104094e9fda3a1db7187b81f5a986751c9e6f1820121812ba5b2ef38",
+      "sealSha256": null
+    },
+    {
+      "sourceCapsule": "C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002",
+      "indexName": "evidence-index.json",
+      "sealName": "seal.json",
+      "subdir": "independent-review",
+      "artifactCount": 101,
+      "indexSha256": "88dac926457e3bff1174025192912bb1327e3ffb99c0059b488f1b524413f640",
+      "sealSha256": "9fbf7a7dd0aee94bd0b5bd6aad5bb2ddf9e9c6d22d0e32a60b65ca53e2675809"
+    }
+  ],
+  "shippingPaths": [
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "mode": "100644",
+      "operation": "MODIFY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "proposedBlob": "3e433396cf483e7fb3af69a5b1a9739d2e94cccf",
+      "preimageBytes": 8853,
+      "bytes": 9474,
+      "byteDelta": 621,
+      "sha256": "364fa016b10db9af0964f6650e730def7e185129a2ccfa3f0ef6a32dadf8dc54"
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "mode": "100644",
+      "operation": "MODIFY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "proposedBlob": "5d7b891f9ab15bec4c0fd0691789d1aa59898c6a",
+      "preimageBytes": 3042,
+      "bytes": 5440,
+      "byteDelta": 2398,
+      "sha256": "3fb17cd25fa158b32182b9473ede3102c5e5dd4228f8854304feb1ef38a5988e"
+    },
+    {
+      "path": "src/frontier/agency-labour-exchange.mjs",
+      "mode": "100644",
+      "operation": "MODIFY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "4ba7d3b974c3d17a55f3f352b5d0ad447a7dea20",
+      "proposedBlob": "23cfbd4264cf012a845efe22eb22f1eb6afe1ffe",
+      "preimageBytes": 19680,
+      "bytes": 21261,
+      "byteDelta": 1581,
+      "sha256": "5719d1467a7aaa86addcfcbd088da18943e2e2a337ca9bdd9901c42e6dbdd38e"
+    },
+    {
+      "path": "test/frontier/agency-labour-exchange.test.mjs",
+      "mode": "100644",
+      "operation": "MODIFY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "66f05773412202a44e8fee68988a3d8e6d4753f3",
+      "proposedBlob": "e40ea4faf854efc1946849f02a74bac9590482f9",
+      "preimageBytes": 10566,
+      "bytes": 14266,
+      "byteDelta": 3700,
+      "sha256": "44118143e463f741b6b4de2e682c991530dab6d7d7eb946e2e1d914a19131aa9"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "mode": "100644",
+      "operation": "MODIFY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "proposedBlob": "66a7e87b44868f5cde3a9e0c827dc40c007aae77",
+      "preimageBytes": 3281,
+      "bytes": 3453,
+      "byteDelta": 172,
+      "sha256": "582fbe1ae967ce411a12a97faacb1ca1efeeced0315d6279431552caf07baf3b"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "mode": "100644",
+      "operation": "MODIFY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "proposedBlob": "1ed517962df0bb7c35a0727734df4ee5f3a45bc5",
+      "preimageBytes": 1881,
+      "bytes": 3220,
+      "byteDelta": 1339,
+      "sha256": "e5bbce38454ada0b05e32542e6193b8dd898baca223a6ff10158765f008bcc9c"
+    }
+  ],
+  "unchangedFrozenDependencies": [
+    {
+      "path": "learning/runtime/training-scenario-engine.cjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+      "proposedBlob": "790743f3b11b495269ec05c4fb6bbfa07380c360",
+      "preimageBytes": 3742,
+      "bytes": 3742,
+      "byteDelta": 0,
+      "sha256": "b0ec8a7fa166bea38b397f1540f9f75207e39a60c94d303fed9bd005a91d371b"
+    },
+    {
+      "path": "learning/runtime/training-scenario-engine.test.cjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "6842ec867a99c919fd2084c59cfad2842e96a511",
+      "proposedBlob": "6842ec867a99c919fd2084c59cfad2842e96a511",
+      "preimageBytes": 928,
+      "bytes": 928,
+      "byteDelta": 0,
+      "sha256": "6394b44d516095039e43135a009156e36ab17925a11098fd418e622b7cc7a476"
+    },
+    {
+      "path": "src/frontier/agency-supplier-compliance.mjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9",
+      "proposedBlob": "a80c3de7730585cb4960eaa5f236e2d3d5e95bb9",
+      "preimageBytes": 6185,
+      "bytes": 6185,
+      "byteDelta": 0,
+      "sha256": "794de11092b621e09c0cab0dadd51f7c5c393fb71ba0082a5e9fd601fc5d4274"
+    },
+    {
+      "path": "src/frontier/agency-right-to-work.mjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7",
+      "proposedBlob": "a56a0d75a837aec2a9d507a69bd01b113ce46fc7",
+      "preimageBytes": 14793,
+      "bytes": 14793,
+      "byteDelta": 0,
+      "sha256": "20f23219151332439943554ce06373163110d5cc86b58a62171f94ddce20f98b"
+    },
+    {
+      "path": "src/frontier/agency-right-to-work-lifecycle.mjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc",
+      "proposedBlob": "690b6dcb97b99c87fbe8a1ecd08fef02668870cc",
+      "preimageBytes": 5102,
+      "bytes": 5102,
+      "byteDelta": 0,
+      "sha256": "c3ef1ec5ef8f378c9afdca0c1a347a9744652a4673f2d1a9344025f78f6af4c1"
+    },
+    {
+      "path": "operations/runtime/autopilot-execution-engine.cjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "0b7541fe363d1071c9207ce349273a1e09414bbb",
+      "proposedBlob": "0b7541fe363d1071c9207ce349273a1e09414bbb",
+      "preimageBytes": 14858,
+      "bytes": 14858,
+      "byteDelta": 0,
+      "sha256": "556d0a6d31c2ccbebec12a52c5b2f1f18604d06a843ba2affbf3020376261c84"
+    },
+    {
+      "path": "trust/runtime/vector-trust-spine.cjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "proposedBlob": "a7e7721335b75a1d26dbfbd0ec4139be67feb2a8",
+      "preimageBytes": 22881,
+      "bytes": 22881,
+      "byteDelta": 0,
+      "sha256": "a3dec9a4e52b36f16caa1152d120fe50cdc72830f1a03bc630bf803e82cf9b45"
+    },
+    {
+      "path": "release/proof-lane-policy.json",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec",
+      "proposedBlob": "da6a0ebf5ced5c8de68438aa24391b05caeb79ec",
+      "preimageBytes": 10575,
+      "bytes": 10575,
+      "byteDelta": 0,
+      "sha256": "e58c3cf199928601297222e8f4b87f5904a7cdec3531e211909b4476a20e7cc8"
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.test.cjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "376e9d05751fa6bd749144a260416b8a6d9d7c7b",
+      "proposedBlob": "376e9d05751fa6bd749144a260416b8a6d9d7c7b",
+      "preimageBytes": 4661,
+      "bytes": 4661,
+      "byteDelta": 0,
+      "sha256": "d17a3f9a27959874013197f3dfc3052d43f64c69068cce024e8481b054a25cd4"
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "proposedBlob": "bfe001bc1696dabef57da9732c15f22d55a77b60",
+      "preimageBytes": 7146,
+      "bytes": 7146,
+      "byteDelta": 0,
+      "sha256": "cea119671c780e75ee282a2eee94e19e09f5b6cd597b197b6964f4e3aa5769d4"
+    },
+    {
+      "path": "operations/runtime/autopilot-execution-engine.test.cjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "ed160d0319aaed36a3e99888316e6cfa6f524b2a",
+      "proposedBlob": "ed160d0319aaed36a3e99888316e6cfa6f524b2a",
+      "preimageBytes": 4567,
+      "bytes": 4567,
+      "byteDelta": 0,
+      "sha256": "b10c36700ca8289d6fdcfb7440fbb76221b99c59464d8c5ae6ea9744b3de9761"
+    },
+    {
+      "path": "test/frontier/agency-right-to-work-authoritative-planner.test.mjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "72b52e7490d60c47b2b93f5b826d33568056cb5a",
+      "proposedBlob": "72b52e7490d60c47b2b93f5b826d33568056cb5a",
+      "preimageBytes": 11854,
+      "bytes": 11854,
+      "byteDelta": 0,
+      "sha256": "18fdafdb8d96eaba4adc2b7755537059845126fda257e992edf697c348075de0"
+    },
+    {
+      "path": "src/frontier/agency-right-to-work-authoritative-planner.mjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "29c980600ac1042ecb74ace0d3241280d6c8abbf",
+      "proposedBlob": "29c980600ac1042ecb74ace0d3241280d6c8abbf",
+      "preimageBytes": 13144,
+      "bytes": 13144,
+      "byteDelta": 0,
+      "sha256": "0a6be6242732a15063c5e37aea478d1a1b4f6e82a7617592fa7116895717d860"
+    },
+    {
+      "path": "src/frontier/agency-right-to-work-refresh.mjs",
+      "mode": "100644",
+      "operation": "UNCHANGED_DEPENDENCY",
+      "sourceRef": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+      "preimageBlob": "5a2c2c3db3cdd3d52bcb6f4af95d86f706da8515",
+      "proposedBlob": "5a2c2c3db3cdd3d52bcb6f4af95d86f706da8515",
+      "preimageBytes": 14017,
+      "bytes": 14017,
+      "byteDelta": 0,
+      "sha256": "6121438a9a1c7ea3bb402b8b972102c28235fcc1dec1350eba0230fad852a7da"
+    }
+  ],
+  "ownerArtifactCount": 35,
+  "independentArtifactCount": 101,
+  "initial66PairOverlappingHistory": true,
+  "postimageBytesChangedDuringPackaging": false
+}

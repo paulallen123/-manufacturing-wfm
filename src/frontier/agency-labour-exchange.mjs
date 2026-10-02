@@ -10,6 +10,7 @@ const ms = value => {
 };
 const n = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
 const c = value => Math.max(0, Math.min(1, n(value)));
+const workerIdentity = value => typeof value === 'string' && value.trim() ? value.trim() : null;
 const stable = value => Array.isArray(value)
   ? value.map(stable)
   : (value && typeof value === 'object'
@@ -76,6 +77,7 @@ export function evaluateAgencyCandidate(worker, request, agency, policy = {}) {
   const failures = [];
   const warnings = [];
   if (!worker || typeof worker !== 'object') return { eligible:false, failures:['candidate_missing'], warnings, score:null };
+  if (!workerIdentity(worker.workerId)) failures.push('worker_identity_missing_or_invalid');
 
   const start = ms(request.startAt);
   const end = ms(request.endAt);
@@ -184,6 +186,13 @@ export function planAgencyLabourFulfilment(input) {
     return blocked;
   }
 
+  const workerIdentities = new Set();
+  for (const worker of candidates) {
+    const identity = workerIdentity(worker?.workerId);
+    if (!identity) throw new TypeError('Every supplied worker identity must be a non-empty string.');
+    if (workerIdentities.has(identity)) throw new TypeError('Duplicate normalized worker identity in supplied population.');
+    workerIdentities.add(identity);
+  }
   const byAgency = new Map(agencies.map(agency => [agency.agencyId, agency]));
   const candidatePolicy = { ...policy, now: input.now ?? policy.now ?? null, tenantId: input.tenantId };
   const evaluations = candidates.map(worker => evaluateAgencyCandidate(worker, request, byAgency.get(worker.agencyId), candidatePolicy));
@@ -339,8 +348,18 @@ export function validateAgencyResponse(plan, response, alternative = null) {
     if (!alternative) {
       failures.push('alternative_worker_requires_revalidation');
     } else {
-      const evaluation = evaluateAgencyCandidate(alternative.candidate, alternative.request, alternative.agency, alternative.policy);
-      if (!evaluation.eligible) failures.push(...evaluation.failures.map(failure => 'alternative_' + failure));
+      const identityFailures = [];
+      if (!workerIdentity(response.workerId) || !workerIdentity(alternative.candidate?.workerId) || response.workerId !== alternative.candidate.workerId)
+        identityFailures.push('alternative_worker_identity_mismatch');
+      if (!workerIdentity(response.agencyId) || !workerIdentity(alternative.agency?.agencyId) || !workerIdentity(alternative.candidate?.agencyId) || response.agencyId !== alternative.agency.agencyId || response.agencyId !== alternative.candidate.agencyId)
+        identityFailures.push('alternative_supplier_identity_mismatch');
+      if (!workerIdentity(response.requestId) || !workerIdentity(alternative.request?.requestId) || response.requestId !== alternative.request.requestId || alternative.request.requestId !== plan?.requestPack?.requestId)
+        identityFailures.push('alternative_request_identity_mismatch');
+      failures.push(...identityFailures);
+      if (!identityFailures.length && !failures.length) {
+        const evaluation = evaluateAgencyCandidate(alternative.candidate, alternative.request, alternative.agency, alternative.policy);
+        if (!evaluation.eligible) failures.push(...evaluation.failures.map(failure => 'alternative_' + failure));
+      }
     }
   }
 

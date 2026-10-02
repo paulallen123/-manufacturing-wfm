@@ -1,0 +1,1010 @@
+TAP version 13
+# Subtest: ordinary scoring/digest exactly equal frozen canonical behavior
+ok 1 - ordinary scoring/digest exactly equal frozen canonical behavior
+  ---
+  duration_ms: 22.9231
+  type: 'test'
+  ...
+# Subtest: ordinary episode is deterministic under option/objective property permutation
+ok 2 - ordinary episode is deterministic under option/objective property permutation
+  ---
+  duration_ms: 0.8132
+  type: 'test'
+  ...
+# Subtest: hard gate feasible excludes superior option and cannot be selected
+ok 3 - hard gate feasible excludes superior option and cannot be selected
+  ---
+  duration_ms: 0.834
+  type: 'test'
+  ...
+# Subtest: hard gate policyAllowed excludes superior option and cannot be selected
+ok 4 - hard gate policyAllowed excludes superior option and cannot be selected
+  ---
+  duration_ms: 0.3007
+  type: 'test'
+  ...
+# Subtest: hard gate hardConstraintsPassed excludes superior option and cannot be selected
+ok 5 - hard gate hardConstraintsPassed excludes superior option and cannot be selected
+  ---
+  duration_ms: 0.2975
+  type: 'test'
+  ...
+# Subtest: SHADOW selection remains nonexecuting and rejects claimed human authorization
+ok 6 - SHADOW selection remains nonexecuting and rejects claimed human authorization
+  ---
+  duration_ms: 0.602
+  type: 'test'
+  ...
+# Subtest: opposite finite extrema reject overflowing throughputUnits range
+not ok 7 - opposite finite extrema reject overflowing throughputUnits range
+  ---
+  duration_ms: 1.0192
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:19:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:19:276)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: opposite finite extrema reject overflowing labourCost range
+not ok 8 - opposite finite extrema reject overflowing labourCost range
+  ---
+  duration_ms: 0.5289
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:19:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:19:276)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: finite objective weights reject overflowed sum before serialization
+not ok 9 - finite objective weights reject overflowed sum before serialization
+  ---
+  duration_ms: 0.694
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:20:176)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: large representable extremes retain finite monotonic ranking
+ok 10 - large representable extremes retain finite monotonic ranking
+  ---
+  duration_ms: 0.7725
+  type: 'test'
+  ...
+# Subtest: equal and missing metric controls retain frozen contract
+ok 11 - equal and missing metric controls retain frozen contract
+  ---
+  duration_ms: 0.7099
+  type: 'test'
+  ...
+# Subtest: exported ranking rejects invalid total NaN
+not ok 12 - exported ranking rejects invalid total NaN
+  ---
+  duration_ms: 0.2582
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:23:50'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:23:123)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: exported ranking rejects invalid total Infinity
+not ok 13 - exported ranking rejects invalid total Infinity
+  ---
+  duration_ms: 0.15
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:23:50'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:23:123)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: exported ranking rejects invalid total -Infinity
+not ok 14 - exported ranking rejects invalid total -Infinity
+  ---
+  duration_ms: 0.1366
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:23:50'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:23:123)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: exported ranking rejects invalid total 0
+not ok 15 - exported ranking rejects invalid total 0
+  ---
+  duration_ms: 0.147
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:23:50'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:23:123)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: exported ranking rejects invalid total -1
+not ok 16 - exported ranking rejects invalid total -1
+  ---
+  duration_ms: 0.142
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:23:50'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:23:123)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: exported ranking rejects overflowing weighted accumulation and final penalty
+not ok 17 - exported ranking rejects overflowing weighted accumulation and final penalty
+  ---
+  duration_ms: 0.3862
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:24:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:24:136)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects NaN
+not ok 18 - normalized confidence rejects NaN
+  ---
+  duration_ms: 0.8109
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects Infinity
+not ok 19 - normalized confidence rejects Infinity
+  ---
+  duration_ms: 0.2323
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects -Infinity
+not ok 20 - normalized confidence rejects -Infinity
+  ---
+  duration_ms: 0.2153
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects -0.001
+not ok 21 - normalized confidence rejects -0.001
+  ---
+  duration_ms: 0.2156
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects 1.001
+not ok 22 - normalized confidence rejects 1.001
+  ---
+  duration_ms: 0.1876
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects NaN
+not ok 23 - normalized confidence rejects NaN
+  ---
+  duration_ms: 0.1955
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects Infinity
+not ok 24 - normalized confidence rejects Infinity
+  ---
+  duration_ms: 0.206
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: normalized confidence rejects not numeric
+not ok 25 - normalized confidence rejects not numeric
+  ---
+  duration_ms: 0.2111
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:26:88'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:26:152)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: legacy confidence undefined normalization and review gates
+ok 26 - legacy confidence undefined normalization and review gates
+  ---
+  duration_ms: 0.4497
+  type: 'test'
+  ...
+# Subtest: legacy confidence null normalization and review gates
+ok 27 - legacy confidence null normalization and review gates
+  ---
+  duration_ms: 0.1796
+  type: 'test'
+  ...
+# Subtest: legacy confidence  normalization and review gates
+ok 28 - legacy confidence  normalization and review gates
+  ---
+  duration_ms: 0.1611
+  type: 'test'
+  ...
+# Subtest: legacy confidence 0.95 normalization and review gates
+ok 29 - legacy confidence 0.95 normalization and review gates
+  ---
+  duration_ms: 0.8653
+  type: 'test'
+  ...
+# Subtest: legacy confidence false normalization and review gates
+ok 30 - legacy confidence false normalization and review gates
+  ---
+  duration_ms: 0.1673
+  type: 'test'
+  ...
+# Subtest: legacy confidence true normalization and review gates
+ok 31 - legacy confidence true normalization and review gates
+  ---
+  duration_ms: 0.1435
+  type: 'test'
+  ...
+# Subtest: legacy confidence 0 normalization and review gates
+ok 32 - legacy confidence 0 normalization and review gates
+  ---
+  duration_ms: 0.1371
+  type: 'test'
+  ...
+# Subtest: legacy confidence 1 normalization and review gates
+ok 33 - legacy confidence 1 normalization and review gates
+  ---
+  duration_ms: 0.1338
+  type: 'test'
+  ...
+# Subtest: legacy confidence 0.949999 normalization and review gates
+ok 34 - legacy confidence 0.949999 normalization and review gates
+  ---
+  duration_ms: 0.1354
+  type: 'test'
+  ...
+# Subtest: material payroll always requires review at confidence1
+ok 35 - material payroll always requires review at confidence1
+  ---
+  duration_ms: 0.2481
+  type: 'test'
+  ...
+# Subtest: material working-time always requires review at confidence1
+ok 36 - material working-time always requires review at confidence1
+  ---
+  duration_ms: 0.1109
+  type: 'test'
+  ...
+# Subtest: material safety always requires review at confidence1
+ok 37 - material safety always requires review at confidence1
+  ---
+  duration_ms: 0.1
+  type: 'test'
+  ...
+# Subtest: material privacy always requires review at confidence1
+ok 38 - material privacy always requires review at confidence1
+  ---
+  duration_ms: 0.0963
+  type: 'test'
+  ...
+# Subtest: high-confidence ambiguous changes require review and stale source blocks
+ok 39 - high-confidence ambiguous changes require review and stale source blocks
+  ---
+  duration_ms: 0.1994
+  type: 'test'
+  ...
+# Subtest: unchanged snapshots retain NO_CHANGE early return without granting authority
+ok 40 - unchanged snapshots retain NO_CHANGE early return without granting authority
+  ---
+  duration_ms: 0.129
+  type: 'test'
+  ...
+# Subtest: distinct/empty/partial populations retain honest unique-person coverage
+ok 41 - distinct/empty/partial populations retain honest unique-person coverage
+  ---
+  duration_ms: 4.4237
+  type: 'test'
+  ...
+# Subtest: whole population rejects missing/malformed worker undefined
+not ok 42 - whole population rejects missing/malformed worker undefined
+  ---
+  duration_ms: 1.073
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:37:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:37:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: whole population rejects missing/malformed worker null
+not ok 43 - whole population rejects missing/malformed worker null
+  ---
+  duration_ms: 0.9914
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:37:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:37:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: whole population rejects missing/malformed worker ""
+not ok 44 - whole population rejects missing/malformed worker ""
+  ---
+  duration_ms: 1.087
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:37:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:37:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: whole population rejects missing/malformed worker "  "
+not ok 45 - whole population rejects missing/malformed worker "  "
+  ---
+  duration_ms: 0.921
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:37:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:37:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: whole population rejects missing/malformed worker 12
+not ok 46 - whole population rejects missing/malformed worker 12
+  ---
+  duration_ms: 1.2372
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:37:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:37:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: whole population rejects missing/malformed worker {}
+not ok 47 - whole population rejects missing/malformed worker {}
+  ---
+  duration_ms: 0.7104
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:37:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:37:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: whole population rejects missing/malformed worker false
+not ok 48 - whole population rejects missing/malformed worker false
+  ---
+  duration_ms: 0.6208
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:37:54'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:37:192)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate normalized identity rejects entire population "P1"
+not ok 49 - duplicate normalized identity rejects entire population "P1"
+  ---
+  duration_ms: 0.6706
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:38:40'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:38:184)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate normalized identity rejects entire population " P1 "
+not ok 50 - duplicate normalized identity rejects entire population " P1 "
+  ---
+  duration_ms: 0.5812
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:38:40'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:38:184)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: duplicate normalized identity rejects entire population "\\tP1\\n"
+not ok 51 - duplicate normalized identity rejects entire population "\\tP1\\n"
+  ---
+  duration_ms: 0.6026
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:38:40'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:38:184)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: null supplied worker rejects before handoff
+not ok 52 - null supplied worker rejects before handoff
+  ---
+  duration_ms: 0.5523
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /worker identity/. Input:
+    
+    "TypeError: Cannot read properties of null (reading 'agencyId')"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: "Cannot read properties of null (reading 'agencyId')"
+  name: 'TypeError'
+  stack: |-
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/frozen/src/frontier/agency-labour-exchange.mjs:189:109
+    Array.map (<anonymous>)
+    Module.planAgencyLabourFulfilment (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/frozen/src/frontier/agency-labour-exchange.mjs:189:34)
+    file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:39:127
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:39:109)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:39:109)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: distinct valid whitespace identity is retained rather than silently renamed
+ok 53 - distinct valid whitespace identity is retained rather than silently renamed
+  ---
+  duration_ms: 0.6055
+  type: 'test'
+  ...
+# Subtest: invalid request retains fail-closed blocked result before population handoff
+ok 54 - invalid request retains fail-closed blocked result before population handoff
+  ---
+  duration_ms: 0.273
+  type: 'test'
+  ...
+# Subtest: matching evaluated alternative passes genuine existing eligibility code
+ok 55 - matching evaluated alternative passes genuine existing eligibility code
+  ---
+  duration_ms: 0.9837
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects response worker missing
+not ok 56 - alternative binding rejects response worker missing
+  ---
+  duration_ms: 1.2355
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:159)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects evaluated worker missing
+not ok 57 - alternative binding rejects evaluated worker missing
+  ---
+  duration_ms: 1.7158
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:159)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects worker mismatch
+not ok 58 - alternative binding rejects worker mismatch
+  ---
+  duration_ms: 0.7319
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:159)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects evaluated supplier mismatch
+not ok 59 - alternative binding rejects evaluated supplier mismatch
+  ---
+  duration_ms: 0.7972
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: '{"valid":false,"failures":["alternative_agency_not_found"]}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects candidate supplier mismatch
+not ok 60 - alternative binding rejects candidate supplier mismatch
+  ---
+  duration_ms: 0.7246
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: '{"valid":false,"failures":["alternative_agency_not_found"]}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects evaluated supplier missing
+not ok 61 - alternative binding rejects evaluated supplier missing
+  ---
+  duration_ms: 0.7137
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: '{"valid":false,"failures":["alternative_agency_not_found"]}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:187)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects request mismatch
+not ok 62 - alternative binding rejects request mismatch
+  ---
+  duration_ms: 0.8955
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:159)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects evaluated request missing
+not ok 63 - alternative binding rejects evaluated request missing
+  ---
+  duration_ms: 0.9516
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane09-lane04-review-20261002\\independent.held-out.test.mjs:55:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane09-lane04-review-20261002/independent.held-out.test.mjs:55:159)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative binding rejects response request mismatch
+ok 64 - alternative binding rejects response request mismatch
+  ---
+  duration_ms: 0.7694
+  type: 'test'
+  ...
+# Subtest: alternative binding rejects response supplier unplanned
+ok 65 - alternative binding rejects response supplier unplanned
+  ---
+  duration_ms: 0.7461
+  type: 'test'
+  ...
+# Subtest: matching IDs retain existing restCompliant hard gate
+ok 66 - matching IDs retain existing restCompliant hard gate
+  ---
+  duration_ms: 1.2062
+  type: 'test'
+  ...
+# Subtest: matching IDs retain existing siteReady hard gate
+ok 67 - matching IDs retain existing siteReady hard gate
+  ---
+  duration_ms: 0.5609
+  type: 'test'
+  ...
+# Subtest: matching IDs retain existing consentToShare hard gate
+ok 68 - matching IDs retain existing consentToShare hard gate
+  ---
+  duration_ms: 0.4891
+  type: 'test'
+  ...
+# Subtest: network guard blocks real fetch without a provider request
+ok 69 - network guard blocks real fetch without a provider request
+  ---
+  duration_ms: 0.4241
+  type: 'test'
+  ...
+1..69
+# tests 69
+# suites 0
+# pass 33
+# fail 36
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 244.0763

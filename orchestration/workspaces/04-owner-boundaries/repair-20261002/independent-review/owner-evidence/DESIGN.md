@@ -1,0 +1,7 @@
+# Approved bounded owner repair
+
+Parent explicitly approved this design on 2026-10-02 after the ten genuine frozen-source failures were sealed. Protected f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560/tree74aba749449f3f4cd68ee385b24637026ea90ec8 stays untouched. Proven/convergence locks remain null.
+
+Sequential changes: DecisionEpisode rejects non-finite objective totals, normalization ranges/intermediates and final scores while retaining existing ranking weights, ordinary recommendations and SHADOW authority. RegulatoryChangeCandidate requires normalized confidence to be finite and within [0,1], preserving valid coercion/default and mandatory review. AgencyLabourExchange explicitly rejects an entire supplied population with missing/malformed/duplicate normalized worker identity before ranking or handoff; an empty population remains valid. Alternative acceptance requires response/evaluated worker, supplier and request IDs to agree before eligibility evaluation. ID consistency is not authentication or complete content/time binding.
+
+Only the three modules and their adjacent tests may change. Existing consumers and exact frozen dependencies are copied and verified, never patched. No shared helper, policy scoring, ledger, producer binding, legal facts, runtime route or provider capability is added. Original red artifacts remain byte-identical. Tests use official Node22 and the retained network guard. Source custody and meaningful red/green results require independent review; root alone publishes.

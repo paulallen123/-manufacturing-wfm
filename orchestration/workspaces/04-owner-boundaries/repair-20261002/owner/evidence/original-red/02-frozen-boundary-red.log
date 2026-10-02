@@ -1,0 +1,273 @@
+{"node":"v22.23.2","files":["C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs"],"networkGuard":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","exit":1,"error":null}
+TAP version 13
+# Subtest: canonical uncertainty rejects historical out-of-range probability analogue; SHADOW stays inert
+ok 1 - canonical uncertainty rejects historical out-of-range probability analogue; SHADOW stays inert
+  ---
+  duration_ms: 22.9344
+  type: 'test'
+  ...
+# Subtest: canonical training scenario stays practice-only and awards no mastery
+ok 2 - canonical training scenario stays practice-only and awards no mastery
+  ---
+  duration_ms: 2.005
+  type: 'test'
+  ...
+# Subtest: canonical authority owner already rejects actor drift; historical current-proof API is absent
+ok 3 - canonical authority owner already rejects actor drift; historical current-proof API is absent
+  ---
+  duration_ms: 2.64
+  type: 'test'
+  ...
+# Subtest: finite objective weights cannot overflow into RANKED null scores
+not ok 4 - finite objective weights cannot overflow into RANKED null scores
+  ---
+  duration_ms: 0.9922
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:22:1'
+  failureType: 'testCodeFailure'
+  error: 'reject unsafe arithmetic or return finite ranked scores'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:22:464)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: finite prediction range overflow cannot silently recommend the smaller benefit
+not ok 5 - finite prediction range overflow cannot silently recommend the smaller benefit
+  ---
+  duration_ms: 0.4443
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:23:1'
+  failureType: 'testCodeFailure'
+  error: 'reject unsafe arithmetic or retain finite monotonic benefit ordering'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:23:495)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: change-candidate valid current, stale, material and low-confidence controls
+ok 6 - change-candidate valid current, stale, material and low-confidence controls
+  ---
+  duration_ms: 1.1236
+  type: 'test'
+  ...
+# Subtest: invalid change confidence NaN cannot obtain low-ambiguity review exemption
+not ok 7 - invalid change confidence NaN cannot obtain low-ambiguity review exemption
+  ---
+  duration_ms: 0.291
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:26:42'
+  failureType: 'testCodeFailure'
+  error: 'invalid confidence must reject or require explicit review'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:26:524)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid change confidence Infinity cannot obtain low-ambiguity review exemption
+not ok 8 - invalid change confidence Infinity cannot obtain low-ambiguity review exemption
+  ---
+  duration_ms: 0.2089
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:26:42'
+  failureType: 'testCodeFailure'
+  error: 'invalid confidence must reject or require explicit review'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:26:524)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: invalid change confidence 2 cannot obtain low-ambiguity review exemption
+not ok 9 - invalid change confidence 2 cannot obtain low-ambiguity review exemption
+  ---
+  duration_ms: 0.5241
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:26:42'
+  failureType: 'testCodeFailure'
+  error: 'invalid confidence must reject or require explicit review'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:26:524)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: valid labour population remains distinct and partial coverage does not overstate fill
+ok 10 - valid labour population remains distinct and partial coverage does not overstate fill
+  ---
+  duration_ms: 6.6008
+  type: 'test'
+  ...
+# Subtest: duplicate same-worker records cannot fill two requested people
+not ok 11 - duplicate same-worker records cannot fill two requested people
+  ---
+  duration_ms: 1.5201
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:28:1'
+  failureType: 'testCodeFailure'
+  error: 'explicit reject/review or account for one distinct worker; never duplicate coverage'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:28:483)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing worker identity cannot count as preferred coverage
+not ok 12 - missing worker identity cannot count as preferred coverage
+  ---
+  duration_ms: 0.9988
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:29:1'
+  failureType: 'testCodeFailure'
+  error: 'reject/review or exclude explicitly; never count unidentified worker as fill'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:29:465)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative response remains bound to the supplied evaluated worker identity
+not ok 13 - alternative response remains bound to the supplied evaluated worker identity
+  ---
+  duration_ms: 2.1166
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    eligible evidence for W9 cannot validate an unrelated response worker
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:30:698)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative response supplier identity must match evaluated supplier and worker
+not ok 14 - alternative response supplier identity must match evaluated supplier and worker
+  ---
+  duration_ms: 1.9345
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:31:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:31:474)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: alternative response request identity must match evaluated request
+not ok 15 - alternative response request identity must match evaluated request
+  ---
+  duration_ms: 1.1778
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-boundaries\\frozen-boundaries.held-out.test.mjs:32:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/User/Documents/Codex/2026-10-02/files-pasted-by-the-user-vector/work/lane04-owner-boundaries/frozen-boundaries.held-out.test.mjs:32:487)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 5
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 236.0095

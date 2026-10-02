@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome}=require('./decision-episode.cjs');
+const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,rankOptions}=require('./decision-episode.cjs');
 
 const base={
   tenant:'alpha',site:'tamworth',decisionType:'absence-recovery',triggerId:'absence:42',
@@ -43,4 +43,34 @@ test('outcome records predicted versus actual delta with evidence',()=>{
   assert.equal(final.outcome.predictionError.labourCost,5);
   assert.equal(final.outcome.predictionError.planAttainmentPct,-0.5);
   assert.ok(final.outcomeDigest);
+});
+
+test('individually finite weights cannot overflow the objective total into null scores',()=>{
+  assert.throws(()=>createDecisionEpisode({...base,objective:{labourCost:Number.MAX_VALUE,planAttainmentPct:Number.MAX_VALUE}}),/finite/i);
+});
+test('finite opposite-sign predictions cannot overflow the ranking range',()=>{
+  const options=base.options.slice(0,2).map((o,i)=>({...o,prediction:{planAttainmentPct:i?Number.MAX_VALUE:-Number.MAX_VALUE}}));
+  assert.throws(()=>createDecisionEpisode({...base,objective:{planAttainmentPct:1},options}),/finite/i);
+});
+test('large finite weights and representable ranges preserve benefit ordering and SHADOW',()=>{
+  const options=base.options.slice(0,2).map((o,i)=>({...o,uncertainty:0,prediction:{planAttainmentPct:i?Number.MAX_VALUE:0}}));
+  const e=createDecisionEpisode({...base,objective:{planAttainmentPct:Number.MAX_VALUE,uncertaintyPenalty:0},options});
+  assert.equal(e.recommendation.optionId,'redeploy');
+  assert.deepEqual(e.recommendation.ranking.map(x=>x.score),[1,0]);
+  assert.equal(e.recommendation.executionPermitted,false);
+});
+test('equal and missing weighted predictions preserve existing ranking results',()=>{
+  const options=base.options.slice(0,2).map(o=>({...o,uncertainty:0,prediction:{planAttainmentPct:50}}));
+  const e=createDecisionEpisode({...base,objective:{planAttainmentPct:1,uncertaintyPenalty:0},options});
+  assert.deepEqual(e.recommendation.ranking.map(x=>[x.optionId,x.score]),[['do-nothing',1],['redeploy',1]]);
+  const missing=createDecisionEpisode({...base,objective:{energyCost:1}});
+  assert.equal(missing.recommendation.reason,'MISSING_WEIGHTED_METRICS');
+  assert.equal(missing.recommendation.optionId,null);
+});
+test('exported ranking cannot return nonfinite arithmetic for invalid totals or accumulated scores',()=>{
+  const options=createDecisionEpisode(base).options;
+  for(const total of [0,NaN,Infinity])assert.throws(()=>rankOptions(options,{weights:{planAttainmentPct:1},total,uncertaintyPenalty:0}),/finite/i);
+  const equal=options.slice(0,2).map(o=>({...o,prediction:{planAttainmentPct:50,labourCost:50}}));
+  assert.throws(()=>rankOptions(equal,{weights:{planAttainmentPct:Number.MAX_VALUE,labourCost:Number.MAX_VALUE},total:1,uncertaintyPenalty:0}),/finite/i);
+  assert.throws(()=>rankOptions(options,{weights:{planAttainmentPct:1},total:1,uncertaintyPenalty:Infinity}),/finite/i);
 });

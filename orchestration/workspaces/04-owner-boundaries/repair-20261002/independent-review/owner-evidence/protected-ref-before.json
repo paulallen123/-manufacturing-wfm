@@ -1,0 +1,8 @@
+{
+  "requestedRef": "release/vector-customer-ready-candidate-20260925",
+  "checkedAt": "2026-10-02T14:13:14.590Z",
+  "resolvedCommit": "f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560",
+  "protectedTree": "74aba749449f3f4cd68ee385b24637026ea90ec8",
+  "treeAuthority": "parent independently verified full frozen Git tree and stored snapshot; commit message also declares matching tree",
+  "url": "https://github.com/paulallen123/-manufacturing-wfm/commit/f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560"
+}

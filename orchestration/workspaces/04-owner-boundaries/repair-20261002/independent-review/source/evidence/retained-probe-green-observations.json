@@ -1,0 +1,78 @@
+[
+  {
+    "case": "historical-passport-analogue",
+    "uncertainty2Rejected": true,
+    "passportApiAbsent": true
+  },
+  {
+    "case": "historical-actor-drift-analogue",
+    "actorDriftRejected": true,
+    "proofStateApiAbsent": true,
+    "authentication": "NOT_ESTABLISHED_BY_SYNTHETIC_GRANT"
+  },
+  {
+    "case": "objective-total-overflow",
+    "error": "Objective total must be finite."
+  },
+  {
+    "case": "prediction-range-overflow",
+    "error": "Ranking range throughputUnits must be finite."
+  },
+  {
+    "case": "change-confidence",
+    "input": "NaN",
+    "error": "Every candidate confidence must be finite and between 0 and 1.",
+    "normalisedConfidence": "undefined"
+  },
+  {
+    "case": "change-confidence",
+    "input": "Infinity",
+    "error": "Every candidate confidence must be finite and between 0 and 1.",
+    "normalisedConfidence": "undefined"
+  },
+  {
+    "case": "change-confidence",
+    "input": "2",
+    "error": "Every candidate confidence must be finite and between 0 and 1.",
+    "normalisedConfidence": "undefined"
+  },
+  {
+    "case": "duplicate-worker-fill",
+    "error": "Duplicate normalized worker identity in supplied population."
+  },
+  {
+    "case": "missing-worker-identity",
+    "error": "Every supplied worker identity must be a non-empty string."
+  },
+  {
+    "case": "alternative-worker-mismatch",
+    "positive": {
+      "valid": true,
+      "failures": []
+    },
+    "mismatch": {
+      "valid": false,
+      "failures": [
+        "alternative_worker_identity_mismatch"
+      ]
+    }
+  },
+  {
+    "case": "alternative-supplier-mismatch",
+    "mismatch": {
+      "valid": false,
+      "failures": [
+        "alternative_supplier_identity_mismatch"
+      ]
+    }
+  },
+  {
+    "case": "alternative-request-mismatch",
+    "mismatch": {
+      "valid": false,
+      "failures": [
+        "alternative_request_identity_mismatch"
+      ]
+    }
+  }
+]

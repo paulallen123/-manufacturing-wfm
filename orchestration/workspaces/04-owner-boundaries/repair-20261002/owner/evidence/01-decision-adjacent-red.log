@@ -1,0 +1,116 @@
+{"node":"v22.23.2","executable":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\tools\\node22\\node.exe","started":"2026-10-02T14:08:49.794Z","args":["--require","C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","--test","operations/runtime/decision-episode.test.cjs"],"networkGuard":"C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\trust_review\\network-guard.cjs","exit":1,"error":null,"summary":["# tests 10","# pass 7","# fail 3","# skipped 0","# duration_ms 477.3809"]}
+TAP version 13
+# Subtest: episode is deterministic regardless of option order
+ok 1 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 71.7546
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 2 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 1.4709
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 3 - do-nothing option is mandatory
+  ---
+  duration_ms: 8.2701
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 4 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 1.6844
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 5 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 3.1749
+  type: 'test'
+  ...
+# Subtest: individually finite weights cannot overflow the objective total into null scores
+not ok 6 - individually finite weights cannot overflow the objective total into null scores
+  ---
+  duration_ms: 8.7526
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\operations\\runtime\\decision-episode.test.cjs:48:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane04-owner-repair\operations\runtime\decision-episode.test.cjs:49:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: finite opposite-sign predictions cannot overflow the ranking range
+not ok 7 - finite opposite-sign predictions cannot overflow the ranking range
+  ---
+  duration_ms: 2.2813
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\operations\\runtime\\decision-episode.test.cjs:51:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane04-owner-repair\operations\runtime\decision-episode.test.cjs:53:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: large finite weights and representable ranges preserve benefit ordering and SHADOW
+ok 8 - large finite weights and representable ranges preserve benefit ordering and SHADOW
+  ---
+  duration_ms: 4.219
+  type: 'test'
+  ...
+# Subtest: equal and missing weighted predictions preserve existing ranking results
+ok 9 - equal and missing weighted predictions preserve existing ranking results
+  ---
+  duration_ms: 3.456
+  type: 'test'
+  ...
+# Subtest: exported ranking cannot return nonfinite arithmetic for invalid totals or accumulated scores
+not ok 10 - exported ranking cannot return nonfinite arithmetic for invalid totals or accumulated scores
+  ---
+  duration_ms: 5.0468
+  type: 'test'
+  location: 'C:\\Users\\User\\Documents\\Codex\\2026-10-02\\files-pasted-by-the-user-vector\\work\\lane04-owner-repair\\operations\\runtime\\decision-episode.test.cjs:70:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\User\Documents\Codex\2026-10-02\files-pasted-by-the-user-vector\work\lane04-owner-repair\operations\runtime\decision-episode.test.cjs:72:46)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 7
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 477.3809
