@@ -48,6 +48,87 @@ test('source systems require zero-human discovery, authorisation and a real prov
   }), null);
 });
 
+
+test('time policies reject fixture/default assumptions and require complete authoritative rules', () => {
+  assert.match(validateStrictReadinessEvidence('time-policies', 'PASS', {
+    fixtureOnly: true
+  }), /non-fixture/);
+  assert.match(validateStrictReadinessEvidence('time-policies', 'PASS', {
+    fixtureOnly: false,
+    evidenceClass: 'customer-authorised',
+    sourceAuthoritative: true,
+    sourceRef: 'contract://policy/2026-01',
+    effectiveDated: true,
+    unresolvedRules: 0,
+    unknownPolicyFields: 0,
+    breakRulesVerified: true,
+    overtimeRulesVerified: false,
+    workingTimeRulesVerified: true,
+    timeZoneVerified: true
+  }), /overtime/);
+  assert.equal(validateStrictReadinessEvidence('time-policies', 'PASS', {
+    fixtureOnly: false,
+    evidenceClass: 'customer-authorised',
+    sourceAuthoritative: true,
+    sourceRef: 'contract://policy/2026-01',
+    effectiveDated: true,
+    unresolvedRules: 0,
+    unknownPolicyFields: 0,
+    breakRulesVerified: true,
+    overtimeRulesVerified: true,
+    workingTimeRulesVerified: true,
+    timeZoneVerified: true
+  }), null);
+});
+
+test('absence policies reject fictional balances and unverified entitlement rules', () => {
+  assert.match(validateStrictReadinessEvidence('absence-policies', 'PASS', {
+    fixtureOnly: false,
+    evidenceClass: 'contract-authorised',
+    sourceAuthoritative: true,
+    sourceRef: 'contract://absence/2026',
+    effectiveDated: true,
+    unresolvedRules: 0,
+    unknownPolicyFields: 0,
+    leaveYearVerified: true,
+    entitlementMethodVerified: true,
+    approvalRulesVerified: true,
+    absenceTypesVerified: true,
+    usesOpeningBalance: true,
+    openingBalanceSourceVerified: true,
+    openingBalanceFictional: true
+  }), /fictional/);
+  assert.match(validateStrictReadinessEvidence('absence-policies', 'PASS', {
+    fixtureOnly: false,
+    evidenceClass: 'contract-authorised',
+    sourceAuthoritative: true,
+    sourceRef: 'contract://absence/2026',
+    effectiveDated: true,
+    unresolvedRules: 0,
+    unknownPolicyFields: 0,
+    leaveYearVerified: true,
+    entitlementMethodVerified: false,
+    approvalRulesVerified: true,
+    absenceTypesVerified: true
+  }), /entitlement/);
+  assert.equal(validateStrictReadinessEvidence('absence-policies', 'PASS', {
+    fixtureOnly: false,
+    evidenceClass: 'provider-authorised',
+    sourceAuthoritative: true,
+    sourceRef: 'provider://hcm/policy/absence-v4',
+    effectiveDated: true,
+    unresolvedRules: 0,
+    unknownPolicyFields: 0,
+    leaveYearVerified: true,
+    entitlementMethodVerified: true,
+    approvalRulesVerified: true,
+    absenceTypesVerified: true,
+    usesOpeningBalance: true,
+    openingBalanceSourceVerified: true,
+    openingBalanceFictional: false
+  }), null);
+});
+
 test('historical replay labels its data class and requires independent exact payroll reconciliation', () => {
   assert.match(validateStrictReadinessEvidence('historical-replay', 'PASS', {
     independentCalculation: true,

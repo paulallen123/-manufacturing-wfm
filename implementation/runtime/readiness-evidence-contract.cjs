@@ -146,6 +146,28 @@ function validateStrictReadinessEvidence(kind, status, detail = {}, context = {}
     }
   }
 
+  if (kind === 'time-policies') {
+    const policyError = validatePolicyEvidence(item, 'Time-policies');
+    if (policyError) return policyError;
+    if (item.breakRulesVerified !== true) return 'Time-policies PASS requires verified break rules.';
+    if (item.overtimeRulesVerified !== true) return 'Time-policies PASS requires verified overtime rules.';
+    if (item.workingTimeRulesVerified !== true) return 'Time-policies PASS requires verified working-time rules.';
+    if (item.timeZoneVerified !== true) return 'Time-policies PASS requires verified site timezone/DST handling.';
+  }
+
+  if (kind === 'absence-policies') {
+    const policyError = validatePolicyEvidence(item, 'Absence-policies');
+    if (policyError) return policyError;
+    if (item.leaveYearVerified !== true) return 'Absence-policies PASS requires a verified leave year.';
+    if (item.entitlementMethodVerified !== true) return 'Absence-policies PASS requires a verified entitlement method.';
+    if (item.approvalRulesVerified !== true) return 'Absence-policies PASS requires verified approval/delegation rules.';
+    if (item.absenceTypesVerified !== true) return 'Absence-policies PASS requires verified absence-type rules.';
+    if (item.openingBalanceFictional === true) return 'Absence-policies PASS cannot use a fictional opening balance.';
+    if (item.usesOpeningBalance === true && item.openingBalanceSourceVerified !== true) {
+      return 'Absence-policies PASS requires a verified source for any opening leave balance.';
+    }
+  }
+
   if (kind === 'historical-replay') {
     const dataClass = text(item.dataClass).toLowerCase();
     if (!PAYROLL_DATA_CLASSES.has(dataClass)) return 'Historical-replay PASS must declare whether evidence is synthetic-scale, sandbox or customer-authorised.';
