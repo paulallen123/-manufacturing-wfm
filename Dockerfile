@@ -4,7 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
-RUN node --test ux-overlay/vector-gusto.test.cjs
+RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 # Exact Staffology review admission: exercise the reviewed bridge, persisted employee
@@ -97,7 +97,7 @@ RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit
 COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs /app/security-runtime/
 COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
-COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs /app/security-runtime/
+COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs /app/security-runtime/
 RUN node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');s=s.replace('</head>','<script src=\"/passkey-session-ui.js\" defer></script></head>');fs.writeFileSync(p,s);" \
  && node --check /app/security-runtime/passkey-auth.cjs
 
@@ -158,7 +158,7 @@ RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runti
 COPY implementation/runtime/one-day-enterprise-engine.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/agents-api-adapter.cjs implementation/runtime/agents-api-adapter.test.cjs implementation/runtime/agents-api-bootstrap-route.cjs implementation/runtime/agents-api-bootstrap-route.test.cjs implementation/runtime/implementation-work-controller.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/readiness-evidence-contract.test.cjs implementation/runtime/readiness-evidence-wrapper.test.cjs implementation/runtime/configuration-inference-engine.cjs implementation/runtime/implementation-digital-twin.cjs implementation/runtime/implementation-digital-twin.test.cjs implementation/runtime/tenant-environment-provisioner.cjs implementation/runtime/tenant-environment-provisioner.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs implementation/runtime/configuration-inference-engine.test.cjs implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/
 COPY learning/runtime/adaptive-learning-engine.cjs learning/runtime/adaptive-learning-engine.test.cjs learning/runtime/training-workflow-manifest.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.cjs learning/runtime/training-regeneration-planner.test.cjs /tmp/wfm-tests/learning/runtime/
 COPY operations/runtime/decision-episode.cjs operations/runtime/manufacturing-scheduling-engine.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs operations/runtime/manufacturing-demand-forecast.cjs operations/runtime/manufacturing-demand-forecast.test.cjs operations/runtime/schedule-attendance-reconciliation.cjs operations/runtime/schedule-attendance-reconciliation.test.cjs operations/runtime/scheduling-intelligence-service.cjs operations/runtime/scheduling-intelligence-service.test.cjs operations/runtime/scheduling-forecast-reconciliation-service.test.cjs /tmp/wfm-tests/operations/runtime/
-COPY security/runtime/hosted-listen-guard.cjs security/runtime/hosted-listen-guard.test.cjs /tmp/wfm-tests/security/runtime/
+COPY security/runtime/hosted-listen-guard.cjs security/runtime/hosted-listen-guard.test.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/hosted-application-user-guard.test.cjs /tmp/wfm-tests/security/runtime/
 COPY integration/runtime/autonomous-integration-hub.cjs integration/runtime/autonomous-integration-hub.test.cjs integration/runtime/gusto-company-connector.cjs integration/runtime/gusto-company-connector.test.cjs integration/runtime/gusto-oauth-landing.cjs integration/runtime/gusto-oauth-landing.test.cjs integration/runtime/gusto-integration-hub.test.cjs integration/runtime/directory-oauth-broker.cjs integration/runtime/directory-oauth-broker.test.cjs /tmp/wfm-tests/integration/runtime/
 COPY integration/worker/directory-discovery-worker.cjs integration/worker/directory-discovery-worker.test.cjs /tmp/wfm-tests/integration/worker/
 COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-core.cjs
@@ -190,6 +190,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/learning/runtime/training-regeneration-planner.test.cjs \
       /tmp/wfm-tests/implementation/runtime/implementation-learning-integration.test.cjs \
       /tmp/wfm-tests/security/runtime/hosted-listen-guard.test.cjs \
+      /tmp/wfm-tests/security/runtime/hosted-application-user-guard.test.cjs \
       /tmp/wfm-tests/integration/runtime/autonomous-integration-hub.test.cjs \
       /tmp/wfm-tests/integration/runtime/gusto-company-connector.test.cjs \
       /tmp/wfm-tests/integration/runtime/gusto-oauth-landing.test.cjs \

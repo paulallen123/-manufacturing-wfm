@@ -131,3 +131,8 @@ body.vector-ui-active .insight-hero{background:white!important;color:var(--vecto
 .vector-value-grid strong{font-size:26px;line-height:1.15;letter-spacing:-.02em;color:var(--vector-text,#0f172a)}
 .vector-value-grid span{font-size:12px;line-height:1.4;color:var(--vector-muted,#667085)}
 @media (max-width:760px){.vector-value-grid{grid-template-columns:1fr}.vector-verified-value{padding:16px}}
+
+/* Staffology exact-scope operation controls */
+.vector-staffology-card textarea{display:block;width:100%;min-height:8rem;margin-top:8px;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+.vector-staffology-card details{margin-top:12px}.vector-staffology-card details label{display:block;margin-top:10px}.vector-staffology-card details input{display:block;width:100%;margin-top:4px}
+.vector-staffology-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.vector-staffology-message{min-height:1.5em;margin-top:10px}.vector-staffology-message.success{color:#17653a}.vector-staffology-message.error{color:#9b2c2c}
