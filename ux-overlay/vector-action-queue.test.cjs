@@ -146,3 +146,11 @@ test('action ordering cannot create synthetic urgency styling', () => {
   assert.doesNotMatch(css, /\.vector-alert-row:first-child>button\s*\{/);
   assert.match(css, /\.vector-alert-row>button\{[^}]*background:#edf3fb;[^}]*color:#355375;/);
 });
+
+
+test('manager leave shortcut hands off to the governed Absence & Leave workflow instead of the retired approval controller', () => {
+  const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
+  assert.match(source, /data-vector-review-coverage/);
+  assert.match(source, /document\.getElementById\('modal'\)\?\.close\(\);go\('leave'\)/);
+  assert.doesNotMatch(source, /if\(review\)[^}]*approveRequest\(id\)/);
+});
