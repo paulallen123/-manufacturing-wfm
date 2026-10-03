@@ -117,6 +117,16 @@ export function buildStaffologyWorkerPageRead({contract,connectionPlan,connectio
   url.searchParams.set('pageNum',String(page));url.searchParams.set('pageSize',String(size));
   return basePlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'staffology-uk',endpointHost:host,region:'uk',dataLocation:'uk'},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'basic-api-key',username:'vector'}},pagination:{style:'page-number',pageNum:page,pageSize:size,terminal:'short-page'},mappingProfile:'staffology-worker-v1'});
 }
+
+export function buildStaffologyWorkerDetailRead({contract,connectionPlan,connectionEvidence,credentialRef:ref,employerId,employeeId,nowMs}={}){
+  assertProvider(contract,'iris-staffology-payroll');
+  const employer=exactId(employerId,'employerId');
+  const employee=exactId(employeeId,'employeeId');
+  const host='api.staffology.co.uk';
+  const url=new URL(`https://${host}/employers/${encodeURIComponent(employer)}/employees/${encodeURIComponent(employee)}`);
+  return basePlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'staffology-uk',endpointHost:host,region:'uk',dataLocation:'uk'},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'basic-api-key',username:'vector'},immutableQueryId:'staffology-worker-detail-v1'},pagination:null,mappingProfile:'staffology-worker-detail-v1'});
+}
+
 function netsuiteHost(value){
   const host=exactHost(value,'accountHost');
   if(!/^[a-z0-9][a-z0-9-]{1,80}\.suitetalk\.api\.netsuite\.com$/.test(host)) throw new TypeError('accountHost must be an exact NetSuite SuiteTalk account host');
