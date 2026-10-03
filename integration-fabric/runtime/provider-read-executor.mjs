@@ -78,9 +78,13 @@ async function readBoundedBody(response,maxBytes,controller){
   const reader=response.body?.getReader?.();
   if(!reader) throw new ProviderReadError('provider response body is not a bounded readable stream',{code:'WFM_PROVIDER_RESPONSE_INVALID',status:502});
   const chunks=[];let total=0;
+  const aborted=new Promise((_,reject)=>{
+    if(controller.signal.aborted) reject(new ProviderReadError('provider read timed out',{code:'WFM_PROVIDER_READ_TIMEOUT',status:504,retryable:true}));
+    else controller.signal.addEventListener('abort',()=>reject(new ProviderReadError('provider read timed out',{code:'WFM_PROVIDER_READ_TIMEOUT',status:504,retryable:true})),{once:true});
+  });
   try{
     while(true){
-      const {done,value}=await reader.read();
+      const {done,value}=await Promise.race([reader.read(),aborted]);
       if(done) break;
       if(!(value instanceof Uint8Array)) throw new ProviderReadError('provider response stream contains non-byte data',{code:'WFM_PROVIDER_RESPONSE_INVALID',status:502});
       total+=value.byteLength;
