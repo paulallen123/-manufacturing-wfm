@@ -12,7 +12,10 @@ const leaveJourney = {
   managerStateReadBack: true,
   requestAuditLinked: true,
   freshEmployeeLoginSawDecision: true,
-  freshBalanceReconciled: true
+  freshBalanceReconciled: true,
+  requestId: 'leave-2026-10-05-e0',
+  approvedDate: '2026-10-05',
+  approvedMinutes: 450
 };
 
 const attendanceJourney = {
@@ -34,6 +37,15 @@ const attendanceJourney = {
 
 const checksum = 'a'.repeat(64);
 const completePayrollJourney = {
+  leaveTrace: {
+    requestId: 'leave-2026-10-05-e0',
+    date: '2026-10-05',
+    weeklyEmployeeHolidayMinutes: 450,
+    payrollHolidayMinutes: 450,
+    payrollLineMinutes: 450,
+    payrollCode: 'HOLIDAY',
+    freshPayrollReadBack: true
+  },
   expectedTeamIds: ['s1', 's2', 's3', 's4'],
   teamSignOffs: [
     { teamId: 's1', submittedRevision: 27, signatureRevision: 27, auditRevision: 27, refreshedStatus: 'signed' },
@@ -54,6 +66,21 @@ const completePayrollJourney = {
     reconciliationOk: true
   }
 };
+
+
+test('payroll proof rejects a release when approved leave is not causally traced into weekly and payroll evidence', () => {
+  const { leaveTrace, ...withoutLeaveTrace } = completePayrollJourney;
+  const result = roleProofResult(
+    { status: 'BOUND' },
+    leaveJourney,
+    attendanceJourney,
+    withoutLeaveTrace
+  );
+
+  assert.equal(result.leaveToPayrollBound, false);
+  assert.equal(result.scopedPayrollJourneyVerified, false);
+  assert.ok(result.missingEvidence.includes('approved-leave-to-payroll-trace'));
+});
 
 test('payroll proof rejects a release when any expected team lacks exact sign-off evidence', () => {
   const result = roleProofResult(
@@ -79,7 +106,9 @@ test('payroll proof accepts exact all-team sign-offs and one checksum-bound pers
     completePayrollJourney
   );
 
+  assert.equal(result.leaveToPayrollBound, true);
   assert.equal(result.scopedPayrollJourneyVerified, true);
+  assert.equal(result.missingEvidence.includes('approved-leave-to-payroll-trace'), false);
   assert.equal(result.missingEvidence.includes('all-team-weekly-sign-off'), false);
   assert.equal(result.missingEvidence.includes('payroll-reconciliation-business-action'), false);
 });
