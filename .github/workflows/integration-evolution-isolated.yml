@@ -57,3 +57,6 @@ jobs:
 
       - name: Run provider canonical-mapping tests
         run: node --test integration-fabric/runtime/provider-canonical-mappers.test.mjs
+
+      - name: Run provider acquisition tests
+        run: node --test integration-fabric/runtime/provider-acquisition.test.mjs
