@@ -40,6 +40,17 @@ function requireNonEmpty(name, value) {
   return text;
 }
 
+function optionalExactHost(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const raw = requireNonEmpty('endpointHost', value).toLowerCase();
+  if (raw.includes('*') || raw.includes('/') || raw.includes('@')) throw new Error('endpointHost must be one exact HTTPS host.');
+  const url = new URL(`https://${raw}`);
+  if (url.username || url.password || url.pathname !== '/' || url.search || url.hash || url.host.toLowerCase() !== raw) {
+    throw new Error('endpointHost must be one exact HTTPS host.');
+  }
+  return raw;
+}
+
 function safeAuthReference(value) {
   return /^(vault|secret|managed|merge|kombo|workato):\/\/[A-Za-z0-9._:/-]{3,200}$/.test(String(value || ''));
 }
@@ -67,10 +78,16 @@ function buildSafeConnectionTest(input = {}) {
   const requestedSemanticScopes = normalizeCapabilities(input.requestedSemanticScopes);
   const dataProbeApproved = input.dataProbeApproved === true;
   const mappingVersion = Number.isInteger(input.mappingVersion) && input.mappingVersion >= 0 ? input.mappingVersion : 0;
+  const wfmTenantId = input.wfmTenantId ? requireNonEmpty('wfmTenantId', input.wfmTenantId) : null;
+  const connectionId = input.connectionId ? requireNonEmpty('connectionId', input.connectionId) : null;
+  const endpointHost = optionalExactHost(input.endpointHost);
 
   const configuration = {
     providerKey,
     sourceInstanceId,
+    wfmTenantId,
+    connectionId,
+    endpointHost,
     environment,
     adapter,
     authMethod,
@@ -113,6 +130,9 @@ function validateConnectionEvidence(plan, evidence = {}, options = {}) {
   if (evidence.configurationFingerprint !== plan.configurationFingerprint) reasons.push('configuration-changed');
   if (clean(evidence.providerKey) !== plan.configuration.providerKey) reasons.push('provider-mismatch');
   if (clean(evidence.sourceInstanceId) !== plan.configuration.sourceInstanceId) reasons.push('source-instance-mismatch');
+  if (plan.configuration.wfmTenantId !== null && clean(evidence.wfmTenantId) !== plan.configuration.wfmTenantId) reasons.push('wfm-tenant-mismatch');
+  if (plan.configuration.connectionId !== null && clean(evidence.connectionId) !== plan.configuration.connectionId) reasons.push('connection-id-mismatch');
+  if (plan.configuration.endpointHost !== null && clean(evidence.endpointHost).toLowerCase() !== plan.configuration.endpointHost) reasons.push('endpoint-host-mismatch');
   if (clean(evidence.environment).toLowerCase() !== plan.configuration.environment) reasons.push('environment-mismatch');
   if (evidence.readOnly !== true) reasons.push('read-only-not-proven');
   if (evidence.rawCredentialObserved === true) reasons.push('raw-credential-observed');
