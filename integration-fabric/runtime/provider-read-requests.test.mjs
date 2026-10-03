@@ -5,6 +5,7 @@ import {compileUniversalConnectorContract} from './universal-connector-contract.
 import {buildSafeConnectionTest} from './connection-test-plan.mjs';
 import {
   buildStaffologyWorkerPageRead,
+  buildStaffologyWorkerDetailRead,
   buildNetSuiteWorkerSuiteQLRead,
   buildSapS4ProductionOrderRead,
   assertProviderReadPlan
@@ -179,4 +180,27 @@ test('NetSuite host and pagination are constrained before any request can be for
     contract,connectionPlan:safe.plan,connectionEvidence:safe.evidence,credentialRef:ref,
     limit:250,offset:1,nowMs:NOW
   }),/divisible/);
+});
+
+
+test('Staffology detail read stays on exact employer and employee identity',()=>{
+  const contract=contractFor('iris-staffology-payroll','staffology-sandbox');
+  const ref='secret://tenant/northstar/staffology';
+  const {plan,evidence}=connectionFor(contract,{
+    sourceInstanceId:'staffology-employer-demo',
+    endpointHost:'api.staffology.co.uk',
+    authMethod:'api-key-basic',
+    credentialRef:ref
+  });
+  const read=buildStaffologyWorkerDetailRead({
+    contract,connectionPlan:plan,connectionEvidence:evidence,credentialRef:ref,
+    employerId:'Employer-123',employeeId:'Employee-42',nowMs:NOW
+  });
+  assert.equal(assertProviderReadPlan(read,contract),true);
+  const url=new URL(read.request.url);
+  assert.equal(url.host,'api.staffology.co.uk');
+  assert.equal(url.pathname,'/employers/Employer-123/employees/Employee-42');
+  assert.equal(url.search,'');
+  assert.equal(read.mappingProfile,'staffology-worker-detail-v1');
+  assert.equal(read.pagination,null);
 });
