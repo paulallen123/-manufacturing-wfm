@@ -148,9 +148,14 @@ export function assertConnectorOperation(contract,{tenantId,connectionId,provide
   return true;
 }
 
-function validateProofAuthority(contract,target,authority,now){
+async function validateProofAuthority(contract,target,authority,now,verifyAuthority){
   plainObject(authority,'authority');
-  const required=['tenantId','connectionId','providerId','target','candidateSha','runId','receiptId','status','expiresAt'];
+  if(typeof verifyAuthority!=='function'){
+    const error=new Error('independent proof authority verifier is required');
+    error.code='WFM_CONNECTOR_PROOF_VERIFIER_REQUIRED';
+    throw error;
+  }
+  const required=['tenantId','connectionId','providerId','target','candidateSha','deploymentId','runId','receiptId','status','expiresAt'];
   for(const field of required){
     if(field==='expiresAt') continue;
     requiredString(authority[field],`authority.${field}`);
@@ -169,20 +174,39 @@ function validateProofAuthority(contract,target,authority,now){
     error.code='WFM_CONNECTOR_WRITE_AUTHORITY_EXPIRED';
     throw error;
   }
+  const verifierPayload=freezeDeep(structuredClone({
+    schemaVersion:1,
+    tenantId:authority.tenantId,
+    connectionId:authority.connectionId,
+    providerId:authority.providerId,
+    target:authority.target,
+    candidateSha:authority.candidateSha,
+    deploymentId:authority.deploymentId,
+    runId:authority.runId,
+    receiptId:authority.receiptId,
+    status:authority.status,
+    expiresAt:authority.expiresAt
+  }));
+  if(await verifyAuthority(verifierPayload)!==true){
+    const error=new Error('independent proof authority verification failed');
+    error.code='WFM_CONNECTOR_PROOF_VERIFICATION_FAILED';
+    throw error;
+  }
   return {
     candidateSha:authority.candidateSha,
+    deploymentId:authority.deploymentId,
     runId:authority.runId,
     receiptId:authority.receiptId,
     expiresAt:authority.expiresAt
   };
 }
 
-export function promoteConnectorWrite(contract,{target,authority,now=Date.now()}={}){
+export async function promoteConnectorWrite(contract,{target,authority,verifyAuthority,now=Date.now()}={}){
   plainObject(contract,'contract');
   if(!Number.isSafeInteger(now)||now<0) throw new TypeError('now must be a non-negative safe integer');
   const normalizedTarget=requiredString(target,'target');
   resourceFor(contract,normalizedTarget);
-  const proof=validateProofAuthority(contract,normalizedTarget,authority,now);
+  const proof=await validateProofAuthority(contract,normalizedTarget,authority,now,verifyAuthority);
 
   const promoted=structuredClone(contract);
   const resource=promoted.resources.find(entry=>entry.target===normalizedTarget);
