@@ -49,7 +49,7 @@ test('authentication failure only auto-recovers when managed refresh exists',()=
   assert.equal(managed.automatic,true);
 });
 
-test('bounded backoff prevents repeated probes before retry time',()=>{
+test('bounded backoff prevents repeated probes before retry time',async()=>{
   const failed=recordConnectorFailure(base(),{code:'WFM_PROVIDER_HTTP_ERROR',status:503,retryable:true},{nowMs:NOW});
   let probed=false;
   const result=await runConnectorRecovery({
