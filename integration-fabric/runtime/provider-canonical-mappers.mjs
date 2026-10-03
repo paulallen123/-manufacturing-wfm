@@ -110,6 +110,7 @@ export function mapNetSuiteWorkerPage({plan,execution,contract}={}){
   if(count>plan.pagination.limit) throw new Error('NetSuite response exceeds requested page limit');
   if(offset!==plan.pagination.offset) throw new Error('NetSuite response offset does not match requested page');
   if(totalResults<offset+count) throw new Error('NetSuite totalResults is smaller than the observed page window');
+  if(totalResults>plan.pagination.maxResults) throw new Error('NetSuite totalResults exceeds the bounded query contract');
   const seen=new Set();
   const records=data.items.map(item=>{
     plainObject(item,'NetSuite employee');
@@ -126,6 +127,7 @@ export function mapNetSuiteWorkerPage({plan,execution,contract}={}){
   });
   const hasMore=data.hasMore===true;
   if(hasMore!==(offset+count<totalResults)) throw new Error('NetSuite hasMore contradicts count/offset/totalResults');
+  if(hasMore&&count!==plan.pagination.limit) throw new Error('NetSuite non-terminal page must fill the requested page size');
   return executionEnvelope(plan,execution,records,{
     schemaObservation:schemaObservation('oracle-netsuite','employee',data.items,receipt.observedAt),
     page:freeze({count,offset,totalResults,hasMore,complete:!hasMore&&offset+count>=totalResults})
