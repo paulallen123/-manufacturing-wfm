@@ -45,3 +45,9 @@ jobs:
 
       - name: Run universal connector authority tests
         run: node --test integration-fabric/runtime/universal-connector-contract.test.mjs
+
+      - name: Run exact connection binding tests
+        run: node --test integration-fabric/runtime/connection-test-plan.test.mjs
+
+      - name: Run provider read-plan tests
+        run: node --test integration-fabric/runtime/provider-read-requests.test.mjs
