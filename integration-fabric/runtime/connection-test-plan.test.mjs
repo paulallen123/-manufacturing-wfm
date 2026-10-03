@@ -159,3 +159,29 @@ test('identity provisioning profile never auto-activates even when evidence is c
   assert.equal(result.status, 'BLOCKED');
   assert.ok(result.reasons.includes('manual-activation-required'));
 });
+
+
+test('bound connection proof cannot be replayed across VECTOR tenant connection or endpoint', () => {
+  const p = plan({
+    wfmTenantId: 'northstar-demo',
+    connectionId: 'netsuite-prod',
+    endpointHost: '1234567-sb1.suitetalk.api.netsuite.com'
+  });
+  const exact = evidenceFor(p, {
+    wfmTenantId: 'northstar-demo',
+    connectionId: 'netsuite-prod',
+    endpointHost: '1234567-sb1.suitetalk.api.netsuite.com'
+  });
+  assert.equal(validateConnectionEvidence(p, exact, { nowMs: NOW }).status, 'CONNECTION_VERIFIED');
+
+  const wrongTenant = validateConnectionEvidence(p, {...exact, wfmTenantId: 'other-tenant'}, { nowMs: NOW });
+  assert.ok(wrongTenant.reasons.includes('wfm-tenant-mismatch'));
+
+  const wrongConnection = validateConnectionEvidence(p, {...exact, connectionId: 'other-connection'}, { nowMs: NOW });
+  assert.ok(wrongConnection.reasons.includes('connection-id-mismatch'));
+
+  const wrongEndpoint = validateConnectionEvidence(p, {...exact, endpointHost: '7654321.suitetalk.api.netsuite.com'}, { nowMs: NOW });
+  assert.ok(wrongEndpoint.reasons.includes('endpoint-host-mismatch'));
+
+  assert.throws(() => plan({ endpointHost: '*.suitetalk.api.netsuite.com' }), /exact HTTPS host/);
+});
