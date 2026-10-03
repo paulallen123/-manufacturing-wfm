@@ -51,3 +51,6 @@ jobs:
 
       - name: Run provider read-plan tests
         run: node --test integration-fabric/runtime/provider-read-requests.test.mjs
+
+      - name: Run provider read-executor tests
+        run: node --test integration-fabric/runtime/provider-read-executor.test.mjs
