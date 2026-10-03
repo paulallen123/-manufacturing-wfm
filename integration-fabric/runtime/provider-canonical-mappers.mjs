@@ -97,8 +97,8 @@ function stringOrUndefined(value){
   const text=String(value).trim();
   return text||undefined;
 }
-export function mapNetSuiteWorkerPage({plan,execution}={}){
-  assertProviderReadPlan(plan,{schemaVersion:1,binding:{...plan.binding},bindingHash:plan.binding.bindingHash,provider:{id:plan.binding.providerId}});
+export function mapNetSuiteWorkerPage({plan,execution,contract}={}){
+  assertProviderReadPlan(plan,contract);
   if(plan.binding.providerId!=='oracle-netsuite'||plan.mappingProfile!=='netsuite-worker-v1') throw new Error('NetSuite worker mapper received incompatible read plan');
   const receipt=validateExecution(plan,execution);
   const data=plainObject(execution.data,'NetSuite response');
@@ -137,7 +137,8 @@ function staffologyPathIdentity(urlValue){
   if(!match) throw new Error('Staffology worker detail plan path is invalid');
   return {employerId:decodeURIComponent(match[1]),employeeId:decodeURIComponent(match[2])};
 }
-export function mapStaffologyWorkerDetail({plan,execution}={}){
+export function mapStaffologyWorkerDetail({plan,execution,contract}={}){
+  assertProviderReadPlan(plan,contract);
   if(plan.binding.providerId!=='iris-staffology-payroll'||plan.mappingProfile!=='staffology-worker-detail-v1') throw new Error('Staffology worker mapper received incompatible read plan');
   const receipt=validateExecution(plan,execution);
   const identity=staffologyPathIdentity(plan.request.url);
@@ -191,7 +192,8 @@ const SAP_PAYLOAD_FIELDS=[
   'MfgOrderPlannedStartDate','MfgOrderPlannedEndDate','MfgOrderPlannedTotalQty',
   'ProductionUnit','OrderIsCreated','OrderIsReleased','OrderIsClosed','LastChangeDateTime'
 ];
-export function mapSapS4ProductionDemandPage({plan,execution}={}){
+export function mapSapS4ProductionDemandPage({plan,execution,contract}={}){
+  assertProviderReadPlan(plan,contract);
   if(plan.binding.providerId!=='sap-s4hana'||plan.mappingProfile!=='sap-s4-production-demand-v1') throw new Error('SAP production mapper received incompatible read plan');
   const receipt=validateExecution(plan,execution);
   const {rows,next}=odataRows(execution.data);
