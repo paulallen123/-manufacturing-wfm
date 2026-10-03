@@ -205,3 +205,16 @@ test('message buses default to non-destructive discovery',()=>{
     assert.equal(c.security.destructiveMessageDiscoveryAllowed,false,id);
   }
 });
+
+
+test('IRIS Staffology is compiled into the canonical fabric without inheriting write authority',()=>{
+  const c=connectorById('iris-staffology-payroll');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.ok(c.adapters.some(x=>x.id==='rest-openapi'));
+  assert.ok(c.canonicalTargets.includes('worker'));
+  assert.ok(c.canonicalTargets.includes('pay-rule'));
+  assert.equal(c.security.writeEnabled,false);
+  assert.equal(c.security.arbitraryEndpointAllowed,false);
+  assert.ok(c.sourceScope.requiredDimensions.includes('employerId'));
+  assert.equal(c.nextEvidenceGate,'sandbox-authentication');
+});
