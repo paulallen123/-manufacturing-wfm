@@ -54,3 +54,6 @@ jobs:
 
       - name: Run provider read-executor tests
         run: node --test integration-fabric/runtime/provider-read-executor.test.mjs
+
+      - name: Run provider canonical-mapping tests
+        run: node --test integration-fabric/runtime/provider-canonical-mappers.test.mjs
