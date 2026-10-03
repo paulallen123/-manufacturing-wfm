@@ -143,13 +143,13 @@ test('Staffology list pages and detail reads reconcile as one worker snapshot',a
       if(url.pathname==='/employers/Employer-123/employees'){
         const page=Number(url.searchParams.get('pageNum'));
         if(page===0) return new Response(JSON.stringify([
-          {id:'E1',url:'https://api.staffology.co.uk/employers/Employer-123/employees/E1'},
-          {id:'E2',url:'/employers/Employer-123/employees/E2'}
+          {id:'EMP1',url:'https://api.staffology.co.uk/employers/Employer-123/employees/EMP1'},
+          {id:'EMP2',url:'/employers/Employer-123/employees/EMP2'}
         ]),{status:200});
-        if(page===1) return new Response(JSON.stringify([{id:'E3'}]),{status:200});
+        if(page===1) return new Response(JSON.stringify([{id:'EMP3'}]),{status:200});
       }
       const id=url.pathname.split('/').at(-1);
-      if(['E1','E2','E3'].includes(id)) return new Response(JSON.stringify(staffEmployee(id)),{status:200});
+      if(['EMP1','EMP2','EMP3'].includes(id)) return new Response(JSON.stringify(staffEmployee(id)),{status:200});
       throw new Error('unexpected Staffology URL');
     }
   });
@@ -168,7 +168,7 @@ test('Staffology contradictory item URL is rejected before detail disclosure',as
       ...ctx,credentialAuthorizer:auth,employerId:'Employer-123',runId:'staff-run-hostile',pageSize:2,nowMs:NOW,clock,
       fetchImpl:async urlValue=>{
         const url=new URL(urlValue);
-        if(url.pathname==='/employers/Employer-123/employees') return new Response(JSON.stringify([{id:'E1',url:'https://attacker.example/employees/E1'}]),{status:200});
+        if(url.pathname==='/employers/Employer-123/employees') return new Response(JSON.stringify([{id:'EMP1',url:'https://attacker.example/employees/EMP1'}]),{status:200});
         throw new Error('detail must not execute');
       }
     }),
