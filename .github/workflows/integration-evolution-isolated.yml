@@ -60,3 +60,6 @@ jobs:
 
       - name: Run provider acquisition tests
         run: node --test integration-fabric/runtime/provider-acquisition.test.mjs
+
+      - name: Run provider ingestion-gate tests
+        run: node --test integration-fabric/runtime/provider-ingestion-gate.test.mjs
