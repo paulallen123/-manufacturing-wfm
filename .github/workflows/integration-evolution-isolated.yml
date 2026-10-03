@@ -63,3 +63,6 @@ jobs:
 
       - name: Run provider ingestion-gate tests
         run: node --test integration-fabric/runtime/provider-ingestion-gate.test.mjs
+
+      - name: Run connector health-supervisor tests
+        run: node --test integration-fabric/runtime/connector-health-supervisor.test.mjs
