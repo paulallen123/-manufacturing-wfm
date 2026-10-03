@@ -107,6 +107,9 @@ export function mapNetSuiteWorkerPage({plan,execution}={}){
   const offset=finiteInt(data.offset??plan.pagination.offset,'NetSuite offset');
   const totalResults=finiteInt(data.totalResults??count,'NetSuite totalResults');
   if(count!==data.items.length) throw new Error('NetSuite response count does not match items');
+  if(count>plan.pagination.limit) throw new Error('NetSuite response exceeds requested page limit');
+  if(offset!==plan.pagination.offset) throw new Error('NetSuite response offset does not match requested page');
+  if(totalResults<offset+count) throw new Error('NetSuite totalResults is smaller than the observed page window');
   const seen=new Set();
   const records=data.items.map(item=>{
     plainObject(item,'NetSuite employee');
@@ -122,6 +125,7 @@ export function mapNetSuiteWorkerPage({plan,execution}={}){
     return record;
   });
   const hasMore=data.hasMore===true;
+  if(hasMore!==(offset+count<totalResults)) throw new Error('NetSuite hasMore contradicts count/offset/totalResults');
   return executionEnvelope(plan,execution,records,{
     schemaObservation:schemaObservation('oracle-netsuite','employee',data.items,receipt.observedAt),
     page:freeze({count,offset,totalResults,hasMore,complete:!hasMore&&offset+count>=totalResults})
@@ -191,6 +195,7 @@ export function mapSapS4ProductionDemandPage({plan,execution}={}){
   if(plan.binding.providerId!=='sap-s4hana'||plan.mappingProfile!=='sap-s4-production-demand-v1') throw new Error('SAP production mapper received incompatible read plan');
   const receipt=validateExecution(plan,execution);
   const {rows,next}=odataRows(execution.data);
+  if(rows.length>plan.pagination.top) throw new Error('SAP response exceeds requested $top');
   const seen=new Set();
   const records=rows.map(row=>{
     plainObject(row,'SAP production order');
