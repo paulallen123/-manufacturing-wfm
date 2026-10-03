@@ -31,6 +31,7 @@ function createImplementationWorkController(options = {}) {
   const leaseMs = Math.max(1_000, Number(options.leaseMs || 60_000));
   const retryDelayMs = Math.max(0, Number(options.retryDelayMs || 5_000));
   const maxAttempts = Math.max(1, Number(options.maxAttempts || 3));
+  const evidenceWatchdogMs = Math.max(5_000, Number(options.evidenceWatchdogMs || 60_000));
   const requirements = Array.isArray(options.requirements) ? options.requirements.map(item => ({
     key: text(item.key, 100),
     dependsOn: Array.isArray(item.dependsOn) ? item.dependsOn.map(dep => text(dep, 100)).filter(Boolean) : []
@@ -274,6 +275,80 @@ function createImplementationWorkController(options = {}) {
     const jobs = rows.map(publicJob);
     const counts = {};
     for (const job of jobs) counts[job.status] = (counts[job.status] || 0) + 1;
+
+    const nowMs = Number(clock());
+    const nextActions = jobs.flatMap(job => {
+      const updatedAtMs = Date.parse(job.updatedAt || '');
+      switch (job.status) {
+        case 'PENDING':
+          return [{
+            requirementKey: job.requirementKey,
+            action: 'CLAIM_WORK',
+            expectedNextStatuses: ['RUNNING'],
+            evidenceRequired: false,
+            overdue: false
+          }];
+        case 'RUNNING':
+          return [{
+            requirementKey: job.requirementKey,
+            action: 'EXECUTE_OR_RECONCILE',
+            expectedNextStatuses: ['AWAITING_EVIDENCE', 'RETRY_WAIT', 'BLOCKED_RESUMABLE', 'FAILED_CLOSED'],
+            evidenceRequired: false,
+            dueAtMs: job.leaseUntilMs || null,
+            overdue: Number(job.leaseUntilMs || 0) > 0 && Number(job.leaseUntilMs) <= nowMs
+          }];
+        case 'AWAITING_EVIDENCE': {
+          const dueAtMs = Number.isFinite(updatedAtMs) ? updatedAtMs + evidenceWatchdogMs : nowMs;
+          return [{
+            requirementKey: job.requirementKey,
+            action: 'INDEPENDENT_READBACK_AND_EVIDENCE',
+            expectedNextStatuses: ['SATISFIED', 'BLOCKED_RESUMABLE', 'FAILED_CLOSED'],
+            evidenceRequired: true,
+            dueAtMs,
+            overdue: nowMs > dueAtMs
+          }];
+        }
+        case 'RETRY_WAIT':
+          return [{
+            requirementKey: job.requirementKey,
+            action: Number(job.nextAttemptAtMs || 0) <= nowMs ? 'RETRY_CLAIM' : 'WAIT_RETRY_WINDOW',
+            expectedNextStatuses: ['PENDING', 'RUNNING', 'FAILED_CLOSED', 'EXHAUSTED'],
+            evidenceRequired: false,
+            dueAtMs: job.nextAttemptAtMs || null,
+            overdue: false
+          }];
+        case 'BLOCKED_RESUMABLE':
+          return [{
+            requirementKey: job.requirementKey,
+            action: 'RESOLVE_BLOCKER',
+            expectedNextStatuses: ['PENDING', 'WAITING_DEPENDENCY', 'SATISFIED'],
+            evidenceRequired: false,
+            reason: job.blockedReason || 'BLOCKER_REQUIRES_DISPOSITION',
+            overdue: false
+          }];
+        case 'WAITING_DEPENDENCY':
+          return [{
+            requirementKey: job.requirementKey,
+            action: 'WAIT_FOR_DEPENDENCY',
+            expectedNextStatuses: ['PENDING', 'BLOCKED_RESUMABLE', 'SATISFIED'],
+            evidenceRequired: false,
+            overdue: false
+          }];
+        default:
+          return [];
+      }
+    });
+
+    const stalled = nextActions.filter(action => action.overdue === true);
+    const activeWorkerLeases = jobs.filter(job =>
+      job.status === 'RUNNING' && Number(job.leaseUntilMs || 0) > nowMs
+    ).length;
+    const openJobs = jobs.filter(job => !TERMINAL.has(job.status));
+    const scheduledNextActions = nextActions.length;
+    const noProgressInvariantFailed = openJobs.length > 0 &&
+      activeWorkerLeases === 0 &&
+      scheduledNextActions === 0;
+
     return {
       jobs,
       counts,
@@ -282,7 +357,16 @@ function createImplementationWorkController(options = {}) {
         requirementKey: job.requirementKey,
         reason: job.blockedReason
       })),
-      failedClosed: jobs.filter(job => job.status === 'FAILED_CLOSED').map(job => job.requirementKey)
+      failedClosed: jobs.filter(job => job.status === 'FAILED_CLOSED').map(job => job.requirementKey),
+      nextActions,
+      activeWorkerLeases,
+      orchestrationFailure: (stalled.length || noProgressInvariantFailed) ? {
+        code: 'OPEN_GATES_NO_PROGRESS',
+        stalledRequirements: stalled.map(action => action.requirementKey),
+        openJobs: openJobs.map(job => ({ requirementKey: job.requirementKey, status: job.status })),
+        activeWorkerLeases,
+        scheduledNextActions
+      } : null
     };
   }
 
