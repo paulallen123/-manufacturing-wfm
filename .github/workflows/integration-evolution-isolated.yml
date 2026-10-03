@@ -1,0 +1,47 @@
+name: VECTOR integration evolution isolated gate
+
+on:
+  push:
+    branches:
+      - review/staffology-customer-proof-20261001
+    paths:
+      - 'integration-fabric/**'
+      - '.github/workflows/integration-evolution-isolated.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vector-integration-evolution-isolated
+  cancel-in-progress: true
+
+jobs:
+  integration-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact isolated candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = "review/staffology-customer-proof-20261001"
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          echo "INTEGRATION_EVOLUTION_SHA=${GITHUB_SHA}"
+          echo "DEPLOYMENT_AUTHORITY=NONE"
+
+      - name: Syntax check new contract
+        run: node --check integration-fabric/runtime/universal-connector-contract.mjs
+
+      - name: Run canonical connector registry tests
+        run: node --test integration-fabric/runtime/connector-registry.test.mjs
+
+      - name: Run universal connector authority tests
+        run: node --test integration-fabric/runtime/universal-connector-contract.test.mjs
