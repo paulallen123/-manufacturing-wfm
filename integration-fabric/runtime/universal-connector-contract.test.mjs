@@ -36,7 +36,7 @@ function authorityFor(contract,target,overrides={}){
 }
 
 const verifier=expected=>async payload=>{
-  assert.deepEqual(payload,expected);
+  assert.deepEqual(payload,{schemaVersion:1,...expected});
   return true;
 };
 
