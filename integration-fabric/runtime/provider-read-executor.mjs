@@ -133,7 +133,7 @@ export async function executeProviderRead({
   const started=Number(clock());
   if(!Number.isSafeInteger(started)||started<0) throw new TypeError('clock returned invalid time');
   const timer=setTimeout(()=>controller.abort(),deadline);
-  let response;
+  let response,body,status;
   try{
     response=await fetchImpl(plan.request.url,{
       method,
@@ -142,19 +142,19 @@ export async function executeProviderRead({
       redirect:'error',
       signal:controller.signal
     });
+    status=Number(response?.status);
+    if(!Number.isInteger(status)) throw new ProviderReadError('provider returned invalid HTTP status',{code:'WFM_PROVIDER_RESPONSE_INVALID',status:502});
+    if(status===401||status===403) throw new ProviderReadError('provider authentication or permission rejected',{code:'WFM_PROVIDER_AUTH_REJECTED',status:502,retryable:false});
+    if(status===429) throw new ProviderReadError('provider rate limit reached',{code:'WFM_PROVIDER_RATE_LIMITED',status:503,retryable:true});
+    if(status<200||status>=300) throw new ProviderReadError(`provider returned HTTP ${status}`,{code:'WFM_PROVIDER_HTTP_ERROR',status:502,retryable:status>=500});
+    body=await readBoundedBody(response,byteLimit,controller);
   }catch(error){
+    if(error instanceof ProviderReadError) throw error;
     if(controller.signal.aborted) throw new ProviderReadError('provider read timed out',{code:'WFM_PROVIDER_READ_TIMEOUT',status:504,retryable:true});
     throw new ProviderReadError('provider read transport failed',{code:'WFM_PROVIDER_TRANSPORT_ERROR',status:503,retryable:true});
   }finally{
     clearTimeout(timer);
   }
-  const status=Number(response?.status);
-  if(!Number.isInteger(status)) throw new ProviderReadError('provider returned invalid HTTP status',{code:'WFM_PROVIDER_RESPONSE_INVALID',status:502});
-  if(status===401||status===403) throw new ProviderReadError('provider authentication or permission rejected',{code:'WFM_PROVIDER_AUTH_REJECTED',status:502,retryable:false});
-  if(status===429) throw new ProviderReadError('provider rate limit reached',{code:'WFM_PROVIDER_RATE_LIMITED',status:503,retryable:true});
-  if(status<200||status>=300) throw new ProviderReadError(`provider returned HTTP ${status}`,{code:'WFM_PROVIDER_HTTP_ERROR',status:502,retryable:status>=500});
-
-  const body=await readBoundedBody(response,byteLimit,controller);
   let data=null;
   if(method!=='HEAD'&&body.length){
     try{data=canonical(JSON.parse(body.toString('utf8')));}catch(error){
