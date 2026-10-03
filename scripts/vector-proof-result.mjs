@@ -57,7 +57,19 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     && release.auditBatchId === release.batchId
     && release.freshLoginBatchId === release.batchId
     && release.reconciliationOk === true;
-  const scopedPayrollJourneyVerified = allTeamWeeklySignOffBound && payrollReleaseBound;
+  const leavePayrollTrace = payrollJourney?.leaveTrace;
+  const approvedLeaveMinutes = Number(leaveJourney?.approvedMinutes);
+  const leaveToPayrollBound = typeof leaveJourney?.requestId === 'string' && leaveJourney.requestId.length > 0
+    && /^\\d{4}-\\d{2}-\\d{2}$/.test(String(leaveJourney?.approvedDate || ''))
+    && Number.isInteger(approvedLeaveMinutes) && approvedLeaveMinutes > 0
+    && leavePayrollTrace?.requestId === leaveJourney.requestId
+    && leavePayrollTrace?.date === leaveJourney.approvedDate
+    && leavePayrollTrace?.weeklyEmployeeHolidayMinutes === approvedLeaveMinutes
+    && leavePayrollTrace?.payrollHolidayMinutes === approvedLeaveMinutes
+    && leavePayrollTrace?.payrollLineMinutes === approvedLeaveMinutes
+    && typeof leavePayrollTrace?.payrollCode === 'string' && leavePayrollTrace.payrollCode.length > 0
+    && leavePayrollTrace?.freshPayrollReadBack === true;
+  const scopedPayrollJourneyVerified = allTeamWeeklySignOffBound && payrollReleaseBound && leaveToPayrollBound;
   return {
     status: 'PARTIAL',
     roleChecks: 'PASS',
@@ -73,6 +85,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     scopedAttendanceCorrectionVerified,
     scopedAttendanceJourneyVerified,
     scopedPayrollJourneyVerified,
+    leaveToPayrollBound,
     endToEndVerified: false,
     productReady: false,
     exactAssetsVerified: assetBinding?.status === 'BOUND',
@@ -87,6 +100,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
       ...(allTeamWeeklySignOffBound ? [] : ['all-team-weekly-sign-off']),
       'server-audit-readback',
       'exact-backend-binding',
+      ...(leaveToPayrollBound ? [] : ['approved-leave-to-payroll-trace']),
       ...(scopedPayrollJourneyVerified ? [] : ['payroll-reconciliation-business-action']),
       'major-workflow-coverage'
     ]
