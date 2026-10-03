@@ -184,3 +184,70 @@ test('retry and blocked states survive restart without idling unrelated work', (
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+
+
+test('awaiting evidence exposes an immediate shadow action and trips the no-stall watchdog if ignored', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-work-controller-'));
+  let now = 10_000;
+  const customRequirements = [
+    { key: 'configuration-scope', dependsOn: [] },
+    { key: 'tenant-environment', dependsOn: ['configuration-scope'] }
+  ];
+  const controller = createImplementationWorkController({
+    dbPath: path.join(dir, 'state.sqlite'),
+    requirements: customRequirements,
+    clock: () => now,
+    evidenceWatchdogMs: 100
+  });
+
+  controller.reconcile({
+    runId: 'run-shadow',
+    tenant: 'tenant-a',
+    readiness: {
+      requirements: [
+        { key: 'configuration-scope', dependsOn: [], satisfied: true, status: 'PASS', source: 'trusted-contract', detail: {} },
+        { key: 'tenant-environment', dependsOn: ['configuration-scope'], satisfied: false, status: 'MISSING', source: null, detail: null }
+      ]
+    },
+    blockerFor: () => null
+  });
+
+  const claimed = controller.claim({
+    runId: 'run-shadow',
+    tenant: 'tenant-a',
+    requirementKey: 'tenant-environment',
+    ownerId: 'canonical-executor'
+  });
+  controller.complete({
+    jobId: claimed.id,
+    runId: 'run-shadow',
+    tenant: 'tenant-a',
+    intentDigest: claimed.intentDigest,
+    ownerId: claimed.ownerId,
+    fence: claimed.fence,
+    leaseToken: claimed.leaseToken,
+    outcome: 'EFFECT_RECORDED',
+    detail: { environmentId: 'env-a' }
+  });
+
+  let plan = controller.plan('run-shadow', 'tenant-a');
+  const action = plan.nextActions.find(item => item.requirementKey === 'tenant-environment');
+  assert.equal(action.action, 'INDEPENDENT_READBACK_AND_EVIDENCE');
+  assert.equal(action.evidenceRequired, true);
+  assert.deepEqual(action.expectedNextStatuses, ['SATISFIED', 'BLOCKED_RESUMABLE', 'FAILED_CLOSED']);
+  assert.equal(action.overdue, false);
+  assert.equal(plan.activeWorkerLeases, 0);
+  assert.equal(plan.orchestrationFailure, null);
+
+  now += 101;
+  plan = controller.plan('run-shadow', 'tenant-a');
+  assert.equal(
+    plan.nextActions.find(item => item.requirementKey === 'tenant-environment').overdue,
+    true
+  );
+  assert.equal(plan.orchestrationFailure.code, 'OPEN_GATES_NO_PROGRESS');
+  assert.deepEqual(plan.orchestrationFailure.stalledRequirements, ['tenant-environment']);
+
+  controller.close();
+  fs.rmSync(dir, { recursive: true, force: true });
+});
