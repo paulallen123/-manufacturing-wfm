@@ -507,6 +507,47 @@
       "writeEnabled": false
     },
     {
+      "id": "iris-staffology-payroll",
+      "name": "IRIS Staffology Payroll",
+      "category": "payroll-hcm",
+      "priority": "P0",
+      "protocols": [
+        "REST",
+        "OpenAPI 3"
+      ],
+      "auth": "api-key-basic",
+      "researchStatus": "docs-verified",
+      "docsUrl": "https://app.staffology.co.uk/api/docs/guides/intro/intro",
+      "testLevel": "spec-verified",
+      "writeEnabled": false,
+      "providerIdentity": {
+        "canonicalName": "IRIS Staffology Payroll",
+        "aliases": [
+          "Staffology Payroll",
+          "Staffology"
+        ],
+        "canonicalApiHosts": [
+          "api.staffology.co.uk"
+        ],
+        "transitionalApiHosts": [],
+        "regionalHostModel": "uk-service",
+        "crossHostRedirectApproved": false
+      },
+      "sourceScope": {
+        "requiredDimensions": [
+          "providerId",
+          "connectionId",
+          "resource",
+          "dataset",
+          "employerId"
+        ],
+        "sourceIdentityDimensions": [
+          "employerId",
+          "recordId"
+        ]
+      }
+    },
+    {
       "id": "dayforce",
       "name": "Dayforce",
       "category": "payroll-hcm",
