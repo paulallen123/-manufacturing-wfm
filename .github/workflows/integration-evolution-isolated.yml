@@ -103,5 +103,8 @@ jobs:
       - name: Run GraphQL connector tests
         run: node --test integration-fabric/runtime/connector-graphql-recipe.test.mjs
 
+      - name: Run external provider proof-harness tests
+        run: node --test integration-fabric/runtime/external-provider-proof.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
