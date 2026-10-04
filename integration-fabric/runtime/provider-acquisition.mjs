@@ -93,12 +93,20 @@ function sourceScope(contract,connectionPlan,target,dataset){
   };
 }
 function finalizeAcquisition({
-  contract,connectionPlan,runId,target,dataset,records,receipts,schemas,complete,
+  contract,connectionPlan,runId,target,dataset,records,receipts,schemas,mappingProfiles=[],complete,
   expectedRowCount=null,duplicates=[],diagnostics=[],previousCheckpoint=null
 }){
   const sourceWatermark=`sha256:${sha256(records)}`;
   const checksumVerified=receipts.length>0&&receipts.every(receiptChecksumValid);
   const schemaVerified=schemas.length>0&&schemaSetCompatible(schemas);
+  const schemaFingerprints=[...new Set(schemas.map(schema=>schema?.fingerprint).filter(value=>/^[a-f0-9]{64}$/.test(String(value))))].sort();
+  const normalizedMappingProfiles=[...new Set(mappingProfiles.map(value=>required(value,'mappingProfile')))].sort();
+  const mappingFingerprint='sha256:'+sha256({
+    providerId:contract.provider.id,
+    target,
+    mappingProfiles:normalizedMappingProfiles,
+    schemaFingerprints
+  });
   const scope=sourceScope(contract,connectionPlan,target,dataset);
   const reconciliation=assessBatchRun({
     provider:contract.provider.id,
@@ -138,6 +146,9 @@ function finalizeAcquisition({
     runId,
     records,
     sourceWatermark,
+    schemaFingerprints,
+    mappingProfiles:normalizedMappingProfiles,
+    mappingFingerprint,
     receiptCount:receipts.length,
     diagnostics:[...diagnostics],
     reconciliation,
@@ -197,7 +208,7 @@ export async function acquireNetSuiteWorkers({
   }
   if(!complete&&diagnostics.length===0) diagnostics.push('max-page-bound-reached');
   return finalizeAcquisition({
-    contract,connectionPlan,runId,target:'worker',dataset:'workers',records,receipts,schemas,complete,
+    contract,connectionPlan,runId,target:'worker',dataset:'workers',records,receipts,schemas,mappingProfiles:['netsuite-worker-v1'],complete,
     expectedRowCount:expectedTotal,duplicates,diagnostics,previousCheckpoint
   });
 }
@@ -254,7 +265,7 @@ export async function acquireStaffologyWorkers({
   }
   if(!complete&&diagnostics.length===0) diagnostics.push('max-page-bound-reached');
   return finalizeAcquisition({
-    contract,connectionPlan,runId,target:'worker',dataset:'workers',records,receipts,schemas,complete,
+    contract,connectionPlan,runId,target:'worker',dataset:'workers',records,receipts,schemas,mappingProfiles:['staffology-worker-detail-v1'],complete,
     expectedRowCount:seenIds.size,duplicates,diagnostics,previousCheckpoint
   });
 }
@@ -284,7 +295,7 @@ export async function acquireSapS4ProductionDemand({
   }
   if(!complete&&diagnostics.length===0) diagnostics.push('max-page-bound-reached');
   return finalizeAcquisition({
-    contract,connectionPlan,runId,target:'production-demand',dataset:'production-demand',records,receipts,schemas,complete,
+    contract,connectionPlan,runId,target:'production-demand',dataset:'production-demand',records,receipts,schemas,mappingProfiles:['sap-s4-production-demand-v1'],complete,
     expectedRowCount:null,duplicates,diagnostics,previousCheckpoint
   });
 }
