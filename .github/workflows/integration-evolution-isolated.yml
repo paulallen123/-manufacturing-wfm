@@ -67,5 +67,8 @@ jobs:
       - name: Run connector health-supervisor tests
         run: node --test integration-fabric/runtime/connector-health-supervisor.test.mjs
 
+      - name: Run connector read-activation tests
+        run: node --test integration-fabric/runtime/connector-read-activation.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
