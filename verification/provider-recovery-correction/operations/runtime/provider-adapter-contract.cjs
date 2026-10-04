@@ -109,23 +109,24 @@ function retryDelayMs({status,retryAfterMs=0,attempt=0,maxRetryAfterMs=30_000,re
  const code=Number(status),cap=boundedPositiveInt(maxRetryAfterMs,'Adapter max retry delay',{min:0,max:300_000});if(![429,503].includes(code)||cap===0)return 0;const n=boundedPositiveInt(attempt,'Provider retry attempt',{min:0,max:10}),base=code===429?1000:500,exponential=Math.min(cap,base*(2**n)),providerDelay=Math.max(0,Number(retryAfterMs)||0),jitterCap=Math.min(250,cap),jitter=jitterCap?parseInt(createHash('sha256').update(`${clean(adapterName,80)}|${clean(requestFingerprint,128)}|${code}|${n}`).digest('hex').slice(0,8),16)%(jitterCap+1):0;return Math.min(cap,Math.max(providerDelay,exponential)+jitter);
 }
 
-async function runPagedAdapter({name,tokenLease,startRequest,fetchPage,mapPage,submitBatch,onPage,maxPages=100,maxRetries=3,maxRetryAfterMs=30_000,sleep=(ms)=>new Promise(r=>setTimeout(r,ms))}={}){
+async function runPagedAdapter({name,tokenLease,startRequest,fetchPage,mapPage,submitBatch,onPage,assertActiveLease=()=>{},maxPages=100,maxRetries=3,maxRetryAfterMs=30_000,sleep=(ms)=>new Promise(r=>setTimeout(r,ms))}={}){
  if(!name||!tokenLease||typeof tokenLease.get!=='function'||typeof fetchPage!=='function'||typeof mapPage!=='function'||typeof submitBatch!=='function')fail('Provider adapter contract is incomplete.',500);
  maxPages=boundedPositiveInt(maxPages,'Adapter max pages',{min:1,max:1000});maxRetries=boundedPositiveInt(maxRetries,'Adapter max retries',{min:0,max:10});maxRetryAfterMs=boundedPositiveInt(maxRetryAfterMs,'Adapter max retry delay',{min:0,max:300_000});
  let request=structuredClone(startRequest||{}),pages=0,sourceRecords=0,stagedRecords=0,heldRecords=0,appliedRecords=0,retries=0;const batches=[],seenRequests=new Set();
  while(request){
+  assertActiveLease();
   if(pages>=maxPages)fail('Provider adapter page limit reached before pagination completed.',409);
   const requestFingerprint=digest(request);if(seenRequests.has(requestFingerprint))fail('Provider paging loop detected; repeated request was not staged.',409);seenRequests.add(requestFingerprint);
   let response,attempt=0;
   while(true){
-   const accessToken=await tokenLease.get();response=await fetchPage({request:structuredClone(request),accessToken,attempt});const status=Number(response?.status);
+   assertActiveLease();const accessToken=await tokenLease.get();assertActiveLease();response=await fetchPage({request:structuredClone(request),accessToken,attempt});assertActiveLease();const status=Number(response?.status);
    if(status>=200&&status<300)break;
    if(status===401&&attempt<maxRetries){tokenLease.invalidate();attempt++;retries++;continue;}
    if((status===429||status===503)&&attempt<maxRetries){const wait=retryDelayMs({status,retryAfterMs:response?.retryAfterMs,attempt,maxRetryAfterMs,requestFingerprint,adapterName:name});attempt++;retries++;if(wait)await sleep(wait);continue;}
    fail(`Provider adapter retry limit reached or non-retryable response (${Number.isFinite(status)?status:'unknown'}).`,502);
   }
   const mapped=mapPage(response.body,structuredClone(request));if(!mapped?.envelope||!Array.isArray(mapped.envelope.records)||mapped.envelope.records.length<1)fail('Provider adapter produced an empty or invalid gateway page.',502);
-  const key=idempotencyKey(name,mapped.envelope),stage=await submitBatch({envelope:mapped.envelope,idempotencyKey:key,providerEvidence:mapped.reconciliation});
+  const key=idempotencyKey(name,mapped.envelope),stage=(assertActiveLease(),await submitBatch({envelope:mapped.envelope,idempotencyKey:key,providerEvidence:mapped.reconciliation}));assertActiveLease();
   const pageSource=mapped.reconciliation?.sourceCount??mapped.envelope.records.length,pageValid=Number(stage?.valid||0),pageHeld=Number(stage?.held||0),nextRequest=mapped.nextRequest?structuredClone(mapped.nextRequest):null;
   pages++;sourceRecords+=pageSource;stagedRecords+=pageValid;heldRecords+=pageHeld;appliedRecords+=Number(stage?.applied||0);batches.push({id:stage?.id||null,idempotencyKey:key,status:stage?.status||'unknown',cursor:mapped.envelope.cursor,sourceVersion:mapped.envelope.sourceVersion,replayed:Boolean(stage?.replayed),sourceCount:pageSource,valid:pageValid,held:pageHeld});
   if(typeof onPage==='function'){const tokenMeta=typeof tokenLease.metadata==='function'?tokenLease.metadata():null;await onPage({page:pages,request:structuredClone(request),nextRequest:nextRequest?structuredClone(nextRequest):null,cursor:mapped.envelope.cursor,sourceVersion:mapped.envelope.sourceVersion,sourceRecords:pageSource,stagedRecords:pageValid,heldRecords:pageHeld,retries:attempt,sourceAt:mapped.reconciliation?.sourceAt||null,ingestedAt:new Date().toISOString(),httpStatus:Number.isFinite(Number(response?.status))?Number(response.status):null,httpLatencyMs:Number.isFinite(Number(response?.elapsedMs))?Math.max(0,Math.round(Number(response.elapsedMs))):null,tokenExpiresAt:Number.isFinite(Number(tokenMeta?.expiresAt))?Number(tokenMeta.expiresAt):null,stage:{id:stage?.id||null,replayed:Boolean(stage?.replayed)}});}
@@ -135,14 +136,14 @@ async function runPagedAdapter({name,tokenLease,startRequest,fetchPage,mapPage,s
 }
 
 async function runDurableAdapterJob({jobStore,jobId,workerId,leaseMs=60_000,retryDelayMs=1_000,...adapter}={}){
- if(!jobStore||typeof jobStore.acquire!=='function')fail('Durable provider job store is required.',500);
+ if(!jobStore||typeof jobStore.acquire!=='function'||typeof jobStore.assertLeaseHeld!=='function')fail('Durable provider job store is required.',500);
  const job=jobStore.acquire(jobId,workerId,{leaseMs});
  try{
   if(job.pagesCompleted>0&&job.nextRequest===null){
    const result={adapter:adapter.name||job.adapterName,pages:0,sourceRecords:0,stagedRecords:0,heldRecords:0,appliedRecords:0,retries:0,batches:[],complete:job.heldRecords===0,recoveredTerminalCheckpoint:true};
    const completed=jobStore.complete(jobId,workerId,{...result,leaseGeneration:job.leaseGeneration,cumulativePages:job.pagesCompleted,cumulativeSourceRecords:job.sourceRecords,cumulativeStagedRecords:job.stagedRecords,cumulativeHeldRecords:job.heldRecords});return {result,job:completed};
   }
-  const result=await runPagedAdapter({...adapter,startRequest:job.nextRequest,onPage:async page=>{jobStore.checkpoint(jobId,workerId,{leaseGeneration:job.leaseGeneration,nextRequest:page.nextRequest,pages:1,sourceRecords:page.sourceRecords,stagedRecords:page.stagedRecords,heldRecords:page.heldRecords,retries:page.retries,cursor:page.cursor,sourceVersion:page.sourceVersion,sourceAt:page.sourceAt,ingestedAt:page.ingestedAt,httpStatus:page.httpStatus,httpLatencyMs:page.httpLatencyMs,tokenExpiresAt:page.tokenExpiresAt,freshnessSloSeconds:adapter.freshnessSloSeconds});if(typeof adapter.onPage==='function')await adapter.onPage(page);}});
+  const result=await runPagedAdapter({...adapter,assertActiveLease:()=>jobStore.assertLeaseHeld(jobId,workerId,job.leaseGeneration),startRequest:job.nextRequest,onPage:async page=>{jobStore.checkpoint(jobId,workerId,{leaseGeneration:job.leaseGeneration,nextRequest:page.nextRequest,pages:1,sourceRecords:page.sourceRecords,stagedRecords:page.stagedRecords,heldRecords:page.heldRecords,retries:page.retries,cursor:page.cursor,sourceVersion:page.sourceVersion,sourceAt:page.sourceAt,ingestedAt:page.ingestedAt,httpStatus:page.httpStatus,httpLatencyMs:page.httpLatencyMs,tokenExpiresAt:page.tokenExpiresAt,freshnessSloSeconds:adapter.freshnessSloSeconds});if(typeof adapter.onPage==='function')await adapter.onPage(page);}});
   const completed=jobStore.complete(jobId,workerId,{...result,leaseGeneration:job.leaseGeneration});return {result,job:completed};
  }catch(error){try{error.job=jobStore.fail(jobId,workerId,error,{retryDelayMs,leaseGeneration:job.leaseGeneration});}catch(leaseError){error.leaseUpdateError={status:leaseError.status||500,message:leaseError.message};}throw error;}
 }
