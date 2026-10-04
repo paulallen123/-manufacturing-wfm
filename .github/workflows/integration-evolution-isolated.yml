@@ -82,5 +82,11 @@ jobs:
       - name: Run declarative mapping-spec tests
         run: node --test integration-fabric/runtime/connector-mapping-spec.test.mjs
 
+      - name: Run XML parser tests
+        run: node --test integration-fabric/runtime/safe-xml-records.test.mjs
+
+      - name: Run SOAP connector tests
+        run: node --test integration-fabric/runtime/connector-soap-recipe.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
