@@ -157,6 +157,8 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
       }
       db.prepare('DELETE FROM support_buckets WHERE minute<?').run(t-48*HOUR);
     });
+    // Clear the collection outage only after the entire scan commits.
+    degraded=false;
   }
   function report(a){
     const t=now(),canReview=admin(a),m=db.prepare('SELECT * FROM support_monitor WHERE tenant=?').get(a.tenant);
