@@ -79,5 +79,8 @@ jobs:
       - name: Run connector recipe-compiler tests
         run: node --test integration-fabric/runtime/connector-read-recipe.test.mjs
 
+      - name: Run declarative mapping-spec tests
+        run: node --test integration-fabric/runtime/connector-mapping-spec.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
