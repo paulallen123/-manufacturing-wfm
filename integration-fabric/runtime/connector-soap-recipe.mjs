@@ -104,7 +104,12 @@ export function defineSoapReadRecipe(raw){
     soapAction:text(x.soapAction,'soapAction',512),
     pathSegments:(()=>{
       if(!Array.isArray(x.pathSegments)||!x.pathSegments.length||x.pathSegments.length>40)fail('pathSegments must contain 1-40 entries');
-      return x.pathSegments.map((v,i)=>segment(v,'pathSegments['+i+']'));
+      return x.pathSegments.map((v,i)=>{
+        if(typeof v==='string')return {literal:segment(v,'pathSegments['+i+']')};
+        const item=plain(v,'pathSegments['+i+']');
+        if(Object.keys(item).length!==1||!item.param)fail('SOAP path entry must be literal or param');
+        return {param:paramDef(item.param,'pathSegments['+i+'].param')};
+      });
     })(),
     envelopeParts:envelopeParts(x.envelopeParts),
     route:{
@@ -121,7 +126,7 @@ export function compileSoapReadRecipe({recipe,contract,connectionPlan,connection
   if(contract?.provider?.id!==r.providerId)fail('SOAP recipe provider mismatch','WFM_SOAP_BINDING_MISMATCH');
   supports(contract,r.target);
   const host=text(connectionPlan?.configuration?.endpointHost,'connectionPlan.configuration.endpointHost',253).toLowerCase();
-  const url=new URL('https://'+host+'/'+r.pathSegments.map(encodeURIComponent).join('/'));
+  const url=new URL('https://'+host+'/'+r.pathSegments.map(part=>encodeURIComponent(part.literal!==undefined?part.literal:paramValue(part.param,parameters))).join('/'));
   const body=buildEnvelope(r.envelopeParts,parameters);
   return buildBoundProviderReadPlan(contract,{
     target:r.target,connectionPlan,connectionEvidence,credentialRef,nowMs,
