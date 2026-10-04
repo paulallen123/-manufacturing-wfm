@@ -12,7 +12,7 @@ function plain(value,name){
   if(!value||typeof value!=='object'||Array.isArray(value)||(Object.getPrototypeOf(value)!==Object.prototype&&Object.getPrototypeOf(value)!==null))fail(name+' must be a plain object');
   return value;
 }
-function freeze(value){if(value&&typeof value==='object'&&!Object.isFrozen(value)){Object.values(value).forEach(freeze);Object.freeze(value);}return value;}
+function freeze(value){if(value&&typeof value==='object'&&!Object.isFrozen(value)){if(ArrayBuffer.isView(value))return value;Object.values(value).forEach(freeze);Object.freeze(value);}return value;}
 function integer(value,name,min,max,defaultValue){
   const raw=value===undefined?defaultValue:value,n=Number(raw);
   if(!Number.isSafeInteger(n)||n<min||n>max)fail(name+' is outside supported bounds');
