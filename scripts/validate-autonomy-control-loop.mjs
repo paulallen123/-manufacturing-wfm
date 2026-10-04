@@ -3,11 +3,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
-import { createHash } from 'node:crypto';
+import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { createAutonomyControlLoop } = require('../resilience/autonomy-control-loop.cjs');
+const { createAutonomyControlLoop, canonical, digest } = require('../resilience/autonomy-control-loop.cjs');
 const SelfHelp = require('../resilience/support-selfhelp.cjs');
 
 const root = process.cwd();
@@ -15,7 +15,7 @@ const contract = JSON.parse(fs.readFileSync(path.join(root, 'resilience/support-
 const failureScenarios = JSON.parse(fs.readFileSync(path.join(root, 'resilience/failure-scenarios.json'), 'utf8'));
 const d = (v) => createHash('sha256').update(String(v)).digest('hex');
 
-const recoveryExecutor = {
+const baserecoveryExecutor = {
   execute: async () => ({
     status: 'recovered',
     verified: true,
@@ -25,7 +25,7 @@ const recoveryExecutor = {
   }),
 };
 
-const repairCoordinator = {
+const baserepairCoordinator = {
   process: async () => ({
     status: 'verified_candidate_staged',
     independentlyVerified: true,
@@ -35,7 +35,7 @@ const repairCoordinator = {
   }),
 };
 
-const rollbackExecutor = {
+const baserollbackExecutor = {
   rollback: async () => ({
     verified: true,
     rollbackDigest: d('known-good-rollback'),
@@ -46,11 +46,17 @@ const rollbackExecutor = {
 const authorityDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-autonomy-validation-'));
 const authorityDb = new DatabaseSync(path.join(authorityDir, 'authority.sqlite'));
 process.on('exit', () => { authorityDb.close(); fs.rmSync(authorityDir, {recursive:true,force:true}); });
+const verificationKeyPair=generateKeyPairSync('ed25519');
+function attest(report,ctx,action){const payload={schemaVersion:1,tenant:ctx.tenant,incidentId:ctx.incidentId,scenarioId:ctx.input.scenarioId,evidenceDigest:ctx.evidenceDigest,requestDigest:digest(ctx.input),action,resultDigest:digest(report),verificationDigest:report.verificationDigest||report.rollbackDigest,issuedAt:0,expiresAt:100000};return {...report,verificationReceipt:{payload,signature:sign(null,Buffer.from('VECTOR_AUTONOMY_VERIFICATION_V1\n'+canonical(payload)),verificationKeyPair.privateKey).toString('base64url')}};}
+const recoveryExecutor={execute:async ctx=>attest(await baserecoveryExecutor.execute(ctx),ctx,ctx.action)};
+const repairCoordinator={process:async ctx=>attest(await baserepairCoordinator.process(ctx),ctx,'repair.process')};
+const rollbackExecutor={rollback:async ctx=>attest(await baserollbackExecutor.rollback(ctx),ctx,'known-good.rollback')};
 let tick = 1000;
 const loop = createAutonomyControlLoop({
   contract,
   failureScenarios,
   authorityDb,
+  verificationPublicKey:verificationKeyPair.publicKey,
   selfHelp: SelfHelp,
   recoveryExecutor,
   repairCoordinator,
@@ -133,6 +139,7 @@ const hostileLoop = createAutonomyControlLoop({
   contract,
   failureScenarios,
   authorityDb,
+  verificationPublicKey:verificationKeyPair.publicKey,
   selfHelp: SelfHelp,
   recoveryExecutor,
   repairCoordinator: hostileRepair,

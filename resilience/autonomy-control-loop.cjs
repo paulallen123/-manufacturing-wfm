@@ -53,6 +53,7 @@ function createAutonomyControlLoop({
   now = Date.now,
   maxActions = 3,
   authorityDb,
+  verificationPublicKey,
 } = {}) {
   if (!contract?.tiers) throw new Error('Autonomy control loop requires support tier contract.');
   const scenarios = Array.isArray(failureScenarios?.scenarios)
@@ -62,12 +63,25 @@ function createAutonomyControlLoop({
     throw new Error('maxActions must be between 1 and 20.');
   }
 
+  let trustedVerifier = null;
+  if (verificationPublicKey) {
+    trustedVerifier = verificationPublicKey.type === 'public' ? verificationPublicKey : require('node:crypto').createPublicKey(verificationPublicKey);
+    if (trustedVerifier.asymmetricKeyType !== 'ed25519') throw Error('Autonomy verification requires an Ed25519 public key.');
+  }
+  const verifierFingerprint = trustedVerifier ? digest(trustedVerifier.export({type:'spki',format:'der'}).toString('base64')) : null;
   // Only an explicitly supplied durable database can authorize an executor.
   // A claimed-but-unfinished incident is never automatically retried: reconcile it first.
   const durableAuthority = authorityDb && authorityDb.prepare('PRAGMA database_list').all().some(r => r.name === 'main' && r.file);
   if (durableAuthority) authorityDb.exec(`CREATE TABLE IF NOT EXISTS autonomy_incident_claims (
     tenant TEXT NOT NULL, incident_id TEXT NOT NULL, input_digest TEXT NOT NULL,
     claim_token TEXT NOT NULL, receipt_json TEXT, PRIMARY KEY(tenant, incident_id));`);
+
+  function authorityTransaction(work) {
+    try { authorityDb.exec('BEGIN IMMEDIATE'); }
+    catch (error) { deny('WFM_AUTONOMY_AUTHORITY_TRANSACTION', 'Authority must own a committed transaction before execution.'); }
+    try { const value = work(); authorityDb.exec('COMMIT'); return value; }
+    catch (error) { try { authorityDb.exec('ROLLBACK'); } catch {} throw error; }
+  }
 
   async function run(input = {}) {
     const incidentId = clean(input.incidentId, 120);
@@ -105,9 +119,10 @@ function createAutonomyControlLoop({
     let claimToken = null;
     let deniedReport = null;
     const reported = { productionMutation: false, customerMutation: false, productionAuthorityGranted: false };
-    const inputDigest = digest({ input, maxActions, contract, failureScenarios });
+    const inputDigest = digest({ input, maxActions, contract, failureScenarios, verifierFingerprint });
     const claim = () => {
       if (!durableAuthority) deny('WFM_AUTONOMY_AUTHORITY_REQUIRED', 'Durable incident authority is required before execution.');
+      return authorityTransaction(() => {
       const token = require('node:crypto').randomUUID();
       const inserted = authorityDb.prepare('INSERT OR IGNORE INTO autonomy_incident_claims (tenant,incident_id,input_digest,claim_token) VALUES (?,?,?,?)').run(tenant,incidentId,inputDigest,token);
       if (Number(inserted.changes) === 1) { claimToken = token; return null; }
@@ -117,6 +132,20 @@ function createAutonomyControlLoop({
       const receipt = JSON.parse(prior.receipt_json);
       if (!verifyReceipt(receipt)) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Retained incident receipt failed integrity validation.');
       return receipt;
+      });
+    };
+    const verifyIndependent = (report, action, verificationDigest) => {
+      const proof = report?.verificationReceipt;
+      const payload = proof?.payload;
+      const reject = () => deny('WFM_AUTONOMY_INDEPENDENT_VERIFICATION', 'Matching independently signed verification is required.');
+      if (!trustedVerifier || !payload || typeof proof.signature !== 'string' || !/^[A-Za-z0-9_-]{86}$/.test(proof.signature)) reject();
+      const expectedKeys = ['schemaVersion','tenant','incidentId','scenarioId','evidenceDigest','requestDigest','action','resultDigest','verificationDigest','issuedAt','expiresAt'].sort();
+      if (JSON.stringify(Object.keys(payload).sort()) !== JSON.stringify(expectedKeys)) reject();
+      const {verificationReceipt, ...observedReport} = report;
+      const current = Number(now());
+      if (payload.schemaVersion !== 1 || payload.tenant !== tenant || payload.incidentId !== incidentId || payload.scenarioId !== scenarioId || payload.evidenceDigest !== evidenceDigest || payload.requestDigest !== digest(input) || payload.action !== action || payload.resultDigest !== digest(observedReport) || payload.verificationDigest !== verificationDigest || !Number.isSafeInteger(payload.issuedAt) || !Number.isSafeInteger(payload.expiresAt) || payload.issuedAt > current || payload.expiresAt <= current || payload.expiresAt <= payload.issuedAt || payload.expiresAt - payload.issuedAt > 300000) reject();
+      if (!require('node:crypto').verify(null, Buffer.from('VECTOR_AUTONOMY_VERIFICATION_V1\n' + canonical(payload)), trustedVerifier, Buffer.from(proof.signature,'base64url'))) reject();
+      append('independent-verification-accepted', {verifierFingerprint, verificationDigest, resultDigest:payload.resultDigest});
     };
     const retainReport = report => {
       const value = report || {};
@@ -161,6 +190,7 @@ function createAutonomyControlLoop({
           }
           if (recovery?.verified !== true || !/^[a-f0-9]{64}$/i.test(recovery?.verificationDigest || '')) deny('WFM_AUTONOMY_T1_VERIFY', 'Tier 1 recovery must be independently verified.');
           if (!isAllowedTerminal(contract, tier, recovery?.status)) deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 1 terminal outcome.');
+          verifyIndependent(recovery, action, recovery.verificationDigest);
           outcome = recovery.status;
           result = { recovery };
           append('t1-verified', { action, status: outcome, verificationDigest: recovery.verificationDigest || null });
@@ -180,6 +210,7 @@ function createAutonomyControlLoop({
           if (repair.status === 'verified_candidate_staged' && (repair.independentlyVerified !== true || !/^[a-f0-9]{64}$/i.test(repair.verificationDigest || ''))) {
             deny('WFM_AUTONOMY_T2_VERIFY', 'Staged repair candidate must be independently verified.');
           }
+          if (repair.status === 'verified_candidate_staged') verifyIndependent(repair, 'repair.process', repair.verificationDigest);
           outcome = repair.status;
           result = { repair };
           append('t2-result', { status: outcome, independentlyVerified: repair.independentlyVerified === true });
@@ -195,6 +226,7 @@ function createAutonomyControlLoop({
         if (rollback?.verified !== true || !/^[a-f0-9]{64}$/i.test(rollback?.rollbackDigest || '') || rollback?.productionAuthorityGranted === true || rollback?.productionMutation === true || rollback?.customerMutation === true) {
           deny('WFM_AUTONOMY_ROLLBACK_VERIFY', 'Known-good rollback must be independently verified and bounded.');
         }
+        verifyIndependent(rollback, 'known-good.rollback', rollback.rollbackDigest);
         outcome = 'rolled_back_to_known_good';
         result = { rollback };
         append('t4-rollback', { verified: true, rollbackDigest: rollback.rollbackDigest || null });
@@ -241,8 +273,10 @@ function createAutonomyControlLoop({
     };
     const receipt = { ...core, receiptDigest: digest(core), ...result };
     if (claimToken) {
+      authorityTransaction(() => {
       const saved = authorityDb.prepare('UPDATE autonomy_incident_claims SET receipt_json=? WHERE tenant=? AND incident_id=? AND claim_token=? AND receipt_json IS NULL').run(JSON.stringify(receipt),tenant,incidentId,claimToken);
       if (Number(saved.changes) !== 1) deny('WFM_AUTONOMY_RECEIPT_COMMIT', 'Incident receipt could not be committed.');
+      });
     }
     return receipt;
   }

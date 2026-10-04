@@ -9,7 +9,7 @@ RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 # Exact Staffology review admission: exercise the reviewed bridge, persisted employee
 # readback/restart guard, tenant denial, audit immutability and runtime composition.
-RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/durable-autonomy.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-support-durability.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/support-evidence-transaction.test.cjs
+RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/durable-autonomy.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-support-durability.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/support-evidence-transaction.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-durable-autonomy.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-verification-signature.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-transaction-boundary.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-isolation.test.cjs
 RUN VECTOR_SEALED_PROOF_ROOT=/proof node --test verification/provider-recovery-correction/tests/*.test.cjs \
  && node scripts/validate-canary-rollback-controller.mjs
 RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime \
