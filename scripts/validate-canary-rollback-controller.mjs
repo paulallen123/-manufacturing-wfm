@@ -20,7 +20,7 @@ function recorder() {
 function attestor(overrides = {}) {
   return {
     capabilities: () => ({ readOnly: true, networkMode: 'none', reusableCredentialsVisible: false, modelCanGrantAuthority: false, productionAuthority: false, customerWriteAuthority: false }),
-    async verify(input) { return { verified: true, schemaCompatible: true, signatureVerified: true, provenanceVerified: true, attestationDigest: sha({ input, tag: 'known-good' }), ...overrides }; },
+    async verify(input) { return { verified: true, schemaCompatible: true, signatureVerified: true, provenanceVerified: true, attestationDigest: sha({ input, tag: 'known-good' }), acceptedArtifactDigest:input.artifactDigest, acceptedRollbackDigest:input.rollbackDigest, acceptedTenantDigest:input.tenantDigest, acceptedStagingReceiptDigest:input.stagingReceiptDigest, ...overrides }; },
   };
 }
 

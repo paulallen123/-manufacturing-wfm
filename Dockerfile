@@ -9,7 +9,8 @@ RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 # Exact Staffology review admission: exercise the reviewed bridge, persisted employee
 # readback/restart guard, tenant denial, audit immutability and runtime composition.
-RUN VECTOR_SEALED_PROOF_ROOT=/proof node --test verification/provider-recovery-correction/tests/*.test.cjs
+RUN VECTOR_SEALED_PROOF_ROOT=/proof node --test verification/provider-recovery-correction/tests/*.test.cjs \
+ && node scripts/validate-canary-rollback-controller.mjs
 RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime \
  && mkdir -p /proof/staffology-private-artifacts \
  && cp /proof/staffology-full-runtime/STAFFOLOGY_ASSEMBLY.json /proof/staffology-full-runtime/LOCAL_PROOF_PROVENANCE.json /proof/staffology-private-artifacts/ \

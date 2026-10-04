@@ -201,6 +201,10 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
       return terminal(base, 'contained', 'known-good-attestation-rejected', { canaryStarted: false });
     }
 
+    if (attestation.acceptedArtifactDigest !== base.artifactDigest || attestation.acceptedRollbackDigest !== base.rollbackDigest || attestation.acceptedTenantDigest !== base.tenantDigest || attestation.acceptedStagingReceiptDigest !== base.stagingReceiptDigest) {
+      return terminal(base, 'contained', 'known-good-attestation-binding-mismatch', {canaryStarted:false});
+    }
+
     const job = Object.freeze({
       schemaVersion: 1,
       incidentId,
@@ -241,7 +245,7 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
       return rollback(base, result.canaryEvidenceDigest, 'canary-invariant-failed');
     }
 
-    return terminal(base, 'canary_proven', 'canary-healthy', {
+    try { return await terminal(base, 'canary_proven', 'canary-healthy', {
       canaryEvidenceDigest: result.canaryEvidenceDigest,
       knownGoodAttestationDigest: attestation.attestationDigest,
       touchedInstances: result.touchedInstances,
@@ -249,6 +253,13 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
       rollbackVerified: false,
       canaryStarted: true,
     });
+    } catch (auditError) {
+      // An unaudited success cannot leave the simulated candidate active. Restore known good,
+      // then propagate the audit error; a missing durable receipt never becomes a proven result.
+      try { auditError.rollbackOutcome = await rollback(base, result.canaryEvidenceDigest, 'canary-terminal-audit-failure'); }
+      catch (recoveryError) { auditError.rollbackError = {code:recoveryError.code||null,message:recoveryError.message}; }
+      throw auditError;
+    }
   }
 
   return {
