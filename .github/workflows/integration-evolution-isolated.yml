@@ -112,5 +112,8 @@ jobs:
       - name: Run integration entitlement-bundle tests
         run: node --test integration-fabric/runtime/integration-entitlements.test.mjs
 
+      - name: Run provider proof-readiness tests
+        run: node --test integration-fabric/runtime/provider-proof-readiness.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
