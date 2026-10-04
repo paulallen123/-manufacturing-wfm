@@ -184,3 +184,71 @@ test('retry and blocked states survive restart without idling unrelated work', (
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+
+
+test('external authority is explicit while unrelated autonomous work remains visible', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-work-controller-'));
+  const customRequirements = [
+    { key: 'configuration-scope', dependsOn: [] },
+    { key: 'source-systems', dependsOn: ['configuration-scope'] },
+    { key: 'tenant-environment', dependsOn: ['configuration-scope'] },
+    { key: 'absence-policies', dependsOn: ['configuration-scope'] },
+    { key: 'privileged-competency', dependsOn: ['configuration-scope'] }
+  ];
+  const controller = createImplementationWorkController({
+    dbPath: path.join(dir, 'state.sqlite'), requirements: customRequirements
+  });
+  const plan = controller.reconcile({
+    runId: 'run-authority', tenant: 'tenant-a',
+    readiness: { requirements: [
+      { key: 'configuration-scope', satisfied: true, status: 'PASS', source: 'contract', detail: {} },
+      { key: 'source-systems', satisfied: false, status: 'MISSING', source: null, detail: null },
+      { key: 'tenant-environment', satisfied: false, status: 'MISSING', source: null, detail: null },
+      { key: 'absence-policies', satisfied: false, status: 'MISSING', source: null, detail: null },
+      { key: 'privileged-competency', satisfied: false, status: 'MISSING', source: null, detail: null }
+    ]},
+    blockerFor: item => ({
+      'source-systems': 'SOURCE_AUTHORIZATION_OR_VALIDATION_REQUIRED',
+      'absence-policies': 'CUSTOMER_POLICY_AUTHORITY_REQUIRED',
+      'privileged-competency': 'CUSTOMER_COMPETENCY_EVIDENCE_REQUIRED'
+    }[item.key] || null)
+  });
+  assert.deepEqual(plan.runnable, ['tenant-environment']);
+  assert.equal(plan.autonomousWorkRemaining, true);
+  assert.deepEqual(plan.awaitingExternalAuthority.map(x => x.requirementKey),
+    ['source-systems', 'absence-policies', 'privileged-competency']);
+  controller.close();
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('authority-only state has no autonomous work and resumes when authority arrives', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-work-controller-'));
+  const customRequirements = [
+    { key: 'configuration-scope', dependsOn: [] },
+    { key: 'absence-policies', dependsOn: ['configuration-scope'] }
+  ];
+  const controller = createImplementationWorkController({
+    dbPath: path.join(dir, 'state.sqlite'), requirements: customRequirements
+  });
+  const base = {
+    requirements: [
+      { key: 'configuration-scope', satisfied: true, status: 'PASS', source: 'contract', detail: {} },
+      { key: 'absence-policies', satisfied: false, status: 'MISSING', source: null, detail: null }
+    ]
+  };
+  let plan = controller.reconcile({
+    runId: 'run-resume', tenant: 'tenant-a', readiness: base,
+    blockerFor: item => item.key === 'absence-policies' ? 'CUSTOMER_POLICY_AUTHORITY_REQUIRED' : null
+  });
+  assert.equal(plan.autonomousWorkRemaining, false);
+  assert.equal(plan.awaitingExternalAuthority.length, 1);
+  plan = controller.reconcile({
+    runId: 'run-resume', tenant: 'tenant-a', readiness: base,
+    blockerFor: () => null
+  });
+  assert.deepEqual(plan.runnable, ['absence-policies']);
+  assert.equal(plan.awaitingExternalAuthority.length, 0);
+  assert.equal(plan.autonomousWorkRemaining, true);
+  controller.close();
+  fs.rmSync(dir, { recursive: true, force: true });
+});
