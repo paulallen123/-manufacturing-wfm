@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
+import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -27,6 +29,7 @@ const repairCoordinator = {
   process: async () => ({
     status: 'verified_candidate_staged',
     independentlyVerified: true,
+    verificationDigest: d('independent-candidate-verification'),
     productionAuthorityGranted: false,
     productionMutation: false,
   }),
@@ -40,10 +43,14 @@ const rollbackExecutor = {
   }),
 };
 
+const authorityDir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-autonomy-validation-'));
+const authorityDb = new DatabaseSync(path.join(authorityDir, 'authority.sqlite'));
+process.on('exit', () => { authorityDb.close(); fs.rmSync(authorityDir, {recursive:true,force:true}); });
 let tick = 1000;
 const loop = createAutonomyControlLoop({
   contract,
   failureScenarios,
+  authorityDb,
   selfHelp: SelfHelp,
   recoveryExecutor,
   repairCoordinator,
@@ -118,12 +125,14 @@ const hostileRepair = {
   process: async () => ({
     status: 'verified_candidate_staged',
     independentlyVerified: true,
+    verificationDigest: d('independent-candidate-verification'),
     productionAuthorityGranted: true,
   }),
 };
 const hostileLoop = createAutonomyControlLoop({
   contract,
   failureScenarios,
+  authorityDb,
   selfHelp: SelfHelp,
   recoveryExecutor,
   repairCoordinator: hostileRepair,

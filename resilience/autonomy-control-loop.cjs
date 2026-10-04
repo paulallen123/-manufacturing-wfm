@@ -52,6 +52,7 @@ function createAutonomyControlLoop({
   rollbackExecutor,
   now = Date.now,
   maxActions = 3,
+  authorityDb,
 } = {}) {
   if (!contract?.tiers) throw new Error('Autonomy control loop requires support tier contract.');
   const scenarios = Array.isArray(failureScenarios?.scenarios)
@@ -60,6 +61,13 @@ function createAutonomyControlLoop({
   if (!Number.isSafeInteger(maxActions) || maxActions < 1 || maxActions > 20) {
     throw new Error('maxActions must be between 1 and 20.');
   }
+
+  // Only an explicitly supplied durable database can authorize an executor.
+  // A claimed-but-unfinished incident is never automatically retried: reconcile it first.
+  const durableAuthority = authorityDb && authorityDb.prepare('PRAGMA database_list').all().some(r => r.name === 'main' && r.file);
+  if (durableAuthority) authorityDb.exec(`CREATE TABLE IF NOT EXISTS autonomy_incident_claims (
+    tenant TEXT NOT NULL, incident_id TEXT NOT NULL, input_digest TEXT NOT NULL,
+    claim_token TEXT NOT NULL, receipt_json TEXT, PRIMARY KEY(tenant, incident_id));`);
 
   async function run(input = {}) {
     const incidentId = clean(input.incidentId, 120);
@@ -94,6 +102,30 @@ function createAutonomyControlLoop({
 
     let outcome = 'contained';
     let result = {};
+    let claimToken = null;
+    let deniedReport = null;
+    const reported = { productionMutation: false, customerMutation: false, productionAuthorityGranted: false };
+    const inputDigest = digest({ input, maxActions, contract, failureScenarios });
+    const claim = () => {
+      if (!durableAuthority) deny('WFM_AUTONOMY_AUTHORITY_REQUIRED', 'Durable incident authority is required before execution.');
+      const token = require('node:crypto').randomUUID();
+      const inserted = authorityDb.prepare('INSERT OR IGNORE INTO autonomy_incident_claims (tenant,incident_id,input_digest,claim_token) VALUES (?,?,?,?)').run(tenant,incidentId,inputDigest,token);
+      if (Number(inserted.changes) === 1) { claimToken = token; return null; }
+      const prior = authorityDb.prepare('SELECT * FROM autonomy_incident_claims WHERE tenant=? AND incident_id=?').get(tenant,incidentId);
+      if (!prior || prior.input_digest !== inputDigest) deny('WFM_AUTONOMY_INCIDENT_CONFLICT', 'Incident authority cannot be reset by changed evidence or configuration.');
+      if (!prior.receipt_json) deny('WFM_AUTONOMY_RECONCILIATION_REQUIRED', 'Incident action already claimed; reconcile its outcome before any further execution.');
+      const receipt = JSON.parse(prior.receipt_json);
+      if (!verifyReceipt(receipt)) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Retained incident receipt failed integrity validation.');
+      return receipt;
+    };
+    const retainReport = report => {
+      const value = report || {};
+      for (const key of Object.keys(reported)) reported[key] = value[key] === true;
+      deniedReport = { reportDigest: digest(value), ...reported };
+      for (const key of ['verificationDigest', 'rollbackDigest', 'violationEvidenceDigest']) {
+        if (typeof value[key] === 'string' && /^[a-f0-9]{64}$/i.test(value[key])) deniedReport[key] = value[key];
+      }
+    };
 
     try {
       if (targetTenant !== tenant) {
@@ -120,12 +152,14 @@ function createAutonomyControlLoop({
             : 'contained';
           append('t1-contained', { action, actionAllowed, executorAvailable: Boolean(recoveryExecutor?.execute) });
         } else {
+          const previous = claim(); if (previous) return previous;
           consumeAction(action);
           const recovery = await recoveryExecutor.execute({ incidentId, tenant, scenario, action, evidenceDigest, input });
-          if (recovery?.productionAuthorityGranted === true || recovery?.customerMutation === true) {
+          retainReport(recovery);
+          if (recovery?.productionMutation === true || recovery?.productionAuthorityGranted === true || recovery?.customerMutation === true) {
             deny('WFM_AUTONOMY_T1_AUTHORITY', 'Tier 1 recovery exceeded authority.');
           }
-          if (recovery?.verified !== true) deny('WFM_AUTONOMY_T1_VERIFY', 'Tier 1 recovery must be independently verified.');
+          if (recovery?.verified !== true || !/^[a-f0-9]{64}$/i.test(recovery?.verificationDigest || '')) deny('WFM_AUTONOMY_T1_VERIFY', 'Tier 1 recovery must be independently verified.');
           if (!isAllowedTerminal(contract, tier, recovery?.status)) deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 1 terminal outcome.');
           outcome = recovery.status;
           result = { recovery };
@@ -135,13 +169,15 @@ function createAutonomyControlLoop({
         if (!repairCoordinator?.process) {
           append('t2-contained', { coordinatorAvailable: false });
         } else {
+          const previous = claim(); if (previous) return previous;
           consumeAction('repair.process');
           const repair = await repairCoordinator.process({ incidentId, tenant, scenario, evidenceDigest, input });
-          if (repair?.productionAuthorityGranted === true || repair?.productionMutation === true) {
+          retainReport(repair);
+          if (repair?.customerMutation === true || repair?.productionAuthorityGranted === true || repair?.productionMutation === true) {
             deny('WFM_AUTONOMY_T2_PRODUCTION', 'Tier 2 repair cannot grant production authority.');
           }
           if (!isAllowedTerminal(contract, tier, repair?.status)) deny('WFM_AUTONOMY_TERMINAL', 'Invalid Tier 2 terminal outcome.');
-          if (repair.status === 'verified_candidate_staged' && repair.independentlyVerified !== true) {
+          if (repair.status === 'verified_candidate_staged' && (repair.independentlyVerified !== true || !/^[a-f0-9]{64}$/i.test(repair.verificationDigest || ''))) {
             deny('WFM_AUTONOMY_T2_VERIFY', 'Staged repair candidate must be independently verified.');
           }
           outcome = repair.status;
@@ -152,9 +188,11 @@ function createAutonomyControlLoop({
         outcome = input.customerAuthorisationRequired === true ? 'customer_authorisation_required' : 'contained';
         append('t3-authority-boundary', { proposedAction: clean(input.proposedAction, 120) || null });
       } else if (input.knownGoodRollbackAvailable === true && rollbackExecutor?.rollback) {
+        const previous = claim(); if (previous) return previous;
         consumeAction('known-good.rollback');
         const rollback = await rollbackExecutor.rollback({ incidentId, tenant, scenario, evidenceDigest, input });
-        if (rollback?.verified !== true || rollback?.productionAuthorityGranted === true) {
+        retainReport(rollback);
+        if (rollback?.verified !== true || !/^[a-f0-9]{64}$/i.test(rollback?.rollbackDigest || '') || rollback?.productionAuthorityGranted === true || rollback?.productionMutation === true || rollback?.customerMutation === true) {
           deny('WFM_AUTONOMY_ROLLBACK_VERIFY', 'Known-good rollback must be independently verified and bounded.');
         }
         outcome = 'rolled_back_to_known_good';
@@ -166,7 +204,7 @@ function createAutonomyControlLoop({
       }
     } catch (error) {
       outcome = 'contained';
-      result = { containedErrorCode: error.code || 'WFM_AUTONOMY_INTERNAL' };
+      result = { containedErrorCode: error.code || 'WFM_AUTONOMY_INTERNAL', ...(deniedReport ? { deniedReport } : {}) };
       append('control-failure-contained', {
         code: result.containedErrorCode,
         messageDigest: digest(String(error.message || 'error')),
@@ -193,16 +231,20 @@ function createAutonomyControlLoop({
       actionCount,
       maxActions,
       evidenceDigest,
-      productionMutation: false,
-      productionAuthorityGranted: false,
-      customerMutation: false,
+      ...reported,
+      mutationObservationScope: 'Executor-reported flags; not independent observation of side effects',
       startedAt,
       endedAt,
       trace,
       traceHeadDigest: prev,
       resultDigest: digest(result),
     };
-    return { ...core, receiptDigest: digest(core), ...result };
+    const receipt = { ...core, receiptDigest: digest(core), ...result };
+    if (claimToken) {
+      const saved = authorityDb.prepare('UPDATE autonomy_incident_claims SET receipt_json=? WHERE tenant=? AND incident_id=? AND claim_token=? AND receipt_json IS NULL').run(JSON.stringify(receipt),tenant,incidentId,claimToken);
+      if (Number(saved.changes) !== 1) deny('WFM_AUTONOMY_RECEIPT_COMMIT', 'Incident receipt could not be committed.');
+    }
+    return receipt;
   }
 
   function verifyReceipt(receipt) {
@@ -226,12 +268,12 @@ function createAutonomyControlLoop({
 
     if (receipt.traceHeadDigest !== prev) return false;
     const result = {};
-    for (const key of ['answer', 'recovery', 'repair', 'rollback', 'containedErrorCode']) {
+    for (const key of ['answer', 'recovery', 'repair', 'rollback', 'containedErrorCode', 'deniedReport']) {
       if (Object.prototype.hasOwnProperty.call(receipt, key)) result[key] = receipt[key];
     }
     if (receipt.resultDigest !== digest(result)) return false;
     const core = { ...receipt };
-    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 'rollback', 'containedErrorCode']) delete core[key];
+    for (const key of ['receiptDigest', 'answer', 'recovery', 'repair', 'rollback', 'containedErrorCode', 'deniedReport']) delete core[key];
     return receipt.receiptDigest === digest(core);
   }
 
