@@ -109,5 +109,8 @@ jobs:
       - name: Run connector certification-truth tests
         run: node --test integration-fabric/runtime/connector-certification.test.mjs
 
+      - name: Run integration entitlement-bundle tests
+        run: node --test integration-fabric/runtime/integration-entitlements.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
