@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "integrationBranch": "review/staffology-customer-proof-20261001",
+  "mirroredReleaseBranch": "release/vector-customer-ready-candidate-20260925",
+  "mirroredReleaseSha": "f309541d715d95b94781c2551bd23d3290c1f699",
+  "mirroredFiles": [
+    "implementation/runtime/implementation-work-controller.cjs",
+    "implementation/runtime/implementation-work-controller.test.cjs",
+    "implementation/runtime/one-day-enterprise-engine-core.cjs",
+    "implementation/runtime/one-day-enterprise-engine.test.cjs"
+  ],
+  "deploymentAuthority": "NONE",
+  "customerProofMutationAllowed": false,
+  "purpose": "Record exact current release orchestration mirrored into isolated integration lane; CI must prove compatibility."
+}
