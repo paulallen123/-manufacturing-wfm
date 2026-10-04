@@ -1,5 +1,6 @@
 'use strict';
 const {createHash}=require('node:crypto');
+const {isProviderReceiver}=require('./integration-gateway.cjs');
 
 function fail(message,status=400){const e=Error(message);e.status=status;throw e;}
 function clean(v,max=240){return String(v??'').trim().replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').slice(0,max);}
@@ -137,13 +138,14 @@ async function runPagedAdapter({name,tokenLease,startRequest,fetchPage,mapPage,s
 
 async function runDurableAdapterJob({jobStore,jobId,workerId,leaseMs=60_000,retryDelayMs=1_000,...adapter}={}){
  if(!jobStore||typeof jobStore.acquire!=='function'||typeof jobStore.assertLeaseHeld!=='function')fail('Durable provider job store is required.',500);
+ if(!isProviderReceiver(adapter.submitBatch,jobStore))fail('Durable provider staging requires an admitted transactional receiver.',409);
  const job=jobStore.acquire(jobId,workerId,{leaseMs});
  try{
   if(job.pagesCompleted>0&&job.nextRequest===null){
    const result={adapter:adapter.name||job.adapterName,pages:0,sourceRecords:0,stagedRecords:0,heldRecords:0,appliedRecords:0,retries:0,batches:[],complete:job.heldRecords===0,recoveredTerminalCheckpoint:true};
    const completed=jobStore.complete(jobId,workerId,{...result,leaseGeneration:job.leaseGeneration,cumulativePages:job.pagesCompleted,cumulativeSourceRecords:job.sourceRecords,cumulativeStagedRecords:job.stagedRecords,cumulativeHeldRecords:job.heldRecords});return {result,job:completed};
   }
-  const result=await runPagedAdapter({...adapter,assertActiveLease:()=>jobStore.assertLeaseHeld(jobId,workerId,job.leaseGeneration),startRequest:job.nextRequest,onPage:async page=>{jobStore.checkpoint(jobId,workerId,{leaseGeneration:job.leaseGeneration,nextRequest:page.nextRequest,pages:1,sourceRecords:page.sourceRecords,stagedRecords:page.stagedRecords,heldRecords:page.heldRecords,retries:page.retries,cursor:page.cursor,sourceVersion:page.sourceVersion,sourceAt:page.sourceAt,ingestedAt:page.ingestedAt,httpStatus:page.httpStatus,httpLatencyMs:page.httpLatencyMs,tokenExpiresAt:page.tokenExpiresAt,freshnessSloSeconds:adapter.freshnessSloSeconds});if(typeof adapter.onPage==='function')await adapter.onPage(page);}});
+  const result=await runPagedAdapter({...adapter,submitBatch:batch=>adapter.submitBatch(batch,{jobId,workerId,leaseGeneration:job.leaseGeneration}),assertActiveLease:()=>jobStore.assertLeaseHeld(jobId,workerId,job.leaseGeneration),startRequest:job.nextRequest,onPage:async page=>{jobStore.checkpoint(jobId,workerId,{leaseGeneration:job.leaseGeneration,nextRequest:page.nextRequest,pages:1,sourceRecords:page.sourceRecords,stagedRecords:page.stagedRecords,heldRecords:page.heldRecords,retries:page.retries,cursor:page.cursor,sourceVersion:page.sourceVersion,sourceAt:page.sourceAt,ingestedAt:page.ingestedAt,httpStatus:page.httpStatus,httpLatencyMs:page.httpLatencyMs,tokenExpiresAt:page.tokenExpiresAt,freshnessSloSeconds:adapter.freshnessSloSeconds});if(typeof adapter.onPage==='function')await adapter.onPage(page);}});
   const completed=jobStore.complete(jobId,workerId,{...result,leaseGeneration:job.leaseGeneration});return {result,job:completed};
  }catch(error){try{error.job=jobStore.fail(jobId,workerId,error,{retryDelayMs,leaseGeneration:job.leaseGeneration});}catch(leaseError){error.leaseUpdateError={status:leaseError.status||500,message:leaseError.message};}throw error;}
 }

@@ -103,7 +103,15 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
       customerMutation: false,
       ...extra,
     };
-    const outcomeReceiptDigest = await record(payload);
+    let outcomeReceiptDigest;
+    try { outcomeReceiptDigest = await record(payload); }
+    catch (cause) {
+      // Preserve the observed diagnosis without manufacturing a durable receipt.
+      const error = new Error(cause?.message || String(cause), {cause});
+      error.code = cause?.code || 'WFM_CANARY_TERMINAL_AUDIT_FAILED';
+      error.unrecordedTerminal = {...payload, durableReceiptRecorded:false};
+      throw error;
+    }
     return { ...payload, outcomeReceiptDigest };
   }
 
@@ -257,7 +265,10 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
       // An unaudited success cannot leave the simulated candidate active. Restore known good,
       // then propagate the audit error; a missing durable receipt never becomes a proven result.
       try { auditError.rollbackOutcome = await rollback(base, result.canaryEvidenceDigest, 'canary-terminal-audit-failure'); }
-      catch (recoveryError) { auditError.rollbackError = {code:recoveryError.code||null,message:recoveryError.message}; }
+      catch (recoveryError) {
+        auditError.rollbackError = {code:recoveryError.code||null,message:recoveryError.message};
+        if (recoveryError.unrecordedTerminal) auditError.rollbackOutcome = recoveryError.unrecordedTerminal;
+      }
       throw auditError;
     }
   }

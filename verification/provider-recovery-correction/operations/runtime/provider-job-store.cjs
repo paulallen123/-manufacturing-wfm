@@ -137,6 +137,17 @@ function createStore(db,{now=Date.now}={}){
   return {totalRuns:runs.length,totalConnections:connectionMap.size,actionRequired,review,retryReady,expiredLeases,reconciliationMismatches,heldRecords,staleConnections,criticalStaleConnections,authExpiring,authExpired,byState,byProvider,connections:[...connectionMap.values()],lastActivityAt:runs[0]?.updatedAt||null,monitoringModel:{signals:['latency','traffic','errors','freshness','reconciliation','authentication-expiry','worker-lease','retry/dead-letter'],telemetryConvention:'OpenTelemetry-compatible naming can be emitted by hosted instrumentation; this local control plane stores deterministic safe evidence only.'},limitations:['Reconciliation health proves only internal run accounting. It does not certify provider completeness, vendor schema compatibility or successful source-to-business acceptance.','Freshness is evaluated only when the adapter supplies a trustworthy provider source timestamp and configured SLO; unknown freshness is never treated as fresh.']};
  }
  function detail(actor,id){canConfigure(actor);const run=raw(id);if(run.tenant!==actor.tenant)fail('Provider adapter run not found.',404);const events=db.prepare('SELECT event_type,worker_id,detail_json,created_at FROM provider_adapter_run_events WHERE run_id=? ORDER BY id').all(run.id).map(e=>({type:e.event_type,workerId:e.worker_id||null,detail:parse(e.detail_json,{}),createdAt:e.created_at}));return {...view(run),events};}
- return {ensure,acquire,assertLeaseHeld:(id,worker,generation)=>{assertLease(raw(id),clean(worker,100),generation);return true;},checkpoint,complete,fail:failRun,requeue,report,observability,detail,raw:(id)=>view(raw(id),false,true)};
+ // Receiving writes and their audit share the lease database's write lock.
+ // This accepts only a synchronous trusted receiver; never hold a lock across await.
+ function stageTransaction(receiverDb,scope,cfg,write){
+  if(receiverDb!==db)fail('Provider staging requires the lease database connection.',409);
+  db.exec('BEGIN IMMEDIATE');try{
+   const check=()=>{const run=raw(scope.jobId);assertLease(run,clean(scope.workerId,100),scope.leaseGeneration);if(run.tenant!==cfg.tenant||run.connector_id!==cfg.id||run.provider!==cfg.provider||run.object_type!==scope.objectType)fail('Provider staging identity mismatch.',403);return run;};
+   check();const result=write();if(result&&typeof result.then==='function')fail('Provider receiving commit must be synchronous.',500);
+   const run=check();event(run,'stage-committed',clean(scope.workerId,100),{leaseGeneration:scope.leaseGeneration,batchId:result.id,replayed:Boolean(result.replayed)});
+   db.exec('COMMIT');return result;
+  }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
+ }
+ return {ensure,acquire,stageTransaction,assertLeaseHeld:(id,worker,generation)=>{assertLease(raw(id),clean(worker,100),generation);return true;},checkpoint,complete,fail:failRun,requeue,report,observability,detail,raw:(id)=>view(raw(id),false,true)};
 }
 module.exports={createStore,digest};
