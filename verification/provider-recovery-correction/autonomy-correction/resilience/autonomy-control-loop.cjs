@@ -54,6 +54,7 @@ function createAutonomyControlLoop({
   maxActions = 3,
   authorityDb,
   verificationPublicKey,
+  authorityWitnessPath,
 } = {}) {
   if (!contract?.tiers) throw new Error('Autonomy control loop requires support tier contract.');
   const scenarios = Array.isArray(failureScenarios?.scenarios)
@@ -75,6 +76,43 @@ function createAutonomyControlLoop({
   if (durableAuthority) authorityDb.exec(`CREATE TABLE IF NOT EXISTS autonomy_incident_claims (
     tenant TEXT NOT NULL, incident_id TEXT NOT NULL, input_digest TEXT NOT NULL,
     claim_token TEXT NOT NULL, receipt_json TEXT, PRIMARY KEY(tenant, incident_id));`);
+
+  // This ledger has an independent restore lifecycle. Never restore it with the
+  // application database. Its loss fails closed; it is not recreated on reopen.
+  let witnessPath = null;
+  let witnessError = null;
+  let witnessIdentity = null;
+  if (durableAuthority) {
+    try {
+      const fs = require('node:fs'), path = require('node:path');
+      const file = authorityDb.prepare('PRAGMA database_list').all().find(r => r.name === 'main').file;
+      witnessPath = path.resolve(authorityWitnessPath || file + '.consumed-authority.sqlite');
+      if (witnessPath === path.resolve(file)) throw Error('Witness must be separate from application database.');
+      authorityDb.exec('CREATE TABLE IF NOT EXISTS autonomy_witness_binding (id INTEGER PRIMARY KEY CHECK(id=1), identity TEXT NOT NULL)');
+      let binding = authorityDb.prepare('SELECT identity FROM autonomy_witness_binding WHERE id=1').get();
+      if (binding && !fs.existsSync(witnessPath)) throw Error('Previously bound witness is missing.');
+      const w = new (require('node:sqlite').DatabaseSync)(witnessPath);
+      try {
+        w.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS witness_identity (id INTEGER PRIMARY KEY CHECK(id=1), identity TEXT NOT NULL); CREATE TABLE IF NOT EXISTS consumed_actions (tenant TEXT NOT NULL, incident_id TEXT NOT NULL, input_digest TEXT NOT NULL, claim_token TEXT NOT NULL, receipt_json TEXT, PRIMARY KEY(tenant,incident_id))');
+        let identity = w.prepare('SELECT identity FROM witness_identity WHERE id=1').get();
+        if (!identity) {
+          if (binding) throw Error('Witness identity is missing.');
+          identity = {identity:require('node:crypto').randomUUID()};
+          w.prepare('INSERT INTO witness_identity VALUES (1,?)').run(identity.identity);
+        }
+        if (binding && binding.identity !== identity.identity) throw Error('Witness identity differs from retained binding.');
+        witnessIdentity = identity.identity;
+        if (!binding) authorityDb.prepare('INSERT INTO autonomy_witness_binding VALUES (1,?)').run(identity.identity);
+      } finally { w.close(); }
+    } catch (error) { witnessError = error; }
+  }
+  function witnessTransaction(work) {
+    if (witnessError || !witnessPath || !require('node:fs').existsSync(witnessPath)) deny('WFM_AUTONOMY_WITNESS_REQUIRED', 'Independent consumed-action witness is unavailable.');
+    const w = new (require('node:sqlite').DatabaseSync)(witnessPath);
+    try { w.exec('PRAGMA synchronous=FULL; BEGIN IMMEDIATE'); if (w.prepare('SELECT identity FROM witness_identity WHERE id=1').get()?.identity !== witnessIdentity) deny('WFM_AUTONOMY_WITNESS_REQUIRED', 'Independent witness identity changed.'); const result=work(w); w.exec('COMMIT'); return result; }
+    catch(error) { try { w.exec('ROLLBACK'); } catch {} throw error; }
+    finally { w.close(); }
+  }
 
   function authorityTransaction(work) {
     try { authorityDb.exec('BEGIN IMMEDIATE'); }
@@ -124,6 +162,21 @@ function createAutonomyControlLoop({
       if (!durableAuthority) deny('WFM_AUTONOMY_AUTHORITY_REQUIRED', 'Durable incident authority is required before execution.');
       return authorityTransaction(() => {
       const token = require('node:crypto').randomUUID();
+      const witnessed = witnessTransaction(w => {
+        const prior = w.prepare('SELECT * FROM consumed_actions WHERE tenant=? AND incident_id=?').get(tenant,incidentId);
+        if (prior) return prior;
+        w.prepare('INSERT INTO consumed_actions (tenant,incident_id,input_digest,claim_token) VALUES (?,?,?,?)').run(tenant,incidentId,inputDigest,token);
+        return null;
+      });
+      if (!witnessed && authorityDb.prepare('SELECT 1 FROM autonomy_incident_claims WHERE tenant=? AND incident_id=?').get(tenant,incidentId)) deny('WFM_AUTONOMY_RECONCILIATION_REQUIRED', 'Legacy claim lacks independent acceptance.');
+      if (witnessed) {
+        if (witnessed.input_digest !== inputDigest) deny('WFM_AUTONOMY_INCIDENT_CONFLICT', 'Independent witness binds different incident input.');
+        if (!witnessed.receipt_json) deny('WFM_AUTONOMY_RECONCILIATION_REQUIRED', 'Independent witness retains an unresolved action.');
+        const local = authorityDb.prepare('SELECT * FROM autonomy_incident_claims WHERE tenant=? AND incident_id=?').get(tenant,incidentId);
+        if (local && (local.claim_token !== witnessed.claim_token || local.input_digest !== witnessed.input_digest)) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Restored receipt differs from independently retained acceptance.');
+        // An old snapshot may lack the local claim. The witness still owns replay.
+        if (!local) authorityDb.prepare('INSERT INTO autonomy_incident_claims (tenant,incident_id,input_digest,claim_token,receipt_json) VALUES (?,?,?,?,?)').run(tenant,incidentId,witnessed.input_digest,witnessed.claim_token,witnessed.receipt_json);
+      }
       const inserted = authorityDb.prepare('INSERT OR IGNORE INTO autonomy_incident_claims (tenant,incident_id,input_digest,claim_token) VALUES (?,?,?,?)').run(tenant,incidentId,inputDigest,token);
       if (Number(inserted.changes) === 1) { claimToken = token; return null; }
       const prior = authorityDb.prepare('SELECT * FROM autonomy_incident_claims WHERE tenant=? AND incident_id=?').get(tenant,incidentId);
@@ -143,6 +196,7 @@ function createAutonomyControlLoop({
           verifyIndependent(report, action, tier === 'T4' ? report.rollbackDigest : report.verificationDigest, accepted[0].at);
         }
       }
+      if (witnessed && prior.receipt_json !== witnessed.receipt_json) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Retained receipt differs from independently retained acceptance.');
       return receipt;
       });
     };
@@ -288,6 +342,10 @@ function createAutonomyControlLoop({
       authorityTransaction(() => {
       const saved = authorityDb.prepare('UPDATE autonomy_incident_claims SET receipt_json=? WHERE tenant=? AND incident_id=? AND claim_token=? AND receipt_json IS NULL').run(JSON.stringify(receipt),tenant,incidentId,claimToken);
       if (Number(saved.changes) !== 1) deny('WFM_AUTONOMY_RECEIPT_COMMIT', 'Incident receipt could not be committed.');
+      });
+      witnessTransaction(w => {
+        const saved=w.prepare('UPDATE consumed_actions SET receipt_json=? WHERE tenant=? AND incident_id=? AND claim_token=? AND receipt_json IS NULL').run(JSON.stringify(receipt),tenant,incidentId,claimToken);
+        if (Number(saved.changes)!==1) deny('WFM_AUTONOMY_RECEIPT_COMMIT', 'Independent acceptance could not be committed.');
       });
     }
     return receipt;

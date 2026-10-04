@@ -1,0 +1,5 @@
+# Independent consumed-action witness
+
+Local correction only. The application authority database is restorable; its sibling `.consumed-authority.sqlite` witness is not part of that restore. `authorityWitnessPath` can select a separately managed durable path. Persist this ledger independently, exclude it from application backup rollback, and restrict write access. It retains one-shot claims before execution and full terminal acceptance after the application receipt commit. A crash between commits leaves the witness unresolved and forbids further execution. Missing or replaced witness identity fails closed. Legacy claims without witnessed acceptance require reconciliation.
+
+This closes the supplied single-database restore and receipt-rewrite scenarios. It does not establish security against an actor who can rewrite both stores, a whole-volume rollback that restores both, deletion of both stores, or a compromised executor process. Hosted independent retention, restore admission and downstream idempotency remain open. No canonical runtime change or customer-ready claim follows from these local tests.
