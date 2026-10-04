@@ -1196,6 +1196,16 @@ function createOneDayEnterpriseEngine(options = {}) {
       notificationRecovery: notificationRecoveryForRun(run)
     };
     readiness.workPlan = workController.reconcile({ runId: run.id, tenant: run.tenant, readiness });
+    const externalAuthority = readiness.workPlan.awaitingExternalAuthority || [];
+    readiness.orchestration = {
+      autonomousWorkRemaining: readiness.workPlan.autonomousWorkRemaining === true,
+      awaitingExternalAuthority: externalAuthority,
+      customerActionRequired: externalAuthority.length > 0,
+      implementationComplete: operationalReady,
+      nextMode: operationalReady
+        ? 'NORMAL_OPERATION'
+        : (readiness.workPlan.autonomousWorkRemaining === true ? 'AUTONOMOUS_EXECUTION' : (externalAuthority.length ? 'AWAITING_CUSTOMER_AUTHORITY' : 'AWAITING_EVIDENCE'))
+    };
     return readiness;
   }
 
