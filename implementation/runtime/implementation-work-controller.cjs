@@ -5,7 +5,20 @@ const { DatabaseSync } = require('node:sqlite');
 
 const TERMINAL = new Set(['SATISFIED', 'FAILED_CLOSED', 'EXHAUSTED']);
 const ACTIVE = new Set(['PENDING', 'RUNNING', 'AWAITING_EVIDENCE', 'RETRY_WAIT', 'WAITING_DEPENDENCY', 'BLOCKED_RESUMABLE']);
-const DEPENDENCY_INDEPENDENT_BLOCKERS = new Set(['CUSTOMER_POLICY_AUTHORITY_REQUIRED']);
+const DEPENDENCY_INDEPENDENT_BLOCKERS = new Set([
+  'CUSTOMER_POLICY_AUTHORITY_REQUIRED',
+  'SOURCE_AUTHORIZATION_OR_VALIDATION_REQUIRED',
+  'CUSTOMER_COMPETENCY_EVIDENCE_REQUIRED'
+]);
+
+const EXTERNAL_AUTHORITY_BLOCKERS = new Set([
+  'CUSTOMER_SCOPE_REQUIRED',
+  'IDENTITY_AUTHORITY_OR_CONFIGURATION_REQUIRED',
+  'SOURCE_AUTHORIZATION_OR_VALIDATION_REQUIRED',
+  'CUSTOMER_POLICY_AUTHORITY_REQUIRED',
+  'PAYROLL_MAPPING_OR_AUTHORITY_REQUIRED',
+  'CUSTOMER_COMPETENCY_EVIDENCE_REQUIRED'
+]);
 
 function stable(value) {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -282,6 +295,15 @@ function createImplementationWorkController(options = {}) {
         requirementKey: job.requirementKey,
         reason: job.blockedReason
       })),
+      awaitingExternalAuthority: jobs.filter(job =>
+        job.status === 'BLOCKED_RESUMABLE' && EXTERNAL_AUTHORITY_BLOCKERS.has(job.blockedReason)
+      ).map(job => ({
+        requirementKey: job.requirementKey,
+        reason: job.blockedReason
+      })),
+      autonomousWorkRemaining: jobs.some(job =>
+        ['PENDING','RUNNING','AWAITING_EVIDENCE','RETRY_WAIT','WAITING_DEPENDENCY'].includes(job.status)
+      ),
       failedClosed: jobs.filter(job => job.status === 'FAILED_CLOSED').map(job => job.requirementKey)
     };
   }
