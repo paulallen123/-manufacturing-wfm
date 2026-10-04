@@ -379,7 +379,7 @@ async function acceptDecision(key,button){
 function apply(){
   if(currentPage()!=='onboarding'||isEmployeeRole()){stop();return;}
   const nav=document.querySelector('.sidebar .navbtn[data-page="onboarding"] span:not(.count):not(.review-count)');
-  if(nav)nav.textContent='Implementation';
+  if(nav&&nav.textContent!=='Implementation')nav.textContent='Implementation';
   const content=document.querySelector('.content');if(!content)return;
   if(content.dataset.wfmImplementationJourney!==VERSION){S.status=null;S.error='';renderView();load(true);}
   else if(!S.loading&&!S.timer)schedule();
