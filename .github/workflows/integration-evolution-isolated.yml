@@ -97,5 +97,11 @@ jobs:
       - name: Run signed webhook connector tests
         run: node --test integration-fabric/runtime/connector-signed-webhook.test.mjs
 
+      - name: Run bounded JSON extractor tests
+        run: node --test integration-fabric/runtime/safe-json-records.test.mjs
+
+      - name: Run GraphQL connector tests
+        run: node --test integration-fabric/runtime/connector-graphql-recipe.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
