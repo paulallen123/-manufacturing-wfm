@@ -5,6 +5,7 @@ const METHODS=new Set(['GET','HEAD','POST']);
 const ADAPTERS=new Set(['http-json','odata']);
 const CREDENTIAL=/(authorization|password|secret|token|api[_-]?key|client[_-]?secret|cookie)/i;
 const BAD_HEADER=/^(authorization|proxy-authorization|cookie|host|content-length|connection|transfer-encoding|upgrade|x-forwarded-|forwarded$)/i;
+const FIXED_ONLY_QUERY=new Set(['$filter','$select','$expand','$orderby','$search','q','query','sql']);
 
 function fail(message,code='WFM_CONNECTOR_RECIPE_INVALID'){const e=new Error(message);e.code=code;throw e;}
 function text(value,name,max=256){
@@ -116,6 +117,7 @@ function queryItems(items=[]){
       if(!['string','number','boolean'].includes(typeof o.fixed)) fail('fixed query value must be scalar');
       return {name,fixed:String(o.fixed)};
     }
+    if(FIXED_ONLY_QUERY.has(name.toLowerCase())) fail('semantic query expression must be fixed in reviewed recipe: '+name);
     return {name,param:param(o.param,'query['+i+'].param')};
   });
 }
