@@ -187,3 +187,58 @@ test('POST transport cannot be reclassified as a read by a caller',async()=>{
     error=>error.code==='WFM_PROVIDER_READ_VIA_POST_NOT_PROVEN'
   );
 });
+
+
+test('bounded XML and text responses stay opaque until a deterministic parser admits them',async()=>{
+  const {contract:c,plan}=readPlan();
+  for(const [format,payload,contentType] of [
+    ['xml','<?xml version="1.0"?><root><item>42</item></root>','text/xml'],
+    ['text','plain-provider-text','text/plain']
+  ]){
+    const p=structuredClone(plan);
+    p.request.responseFormat=format;
+    const result=await executeProviderRead({
+      plan:p,
+      contract:c,
+      credentialAuthorizer:async()=>({authorization:'Bearer test'}),
+      fetchImpl:async()=>new Response(payload,{status:200,headers:{'content-type':contentType}}),
+      clock:twoTickClock()
+    });
+    assert.equal(result.data,payload);
+    assert.equal(result.receipt.responseFormat,format);
+    assert.equal(result.receipt.contentType,contentType);
+    assert.equal(result.receipt.readOnly,true);
+    assert.equal(result.receipt.checkpointAdvanceAllowed,false);
+  }
+});
+
+test('unsupported response format fails before provider data is admitted',async()=>{
+  const {contract:c,plan}=readPlan();
+  const p=structuredClone(plan);
+  p.request.responseFormat='binary';
+  await assert.rejects(
+    ()=>executeProviderRead({
+      plan:p,
+      contract:c,
+      credentialAuthorizer:async()=>({authorization:'Bearer test'}),
+      fetchImpl:async()=>new Response('abc',{status:200})
+    }),
+    error=>error.code==='WFM_PROVIDER_REQUEST_INVALID'
+  );
+});
+
+test('invalid UTF-8 text fails closed instead of replacement-decoding',async()=>{
+  const {contract:c,plan}=readPlan();
+  const p=structuredClone(plan);
+  p.request.responseFormat='xml';
+  const bad=new Uint8Array([0x3c,0x78,0x3e,0xc3,0x28,0x3c,0x2f,0x78,0x3e]);
+  await assert.rejects(
+    ()=>executeProviderRead({
+      plan:p,
+      contract:c,
+      credentialAuthorizer:async()=>({authorization:'Bearer test'}),
+      fetchImpl:async()=>new Response(bad,{status:200,headers:{'content-type':'text/xml'}})
+    }),
+    error=>error.code==='WFM_PROVIDER_RESPONSE_INVALID'
+  );
+});
