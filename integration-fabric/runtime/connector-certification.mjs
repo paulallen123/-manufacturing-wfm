@@ -43,6 +43,21 @@ function assertContract(contract,target){
   if(contract.schemaVersion!==1||!contract.provider||!contract.binding||!contract.bindingHash)fail('valid connector contract is required');
   if(!contract.resources?.some(r=>r.target===target))fail('connector does not expose target '+target,'WFM_CONNECTOR_CERTIFICATION_TARGET_UNAVAILABLE');
 }
+function contractShapeFingerprint(contract,target){
+  const transports=(contract.transports||[]).map(t=>({
+    profileId:t.profileId,adapter:t.adapter,transport:t.transport,
+    supports:[...(t.supports||[])].sort()
+  })).sort((a,b)=>canonical(a).localeCompare(canonical(b)));
+  const resource=contract.resources.find(r=>r.target===target);
+  return digest({
+    schemaVersion:1,providerId:contract.provider.id,target,
+    transports,
+    readOnlyDefault:contract.security?.readOnlyDefault===true,
+    arbitraryEndpointAllowed:contract.security?.arbitraryEndpointAllowed===true,
+    crossHostRedirectAllowed:contract.security?.crossHostRedirectAllowed===true,
+    initialAllowedVerbs:[...(resource?.allowedVerbs||[])].sort()
+  });
+}
 function exactInstant(value,name){
   const v=text(value,name,40),ms=Date.parse(v);
   if(!Number.isFinite(ms))fail(name+' must be an ISO timestamp');
@@ -60,7 +75,7 @@ export function createConnectorBuildManifest({
     providerId:contract.provider.id,
     target:canonicalTarget,
     sourceSha:gitSha(sourceSha,'sourceSha'),
-    contractBindingHash:text(contract.bindingHash,'contract.bindingHash',128),
+    contractShapeFingerprint:contractShapeFingerprint(contract,canonicalTarget),
     implementationKind:text(implementationKind,'implementationKind',80),
     implementationFingerprint:fingerprint(implementationFingerprint,'implementationFingerprint'),
     mappingFingerprint:fingerprint(mappingFingerprint,'mappingFingerprint'),
@@ -141,8 +156,9 @@ export async function assessConnectorCertification({
 }={}){
   plain(manifest,'manifest');
   assertContract(contract,manifest.target);
-  if(manifest.providerId!==contract.provider.id||manifest.contractBindingHash!==contract.bindingHash){
-    fail('manifest does not match connector contract','WFM_CONNECTOR_CERTIFICATION_MANIFEST_MISMATCH');
+  if(manifest.providerId!==contract.provider.id||
+     manifest.contractShapeFingerprint!==contractShapeFingerprint(contract,manifest.target)){
+    fail('manifest does not match connector contract shape','WFM_CONNECTOR_CERTIFICATION_MANIFEST_MISMATCH');
   }
   const rebuilt=createConnectorBuildManifest({
     contract,target:manifest.target,sourceSha:manifest.sourceSha,
