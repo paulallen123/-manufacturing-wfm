@@ -159,11 +159,19 @@ export async function executeProviderRead({
   }finally{
     clearTimeout(timer);
   }
+  const responseFormat=required(plan.request.responseFormat??'json','request.responseFormat').toLowerCase();
+  if(!['json','text','xml'].includes(responseFormat)) throw new ProviderReadError('provider response format is not allowlisted',{code:'WFM_PROVIDER_REQUEST_INVALID',status:500});
   let data=null;
   if(method!=='HEAD'&&body.length){
-    try{data=canonical(JSON.parse(body.toString('utf8')));}catch(error){
-      if(error instanceof ProviderReadError) throw error;
-      throw new ProviderReadError('provider response is not valid JSON',{code:'WFM_PROVIDER_RESPONSE_INVALID',status:502});
+    if(responseFormat==='json'){
+      try{data=canonical(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(body)));}catch(error){
+        if(error instanceof ProviderReadError) throw error;
+        throw new ProviderReadError('provider response is not valid UTF-8 JSON',{code:'WFM_PROVIDER_RESPONSE_INVALID',status:502});
+      }
+    }else{
+      try{data=new TextDecoder('utf-8',{fatal:true}).decode(body);}catch{
+        throw new ProviderReadError('provider response is not valid UTF-8 text',{code:'WFM_PROVIDER_RESPONSE_INVALID',status:502});
+      }
     }
   }
   const completed=Number(clock());
@@ -179,6 +187,8 @@ export async function executeProviderRead({
       configurationFingerprint:plan.connection.configurationFingerprint,
       requestFingerprint:requestFingerprint(plan),
       responseSha256:sha256(body),
+      responseFormat,
+      contentType:String(response?.headers?.get?.('content-type')||'').slice(0,180)||null,
       httpStatus:status,
       observedAt:new Date(completed).toISOString(),
       latencyMs:completed-started,
