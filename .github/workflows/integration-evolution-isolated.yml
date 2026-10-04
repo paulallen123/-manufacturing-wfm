@@ -94,5 +94,8 @@ jobs:
       - name: Run database read connector tests
         run: node --test integration-fabric/runtime/connector-database-read.test.mjs
 
+      - name: Run signed webhook connector tests
+        run: node --test integration-fabric/runtime/connector-signed-webhook.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
