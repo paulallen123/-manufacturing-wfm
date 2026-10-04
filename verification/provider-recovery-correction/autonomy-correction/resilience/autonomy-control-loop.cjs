@@ -131,10 +131,22 @@ function createAutonomyControlLoop({
       if (!prior.receipt_json) deny('WFM_AUTONOMY_RECONCILIATION_REQUIRED', 'Incident action already claimed; reconcile its outcome before any further execution.');
       const receipt = JSON.parse(prior.receipt_json);
       if (!verifyReceipt(receipt)) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Retained incident receipt failed integrity validation.');
+      if (receipt.tenant !== tenant || receipt.incidentId !== incidentId || receipt.scenarioId !== scenarioId || receipt.evidenceDigest !== evidenceDigest || receipt.tier !== tier) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Retained receipt scope differs from incident authority.');
+      // Hashes detect corruption, not authenticity. Revalidate signed successful outcomes.
+      if (receipt.outcome !== 'contained') {
+        const report = tier === 'T1' ? receipt.recovery : tier === 'T2' ? receipt.repair : receipt.rollback;
+        const action = tier === 'T1' ? scenario.autonomous_action : tier === 'T2' ? 'repair.process' : 'known-good.rollback';
+        if (!report || (tier !== 'T4' && report.status !== receipt.outcome) || (tier === 'T4' && receipt.outcome !== 'rolled_back_to_known_good') || ['productionMutation','customerMutation','productionAuthorityGranted'].some(k => report[k] === true || receipt[k] === true)) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Retained receipt contradicts its bounded result.');
+        if (tier !== 'T2' || receipt.outcome === 'verified_candidate_staged') {
+          const accepted = receipt.trace.filter(e => e.type === 'independent-verification-accepted');
+          if (accepted.length !== 1 || !Number.isSafeInteger(accepted[0].at) || accepted[0].at < receipt.startedAt || accepted[0].at > receipt.endedAt) deny('WFM_AUTONOMY_RECEIPT_INTEGRITY', 'Retained verification time is invalid.');
+          verifyIndependent(report, action, tier === 'T4' ? report.rollbackDigest : report.verificationDigest, accepted[0].at);
+        }
+      }
       return receipt;
       });
     };
-    const verifyIndependent = (report, action, verificationDigest) => {
+    const verifyIndependent = (report, action, verificationDigest, retainedAt) => {
       const proof = report?.verificationReceipt;
       const payload = proof?.payload;
       const reject = () => deny('WFM_AUTONOMY_INDEPENDENT_VERIFICATION', 'Matching independently signed verification is required.');
@@ -142,10 +154,10 @@ function createAutonomyControlLoop({
       const expectedKeys = ['schemaVersion','tenant','incidentId','scenarioId','evidenceDigest','requestDigest','action','resultDigest','verificationDigest','issuedAt','expiresAt'].sort();
       if (JSON.stringify(Object.keys(payload).sort()) !== JSON.stringify(expectedKeys)) reject();
       const {verificationReceipt, ...observedReport} = report;
-      const current = Number(now());
+      const current = retainedAt === undefined ? Number(now()) : retainedAt;
       if (payload.schemaVersion !== 1 || payload.tenant !== tenant || payload.incidentId !== incidentId || payload.scenarioId !== scenarioId || payload.evidenceDigest !== evidenceDigest || payload.requestDigest !== digest(input) || payload.action !== action || payload.resultDigest !== digest(observedReport) || payload.verificationDigest !== verificationDigest || !Number.isSafeInteger(payload.issuedAt) || !Number.isSafeInteger(payload.expiresAt) || payload.issuedAt > current || payload.expiresAt <= current || payload.expiresAt <= payload.issuedAt || payload.expiresAt - payload.issuedAt > 300000) reject();
       if (!require('node:crypto').verify(null, Buffer.from('VECTOR_AUTONOMY_VERIFICATION_V1\n' + canonical(payload)), trustedVerifier, Buffer.from(proof.signature,'base64url'))) reject();
-      append('independent-verification-accepted', {verifierFingerprint, verificationDigest, resultDigest:payload.resultDigest});
+      if (retainedAt === undefined) append('independent-verification-accepted', {verifierFingerprint, verificationDigest, resultDigest:payload.resultDigest});
     };
     const retainReport = report => {
       const value = report || {};
