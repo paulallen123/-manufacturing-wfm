@@ -76,5 +76,8 @@ jobs:
       - name: Run provider recovery-resume tests
         run: node --test integration-fabric/runtime/provider-recovery-resume.test.mjs
 
+      - name: Run connector recipe-compiler tests
+        run: node --test integration-fabric/runtime/connector-read-recipe.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
