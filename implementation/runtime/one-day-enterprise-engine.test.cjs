@@ -1675,4 +1675,47 @@ test('current admission: configuration digest mismatch and caller-issued configu
 test('current admission: receipts accepted before first configuration cannot acquire its authority retroactively',async()=>{const f=fixture();try{for(const{key}of REQUIREMENTS)if(key!=='configuration-scope')assert.equal((await submit(f,key)).status,200,key);const before=f.audit();assert.ok(before.evidence.every(x=>!JSON.parse(x.detail_json)._configurationValidation));const changed={...scope(),countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};const captured=await call(f,'scope',changed,'manager');assert.equal(captured.body.operationalReady,false);assert.equal(captured.body.requirements.filter(x=>x.status==='REVALIDATION_REQUIRED').length,20);assert.deepEqual(f.audit().evidence,before.evidence);}finally{f.close();}});
 test('current admission: trusted contract scope changes share the revision boundary and cannot resurrect prior scope receipts',async()=>{const f=fixture();try{const d=new DatabaseSync(f.dbPath);d.prepare('UPDATE implementation_runs SET contract_ref_hash=? WHERE id=?').run(hash('review-existing-contract'),'run-review');d.close();await admitReady(f);const before=f.audit();const activate=s=>call(f,'contract-activated',{tenant:'review-alpha',contractRef:'review-existing-contract',recipientEmail:'synthetic@example.invalid',scope:s});const changed={...scope(),countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};await activate(changed);assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);await activate(scope());assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);assert.deepEqual(f.audit().evidence,before.evidence);assert.equal(f.audit().environments[0].environment_id,before.environments[0].environment_id);}finally{f.close();}});
 
+
+test('current admission: orchestration enters normal operation only after all readiness gates are satisfied',async()=>{
+  const f=fixture();try{
+    const initial=await call(f,'scope',scope(),'manager');
+    assert.equal(initial.status,201);
+    let status=await call(f,'status',undefined,'manager');
+    assert.equal(status.body.orchestration.implementationComplete,false);
+    assert.notEqual(status.body.orchestration.nextMode,'NORMAL_OPERATION');
+    for(const{key}of REQUIREMENTS){
+      if(key==='configuration-scope')continue;
+      const d=detail(key);
+      d.configurationDigest=initial.body.tenantEnvironment.configurationDigest;
+      const accepted=await submit(f,key,d);
+      assert.equal(accepted.status,200,key);
+    }
+    status=await call(f,'status',undefined,'manager');
+    assert.equal(status.body.operationalReady,true);
+    assert.equal(status.body.orchestration.implementationComplete,true);
+    assert.equal(status.body.orchestration.nextMode,'NORMAL_OPERATION');
+    assert.equal(status.body.orchestration.customerActionRequired,false);
+    assert.equal(status.body.orchestration.autonomousWorkRemaining,false);
+  }finally{f.close();}
+});
+
+test('current admission: orchestration surfaces customer authority instead of pretending implementation is complete',async()=>{
+  const f=fixture();try{
+    const initial=await call(f,'scope',scope(),'manager');
+    assert.equal(initial.status,201);
+    for(const{key}of REQUIREMENTS){
+      if(['configuration-scope','absence-policies'].includes(key))continue;
+      const d=detail(key);
+      d.configurationDigest=initial.body.tenantEnvironment.configurationDigest;
+      assert.equal((await submit(f,key,d)).status,200,key);
+    }
+    const status=await call(f,'status',undefined,'manager');
+    assert.equal(status.body.operationalReady,false);
+    assert.equal(status.body.orchestration.implementationComplete,false);
+    assert.equal(status.body.orchestration.customerActionRequired,true);
+    assert.equal(status.body.orchestration.nextMode,'AWAITING_CUSTOMER_AUTHORITY');
+    assert.ok(status.body.orchestration.awaitingExternalAuthority.some(x=>x.requirementKey==='absence-policies'));
+  }finally{f.close();}
+});
+
 }
