@@ -73,5 +73,8 @@ jobs:
       - name: Run provider recovery-handoff tests
         run: node --test integration-fabric/runtime/provider-recovery-handoff.test.mjs
 
+      - name: Run provider recovery-resume tests
+        run: node --test integration-fabric/runtime/provider-recovery-resume.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
