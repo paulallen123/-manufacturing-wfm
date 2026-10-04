@@ -182,7 +182,8 @@ export function acquireFileBatch({
     tenant:contract.binding.tenantId,environment:connectionPlan.configuration.environment,
     serverInstance:connectionPlan.configuration.sourceInstanceId,dataset:r.dataset
   };
-  const sourceWatermark='sha256:'+fileHash;
+  const sourceArtifactSha256=fileHash;
+  const sourceWatermark='sha256:'+sha256(records);
   const reconciliation=assessBatchRun({
     provider:contract.provider.id,connector:'vector-file-'+r.target,runId:text(runId,'runId',128),
     scope,requiredScopeDimensions:['tenant','environment','serverInstance','dataset'],
@@ -201,6 +202,7 @@ export function acquireFileBatch({
     schemaFingerprints:[r.schemaFingerprint],mappingProfiles:[r.mappingProfile],mappingFingerprint:mapFp,
     receiptCount:1,diagnostics:[],reconciliation,checkpointCandidate,
     deletionAuthority:false,customerProofClaimAllowed:false,
+    sourceArtifactSha256,
     file:{fileName,sizeBytes:buffer.byteLength,fileSha256:fileHash,format:r.format}
   });
 }
