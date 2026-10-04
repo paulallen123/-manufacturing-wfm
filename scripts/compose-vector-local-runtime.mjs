@@ -30,6 +30,21 @@ function validateSealedRuntime(runtime) {
 }
 function composeStaffology(runtime) {
   validateSealedRuntime(runtime);
+  // Explicit recovery correction overlay. Preserve the original archive and bind every replacement byte.
+  const recoverySources = {"provider-job-store.cjs": "1b36e5f9bc599741ab2cc8ef245ac3f5c8ac33e68aea46612cb31252965282a0", "provider-adapter-contract.cjs": "e5631bc79138e2da426daa01d0ce1af7a394758abbc5232655cf7af6e2f5f196", "provider-recovery-authority.cjs": "5a53dc665b6f4e651705d8590c91188b4e325e625fa64cb8210a0b65dbf2cb63", "provider-investigation.cjs": "c69950a2253de9479dfdc3a325fc23cb800470fab3347271e98c4e8963b4e555"};
+  const recoveryAssembly = {};
+  for (const [file, sealedHash] of Object.entries(recoverySources)) {
+    const source = `verification/provider-recovery-correction/operations/runtime/${file}`;
+    const target = path.join(runtime, 'lib', file);
+    recordInput(source);
+    const replacement = fs.readFileSync(path.join(root, source));
+    const currentHash = sha256(fs.readFileSync(target));
+    if (currentHash !== sealedHash && currentHash !== sha256(replacement)) throw Error('RECOVERY_OVERLAY_SOURCE_DRIFT: ' + file);
+    fs.writeFileSync(target, replacement);
+    recoveryAssembly[file] = {sealedSha256:sealedHash,replacementSha256:sha256(replacement),source};
+  }
+
+  fs.writeFileSync(path.join(runtime,'PROVIDER_RECOVERY_ASSEMBLY.json'),JSON.stringify({schemaVersion:1,files:recoveryAssembly,claimBoundary:'Explicit source overlay; scoped build metadata, not hosted recovery proof.'},null,2)+'\n');
   const integrationDir = path.join(runtime, 'integrations', 'staffology');
   fs.mkdirSync(integrationDir, {recursive: true});
   for (const file of ['staffology-adapter.cjs', 'canonical-runtime-bridge.cjs', 'canonical-production-boundaries.cjs', 'canonical-operations.cjs']) {
