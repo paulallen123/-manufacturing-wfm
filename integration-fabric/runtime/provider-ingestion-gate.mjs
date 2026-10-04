@@ -84,6 +84,8 @@ export function buildCanonicalStagingCommand(acquisition,contract){
     target:acquisition.target,
     runId:acquisition.runId,
     sourceWatermark:acquisition.sourceWatermark,
+    mappingFingerprint:acquisition.mappingFingerprint,
+    schemaFingerprints:acquisition.schemaFingerprints,
     records:acquisition.records
   });
   return freeze({
@@ -101,6 +103,8 @@ export function buildCanonicalStagingCommand(acquisition,contract){
     batchDigest,
     idempotencyKey:`vector-ingest-v1:${batchDigest}`,
     sourceWatermark:acquisition.sourceWatermark,
+    mappingFingerprint:required(acquisition.mappingFingerprint,'acquisition.mappingFingerprint'),
+    schemaFingerprints:structuredClone(acquisition.schemaFingerprints||[]),
     scopeNamespace:acquisition.reconciliation.scopeNamespace,
     rowCount:acquisition.records.length,
     records:structuredClone(acquisition.records),
@@ -167,6 +171,8 @@ export async function stageCanonicalBatch({
     batchDigest:command.batchDigest,
     rowCount:command.rowCount,
     route:command.route,
+    mappingFingerprint:command.mappingFingerprint,
+    schemaFingerprints:structuredClone(command.schemaFingerprints),
     checkpointToCommit:structuredClone(command.checkpointCandidate),
     deletionAuthority:false,
     customerProofClaimAllowed:false
