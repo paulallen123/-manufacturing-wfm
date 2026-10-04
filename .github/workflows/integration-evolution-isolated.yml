@@ -106,5 +106,8 @@ jobs:
       - name: Run external provider proof-harness tests
         run: node --test integration-fabric/runtime/external-provider-proof.test.mjs
 
+      - name: Run connector certification-truth tests
+        run: node --test integration-fabric/runtime/connector-certification.test.mjs
+
       - name: Run full Integration Fabric regression suite
         run: node --test integration-fabric/runtime/*.test.mjs
