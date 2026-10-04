@@ -89,7 +89,7 @@ function exactRoute(contract,{routeId,endpointHost,region,dataLocation}){
   });
   return authorizeRegionalRoute({policy,routeId,endpointUrl:`https://${host}/`});
 }
-function basePlan(contract,{target,route,credentialRef:ref,connectionPlan,connectionEvidence,nowMs,request,pagination,mappingProfile}){
+export function buildBoundProviderReadPlan(contract,{target,route,credentialRef:ref,connectionPlan,connectionEvidence,nowMs,request,pagination,mappingProfile}){
   authorizeRead(contract,target);
   const connection=verifiedConnection(contract,{connectionPlan,connectionEvidence,credentialRef:ref,expectedHost:route.endpointHost,nowMs});
   const routeAuthority=exactRoute(contract,route);
@@ -115,7 +115,7 @@ export function buildStaffologyWorkerPageRead({contract,connectionPlan,connectio
   const employer=exactId(employerId,'employerId'),page=integer(pageNum,'pageNum',0,1_000_000),size=integer(pageSize,'pageSize',1,500);
   const host='api.staffology.co.uk',url=new URL(`https://${host}/employers/${encodeURIComponent(employer)}/employees`);
   url.searchParams.set('pageNum',String(page));url.searchParams.set('pageSize',String(size));
-  return basePlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'staffology-uk',endpointHost:host,region:'uk',dataLocation:'uk'},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'basic-api-key',username:'vector'}},pagination:{style:'page-number',pageNum:page,pageSize:size,terminal:'short-page'},mappingProfile:'staffology-worker-v1'});
+  return buildBoundProviderReadPlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'staffology-uk',endpointHost:host,region:'uk',dataLocation:'uk'},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'basic-api-key',username:'vector'}},pagination:{style:'page-number',pageNum:page,pageSize:size,terminal:'short-page'},mappingProfile:'staffology-worker-v1'});
 }
 
 export function buildStaffologyWorkerDetailRead({contract,connectionPlan,connectionEvidence,credentialRef:ref,employerId,employeeId,nowMs}={}){
@@ -124,7 +124,7 @@ export function buildStaffologyWorkerDetailRead({contract,connectionPlan,connect
   const employee=exactId(employeeId,'employeeId');
   const host='api.staffology.co.uk';
   const url=new URL(`https://${host}/employers/${encodeURIComponent(employer)}/employees/${encodeURIComponent(employee)}`);
-  return basePlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'staffology-uk',endpointHost:host,region:'uk',dataLocation:'uk'},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'basic-api-key',username:'vector'},immutableQueryId:'staffology-worker-detail-v1'},pagination:null,mappingProfile:'staffology-worker-detail-v1'});
+  return buildBoundProviderReadPlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'staffology-uk',endpointHost:host,region:'uk',dataLocation:'uk'},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'basic-api-key',username:'vector'},immutableQueryId:'staffology-worker-detail-v1'},pagination:null,mappingProfile:'staffology-worker-detail-v1'});
 }
 
 function netsuiteHost(value){
@@ -139,14 +139,14 @@ export function buildNetSuiteWorkerSuiteQLRead({contract,connectionPlan,connecti
   const url=new URL(`https://${host}/services/rest/query/v1/suiteql`);
   url.searchParams.set('limit',String(pageSize));url.searchParams.set('offset',String(pageOffset));
   const query='SELECT id, entityid, firstname, lastname, email, isinactive FROM employee ORDER BY id';
-  return basePlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'netsuite-account',endpointHost:host,region,dataLocation},request:{method:'POST',url:url.toString(),headers:{accept:'application/json','content-type':'application/json',prefer:'transient'},body:JSON.stringify({q:query}),auth:{mode:'oauth2-bearer'},readViaPostProven:true,immutableQueryId:'netsuite-worker-core-v1'},pagination:{style:'limit-offset',limit:pageSize,offset:pageOffset,maxResults:100_000,uniqueOrder:'id'},mappingProfile:'netsuite-worker-v1'});
+  return buildBoundProviderReadPlan(contract,{target:'worker',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'netsuite-account',endpointHost:host,region,dataLocation},request:{method:'POST',url:url.toString(),headers:{accept:'application/json','content-type':'application/json',prefer:'transient'},body:JSON.stringify({q:query}),auth:{mode:'oauth2-bearer'},readViaPostProven:true,immutableQueryId:'netsuite-worker-core-v1'},pagination:{style:'limit-offset',limit:pageSize,offset:pageOffset,maxResults:100_000,uniqueOrder:'id'},mappingProfile:'netsuite-worker-v1'});
 }
 export function buildSapS4ProductionOrderRead({contract,connectionPlan,connectionEvidence,credentialRef:ref,top=500,skip=0,region='provider',dataLocation='provider',nowMs}={}){
   assertProvider(contract,'sap-s4hana');
   const host=exactHost(connectionPlan?.configuration?.endpointHost),pageSize=integer(top,'top',1,1000),pageOffset=integer(skip,'skip',0,10_000_000);
   const url=new URL(`https://${host}/sap/opu/odata/sap/API_PRODUCTION_ORDER_2_SRV/A_ProductionOrder_2`);
   url.searchParams.set('$top',String(pageSize));url.searchParams.set('$skip',String(pageOffset));url.searchParams.set('$orderby','ManufacturingOrder');
-  return basePlan(contract,{target:'production-demand',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'sap-s4-primary',endpointHost:host,region,dataLocation},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'managed-provider-auth'},immutableQueryId:'sap-s4-production-order-v2'},pagination:{style:'odata-v2-skip',top:pageSize,skip:pageOffset,uniqueOrder:'ManufacturingOrder'},mappingProfile:'sap-s4-production-demand-v1'});
+  return buildBoundProviderReadPlan(contract,{target:'production-demand',connectionPlan,connectionEvidence,credentialRef:ref,nowMs,route:{routeId:'sap-s4-primary',endpointHost:host,region,dataLocation},request:{method:'GET',url:url.toString(),headers:{accept:'application/json'},body:null,auth:{mode:'managed-provider-auth'},immutableQueryId:'sap-s4-production-order-v2'},pagination:{style:'odata-v2-skip',top:pageSize,skip:pageOffset,uniqueOrder:'ManufacturingOrder'},mappingProfile:'sap-s4-production-demand-v1'});
 }
 export function assertProviderReadPlan(plan,contract){
   if(!plan||plan.schemaVersion!==1||plan.operationClass!=='read'||plan.writeAuthority!==false) throw new TypeError('valid read-only provider plan is required');
