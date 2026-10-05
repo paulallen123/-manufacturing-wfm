@@ -34,8 +34,8 @@
   async function refresh() {
     if (OFFLINE) throw Error('Connect to the authenticated Vector service to review or change payroll records.');
     clearOwner();
-    const canReview=reviewer(),canPayroll=permitted('payroll.view'),epoch=++RF.epoch,owner=state.owner;
-    if(!canReview&&!canPayroll){RF.period='';RF.report=null;RF.company=null;RF.team='';return true;}
+    const currentActor=actor(),canReview=reviewer(),canPayroll=permitted('payroll.view'),epoch=++RF.epoch,owner=state.owner;
+    if(currentActor?.role==='employee'||(!canReview&&!canPayroll)){RF.period='';RF.report=null;RF.company=null;RF.team='';return true;}
     const calendar=await request('/api/current-review-period');
     if(epoch!==RF.epoch||owner!==state.owner||owner!==ownerKey()||!F.ready)return false;
     const authoritativePeriod=calendar?.period?.id||null;

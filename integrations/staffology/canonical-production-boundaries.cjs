@@ -89,26 +89,37 @@ function createBoundaries({db,now=Date.now,resolvePrincipal}={}){
   if(manifest.lines.length!==Number(manifest.expectedLineCount)||manifest.lines.length<1)
     fail('Staffology batch manifest line count is inconsistent.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
   let acknowledgedLineCount=0,acknowledgedGrossPence=0,heldLineCount=0;
-  const results=[];
+  const results=[],seenLineDigests=new Set();
   for(const line of manifest.lines){
+    if(!line||typeof line.lineDigest!=='string'||!/^[a-f0-9]{64}$/.test(line.lineDigest)||seenLineDigests.has(line.lineDigest))
+      fail('Staffology batch manifest contains an invalid or duplicate released-line digest.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+    seenLineDigests.add(line.lineDigest);
     if(line.status!=='mapped'){
       heldLineCount++;results.push({lineDigest:line.lineDigest,status:'held',reason:line.reason||'UNSUPPORTED'});continue;
     }
     const row=db.prepare('SELECT * FROM outbound_staffology_deliveries WHERE delivery_id=?').get(line.deliveryId);
+    const payload=row?.payload_json?JSON.parse(row.payload_json):null;
     const receipt=row?.receipt_json?JSON.parse(row.receipt_json):null;
     const dispatch=row?.dispatch_json?JSON.parse(row.dispatch_json):null;
     const transport=db.prepare("SELECT evidence_json FROM outbound_staffology_private_evidence WHERE delivery_id=? AND phase='transport' ORDER BY id DESC LIMIT 1").get(line.deliveryId);
     const transportEvidence=transport?JSON.parse(transport.evidence_json):null;
-    const ok=Boolean(row&&row.binding_digest===current&&row.digest===line.digest&&row.status==='acknowledged'&&dispatch&&receipt&&
+    const dispatchExact=Boolean(dispatch&&dispatch.deliveryId===line.deliveryId&&dispatch.digest===line.digest&&dispatch.bindingDigest===current&&
+      dispatch.request?.bodySha256===transportEvidence?.requestSha256);
+    const lineExact=Boolean(payload?.source?.sourceLineDigest===line.lineDigest&&line.sourceLineDigest===line.lineDigest);
+    const receiptExact=Boolean(receipt&&receipt.verification==='basic-pay-verified'&&receipt.fullPayrollVerified===false&&
+      receipt.comparison?.matchesApprovedTransition===true&&canonical(receipt)===row?.receipt_json);
+    const ok=Boolean(row&&row.binding_digest===current&&row.digest===line.digest&&row.status==='acknowledged'&&dispatchExact&&lineExact&&receiptExact&&
       transportEvidence&&Number.isInteger(transportEvidence.httpStatus)&&/^[a-f0-9]{64}$/.test(transportEvidence.requestSha256||'')&&/^[a-f0-9]{64}$/.test(transportEvidence.responseSha256||''));
-    if(ok){acknowledgedLineCount++;acknowledgedGrossPence+=Number(line.grossPence);results.push({lineDigest:line.lineDigest,status:'acknowledged',deliveryId:line.deliveryId});}
+    if(ok){acknowledgedLineCount++;acknowledgedGrossPence+=Number(line.grossPence);results.push({lineDigest:line.lineDigest,status:'acknowledged',deliveryId:line.deliveryId,receiptDigest:digest(receipt)});}
     else results.push({lineDigest:line.lineDigest,status:'unacknowledged',deliveryId:line.deliveryId});
   }
+  const allIdentitiesAccountedFor=seenLineDigests.size===Number(manifest.expectedLineCount)&&results.length===Number(manifest.expectedLineCount)&&
+    results.every(result=>result.status==='acknowledged'||result.status==='held');
   const fullPayrollVerified=heldLineCount===0&&acknowledgedLineCount===Number(manifest.expectedLineCount)&&
-    acknowledgedGrossPence===Number(manifest.expectedGrossPence)&&manifest.batchChecksum===text(manifest.batchChecksum,'Batch checksum',64);
+    acknowledgedGrossPence===Number(manifest.expectedGrossPence)&&allIdentitiesAccountedFor&&/^[a-f0-9]{64}$/.test(text(manifest.batchChecksum,'Batch checksum',64));
   const receipt={schemaVersion:1,batchId:manifest.batchId,batchChecksum:manifest.batchChecksum,bindingDigest:current,
     manifestDigest:manifest.manifestDigest,expectedLineCount:Number(manifest.expectedLineCount),acknowledgedLineCount,heldLineCount,
-    expectedGrossPence:Number(manifest.expectedGrossPence),acknowledgedGrossPence,allIdentitiesAccountedFor:results.length===Number(manifest.expectedLineCount),
+    expectedGrossPence:Number(manifest.expectedGrossPence),acknowledgedGrossPence,allIdentitiesAccountedFor,
     fullPayrollVerified,lines:results};
   if(!fullPayrollVerified)return receipt;
   const encoded=canonical(receipt),receiptDigest=digest(receipt),at=Number(now());

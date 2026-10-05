@@ -1090,7 +1090,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     const bindingMatches = resolvedBinding.tenant === run.tenant &&
       resolvedBinding.implementationRunId === run.id &&
       resolvedBinding.candidateSha === candidateSha &&
-      Boolean(deploymentId)&&(!profile.deploymentId || profile.deploymentId === deploymentId);
+      Boolean(deploymentId) && String(profile.deploymentId || '') === deploymentId;
     const bindingDigest = bindingMatches ? digestJson(resolvedBinding) : null;
     const cohort = Array.isArray(profile.employeeIds) ? profile.employeeIds : [];
     const state=tenantStateFor(run.tenant),people=Array.isArray(state?.onboarding?.people)?state.onboarding.people:[],staff=Array.isArray(state?.staff)?state.staff:[];

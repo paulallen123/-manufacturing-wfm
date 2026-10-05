@@ -334,7 +334,9 @@ function mapPayroll(input) {
   const entryId=requiredId(input.entryId,'Provider entry identity');
   const payCodeDefinitionSha256=input.payCodeDefinitionSha256==null?null:exactText(input.payCodeDefinitionSha256,'Pay-code definition digest',64);
   if(payCodeDefinitionSha256!==null&&!/^[a-f0-9]{64}$/.test(payCodeDefinitionSha256))throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','A current pay-code semantic digest is required.');
-  const source={system:'VECTOR',tenant:requiredId(input.tenant,'Tenant identity'),batchId:requiredId(input.batchId,'Batch identity'),revision:exactText(input.sourceRevision,'Source revision',100)};
+  const sourceLineDigest=input.sourceLineDigest==null?null:exactText(input.sourceLineDigest,'Released source line digest',64);
+  if(sourceLineDigest!==null&&!/^[a-f0-9]{64}$/.test(sourceLineDigest))throw failure('STAFFOLOGY_PAYROLL_LINE_INVALID','Exact released source-line digest is invalid.',400);
+  const source={system:'VECTOR',tenant:requiredId(input.tenant,'Tenant identity'),batchId:requiredId(input.batchId,'Batch identity'),revision:exactText(input.sourceRevision,'Source revision',100),...(sourceLineDigest?{sourceLineDigest}:{})};
   const importBody=[{payrollCode,basis:'Hourly',payCode:code,payAmount:Number(rate.text),payAmountMultiplier:Number(hours.text),lines:[]}];
   if(!decimalEqual(importBody[0].payAmount,rate.text)||!decimalEqual(importBody[0].payAmountMultiplier,hours.text))throw failure('STAFFOLOGY_PAYROLL_LINE_INVALID','Wire conversion changed a decimal value.');
   return immutable({employerId,employeeId,entryId,payrollCode,effectiveDate,run,source,mode:input.mode,rounding,expectedBasicPay,payCodeDefinitionSha256,basic:{code,hours:hours.text,rate:rate.text},importBody});
@@ -383,7 +385,12 @@ function validateProviderResponse(observation,expected) {
   validateRun(observation.run,expected);validateEntryIdentity(observation.entry,expected);
   const safety=replacementSafety(observation.entry,observation.employee);
   if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Current employee/payroll state is unsafe for replacement.');
-  if(expected.payCodeDefinitionSha256&&sha256(observation.payCode)!==expected.payCodeDefinitionSha256)throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Readback pay-code semantics differ from the approved definition.');
+  if(expected.payCodeDefinitionSha256){
+    const payCodes=Array.isArray(observation.payCodes)?observation.payCodes:Array.isArray(observation.payCodes?.items)?observation.payCodes.items:[],
+      matching=payCodes.filter(row=>row?.code===expected.basic.code);
+    if(matching.length!==1||sha256(matching[0])!==expected.payCodeDefinitionSha256)
+      throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Readback pay-code semantics differ from the approved definition.');
+  }
   const e=observation.entry,p=e.payOptions;
   if(!p||p.basis!=='Hourly'||!decimalEqual(p.payAmount,expected.basic.rate)||!decimalEqual(p.payAmountMultiplier,expected.basic.hours))throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider rate, hours or basis do not match.');
   if(p.payCode!==expected.basic.code)throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider basic pay code does not match.');
@@ -457,23 +464,44 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     if(payload.payCodeDefinitionSha256){
       const employeePath=`/employers/${encodeURIComponent(payload.employerId)}/employees/${encodeURIComponent(payload.employeeId)}`;
       const employeeResult=await request(client,config,employeePath);
-      if(employeeResult.body?.id!==payload.employeeId||employeeResult.body?.employmentDetails?.payrollCode!==payload.payrollCode)
+      const payCodesPath=runPath(payload)+`/paycodes?ordinal=${payload.run.ordinal}&version=${payload.run.version}`;
+      const payCodesResult=await request(client,config,payCodesPath);
+      return {employerId:payload.employerId,run:r.body,entry:e.body,employee:employeeResult.body,payCodes:payCodesResult.body,
+        provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,employeePath,payCodesPath,
+          openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256,
+          employeeResponseSha256:employeeResult.responseSha256,payCodesResponseSha256:payCodesResult.responseSha256}};
+    }
+    return {employerId:payload.employerId,run:r.body,entry:e.body,employee:null,payCodes:null,
+      provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,
+        openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256}};
+  }
+  function validateObservationSafety(observation,payload) {
+    if(observation?.employerId!==payload.employerId)throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Provider observation employer differs from the authorised target.',502);
+    validateRun(observation.run,payload);validateEntryIdentity(observation.entry,payload);
+    if(payload.payCodeDefinitionSha256){
+      if(observation.employee?.id!==payload.employeeId||observation.employee?.employmentDetails?.payrollCode!==payload.payrollCode)
         throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Current employee state differs from the authorised payroll identity.',502);
-      const safety=replacementSafety(e.body,employeeResult.body);
+      const safety=replacementSafety(observation.entry,observation.employee);
       if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Current provider state is unsafe for basic-pay replacement: '+safety.reason+'.');
-      const payCodesResult=await request(client,config,runPath(payload)+`/paycodes?ordinal=${payload.run.ordinal}&version=${payload.run.version}`);
-      const payCodes=Array.isArray(payCodesResult.body)?payCodesResult.body:Array.isArray(payCodesResult.body?.items)?payCodesResult.body.items:null;
+      const payCodes=Array.isArray(observation.payCodes)?observation.payCodes:Array.isArray(observation.payCodes?.items)?observation.payCodes.items:null;
       if(!payCodes)throw failure('STAFFOLOGY_RESPONSE_INVALID','Current pay-code definition response is invalid.',502);
       const matching=payCodes.filter(row=>row?.code===payload.basic.code);
       if(matching.length!==1||sha256(matching[0])!==payload.payCodeDefinitionSha256)
         throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Current pay-code semantics differ from the approved definition.',409);
-      return {employerId:payload.employerId,run:r.body,entry:e.body,employee:employeeResult.body,payCode:matching[0],provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,employeePath,payCodesPath:runPath(payload)+'/paycodes',openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256,employeeResponseSha256:employeeResult.responseSha256,payCodesResponseSha256:payCodesResult.responseSha256}};
+      return immutable({safe:true,payCode:matching[0]});
     }
-    const safety=replacementSafety(e.body,null);if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Provider entry is unsafe for basic-pay replacement: '+safety.reason+'.');
-    return {employerId:payload.employerId,run:r.body,entry:e.body,employee:null,payCode:null,provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256}};
+    const safety=replacementSafety(observation.entry,null);
+    if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Provider entry is unsafe for basic-pay replacement: '+safety.reason+'.');
+    return immutable({safe:true,payCode:null});
+  }
+  function evidenceSnapshot(value) {
+    const snapshot=immutable(value);return immutable({snapshot,sha256:sha256(snapshot)});
   }
   async function retainEvidence(deliveryId,token,phase,observation) {
-    const evidence=immutable({phase,observedAt:new Date().toISOString(),run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});
+    const evidence=immutable({phase,observedAt:new Date().toISOString(),run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),
+      ...(observation.employee?{employee:evidenceSnapshot(observation.employee)}:{}),
+      ...(observation.payCodes?{payCodes:evidenceSnapshot(observation.payCodes)}:{}),
+      provenance:observation.provenance});
     if(await store.recordEvidence(deliveryId,evidence,token)!==true)throw failure('STAFFOLOGY_EVIDENCE_NOT_PERSISTED','Complete private evidence was not persisted.');
     return evidence;
   }
@@ -481,16 +509,23 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     const b=row?.baseline;
     if(!b||b.phase!=='baseline'||!b.run?.snapshot||!b.entry?.snapshot||sha256(b.run.snapshot)!==b.run.sha256||sha256(b.entry.snapshot)!==b.entry.sha256)
       throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Original complete baseline is unavailable or inconsistent.');
-    validateRun(b.run.snapshot,row.payload);validateEntryIdentity(b.entry.snapshot,row.payload);
-    validateReplacementBaseline(b.entry.snapshot,row.payload);
+    if(b.employee&&sha256(b.employee.snapshot)!==b.employee.sha256)throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Persisted employee evidence digest is inconsistent.');
+    if(b.payCodes&&sha256(b.payCodes.snapshot)!==b.payCodes.sha256)throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Persisted pay-code evidence digest is inconsistent.');
+    validateObservationSafety({employerId:row.payload.employerId,run:b.run.snapshot,entry:b.entry.snapshot,
+      employee:b.employee?.snapshot||null,payCodes:b.payCodes?.snapshot||null},row.payload);
     return immutable(b);
   }
   async function startDispatch(row,token) {
     const {deliveryId,digest,payload}=row;let dispatchStarted=false,transportAccepted=false;
     try {
-      const baseline=await observe(payload),before=await store.get(deliveryId),evidence=before?.baseline?persistedBaseline(before):await retainEvidence(deliveryId,token,'baseline',baseline);
-      validateReplacementBaseline(baseline.entry,payload);
-      if(before?.baseline&&(evidence.run.sha256!==sha256(baseline.run)||evidence.entry.sha256!==sha256(baseline.entry)))throw failure('STAFFOLOGY_BASELINE_CHANGED','Fresh pre-dispatch provider state differs from the immutable original baseline.');
+      const baseline=await observe(payload),before=await store.get(deliveryId),
+        freshEvidence=await retainEvidence(deliveryId,token,before?.baseline?'pre-dispatch-recheck':'baseline',baseline),
+        evidence=before?.baseline?persistedBaseline(before):freshEvidence;
+      validateObservationSafety(baseline,payload);
+      if(before?.baseline&&(evidence.run.sha256!==sha256(baseline.run)||evidence.entry.sha256!==sha256(baseline.entry)||
+        (evidence.employee?.sha256||null)!==(baseline.employee?sha256(baseline.employee):null)||
+        (evidence.payCodes?.sha256||null)!==(baseline.payCodes?sha256(baseline.payCodes):null)))
+        throw failure('STAFFOLOGY_BASELINE_CHANGED','Fresh pre-dispatch provider state differs from the immutable original baseline.');
       const stored=await store.get(deliveryId);
       if(!stored||stored.digest!==digest||stored.bindingDigest!==bindingDigest||sha256(persistedBaseline(stored))!==sha256(evidence))
         throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Stored baseline does not match the exact pre-write observation.');
@@ -566,7 +601,7 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
       const observation=await observe(row.payload);
       await retainEvidence(deliveryId,token,'readback',observation);
       let verified,verificationError;
-      try{verified=validateProviderResponse(observation,row.payload);}catch(error){verificationError=error;}
+      try{validateObservationSafety(observation,row.payload);verified=validateProviderResponse(observation,row.payload);}catch(error){verificationError=error;}
       const comparison=financialTransition(baseline,observation,Boolean(verified));
       if(await store.recordEvidence(deliveryId,immutable({phase:'comparison',comparison}),token)!==true)
         throw failure('STAFFOLOGY_EVIDENCE_NOT_PERSISTED','Complete private financial comparison was not persisted.');
@@ -606,7 +641,7 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     const transport=[...(stored.evidence||[])].reverse().find(item=>item.phase==='transport')?.value;
     if(!transport||!Number.isInteger(transport.httpStatus)||!/^[a-f0-9]{64}$/.test(transport.requestSha256||'')||!/^[a-f0-9]{64}$/.test(transport.responseSha256||''))
       throw failure('STAFFOLOGY_TRANSPORT_EVIDENCE_NOT_PERSISTED','Acknowledged delivery lacks durable transport evidence.',503);
-    const observation=await observe(payload),verified=validateProviderResponse(observation,payload);
+    const observation=await observe(payload);validateObservationSafety(observation,payload);const verified=validateProviderResponse(observation,payload);
     const observedBasicPay=Number(calculatedBasicPay(observation.entry,payload)).toFixed(2);
     const receiptMatches=stored.receipt.verification===verified.verification&&stored.receipt.providerReference===verified.providerReference&&
       canonical(stored.receipt.run)===canonical(verified.run)&&stored.receipt.fullPayrollVerified===false;

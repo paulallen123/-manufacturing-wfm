@@ -47,7 +47,7 @@ function payrollLineIdentity(line){
  return Object.freeze({...identity,digest:sha256(identity)});
 }
 
-function releasedBatchManifest(state,{periodId,batchId,expectedChecksum,mappings=[]}){
+function releasedBatchManifest(state,{periodId,batchId,batchChecksum,expectedChecksum=batchChecksum,mappings=[]}){
  const {period,batch}=releasedBatch(state,{periodId,batchId,expectedChecksum});
  if(!Array.isArray(mappings))fail('Released payroll batch mappings are invalid.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
  const declared=new Map();
@@ -90,7 +90,8 @@ function preparePayrollInput(state,approval){
  const effectiveDate=exact(approval.effectiveDate,'Effective date');
  if(effectiveDate<period.start||effectiveDate>period.end||line.date!==effectiveDate)fail('Approved effective date does not identify the released payroll line.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED');
  const payCodeDefinitionSha256=exact(approval.payCodeDefinitionSha256,'Pay-code definition digest');if(!/^[a-f0-9]{64}$/.test(payCodeDefinitionSha256))fail('A current Staffology pay-code semantic digest is required.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED',403);
- const input={employerId:id(approval.employerId,'Staffology employer'),employeeId:id(approval.staffologyEmployeeId,'Staffology employee'),entryId:id(approval.entryId,'Staffology entry'),payrollCode:exact(approval.payrollCode,'Payroll code'),effectiveDate,tenant:id(approval.tenant,'Tenant'),batchId:batch.id,sourceRevision:`sha256:${batch.checksum}`,mode:'hourly-basic-replacement',rounding:approval.rounding,taxYear:approval.taxYear,payPeriod:approval.payPeriod,periodNumber:approval.periodNumber,ordinal:approval.ordinal,version:approval.version,payCodeDefinitionSha256,lines:[{code:exact(approval.basicPayCode,'Approved basic pay code'),hours:exact(line.hours,'Released hours'),rate:exact(line.rate,'Released rate')}]};
+ const releasedLineIdentity=payrollLineIdentity(line);
+ const input={employerId:id(approval.employerId,'Staffology employer'),employeeId:id(approval.staffologyEmployeeId,'Staffology employee'),entryId:id(approval.entryId,'Staffology entry'),payrollCode:exact(approval.payrollCode,'Payroll code'),effectiveDate,tenant:id(approval.tenant,'Tenant'),batchId:batch.id,sourceRevision:`sha256:${batch.checksum}`,sourceLineDigest:releasedLineIdentity.digest,mode:'hourly-basic-replacement',rounding:approval.rounding,taxYear:approval.taxYear,payPeriod:approval.payPeriod,periodNumber:approval.periodNumber,ordinal:approval.ordinal,version:approval.version,payCodeDefinitionSha256,lines:[{code:exact(approval.basicPayCode,'Approved basic pay code'),hours:exact(line.hours,'Released hours'),rate:exact(line.rate,'Released rate')}]};
  // Run the adapter's authoritative mapper now so unsupported decimals, rounding
  // or run coordinates fail before any durable intent can be created.
  const mapped=Staffology.mapPayroll(input);
