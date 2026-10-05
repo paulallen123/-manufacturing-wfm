@@ -218,30 +218,19 @@ function createDurableReplayGuard({ db, witnessPath, now = Date.now } = {}) {
                 WHERE scope=? AND tenant_digest=? AND incident_id=?`).get(key.scope,key.tenantDigest,key.incidentId);
             }
           }
+          if (local.receipt_json !== witnessed.receipt_json || local.receipt_digest !== witnessed.receipt_digest) {
+            deny('WFM_REPLAY_GUARD_INTEGRITY', 'Application replay receipt differs from independent witness.');
+          }
           const receipt = validateStored(local, key);
           event(key, 'replay-returned', { receiptDigest: witnessed.receipt_digest });
           return { status: 'replay', receipt };
         }
 
         if (local) {
-          const localReceipt = validateStored(local, key);
+          validateStored(local, key);
           if (local.claim_token !== witnessed.claim_token) deny('WFM_REPLAY_GUARD_INTEGRITY', 'Replay claim token differs from witness.');
-          if (localReceipt) {
-            const receiptJson = JSON.stringify(localReceipt);
-            const receiptDigest = digest(receiptJson);
-            witnessTx((witness) => {
-              const saved = witness.prepare(`UPDATE consumed_poststaging_actions
-                SET receipt_json=?,receipt_digest=?
-                WHERE scope=? AND tenant_digest=? AND incident_id=? AND claim_token=? AND receipt_json IS NULL`).run(
-                  receiptJson,receiptDigest,key.scope,key.tenantDigest,key.incidentId,witnessed.claim_token
-                );
-              if (Number(saved.changes) !== 1) deny('WFM_REPLAY_GUARD_INTEGRITY', 'Replay witness could not be reconciled.');
-            });
-            event(key, 'witness-reconciled', { receiptDigest });
-            return { status: 'replay', receipt: localReceipt };
-          }
         }
-        deny('WFM_REPLAY_GUARD_RECONCILIATION_REQUIRED', 'A post-staging action was claimed but has no committed terminal receipt.');
+        deny('WFM_REPLAY_GUARD_RECONCILIATION_REQUIRED', 'Independent witness retains a consumed action without a terminal receipt.');
       }
 
       const inserted = db.prepare(`INSERT OR IGNORE INTO poststaging_replay_claims(
@@ -272,6 +261,28 @@ function createDurableReplayGuard({ db, witnessPath, now = Date.now } = {}) {
     const receiptJson = JSON.stringify(input.receipt);
     const receiptDigest = digest(receiptJson);
 
+    // Commit the terminal result to the independent witness first. If the
+    // application-database commit then fails, replay can safely restore it from
+    // the independently retained outcome without re-executing the action.
+    witnessTx((witness) => {
+      const row = witness.prepare(`SELECT * FROM consumed_poststaging_actions
+        WHERE scope=? AND tenant_digest=? AND incident_id=?`).get(key.scope,key.tenantDigest,key.incidentId);
+      if (!row || row.claim_token !== token || row.input_digest !== key.inputDigest) {
+        deny('WFM_REPLAY_GUARD_INTEGRITY', 'Replay witness does not own the consumed claim.');
+      }
+      if (row.receipt_json) {
+        if (row.receipt_digest !== receiptDigest || row.receipt_json !== receiptJson) {
+          deny('WFM_REPLAY_GUARD_INTEGRITY', 'Replay witness retains a different terminal receipt.');
+        }
+      } else {
+        const saved = witness.prepare(`UPDATE consumed_poststaging_actions SET receipt_json=?,receipt_digest=?
+          WHERE scope=? AND tenant_digest=? AND incident_id=? AND claim_token=? AND receipt_json IS NULL`).run(
+            receiptJson,receiptDigest,key.scope,key.tenantDigest,key.incidentId,token
+          );
+        if (Number(saved.changes) !== 1) deny('WFM_REPLAY_GUARD_INTEGRITY', 'Terminal replay witness receipt could not be committed.');
+      }
+    });
+
     mainTx(() => {
       const row = db.prepare(`SELECT * FROM poststaging_replay_claims
         WHERE scope=? AND tenant_digest=? AND incident_id=?`).get(key.scope,key.tenantDigest,key.incidentId);
@@ -290,25 +301,6 @@ function createDurableReplayGuard({ db, witnessPath, now = Date.now } = {}) {
         );
       if (Number(saved.changes) !== 1) deny('WFM_REPLAY_GUARD_INTEGRITY', 'Terminal replay receipt could not be committed.');
       event(key, 'terminal-committed', { receiptDigest });
-    });
-
-    witnessTx((witness) => {
-      const row = witness.prepare(`SELECT * FROM consumed_poststaging_actions
-        WHERE scope=? AND tenant_digest=? AND incident_id=?`).get(key.scope,key.tenantDigest,key.incidentId);
-      if (!row || row.claim_token !== token || row.input_digest !== key.inputDigest) {
-        deny('WFM_REPLAY_GUARD_INTEGRITY', 'Replay witness does not own the consumed claim.');
-      }
-      if (row.receipt_json) {
-        if (row.receipt_digest !== receiptDigest || row.receipt_json !== receiptJson) {
-          deny('WFM_REPLAY_GUARD_INTEGRITY', 'Replay witness retains a different terminal receipt.');
-        }
-        return;
-      }
-      const saved = witness.prepare(`UPDATE consumed_poststaging_actions SET receipt_json=?,receipt_digest=?
-        WHERE scope=? AND tenant_digest=? AND incident_id=? AND claim_token=? AND receipt_json IS NULL`).run(
-          receiptJson,receiptDigest,key.scope,key.tenantDigest,key.incidentId,token
-        );
-      if (Number(saved.changes) !== 1) deny('WFM_REPLAY_GUARD_INTEGRITY', 'Terminal replay witness receipt could not be committed.');
     });
 
     return { receiptDigest };
