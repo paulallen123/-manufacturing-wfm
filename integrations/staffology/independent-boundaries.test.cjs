@@ -21,7 +21,7 @@ function harness(options={}) {
 }
 test('I01 independent 1250 cents expectation rejects returned 125000 cents',async()=>{
  const expectedCents=125*1000/100;assert.equal(expectedCents,1250);
- const h=harness({after:()=>entry(1250)});const r=await h.coordinator.deliver(input);
+ const h=harness({after:()=>{const e=entry(1250);e.payOptions.regularPayLines[0].value=1250;return e;}});const r=await h.coordinator.deliver(input);
  assert.equal(r.reconciliationRequired,true);assert.equal(r.reconciliation.code,'STAFFOLOGY_FINANCIAL_MISMATCH');assert.notEqual([...h.rows.values()][0].status,'acknowledged');
  assert.equal(h.evidence.find(x=>x.phase==='readback').entry.snapshot.totals.basicPay,1250);
 });

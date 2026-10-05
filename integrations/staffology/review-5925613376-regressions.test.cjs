@@ -8,7 +8,7 @@ const Bridge=require('./canonical-runtime-bridge.cjs');
 
 const csv='reviewed-released-payroll-bytes';
 const checksum=createHash('sha256').update(csv).digest('hex');
-const releasedLine={employee:'vector-employee-1',payrollId:'PAY001',date:'2026-09-15',code:'WORKED_BASIC',hours:'1.25',rate:'10.00',allowance:'0.00',grossPence:1250,gross:'12.50'};
+const releasedLine={employee:'vector-employee-1',payrollId:'PAY001',date:'2026-09-15',code:'WORKED_BASIC',minutes:75,hours:'1.25',rate:'10.00',allowance:'0.00',grossPence:1250,gross:'12.50'};
 const approval={approved:true,tenant:'northstar-demo',periodId:'period-001',batchId:'batch-001',batchChecksum:checksum,employeeId:'vector-employee-1',employerId:'employer-001',staffologyEmployeeId:'staffology-employee-1',entryId:'entry-001',payrollCode:'PAY001',effectiveDate:'2026-09-15',basicPayCode:'BASIC',payCodeDefinitionSha256:'f'.repeat(64),rounding:'exact-cent',taxYear:'Year2026',payPeriod:'Monthly',periodNumber:9,ordinal:1,version:0};
 function state(line=releasedLine){return {staff:[{id:'vector-employee-1',sourceId:'staffology-employee-1',payrollId:'PAY001',onboardingReady:true}],payrollControl:{periods:[{id:'period-001',start:'2026-09-01',end:'2026-09-30',batches:[{id:'batch-001',status:'released',checksum,csv,lines:[line]}]}]}};}
 function employee(externalId,payrollCode){return {externalId,revision:`revision-${externalId}`,operation:'upsert',data:{identity:{provider:'staffology',employeeId:externalId,payrollCode},person:{firstName:'Test',lastName:externalId,email:`${externalId}@example.invalid`},employment:{effectiveFrom:'2026-09-01'}}};}

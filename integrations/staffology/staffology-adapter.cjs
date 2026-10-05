@@ -208,8 +208,10 @@ function replacementSafety(entry,employee=null) {
   if(line.autoAdjustForLeave===true)return immutable({safe:false,reason:'basic-line-auto-adjust-for-leave'});
   if(line.isLeaveBasedBackPayLine===true)return immutable({safe:false,reason:'basic-line-leave-backpay'});
   try{
-    if(!decimalEqual(line.rate,p.payAmount)||!decimalEqual(line.multiplier,p.payAmountMultiplier)||
-      !entry.totals||!decimalEqual(line.value,entry.totals.basicPay))return immutable({safe:false,reason:'basic-line-inconsistent'});
+    if(!decimalEqual(line.rate,p.payAmount)||!decimalEqual(line.multiplier,p.payAmountMultiplier)||!entry.totals)
+      return immutable({safe:false,reason:'basic-line-inconsistent'});
+    const basicPay=entry.totals.basicPay===undefined&&decimalEqual(line.value,'0')?'0':entry.totals.basicPay;
+    if(!decimalEqual(line.value,basicPay))return immutable({safe:false,reason:'basic-line-inconsistent'});
   }catch{return immutable({safe:false,reason:'basic-line-incomplete'});}
   return immutable({safe:true,reason:null});
 }
