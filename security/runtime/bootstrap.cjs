@@ -23,6 +23,7 @@ const { createAutopilotExecutionEngine } = require('/app/operations-runtime/auto
 const { createRealtimeEventService } = require('/app/operations-runtime/realtime-event-service.cjs');
 const { createSchedulingIntelligenceService } = require('/app/operations-runtime/scheduling-intelligence-service.cjs');
 const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-customer-guardian.cjs');
+const { createOperationalPeriodRollover } = require('/app/operations-runtime/operational-period-rollover.cjs');
 const { createVectorReportingService } = require('/app/reporting-runtime/vector-reporting-service.cjs');
 
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
@@ -49,6 +50,8 @@ installHostedListenGuard(http, { hosted });
 const ownerAccessRecovery = createOwnerAccessRecovery();
 const runtimeIdentity = createRuntimeIdentity({ hosted });
 let guard = null;
+let operationalPeriodRollover = null;
+let operationalPeriodRolloverInitError = null;
 let proofRunnerAuth = null;
 let passkeyAuth = null;
 let integrationHub = null;
@@ -446,6 +449,11 @@ http.createServer = function guardedCreateServer(listener) {
     catch (error) { t9CustomerGuardianInitError = error; }
   }
 
+  if (!operationalPeriodRollover && !operationalPeriodRolloverInitError && process.env.WFM_DB) {
+    try { operationalPeriodRollover = createOperationalPeriodRollover({ dbPath: process.env.WFM_DB }); }
+    catch (error) { operationalPeriodRolloverInitError = error; }
+  }
+
   if (!reportingService && !reportingServiceInitError && process.env.WFM_DB) {
     try { reportingService = createVectorReportingService({ dbPath: process.env.WFM_DB }); }
     catch (error) { reportingServiceInitError = error; }
@@ -515,6 +523,10 @@ http.createServer = function guardedCreateServer(listener) {
     }
 
     if (passkeyAuth && await passkeyAuth.handleRequest(req, res)) return;
+
+    if (requestPath(req) === '/api/operations/period-rollover') {
+      if (await routeOverlay(operationalPeriodRollover, operationalPeriodRolloverInitError, res, 'Operational period rollover', req)) return;
+    }
 
     if (requestPath(req).startsWith('/api/operations/scheduling')) {
       if (await routeOverlay(schedulingIntelligenceService, schedulingIntelligenceServiceInitError, res, 'Scheduling intelligence', req)) return;
