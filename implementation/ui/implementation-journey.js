@@ -216,6 +216,8 @@ function liveMarkup(){
   const test=requirement('scenario-validation');
   const cleanup=requirement('test-data-cleanup');
   const liveImport=requirement('live-data-import');
+  const runtime=S.status?.runtimeIdentity||{},provider=S.status?.providerJourney||{},launch=S.status?.launchBoundary||{};
+  const launchReady=S.status?.operationalReady===true&&launch.ready===true&&runtime.fixtureOnly===false&&runtime.productionApproved===true&&S.status?.wholeJourneyProven===true&&(!provider.required||provider.proven===true);
   return '<div class="wfm-ij-shell">'+
     '<header class="wfm-ij-header"><div><span class="wfm-ij-kicker">IMPLEMENTATION IN PROGRESS</span><h1>Your implementation</h1><p>One place to see what is happening, what has been proven and what needs you.</p></div><span class="wfm-ij-status '+(state==='READY'?'ready':state==='AT_RISK'||state==='SLA_MISSED'?'blocked':'working')+'">'+safe(stateLabel(state))+'</span></header>'+
     scopeMarkup()+
@@ -232,7 +234,7 @@ function liveMarkup(){
     '</div>'+
     '<section class="wfm-ij-panel wfm-ij-import-advice"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">DATA READINESS</span><h2>What is needed before live import</h2><p>The system explains the remaining prerequisites rather than leaving the customer to work them out.</p></div><span class="wfm-ij-pill '+(liveImport?.satisfied?'active':'validating')+'">'+(liveImport?.satisfied?'Reconciled':'Preparing')+'</span></div>'+importAdvice()+'</section>'+
     trainingPanel(false)+
-    '<section class="wfm-ij-panel wfm-ij-golive"><div><span class="wfm-ij-kicker">GO LIVE</span><h2>'+(S.status?.operationalReady?'Everything required for launch is proven':'Go live remains protected')+'</h2><p>'+(S.status?.operationalReady?'All implementation controls and training gates are complete. Review the final readiness evidence before activation.':'The launch control stays locked until environment, integrations, scenario testing, cleanup, live import and role competence are all proven.')+'</p></div><button type="button" class="btn primary" data-ij-route="readiness" '+(S.status?.operationalReady?'':'disabled')+'>'+(S.status?.operationalReady?'Review go-live readiness':'Not ready yet')+'</button></section>'+
+    '<section class="wfm-ij-panel wfm-ij-golive"><div><span class="wfm-ij-kicker">GO LIVE</span><h2>'+(launchReady?'Everything required for launch is proven':'Go live remains protected')+'</h2><p>'+(launchReady?'All implementation, runtime, provider and Golden Journey gates are current and proven. Review the final readiness evidence before activation.':'Launch stays locked until current non-fixture runtime identity, production approval, workforce readiness, provider journey, Golden Journey, integrations, cleanup, live import and role competence are all proven.')+'</p></div><button type="button" class="btn primary" data-ij-route="readiness" '+(launchReady?'':'disabled')+'>'+(launchReady?'Review go-live readiness':'Not ready yet')+'</button></section>'+
     '<p class="wfm-ij-footnote">Testing '+safe(test?.status||'MISSING')+' · Cleanup '+safe(cleanup?.status||'MISSING')+' · Live import '+safe(liveImport?.status||'MISSING')+'. Progress comes from implementation evidence, not manually ticked boxes.</p>'+
   '</div>';
 }

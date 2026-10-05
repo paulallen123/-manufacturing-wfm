@@ -407,8 +407,22 @@ function createAdaptiveLearningEngine(options = {}) {
     const criticalMastered = critical.filter(row => row.status === 'MASTERED').length;
     const privileged = rows.filter(row => row.role !== 'employee' && COMPETENCIES[row.competency_key]?.critical);
     const privilegedMastered = privileged.filter(row => row.status === 'MASTERED').length;
+    const roles = {};
+    for (const user of users) {
+      const role = canonicalRole(user.role);
+      roles[role] ??= { users: 0, assignments: 0, mastered: 0, fullyCertified: false };
+      roles[role].users++;
+    }
+    for (const row of rows) {
+      const role = canonicalRole(row.role);
+      roles[role] ??= { users: 0, assignments: 0, mastered: 0, fullyCertified: false };
+      roles[role].assignments++;
+      if (row.status === 'MASTERED') roles[role].mastered++;
+    }
+    for (const value of Object.values(roles)) value.fullyCertified = value.users > 0 && value.assignments > 0 && value.assignments === value.mastered;
     return {
       users: users.length,
+      userEmailDigests: users.map(user => sha256(String(user.email || '').trim().toLowerCase()).slice(0, 24)).sort(),
       assignments: total,
       mastered,
       masteryPercent: total ? Math.round(mastered / total * 100) : 100,
@@ -417,8 +431,9 @@ function createAdaptiveLearningEngine(options = {}) {
       criticalMasteryPercent: critical.length ? Math.round(criticalMastered / critical.length * 100) : 100,
       privilegedAssignments: privileged.length,
       privilegedMastered,
-      privilegedReady: privileged.length === privilegedMastered,
-      fullyCertified: total === mastered
+      privilegedReady: privileged.length > 0 && privileged.length === privilegedMastered,
+      roles,
+      fullyCertified: total > 0 && total === mastered
     };
   }
 

@@ -134,3 +134,25 @@ test('strict wrapper admits structured zero-human cloud environment evidence and
     f.close();
   }
 });
+
+
+test('generic internal evidence cannot manufacture customer policy authority', async () => {
+  const f = fixture();
+  try {
+    const result = await submit(f.engine, {
+      runId: 'run-1', kind: 'time-policies', status: 'PASS', confidence: 1,
+      source: 'trusted-worker',
+      detail: {
+        evidenceClass: 'customer-authorised', sourceAuthoritative: true,
+        sourceRef: 'worker-supplied-policy', effectiveDated: true, effectiveDate: '2026-10-01',
+        unresolvedRules: 0, unknownPolicyFields: 0,
+        breakRulesVerified: true, overtimeRulesVerified: true,
+        workingTimeRulesVerified: true, timeZoneVerified: true
+      }
+    });
+    assert.equal(result.status, 409);
+    assert.match(result.body.error, /cannot originate from generic internal evidence/i);
+  } finally {
+    f.close();
+  }
+});

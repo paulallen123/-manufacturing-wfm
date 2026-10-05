@@ -267,6 +267,16 @@ function createOneDayEnterpriseEngine(options = {}) {
   const requireCandidateBinding = options.requireCandidateBinding === true || process.env.WFM_HOSTED_STAGING === 'true';
   const candidateSha = String(options.candidateSha ?? process.env.WFM_CANDIDATE_SHA ?? '').trim();
   const deploymentId = String(options.deploymentId ?? process.env.RAILWAY_DEPLOYMENT_ID ?? '').trim();
+  const runtimeIdentityProvider = typeof options.runtimeIdentityProvider === 'function'
+    ? options.runtimeIdentityProvider
+    : () => (options.runtimeIdentity && typeof options.runtimeIdentity === 'object' ? options.runtimeIdentity : null);
+  const readinessEvidenceMaxAgeMs = Math.max(60000, Number(options.readinessEvidenceMaxAgeMs ?? 4 * 60 * 60 * 1000));
+  function runtimeIdentitySnapshot() {
+    try {
+      const value = runtimeIdentityProvider();
+      return value && typeof value === 'object' ? value : null;
+    } catch { return null; }
+  }
 
   function evidenceBindingFor(detail, run) {
     if (!requireCandidateBinding) return null;
@@ -491,6 +501,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     'SELECT * FROM implementation_evidence WHERE run_id=? AND tenant=? AND kind=? ORDER BY id DESC LIMIT 1'
   );
   const scopeByRun = db.prepare('SELECT * FROM implementation_scope WHERE run_id=? AND tenant=?');
+  const tenantStateById = db.prepare('SELECT state FROM tenants WHERE id=?');
   const upsertScope = db.prepare(
     'INSERT INTO implementation_scope(run_id,tenant,scope_json,submitted_by_hash,created_at,updated_at) VALUES(?,?,?,?,?,?) ' +
     'ON CONFLICT(run_id) DO UPDATE SET scope_json=excluded.scope_json,submitted_by_hash=excluded.submitted_by_hash,updated_at=excluded.updated_at'
@@ -658,7 +669,8 @@ function createOneDayEnterpriseEngine(options = {}) {
     const detail = evidenceDetail || parseJsonSafe(row.detail_json, {});
     const error = validateStrictReadinessEvidence('tenant-environment', 'PASS', detail, {
       tenant: run.tenant, implementationRunId: run.id, candidateSha, deploymentId,
-      source: row.source, evidenceCreatedAt: row.created_at, requireCandidateIdentity: true, enforceFreshAdmission
+      source: row.source, evidenceCreatedAt: row.created_at, requireCandidateIdentity: true, enforceFreshAdmission,
+      runtimeIdentity: runtimeIdentitySnapshot(), nowMs: Date.now(), freshnessMaxAgeMs: readinessEvidenceMaxAgeMs
     });
     if (error) return error;
     if (!requireAttestation) return null;
@@ -717,11 +729,36 @@ function createOneDayEnterpriseEngine(options = {}) {
         scopeChangeEventId: detail._configurationValidation?.scopeChangeEventId ?? null } };
   }
 
+  function customerAuthorityReceiptError(run, kind, row, detail) {
+    if (!POLICY_REQUIREMENT_KINDS.has(kind)) return null;
+    const receipt = detail?._customerAuthorityReceipt;
+    if (!receipt || receipt.version !== 1 || receipt.tenant !== run.tenant || receipt.runId !== run.id ||
+        receipt.acceptedAt !== row.created_at || !/^[0-9a-f]{16}$/.test(String(receipt.actorDigest || '')) ||
+        !/^[0-9a-f]{16}$/.test(String(receipt.sourceRefDigest || ''))) {
+      return 'Policy evidence lacks a valid server-issued customer authority receipt.';
+    }
+    const pair = Object.entries(POLICY_DECISIONS).find(([, spec]) => spec.kind === kind);
+    if (!pair || receipt.key !== pair[0]) return 'Policy authority receipt does not identify this requirement.';
+    const decision = decisionByKey.get(run.id, run.tenant, receipt.key);
+    if (!decision || decision.id !== receipt.decisionId || !['ACCEPTED','CHANGED'].includes(decision.status)) {
+      return 'Policy authority receipt is not backed by the current authenticated customer decision.';
+    }
+    const answer = parseJsonSafe(decision.decision_json, {});
+    if (sha256(String(answer?.sourceRef || '')).slice(0, 16) !== receipt.sourceRefDigest) {
+      return 'Policy authority receipt source no longer matches the customer decision.';
+    }
+    return null;
+  }
+
   function storedEvidenceValidationError(run, kind, row, detail) {
     if (kind === 'tenant-environment') return tenantEnvironmentEvidenceError(run, row, true, detail);
-    if (POLICY_REQUIREMENT_KINDS.has(kind) || options.strictEvidence === true || process.env.WFM_HOSTED_STAGING === 'true')
-      return validateStrictReadinessEvidence(kind, 'PASS', detail);
-    return null;
+    const contractError = validateStrictReadinessEvidence(kind, 'PASS', detail, {
+      tenant: run.tenant, implementationRunId: run.id, candidateSha, deploymentId,
+      source: row.source, evidenceCreatedAt: row.created_at,
+      runtimeIdentity: runtimeIdentitySnapshot(), nowMs: Date.now(), freshnessMaxAgeMs: readinessEvidenceMaxAgeMs
+    });
+    if (contractError) return contractError;
+    return customerAuthorityReceiptError(run, kind, row, detail);
   }
 
   function bindAcceptedConfiguration(detail, run, acceptedAt) {
@@ -790,7 +827,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     return created;
   }
 
-  function customerPolicyEvidence(key, answer, run) {
+  function customerPolicyEvidence(key, answer, run, authorityReceipt) {
     const spec = POLICY_DECISIONS[key];
     if (!spec) return null;
     if (!answer || typeof answer !== 'object' || Array.isArray(answer)) {
@@ -820,6 +857,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       evidenceClass: 'customer-authorised',
       sourceAuthoritative: true,
       sourceRef,
+      _customerAuthorityReceipt: authorityReceipt,
       effectiveDated: true,
       effectiveDate,
       unresolvedRules: Number(answer.unresolvedRules),
@@ -845,7 +883,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       });
     }
 
-    const validationError = validateStrictReadinessEvidence(spec.kind, 'PASS', detail);
+    const validationError = validateStrictReadinessEvidence(spec.kind, 'PASS', detail, {
+      tenant: run.tenant, implementationRunId: run.id, candidateSha, deploymentId,
+      runtimeIdentity: runtimeIdentitySnapshot()
+    });
     if (validationError) {
       const error = new Error(validationError);
       error.statusCode = 409;
@@ -981,6 +1022,78 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  function workforceReadinessForTenant(tenant) {
+    const row = tenantStateById.get(tenant);
+    const state = parseJsonSafe(row?.state, {});
+    const people = Array.isArray(state?.onboarding?.people) ? state.onboarding.people : [];
+    const staff = Array.isArray(state?.staff) ? state.staff : [];
+    const activeImported = people.filter(person => person && person.status !== 'former' && person.operation !== 'delete');
+    const importedEmailDigests = activeImported.map(person => sha256(String(person.email || '').trim().toLowerCase()).slice(0, 24)).filter(Boolean).sort();
+    const identityVerified = activeImported.filter(person => person.identityVerified === true).length;
+    const invited = activeImported.filter(person => Boolean(person.inviteId)).length;
+    const readyForScheduling = activeImported.filter(person => {
+      const linked = staff.find(worker => worker.id === person.staffId);
+      return person.identityVerified === true && Boolean(person.staffId) &&
+        person.status === 'ready_for_scheduling' && linked?.onboardingReady === true;
+    }).length;
+    return {
+      importedPeople: activeImported.length,
+      importedEmailDigests,
+      identityVerified,
+      invitationsIssued: invited,
+      readyForScheduling,
+      invitationDeliveryProven: activeImported.length === 0 || invited === activeImported.length,
+      allReady: activeImported.length === 0 || readyForScheduling === activeImported.length
+    };
+  }
+
+  function staffologyJourneyForRun(run) {
+    let profile = null;
+    try { profile = JSON.parse(process.env.WFM_STAFFOLOGY_OPERATION_JSON || 'null'); } catch {}
+    if (!profile || typeof profile !== 'object') return { required: false, proven: true, configured: false };
+    const bindingMatches = profile.tenant === run.tenant &&
+      profile.implementationRunId === run.id &&
+      profile.candidateSha === candidateSha &&
+      (!profile.deploymentId || profile.deploymentId === deploymentId);
+    const cohort = Array.isArray(profile.employeeIds) ? profile.employeeIds : [];
+    const workforce = workforceReadinessForTenant(run.tenant);
+    let fullPayrollVerified = false;
+    try {
+      const exists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='outbound_staffology_deliveries'").get();
+      if (exists) {
+        const rows = db.prepare("SELECT payload_json,receipt_json,status FROM outbound_staffology_deliveries WHERE status='acknowledged' AND receipt_json IS NOT NULL ORDER BY updated_at DESC LIMIT 50").all();
+        fullPayrollVerified = rows.some(item => {
+          const payload = parseJsonSafe(item.payload_json, {});
+          const receipt = parseJsonSafe(item.receipt_json, {});
+          return payload?.source?.tenant === run.tenant &&
+            (!profile.payroll?.batchId || payload?.source?.batchId === profile.payroll.batchId) &&
+            receipt?.fullPayrollVerified === true;
+        });
+      }
+    } catch {}
+    const payrollConfigured = Boolean(profile.payroll);
+    const peopleApplied = workforce.importedPeople > 0;
+    return {
+      required: true,
+      proven: bindingMatches && peopleApplied && payrollConfigured && fullPayrollVerified,
+      configured: true,
+      bindingMatches,
+      employerId: profile.employerId || null,
+      cohortCount: cohort.length,
+      peopleApplied,
+      payrollConfigured,
+      fullPayrollVerified,
+      claimBoundary: 'Current server-held Staffology binding plus durable provider-delivery evidence; generic integration tables are insufficient.'
+    };
+  }
+
+  function requiredTrainingRoles(scope, requiredPopulation) {
+    const roles = new Set(['employee']);
+    if (requiredPopulation > 1) roles.add('manager');
+    if (String(scope?.payrollSystem || '').trim() || (scope?.sourceSystems || []).some(value => /payroll|staffology/i.test(String(value)))) roles.add('payroll_admin');
+    return [...roles];
+  }
+
   function readinessForRun(run) {
     const latest = latestEvidence.all(run.id, run.tenant);
     const map = new Map(latest.map(row => [row.kind, row]));
@@ -1003,6 +1116,24 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (learningSummaryProvider) {
       try { learningSummary = learningSummaryProvider(run.tenant); } catch {}
     }
+    const workforceReadiness = workforceReadinessForTenant(run.tenant);
+    const providerJourney = staffologyJourneyForRun(run);
+    const requiredTrainingPopulation = Math.max(
+      Number(sourceDataSummary?.employeeCount || 0),
+      Number(workforceReadiness.importedPeople || 0)
+    );
+    const trainingPopulationRequired = requiredTrainingPopulation > 0;
+    const requiredRoles = requiredTrainingRoles(customerScope, requiredTrainingPopulation);
+    const roleCoverage = learningSummary?.roles && typeof learningSummary.roles === 'object' ? learningSummary.roles : {};
+    const learningUserDigests = new Set(Array.isArray(learningSummary?.userEmailDigests) ? learningSummary.userEmailDigests : []);
+    const importedLearningUsersReconciled = Number(workforceReadiness.importedPeople || 0) === 0 ||
+      workforceReadiness.importedEmailDigests.every(value => learningUserDigests.has(value));
+    const trainingPopulationReady = !trainingPopulationRequired
+      ? Boolean(learningSummary)
+      : Boolean(learningSummary) &&
+        Number(learningSummary.users || 0) >= requiredTrainingPopulation &&
+        importedLearningUsersReconciled &&
+        requiredRoles.every(role => Number(roleCoverage[role]?.users || 0) > 0 && roleCoverage[role]?.fullyCertified === true);
 
     const requirements = REQUIREMENTS.map(requirement => {
       const row = map.get(requirement.key);
@@ -1095,7 +1226,7 @@ function createOneDayEnterpriseEngine(options = {}) {
           }
         };
       } else if (learningSummary && requirement.key === 'role-learning') {
-        const ok = learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
+        const ok = trainingPopulationReady && learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
         derived = {
           status: ok ? 'PASS' : 'MISSING',
           confidence: ok ? 1 : 0,
@@ -1103,7 +1234,7 @@ function createOneDayEnterpriseEngine(options = {}) {
           detail: learningSummary
         };
       } else if (learningSummary && requirement.key === 'privileged-competency') {
-        const ok = Boolean(learningSummary.privilegedReady);
+        const ok = trainingPopulationReady && Boolean(learningSummary.privilegedReady);
         derived = {
           status: ok ? 'PASS' : 'MISSING',
           confidence: ok ? 1 : 0,
@@ -1111,7 +1242,7 @@ function createOneDayEnterpriseEngine(options = {}) {
           detail: learningSummary
         };
       } else if (learningSummary && requirement.key === 'frontline-readiness') {
-        const ok = Boolean(learningSummary.fullyCertified);
+        const ok = trainingPopulationReady && Boolean(learningSummary.fullyCertified);
         derived = {
           status: ok ? 'PASS' : 'MISSING',
           confidence: ok ? 1 : 0,
@@ -1161,11 +1292,28 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
 
     const missing = requirements.filter(item => !item.satisfied);
+    const runtimeIdentity = runtimeIdentitySnapshot();
+    const notificationRecovery = notificationRecoveryForRun(run);
+    const scenarioRequirement = requirements.find(item => item.key === 'scenario-validation');
+    const wholeJourneyProven = scenarioRequirement?.satisfied === true && providerJourney.proven === true;
+    const launchBlockers = [];
+    const runtimeIdentityRequired = Boolean(runtimeIdentity);
+    const workforceReadinessRequired = Number(workforceReadiness.importedPeople || 0) > 0;
+    const implementationInvitationRequired = Boolean(invitationByContract.get(run.tenant, run.contract_ref_hash));
+    if (runtimeIdentityRequired && runtimeIdentity.fixtureOnly !== false) launchBlockers.push('RUNTIME_FIXTURE_ONLY');
+    if (runtimeIdentityRequired && runtimeIdentity.productionApproved !== true) launchBlockers.push('RUNTIME_PRODUCTION_APPROVAL_REQUIRED');
+    if (runtimeIdentityRequired && runtimeIdentity.pilotReady !== true) launchBlockers.push('RUNTIME_PILOT_READINESS_REQUIRED');
+    if (trainingPopulationRequired && !trainingPopulationReady) launchBlockers.push('TRAINING_POPULATION_OR_ROLE_COVERAGE_INCOMPLETE');
+    if (workforceReadinessRequired && !workforceReadiness.allReady) launchBlockers.push('IMPORTED_WORKFORCE_IDENTITY_OR_READINESS_INCOMPLETE');
+    if (workforceReadinessRequired && !workforceReadiness.invitationDeliveryProven) launchBlockers.push('WORKFORCE_INVITATION_DELIVERY_UNPROVEN');
+    if (implementationInvitationRequired && !['DELIVERED','STARTED'].includes(notificationRecovery.state)) launchBlockers.push('IMPLEMENTATION_INVITATION_DELIVERY_UNPROVEN');
+    if (providerJourney.required && !providerJourney.proven) launchBlockers.push('MANDATORY_PROVIDER_JOURNEY_UNPROVEN');
+    if (!wholeJourneyProven) launchBlockers.push('WHOLE_GOLDEN_JOURNEY_UNPROVEN');
     const elapsedMinutes = Math.max(0, (Date.now() - run.started_at_ms) / 60000);
     const remainingMinutes = Math.max(0, (run.deadline_at_ms - Date.now()) / 60000);
     const parallelWorkMinutes = missing.reduce((sum, item) => sum + item.budgetMinutes, 0);
     const remainingBudgetMinutes = criticalPathRemainingMinutes(requirements);
-    const operationalReady = missing.length === 0 && blockingDecisions.length === 0;
+    const operationalReady = missing.length === 0 && blockingDecisions.length === 0 && launchBlockers.length === 0;
     let state = operationalReady ? 'READY' : 'BUILDING';
     if (!operationalReady && Date.now() > run.deadline_at_ms) state = 'SLA_MISSED';
     else if (!operationalReady && remainingBudgetMinutes > remainingMinutes) state = 'AT_RISK';
@@ -1188,12 +1336,30 @@ function createOneDayEnterpriseEngine(options = {}) {
       requirements,
       decisions,
       blockingDecisions,
-      learningSummary,
+      learningSummary: learningSummary ? {
+        ...learningSummary,
+        requiredPopulation: requiredTrainingPopulation,
+        populationReconciliationRequired: trainingPopulationRequired,
+        requiredRoles,
+        importedLearningUsersReconciled,
+        populationAndRoleCoverageReady: trainingPopulationReady
+      } : null,
       sourceDataSummary,
+      workforceReadiness,
+      providerJourney,
+      runtimeIdentity,
+      wholeJourneyProven,
+      launchBoundary: {
+        ready: launchBlockers.length === 0,
+        blockers: launchBlockers,
+        fixtureOnly: runtimeIdentity?.fixtureOnly ?? null,
+        productionApproved: runtimeIdentity?.productionApproved ?? false,
+        pilotReady: runtimeIdentity?.pilotReady ?? false
+      },
       scopeCaptured: Boolean(customerScope),
       customerScope,
       tenantEnvironment,
-      notificationRecovery: notificationRecoveryForRun(run)
+      notificationRecovery
     };
     readiness.workPlan = workController.reconcile({ runId: run.id, tenant: run.tenant, readiness });
     const externalAuthority = readiness.workPlan.awaitingExternalAuthority || [];
@@ -1833,6 +1999,16 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
 
     const detail = body.detail && typeof body.detail === 'object' ? body.detail : {};
+    if (status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(kind)) {
+      return writeJson(res, 409, {
+        error: 'Policy PASS cannot originate from generic internal evidence. Use the authenticated customer-authority decision path or a separately verified signed authority path.',
+        readinessEvidenceAccepted: false, kind
+      });
+    }
+    if (status === 'PASS' && (Object.prototype.hasOwnProperty.call(detail, '_customerAuthorityReceipt') ||
+        Object.prototype.hasOwnProperty.call(detail, '_externalAuthorityReceipt'))) {
+      return writeJson(res, 409, { error: 'Authority receipts are server-issued or independently verified only.', readinessEvidenceAccepted: false, kind });
+    }
     const evidenceBinding = status === 'PASS' ? evidenceBindingFor(detail, run) : null;
     if (evidenceBinding?.reason) {
       return writeJson(res, 409, {
@@ -1848,12 +2024,16 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 409, { error: 'Evidence must be revalidated against the current configuration.', readinessEvidenceAccepted: false, kind, configurationBinding });
     }
     const evidenceRecordedAt = nowIso();
-    if (status === 'PASS' && (kind === 'tenant-environment' || POLICY_REQUIREMENT_KINDS.has(kind))) {
-      const policyValidationError = kind === 'tenant-environment'
+    if (status === 'PASS') {
+      const strictValidationError = kind === 'tenant-environment'
         ? tenantEnvironmentEvidenceError(run, { source, created_at: evidenceRecordedAt }, false, detail, true)
-        : validateStrictReadinessEvidence(kind, status, detail);
-      if (policyValidationError) {
-        return writeJson(res, 409, { error: policyValidationError, readinessEvidenceAccepted: false, kind });
+        : validateStrictReadinessEvidence(kind, status, detail, {
+            tenant: run.tenant, implementationRunId: run.id, candidateSha, deploymentId,
+            source, evidenceCreatedAt: evidenceRecordedAt, runtimeIdentity: runtimeIdentitySnapshot(),
+            nowMs: Date.now(), freshnessMaxAgeMs: readinessEvidenceMaxAgeMs
+          });
+      if (strictValidationError) {
+        return writeJson(res, 409, { error: strictValidationError, readinessEvidenceAccepted: false, kind });
       }
     }
     if (status === 'PASS' && kind === 'tenant-environment') {
@@ -2127,12 +2307,25 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
 
     const detail = action === 'CHANGED' ? body.value : body.detail;
+    const acceptedAt = nowIso();
     let policyEvidence = null;
     if (action !== 'REJECTED' && POLICY_DECISIONS[key]) {
-      policyEvidence = customerPolicyEvidence(key, detail, run);
+      const sourceRefDigest = sha256(String(detail?.sourceRef || '')).slice(0, 16);
+      const authorityReceipt = Object.freeze({
+        version: 1,
+        authorityPath: 'authenticated-customer-decision',
+        decisionId: decision.id,
+        key,
+        tenant: run.tenant,
+        runId: run.id,
+        acceptedAt,
+        actorDigest: sha256(ctx.email).slice(0, 16),
+        sourceRefDigest
+      });
+      policyEvidence = customerPolicyEvidence(key, detail, run, authorityReceipt);
     }
 
-    updateDecision.run(action, JSON.stringify(detail ?? null), nowIso(), decision.id, run.tenant);
+    updateDecision.run(action, JSON.stringify(detail ?? null), acceptedAt, decision.id, run.tenant);
     record(run.id, run.tenant, 'DECISION_RESOLVED', {
       key,
       action,
@@ -2140,7 +2333,6 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
 
     if (policyEvidence) {
-      const acceptedAt = nowIso();
       insertEvidence.run(
         run.id,
         run.tenant,

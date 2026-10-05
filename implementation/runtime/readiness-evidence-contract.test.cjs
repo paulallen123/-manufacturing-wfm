@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateStrictReadinessEvidence } = require('./readiness-evidence-contract.cjs');
+const { validateStrictReadinessEvidence, MANDATORY_GOLDEN_JOURNEY_STEPS } = require('./readiness-evidence-contract.cjs');
 
 test('tenant environment refuses weak, fixture or human-assisted evidence', () => {
   assert.match(validateStrictReadinessEvidence('tenant-environment', 'PASS', { checked: true }), /non-fixture/);
@@ -82,9 +82,17 @@ test('security, scenario and live import evidence are fail-closed without overst
     cloudRuntime: false,
     testDataClass: 'synthetic-edge-suite'
   }), /cloud runtime/);
+  assert.match(validateStrictReadinessEvidence('scenario-validation', 'PASS', {
+    cloudRuntime: true,
+    testDataClass: 'synthetic-edge-suite',
+    criticalFailures: 0,
+    steps: []
+  }), /Golden Journey step/);
   assert.equal(validateStrictReadinessEvidence('scenario-validation', 'PASS', {
     cloudRuntime: true,
-    testDataClass: 'synthetic-edge-suite'
+    testDataClass: 'synthetic-edge-suite',
+    criticalFailures: 0,
+    steps: MANDATORY_GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'proof:' + id }))
   }), null);
   assert.match(validateStrictReadinessEvidence('live-data-import', 'PASS', {
     fixtureOnly: false,
@@ -97,4 +105,44 @@ test('security, scenario and live import evidence are fail-closed without overst
 test('non-PASS evidence remains recordable for diagnostics', () => {
   assert.equal(validateStrictReadinessEvidence('source-systems', 'FAIL', { fixtureOnly: true }), null);
   assert.equal(validateStrictReadinessEvidence('tenant-environment', 'WARN', {}), null);
+});
+
+
+test('runtime identity defeats contradictory tenant-environment claims', () => {
+  const detail = {
+    fixtureOnly: false, zeroHuman: true, humanInterventions: 0,
+    provisioned: true, tenantExists: true, environmentId: 'railway-runtime/tenant-alpha',
+    provisioningMode: 'cloud-runtime', runtimeHealthPassed: true,
+    tenantIsolationVerified: true, durableStateVerified: true,
+    exactCandidateSha: 'a'.repeat(40), exactTargetDeploymentId: 'deployment-current',
+    tenant: 'alpha', implementationRunId: 'run-1', verifierRunId: 'verifier-1'
+  };
+  assert.match(validateStrictReadinessEvidence('tenant-environment', 'PASS', detail, {
+    runtimeIdentity: { candidateSha: 'a'.repeat(40), fixtureOnly: true, productionApproved: false }
+  }), /runtime fixture boundary/);
+});
+
+test('semantic readiness gates reject generic candidate-bound booleans', () => {
+  for (const kind of ['scheduling','approvals','clocking','payroll-mapping','resilience']) {
+    assert.ok(validateStrictReadinessEvidence(kind, 'PASS', { cloudRuntime: true }), kind);
+  }
+  assert.match(validateStrictReadinessEvidence('payroll-mapping', 'PASS', {
+    readinessClass: 'synthetic-scale', dataClass: 'synthetic-scale'
+  }), /customer-specific/);
+  assert.equal(validateStrictReadinessEvidence('payroll-mapping', 'PASS', {
+    readinessClass: 'customer-specific', dataClass: 'customer-authorised',
+    mappingAuthorityVerified: true, providerTargetVerified: true, employeeIdentityMappingVerified: true,
+    payCodesVerified: true, absenceMappingVerified: true, roundingPolicyVerified: true,
+    releasedBatchId: 'B-current', batchChecksum: 'a'.repeat(64), fullPayrollVerified: true
+  }), null);
+});
+
+test('operational freshness expires current-state evidence', () => {
+  const now = Date.now();
+  const result = validateStrictReadinessEvidence('resilience', 'PASS', {
+    hostedRuntime: true, faultInjected: true, detected: true, classified: true,
+    repairOrContainmentApplied: true, independentVerificationPassed: true,
+    durableAuditVerified: true, replaySafetyVerified: true, criticalFailures: 0
+  }, { evidenceCreatedAt: new Date(now - 10000).toISOString(), nowMs: now, freshnessMaxAgeMs: 1000 });
+  assert.match(result, /stale/);
 });

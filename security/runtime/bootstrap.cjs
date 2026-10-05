@@ -382,6 +382,7 @@ http.createServer = function guardedCreateServer(listener) {
     try {
       implementationEngine = createOneDayEnterpriseEngine({
         dbPath: process.env.WFM_DB,
+        runtimeIdentityProvider: () => runtimeIdentity.snapshot(),
         learningSummaryProvider: tenant => {
           if (!learningEngine || learningEngineInitError) {
             throw new Error('Adaptive learning evidence unavailable.');

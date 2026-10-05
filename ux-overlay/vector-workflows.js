@@ -3,7 +3,7 @@
  * No retired presentation is loaded; the server remains the permission/pay authority. */
 (function () {
   'use strict';
-  const RF = globalThis.RF = { period: '2026-09-07', team: '', report: null, company: null, recoveryActuals: [], financeAttribution: [], epoch: 0 };
+  const RF = globalThis.RF = { period: '', team: '', report: null, company: null, recoveryActuals: [], financeAttribution: [], epoch: 0 };
   const state = { busy: false, receipt: null, owner: '', epoch: 0 };
   const LF = { bootstrap: null, personal: null, busy: false, receipt: null, owner: '', epoch: 0 };
   const actor = () => payrollActor();
@@ -34,12 +34,19 @@
   async function refresh() {
     if (OFFLINE) throw Error('Connect to the authenticated Vector service to review or change payroll records.');
     clearOwner();
-    const epoch = ++RF.epoch, period = RF.period, owner = state.owner;
+    const epoch = ++RF.epoch, requestedPeriod = RF.period, owner = state.owner;
+    const suffix = requestedPeriod ? '?period=' + encodeURIComponent(requestedPeriod) : '';
     const [report, company] = await Promise.all([
-      reviewer() ? request('/api/weekly-review?period=' + encodeURIComponent(period)) : null,
-      permitted('payroll.view') ? request('/api/payroll-run?period=' + encodeURIComponent(period)) : null
+      reviewer() ? request('/api/weekly-review' + suffix) : null,
+      permitted('payroll.view') ? request('/api/payroll-run' + suffix) : null
     ]);
-    if (epoch !== RF.epoch || period !== RF.period || owner !== state.owner || owner !== ownerKey() || !F.ready) return false;
+    if (epoch !== RF.epoch || owner !== state.owner || owner !== ownerKey() || !F.ready) return false;
+    const reportPeriod = report?.period || null, companyPeriod = company?.period || null;
+    if (reportPeriod && companyPeriod && reportPeriod !== companyPeriod) throw Error('Manager review and payroll disagree on the current authoritative review period.');
+    const authoritativePeriod = reportPeriod || companyPeriod;
+    if (!authoritativePeriod) throw Error('The server did not return a current review period.');
+    if (requestedPeriod && authoritativePeriod !== requestedPeriod) throw Error('The requested review period is no longer authoritative. Refresh the current period.');
+    RF.period = authoritativePeriod;
     RF.report = report; RF.company = company;
     if (!report?.teams.some(team => team.id === RF.team)) RF.team = report?.teams[0]?.id || '';
     return true;

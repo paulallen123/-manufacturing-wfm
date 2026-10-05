@@ -163,6 +163,7 @@ function createRuntimeIdentity({
 
   return Object.freeze({
     candidateSha: payload.candidateSha,
+    snapshot: () => payload,
     applyResponseHeaders,
     handleRequest
   });

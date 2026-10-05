@@ -181,6 +181,80 @@ async function acquireEmployees({client=globalThis.fetch,config,employerId,pageS
     paginationComplete:true,atomicProviderSnapshot:false};
 }
 
+function replacementSafety(entry) {
+  const p=entry?.payOptions,lines=p?.regularPayLines;
+  if(p?.basis!=='Hourly')return immutable({safe:false,reason:'basis-not-hourly'});
+  if(typeof p.payCode!=='string'||!p.payCode.trim())return immutable({safe:false,reason:'pay-code-missing'});
+  if(!Array.isArray(lines)||lines.length!==1||lines[0]?.code!==p.payCode)return immutable({safe:false,reason:'regular-line-not-isolated'});
+  if(p.lines!==undefined&&(!Array.isArray(p.lines)||p.lines.length!==0))return immutable({safe:false,reason:'additional-lines-present'});
+  try{
+    if(!decimalEqual(lines[0].rate,p.payAmount)||!decimalEqual(lines[0].multiplier,p.payAmountMultiplier)||
+      !entry.totals||!decimalEqual(lines[0].value,entry.totals.basicPay))return immutable({safe:false,reason:'basic-line-inconsistent'});
+  }catch{return immutable({safe:false,reason:'basic-line-incomplete'});}
+  return immutable({safe:true,reason:null});
+}
+
+async function discoverPayroll({client=globalThis.fetch,config,employerId,allowedEmployeeIds=null,pageSize=500,maxPages=100}={}) {
+  const employer=requiredId(employerId,'Employer identity');
+  integer(pageSize,'Page size',1,500);integer(maxPages,'Page limit',1,1000);
+  const allowed=allowedEmployeeIds===null?null:new Set(allowedEmployeeIds);
+  if(allowed&&(!Array.isArray(allowedEmployeeIds)||allowed.size!==allowedEmployeeIds.length||[...allowed].some(id=>requiredId(id,'Allowed employee identity')!==id)))
+    throw failure('STAFFOLOGY_EMPLOYEE_COHORT_MISMATCH','The approved payroll discovery cohort is invalid.',403);
+  const opened=await request(client,config,`/open?employerId=${encodeURIComponent(employer)}`);
+  if(!Array.isArray(opened.body))throw failure('STAFFOLOGY_RESPONSE_INVALID','Open pay-run response must be an array.',502);
+  const runs=[];
+  for(const open of opened.body){
+    if(open?.state!=='Open'||open?.isClosed===true||open?.isRolledBack===true||open?.isLatestVersion===false)continue;
+    const taxYear=exactText(open.taxYear,'Tax year',32),payPeriod=exactText(open.payPeriod,'Pay period',32);
+    if(!/^Year\d{4}$/.test(taxYear))throw failure('STAFFOLOGY_RUN_IDENTITY_INVALID','Open payroll tax year is invalid.',502);
+    const period=integer(open.period,'Period',1,366),ordinal=integer(open.ordinal,'Ordinal',1,1000),version=integer(open.version,'Version',0,100000);
+    const basePath=`/employers/${encodeURIComponent(employer)}/payrun/${taxYear}/${payPeriod}/${period}`;
+    let firstRun=null,complete=false;const entries=[],seen=new Set();
+    for(let pageNum=0;pageNum<maxPages;pageNum++){
+      const result=await request(client,config,basePath+`?ordinal=${ordinal}&version=${version}&pageNum=${pageNum}&pageSize=${pageSize}`);
+      const run=result.body;
+      if(!run||typeof run!=='object'||Array.isArray(run))throw failure('STAFFOLOGY_RESPONSE_INVALID','Pay-run discovery response is invalid.',502);
+      if(run.taxYear!==taxYear||run.payPeriod!==payPeriod||run.period!==period||run.ordinal!==ordinal||run.version!==version||run.state!=='Open'||run.isClosed===true)
+        throw failure('STAFFOLOGY_RUN_IDENTITY_MISMATCH','Pay-run discovery coordinates changed during readback.',502);
+      if(!firstRun)firstRun=run;
+      const pageEntries=Array.isArray(run.entries)?run.entries:[];
+      if(pageEntries.length>pageSize)throw failure('STAFFOLOGY_PAGINATION_INCOMPLETE','Pay-run entry page exceeds requested size.',502);
+      for(const item of pageEntries){
+        const entryId=requiredId(item?.id,'Pay-run entry identity');
+        if(seen.has(entryId))throw failure('STAFFOLOGY_RESPONSE_INVALID','Duplicate pay-run entry identity returned during discovery.',502);
+        seen.add(entryId);
+        const providerEmployeeId=requiredId(item?.metadata?.employeeId,'Provider employee identity');
+        if(allowed&&!allowed.has(providerEmployeeId))continue;
+        const entryPath=basePath+'/'+encodeURIComponent(entryId);
+        if(item?.url){
+          let itemUrl;try{itemUrl=new URL(item.url,ORIGIN);}catch{throw failure('STAFFOLOGY_RESPONSE_INVALID','Pay-run entry URL is invalid.',502);}
+          if(itemUrl.origin!==ORIGIN||itemUrl.pathname!==entryPath||itemUrl.search||itemUrl.hash||itemUrl.username||itemUrl.password)
+            throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Pay-run entry URL contradicts its identity.',502);
+        }
+        const detail=await request(client,config,entryPath+`?ordinal=${ordinal}`);
+        const e=detail.body;
+        if(!e||e.id!==entryId||e?.employee?.id!==providerEmployeeId||e.taxYear!==taxYear||e.payPeriod!==payPeriod||e.period!==period||e.ordinal!==ordinal||e.payRunVersion!==version)
+          throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Pay-run entry detail differs from discovered coordinates.',502);
+        const payrollCode=exactText(e?.employmentDetails?.payrollCode,'Payroll code',80);
+        const safety=replacementSafety(e);
+        entries.push(immutable({
+          entryId,providerEmployeeId,payrollCode,basis:e?.payOptions?.basis??null,payCode:e?.payOptions?.payCode??null,
+          regularLineCount:Array.isArray(e?.payOptions?.regularPayLines)?e.payOptions.regularPayLines.length:0,
+          safeReplacement:safety.safe,safeReplacementReason:safety.reason
+        }));
+      }
+      if(pageEntries.length<pageSize){complete=true;break;}
+    }
+    if(!complete)throw failure('STAFFOLOGY_PAGINATION_INCOMPLETE','Pay-run discovery page bound reached.',502);
+    runs.push(immutable({
+      taxYear,payPeriod,period,ordinal,version,
+      dates:{startDate:dateOnly(firstRun.startDate),endDate:dateOnly(firstRun.endDate),paymentDate:firstRun.paymentDate?dateOnly(firstRun.paymentDate):null},
+      entries
+    }));
+  }
+  return immutable({employerId:employer,runs,providerMethods:['GET'],providerWritePerformed:false});
+}
+
 // Exact decimal arithmetic for the declared hourly-basic contract. Not a tax engine.
 function decimal(value) {
   const s=typeof value==='number'&&Number.isFinite(value)?String(value):value;
@@ -266,18 +340,9 @@ function validateProviderResponse(observation,expected) {
   return immutable({providerReference:e.id,run:expected.run,verification:'basic-pay-verified',fullPayrollVerified:false,financial:financialSnapshot(e)});
 }
 function validateReplacementBaseline(entry,expected) {
-  const p=entry?.payOptions,lines=p?.regularPayLines;
-  // This is replacement, not append. Never erase additional or ambiguous pay.
-  // An empty/absent baseline is outside this explicitly mapped one-line scope.
-  if(p?.basis!=='Hourly'||p.payCode!==expected.basic.code||!Array.isArray(lines)||lines.length!==1||lines[0]?.code!==expected.basic.code||
-    (p.lines!==undefined&&(!Array.isArray(p.lines)||p.lines.length!==0)))
+  const safety=replacementSafety(entry);
+  if(!safety.safe||entry?.payOptions?.payCode!==expected.basic.code)
     throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','The baseline is not an isolated mapped hourly basic line.');
-  try {
-    if(!decimalEqual(lines[0].rate,p.payAmount)||!decimalEqual(lines[0].multiplier,p.payAmountMultiplier)||
-      !entry.totals||!decimalEqual(lines[0].value,entry.totals.basicPay))throw Error('BASELINE_INCONSISTENT');
-  } catch {
-    throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Baseline basic rate, hours and calculated amount must be complete and consistent.');
-  }
 }
 function financialTransition(baseline,observation,basicVerified) {
   // Invoke only AFTER validating the readback against independently approved
@@ -360,7 +425,7 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
         throw failure('STAFFOLOGY_BASELINE_NOT_PERSISTED','Stored baseline does not match the exact pre-write observation.');
       const permit=immutable({binding:scope,deliveryId,digest,run:payload.run,entryId:payload.entryId,baselineSha256:evidence.entry.sha256,baselineRunSha256:evidence.run.sha256,expectedBasicPay:payload.expectedBasicPay,rounding:payload.rounding});
       if(typeof authorizeWrite!=='function'||await authorizeWrite(permit)!==true)throw failure('STAFFOLOGY_WRITE_NOT_AUTHORIZED','Verified payroll import authority is required.',403);
-      await request(async(url,options)=>{
+      const transport=await request(async(url,options)=>{
         let active=true,called=false,response;
         try {
           const allowed=await store.assertOwned({deliveryId,token,digest,bindingDigest,permit,
@@ -375,6 +440,21 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
       },config,importPath(payload),{method:'POST',body:payload.importBody,authorizeWrite:async()=>{
         if(await authorizeWrite(permit)!==true)return false;await owned(deliveryId,token,digest);return true;
       }});
+      const transportEvidence=immutable({
+        phase:'transport',httpStatus:transport.status,requestId:transport.requestId??null,
+        requestSha256:transport.requestSha256,responseSha256:transport.responseSha256
+      });
+      try{
+        if(!Number.isInteger(transportEvidence.httpStatus)||!/^[a-f0-9]{64}$/.test(transportEvidence.requestSha256||'')||
+          !/^[a-f0-9]{64}$/.test(transportEvidence.responseSha256||'')||
+          await store.recordEvidence(deliveryId,transportEvidence,token)!==true)
+          throw Error('TRANSPORT_EVIDENCE_WRITE_FAILED');
+        const persisted=await store.get(deliveryId);
+        const saved=[...(persisted?.evidence||[])].reverse().find(item=>item.phase==='transport')?.value;
+        if(!saved||canonical(saved)!==canonical(transportEvidence))throw Error('TRANSPORT_EVIDENCE_READBACK_FAILED');
+      }catch{
+        throw failure('STAFFOLOGY_TRANSPORT_EVIDENCE_NOT_PERSISTED','Provider response was observed but its transport evidence could not be durably persisted.',503);
+      }
       transportAccepted=true;
     } catch(error) {
       if(!dispatchStarted) {
@@ -384,7 +464,10 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
         try{await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_PRE_DISPATCH_FAILED',dispatchStarted:false},token);}catch(markError){if(markError.code!=='STAFFOLOGY_OWNERSHIP_LOST')throw markError;}
         throw error;
       }
-      if(error.code==='STAFFOLOGY_AUTH_REJECTED'){await store.markRejected(deliveryId,{code:error.code,dispatchStarted:true,definitive:true},token);throw error;}await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_OUTCOME_UNCERTAIN',dispatchStarted:true},token);
+      if(error.code==='STAFFOLOGY_AUTH_REJECTED'){await store.markRejected(deliveryId,{code:error.code,dispatchStarted:true,definitive:true},token);throw error;}
+      const transportEvidenceLost=error.code==='STAFFOLOGY_TRANSPORT_EVIDENCE_NOT_PERSISTED';
+      await store.markUncertain(deliveryId,{code:error.code||'STAFFOLOGY_OUTCOME_UNCERTAIN',dispatchStarted:true,providerResponseObserved:transportEvidenceLost},token);
+      if(transportEvidenceLost)throw error;
     }
     return {transportAccepted,dispatchStarted};
   }
@@ -393,6 +476,8 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     if(!row||row.bindingDigest!==bindingDigest||row.digest!==sha256(row.payload))throw failure('STAFFOLOGY_BINDING_MISMATCH','Reconciliation must use the persisted, exact-bound intent.');
     await owned(deliveryId,token,row.digest);
     if(row.status==='rejected')return {status:'rejected',code:'STAFFOLOGY_AUTH_REJECTED'};
+    if(row.uncertainReason?.code==='STAFFOLOGY_TRANSPORT_EVIDENCE_NOT_PERSISTED')
+      return {status:'unresolved',code:'STAFFOLOGY_TRANSPORT_EVIDENCE_NOT_PERSISTED',dispatchStarted:true};
     if(!row.dispatchAttempt) {
       try {await startDispatch(row,token);} catch(error) {
         const code=error.code||'STAFFOLOGY_PRE_DISPATCH_FAILED';
@@ -452,4 +537,4 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
   }
   return {deliver,reconcile,inspect};
 }
-module.exports={StaffologyError,loadConfiguration,request,mapEmployee,acquireEmployees,mapPayroll,financialSnapshot,compareFinancialSnapshots,validateProviderResponse,createDeliveryCoordinator,canonical,sha256,businessKey};
+module.exports={StaffologyError,loadConfiguration,request,mapEmployee,acquireEmployees,discoverPayroll,replacementSafety,mapPayroll,financialSnapshot,compareFinancialSnapshots,validateProviderResponse,createDeliveryCoordinator,canonical,sha256,businessKey};

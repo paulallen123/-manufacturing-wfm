@@ -74,7 +74,7 @@ function composeStaffology(runtime) {
   server = server.replace(reportAnchor, 'return json(res,200,{...report,staffology:{...staffologyIntegration.status(),operation:staffologyOperations.status(a)},jobs:providerJobs.report(a)');
   const routeAnchor = "if(url.pathname==='/api/integrations'&&req.method==='GET')";
   if (server.split(routeAnchor).length !== 2) throw Error('SERVER_INTEGRATION_ROUTE_ANCHOR_CHANGED');
-  server = server.replace(routeAnchor, "if(url.pathname==='/api/integrations/staffology/employees/acquire-stage'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.acquireAndStage(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/approve-deliver'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.approveAndDeliver(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/recover'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.recover(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/readback'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.readback(a,input));}\n" + routeAnchor);
+  server = server.replace(routeAnchor, "if(url.pathname==='/api/integrations/staffology/payroll/discover'&&req.method==='GET'){return json(res,200,await staffologyOperations.discoverPayroll(a));}\nif(url.pathname==='/api/integrations/staffology/employees/acquire-stage'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.acquireAndStage(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/approve-deliver'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.approveAndDeliver(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/recover'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.recover(a,input));}\nif(url.pathname==='/api/integrations/staffology/payroll/readback'&&req.method==='POST'){const input=await body(req);return json(res,200,await staffologyOperations.readback(a,input));}\n" + routeAnchor);
   const payrollCommandAnchor = "if(input.command.startsWith('review-')||input.command.startsWith('payroll-'))";
   if (server.split(payrollCommandAnchor).length !== 2) throw Error('SERVER_PAYROLL_COMMAND_ANCHOR_CHANGED');
   server = server.replace(payrollCommandAnchor, "if(input.command==='time-source-ingest')return P.openPeriodFromSource(state,a,p);" + payrollCommandAnchor);
@@ -99,9 +99,23 @@ function composeStaffology(runtime) {
   fs.writeFileSync(path.join(runtime, 'STAFFOLOGY_ASSEMBLY.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }
+function patchCustomerFacingCopy(runtime) {
+  const replacements = new Map([
+    ['Fictional data · Local development v0.6 · Changes saved to the local database.','Evidence mode · Source status is shown per workflow.'],
+    ['One sign-in · Capability-based access · Not a live payroll service','One sign-in · Capability-based access · Provider acceptance is shown only when verified.'],
+    ['No external invitation email or SMS is sent by this development build.','Invitation delivery is not yet proven for this environment.']
+  ]);
+  for (const relative of ['public/app.js','public/onboarding-engine.js']) {
+    const file=path.join(runtime,relative);if(!fs.existsSync(file))continue;
+    let text=fs.readFileSync(file,'utf8');
+    for(const [from,to] of replacements)text=text.split(from).join(to);
+    fs.writeFileSync(file,text);
+  }
+}
 recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
-  console.log(JSON.stringify(composeStaffology(output), null, 2));
+  const result=composeStaffology(output);patchCustomerFacingCopy(output);
+  console.log(JSON.stringify(result, null, 2));
   process.exit(0);
 }
 const archive = path.join(root, 'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz');
@@ -146,6 +160,7 @@ const groups = {
 };
 for (const [group, files] of Object.entries(groups)) for (const file of files) copy(`${group}/runtime/${file}`, `${group}-runtime/${file}`);
 composeStaffology(output);
+patchCustomerFacingCopy(output);
 // Copy the lockfile-installed dependency closure; never install from the proof process.
 const securityDependencies = path.join(root, 'security/runtime/node_modules');
 if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');
