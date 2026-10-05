@@ -1,11 +1,29 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 
 const require = createRequire(import.meta.url);
 const { createAutonomousRepairCanaryOrchestrator } = require(path.join(process.cwd(), 'resilience/autonomous-repair-canary-orchestrator.cjs'));
+const { createDurableReplayGuard } = require(path.join(process.cwd(), 'resilience/durable-poststaging-replay-guard.cjs'));
 const d = (v) => createHash('sha256').update(String(v)).digest('hex');
+
+const replayFixtures = [];
+function freshReplayGuard() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-poststaging-replay-validator-'));
+  const db = new DatabaseSync(path.join(dir, 'state.sqlite'));
+  replayFixtures.push({ db, dir });
+  return createDurableReplayGuard({ db });
+}
+process.on('exit', () => {
+  for (const { db, dir } of replayFixtures) {
+    try { db.close(); } catch {}
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch {}
+  }
+});
 
 function recorder() {
   const records = [];
@@ -97,7 +115,7 @@ let outRec = recorder();
 let orchestrator = createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(),
   canaryController: canaryController(proven),
-  outcomeRecorder: outRec,
+  outcomeRecorder: outRec, replayGuard: freshReplayGuard(),
 });
 let out = await orchestrator.run(base);
 assert.equal(out.status, 'canary_proven');
@@ -107,7 +125,7 @@ assert.equal(outRec.records.at(-1).status, 'canary_proven');
 assert.match(out.compositionReceiptDigest, /^[a-f0-9]{64}$/);
 
 outRec = recorder();
-orchestrator = createAutonomousRepairCanaryOrchestrator({ repairPipeline: repairPipeline(), canaryController: canaryController(rolledBack), outcomeRecorder: outRec });
+orchestrator = createAutonomousRepairCanaryOrchestrator({ repairPipeline: repairPipeline(), canaryController: canaryController(rolledBack), outcomeRecorder: outRec, replayGuard: freshReplayGuard() });
 out = await orchestrator.run(base);
 assert.equal(out.status, 'rolled_back_to_known_good');
 assert.match(out.rollbackEvidenceDigest, /^[a-f0-9]{64}$/);
@@ -118,7 +136,7 @@ await assert.rejects(() => orchestrator.run({ ...base, targetTenant: 'tenant-b' 
 
 outRec = recorder();
 const containedPipelineResult = { status: 'contained', phase: 'independent-verifier', reason: 'security-failed', productionAuthorityGranted: false, productionMutation: false, customerMutation: false };
-orchestrator = createAutonomousRepairCanaryOrchestrator({ repairPipeline: repairPipeline(containedPipelineResult), canaryController: canaryController(() => { throw new Error('must not run'); }), outcomeRecorder: outRec });
+orchestrator = createAutonomousRepairCanaryOrchestrator({ repairPipeline: repairPipeline(containedPipelineResult), canaryController: canaryController(() => { throw new Error('must not run'); }), outcomeRecorder: outRec, replayGuard: freshReplayGuard() });
 out = await orchestrator.run(base);
 assert.equal(out.status, 'contained');
 assert.equal(out.phase, 'independent-verifier');
@@ -128,7 +146,7 @@ outRec = recorder();
 orchestrator = createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(),
   canaryController: canaryController((input) => ({ ...proven(input), artifactDigest: d('drifted') })),
-  outcomeRecorder: outRec,
+  outcomeRecorder: outRec, replayGuard: freshReplayGuard(),
 });
 out = await orchestrator.run(base);
 assert.equal(out.status, 'contained');
@@ -138,7 +156,7 @@ outRec = recorder();
 orchestrator = createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(),
   canaryController: canaryController((input) => ({ ...proven(input), productionAuthority: true })),
-  outcomeRecorder: outRec,
+  outcomeRecorder: outRec, replayGuard: freshReplayGuard(),
 });
 out = await orchestrator.run(base);
 assert.equal(out.status, 'contained');
@@ -146,13 +164,13 @@ assert.equal(out.reason, 'canary-authority-violation');
 
 assert.throws(() => createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(repairResult, { ...pipelineCaps, exactArtifactStagingRequired: false }),
-  canaryController: canaryController(proven), outcomeRecorder: recorder(),
+  canaryController: canaryController(proven), outcomeRecorder: recorder(), replayGuard: freshReplayGuard(),
 }), (err) => err.code === 'WFM_POSTSTAGING_PIPELINE');
 
 assert.throws(() => createAutonomousRepairCanaryOrchestrator({
   repairPipeline: repairPipeline(),
   canaryController: { ...canaryController(proven), limits: () => ({ maxInstances: 2, maxTrafficPercent: 5 }) },
-  outcomeRecorder: recorder(),
+  outcomeRecorder: recorder(), replayGuard: freshReplayGuard(),
 }), (err) => err.code === 'WFM_POSTSTAGING_CANARY');
 
 console.log(JSON.stringify({
