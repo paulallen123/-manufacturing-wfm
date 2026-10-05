@@ -1,12 +1,30 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 
 const require = createRequire(import.meta.url);
 const { createCanaryRollbackController, MAX_CANARY_INSTANCES, MAX_TRAFFIC_PERCENT } = require(path.join(process.cwd(), 'resilience/canary-rollback-controller.cjs'));
+const { createDurableReplayGuard } = require(path.join(process.cwd(), 'resilience/durable-poststaging-replay-guard.cjs'));
 const sha = v => createHash('sha256').update(typeof v === 'string' ? v : JSON.stringify(v)).digest('hex');
 const D = label => sha(label);
+
+const replayFixtures = [];
+function freshReplayGuard() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-canary-replay-validator-'));
+  const db = new DatabaseSync(path.join(dir, 'state.sqlite'));
+  replayFixtures.push({ db, dir });
+  return createDurableReplayGuard({ db });
+}
+process.on('exit', () => {
+  for (const { db, dir } of replayFixtures) {
+    try { db.close(); } catch {}
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch {}
+  }
+});
 
 function recorder() {
   const records = [];
@@ -63,7 +81,7 @@ let rec = recorder();
 let ctl = createCanaryRollbackController({
   canaryExecutor: canary(async job => healthyResult(job)),
   rollbackExecutor: rollback(async job => { rollbackCalls++; return rollbackResult(job); }),
-  knownGoodAttestor: attestor(), outcomeRecorder: rec,
+  knownGoodAttestor: attestor(), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 assert.deepEqual(ctl.limits(), { maxInstances: MAX_CANARY_INSTANCES, maxTrafficPercent: MAX_TRAFFIC_PERCENT });
 let out = await ctl.run(base);
@@ -77,7 +95,7 @@ rollbackCalls = 0; rec = recorder();
 ctl = createCanaryRollbackController({
   canaryExecutor: canary(async job => healthyResult(job, { status: 'unhealthy' })),
   rollbackExecutor: rollback(async job => { rollbackCalls++; return rollbackResult(job); }),
-  knownGoodAttestor: attestor(), outcomeRecorder: rec,
+  knownGoodAttestor: attestor(), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 out = await ctl.run(base);
 assert.equal(out.status, 'rolled_back_to_known_good');
@@ -88,7 +106,7 @@ rollbackCalls = 0; rec = recorder();
 ctl = createCanaryRollbackController({
   canaryExecutor: canary(async job => healthyResult(job, { status: 'indeterminate' })),
   rollbackExecutor: rollback(async job => { rollbackCalls++; return rollbackResult(job); }),
-  knownGoodAttestor: attestor(), outcomeRecorder: rec,
+  knownGoodAttestor: attestor(), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 out = await ctl.run(base);
 assert.equal(out.status, 'rolled_back_to_known_good');
@@ -96,7 +114,7 @@ assert.equal(rollbackCalls, 1);
 
 rec = recorder();
 ctl = createCanaryRollbackController({
-  canaryExecutor: canary(async job => healthyResult(job)), rollbackExecutor: rollback(async job => rollbackResult(job)), knownGoodAttestor: attestor(), outcomeRecorder: rec,
+  canaryExecutor: canary(async job => healthyResult(job)), rollbackExecutor: rollback(async job => rollbackResult(job)), knownGoodAttestor: attestor(), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 await assert.rejects(() => ctl.run({ ...base, targetTenant: 'tenant-b' }), err => err.code === 'WFM_CANARY_CROSS_TENANT');
 await assert.rejects(() => ctl.run({ ...base, maxInstances: 2 }), err => err.code === 'WFM_CANARY_BLAST_RADIUS');
@@ -105,7 +123,7 @@ await assert.rejects(() => ctl.run({ ...base, trafficPercent: 6 }), err => err.c
 let canaryCalls = 0; rec = recorder();
 ctl = createCanaryRollbackController({
   canaryExecutor: canary(async job => { canaryCalls++; return healthyResult(job); }), rollbackExecutor: rollback(async job => rollbackResult(job)),
-  knownGoodAttestor: attestor({ verified: false }), outcomeRecorder: rec,
+  knownGoodAttestor: attestor({ verified: false }), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 out = await ctl.run(base);
 assert.equal(out.status, 'contained');
@@ -115,7 +133,7 @@ assert.equal(canaryCalls, 0);
 rollbackCalls = 0; rec = recorder();
 ctl = createCanaryRollbackController({
   canaryExecutor: canary(async job => healthyResult(job, { touchedInstances: 2 })),
-  rollbackExecutor: rollback(async job => { rollbackCalls++; return rollbackResult(job); }), knownGoodAttestor: attestor(), outcomeRecorder: rec,
+  rollbackExecutor: rollback(async job => { rollbackCalls++; return rollbackResult(job); }), knownGoodAttestor: attestor(), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 out = await ctl.run(base);
 assert.equal(out.status, 'rolled_back_to_known_good');
@@ -125,7 +143,7 @@ assert.equal(rollbackCalls, 1);
 rollbackCalls = 0; rec = recorder();
 ctl = createCanaryRollbackController({
   canaryExecutor: canary(async job => healthyResult(job, { businessInvariantPassed: false })),
-  rollbackExecutor: rollback(async job => { rollbackCalls++; return rollbackResult(job); }), knownGoodAttestor: attestor(), outcomeRecorder: rec,
+  rollbackExecutor: rollback(async job => { rollbackCalls++; return rollbackResult(job); }), knownGoodAttestor: attestor(), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 out = await ctl.run(base);
 assert.equal(out.status, 'rolled_back_to_known_good');
@@ -135,7 +153,7 @@ assert.equal(rollbackCalls, 1);
 rec = recorder();
 ctl = createCanaryRollbackController({
   canaryExecutor: canary(async job => healthyResult(job, { status: 'unhealthy' })),
-  rollbackExecutor: rollback(async job => rollbackResult(job, { knownGoodVerified: false })), knownGoodAttestor: attestor(), outcomeRecorder: rec,
+  rollbackExecutor: rollback(async job => rollbackResult(job, { knownGoodVerified: false })), knownGoodAttestor: attestor(), outcomeRecorder: rec, replayGuard: freshReplayGuard(),
 });
 out = await ctl.run(base);
 assert.equal(out.status, 'contained');
@@ -144,7 +162,7 @@ assert.equal(out.rollbackVerified, false);
 
 assert.throws(() => createCanaryRollbackController({
   canaryExecutor: { ...canary(async job => healthyResult(job)), capabilities: () => ({ ...canary(async()=>{}).capabilities(), modelCanGrantAuthority: true }) },
-  rollbackExecutor: rollback(async job => rollbackResult(job)), knownGoodAttestor: attestor(), outcomeRecorder: recorder(),
+  rollbackExecutor: rollback(async job => rollbackResult(job)), knownGoodAttestor: attestor(), outcomeRecorder: recorder(), replayGuard: freshReplayGuard(),
 }), err => err.code === 'WFM_CANARY_EXECUTOR_UNSAFE');
 
 console.log(JSON.stringify({
