@@ -35,7 +35,7 @@ function verifyCaps(obj, method, required, code) {
   return Object.freeze({ ...caps });
 }
 
-function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, knownGoodAttestor, outcomeRecorder } = {}) {
+function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, knownGoodAttestor, outcomeRecorder, replayGuard } = {}) {
   const canaryCaps = verifyCaps(canaryExecutor, 'run', {
     sameTenantEnforced: true,
     exactArtifactRequired: true,
@@ -79,6 +79,15 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
     customerWriteAuthority: false,
     incrementalCostZero: true,
   }, 'WFM_CANARY_RECORDER_UNSAFE');
+  const replayCaps = verifyCaps(replayGuard, 'claim', {
+    durable: true,
+    atomicClaim: true,
+    failClosedOnPending: true,
+    tenantScoped: true,
+    independentWitness: true,
+    modelCanGrantAuthority: false,
+  }, 'WFM_CANARY_REPLAY_UNSAFE');
+  if (typeof replayGuard.complete !== 'function') deny('WFM_CANARY_REPLAY_UNSAFE', 'trusted replay completion unavailable');
 
   async function record(payload) {
     const out = await outcomeRecorder.record(Object.freeze({ ...payload }));
@@ -157,7 +166,7 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
     });
   }
 
-  async function run(input = {}) {
+  async function execute(input = {}) {
     const incidentId = safeId(input.incidentId);
     const canaryControllerId = safeId(input.canaryControllerId);
     const rollbackControllerId = safeId(input.rollbackControllerId);
@@ -273,10 +282,63 @@ function createCanaryRollbackController({ canaryExecutor, rollbackExecutor, know
     }
   }
 
+  async function run(input = {}) {
+    const incidentId = safeId(input.incidentId);
+    const canaryControllerId = safeId(input.canaryControllerId);
+    const rollbackControllerId = safeId(input.rollbackControllerId);
+    const tenant = String(input.tenant || '').trim();
+    const targetTenant = String(input.targetTenant || '').trim();
+    if (!incidentId || !canaryControllerId || !rollbackControllerId || !tenant || !targetTenant) deny('WFM_CANARY_INPUT', 'bounded canary scope required');
+    if (canaryControllerId === rollbackControllerId) deny('WFM_CANARY_SEPARATION', 'canary and rollback controllers must be distinct');
+    if (tenant !== targetTenant) deny('WFM_CANARY_CROSS_TENANT', 'cross-tenant canary denied');
+    for (const value of [input.artifactDigest, input.rollbackDigest, input.stagingReceiptDigest]) {
+      if (!validDigest(value)) deny('WFM_CANARY_INPUT', 'digest-only canary evidence required');
+    }
+    const maxInstances = Number(input.maxInstances);
+    const trafficPercent = Number(input.trafficPercent);
+    if (!Number.isInteger(maxInstances) || maxInstances < 1 || maxInstances > MAX_CANARY_INSTANCES) {
+      deny('WFM_CANARY_BLAST_RADIUS', 'canary instance cap exceeded');
+    }
+    if (!Number.isFinite(trafficPercent) || trafficPercent <= 0 || trafficPercent > MAX_TRAFFIC_PERCENT) {
+      deny('WFM_CANARY_BLAST_RADIUS', 'canary traffic cap exceeded');
+    }
+
+    const tenantDigest = sha(tenant);
+    const inputDigest = sha(JSON.stringify({
+      input,
+      canaryCaps,
+      rollbackCaps,
+      attestorCaps,
+      recorderCaps,
+      replayCaps,
+    }));
+    const claim = replayGuard.claim({
+      scope: 'canary-rollback-controller',
+      tenantDigest,
+      incidentId,
+      inputDigest,
+    });
+    if (claim?.status === 'replay') return claim.receipt;
+    if (!claim || claim.status !== 'claimed' || !claim.token) {
+      deny('WFM_CANARY_REPLAY_UNSAFE', 'canary replay claim was not acquired');
+    }
+
+    const result = await execute(input);
+    replayGuard.complete({
+      scope: 'canary-rollback-controller',
+      tenantDigest,
+      incidentId,
+      inputDigest,
+      token: claim.token,
+      receipt: result,
+    });
+    return result;
+  }
+
   return {
     run,
     limits: () => ({ maxInstances: MAX_CANARY_INSTANCES, maxTrafficPercent: MAX_TRAFFIC_PERCENT }),
-    capabilities: () => ({ canary: { ...canaryCaps }, rollback: { ...rollbackCaps }, attestor: { ...attestorCaps }, recorder: { ...recorderCaps } }),
+    capabilities: () => ({ canary: { ...canaryCaps }, rollback: { ...rollbackCaps }, attestor: { ...attestorCaps }, recorder: { ...recorderCaps }, replay: { ...replayCaps }, durableReplayRequired: true }),
   };
 }
 
