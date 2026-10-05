@@ -29,17 +29,68 @@ function releasedBatch(state,{periodId,batchId,expectedChecksum}){
  return {period,batch};
 }
 
+function payrollLineIdentity(line){
+ if(!line||typeof line!=='object')fail('Released payroll line is invalid.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+ const identity={
+  employee:id(line.employee,'VECTOR employee'),
+  payrollId:exact(line.payrollId,'Released payroll identity'),
+  date:exact(line.date,'Released payroll date'),
+  code:exact(line.code,'Released payroll component'),
+  minutes:Number(line.minutes),
+  hours:String(line.hours??''),
+  rate:String(line.rate??''),
+  grossPence:Number(line.grossPence),
+  allowance:Number(line.allowance||0)
+ };
+ if(!Number.isSafeInteger(identity.minutes)||identity.minutes<0||!Number.isSafeInteger(identity.grossPence)||identity.grossPence<0)
+  fail('Released payroll line totals are invalid.','STAFFOLOGY_PAYROLL_TOTAL_MISMATCH');
+ return Object.freeze({...identity,digest:sha256(identity)});
+}
+
+function releasedBatchManifest(state,{periodId,batchId,expectedChecksum,mappings=[]}){
+ const {period,batch}=releasedBatch(state,{periodId,batchId,expectedChecksum});
+ if(!Array.isArray(mappings))fail('Released payroll batch mappings are invalid.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+ const declared=new Map();
+ for(const item of mappings){
+  if(!item||typeof item!=='object'||Array.isArray(item)||!['mapped','unsupported'].includes(item.status))
+   fail('Every released payroll line must be mapped or explicitly unsupported.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+  const lineDigest=exact(item.lineDigest,'Released line digest');
+  if(!/^[a-f0-9]{64}$/.test(lineDigest)||declared.has(lineDigest))fail('Released payroll line manifest is invalid.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+  declared.set(lineDigest,item);
+ }
+ const lines=batch.lines.map(payrollLineIdentity),unsupported=[],mapped=[];
+ for(const line of lines){
+  const item=declared.get(line.digest);
+  if(!item){unsupported.push({lineDigest:line.digest,code:line.code,reason:'UNMAPPED_RELEASED_COMPONENT'});continue;}
+  if(item.status==='unsupported'){unsupported.push({lineDigest:line.digest,code:line.code,reason:exact(item.reason,'Unsupported component reason')});continue;}
+  if(line.code!=='WORKED_BASIC'||line.allowance!==0)unsupported.push({lineDigest:line.digest,code:line.code,reason:'STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED'});
+  else mapped.push({lineDigest:line.digest,line,mapping:item});
+ }
+ if(declared.size!==lines.length)
+  fail('Every released payroll line must be explicitly classified in the immutable batch manifest.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+ const grossPence=lines.reduce((n,line)=>n+line.grossPence,0);
+ return Object.freeze({period,batch,manifest:Object.freeze({
+  schemaVersion:1,batchId:batch.id,batchChecksum:batch.checksum,expectedLineCount:lines.length,
+  mappedLineCount:mapped.length,unsupportedLineCount:unsupported.length,grossPence,
+  lineDigests:Object.freeze(lines.map(line=>line.digest).sort()),manifestDigest:sha256({batchId:batch.id,batchChecksum:batch.checksum,lines:lines.map(line=>line.digest).sort()})
+ })});
+}
+
 function preparePayrollInput(state,approval){
  if(!approval||approval.approved!==true)fail('An explicit reviewed Staffology mapping is required.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED',403);
  const {period,batch}=releasedBatch(state,{periodId:id(approval.periodId,'Payroll period'),batchId:id(approval.batchId,'Payroll batch'),expectedChecksum:exact(approval.batchChecksum,'Payroll checksum')});
- const employee=id(approval.employeeId,'VECTOR employee'),lines=batch.lines.filter(line=>line.employee===employee);
+ const employee=id(approval.employeeId,'VECTOR employee');
+ const staff=(state?.staff||[]).filter(row=>row&&row.id===employee&&row.sourceId===approval.staffologyEmployeeId&&row.payrollId===approval.payrollCode&&row.onboardingReady===true);
+ if(staff.length!==1)fail('Payroll identity is not linked to one active, source-bound, onboarding-ready VECTOR staff row.','STAFFOLOGY_PAYROLL_IDENTITY_NOT_READY',409);
+ const lines=batch.lines.filter(line=>line.employee===employee);
  if(lines.length!==1)fail('The approved basic-only integration requires exactly one retained employee line.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED');
  const line=lines[0];
  if(line.code!=='WORKED_BASIC'||Number(line.allowance||0)!==0||line.grossPence===null)fail('Only one allowance-free WORKED_BASIC line is supported.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED');
  if(line.payrollId!==approval.payrollCode)fail('Released payroll identity differs from the approved provider mapping.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED');
  const effectiveDate=exact(approval.effectiveDate,'Effective date');
  if(effectiveDate<period.start||effectiveDate>period.end||line.date!==effectiveDate)fail('Approved effective date does not identify the released payroll line.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED');
- const input={employerId:id(approval.employerId,'Staffology employer'),employeeId:id(approval.staffologyEmployeeId,'Staffology employee'),entryId:id(approval.entryId,'Staffology entry'),payrollCode:exact(approval.payrollCode,'Payroll code'),effectiveDate,tenant:id(approval.tenant,'Tenant'),batchId:batch.id,sourceRevision:`sha256:${batch.checksum}`,mode:'hourly-basic-replacement',rounding:approval.rounding,taxYear:approval.taxYear,payPeriod:approval.payPeriod,periodNumber:approval.periodNumber,ordinal:approval.ordinal,version:approval.version,lines:[{code:exact(approval.basicPayCode,'Approved basic pay code'),hours:exact(line.hours,'Released hours'),rate:exact(line.rate,'Released rate')}]};
+ const payCodeDefinitionSha256=exact(approval.payCodeDefinitionSha256,'Pay-code definition digest');if(!/^[a-f0-9]{64}$/.test(payCodeDefinitionSha256))fail('A current Staffology pay-code semantic digest is required.','STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED',403);
+ const input={employerId:id(approval.employerId,'Staffology employer'),employeeId:id(approval.staffologyEmployeeId,'Staffology employee'),entryId:id(approval.entryId,'Staffology entry'),payrollCode:exact(approval.payrollCode,'Payroll code'),effectiveDate,tenant:id(approval.tenant,'Tenant'),batchId:batch.id,sourceRevision:`sha256:${batch.checksum}`,mode:'hourly-basic-replacement',rounding:approval.rounding,taxYear:approval.taxYear,payPeriod:approval.payPeriod,periodNumber:approval.periodNumber,ordinal:approval.ordinal,version:approval.version,payCodeDefinitionSha256,lines:[{code:exact(approval.basicPayCode,'Approved basic pay code'),hours:exact(line.hours,'Released hours'),rate:exact(line.rate,'Released rate')}]};
  // Run the adapter's authoritative mapper now so unsupported decimals, rounding
  // or run coordinates fail before any durable intent can be created.
  const mapped=Staffology.mapPayroll(input);
@@ -81,8 +132,10 @@ function createRuntime({loadState,stagePeople=null,assertStagePeople=null,produc
   assertEmployeeMappings(actor,mappings){const options=this.employeeMappingOptions(actor),allowed=(values,value)=>values.some(item=>String(item)===String(value));if(!Array.isArray(mappings)||mappings.some(row=>!row||!options.managers.some(item=>item.id===row.managerId)||!allowed(options.sites,row.site)||!allowed(options.jobs,row.job)||!allowed(options.contractTypes,row.contractType)||!allowed(options.weeklyHours,row.weeklyHours)))fail('Employee mapping is outside the current canonical manager, site, job, contract or weekly-hours options.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);for(const row of mappings)reviewedEmail(row.email);return true;},
   stageEmployeeAcquisition(actor,acquisition,receipt){if(typeof stagePeople!=='function')fail('Canonical employee staging boundary is unavailable.','STAFFOLOGY_EMPLOYEE_IMPORT_NOT_WIRED',503);const envelope=peopleEnvelope(acquisition,receipt),former=envelope.records.filter(row=>row.operation==='delete'),full=stagePeople(actor,envelope,receipt);if(!former.length)return full;const eligible=envelope.records.filter(row=>row.operation!=='delete'),lifecycleHold=Object.freeze({batchId:full.id,held:former.length,employeeIds:Object.freeze(former.map(row=>row.externalId))});if(!eligible.length)return {...full,lifecycleHold};const eligibleReceipt={...receipt,idempotencyKey:`staffology-current-${sha256(receipt.idempotencyKey).slice(0,24)}`},staged=stagePeople(actor,{...envelope,records:eligible},eligibleReceipt);return {...staged,lifecycleHold};},
   preparePayroll(actor,approval){if(!actor?.tenant||actor.tenant!==approval?.tenant||!(actor.permissions||[]).includes('payroll.export'))fail('Current payroll release permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);return preparePayrollInput(loadState(actor.tenant),approval);},
+  prepareBatchManifest(actor,manifest){if(!actor?.tenant||!(actor.permissions||[]).includes('payroll.export'))fail('Current payroll release permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);return releasedBatchManifest(loadState(actor.tenant),manifest);},
+  payrollLineIdentity(row){return payrollLineIdentity(row);},
   coordinator(options){if(typeof productionBoundaries?.coordinator!=='function')fail('Production Staffology store and authority are not assembled.','STAFFOLOGY_PRODUCTION_STORE_REQUIRED',503);return productionBoundaries.coordinator(options);}
  });
 }
 
-module.exports={createRuntime,releasedBatch,preparePayrollInput,peopleEnvelope,assertPeopleApplicationRecord,sha256};
+module.exports={createRuntime,releasedBatch,releasedBatchManifest,payrollLineIdentity,preparePayrollInput,peopleEnvelope,assertPeopleApplicationRecord,sha256};

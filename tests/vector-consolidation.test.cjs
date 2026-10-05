@@ -26,7 +26,7 @@ function load(extra = {}) {
   assert.ok(source.includes(hook), 'existing Vector test hook is present');
   const augmented = source.replace(hook,
     'window.VectorWorkforceOperations={NAV,labourCost,metrics,loadTimeReviewEvidence,sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
-    'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");generalPage=()=>events.push("employee-source");apply();},marker:MARKER');
+    'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTenantCalendar=async()=>({tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000});state.calendar={status:"ready",value:{tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000}};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");renderEmployeeHome=()=>events.push("employee-current-personal");generalPage=()=>events.push("employee-source");apply();},marker:MARKER');
   context.events = events;
   vm.runInNewContext(augmented, context);
   return { api: context.window.VectorWorkforceOperations, context, events,
@@ -60,10 +60,10 @@ test('five-section navigation keeps every registered workflow reachable exactly 
   assert.deepEqual(Array.from(assigned).concat(settings).sort(), routes.slice().sort());
   assert.equal(new Set([...assigned, ...settings]).size, routes.length);
 });
-test('employee Today preserves the existing self-service screen instead of replacing it with the manager dashboard', () => {
+test('employee Today renders the authenticated current personal home instead of the legacy sample overview', () => {
   const { api, events, flush } = load({ employee: true, selectors: { '.app': { dataset: {} }, '.content': {} } });
   api.exerciseHome(); flush();
-  assert.deepEqual(events, ['employee-source']);
+  assert.deepEqual(events, ['employee-current-personal']);
 });
 test('an unregistered payroll page cannot be opened by an employee', async () => {
   const { api, context } = load({ employee: true, routes: ['overview', 'leave'] });

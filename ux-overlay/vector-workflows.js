@@ -34,21 +34,23 @@
   async function refresh() {
     if (OFFLINE) throw Error('Connect to the authenticated Vector service to review or change payroll records.');
     clearOwner();
-    const epoch = ++RF.epoch, requestedPeriod = RF.period, owner = state.owner;
-    const suffix = requestedPeriod ? '?period=' + encodeURIComponent(requestedPeriod) : '';
-    const [report, company] = await Promise.all([
-      reviewer() ? request('/api/weekly-review' + suffix) : null,
-      permitted('payroll.view') ? request('/api/payroll-run' + suffix) : null
+    const canReview=reviewer(),canPayroll=permitted('payroll.view'),epoch=++RF.epoch,owner=state.owner;
+    if(!canReview&&!canPayroll){RF.period='';RF.report=null;RF.company=null;RF.team='';return true;}
+    const calendar=await request('/api/current-review-period');
+    if(epoch!==RF.epoch||owner!==state.owner||owner!==ownerKey()||!F.ready)return false;
+    const authoritativePeriod=calendar?.period?.id||null;
+    if(!authoritativePeriod)throw Error('The server did not return a current review period.');
+    const suffix='?period='+encodeURIComponent(authoritativePeriod);
+    const [report,company]=await Promise.all([
+      canReview?request('/api/weekly-review'+suffix):null,
+      canPayroll?request('/api/payroll-run'+suffix):null
     ]);
-    if (epoch !== RF.epoch || owner !== state.owner || owner !== ownerKey() || !F.ready) return false;
-    const reportPeriod = report?.period || null, companyPeriod = company?.period || null;
-    if (reportPeriod && companyPeriod && reportPeriod !== companyPeriod) throw Error('Manager review and payroll disagree on the current authoritative review period.');
-    const authoritativePeriod = reportPeriod || companyPeriod;
-    if (!authoritativePeriod) throw Error('The server did not return a current review period.');
-    if (requestedPeriod && authoritativePeriod !== requestedPeriod) throw Error('The requested review period is no longer authoritative. Refresh the current period.');
-    RF.period = authoritativePeriod;
-    RF.report = report; RF.company = company;
-    if (!report?.teams.some(team => team.id === RF.team)) RF.team = report?.teams[0]?.id || '';
+    if(epoch!==RF.epoch||owner!==state.owner||owner!==ownerKey()||!F.ready)return false;
+    const reportPeriod=report?.period||null,companyPeriod=company?.period||null;
+    if(reportPeriod&&reportPeriod!==authoritativePeriod)throw Error('Manager review differs from the server-authoritative current period.');
+    if(companyPeriod&&companyPeriod!==authoritativePeriod)throw Error('Payroll differs from the server-authoritative current period.');
+    RF.period=authoritativePeriod;RF.report=report;RF.company=company;
+    if(!report?.teams.some(team=>team.id===RF.team))RF.team=report?.teams[0]?.id||'';
     return true;
   }
   const evidenceCopy = value => JSON.parse(JSON.stringify(value));
@@ -369,7 +371,7 @@
       for (const [id, visible] of [['vw-work-fields', work], ['vw-absence-fields', absence]]) { const group = document.getElementById(id); if (group) { group.hidden = !visible; group.disabled = !visible; } }
     }
     if (event.target.id === 'vw-team') { RF.team = event.target.value; await render(); }
-    if (event.target.id === 'vw-period') { RF.period = event.target.value; RF.report = null; RF.company = null; state.receipt = null; await render(); }
+    if (event.target.id === 'vw-period') { state.receipt = null; await render(); }
   });
   globalThis.VectorWorkflow = Object.freeze({ refresh, action, mutate, weeklyPage, payrollPage, leaveRefresh, leaveRequest, leaveDecision, leavePage, leaveState: () => ({ bootstrap: LF.bootstrap, personal: LF.personal, receipt: LF.receipt, busy: LF.busy }), state: () => ({ receipt: state.receipt, busy: state.busy }), marker: 'VECTOR_AUTHENTICATED_WORKFLOWS_V1' });
 }());

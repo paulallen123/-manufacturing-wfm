@@ -72,6 +72,14 @@ function nowIso() {
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
 }
+function canonicalJson(value) {
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number' && Number.isFinite(value)) return JSON.stringify(value);
+  if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
+  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + canonicalJson(value[key])).join(',') + '}';
+  throw new Error('Operating-state evidence must be finite JSON.');
+}
+function digestJson(value) { return createHash('sha256').update(canonicalJson(value)).digest('hex'); }
 
 function recoveryKey(secret) {
   return createHash('sha256').update('wfm-implementation-invitation-recovery:v1:' + String(secret)).digest();
@@ -289,10 +297,14 @@ function createOneDayEnterpriseEngine(options = {}) {
     else if (observedSha !== candidateSha || observedDeployment !== deploymentId) reason = 'EVIDENCE_CANDIDATE_IDENTITY_MISMATCH';
     else if (item.tenant && item.tenant !== run.tenant) reason = 'EVIDENCE_TENANT_MISMATCH';
     else if (item.runId && item.runId !== run.id) reason = 'EVIDENCE_RUN_MISMATCH';
+    const operatingState = operatingStateDigestForRun(run);
+    const observedOperatingStateDigest = String(item.operatingStateDigest || '');
+    if (!reason && !observedOperatingStateDigest) reason = 'EVIDENCE_OPERATING_STATE_DIGEST_MISSING';
+    else if (!reason && observedOperatingStateDigest !== operatingState.digest) reason = 'EVIDENCE_OPERATING_STATE_DIGEST_MISMATCH';
     return {
       status: reason ? 'REVALIDATION_REQUIRED' : 'MATCHED', reason,
-      expected: { candidateSha, deploymentId, tenant: run.tenant, runId: run.id },
-      observed: { candidateSha: observedSha || null, deploymentId: observedDeployment || null }
+      expected: { candidateSha, deploymentId, tenant: run.tenant, runId: run.id, operatingStateDigest: operatingState.digest },
+      observed: { candidateSha: observedSha || null, deploymentId: observedDeployment || null, operatingStateDigest: observedOperatingStateDigest || null }
     };
   }
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
@@ -853,6 +865,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       exactTargetDeploymentId: deploymentId,
       tenant: run.tenant,
       runId: run.id,
+      operatingStateDigest: operatingStateDigestForRun(run).digest,
       fixtureOnly: false,
       evidenceClass: 'customer-authorised',
       sourceAuthoritative: true,
@@ -1022,9 +1035,27 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
-  function workforceReadinessForTenant(tenant) {
+  function tenantStateFor(tenant) {
     const row = tenantStateById.get(tenant);
-    const state = parseJsonSafe(row?.state, {});
+    return parseJsonSafe(row?.state, {});
+  }
+
+  function relevantPayrollPeriodForTenant(tenant) {
+    const state = tenantStateFor(tenant),periods=Array.isArray(state?.payrollControl?.periods)?state.payrollControl.periods:[];
+    const today=new Date().toISOString().slice(0,10);
+    const current=periods.find(period=>period?.start<=today&&period?.end>=today);
+    const selected=current||[...periods].filter(period=>period?.start<=today).sort((a,b)=>String(b.start).localeCompare(String(a.start)))[0]||null;
+    if(!selected)return null;
+    return {
+      id:selected.id||selected.start||null,start:selected.start||null,end:selected.end||null,
+      source:selected.source||null,
+      teamStates:Array.isArray(selected.teams)?selected.teams.map(team=>({id:team.id,status:selected.reviews?.[team.id]?.status||null,feedComplete:team.feedComplete===true})).sort((a,b)=>String(a.id).localeCompare(String(b.id))):[],
+      batches:Array.isArray(selected.batches)?selected.batches.map(batch=>({id:batch.id,status:batch.status,checksum:batch.checksum||null,rowCount:batch.rowCount||null,employeeCount:batch.employeeCount||null})).sort((a,b)=>String(a.id).localeCompare(String(b.id))):[]
+    };
+  }
+
+  function workforceReadinessForTenant(tenant) {
+    const state = tenantStateFor(tenant);
     const people = Array.isArray(state?.onboarding?.people) ? state.onboarding.people : [];
     const staff = Array.isArray(state?.staff) ? state.staff : [];
     const activeImported = people.filter(person => person && person.status !== 'former' && person.operation !== 'delete');
@@ -1051,39 +1082,49 @@ function createOneDayEnterpriseEngine(options = {}) {
     let profile = null;
     try { profile = JSON.parse(process.env.WFM_STAFFOLOGY_OPERATION_JSON || 'null'); } catch {}
     if (!profile || typeof profile !== 'object') return { required: false, proven: true, configured: false };
-    const bindingMatches = profile.tenant === run.tenant &&
-      profile.implementationRunId === run.id &&
-      profile.candidateSha === candidateSha &&
-      (!profile.deploymentId || profile.deploymentId === deploymentId);
+    const resolvedBinding = {
+      tenant:String(profile.tenant||''),implementationRunId:String(profile.implementationRunId||''),
+      candidateSha:String(profile.candidateSha||''),deploymentId,
+      configurationId:String(profile.configurationId||''),employerId:String(profile.employerId||'')
+    };
+    const bindingMatches = resolvedBinding.tenant === run.tenant &&
+      resolvedBinding.implementationRunId === run.id &&
+      resolvedBinding.candidateSha === candidateSha &&
+      Boolean(deploymentId)&&(!profile.deploymentId || profile.deploymentId === deploymentId);
+    const bindingDigest = bindingMatches ? digestJson(resolvedBinding) : null;
     const cohort = Array.isArray(profile.employeeIds) ? profile.employeeIds : [];
-    const workforce = workforceReadinessForTenant(run.tenant);
-    let fullPayrollVerified = false;
+    const state=tenantStateFor(run.tenant),people=Array.isArray(state?.onboarding?.people)?state.onboarding.people:[],staff=Array.isArray(state?.staff)?state.staff:[];
+    const expectedActive=people.filter(person=>cohort.includes(person?.sourceId));
+    const activated=expectedActive.filter(person=>{
+      const worker=staff.find(row=>row?.id===person.staffId);
+      return person.identityVerified===true&&person.status==='ready_for_scheduling'&&Boolean(person.staffId)&&
+        worker?.onboardingReady===true&&worker.sourceId===person.sourceId&&worker.payrollId===person.payrollId;
+    });
+    const peopleApplied=expectedActive.length>0&&activated.length===expectedActive.length;
+    let fullPayrollVerified = false,batchReceipt=null;
     try {
-      const exists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='outbound_staffology_deliveries'").get();
-      if (exists) {
-        const rows = db.prepare("SELECT payload_json,receipt_json,status FROM outbound_staffology_deliveries WHERE status='acknowledged' AND receipt_json IS NOT NULL ORDER BY updated_at DESC LIMIT 50").all();
-        fullPayrollVerified = rows.some(item => {
-          const payload = parseJsonSafe(item.payload_json, {});
-          const receipt = parseJsonSafe(item.receipt_json, {});
-          return payload?.source?.tenant === run.tenant &&
-            (!profile.payroll?.batchId || payload?.source?.batchId === profile.payroll.batchId) &&
-            receipt?.fullPayrollVerified === true;
-        });
+      const exists=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='outbound_staffology_batch_receipts'").get();
+      if(exists&&bindingDigest&&profile.batchManifest?.batchId&&profile.batchManifest?.batchChecksum){
+        const row=db.prepare('SELECT receipt_json,receipt_digest,manifest_digest FROM outbound_staffology_batch_receipts WHERE batch_id=? AND batch_checksum=? AND binding_digest=?')
+          .get(profile.batchManifest.batchId,profile.batchManifest.batchChecksum,bindingDigest);
+        if(row){
+          const receipt=parseJsonSafe(row.receipt_json,{}),receiptDigest=digestJson(receipt);
+          if(receiptDigest===row.receipt_digest&&receipt.bindingDigest===bindingDigest&&receipt.fullPayrollVerified===true&&
+            receipt.acknowledgedLineCount===receipt.expectedLineCount&&receipt.heldLineCount===0&&receipt.allIdentitiesAccountedFor===true){
+            fullPayrollVerified=true;batchReceipt={batchId:receipt.batchId,batchChecksum:receipt.batchChecksum,manifestDigest:receipt.manifestDigest,expectedLineCount:receipt.expectedLineCount,acknowledgedLineCount:receipt.acknowledgedLineCount};
+          }
+        }
       }
     } catch {}
-    const payrollConfigured = Boolean(profile.payroll);
-    const peopleApplied = workforce.importedPeople > 0;
+    const payrollConfigured = Boolean(profile.payroll&&profile.batchManifest);
     return {
       required: true,
       proven: bindingMatches && peopleApplied && payrollConfigured && fullPayrollVerified,
-      configured: true,
-      bindingMatches,
-      employerId: profile.employerId || null,
-      cohortCount: cohort.length,
-      peopleApplied,
-      payrollConfigured,
-      fullPayrollVerified,
-      claimBoundary: 'Current server-held Staffology binding plus durable provider-delivery evidence; generic integration tables are insufficient.'
+      configured: true,bindingMatches,bindingDigest,
+      employerId: profile.employerId || null,cohortCount: cohort.length,
+      expectedActiveCohortCount:expectedActive.length,activatedCohortCount:activated.length,
+      peopleApplied,payrollConfigured,fullPayrollVerified,batchReceipt,
+      claimBoundary: 'Current runtime-resolved binding digest, activated source-bound workforce identities and a complete immutable Staffology batch receipt are required.'
     };
   }
 
@@ -1092,6 +1133,21 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (requiredPopulation > 1) roles.add('manager');
     if (String(scope?.payrollSystem || '').trim() || (scope?.sourceSystems || []).some(value => /payroll|staffology/i.test(String(value)))) roles.add('payroll_admin');
     return [...roles];
+  }
+
+  function operatingStateDigestForRun(run) {
+    const source=canonicalSourceSummaryForTenant(run.tenant),workforce=workforceReadinessForTenant(run.tenant),
+      environment=tenantEnvironmentProvisioner.statusForTenant(run.tenant),payrollPeriod=relevantPayrollPeriodForTenant(run.tenant),
+      provider=staffologyJourneyForRun(run),scopeRow=scopeByRun.get(run.id,run.tenant);
+    const snapshot={
+      tenant:run.tenant,runId:run.id,
+      workforce:{importedPeople:workforce.importedPeople,identityVerified:workforce.identityVerified,readyForScheduling:workforce.readyForScheduling,importedEmailDigests:workforce.importedEmailDigests},
+      configuration:{configurationDigest:environment?.configurationDigest||null,scopeDigest:scopeRow?digestJson(normaliseScope(parseJsonSafe(scopeRow.scope_json,{}))):null},
+      source:source?{connectionId:source.connectionId,batchId:source.batchId,checksum:source.checksum,employeeCount:source.employeeCount,importedAt:source.importedAt}:null,
+      provider:{required:provider.required,bindingDigest:provider.bindingDigest||null,peopleApplied:provider.peopleApplied||false,fullPayrollVerified:provider.fullPayrollVerified||false,batchReceipt:provider.batchReceipt||null},
+      payrollPeriod
+    };
+    return {digest:digestJson(snapshot),snapshot};
   }
 
   function readinessForRun(run) {
@@ -1128,11 +1184,18 @@ function createOneDayEnterpriseEngine(options = {}) {
     const learningUserDigests = new Set(Array.isArray(learningSummary?.userEmailDigests) ? learningSummary.userEmailDigests : []);
     const importedLearningUsersReconciled = Number(workforceReadiness.importedPeople || 0) === 0 ||
       workforceReadiness.importedEmailDigests.every(value => learningUserDigests.has(value));
+    const requiredFrontlineCount=Number(workforceReadiness.importedPeople||0);
+    const requiredPrivilegedRoleCount=Object.entries(roleCoverage).filter(([role])=>role!=='employee').reduce((sum,[,value])=>sum+Number(value?.users||0),0);
+    const frontlineCoverageReady=requiredFrontlineCount===0||(
+      Number(roleCoverage.employee?.users||0)>=requiredFrontlineCount&&roleCoverage.employee?.fullyCertified===true&&importedLearningUsersReconciled
+    );
+    const privilegedCoverageReady=requiredPrivilegedRoleCount===0||Object.entries(roleCoverage)
+      .filter(([role])=>role!=='employee').every(([,value])=>Number(value?.users||0)>0&&value?.fullyCertified===true);
     const trainingPopulationReady = !trainingPopulationRequired
       ? Boolean(learningSummary)
       : Boolean(learningSummary) &&
         Number(learningSummary.users || 0) >= requiredTrainingPopulation &&
-        importedLearningUsersReconciled &&
+        importedLearningUsersReconciled&&frontlineCoverageReady&&privilegedCoverageReady&&
         requiredRoles.every(role => Number(roleCoverage[role]?.users || 0) > 0 && roleCoverage[role]?.fullyCertified === true);
 
     const requirements = REQUIREMENTS.map(requirement => {
@@ -1336,12 +1399,17 @@ function createOneDayEnterpriseEngine(options = {}) {
       requirements,
       decisions,
       blockingDecisions,
+      operatingState: operatingStateDigestForRun(run),
       learningSummary: learningSummary ? {
         ...learningSummary,
         requiredPopulation: requiredTrainingPopulation,
         populationReconciliationRequired: trainingPopulationRequired,
         requiredRoles,
+        requiredFrontlineCount,
+        requiredPrivilegedRoleCount,
         importedLearningUsersReconciled,
+        frontlineCoverageReady,
+        privilegedCoverageReady,
         populationAndRoleCoverageReady: trainingPopulationReady
       } : null,
       sourceDataSummary,

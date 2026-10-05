@@ -181,15 +181,35 @@ async function acquireEmployees({client=globalThis.fetch,config,employerId,pageS
     paginationComplete:true,atomicProviderSnapshot:false};
 }
 
-function replacementSafety(entry) {
-  const p=entry?.payOptions,lines=p?.regularPayLines;
+function replacementSafety(entry,employee=null) {
+  const p=entry?.payOptions,lines=p?.regularPayLines,employment=employee?.employmentDetails||entry?.employmentDetails||{},leaver=employment?.leaverDetails||{};
+  if(employee){
+    if(employee.status!=='Current')return immutable({safe:false,reason:'employee-not-current'});
+    if(employment.onHold===true)return immutable({safe:false,reason:'employee-on-hold'});
+    if(leaver.hasLeft===true)return immutable({safe:false,reason:'employee-has-left'});
+    if(leaver.leaveDate!=null)return immutable({safe:false,reason:'employee-leave-date-present'});
+    if(leaver.paymentAfterLeaving===true)return immutable({safe:false,reason:'employee-payment-after-leaving'});
+  }
+  if(entry?.paymentAfterLeaving===true)return immutable({safe:false,reason:'entry-payment-after-leaving'});
+  if(entry?.unpaidAbsence===true)return immutable({safe:false,reason:'entry-unpaid-absence'});
+  if(entry?.recievingOffsetPay===true)return immutable({safe:false,reason:'entry-receiving-offset-pay'});
+  if(entry?.percentageOfWorkingDaysPaidAsNormal!=null&&Number(entry.percentageOfWorkingDaysPaidAsNormal)!==1)return immutable({safe:false,reason:'working-days-percentage-not-normal'});
+  if(entry?.workingDaysNotPaidAsNormal!=null&&Number(entry.workingDaysNotPaidAsNormal)!==0)return immutable({safe:false,reason:'working-days-not-normal'});
+  if(p?.autoAdjustForLeave===true)return immutable({safe:false,reason:'pay-options-auto-adjust-for-leave'});
+  if(Array.isArray(p?.excludedRegularPayLines)&&p.excludedRegularPayLines.length>0)return immutable({safe:false,reason:'excluded-regular-pay-lines'});
   if(p?.basis!=='Hourly')return immutable({safe:false,reason:'basis-not-hourly'});
   if(typeof p.payCode!=='string'||!p.payCode.trim())return immutable({safe:false,reason:'pay-code-missing'});
   if(!Array.isArray(lines)||lines.length!==1||lines[0]?.code!==p.payCode)return immutable({safe:false,reason:'regular-line-not-isolated'});
   if(p.lines!==undefined&&(!Array.isArray(p.lines)||p.lines.length!==0))return immutable({safe:false,reason:'additional-lines-present'});
+  const line=lines[0];
+  if(line.leaveId!=null)return immutable({safe:false,reason:'basic-line-leave-linked'});
+  if(Number(line.leaveStatutoryDaysPaid||0)>0)return immutable({safe:false,reason:'basic-line-statutory-leave-days'});
+  if(Number(line.leaveStatutoryWeeksPaid||0)>0)return immutable({safe:false,reason:'basic-line-statutory-leave-weeks'});
+  if(line.autoAdjustForLeave===true)return immutable({safe:false,reason:'basic-line-auto-adjust-for-leave'});
+  if(line.isLeaveBasedBackPayLine===true)return immutable({safe:false,reason:'basic-line-leave-backpay'});
   try{
-    if(!decimalEqual(lines[0].rate,p.payAmount)||!decimalEqual(lines[0].multiplier,p.payAmountMultiplier)||
-      !entry.totals||!decimalEqual(lines[0].value,entry.totals.basicPay))return immutable({safe:false,reason:'basic-line-inconsistent'});
+    if(!decimalEqual(line.rate,p.payAmount)||!decimalEqual(line.multiplier,p.payAmountMultiplier)||
+      !entry.totals||!decimalEqual(line.value,entry.totals.basicPay))return immutable({safe:false,reason:'basic-line-inconsistent'});
   }catch{return immutable({safe:false,reason:'basic-line-incomplete'});}
   return immutable({safe:true,reason:null});
 }
@@ -209,6 +229,27 @@ async function discoverPayroll({client=globalThis.fetch,config,employerId,allowe
     if(!/^Year\d{4}$/.test(taxYear))throw failure('STAFFOLOGY_RUN_IDENTITY_INVALID','Open payroll tax year is invalid.',502);
     const period=integer(open.period,'Period',1,366),ordinal=integer(open.ordinal,'Ordinal',1,1000),version=integer(open.version,'Version',0,100000);
     const basePath=`/employers/${encodeURIComponent(employer)}/payrun/${taxYear}/${payPeriod}/${period}`;
+    const payCodesResult=await request(client,config,basePath+`/paycodes?ordinal=${ordinal}&version=${version}`);
+    const payCodeRows=Array.isArray(payCodesResult.body)?payCodesResult.body:Array.isArray(payCodesResult.body?.items)?payCodesResult.body.items:null;
+    if(!payCodeRows)throw failure('STAFFOLOGY_RESPONSE_INVALID','Pay-run pay-code discovery response is invalid.',502);
+    const payCodes=new Map();
+    for(const row of payCodeRows){
+      const code=exactText(row?.code,'Pay code identity',80);
+      if(payCodes.has(code))throw failure('STAFFOLOGY_RESPONSE_INVALID','Duplicate pay-code identity returned during discovery.',502);
+      const semantic={
+        code,
+        isDeduction:row.isDeduction===true,isNiable:row.isNiable===true,isTaxable:row.isTaxable===true,
+        isPensionable:row.isPensionable===true,isAttachable:row.isAttachable===true,
+        isRealTimeClass1aNiable:row.isRealTimeClass1aNiable===true,
+        isNotContributingToHolidayPay:row.isNotContributingToHolidayPay===true,
+        isQualifyingEarningsForAe:row.isQualifyingEarningsForAe===true,isNotTierable:row.isNotTierable===true,
+        isAutoAdjust:row.isAutoAdjust===true,calculationType:row.calculationType??null,
+        multiplierType:row.multiplierType??null,dailyRateMultiplier:row.dailyRateMultiplier??null,
+        hourlyRateMultiplier:row.hourlyRateMultiplier??null,isSystemCode:row.isSystemCode===true,
+        isControlCode:row.isControlCode===true,isNotional:row.isNotional===true
+      };
+      payCodes.set(code,immutable({semantic,sha256:sha256(row)}));
+    }
     let firstRun=null,complete=false;const entries=[],seen=new Set();
     for(let pageNum=0;pageNum<maxPages;pageNum++){
       const result=await request(client,config,basePath+`?ordinal=${ordinal}&version=${version}&pageNum=${pageNum}&pageSize=${pageSize}`);
@@ -235,10 +276,19 @@ async function discoverPayroll({client=globalThis.fetch,config,employerId,allowe
         const e=detail.body;
         if(!e||e.id!==entryId||e?.employee?.id!==providerEmployeeId||e.taxYear!==taxYear||e.payPeriod!==payPeriod||e.period!==period||e.ordinal!==ordinal||e.payRunVersion!==version)
           throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Pay-run entry detail differs from discovered coordinates.',502);
+        const employeePath=`/employers/${encodeURIComponent(employer)}/employees/${encodeURIComponent(providerEmployeeId)}`;
+        const employeeResult=await request(client,config,employeePath);
+        const employee=employeeResult.body;
+        if(!employee||employee.id!==providerEmployeeId)throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Payroll discovery employee detail differs from the entry identity.',502);
         const payrollCode=exactText(e?.employmentDetails?.payrollCode,'Payroll code',80);
-        const safety=replacementSafety(e);
+        if(exactText(employee?.employmentDetails?.payrollCode,'Employee payroll code',80)!==payrollCode)
+          throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Employee payroll code differs from the pay-run entry.',502);
+        const payCode=exactText(e?.payOptions?.payCode,'Pay code',80),definition=payCodes.get(payCode);
+        if(!definition)throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Entry pay code has no matching current pay-run definition.',409);
+        const safety=replacementSafety(e,employee);
         entries.push(immutable({
-          entryId,providerEmployeeId,payrollCode,basis:e?.payOptions?.basis??null,payCode:e?.payOptions?.payCode??null,
+          entryId,providerEmployeeId,payrollCode,basis:e?.payOptions?.basis??null,payCode,
+          payCodeDefinition:definition.semantic,payCodeDefinitionSha256:definition.sha256,
           regularLineCount:Array.isArray(e?.payOptions?.regularPayLines)?e.payOptions.regularPayLines.length:0,
           safeReplacement:safety.safe,safeReplacementReason:safety.reason
         }));
@@ -282,10 +332,12 @@ function mapPayroll(input) {
   if(typeof input.taxYear!=='string'||!/^Year\d{4}$/.test(input.taxYear)||!['Monthly','Weekly','Fortnightly','FourWeekly','Quarterly','HalfYearly','Annual','Daily','Custom'].includes(input.payPeriod))throw failure('STAFFOLOGY_RUN_IDENTITY_INVALID','Explicit payroll run coordinates are required.');
   const run={taxYear:input.taxYear,payPeriod:input.payPeriod,periodNumber:integer(input.periodNumber,'Period',1,366),ordinal:integer(input.ordinal,'Ordinal',1,1000),version:integer(input.version,'Version',0,100000)};
   const entryId=requiredId(input.entryId,'Provider entry identity');
+  const payCodeDefinitionSha256=exactText(input.payCodeDefinitionSha256,'Pay-code definition digest',64);
+  if(!/^[a-f0-9]{64}$/.test(payCodeDefinitionSha256))throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','A current pay-code semantic digest is required.');
   const source={system:'VECTOR',tenant:requiredId(input.tenant,'Tenant identity'),batchId:requiredId(input.batchId,'Batch identity'),revision:exactText(input.sourceRevision,'Source revision',100)};
   const importBody=[{payrollCode,basis:'Hourly',payCode:code,payAmount:Number(rate.text),payAmountMultiplier:Number(hours.text),lines:[]}];
   if(!decimalEqual(importBody[0].payAmount,rate.text)||!decimalEqual(importBody[0].payAmountMultiplier,hours.text))throw failure('STAFFOLOGY_PAYROLL_LINE_INVALID','Wire conversion changed a decimal value.');
-  return immutable({employerId,employeeId,entryId,payrollCode,effectiveDate,run,source,mode:input.mode,rounding,expectedBasicPay,basic:{code,hours:hours.text,rate:rate.text},importBody});
+  return immutable({employerId,employeeId,entryId,payrollCode,effectiveDate,run,source,mode:input.mode,rounding,expectedBasicPay,payCodeDefinitionSha256,basic:{code,hours:hours.text,rate:rate.text},importBody});
 }
 
 function financialSnapshot(value) {
@@ -329,6 +381,9 @@ function calculatedBasicPay(entry,expected) {
 function validateProviderResponse(observation,expected) {
   if(observation?.employerId!==expected.employerId)throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Readback employer path is not bound.');
   validateRun(observation.run,expected);validateEntryIdentity(observation.entry,expected);
+  const safety=replacementSafety(observation.entry,observation.employee);
+  if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Current employee/payroll state is unsafe for replacement.');
+  if(sha256(observation.payCode)!==expected.payCodeDefinitionSha256)throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Readback pay-code semantics differ from the approved definition.');
   const e=observation.entry,p=e.payOptions;
   if(!p||p.basis!=='Hourly'||!decimalEqual(p.payAmount,expected.basic.rate)||!decimalEqual(p.payAmountMultiplier,expected.basic.hours))throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider rate, hours or basis do not match.');
   if(p.payCode!==expected.basic.code)throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider basic pay code does not match.');
@@ -399,7 +454,19 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     const e=await request(client,config,runPath(payload)+`/${encodeURIComponent(payload.entryId)}?ordinal=${payload.run.ordinal}`,{acceptedStatuses:[404]});
     if(e.status===404)throw failure('STAFFOLOGY_READBACK_UNRESOLVED','Provider entry is not available for reconciliation.');
     validateEntryIdentity(e.body,payload);
-    return {employerId:payload.employerId,run:r.body,entry:e.body,provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256}};
+    const employeePath=`/employers/${encodeURIComponent(payload.employerId)}/employees/${encodeURIComponent(payload.employeeId)}`;
+    const employeeResult=await request(client,config,employeePath);
+    if(employeeResult.body?.id!==payload.employeeId||employeeResult.body?.employmentDetails?.payrollCode!==payload.payrollCode)
+      throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Current employee state differs from the authorised payroll identity.',502);
+    const safety=replacementSafety(e.body,employeeResult.body);
+    if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Current provider state is unsafe for basic-pay replacement: '+safety.reason+'.');
+    const payCodesResult=await request(client,config,runPath(payload)+`/paycodes?ordinal=${payload.run.ordinal}&version=${payload.run.version}`);
+    const payCodes=Array.isArray(payCodesResult.body)?payCodesResult.body:Array.isArray(payCodesResult.body?.items)?payCodesResult.body.items:null;
+    if(!payCodes)throw failure('STAFFOLOGY_RESPONSE_INVALID','Current pay-code definition response is invalid.',502);
+    const matching=payCodes.filter(row=>row?.code===payload.basic.code);
+    if(matching.length!==1||sha256(matching[0])!==payload.payCodeDefinitionSha256)
+      throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Current pay-code semantics differ from the approved definition.',409);
+    return {employerId:payload.employerId,run:r.body,entry:e.body,employee:employeeResult.body,payCode:matching[0],provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,employeePath,payCodesPath:runPath(payload)+'/paycodes',openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256,employeeResponseSha256:employeeResult.responseSha256,payCodesResponseSha256:payCodesResult.responseSha256}};
   }
   async function retainEvidence(deliveryId,token,phase,observation) {
     const evidence=immutable({phase,observedAt:new Date().toISOString(),run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});
@@ -528,9 +595,19 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
   }
   async function inspect(input) {
     assertScope(input);
-    const payload=mapPayroll(input),observation=await observe(payload),verified=validateProviderResponse(observation,payload);
+    const payload=mapPayroll(input),deliveryId=businessKey(payload),deliveryDigest=sha256(payload),stored=await store.get(deliveryId);
+    if(!stored||stored.deliveryId!==deliveryId||stored.digest!==deliveryDigest||stored.bindingDigest!==bindingDigest||
+      !stored.dispatchAttempt||stored.status!=='acknowledged'||!stored.receipt)
+      throw failure('STAFFOLOGY_DISPATCH_NOT_RECORDED','Provider readback is not evidence of a VECTOR send without the exact acknowledged delivery.');
+    const transport=[...(stored.evidence||[])].reverse().find(item=>item.phase==='transport')?.value;
+    if(!transport||!Number.isInteger(transport.httpStatus)||!/^[a-f0-9]{64}$/.test(transport.requestSha256||'')||!/^[a-f0-9]{64}$/.test(transport.responseSha256||''))
+      throw failure('STAFFOLOGY_TRANSPORT_EVIDENCE_NOT_PERSISTED','Acknowledged delivery lacks durable transport evidence.',503);
+    const observation=await observe(payload),verified=validateProviderResponse(observation,payload);
     const observedBasicPay=Number(calculatedBasicPay(observation.entry,payload)).toFixed(2);
-    return immutable({verified,comparison:{expectedBasicPay:payload.expectedBasicPay,observedBasicPay,matches:observedBasicPay===payload.expectedBasicPay},run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});
+    const receiptMatches=stored.receipt.verification===verified.verification&&stored.receipt.providerReference===verified.providerReference&&
+      canonical(stored.receipt.run)===canonical(verified.run)&&stored.receipt.fullPayrollVerified===false;
+    if(!receiptMatches)throw failure('STAFFOLOGY_RECEIPT_CONFLICT','Current provider readback does not match the acknowledged VECTOR receipt.');
+    return immutable({verified,delivery:{deliveryId,digest:deliveryDigest,bindingDigest,status:stored.status,dispatchRecorded:true,transportEvidencePersisted:true,receiptVerified:true},comparison:{expectedBasicPay:payload.expectedBasicPay,observedBasicPay,matches:observedBasicPay===payload.expectedBasicPay},run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});
   }
   return {deliver,reconcile,inspect};
 }

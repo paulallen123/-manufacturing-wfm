@@ -25,7 +25,7 @@ const NAV=[
 const DESIGN_ID='VECTOR_FIVE_SECTION_2026_09_19';
 let navigationEpoch=0,historyReady=false;
 const RETIRED_ROUTE_REDIRECTS=Object.freeze({'weekly-review':'attendance','time-review':'attendance','savings-decisions':'costs'});
-const state={queued:false,evidenceEpoch:0,readinessEpoch:0,employeeHomeEpoch:0,timeReviewEvidence:{status:'idle',items:[]},readinessEvidence:{status:'idle',departments:[],summary:null,asOf:null,limitations:[]},employeeHome:{status:'idle',owner:'',value:null,error:''},returnFocus:false,settingsOpen:false};
+const state={queued:false,evidenceEpoch:0,readinessEpoch:0,calendarEpoch:0,employeeHomeEpoch:0,timeReviewEvidence:{status:'idle',items:[]},readinessEvidence:{status:'idle',departments:[],summary:null,asOf:null,limitations:[]},calendar:{status:'idle',value:null},employeeHome:{status:'idle',owner:'',value:null,error:''},returnFocus:false,settingsOpen:false};
 const observerConfig={subtree:true,childList:true};
 let shellObserver=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -344,9 +344,13 @@ const ACTION_CONFIRMATION_STATES=new Set(['action_required','decision_sent','con
 const ACTION_FRESHNESS_STATES=new Set(['current','stale','unknown']);
 function acceptTimeReviewEvidenceItem(item){
   if(!item||typeof item!=='object'||Array.isArray(item))return null;
+  const calendar=state.calendar.value;
+  if(state.calendar.status!=='ready'||!calendar)return null;
   if(item.contractVersion!==ACTION_EVIDENCE_CONTRACT||item.workflow!=='time-review')return null;
   if(!String(item.sourceId||'').trim()||!/^[A-Z0-9_]+$/.test(String(item.reasonCode||''))||!String(item.authorityRequired||'').trim())return null;
-  if(!Number.isFinite(Date.parse(String(item.observedAt||''))))return null;
+  const observedAt=Date.parse(String(item.observedAt||''));if(!Number.isFinite(observedAt))return null;
+  if(String(item.timeZone||'')!==calendar.timeZone||!Number.isFinite(Number(item.maxAgeMs))||Number(item.maxAgeMs)<=0||
+    observedAt>Date.parse(calendar.asOf)+30000||Date.parse(calendar.asOf)-observedAt>Number(item.maxAgeMs))return null;
   const freshness=item.freshness,confirmation=item.confirmation;
   if(!freshness||typeof freshness!=='object'||!ACTION_FRESHNESS_STATES.has(String(freshness.state||'').toLowerCase()))return null;
   const freshnessState=String(freshness.state||'').toLowerCase(),validUntil=freshness.validUntil==null?null:Date.parse(String(freshness.validUntil));
@@ -393,8 +397,10 @@ function structuredReviewRows(){
   const visible=new Set(visiblePeople().map(p=>String(p?.id)).filter(Boolean));
   try{if(typeof data!=='undefined'&&Array.isArray(data.requests))for(const request of data.requests){
     if(String(request?.status||'').toLowerCase()!=='pending'||!visible.has(String(request?.employee)))continue;
-    const p=sourcePerson(request.employee);
-    rows.push({title:`${p?.name||request.employeeName||'Employee'} · leave request`,detail:'Pending leave request requires a manager decision in Absence & Leave.',sourceId:String(request.id),workflow:'leave',route:'leave',tone:'blue',action:'Review',status:'Needs review'});
+    const p=sourcePerson(request.employee),calendar=state.calendar.value,currentDay=calendar?.localDate||null,
+      requestDay=leaveDate(request.createdAt||request.requestedAt||request.submittedAt||request.date||request.start,calendar?.timeZone),
+      stale=Boolean(currentDay&&requestDay&&requestDay<currentDay);
+    rows.push({title:`${p?.name||request.employeeName||'Employee'} · leave request`,detail:stale?'Pending leave request is overdue/stale and still requires an explicit manager decision.':'Pending leave request requires a manager decision in Absence & Leave.',sourceId:String(request.id),workflow:'leave',route:'leave',tone:stale?'amber':'blue',action:'Review',status:stale?'Overdue / stale':'Needs review',freshnessState:stale?'stale':'current'});
   }}catch{}
   return rows;
 }
@@ -421,6 +427,23 @@ async function loadTimeReviewEvidence(){
   }
   refreshActionSurfaces();
 }
+function invalidateTenantCalendar(){state.calendarEpoch++;state.calendar={status:'idle',value:null};}
+async function loadTenantCalendar(){
+ const tenant=sourceIdentity().tenant||null;
+ if(state.calendar.status==='ready'&&state.calendar.value?.tenant===tenant)return state.calendar.value;
+ if(state.calendar.status==='ready'&&state.calendar.value?.tenant!==tenant)invalidateTenantCalendar();
+ if(state.calendar.status==='loading')return null;
+ const epoch=++state.calendarEpoch;state.calendar={status:'loading',value:null};
+ try{
+  const response=await fetch('/api/tenant-calendar',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
+  if(!response.ok)throw Error('tenant calendar unavailable');
+  const value=await response.json();
+  if(value?.schemaVersion!=='tenant-calendar-1'||!value.timeZone||!value.asOf||!/^\d{4}-\d{2}-\d{2}$/.test(String(value.localDate||''))||!Number.isFinite(Number(value.maxAgeMs)))throw Error('tenant calendar contract mismatch');
+  try{new Intl.DateTimeFormat('en-GB',{timeZone:value.timeZone}).format(new Date(value.asOf));}catch{throw Error('tenant calendar timezone invalid');}
+  if(epoch!==state.calendarEpoch)return null;state.calendar={status:'ready',value};window.WFMTenantCalendarSnapshot=value;return value;
+ }catch{if(epoch===state.calendarEpoch)state.calendar={status:'unavailable',value:null};return null;}
+}
+function serverNowMs(){const value=state.calendar.value?.asOf,ms=Date.parse(value||'');return Number.isFinite(ms)?ms:null;}
 function invalidateReadinessEvidence(){state.readinessEpoch++;state.readinessEvidence={status:'idle',departments:[],summary:null,asOf:null,limitations:[]};}
 function readinessDepartment(item){
   if(!item||typeof item!=='object'||Array.isArray(item))return null;
@@ -442,18 +465,28 @@ async function loadReadinessEvidence(){
   const epoch=state.readinessEpoch;
   state.readinessEvidence={status:'loading',departments:[],summary:null,asOf:null,limitations:[]};
   try{
-    const response=await fetch('/api/readiness',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
-    if(!response.ok)throw new Error('readiness unavailable');
-    const body=await response.json();
+    const calendar=await loadTenantCalendar();if(!calendar)throw new Error('tenant calendar unavailable');
+    const [response,identityResponse]=await Promise.all([
+      fetch('/api/readiness',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}}),
+      fetch('/api/runtime-identity',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}})
+    ]);
+    if(!response.ok||!identityResponse.ok)throw new Error('readiness unavailable');
+    const body=await response.json(),runtimeIdentity=await identityResponse.json();
     if(!body||body.schemaVersion!=='readiness-1'||!Array.isArray(body.departments))throw new Error('readiness contract mismatch');
     if(epoch!==state.readinessEpoch||employee()||page()!=='overview')return;
-    const asOf=String(body.asOf||''),asOfMs=Date.parse(asOf),nowMs=Date.now(),fresh=Number.isFinite(asOfMs)&&asOfMs<=nowMs+30000&&nowMs-asOfMs<=15*60*1000;
+    const asOf=String(body.asOf||''),asOfMs=Date.parse(asOf),nowMs=Date.parse(calendar.asOf),
+      maxAgeMs=Number(body.maxAgeMs),timeZone=String(body.timeZone||''),
+      freshnessContract=timeZone===calendar.timeZone&&Number.isFinite(maxAgeMs)&&maxAgeMs>0,
+      fresh=freshnessContract&&Number.isFinite(asOfMs)&&asOfMs<=nowMs+30000&&nowMs-asOfMs<=maxAgeMs,
+      fixtureOnly=body.fixtureOnly===true||runtimeIdentity.fixtureOnly===true;
     state.readinessEvidence={
-      status:fresh?'ready':'stale',
+      status:fixtureOnly?'fixture':fresh?'ready':'stale',
       departments:body.departments.map(readinessDepartment).filter(Boolean),
       summary:body.summary&&typeof body.summary==='object'?body.summary:null,
       asOf,
-      limitations:[...(Array.isArray(body.limitations)?body.limitations.map(String).slice(0,6):[]),...(fresh?[]:['Readiness evidence is outside the 15-minute Today SLA and is not presented as current.'])]
+      limitations:[...(Array.isArray(body.limitations)?body.limitations.map(String).slice(0,6):[]),
+        ...(fixtureOnly?['Demonstration/fixture readiness is not current operational truth.']:[]),
+        ...(!fixtureOnly&&!fresh?['Readiness evidence failed its timezone/maximum-age Today contract and is not presented as current.']:[])]
     };
   }catch{
     if(epoch!==state.readinessEpoch||employee())return;
@@ -461,21 +494,14 @@ async function loadReadinessEvidence(){
   }
   refreshReadinessSurfaces();
 }
-function authoritativeTimeZone(){
- try{
-  const own=typeof me==='function'?me():null,p=own&&typeof sourcePerson==='function'?sourcePerson(own.id):null;
-  const candidates=[p?.timeZone,p?.timezone,typeof data!=='undefined'?data?.jurisdiction?.timeZone:null,typeof data!=='undefined'?data?.jurisdiction?.timezone:null,typeof data!=='undefined'?data?.timeZone:null,typeof data!=='undefined'?data?.timezone:null].filter(v=>typeof v==='string'&&v.trim()).map(v=>v.trim());
-  for(const zone of candidates){try{new Intl.DateTimeFormat('en-GB',{timeZone:zone}).format(new Date());return zone;}catch{}}
- }catch{}
- return null;
-}
+function authoritativeTimeZone(){return state.calendar.status==='ready'?String(state.calendar.value?.timeZone||'')||null:null;}
 function zonedDate(value,zone){if(!zone)return null;const d=new Date(value);if(!Number.isFinite(d.getTime()))return null;const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));return parts.year+'-'+parts.month+'-'+parts.day;}
 function addDateDays(day,count){if(!/^\d{4}-\d{2}-\d{2}$/.test(day||''))return null;const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+count);return d.toISOString().slice(0,10);}
 function leaveDate(value,zone){if(/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')))return String(value);return zonedDate(value,zone);}
 function leaveWhen(day,zone){if(!day||!zone)return 'Date unavailable';const d=new Date(day+'T12:00:00Z');return new Intl.DateTimeFormat('en-GB',{timeZone:zone,weekday:'short',day:'2-digit',month:'short'}).format(d);}
-function leaveRows(){try{if(typeof data==='undefined'||!Array.isArray(data.requests))return [];const zone=authoritativeTimeZone(),start=zonedDate(Date.now(),zone),end=addDateDays(start,7);if(!zone||!start||!end)return [];return data.requests.filter(r=>String(r.status||'').toLowerCase()==='approved').map(r=>({r,date:leaveDate(r.start||r.date,zone)})).filter(x=>x.date&&x.date>=start&&x.date<end).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4).map(({r,date})=>{let p=null;try{if(typeof person==='function')p=person(r.employee)||null;}catch{}const name=(typeof p?.name==='string'&&p.name.trim())?p.name.trim():(typeof r.employeeName==='string'&&r.employeeName.trim()?r.employeeName.trim():'Employee');const area=[p?.departmentName,p?.teamName,p?.areaName].find(v=>typeof v==='string'&&v.trim())?.trim()||'Source-confirmed leave';const type=(typeof r.typeLabel==='string'&&r.typeLabel.trim())?r.typeLabel.trim():(typeof r.type==='string'&&r.type.trim()?r.type.trim():'Leave');return {name,area,when:leaveWhen(date,zone),type};});}catch{return []}}
-function currentDate(){const zone=authoritativeTimeZone();if(!zone)return {date:'Timezone not verified',week:'—'};const day=zonedDate(Date.now(),zone),d=new Date(day+'T12:00:00Z');const date=new Intl.DateTimeFormat('en-GB',{timeZone:zone,weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(d);const jan4=new Date(Date.UTC(d.getUTCFullYear(),0,4)),dow=(d.getUTCDay()+6)%7,thurs=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-dow+3)),janThurs=new Date(Date.UTC(jan4.getUTCFullYear(),0,4-((jan4.getUTCDay()+6)%7)+3)),week=1+Math.round((thurs-janThurs)/604800000);return {date,week};}
-function greeting(){const zone=authoritativeTimeZone();if(!zone)return 'Hello';const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:zone,hour:'2-digit',hour12:false}).format(new Date()).slice(0,2));return hour<12?'Good morning':hour<18?'Good afternoon':'Good evening';}
+function leaveRows(){try{if(typeof data==='undefined'||!Array.isArray(data.requests))return [];const zone=authoritativeTimeZone(),nowMs=serverNowMs(),start=nowMs==null?null:zonedDate(nowMs,zone),end=addDateDays(start,7);if(!zone||!start||!end)return [];return data.requests.filter(r=>String(r.status||'').toLowerCase()==='approved').map(r=>({r,date:leaveDate(r.start||r.date,zone)})).filter(x=>x.date&&x.date>=start&&x.date<end).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4).map(({r,date})=>{let p=null;try{if(typeof person==='function')p=person(r.employee)||null;}catch{}const name=(typeof p?.name==='string'&&p.name.trim())?p.name.trim():(typeof r.employeeName==='string'&&r.employeeName.trim()?r.employeeName.trim():'Employee');const area=[p?.departmentName,p?.teamName,p?.areaName].find(v=>typeof v==='string'&&v.trim())?.trim()||'Source-confirmed leave';const type=(typeof r.typeLabel==='string'&&r.typeLabel.trim())?r.typeLabel.trim():(typeof r.type==='string'&&r.type.trim()?r.type.trim():'Leave');return {name,area,when:leaveWhen(date,zone),type};});}catch{return []}}
+function currentDate(){const zone=authoritativeTimeZone(),day=state.calendar.value?.localDate;if(!zone||!day)return {date:'Timezone not verified',week:'—'};const d=new Date(day+'T12:00:00Z');const date=new Intl.DateTimeFormat('en-GB',{timeZone:zone,weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(d);const jan4=new Date(Date.UTC(d.getUTCFullYear(),0,4)),dow=(d.getUTCDay()+6)%7,thurs=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-dow+3)),janThurs=new Date(Date.UTC(jan4.getUTCFullYear(),0,4-((jan4.getUTCDay()+6)%7)+3)),week=1+Math.round((thurs-janThurs)/604800000);return {date,week};}
+function greeting(){const zone=authoritativeTimeZone(),time=String(state.calendar.value?.localTime||'');if(!zone||!/^\d{2}:/.test(time))return 'Hello';const hour=Number(time.slice(0,2));return hour<12?'Good morning':hour<18?'Good afternoon':'Good evening';}
 
 function ensureSidebar(app){let sidebar=app.querySelector(':scope > .vector-sidebar');if(sidebar)return sidebar;sidebar=document.createElement('aside');sidebar.className='vector-sidebar';sidebar.setAttribute('aria-label','Vector primary navigation');sidebar.innerHTML=`
  <div class="vector-brand"><span class="vector-brand-v" aria-hidden="true"><i></i><i></i></span><div><strong>Vector</strong><small>People. Production. A better tomorrow.</small></div></div>
@@ -536,15 +562,15 @@ function productionPreviewMarkup(source){
   }
   const asOf=state.readinessEvidence.asOf?new Date(state.readinessEvidence.asOf):null;
   const asOfText=asOf&&Number.isFinite(asOf.getTime())?new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(asOf):'current source snapshot';
-  const fresh=state.readinessEvidence.status==='ready';
-  return `<section class="vector-card vector-production-preview" data-vector-planning="${PLANNING_MARKER}"><div class="vector-card-head"><div><span class="vector-card-kicker">Production</span><h2>${fresh?'Today’s production forecast':'Production forecast'}</h2><p>Required vs planned labour capacity</p></div><button type="button" data-vector-route="readiness">Open Factory ${icon('arrow')}</button></div><div class="vector-forecast-chart">${body}</div><div class="vector-production-foot"><span></span>${fresh?'Readiness source · '+esc(asOfText):'Readiness source is stale or unavailable; it is not labelled as Today.'} No production-output units are invented.</div></section>`;
+  const fresh=state.readinessEvidence.status==='ready',fixture=state.readinessEvidence.status==='fixture';
+  return `<section class="vector-card vector-production-preview" data-vector-planning="${PLANNING_MARKER}"><div class="vector-card-head"><div><span class="vector-card-kicker">Production</span><h2>${fresh?'Today’s production forecast':'Production forecast'}</h2><p>Required vs planned labour capacity</p></div><button type="button" data-vector-route="readiness">Open Factory ${icon('arrow')}</button></div><div class="vector-forecast-chart">${body}</div><div class="vector-production-foot"><span></span>${fresh?'Readiness source · '+esc(asOfText):fixture?'Demonstration readiness only; not current operational truth.':'Readiness source is stale or unavailable; it is not labelled as Today.'} No production-output units are invented.</div></section>`;
 }
 function alertsMarkup(rows){const groups=actionQueueGroups(rows),visibleNeeds=groups.needs.slice(0,4),visibleAwaiting=groups.awaiting.slice(0,3),needsBody=visibleNeeds.length?visibleNeeds.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>',awaitingBody=groups.awaiting.length?`<details data-vector-awaiting-confirmation><summary class="vector-empty">Awaiting source confirmation · ${groups.awaiting.length}</summary><div class="vector-alert-list">${visibleAwaiting.map(alertRowMarkup).join('')}</div></details>`:'';return `<section class="vector-card vector-alerts" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><h2 id="vector-review-title"><span class="vector-alert-bell">${icon('bell')}</span>Needs my action <em>${groups.needs.length}</em></h2><button type="button" data-vector-route="time-review">Open Time Review ${icon('arrow')}</button></div><div class="vector-alert-list">${needsBody}</div>${awaitingBody}</section>`;}
 function leaveMarkup(rows){const body=rows.length?rows.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join(''):`<button type="button" class="vector-leave-row" data-vector-route="leave" aria-label="Open Absence & Leave to review upcoming leave evidence"><span class="vector-person-badge" aria-hidden="true">i</span><span><b>Open Absence & Leave</b><small>No approved leave is available to this summary.</small></span><em>Source check</em><strong>Review</strong>${icon('chevron')}</button>`;return `<section class="vector-card vector-leave" data-vector-leave-evidence="${LEAVE_MARKER}" aria-label="Upcoming leave. Only approved source requests dated within the next seven days are shown."><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${body}</div></section>`;}
 function promoMarkup(){return '<aside class="vector-promo"><div><h2>A more productive<br>tomorrow starts today.</h2><p>Empowered people.<br>Stronger manufacturers.</p></div><div class="vector-promo-brand"><span class="vector-mark small"><i></i><i></i><i></i></span><b>Vector.</b></div></aside>';}
 function employeeHomeMarkup(v){
- const zone=String(v?.timeZone||v?.identity?.timeZone||authoritativeTimeZone()||''),serverTime=v?.serverTime||Date.now(),day=zone?zonedDate(serverTime,zone):null;
- const title=day?'Today':'Current work',name=v?.profile?.fields?.preferredName||v?.identity?.name||displayName(),nowMs=Date.parse(serverTime)||Date.now();
+ const zone=String(authoritativeTimeZone()||''),serverTime=state.calendar.value?.asOf||v?.serverTime||null,day=zone&&serverTime?zonedDate(serverTime,zone):null;
+ const title=day?'Today':'Current work',name=v?.profile?.fields?.preferredName||v?.identity?.name||displayName(),nowMs=Date.parse(serverTime||'');
  const shifts=(Array.isArray(v?.shifts)?v.shifts:[]).filter(x=>Date.parse(x?.end)>nowMs).sort((a,b)=>Date.parse(a.start)-Date.parse(b.start)).slice(0,3);
  const requests=(Array.isArray(v?.requests)?v.requests:[]).slice(0,6),clock=v?.clock||{},leave=v?.leave||{};
  const fmtTime=value=>{try{return zone?new Intl.DateTimeFormat('en-GB',{timeZone:zone,dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):String(value||'');}catch{return String(value||'');}};
@@ -554,6 +580,7 @@ function employeeHomeMarkup(v){
  <section class="vector-card"><div class="vector-card-head"><h2>Recent leave requests</h2><button type="button" data-vector-route="leave">Open leave ${icon('arrow')}</button></div>${requests.length?requests.map(r=>`<div class="vector-alert-row"><i class="blue"></i><b>${esc(r.kind||'Leave')}<small> · ${esc(r.status||'recorded')}</small></b><span>${esc(r.date||r.start||'')}</span></div>`).join(''):'<div class="vector-empty">No leave requests are recorded.</div>'}</section>`;
 }
 async function renderEmployeeHome(content){
+ await loadTenantCalendar();
  const owner=[sourceIdentity().tenant,sourceIdentity().email,sourceIdentity().id].join(':');
  if(state.employeeHome.owner!==owner){state.employeeHomeEpoch++;state.employeeHome={status:'idle',owner,value:null,error:''};}
  if(state.employeeHome.status==='ready'&&state.employeeHome.value){content.innerHTML=employeeHomeMarkup(state.employeeHome.value);content.dataset.vectorEmployeeHome='1';document.title='Vector · Current work';return;}
@@ -610,11 +637,11 @@ function peoplePage(){
 }
 function syncSettingsMenu(content){
  const existing=content.querySelector(':scope > .vector-settings');if(!state.settingsOpen){existing?.remove();return null;}if(existing)return existing;
- const links=sourceButtons().filter(button=>button.dataset.page&&!NAV.some(section=>section.routes.includes(button.dataset.page)));
+ const links=sourceButtons().filter(button=>button.dataset.page&&!NAV.some(section=>section.routes.includes(button.dataset.page))&&available(button.dataset.page));
  const panel=document.createElement('section');panel.className='vector-card vector-settings';panel.dataset.vectorSettingsPanel='1';panel.setAttribute('aria-label','Settings and more');panel.innerHTML='<div class="vector-card-head"><h2>Settings & more</h2><button type="button" data-vector-settings>Close</button></div><div class="vector-settings-links">'+links.map(button=>`<button type="button" data-vector-route="${esc(button.dataset.page)}">${esc(text(button))}</button>`).join('')+'</div>';content.prepend(panel);return panel;
 }
 function settingsMenu(){const content=document.querySelector('.content');if(!content)return;state.settingsOpen=!state.settingsOpen;const panel=syncSettingsMenu(content);if(panel)panel.scrollIntoView({block:'start'});}
-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);syncGustoPanel(content);syncStaffologyPanel(content);if(page()==='overview'&&employee())void renderEmployeeHome(content);else if(page()==='overview')renderHome(content);else generalPage(content);syncSettingsMenu(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content)return;document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(state.calendar.status==='idle')void loadTenantCalendar().then(value=>{if(value&&page()==='overview')queueMicrotask(apply);});syncGustoPanel(content);syncStaffologyPanel(content);if(page()==='overview'&&employee())void renderEmployeeHome(content);else if(page()==='overview')renderHome(content);else generalPage(content);syncSettingsMenu(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
 document.addEventListener('click',e=>{if(e.target.closest('[data-vector-close-review]')){document.getElementById('modal').close();return;}const review=e.target.closest('[data-vector-review-coverage]');if(review){const id=review.dataset.vectorReviewCoverage;const r=data.requests?.find(r=>String(r.id)===id);if(r&&visiblePeople().some(p=>String(p.id)===String(r.employee)))void approveRequest(id);return;}if(e.target.closest('[data-vector-settings]')){settingsMenu();return;}const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec){const r=firstRoute(spec.routes);if(r)go(r);}return;}if(e.target.closest('[data-vector-return-context]')){clearActionContext();state.returnFocus=true;go('overview');return;}const actionButton=e.target.closest('[data-vector-source-id][data-vector-workflow][data-vector-route]');if(actionButton){if(actionButton.dataset.vectorWorkflow==='leave'){openLeaveReview(actionButton.dataset.vectorSourceId);return;}rememberActionContext({sourceId:actionButton.dataset.vectorSourceId,workflow:actionButton.dataset.vectorWorkflow,route:actionButton.dataset.vectorRoute,title:actionButton.closest('.vector-alert-row')?.querySelector('b')?.textContent||'Time Review item'});go(actionButton.dataset.vectorRoute);return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){const launch=document.getElementById('wfm-bot-launch');if(launch)launch.click();else go('support');return;}if(e.target.closest('[data-vector-alerts]')){go('attendance');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
 const previousRender=window.render;

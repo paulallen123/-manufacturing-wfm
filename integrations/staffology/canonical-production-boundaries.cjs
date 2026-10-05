@@ -50,7 +50,11 @@ function createStore(db,{authority,binding,workerId='staffology-worker',now=Date
  CREATE TABLE IF NOT EXISTS outbound_staffology_private_evidence(
   id INTEGER PRIMARY KEY AUTOINCREMENT,delivery_id TEXT NOT NULL REFERENCES outbound_staffology_deliveries(delivery_id),
   phase TEXT NOT NULL,evidence_json TEXT NOT NULL,evidence_digest TEXT NOT NULL,created_at INTEGER NOT NULL,
-  UNIQUE(delivery_id,phase,evidence_digest));`);
+  UNIQUE(delivery_id,phase,evidence_digest));
+ CREATE TABLE IF NOT EXISTS outbound_staffology_batch_receipts(
+  batch_id TEXT NOT NULL,batch_checksum TEXT NOT NULL,binding_digest TEXT NOT NULL,manifest_digest TEXT NOT NULL,
+  receipt_json TEXT NOT NULL,receipt_digest TEXT NOT NULL,created_at INTEGER NOT NULL,
+  PRIMARY KEY(batch_id,batch_checksum,binding_digest));`);
  const raw=id=>db.prepare('SELECT * FROM outbound_staffology_deliveries WHERE delivery_id=?').get(String(id||''));
  const owned=(id,token,row=raw(id))=>{if(!row||row.owner_token!==token||row.owner_worker!==worker||row.binding_digest!==bindingDigest)fail('Staffology delivery ownership changed.','STAFFOLOGY_OWNERSHIP_LOST');if(Number(row.lease_expires_at)<=Number(now()))fail('Staffology delivery lease expired.','STAFFOLOGY_OWNERSHIP_LOST');return row;};
  function view(row){if(!row)return null;const evidence=db.prepare('SELECT phase,evidence_json FROM outbound_staffology_private_evidence WHERE delivery_id=? ORDER BY id').all(row.delivery_id).map(item=>({phase:item.phase,value:JSON.parse(item.evidence_json)}));const baseline=evidence.find(item=>item.phase==='baseline')?.value||null;return {deliveryId:row.delivery_id,digest:row.digest,bindingDigest:row.binding_digest,payload:JSON.parse(row.payload_json),status:row.status,receipt:row.receipt_json?JSON.parse(row.receipt_json):null,dispatchAttempt:row.dispatch_json?JSON.parse(row.dispatch_json):null,uncertainReason:row.uncertain_json?JSON.parse(row.uncertain_json):null,baseline,evidence};}
@@ -65,6 +69,67 @@ function createStore(db,{authority,binding,workerId='staffology-worker',now=Date
  return {get,begin,recover,assertOwned,recordEvidence,acknowledge,markUncertain,markRejected};
 }
 
-function createBoundaries({db,now=Date.now,resolvePrincipal}={}){if(!db)fail('Canonical database is required.','STAFFOLOGY_STORE_INVALID',503);const authority=createAuthority(db,{now,resolvePrincipal});return {authority,assertCurrentPrincipal(actor){if(!authority.current(actor))fail('Current exact Staffology principal authority is unavailable.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);return true;},coordinator(options={}){const binding=exactBinding(options.binding),store=createStore(db,{authority,binding,workerId:options.workerId,now,leaseMs:Math.max(60000,(Number(options.config?.timeoutMs)||10000)*8)});return Staffology.createDeliveryCoordinator({...options,store,binding,authorizeWrite:permit=>authority.check(permit)});},approvedCoordinator(actor,options={}){if(!actor||typeof actor!=='object')fail('Authenticated approval actor is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);const binding=exactBinding(options.binding),store=createStore(db,{authority,binding,workerId:options.workerId,now,leaseMs:Math.max(60000,(Number(options.config?.timeoutMs)||10000)*8)});let approvalId=null;const coordinator=Staffology.createDeliveryCoordinator({...options,store,binding,authorizeWrite:permit=>{if(!approvalId)approvalId=authority.issue(actor,permit,{ttlMs:options.approvalTtlMs}).id;return authority.check(permit);}});return {deliver:async input=>({...await coordinator.deliver(input),approvalId}),inspect:input=>coordinator.inspect(input),recover:async({deliveryId,digest})=>{const exactDelivery=text(deliveryId,'Delivery identity',160),stored=store.get(exactDelivery);if(!stored)fail('Exact Staffology delivery is unavailable.','STAFFOLOGY_RECOVERY_HELD');if(digest!==undefined&&text(digest,'Delivery digest',64)!==stored.digest)fail('Recovery digest differs from the stored intent.','STAFFOLOGY_RECOVERY_HELD');const hadDispatch=Boolean(stored.dispatchAttempt),claim=store.recover(exactDelivery,stored.digest),result=await coordinator.reconcile({deliveryId:exactDelivery,token:claim.token}),refreshed=store.get(exactDelivery),hasDispatch=Boolean(refreshed?.dispatchAttempt),mode=hasDispatch?(hadDispatch?'read-only-reconciliation':'recovery-dispatch'):'held-no-dispatch';return {...result,approvalId:refreshed?.dispatchAttempt?.approvalId||null,mode};}};},createStore:options=>createStore(db,{...options,authority,now}),status(){return {productionDatabase:true,durableOneShotAuthority:true,activationAvailable:false};}};}
+function createBoundaries({db,now=Date.now,resolvePrincipal}={}){
+ if(!db)fail('Canonical database is required.','STAFFOLOGY_STORE_INVALID',503);
+ const authority=createAuthority(db,{now,resolvePrincipal});
+ function bindingDigestFor(binding){return digest(exactBinding(binding));}
+ function assertDeploymentSafe(binding){
+  const current=bindingDigestFor(binding);
+  const rows=db.prepare("SELECT delivery_id,binding_digest,status FROM outbound_staffology_deliveries WHERE status IN ('sending','uncertain')").all();
+  const foreign=rows.filter(row=>row.binding_digest!==current);
+  if(foreign.length)fail('A prior Staffology deployment has an unresolved sending/uncertain delivery and must reconcile it before replacement.','STAFFOLOGY_DEPLOYMENT_UNCERTAIN_SENDS',503);
+  return {bindingDigest:current,unresolvedCurrent:rows.length};
+ }
+ function aggregateBatch(binding,manifest){
+  const current=bindingDigestFor(binding);
+  if(!manifest||typeof manifest!=='object'||!Array.isArray(manifest.lines)||!manifest.batchId||!manifest.batchChecksum||!manifest.manifestDigest)
+    fail('A complete immutable Staffology batch manifest is required.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+  if(manifest.lines.length!==Number(manifest.expectedLineCount)||manifest.lines.length<1)
+    fail('Staffology batch manifest line count is inconsistent.','STAFFOLOGY_BATCH_COMPONENT_UNSUPPORTED');
+  let acknowledgedLineCount=0,acknowledgedGrossPence=0,heldLineCount=0;
+  const results=[];
+  for(const line of manifest.lines){
+    if(line.status!=='mapped'){
+      heldLineCount++;results.push({lineDigest:line.lineDigest,status:'held',reason:line.reason||'UNSUPPORTED'});continue;
+    }
+    const row=db.prepare('SELECT * FROM outbound_staffology_deliveries WHERE delivery_id=?').get(line.deliveryId);
+    const receipt=row?.receipt_json?JSON.parse(row.receipt_json):null;
+    const dispatch=row?.dispatch_json?JSON.parse(row.dispatch_json):null;
+    const transport=db.prepare("SELECT evidence_json FROM outbound_staffology_private_evidence WHERE delivery_id=? AND phase='transport' ORDER BY id DESC LIMIT 1").get(line.deliveryId);
+    const transportEvidence=transport?JSON.parse(transport.evidence_json):null;
+    const ok=Boolean(row&&row.binding_digest===current&&row.digest===line.digest&&row.status==='acknowledged'&&dispatch&&receipt&&
+      transportEvidence&&Number.isInteger(transportEvidence.httpStatus)&&/^[a-f0-9]{64}$/.test(transportEvidence.requestSha256||'')&&/^[a-f0-9]{64}$/.test(transportEvidence.responseSha256||''));
+    if(ok){acknowledgedLineCount++;acknowledgedGrossPence+=Number(line.grossPence);results.push({lineDigest:line.lineDigest,status:'acknowledged',deliveryId:line.deliveryId});}
+    else results.push({lineDigest:line.lineDigest,status:'unacknowledged',deliveryId:line.deliveryId});
+  }
+  const fullPayrollVerified=heldLineCount===0&&acknowledgedLineCount===Number(manifest.expectedLineCount)&&
+    acknowledgedGrossPence===Number(manifest.expectedGrossPence)&&manifest.batchChecksum===text(manifest.batchChecksum,'Batch checksum',64);
+  const receipt={schemaVersion:1,batchId:manifest.batchId,batchChecksum:manifest.batchChecksum,bindingDigest:current,
+    manifestDigest:manifest.manifestDigest,expectedLineCount:Number(manifest.expectedLineCount),acknowledgedLineCount,heldLineCount,
+    expectedGrossPence:Number(manifest.expectedGrossPence),acknowledgedGrossPence,allIdentitiesAccountedFor:results.length===Number(manifest.expectedLineCount),
+    fullPayrollVerified,lines:results};
+  if(!fullPayrollVerified)return receipt;
+  const encoded=canonical(receipt),receiptDigest=digest(receipt),at=Number(now());
+  const prior=db.prepare('SELECT receipt_json,receipt_digest,manifest_digest FROM outbound_staffology_batch_receipts WHERE batch_id=? AND batch_checksum=? AND binding_digest=?').get(manifest.batchId,manifest.batchChecksum,current);
+  if(prior){
+    if(prior.manifest_digest!==manifest.manifestDigest||prior.receipt_json!==encoded||prior.receipt_digest!==receiptDigest)
+      fail('Staffology batch receipt is immutable for this exact batch and binding.','STAFFOLOGY_RECEIPT_CONFLICT');
+    return receipt;
+  }
+  db.prepare('INSERT INTO outbound_staffology_batch_receipts(batch_id,batch_checksum,binding_digest,manifest_digest,receipt_json,receipt_digest,created_at) VALUES(?,?,?,?,?,?,?)')
+    .run(manifest.batchId,manifest.batchChecksum,current,manifest.manifestDigest,encoded,receiptDigest,at);
+  const saved=db.prepare('SELECT receipt_json,receipt_digest FROM outbound_staffology_batch_receipts WHERE batch_id=? AND batch_checksum=? AND binding_digest=?').get(manifest.batchId,manifest.batchChecksum,current);
+  if(!saved||saved.receipt_json!==encoded||saved.receipt_digest!==receiptDigest)fail('Staffology batch receipt could not be read back after persistence.','STAFFOLOGY_EVIDENCE_NOT_PERSISTED',503);
+  return receipt;
+ }
+ return {
+  authority,bindingDigestFor,assertDeploymentSafe,aggregateBatch,
+  assertCurrentPrincipal(actor){if(!authority.current(actor))fail('Current exact Staffology principal authority is unavailable.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);return true;},
+  coordinator(options={}){const binding=exactBinding(options.binding),store=createStore(db,{authority,binding,workerId:options.workerId,now,leaseMs:Math.max(60000,(Number(options.config?.timeoutMs)||10000)*8)});return Staffology.createDeliveryCoordinator({...options,store,binding,authorizeWrite:permit=>authority.check(permit)});},
+  approvedCoordinator(actor,options={}){if(!actor||typeof actor!=='object')fail('Authenticated approval actor is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);const binding=exactBinding(options.binding),store=createStore(db,{authority,binding,workerId:options.workerId,now,leaseMs:Math.max(60000,(Number(options.config?.timeoutMs)||10000)*8)});let approvalId=null;const coordinator=Staffology.createDeliveryCoordinator({...options,store,binding,authorizeWrite:permit=>{if(!approvalId)approvalId=authority.issue(actor,permit,{ttlMs:options.approvalTtlMs}).id;return authority.check(permit);}});return {deliver:async input=>({...await coordinator.deliver(input),approvalId}),inspect:input=>coordinator.inspect(input),recover:async({deliveryId,digest})=>{const exactDelivery=text(deliveryId,'Delivery identity',160),stored=store.get(exactDelivery);if(!stored)fail('Exact Staffology delivery is unavailable.','STAFFOLOGY_RECOVERY_HELD');if(digest!==undefined&&text(digest,'Delivery digest',64)!==stored.digest)fail('Recovery digest differs from the stored intent.','STAFFOLOGY_RECOVERY_HELD');const hadDispatch=Boolean(stored.dispatchAttempt),claim=store.recover(exactDelivery,stored.digest),result=await coordinator.reconcile({deliveryId:exactDelivery,token:claim.token}),refreshed=store.get(exactDelivery),hasDispatch=Boolean(refreshed?.dispatchAttempt),mode=hasDispatch?(hadDispatch?'read-only-reconciliation':'recovery-dispatch'):'held-no-dispatch';return {...result,approvalId:refreshed?.dispatchAttempt?.approvalId||null,mode};}};},
+  createStore:options=>createStore(db,{...options,authority,now}),
+  status(){return {productionDatabase:true,durableOneShotAuthority:true,activationAvailable:false};}
+ };
+}
 
 module.exports={createAuthority,createStore,createBoundaries,digest,exactBinding,exactPermit};
