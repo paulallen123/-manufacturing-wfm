@@ -356,15 +356,35 @@ const tamperKey = {
 };
 const tamperClaim = tamperGuard.claim(tamperKey);
 tamperGuard.complete({ ...tamperKey, token: tamperClaim.token, receipt: { status: 'done' } });
-tamper.db.prepare(`UPDATE poststaging_replay_claims SET receipt_json=? WHERE scope=? AND tenant_digest=? AND incident_id=?`).run(
-  JSON.stringify({ status: 'forged' }), tamperKey.scope, tamperKey.tenantDigest, tamperKey.incidentId
+const forgedJson = JSON.stringify({ status: 'forged' });
+tamper.db.prepare(`UPDATE poststaging_replay_claims SET receipt_json=?,receipt_digest=? WHERE scope=? AND tenant_digest=? AND incident_id=?`).run(
+  forgedJson, d(forgedJson), tamperKey.scope, tamperKey.tenantDigest, tamperKey.incidentId
 );
 assert.throws(
   () => tamper.guard().claim(tamperKey),
   (error) => error.code === 'WFM_REPLAY_GUARD_INTEGRITY'
 );
 
-for (const fx of [post, canaryFx, pending, lost, restore, tamper]) fx.close();
+const commitGap = fixture('commit-gap');
+const commitGapGuard = commitGap.guard();
+const commitGapKey = {
+  scope: 'commit-gap-proof',
+  tenantDigest: d('tenant-a'),
+  incidentId: 'commit-gap-incident',
+  inputDigest: d('commit-gap-input'),
+};
+const commitGapClaim = commitGapGuard.claim(commitGapKey);
+commitGap.db.exec("CREATE TRIGGER replay_main_commit_outage BEFORE UPDATE ON poststaging_replay_claims BEGIN SELECT RAISE(ABORT,'injected main replay commit outage'); END;");
+assert.throws(
+  () => commitGapGuard.complete({ ...commitGapKey, token: commitGapClaim.token, receipt: { status: 'done-after-gap' } }),
+  /injected main replay commit outage/
+);
+commitGap.db.exec('DROP TRIGGER replay_main_commit_outage');
+const recoveredGap = commitGapGuard.claim(commitGapKey);
+assert.equal(recoveredGap.status, 'replay');
+assert.deepEqual(recoveredGap.receipt, { status: 'done-after-gap' });
+
+for (const fx of [post, canaryFx, pending, lost, restore, tamper, commitGap]) fx.close();
 
 console.log(JSON.stringify({
   schemaVersion: 1,
@@ -378,6 +398,7 @@ console.log(JSON.stringify({
   olderSnapshotRecoveredFromIndependentWitness: true,
   changedInputReplayDenied: true,
   retainedReceiptTamperDenied: true,
+  witnessFirstCommitGapRecoveredWithoutReplay: true,
   replayIdempotent: true,
   productionMutation: false,
   customerMutation: false,
