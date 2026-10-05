@@ -25,7 +25,7 @@ function load(extra = {}) {
   const hook = 'window.VectorWorkforceOperations={marker:MARKER';
   assert.ok(source.includes(hook), 'existing Vector test hook is present');
   const augmented = source.replace(hook,
-    'window.VectorWorkforceOperations={NAV,labourCost,metrics,loadTimeReviewEvidence,sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
+    'window.VectorWorkforceOperations={NAV,labourCost,metrics,loadTimeReviewEvidence,setTestCalendar(value){state.calendar={status:"ready",value};},sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
     'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTenantCalendar=async()=>({tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000});state.calendar={status:"ready",value:{tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000}};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");renderEmployeeHome=()=>events.push("employee-current-personal");generalPage=()=>events.push("employee-source");if(employee())renderEmployeeHome({});else apply();},marker:MARKER');
   context.events = events;
   vm.runInNewContext(augmented, context);
@@ -72,9 +72,10 @@ test('an unregistered payroll page cannot be opened by an employee', async () =>
 });
 test('late action evidence updates the queue and notification and preserves accessible authority detail', async () => {
   const badge = { textContent: '0', hidden: true }, queue = { outerHTML: '' };
-  const item = { contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: 'time-1', reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-09-21T00:00:00Z', freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title: 'Missing clock out' };
+  const item = { contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: 'time-1', reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', timeZone: 'Europe/London', maxAgeMs: 900000, freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title: 'Missing clock out' };
   const { api } = load({ selectors: { '.vector-alerts': queue, '.vector-notification-count': badge },
     fetch: async () => ({ ok: true, json: async () => ({ contractVersion: item.contractVersion, workflow: item.workflow, items: [item] }) }) });
+  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   await api.loadTimeReviewEvidence();
   assert.equal(badge.textContent, '1'); assert.equal(badge.hidden, false);
   assert.match(queue.outerHTML, /Missing clock out/); assert.match(queue.outerHTML, /Authority: manager/);
@@ -83,8 +84,9 @@ test('late action evidence updates the queue and notification and preserves acce
 
 test('a completed older request cannot overwrite refreshed action evidence after a screen render', async () => {
   const queue = { outerHTML: '' }, pending = [];
-  const response = title => ({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', items: [{ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: title, reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-09-21T00:00:00Z', freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title }] }) });
+  const response = title => ({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', items: [{ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: title, reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', timeZone: 'Europe/London', maxAgeMs: 900000, freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title }] }) });
   const { api, context } = load({ selectors: { '.vector-alerts': queue }, fetch: () => new Promise(resolve => pending.push(resolve)) });
+  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   const oldRequest = api.loadTimeReviewEvidence();
   await context.window.render();
   const newRequest = api.loadTimeReviewEvidence();
