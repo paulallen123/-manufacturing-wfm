@@ -30,6 +30,8 @@ const checks = [
   ['tier2-canary-blast-radius-known-good-rollback', 'scripts/validate-canary-rollback-controller.mjs', true],
   ['tier2-repair-to-canary-decision-composition', 'scripts/validate-autonomous-repair-canary-orchestrator.mjs', true],
   ['tier2-poststaging-durable-replay', 'scripts/validate-poststaging-replay.mjs', true],
+  ['tier2-control-to-poststaging-handoff', 'scripts/validate-t2-poststaging-handoff.mjs', true],
+  ['hosted-recovery-proof-identity-boundary', 'security/runtime/recovery-proof-boundary.test.cjs', true],
   ['closed-loop-autonomy-controller', 'scripts/validate-autonomy-control-loop.mjs', true],
 ];
 
