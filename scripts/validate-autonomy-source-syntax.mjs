@@ -12,6 +12,7 @@ const jsFiles = [
   'resilience/disposable-staging-gate.cjs',
   'resilience/autonomous-repair-pipeline.cjs',
   'resilience/canary-rollback-controller.cjs',
+  'resilience/durable-poststaging-replay-guard.cjs',
   'resilience/autonomous-repair-canary-orchestrator.cjs',
   'resilience/provider-recovery-handoff.cjs',
   'resilience/autonomy-control-loop.cjs',
@@ -28,6 +29,7 @@ const jsFiles = [
   'scripts/validate-disposable-staging-gate.mjs',
   'scripts/validate-autonomous-repair-pipeline.mjs',
   'scripts/validate-canary-rollback-controller.mjs',
+  'scripts/validate-poststaging-replay.mjs',
   'scripts/validate-autonomous-repair-canary-orchestrator.mjs',
   'scripts/validate-autonomy-control-loop.mjs',
 ];
@@ -47,6 +49,7 @@ for (const rel of [
   'resilience/disposable-staging-gate.cjs',
   'resilience/autonomous-repair-pipeline.cjs',
   'resilience/canary-rollback-controller.cjs',
+  'resilience/durable-poststaging-replay-guard.cjs',
   'resilience/autonomous-repair-canary-orchestrator.cjs',
 ]) {
   const source = fs.readFileSync(path.join(root, rel), 'utf8');
@@ -66,6 +69,7 @@ const requiredWorkflowPaths = [
   "      - 'resilience/disposable-staging-gate.cjs'",
   "      - 'resilience/autonomous-repair-pipeline.cjs'",
   "      - 'resilience/canary-rollback-controller.cjs'",
+  "      - 'resilience/durable-poststaging-replay-guard.cjs'",
   "      - 'resilience/autonomous-repair-canary-orchestrator.cjs'",
   "      - 'resilience/autonomy-control-loop.cjs'",
   "      - 'scripts/validate-autonomous-repair-factory.mjs'",
@@ -74,6 +78,7 @@ const requiredWorkflowPaths = [
   "      - 'scripts/validate-disposable-staging-gate.mjs'",
   "      - 'scripts/validate-autonomous-repair-pipeline.mjs'",
   "      - 'scripts/validate-canary-rollback-controller.mjs'",
+  "      - 'scripts/validate-poststaging-replay.mjs'",
   "      - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'",
   "      - 'scripts/validate-autonomy-control-loop.mjs'",
   "      - 'scripts/validate-autonomy-source-syntax.mjs'",
