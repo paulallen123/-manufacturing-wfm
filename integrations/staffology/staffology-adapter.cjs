@@ -449,9 +449,6 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
           !/^[a-f0-9]{64}$/.test(transportEvidence.responseSha256||'')||
           await store.recordEvidence(deliveryId,transportEvidence,token)!==true)
           throw Error('TRANSPORT_EVIDENCE_WRITE_FAILED');
-        const persisted=await store.get(deliveryId);
-        const saved=[...(persisted?.evidence||[])].reverse().find(item=>item.phase==='transport')?.value;
-        if(!saved||canonical(saved)!==canonical(transportEvidence))throw Error('TRANSPORT_EVIDENCE_READBACK_FAILED');
       }catch{
         throw failure('STAFFOLOGY_TRANSPORT_EVIDENCE_NOT_PERSISTED','Provider response was observed but its transport evidence could not be durably persisted.',503);
       }
