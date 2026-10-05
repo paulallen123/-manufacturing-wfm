@@ -104,7 +104,7 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
     return { ...payload, compositionReceiptDigest };
   }
 
-  async function execute(input = {}) {
+  function validateScope(input = {}) {
     const incidentId = safeId(input.incidentId);
     const tenant = String(input.tenant || '').trim();
     const targetTenant = String(input.targetTenant || tenant).trim();
@@ -116,15 +116,18 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
       canaryControllerId: safeId(input.canaryControllerId),
       rollbackControllerId: safeId(input.rollbackControllerId),
     };
-    if (!incidentId || !tenant || !targetTenant || Object.values(actorIds).some((v) => !v)) {
+    if (!incidentId || !tenant || !targetTenant || Object.values(actorIds).some((value) => !value)) {
       deny('WFM_POSTSTAGING_INPUT', 'bounded incident, tenant and actor identities required');
     }
     if (new Set(Object.values(actorIds)).size !== Object.values(actorIds).length) {
       deny('WFM_POSTSTAGING_SEPARATION', 'repair, verification, release, staging, canary and rollback actors must be distinct');
     }
     if (tenant !== targetTenant) deny('WFM_POSTSTAGING_CROSS_TENANT', 'cross-tenant post-staging decision denied');
+    return { incidentId, tenant, targetTenant, actorIds };
+  }
 
-    const repair = await repairPipeline.process({ ...input, targetTenant });
+  async function continuePostStaging(scope, repair) {
+    const { incidentId, tenant, targetTenant, actorIds } = scope;
     if (!repair || repair.status !== 'verified_candidate_staged') {
       return repair || contained({ incidentId, tenantDigest: sha(tenant) }, 'repair-pipeline-no-terminal-result');
     }
@@ -183,26 +186,15 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
     return { ...payload, compositionReceiptDigest };
   }
 
-  async function run(input = {}) {
-    const incidentId = safeId(input.incidentId);
-    const tenant = String(input.tenant || '').trim();
-    const targetTenant = String(input.targetTenant || tenant).trim();
-    const actorIds = [
-      safeId(input.workerId),
-      safeId(input.verifierId),
-      safeId(input.releaseAuthorityId),
-      safeId(input.stagingControllerId),
-      safeId(input.canaryControllerId),
-      safeId(input.rollbackControllerId),
-    ];
-    if (!incidentId || !tenant || !targetTenant || actorIds.some((v) => !v)) {
-      deny('WFM_POSTSTAGING_INPUT', 'bounded incident, tenant and actor identities required');
-    }
-    if (new Set(actorIds).size !== actorIds.length) {
-      deny('WFM_POSTSTAGING_SEPARATION', 'repair, verification, release, staging, canary and rollback actors must be distinct');
-    }
-    if (tenant !== targetTenant) deny('WFM_POSTSTAGING_CROSS_TENANT', 'cross-tenant post-staging decision denied');
+  async function execute(input = {}) {
+    const scope = validateScope(input);
+    const repair = await repairPipeline.process({ ...input, targetTenant: scope.targetTenant });
+    return continuePostStaging(scope, repair);
+  }
 
+  async function run(input = {}) {
+    const scope = validateScope(input);
+    const { incidentId, tenant } = scope;
     const tenantDigest = sha(tenant);
     const inputDigest = sha(JSON.stringify({
       input,
@@ -235,8 +227,47 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
     return result;
   }
 
+  async function resumeVerifiedRepair(input = {}, repair = {}) {
+    const scope = validateScope(input);
+    const { incidentId, tenant } = scope;
+    const tenantDigest = sha(tenant);
+    const repairDigest = sha(repair);
+    const inputDigest = sha(JSON.stringify({
+      mode: 'verified-repair-resume',
+      input,
+      repairDigest,
+      pipelineCaps,
+      limits,
+      canaryCaps,
+      recorderCaps,
+      replayCaps,
+    }));
+    const claim = replayGuard.claim({
+      scope: 'repair-canary-resume',
+      tenantDigest,
+      incidentId,
+      inputDigest,
+    });
+    if (claim?.status === 'replay') return claim.receipt;
+    if (!claim || claim.status !== 'claimed' || !claim.token) {
+      deny('WFM_POSTSTAGING_REPLAY', 'verified repair resume claim was not acquired');
+    }
+
+    const result = await continuePostStaging(scope, repair);
+    replayGuard.complete({
+      scope: 'repair-canary-resume',
+      tenantDigest,
+      incidentId,
+      inputDigest,
+      token: claim.token,
+      receipt: result,
+    });
+    return result;
+  }
+
   return {
     run,
+    resumeVerifiedRepair,
     capabilities: () => ({
       endToEndRepairToCanaryDecision: true,
       sixActorSeparationRequired: true,
@@ -249,6 +280,7 @@ function createAutonomousRepairCanaryOrchestrator({ repairPipeline, canaryContro
       customerMutation: false,
       incrementalCostZero: true,
       durableReplayRequired: true,
+      verifiedRepairResumeSupported: true,
     }),
   };
 
