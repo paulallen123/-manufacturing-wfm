@@ -12,7 +12,9 @@ on:
       - 'resilience/independent-repair-verifier.cjs'
       - 'resilience/disposable-staging-gate.cjs'
       - 'resilience/canary-rollback-controller.cjs'
+      - 'resilience/durable-poststaging-replay-guard.cjs'
       - 'scripts/validate-canary-rollback-controller.mjs'
+      - 'scripts/validate-poststaging-replay.mjs'
       - 'resilience/autonomous-repair-canary-orchestrator.cjs'
       - 'scripts/validate-autonomous-repair-canary-orchestrator.mjs'
       - '.github/workflows/wfm-autonomous-repair-pipeline.yml'
@@ -48,7 +50,9 @@ jobs:
           node --check resilience/autonomous-repair-pipeline.cjs
           node --check scripts/validate-autonomous-repair-pipeline.mjs
           node --check resilience/canary-rollback-controller.cjs
+          node --check resilience/durable-poststaging-replay-guard.cjs
           node --check scripts/validate-canary-rollback-controller.mjs
+          node --check scripts/validate-poststaging-replay.mjs
           node --check resilience/autonomous-repair-canary-orchestrator.cjs
           node --check scripts/validate-autonomous-repair-canary-orchestrator.mjs
 
@@ -60,3 +64,6 @@ jobs:
 
       - name: Prove repair-to-canary decision composition
         run: node scripts/validate-autonomous-repair-canary-orchestrator.mjs
+
+      - name: Prove durable post-staging replay safety
+        run: node scripts/validate-poststaging-replay.mjs
