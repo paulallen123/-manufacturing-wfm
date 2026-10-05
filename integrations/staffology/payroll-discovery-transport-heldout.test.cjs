@@ -14,12 +14,14 @@ const actor={email:'payroll@northstar.example',tenant:binding.tenant,personId:'p
 const config={apiKey:'offline-synthetic-key-001',baseUrl:'https://api.staffology.co.uk',timeoutMs:1000};
 const run=()=>({taxYear:'Year2026',payPeriod:'Monthly',period:9,ordinal:1,version:0,state:'Open',isClosed:false,isLatestVersion:true,startDate:'2026-09-01',endDate:'2026-09-30',paymentDate:'2026-09-30',
  entries:[{id:'entry-001',name:'PII MUST NOT LEAK',metadata:{employeeId:'employee-001',payrollCode:'PAY001'},url:'/employers/employer-001/payrun/Year2026/Monthly/9/entry-001'}]});
-const entry=amount=>({id:'entry-001',employee:{id:'employee-001',name:'PII MUST NOT LEAK'},personalDetails:{email:'secret@example.invalid'},employmentDetails:{payrollCode:'PAY001'},taxYear:'Year2026',payPeriod:'Monthly',period:9,ordinal:1,payRunVersion:0,state:'Open',isClosed:false,isLatestVersion:true,payOptions:{basis:'Hourly',payCode:'BASIC',payAmount:10,payAmountMultiplier:amount===100?10:1.25,regularPayLines:[{code:'BASIC',rate:10,multiplier:amount===100?10:1.25,value:amount}]},totals:{basicPay:amount}});
+const entry=amount=>({id:'entry-001',employee:{id:'employee-001',name:'PII MUST NOT LEAK'},personalDetails:{email:'secret@example.invalid'},employmentDetails:{payrollCode:'PAY001'},taxYear:'Year2026',payPeriod:'Monthly',period:9,ordinal:1,payRunVersion:0,state:'Open',isClosed:false,isLatestVersion:true,paymentAfterLeaving:false,unpaidAbsence:false,recievingOffsetPay:false,percentageOfWorkingDaysPaidAsNormal:1,workingDaysNotPaidAsNormal:0,payOptions:{basis:'Hourly',payCode:'BASIC',payAmount:10,payAmountMultiplier:amount===100?10:1.25,autoAdjustForLeave:false,excludedRegularPayLines:[],regularPayLines:[{code:'BASIC',rate:10,multiplier:amount===100?10:1.25,value:amount,leaveId:null,leaveStatutoryDaysPaid:0,leaveStatutoryWeeksPaid:0,autoAdjustForLeave:false,isLeaveBasedBackPayLine:false}]},totals:{basicPay:amount}});
+const currentEmployee=()=>({id:'employee-001',status:'Current',personalDetails:{firstName:'PII',lastName:'MUST NOT LEAK',email:'secret@example.invalid'},employmentDetails:{payrollCode:'PAY001',onHold:false,starterDetails:{startDate:'2020-01-01'},leaverDetails:{hasLeft:false,leaveDate:null,paymentAfterLeaving:false}}});
+const payCode={code:'BASIC',isDeduction:false,isNiable:true,isTaxable:true,isPensionable:true,isAttachable:true,isRealTimeClass1aNiable:false,isNotContributingToHolidayPay:false,isQualifyingEarningsForAe:true,isNotTierable:false,isAutoAdjust:false,calculationType:'Basic',multiplierType:'Hourly',hourlyRateMultiplier:1,isSystemCode:false,isControlCode:false,isNotional:false};
 const response=(value,{status=200,requestId}={})=>new Response(value===undefined?null:JSON.stringify(value),{status,headers:requestId?{'x-request-id':requestId}:{}});
 
 test('read-only payroll discovery uses GET only, refuses stale authority and returns no PII or secret material',async()=>{
  let calls=[],current=true;
- const client=async(url,options)=>{calls.push({url,method:options.method});assert.equal(options.method,'GET');const p=new URL(url).pathname;if(p==='/open')return response([run()]);if(p.endsWith('/entry-001'))return response(entry(100));return response(run());};
+ const client=async(url,options)=>{calls.push({url,method:options.method});assert.equal(options.method,'GET');const p=new URL(url).pathname;if(p==='/open')return response([run()]);if(p.endsWith('/entry-001'))return response(entry(100));if(p.endsWith('/employees/employee-001'))return response(currentEmployee());if(p.endsWith('/paycodes'))return response([payCode]);return response(run());};
  const profile={binding,provider:config,cohort:Object.freeze(['employee-001']),pageSize:100,maxPages:10,payroll:null,connector:{id:'staffology-people',scope:'staffology-reviewed-people'}};
  const boundaries={approvedCoordinator(){throw Error('not used');},assertCurrentPrincipal(){if(!current){const e=Error('stale');e.code='STAFFOLOGY_WRITE_NOT_AUTHORIZED';e.status=403;throw e;}}};
  const operations=Operations.createOperations({runtime:{},boundaries,profile,client});
@@ -28,8 +30,8 @@ test('read-only payroll discovery uses GET only, refuses stale authority and ret
  current=true;const found=await operations.discoverPayroll(actor);
  assert.equal(found.providerWritePerformed,false);assert.ok(calls.length>=3);assert.equal(calls.some(x=>x.method!=='GET'),false);
  const text=JSON.stringify(found);for(const forbidden of ['PII MUST NOT LEAK','secret@example.invalid','offline-synthetic-key-001','personalDetails','name'])assert.equal(text.includes(forbidden),false,forbidden);
- const item=found.runs[0].entries[0];assert.deepEqual(Object.keys(item).sort(),['basis','entryId','payCode','payrollCode','providerEmployeeId','regularLineCount','safeReplacement','safeReplacementReason'].sort());
- assert.equal(item.safeReplacement,true);assert.equal(item.providerEmployeeId,'employee-001');assert.equal(item.payrollCode,'PAY001');
+ const item=found.runs[0].entries[0];assert.deepEqual(Object.keys(item).sort(),['basis','entryId','payCode','payCodeDefinition','payCodeDefinitionSha256','payrollCode','providerEmployeeId','regularLineCount','safeReplacement','safeReplacementReason'].sort());
+ assert.equal(item.safeReplacement,true);assert.match(item.payCodeDefinitionSha256,/^[a-f0-9]{64}$/);assert.equal(item.payCodeDefinition.code,'BASIC');assert.equal(item.providerEmployeeId,'employee-001');assert.equal(item.payrollCode,'PAY001');
 });
 
 function dbFixture(t){

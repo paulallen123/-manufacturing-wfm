@@ -332,8 +332,8 @@ function mapPayroll(input) {
   if(typeof input.taxYear!=='string'||!/^Year\d{4}$/.test(input.taxYear)||!['Monthly','Weekly','Fortnightly','FourWeekly','Quarterly','HalfYearly','Annual','Daily','Custom'].includes(input.payPeriod))throw failure('STAFFOLOGY_RUN_IDENTITY_INVALID','Explicit payroll run coordinates are required.');
   const run={taxYear:input.taxYear,payPeriod:input.payPeriod,periodNumber:integer(input.periodNumber,'Period',1,366),ordinal:integer(input.ordinal,'Ordinal',1,1000),version:integer(input.version,'Version',0,100000)};
   const entryId=requiredId(input.entryId,'Provider entry identity');
-  const payCodeDefinitionSha256=exactText(input.payCodeDefinitionSha256,'Pay-code definition digest',64);
-  if(!/^[a-f0-9]{64}$/.test(payCodeDefinitionSha256))throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','A current pay-code semantic digest is required.');
+  const payCodeDefinitionSha256=input.payCodeDefinitionSha256==null?null:exactText(input.payCodeDefinitionSha256,'Pay-code definition digest',64);
+  if(payCodeDefinitionSha256!==null&&!/^[a-f0-9]{64}$/.test(payCodeDefinitionSha256))throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','A current pay-code semantic digest is required.');
   const source={system:'VECTOR',tenant:requiredId(input.tenant,'Tenant identity'),batchId:requiredId(input.batchId,'Batch identity'),revision:exactText(input.sourceRevision,'Source revision',100)};
   const importBody=[{payrollCode,basis:'Hourly',payCode:code,payAmount:Number(rate.text),payAmountMultiplier:Number(hours.text),lines:[]}];
   if(!decimalEqual(importBody[0].payAmount,rate.text)||!decimalEqual(importBody[0].payAmountMultiplier,hours.text))throw failure('STAFFOLOGY_PAYROLL_LINE_INVALID','Wire conversion changed a decimal value.');
@@ -383,7 +383,7 @@ function validateProviderResponse(observation,expected) {
   validateRun(observation.run,expected);validateEntryIdentity(observation.entry,expected);
   const safety=replacementSafety(observation.entry,observation.employee);
   if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Current employee/payroll state is unsafe for replacement.');
-  if(sha256(observation.payCode)!==expected.payCodeDefinitionSha256)throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Readback pay-code semantics differ from the approved definition.');
+  if(expected.payCodeDefinitionSha256&&sha256(observation.payCode)!==expected.payCodeDefinitionSha256)throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Readback pay-code semantics differ from the approved definition.');
   const e=observation.entry,p=e.payOptions;
   if(!p||p.basis!=='Hourly'||!decimalEqual(p.payAmount,expected.basic.rate)||!decimalEqual(p.payAmountMultiplier,expected.basic.hours))throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider rate, hours or basis do not match.');
   if(p.payCode!==expected.basic.code)throw failure('STAFFOLOGY_FINANCIAL_MISMATCH','Provider basic pay code does not match.');
@@ -454,19 +454,23 @@ function createDeliveryCoordinator({store,client=globalThis.fetch,config,binding
     const e=await request(client,config,runPath(payload)+`/${encodeURIComponent(payload.entryId)}?ordinal=${payload.run.ordinal}`,{acceptedStatuses:[404]});
     if(e.status===404)throw failure('STAFFOLOGY_READBACK_UNRESOLVED','Provider entry is not available for reconciliation.');
     validateEntryIdentity(e.body,payload);
-    const employeePath=`/employers/${encodeURIComponent(payload.employerId)}/employees/${encodeURIComponent(payload.employeeId)}`;
-    const employeeResult=await request(client,config,employeePath);
-    if(employeeResult.body?.id!==payload.employeeId||employeeResult.body?.employmentDetails?.payrollCode!==payload.payrollCode)
-      throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Current employee state differs from the authorised payroll identity.',502);
-    const safety=replacementSafety(e.body,employeeResult.body);
-    if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Current provider state is unsafe for basic-pay replacement: '+safety.reason+'.');
-    const payCodesResult=await request(client,config,runPath(payload)+`/paycodes?ordinal=${payload.run.ordinal}&version=${payload.run.version}`);
-    const payCodes=Array.isArray(payCodesResult.body)?payCodesResult.body:Array.isArray(payCodesResult.body?.items)?payCodesResult.body.items:null;
-    if(!payCodes)throw failure('STAFFOLOGY_RESPONSE_INVALID','Current pay-code definition response is invalid.',502);
-    const matching=payCodes.filter(row=>row?.code===payload.basic.code);
-    if(matching.length!==1||sha256(matching[0])!==payload.payCodeDefinitionSha256)
-      throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Current pay-code semantics differ from the approved definition.',409);
-    return {employerId:payload.employerId,run:r.body,entry:e.body,employee:employeeResult.body,payCode:matching[0],provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,employeePath,payCodesPath:runPath(payload)+'/paycodes',openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256,employeeResponseSha256:employeeResult.responseSha256,payCodesResponseSha256:payCodesResult.responseSha256}};
+    if(payload.payCodeDefinitionSha256){
+      const employeePath=`/employers/${encodeURIComponent(payload.employerId)}/employees/${encodeURIComponent(payload.employeeId)}`;
+      const employeeResult=await request(client,config,employeePath);
+      if(employeeResult.body?.id!==payload.employeeId||employeeResult.body?.employmentDetails?.payrollCode!==payload.payrollCode)
+        throw failure('STAFFOLOGY_RESPONSE_IDENTITY_MISMATCH','Current employee state differs from the authorised payroll identity.',502);
+      const safety=replacementSafety(e.body,employeeResult.body);
+      if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Current provider state is unsafe for basic-pay replacement: '+safety.reason+'.');
+      const payCodesResult=await request(client,config,runPath(payload)+`/paycodes?ordinal=${payload.run.ordinal}&version=${payload.run.version}`);
+      const payCodes=Array.isArray(payCodesResult.body)?payCodesResult.body:Array.isArray(payCodesResult.body?.items)?payCodesResult.body.items:null;
+      if(!payCodes)throw failure('STAFFOLOGY_RESPONSE_INVALID','Current pay-code definition response is invalid.',502);
+      const matching=payCodes.filter(row=>row?.code===payload.basic.code);
+      if(matching.length!==1||sha256(matching[0])!==payload.payCodeDefinitionSha256)
+        throw failure('STAFFOLOGY_MAPPING_AUTHORITY_REQUIRED','Current pay-code semantics differ from the approved definition.',409);
+      return {employerId:payload.employerId,run:r.body,entry:e.body,employee:employeeResult.body,payCode:matching[0],provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,employeePath,payCodesPath:runPath(payload)+'/paycodes',openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256,employeeResponseSha256:employeeResult.responseSha256,payCodesResponseSha256:payCodesResult.responseSha256}};
+    }
+    const safety=replacementSafety(e.body,null);if(!safety.safe)throw failure('STAFFOLOGY_REPLACEMENT_UNSAFE','Provider entry is unsafe for basic-pay replacement: '+safety.reason+'.');
+    return {employerId:payload.employerId,run:r.body,entry:e.body,employee:null,payCode:null,provenance:{origin:ORIGIN,runPath:runPath(payload),entryPath:runPath(payload)+'/'+payload.entryId,openResponseSha256:opened.responseSha256,runResponseSha256:r.responseSha256,entryResponseSha256:e.responseSha256}};
   }
   async function retainEvidence(deliveryId,token,phase,observation) {
     const evidence=immutable({phase,observedAt:new Date().toISOString(),run:financialSnapshot(observation.run),entry:financialSnapshot(observation.entry),provenance:observation.provenance});

@@ -75,6 +75,8 @@ function createBoundaries({db,now=Date.now,resolvePrincipal}={}){
  function bindingDigestFor(binding){return digest(exactBinding(binding));}
  function assertDeploymentSafe(binding){
   const current=bindingDigestFor(binding);
+  const table=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='outbound_staffology_deliveries'").get();
+  if(!table)return {bindingDigest:current,unresolvedCurrent:0};
   const rows=db.prepare("SELECT delivery_id,binding_digest,status FROM outbound_staffology_deliveries WHERE status IN ('sending','uncertain')").all();
   const foreign=rows.filter(row=>row.binding_digest!==current);
   if(foreign.length)fail('A prior Staffology deployment has an unresolved sending/uncertain delivery and must reconcile it before replacement.','STAFFOLOGY_DEPLOYMENT_UNCERTAIN_SENDS',503);
