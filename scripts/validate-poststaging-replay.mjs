@@ -321,7 +321,50 @@ assert.throws(
   (error) => error.code === 'WFM_REPLAY_GUARD_WITNESS'
 );
 
-for (const fx of [post, canaryFx, pending, lost]) fx.close();
+const restore = fixture('restore');
+const restoreGuard = restore.guard();
+const restoreKey = {
+  scope: 'restore-proof',
+  tenantDigest: d('tenant-a'),
+  incidentId: 'restore-incident',
+  inputDigest: d('restore-input'),
+};
+const backup = path.join(restore.dir, 'pre-claim.sqlite');
+restore.db.prepare('VACUUM INTO ?').run(backup);
+const restoreClaim = restoreGuard.claim(restoreKey);
+const restoredReceipt = { status: 'rolled_back_to_known_good', receipt: d('terminal') };
+restoreGuard.complete({ ...restoreKey, token: restoreClaim.token, receipt: restoredReceipt });
+restore.db.close();
+fs.copyFileSync(backup, restore.file);
+restore.db = new DatabaseSync(restore.file);
+const restoredReplay = restore.guard().claim(restoreKey);
+assert.equal(restoredReplay.status, 'replay');
+assert.deepEqual(restoredReplay.receipt, restoredReceipt);
+
+assert.throws(
+  () => restore.guard().claim({ ...restoreKey, inputDigest: d('different-input') }),
+  (error) => error.code === 'WFM_REPLAY_GUARD_CONFLICT'
+);
+
+const tamper = fixture('tamper');
+const tamperGuard = tamper.guard();
+const tamperKey = {
+  scope: 'tamper-proof',
+  tenantDigest: d('tenant-a'),
+  incidentId: 'tamper-incident',
+  inputDigest: d('tamper-input'),
+};
+const tamperClaim = tamperGuard.claim(tamperKey);
+tamperGuard.complete({ ...tamperKey, token: tamperClaim.token, receipt: { status: 'done' } });
+tamper.db.prepare(`UPDATE poststaging_replay_claims SET receipt_json=? WHERE scope=? AND tenant_digest=? AND incident_id=?`).run(
+  JSON.stringify({ status: 'forged' }), tamperKey.scope, tamperKey.tenantDigest, tamperKey.incidentId
+);
+assert.throws(
+  () => tamper.guard().claim(tamperKey),
+  (error) => error.code === 'WFM_REPLAY_GUARD_INTEGRITY'
+);
+
+for (const fx of [post, canaryFx, pending, lost, restore, tamper]) fx.close();
 
 console.log(JSON.stringify({
   schemaVersion: 1,
@@ -332,6 +375,9 @@ console.log(JSON.stringify({
   restartReplayReturnsRetainedReceipt: true,
   pendingClaimFailsClosed: true,
   missingIndependentWitnessFailsClosed: true,
+  olderSnapshotRecoveredFromIndependentWitness: true,
+  changedInputReplayDenied: true,
+  retainedReceiptTamperDenied: true,
   replayIdempotent: true,
   productionMutation: false,
   customerMutation: false,
