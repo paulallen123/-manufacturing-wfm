@@ -75,6 +75,7 @@ function patchOnboarding(){
  source=source.replaceAll('Secure invitations require the authenticated development application.','Secure invitations require the authenticated online application.');
  source=source.replaceAll('Invitation created — development only','Invitation created');
  source=source.replaceAll('This development build does not contact real employees.','Delivery is not treated as confirmed until the configured invitation channel records an acknowledgement.');
+ source=source.replaceAll('Use fictional data in this development build.','Preview validates the file without creating employee records.');
  const forbidden=[['development only',/development only/i],['development build',/development build/i],['Jordan New',/Jordan New/i],['jordan.new@example.test',/jordan\.new@example\.test/i]];
  const survivor=forbidden.find(([,pattern])=>pattern.test(source));
  if(survivor){const match=survivor[1].exec(source),at=match?.index??-1,snippet=at>=0?source.slice(Math.max(0,at-120),Math.min(source.length,at+240)).replace(/[\r\n]+/g,' '):'';throw new Error('ONBOARDING_CUSTOMER_SAMPLE_COPY_REMAINS:'+survivor[0]+':'+snippet);}

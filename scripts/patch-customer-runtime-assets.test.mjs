@@ -6,7 +6,7 @@ import {spawnSync} from 'node:child_process';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 const patcher=path.join(path.dirname(fileURLToPath(import.meta.url)),'patch-customer-runtime-assets.mjs');
-const exactSealedOnboardingExcerpt="(function(){'use strict';\nconst ON=rootThis(),STATE={report:null,preview:null,csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\nHR-9101,PAY-9101,Jordan New,jordan.new@example.test,s1,Tamworth,Machine operator,2026-10-01,full_time,40,en-GB,CNC,director\\n'};\nfunction rootThis(){return window.WFMOnboarding;}\nasync function invite(source){if(OFFLINE)return toast('Secure invitations require the authenticated development application.');modal('Invitation created — development only','This development build does not contact real employees.');}\n})();";
+const exactSealedOnboardingExcerpt="(function(){'use strict';\nconst ON=rootThis(),STATE={report:null,preview:null,csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\nHR-9101,PAY-9101,Jordan New,jordan.new@example.test,s1,Tamworth,Machine operator,2026-10-01,full_time,40,en-GB,CNC,director\\n'};\nfunction rootThis(){return window.WFMOnboarding;}\nfunction previewModal(){modal('Preview employee CSV',\`<p>No employee is created during preview. Use fictional data in this development build.</p><label>CSV<textarea name="csv" rows="9" required>${esc(STATE.csv)}</textarea></label>\`);}\nasync function invite(source){if(OFFLINE)return toast('Secure invitations require the authenticated development application.');modal('Invitation created — development only','This development build does not contact real employees.');}\n})();";
 test('customer runtime patch removes fixed September shifts and development onboarding copy',t=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'vector-customer-runtime-patch-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const ops=[
@@ -26,6 +26,7 @@ test('customer runtime patch removes fixed September shifts and development onbo
  assert.match(patched,/api\/tenant-calendar/);assert.match(patched,/api\/personal/);assert.match(patched,/opCurrentWeek/);
  const onboarding=fs.readFileSync(path.join(root,'onboarding-ui.js'),'utf8');
  assert.doesNotMatch(onboarding,/Jordan New|jordan\.new@example\.test|development only|development build/i);
+ assert.match(onboarding,/Preview validates the file without creating employee records\./);
  assert.match(onboarding,/Delivery is not treated as confirmed/);
  assert.match(onboarding,/VECTOR_CUSTOMER_ONBOARDING_COPY_V2/);
  assert.ok(onboarding.includes("csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\n'};"),'sealed CSV header must remain after sample-row removal');
