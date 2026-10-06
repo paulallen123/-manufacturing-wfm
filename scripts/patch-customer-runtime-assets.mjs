@@ -46,15 +46,51 @@ function patchOperations(){
  if(/development sample|legacy sample|unfinished core workflow/i.test(source))throw new Error('OPERATIONS_CUSTOMER_SAMPLE_COPY_REMAINS');
  source+='\n/* VECTOR_CUSTOMER_OPERATIONS_CURRENT_DATE_V1 */\n';fs.writeFileSync(file,source);
 }
+function removeEncodedCsvRow(source,matcher){
+ const findBoundary=(from,backward)=>{
+  const escaped=backward?source.lastIndexOf('\\n',from):source.indexOf('\\n',from);
+  const actual=backward?source.lastIndexOf('\n',from):source.indexOf('\n',from);
+  const options=[escaped,actual].filter(v=>v>=0);
+  if(!options.length)return backward?0:source.length;
+  return backward?Math.max(...options):Math.min(...options);
+ };
+ let guard=0;
+ while(matcher.test(source)){
+  matcher.lastIndex=0;
+  const match=matcher.exec(source);if(!match)break;
+  if(++guard>20)throw new Error('ONBOARDING_SAMPLE_ROW_SCRUB_LOOP');
+  const tokenAt=match.index,startBoundary=findBoundary(tokenAt,true);
+  const start=source.slice(startBoundary,startBoundary+2)==='\\n'?startBoundary+2:(startBoundary===0?0:startBoundary+1);
+  const endBoundary=findBoundary(tokenAt,false);
+  const end=source.slice(endBoundary,endBoundary+2)==='\\n'?endBoundary+2:(endBoundary<source.length?endBoundary+1:endBoundary);
+  source=source.slice(0,start)+source.slice(end);
+  matcher.lastIndex=0;
+ }
+ return source;
+}
 function patchOnboarding(){
  const file=path.join(root,'onboarding-ui.js');if(!fs.existsSync(file))return;
- let source=fs.readFileSync(file,'utf8');if(source.includes('VECTOR_CUSTOMER_ONBOARDING_COPY_V1'))return;
- source=source.replace("HR-9101,PAY-9101,Jordan New,jordan.new@example.test,s1,Tamworth,Machine operator,2026-10-01,full_time,40,en-GB,CNC,director\\n",'');
- source=source.replace('Secure invitations require the authenticated development application.','Secure invitations require the authenticated online application.');
- source=source.replace('Invitation created — development only','Invitation created');
- source=source.replace('This development build does not contact real employees.','Delivery is not treated as confirmed until the configured invitation channel records an acknowledgement.');
+ let source=fs.readFileSync(file,'utf8');if(source.includes('VECTOR_CUSTOMER_ONBOARDING_COPY_V2'))return;
+ source=removeEncodedCsvRow(source,/Jordan New|jordan\.new@example\.test/gi);
+ source=source.replaceAll('Secure invitations require the authenticated development application.','Secure invitations require the authenticated online application.');
+ source=source.replaceAll('Invitation created — development only','Invitation created');
+ source=source.replaceAll('This development build does not contact real employees.','Delivery is not treated as confirmed until the configured invitation channel records an acknowledgement.');
  if(/development only|development build|Jordan New|jordan\.new@example\.test/i.test(source))throw new Error('ONBOARDING_CUSTOMER_SAMPLE_COPY_REMAINS');
- source+='\n/* VECTOR_CUSTOMER_ONBOARDING_COPY_V1 */\n';fs.writeFileSync(file,source);
+ source+='\n/* VECTOR_CUSTOMER_ONBOARDING_COPY_V2 */\n';fs.writeFileSync(file,source);
 }
-patchOperations();patchOnboarding();
+function patchFeatures(){
+ const file=path.join(root,'features.js');if(!fs.existsSync(file))return;
+ let source=fs.readFileSync(file,'utf8');if(source.includes('VECTOR_CUSTOMER_FEATURES_COPY_V1'))return;
+ source=source.replace(/For the sample journey, send Leah an offer,[\s\S]*?return to the manager to confirm\.\\n\\n/g,'');
+ source=source.replaceAll(' All data is synthetic.','');
+ source=source.replaceAll('All data is synthetic.','');
+ source=source.replace(
+  "document.title='Manufacturing Workforce · '+(OFFLINE?'Interactive sample':'Local development build');",
+  "document.title='Vector · Workforce';"
+ );
+ if(/For the sample journey, send Leah|All data is synthetic\./i.test(source))throw new Error('FEATURES_CUSTOMER_SAMPLE_COPY_REMAINS');
+ if(/document\.title\s*=.*Local development build/i.test(source))throw new Error('FEATURES_CUSTOMER_DEVELOPMENT_TITLE_REMAINS');
+ source+='\n/* VECTOR_CUSTOMER_FEATURES_COPY_V1 */\n';fs.writeFileSync(file,source);
+}
+patchOperations();patchOnboarding();patchFeatures();
 console.log('VECTOR_CUSTOMER_RUNTIME_ASSET_PATCH=PASS');
