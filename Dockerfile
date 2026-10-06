@@ -96,7 +96,7 @@ COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.
 RUN node /tmp/retire-legacy-presentation.mjs /app/public \
  && node /tmp/harden-attendance-integrity.mjs /app/public \
  && node /tmp/patch-customer-runtime-assets.mjs /app/public \
- && node -e "const fs=require('fs');const source=fs.readFileSync('/app/public/onboarding-ui.js','utf8');if(/development only|development build|Jordan New|jordan\\.new@example\\.test/i.test(source))throw new Error('ONBOARDING_CUSTOMER_SAMPLE_COPY_REMAINS');if(!source.includes('VECTOR_CUSTOMER_ONBOARDING_COPY_V2'))throw new Error('ONBOARDING_CUSTOMER_SAMPLE_COPY_MARKER_MISSING');console.log('ONBOARDING_CUSTOMER_SAMPLE_COPY_GUARD=PASS')" \
+ && node -e "const fs=require('fs');const source=fs.readFileSync('/app/public/onboarding-ui.js','utf8');const forbidden=/development only|development build|Jordan New|jordan\\.new@example\\.test/i.exec(source);if(forbidden){const at=forbidden.index,snippet=source.slice(Math.max(0,at-120),Math.min(source.length,at+240)).replace(/[\\r\\n]+/g,' ');throw new Error('ONBOARDING_CUSTOMER_SAMPLE_COPY_REMAINS:'+forbidden[0]+':'+snippet)}if(!source.includes('VECTOR_CUSTOMER_ONBOARDING_COPY_V2'))throw new Error('ONBOARDING_CUSTOMER_SAMPLE_COPY_MARKER_MISSING');console.log('ONBOARDING_CUSTOMER_SAMPLE_COPY_GUARD=PASS')" \
  && rm -f /tmp/retire-legacy-presentation.mjs /tmp/harden-attendance-integrity.mjs /tmp/patch-customer-runtime-assets.mjs
 
 # Resource-side identity survival overlay. Keep the original sealed artifact intact and
