@@ -32,6 +32,7 @@ function patchOperations(){
  source=source.replace('Actual published duty intervals, including approved cross-site swaps.','Actual published duty intervals for the current tenant-calendar week, including approved cross-site swaps.');
  source=source.replace('The legacy sample has remaining balances but no verified earlier usage. A super user must enter reviewed openings; the system will not invent annual usage from a rough estimate.','Earlier leave usage is not verified. An authorised administrator must provide reviewed opening evidence; the system will not infer annual usage.');
  source=source.replace('Clocking remains on the site tablet. The development sample uses fictional clock evidence, not a live device feed.','Attendance shown here comes from the connected source. Unverified events are labelled and stay outside approved payroll.');
+ source=source.replace('The development sample uses fictional clock evidence, not a live device feed.','Unverified clock events are clearly labelled and excluded from approved payroll.');
  source=source.replace('General draft-shift editing remains a separate unfinished core workflow.','Only published assignments are shown here; draft planning remains outside this employee view.');
  source=replaceOnce(source,
   "if(ui.page==='overview'&&isEmployee()){[OP.leave,OP.shifts]=await Promise.all([opGet('leave'),opGet('shifts')]);if(epoch!==OP.epoch)return;document.getElementById('root').innerHTML=shell(opEmployeeHome());saveOffline();return;}",
