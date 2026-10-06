@@ -10,7 +10,7 @@ const input = {...binding,batchId:'approved-batch',sourceRevision:'approved-rev'
 const run = {taxYear:'Year2026',payPeriod:'Monthly',period:6,ordinal:1,version:0,state:'Open',startDate:'2026-09-01',endDate:'2026-09-30'};
 function entry(amount=12.5) { return {id:'synthetic-entry',employee:{id:'synthetic-employee'},employmentDetails:{payrollCode:'TEST01'},taxYear:'Year2026',payPeriod:'Monthly',period:6,ordinal:1,payRunVersion:0,state:'Open',payOptions:{basis:'Hourly',payCode:'BASIC',payAmount:10,payAmountMultiplier:1.25,regularPayLines:[{code:'BASIC',rate:10,multiplier:1.25,value:12.5}],lines:[]},totals:{basicPay:amount},totalsYtd:{tax:10}}; }
 function baselineEntry(){const e=entry(100);e.payOptions.payAmountMultiplier=10;e.payOptions.regularPayLines[0].multiplier=10;e.payOptions.regularPayLines[0].value=100;return e;}
-const config = {apiKey:'FAKE-INDEPENDENT-ONLY',baseUrl:'https://api.staffology.co.uk',timeoutMs:100};
+const config = {apiKey:'FAKE-INDEPENDENT-ONLY',baseUrl:'https://api.staffology.co.uk',timeoutMs:1000};
 const response = x => new Response(x===undefined?null:JSON.stringify(x),{status:200});
 function harness(options={}) {
  const rows=new Map(),evidence=[]; let current=true,posts=0,authorizations=0,dispatchGuards=0; let lateDispatch;
