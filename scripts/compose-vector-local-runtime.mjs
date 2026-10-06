@@ -64,6 +64,10 @@ function composeStaffology(runtime) {
   // Provider payroll codes may contain one safe character. Source IDs retain their stricter rule.
   const payrollValidator = "function payrollId(x){const v=String(x||'').trim();assert(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/.test(v),'Payroll ID must be 1–64 safe characters.');return v;}\n";
   onboarding = onboarding.replace(normaliseAnchor, payrollValidator + normaliseAnchor).replace(payrollAnchor, 'source=sourceId(row.source_id),payroll=payrollId(row.payroll_id),name=');
+  const contractAnchor="const effectiveFrom=x.startDate,ct={id:'onb-contract-'+staffId+'-'+effectiveFrom,effectiveFrom,type:x.contractType,weeklyHours:x.weeklyHours,overtimeBasis:'custom',overtimeAfter:Number(p.overtimeAfter??x.weeklyHours),holidayMethod:x.contractType==='zero_hours'?'irregular':'regular',requireAcceptance:x.contractType==='zero_hours'};s.workRules.contracts[staffId]=[ct];";
+  if(onboarding.split(contractAnchor).length!==2)throw Error('SEALED_ONBOARDING_CONTRACT_ANCHOR_CHANGED');
+  const contractReplacement="const effectiveFrom=x.startDate,baseline=Object.values(s.workRules.contracts||{}).flat().filter(c=>c&&c.type===x.contractType).sort((a,b)=>String(b.effectiveFrom||'').localeCompare(String(a.effectiveFrom||'')))[0];assert(baseline,'A reviewed '+x.contractType+' contract baseline is required before this employee can be configured.',409);const ct={...clone(baseline),id:'onb-contract-'+staffId+'-'+effectiveFrom,effectiveFrom,weeklyHours:x.weeklyHours,revision:1};if(p.overtimeAfter!==undefined){const threshold=Number(p.overtimeAfter);assert(Number.isFinite(threshold)&&threshold>0,'Reviewed overtime threshold is invalid.');ct.overtimeBasis='custom';ct.overtimeAfter=threshold;}R.validateContract(ct);s.workRules.contracts[staffId]=[ct];";
+  onboarding=onboarding.replace(contractAnchor,contractReplacement);
   fs.writeFileSync(onboardingPath, onboarding);
   const serverPath = path.join(runtime, 'server.cjs');
   let server = fs.readFileSync(serverPath, 'utf8');
