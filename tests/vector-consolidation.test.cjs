@@ -74,7 +74,7 @@ test('late action evidence updates the queue and notification and preserves acce
   const badge = { textContent: '0', hidden: true }, queue = { outerHTML: '' };
   const item = { contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: 'time-1', reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', timeZone: 'Europe/London', maxAgeMs: 900000, freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title: 'Missing clock out' };
   const { api } = load({ selectors: { '.vector-alerts': queue, '.vector-notification-count': badge },
-    fetch: async () => ({ ok: true, json: async () => ({ contractVersion: item.contractVersion, workflow: item.workflow, items: [item] }) }) });
+    fetch: async () => ({ ok: true, json: async () => ({ contractVersion: item.contractVersion, workflow: item.workflow, timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [item] }) }) });
   api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   await api.loadTimeReviewEvidence();
   assert.equal(badge.textContent, '1'); assert.equal(badge.hidden, false);
@@ -82,9 +82,20 @@ test('late action evidence updates the queue and notification and preserves acce
   assert.match(queue.outerHTML, /<details class="vector-action-detail">/);
 });
 
+test('stale Time Review evidence cannot become a current Today priority', async () => {
+  const badge = { textContent: '9', hidden: false }, queue = { outerHTML: '' };
+  const stale = { contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow:'time-review', sourceId:'stale-time-1', reasonCode:'MISSING_CLOCK_OUT', authorityRequired:'manager', observedAt:'2026-10-05T11:30:00Z', confirmation:{state:'action_required'}, title:'Stale missing clock out' };
+  const { api } = load({ selectors:{'.vector-alerts':queue,'.vector-notification-count':badge},
+    fetch: async () => ({ok:true,json:async()=>({contractVersion:stale.contractVersion,workflow:stale.workflow,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',maxAgeMs:900000,items:[stale]})}) });
+  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
+  await api.loadTimeReviewEvidence();
+  assert.equal(badge.textContent,'0');assert.equal(badge.hidden,true);
+  assert.doesNotMatch(queue.outerHTML,/Stale missing clock out/);
+});
+
 test('a completed older request cannot overwrite refreshed action evidence after a screen render', async () => {
   const queue = { outerHTML: '' }, pending = [];
-  const response = title => ({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', items: [{ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: title, reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', timeZone: 'Europe/London', maxAgeMs: 900000, freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title }] }) });
+  const response = title => ({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [{ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: title, reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title }] }) });
   const { api, context } = load({ selectors: { '.vector-alerts': queue }, fetch: () => new Promise(resolve => pending.push(resolve)) });
   api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   const oldRequest = api.loadTimeReviewEvidence();
@@ -99,7 +110,8 @@ test('a completed older request cannot overwrite refreshed action evidence after
 test('an in-flight manager response is discarded after the role becomes employee', async () => {
   const queue = { outerHTML: 'employee-self-service' }; let resolve, employee = false;
   const { api } = load({ isEmployee: () => employee, selectors: { '.vector-alerts': queue }, fetch: () => new Promise(r => { resolve = r; }) });
+  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   const request = api.loadTimeReviewEvidence(); employee = true;
-  resolve({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', items: [] }) });
+  resolve({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [] }) });
   await request; assert.equal(queue.outerHTML, 'employee-self-service');
 });

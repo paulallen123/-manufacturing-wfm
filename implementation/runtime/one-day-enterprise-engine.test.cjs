@@ -25,9 +25,9 @@ function fixture(options = {}) {
   );
   db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('alpha', 1, '{}');
   db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('bravo', 1, '{}');
-  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha', 'alpha', 'm1', 'manager', 1, 's', '00', '[]');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha', 'alpha', 'm1', 'manager', 1, 's', '00', JSON.stringify(['company.configure']));
   db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('employee@alpha', 'alpha', 'e1', 'employee', 0, 's', '00', '[]');
-  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@bravo', 'bravo', 'm2', 'manager', 1, 's', '00', '[]');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@bravo', 'bravo', 'm2', 'manager', 1, 's', '00', JSON.stringify(['company.configure']));
   const tokens = {
     manager: 'm'.repeat(64),
     employee: 'e'.repeat(64),
@@ -215,7 +215,8 @@ function evidenceDetail(kind) {
   if (kind === 'scenario-validation') return {
     cloudRuntime: true, testDataClass: 'synthetic-unit-journey', criticalFailures: 0,
     totalScenarios: GOLDEN_JOURNEY_STEPS.length, passedScenarios: GOLDEN_JOURNEY_STEPS.length,
-    steps: GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'unit:' + id }))
+    correlationId: 'unit-golden-journey',
+    steps: GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'unit:' + id, correlationId: 'unit-golden-journey' }))
   };
   if (kind === 'test-data-cleanup') return { remainingTestRows: 0, liveRowsTouched: 0 };
   if (kind === 'live-data-import') return {
@@ -1424,7 +1425,11 @@ test('trusted evidence cannot bypass missing customer scope', async () => {
     assert.equal(scoped.status, 201);
     assert.equal(scoped.body.scopeCaptured, true);
     assert.equal(scoped.body.operationalReady, false);
-    assert.equal(scoped.body.requirements.filter(item => item.status === 'REVALIDATION_REQUIRED').length, 20);
+    const scopedMap=new Map(scoped.body.requirements.map(item=>[item.key,item]));
+    assert.ok(scoped.body.requirements.filter(item => item.status === 'REVALIDATION_REQUIRED').length > 0);
+    assert.equal(scopedMap.get('tenant-environment').status,'REVALIDATION_REQUIRED');
+    assert.equal(scopedMap.get('identity-access').satisfied,true);
+    assert.equal(scopedMap.get('security-controls').satisfied,true);
     const renewed = await passAllEvidence(f, started.body.runId, '-current-scope');
     assert.equal(renewed.operationalReady, true);
     assert.equal(renewed.state, 'READY');
@@ -1710,7 +1715,7 @@ function detail(kind){
  if(kind==='historical-replay')return{...common,dataClass:'customer-authorised',independentCalculation:true,expectedTotal:100,calculatedTotal:100,unexplainedVariance:0};
  if(kind==='security-controls')return{...common,cloudRuntime:true,tenantIsolationVerified:true,crossTenantNegativeTests:1,criticalFailures:0};
  if(kind==='resilience')return{...common,hostedRuntime:true,faultInjected:true,detected:true,classified:true,repairOrContainmentApplied:true,independentVerificationPassed:true,durableAuditVerified:true,replaySafetyVerified:true,rollbackRequired:false,criticalFailures:0};
- if(kind==='scenario-validation')return{...common,cloudRuntime:true,testDataClass:'synthetic-scenario',totalScenarios:GOLDEN_JOURNEY_STEPS.length,passedScenarios:GOLDEN_JOURNEY_STEPS.length,criticalFailures:0,steps:GOLDEN_JOURNEY_STEPS.map(id=>({id,status:'PASS',evidenceRef:'review:'+id}))};
+ if(kind==='scenario-validation')return{...common,cloudRuntime:true,testDataClass:'synthetic-scenario',totalScenarios:GOLDEN_JOURNEY_STEPS.length,passedScenarios:GOLDEN_JOURNEY_STEPS.length,criticalFailures:0,correlationId:'review-golden-journey',steps:GOLDEN_JOURNEY_STEPS.map(id=>({id,status:'PASS',evidenceRef:'review:'+id,correlationId:'review-golden-journey'}))};
  if(kind==='test-data-cleanup')return{...common,remainingTestRows:0,liveRowsTouched:0};
  if(kind==='live-data-import')return{...common,zeroHuman:true,humanInterventions:0,sourceAuthoritative:true,sourceCount:1,importedCount:1,invalidCount:0,checksumMatch:true};
  return{...common,checked:true};
@@ -1736,11 +1741,11 @@ test('current admission: candidate/deployment/tenant/run explicit mismatches are
 test('current admission: manager cookie and unauthenticated caller cannot publish internal readiness evidence',async()=>{const f=fixture();try{for(const auth of['manager','none'])assert.equal((await submit(f,'identity-access',detail('identity-access'),auth)).status,403);assert.equal(f.audit().evidence.length,0);}finally{f.close();}});
 
 async function admitReady(f){await call(f,'scope',scope(),'manager');for(const{key}of REQUIREMENTS){if(key!=='configuration-scope')assert.equal((await submit(f,key)).status,200,key);}assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,true);}
-test('current admission: same-count scope changes invalidate server-bound receipts without caller digest and cannot resurrect them by changing back',async()=>{const f=fixture();try{await admitReady(f);const before=f.audit(),old=scope();const changed={...old,countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};const updated=await call(f,'scope',changed,'manager');assert.equal(updated.body.operationalReady,false);assert.equal(updated.body.requirements.filter(x=>x.status==='REVALIDATION_REQUIRED').length,20);assert.deepEqual(f.audit().evidence,before.evidence);f.reopen(true);assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);const back=await call(f,'scope',old,'manager');assert.equal(back.body.operationalReady,false,'Prior identical configuration must not resurrect old-revision authority');assert.deepEqual(f.audit().evidence,before.evidence);assert.equal(f.audit().environments[0].environment_id,before.environments[0].environment_id);}finally{f.close();}});
+test('current admission: same-count scope changes invalidate only affected proof epochs and cannot resurrect prior configuration authority',async()=>{const f=fixture();try{await admitReady(f);const before=f.audit(),old=scope();const changed={...old,countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};const updated=await call(f,'scope',changed,'manager');assert.equal(updated.body.operationalReady,false);assert.ok(updated.body.requirements.filter(x=>x.status==='REVALIDATION_REQUIRED').length>0);const scoped=new Map(updated.body.requirements.map(x=>[x.key,x]));assert.equal(scoped.get('tenant-environment').status,'REVALIDATION_REQUIRED');assert.equal(scoped.get('time-policies').status,'REVALIDATION_REQUIRED');assert.equal(scoped.get('identity-access').satisfied,true);assert.equal(scoped.get('security-controls').satisfied,true);assert.equal(scoped.get('source-systems').satisfied,true);assert.deepEqual(f.audit().evidence,before.evidence);f.reopen(true);assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);const back=await call(f,'scope',old,'manager');assert.equal(back.body.operationalReady,false,'Prior identical configuration must not resurrect old-revision authority');assert.deepEqual(f.audit().evidence,before.evidence);assert.equal(f.audit().environments[0].environment_id,before.environments[0].environment_id);}finally{f.close();}});
 test('current admission: identical scope resubmission preserves ready receipts and existing effect/job identity',async()=>{const f=fixture();try{await admitReady(f);const before=f.audit(),d=new DatabaseSync(f.dbPath),count=d.prepare('SELECT COUNT(*) AS n FROM tenant_environment_events').get().n;d.close();const again=await call(f,'scope',scope(),'manager');assert.equal(again.body.operationalReady,true);assert.deepEqual(f.audit().evidence,before.evidence);assert.deepEqual(f.audit().jobs.map(x=>[x.id,x.intent_digest,x.status]),before.jobs.map(x=>[x.id,x.intent_digest,x.status]));const check=new DatabaseSync(f.dbPath);assert.equal(check.prepare('SELECT COUNT(*) AS n FROM tenant_environment_events').get().n,count);check.close();}finally{f.close();}});
 test('current admission: configuration digest mismatch and caller-issued configuration seal are refused before storing evidence',async()=>{const f=fixture();try{await call(f,'scope',scope(),'manager');assert.equal((await submit(f,'identity-access',{...detail('identity-access'),configurationDigest:'prior-configuration'})).status,409);assert.equal((await submit(f,'identity-access',{...detail('identity-access'),_configurationValidation:{version:1}})).status,409);assert.equal(f.audit().evidence.length,0);}finally{f.close();}});
 
-test('current admission: receipts accepted before first configuration cannot acquire its authority retroactively',async()=>{const f=fixture();try{for(const{key}of REQUIREMENTS)if(!['configuration-scope','time-policies','absence-policies'].includes(key))assert.equal((await submit(f,key)).status,200,key);const before=f.audit();assert.ok(before.evidence.every(x=>!JSON.parse(x.detail_json)._configurationValidation));const changed={...scope(),countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};const captured=await call(f,'scope',changed,'manager');assert.equal(captured.body.operationalReady,false);assert.equal(captured.body.requirements.filter(x=>x.status==='REVALIDATION_REQUIRED').length,18);assert.deepEqual(f.audit().evidence,before.evidence);}finally{f.close();}});
+test('current admission: receipts accepted before first configuration cannot acquire its authority retroactively',async()=>{const f=fixture();try{for(const{key}of REQUIREMENTS)if(!['configuration-scope','time-policies','absence-policies'].includes(key))assert.equal((await submit(f,key)).status,200,key);const before=f.audit();assert.ok(before.evidence.every(x=>!JSON.parse(x.detail_json)._configurationValidation));const changed={...scope(),countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};const captured=await call(f,'scope',changed,'manager');assert.equal(captured.body.operationalReady,false);assert.ok(captured.body.requirements.filter(x=>x.status==='REVALIDATION_REQUIRED').length>0);const capturedMap=new Map(captured.body.requirements.map(x=>[x.key,x]));assert.equal(capturedMap.get('tenant-environment').status,'REVALIDATION_REQUIRED');assert.equal(capturedMap.get('identity-access').satisfied,true);assert.equal(capturedMap.get('security-controls').satisfied,true);assert.deepEqual(f.audit().evidence,before.evidence);}finally{f.close();}});
 test('current admission: trusted contract scope changes share the revision boundary and cannot resurrect prior scope receipts',async()=>{const f=fixture();try{const d=new DatabaseSync(f.dbPath);d.prepare('UPDATE implementation_runs SET contract_ref_hash=? WHERE id=?').run(hash('review-existing-contract'),'run-review');d.close();await admitReady(f);const before=f.audit();const activate=s=>call(f,'contract-activated',{tenant:'review-alpha',contractRef:'review-existing-contract',recipientEmail:'synthetic@example.invalid',scope:s});const changed={...scope(),countries:['Germany'],sites:['Plant2'],payrollSystem:'PayrollDE'};await activate(changed);assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);await activate(scope());assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);assert.deepEqual(f.audit().evidence,before.evidence);assert.equal(f.audit().environments[0].environment_id,before.environments[0].environment_id);}finally{f.close();}});
 
 

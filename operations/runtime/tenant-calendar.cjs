@@ -17,9 +17,7 @@ function currentPeriod(periods,localDate){
  const rows=Array.isArray(periods)?periods.filter(row=>row&&typeof row.start==='string'&&typeof row.end==='string'):[];
  const exact=rows.filter(row=>row.start<=localDate&&row.end>=localDate).sort((a,b)=>String(b.start).localeCompare(String(a.start)));
  if(exact.length>1)fail('Multiple payroll periods overlap the authoritative tenant date.','WFM_CURRENT_PERIOD_AMBIGUOUS');
- if(exact.length===1)return exact[0];
- const past=rows.filter(row=>row.end<localDate).sort((a,b)=>String(b.end).localeCompare(String(a.end)));
- return past[0]||null;
+ return exact.length===1?exact[0]:null;
 }
 function freshness({asOf,timeZone,maxAgeMs,nowMs}){
  const zone=validZone(timeZone),observed=Date.parse(asOf),current=Number(nowMs);

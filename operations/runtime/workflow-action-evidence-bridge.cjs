@@ -3,6 +3,7 @@
 const http = require('node:http');
 const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { createTenantCalendar } = require('./tenant-calendar.cjs');
 const {
   CONTRACT_VERSION,
   produceTimeReviewActionEvidence
@@ -154,7 +155,19 @@ function createWorkflowActionEvidenceBridge(options = {}) {
   const sourceProvider = typeof options.timeReviewSourceProvider === 'function'
     ? options.timeReviewSourceProvider
     : (req) => fetchAuthoritativeTimeReview(req, options.source || {});
-  const auth = db.prepare(`SELECT u.email,u.tenant,u.role
+  const tenantCalendar = options.tenantCalendar || createTenantCalendar({
+    env: options.env || process.env,
+    now: typeof options.now === 'function' ? options.now : Date.now
+  });
+  const calendarProvider = typeof options.calendarProvider === 'function'
+    ? options.calendarProvider
+    : ctx => {
+        const row=tenantState.get(ctx.tenant),state=row?.state?JSON.parse(row.state):{};
+        const person=(Array.isArray(state?.staff)?state.staff:[]).find(item=>item?.id===ctx.person_id);
+        return tenantCalendar.snapshot({tenant:ctx.tenant,site:person?.site||null});
+      };
+  const tenantState = db.prepare('SELECT state FROM tenants WHERE id=?');
+  const auth = db.prepare(`SELECT u.email,u.tenant,u.role,u.person_id
     FROM sessions s JOIN users u ON u.email=s.email
     WHERE s.token_hash=? AND s.expires>?`);
 
@@ -206,12 +219,30 @@ function createWorkflowActionEvidenceBridge(options = {}) {
     const allowedTeamIds = [...new Set((Array.isArray(report.teams) ? report.teams : [])
       .map(team => compact(team?.id ?? team?.teamId, 160))
       .filter(Boolean))];
-    const items = produceTimeReviewActionEvidence(report, { allowedTeamIds });
+    let calendar;
+    try {
+      calendar = calendarProvider(Object.freeze({
+        tenant:String(ctx.tenant),role:String(ctx.role),email:String(ctx.email),person_id:String(ctx.person_id||'')
+      }));
+    } catch {
+      return writeJson(res, 503, { error: 'Tenant calendar authority is unavailable.' });
+    }
+    if (!calendar || calendar.schemaVersion!=='tenant-calendar-1' || !calendar.timeZone || !calendar.asOf ||
+        !Number.isFinite(Number(calendar.maxAgeMs)) || Number(calendar.maxAgeMs)<=0) {
+      return writeJson(res, 503, { error: 'Tenant calendar authority is unavailable.' });
+    }
+    const items = produceTimeReviewActionEvidence(report, {
+      allowedTeamIds,
+      freshnessEnvelope: {timeZone:calendar.timeZone,asOf:calendar.asOf,maxAgeMs:Number(calendar.maxAgeMs)}
+    });
 
     return writeJson(res, 200, {
       contractVersion: CONTRACT_VERSION,
       workflow: 'time-review',
       source: SOURCE_TIME_REVIEW_PATH,
+      timeZone: calendar.timeZone,
+      asOf: calendar.asOf,
+      maxAgeMs: Number(calendar.maxAgeMs),
       items
     });
   }

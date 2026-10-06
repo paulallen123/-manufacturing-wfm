@@ -17,6 +17,7 @@ const { createAutonomousIntegrationHub } = require('/app/integration-runtime/aut
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
+const { createTenantCalendar } = require('/app/operations-runtime/tenant-calendar.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
 const { createDemandDecisionService } = require('/app/operations-runtime/demand-decision-service.cjs');
 const { createAutopilotExecutionEngine } = require('/app/operations-runtime/autopilot-execution-engine.cjs');
@@ -48,6 +49,7 @@ const proofRunnerEnabled = process.env.WFM_PROOF_RUNNER_AUTH === 'enabled';
 installHostedListenGuard(http, { hosted });
 const ownerAccessRecovery = createOwnerAccessRecovery();
 const runtimeIdentity = createRuntimeIdentity({ hosted });
+const tenantCalendar = createTenantCalendar({ env: process.env });
 let guard = null;
 let proofRunnerAuth = null;
 let passkeyAuth = null;
@@ -383,6 +385,7 @@ http.createServer = function guardedCreateServer(listener) {
       implementationEngine = createOneDayEnterpriseEngine({
         dbPath: process.env.WFM_DB,
         runtimeIdentityProvider: () => runtimeIdentity.snapshot(),
+        tenantCalendarSnapshotProvider: tenant => tenantCalendar.snapshot({ tenant }),
         learningSummaryProvider: tenant => {
           if (!learningEngine || learningEngineInitError) {
             throw new Error('Adaptive learning evidence unavailable.');

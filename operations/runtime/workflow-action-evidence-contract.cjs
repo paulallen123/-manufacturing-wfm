@@ -143,7 +143,22 @@ function acceptSourceActionEvidence(input){
  * from the source workflow's structured `status: open` state. Later lifecycle
  * states must be supplied explicitly by the source in `issue.confirmation`.
  */
-function produceTimeReviewActionEvidence(report,{allowedTeamIds=[]}={}){
+function trustedEnvelopeFreshness(observedAt,envelope){
+  if(!isObject(envelope))return null;
+  const asOf=iso(envelope.asOf),timeZone=text(envelope.timeZone,120),maxAgeMs=Number(envelope.maxAgeMs);
+  if(!asOf||!timeZone||!Number.isFinite(maxAgeMs)||maxAgeMs<=0)return null;
+  try{new Intl.DateTimeFormat('en-GB',{timeZone}).format(new Date(asOf));}catch{return null;}
+  const observed=Date.parse(observedAt),current=Date.parse(asOf);
+  if(!Number.isFinite(observed)||!Number.isFinite(current)||observed>current+30000)return null;
+  const stale=current-observed>maxAgeMs;
+  return Object.freeze({
+    state:stale?'stale':'current',
+    policyRef:'server-authoritative-tenant-calendar',
+    validUntil:stale?null:new Date(observed+maxAgeMs).toISOString()
+  });
+}
+
+function produceTimeReviewActionEvidence(report,{allowedTeamIds=[],freshnessEnvelope=null}={}){
   if(!isObject(report)) return Object.freeze([]);
   const allowed=new Set((Array.isArray(allowedTeamIds)?allowedTeamIds:[])
     .map(value=>text(value,160)).filter(Boolean));
@@ -170,7 +185,9 @@ function produceTimeReviewActionEvidence(report,{allowedTeamIds=[]}={}){
       const authorityRequired=text(issue.authorityRequired??team.authorityRequired??report.authorityRequired,160);
       if(!sourceId||!reasonCode||!observedAt||!authorityRequired) continue;
 
-      const explicitFreshness=firstObject(issue.freshness,team.freshness,report.freshness);
+      // Freshness is owned by the server envelope, never by issue/team/report input.
+      const envelopeFreshness=trustedEnvelopeFreshness(observedAt,freshnessEnvelope);
+      if(!envelopeFreshness) continue;
       const explicitConfirmation=isObject(issue.confirmation)?issue.confirmation:null;
       const accepted=acceptSourceActionEvidence({
         workflow:'time-review',
@@ -184,7 +201,7 @@ function produceTimeReviewActionEvidence(report,{allowedTeamIds=[]}={}){
         recommendation:issue.recommendation,
         consequence:issue.consequence,
         alternatives:issue.alternatives,
-        freshness:explicitFreshness||{state:'unknown'},
+        freshness:envelopeFreshness,
         confirmation:explicitConfirmation||{state:'action_required'}
       });
       if(accepted) rows.push(accepted);

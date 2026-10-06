@@ -52,7 +52,14 @@ function fixture() {
     strictEvidence: true,
     requireCandidateBinding: true,
     candidateSha: 'a'.repeat(40),
-    deploymentId: 'deployment-current'
+    deploymentId: 'deployment-current',
+    runtimeIdentity: {
+      candidateSha: 'a'.repeat(40),
+      deploymentId: 'deployment-current',
+      fixtureOnly: false,
+      productionApproved: false,
+      pilotReady: false
+    }
   });
 
   const seed = new DatabaseSync(dbPath);
@@ -151,7 +158,7 @@ test('generic internal evidence cannot manufacture customer policy authority', a
       }
     });
     assert.equal(result.status, 409);
-    assert.match(result.body.error, /cannot originate from generic internal evidence/i);
+    assert.match(result.body.error, /server-issued authenticated customer-authority receipt|cannot originate from generic internal evidence/i);
   } finally {
     f.close();
   }

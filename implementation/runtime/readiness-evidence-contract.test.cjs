@@ -92,8 +92,16 @@ test('security, scenario and live import evidence are fail-closed without overst
     cloudRuntime: true,
     testDataClass: 'synthetic-edge-suite',
     criticalFailures: 0,
-    steps: MANDATORY_GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'proof:' + id }))
+    correlationId: 'journey-contract-test',
+    steps: MANDATORY_GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'proof:' + id, correlationId: 'journey-contract-test' }))
   }), null);
+  assert.match(validateStrictReadinessEvidence('scenario-validation', 'PASS', {
+    cloudRuntime: true,
+    testDataClass: 'synthetic-edge-suite',
+    criticalFailures: 0,
+    correlationId: 'journey-a',
+    steps: MANDATORY_GOLDEN_JOURNEY_STEPS.map((id,index) => ({ id, status: 'PASS', evidenceRef: 'proof:' + id, correlationId: index===0?'journey-b':'journey-a' }))
+  }), /correlate every mandatory Golden Journey step/);
   assert.match(validateStrictReadinessEvidence('live-data-import', 'PASS', {
     fixtureOnly: false,
     zeroHuman: true,

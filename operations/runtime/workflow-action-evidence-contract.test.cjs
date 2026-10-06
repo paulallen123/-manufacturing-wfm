@@ -29,6 +29,8 @@ function base(overrides={}){
   };
 }
 
+const freshnessEnvelope={timeZone:'Europe/London',asOf:'2026-09-19T10:02:00.000Z',maxAgeMs:300000};
+
 function timeReviewReport(overrides={}){
   return {
     generatedAt:'2026-09-19T10:00:00.000Z',
@@ -181,11 +183,11 @@ test('Time Review producer emits only scoped open structured source issues',()=>
       ]}
     ]
   });
-  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a'],freshnessEnvelope});
   assert.equal(rows.length,1);
   assert.equal(rows[0].sourceId,'issue-1');
   assert.equal(rows[0].reasonCode,'MISSED_CLOCK_OUT');
-  assert.equal(rows[0].freshness.state,'unknown');
+  assert.equal(rows[0].freshness.state,'current');
   assert.equal(rows[0].confirmation.state,'action_required');
 });
 
@@ -204,12 +206,12 @@ test('Time Review producer normalizes only the sealed authoritative adjustment s
       }]
     }]
   });
-  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a'],freshnessEnvelope});
   assert.equal(rows.length,1);
   assert.equal(rows[0].sourceId,'issue-adjustment-1');
   assert.equal(rows[0].reasonCode,'TIME_REVIEW_ADJUSTMENT');
   assert.equal(rows[0].title,'Manager proposed a five-minute correction.');
-  assert.equal(rows[0].freshness.state,'unknown');
+  assert.equal(rows[0].freshness.state,'current');
   assert.equal(rows[0].confirmation.state,'action_required');
 
   const missingFingerprint=timeReviewReport({
@@ -225,31 +227,41 @@ test('Time Review producer fails closed without explicit source scope or require
   assert.deepEqual(produceTimeReviewActionEvidence(report),[]);
 
   const noId=timeReviewReport({teams:[{id:'team-a',issues:[{status:'open',reasonCode:'MISSED_CLOCK_OUT'}]}]});
-  assert.deepEqual(produceTimeReviewActionEvidence(noId,{allowedTeamIds:['team-a']}),[]);
+  assert.deepEqual(produceTimeReviewActionEvidence(noId,{allowedTeamIds:['team-a'],freshnessEnvelope}),[]);
 
   const noReason=timeReviewReport({teams:[{id:'team-a',issues:[{id:'issue-1',status:'open'}]}]});
-  assert.deepEqual(produceTimeReviewActionEvidence(noReason,{allowedTeamIds:['team-a']}),[]);
+  assert.deepEqual(produceTimeReviewActionEvidence(noReason,{allowedTeamIds:['team-a'],freshnessEnvelope}),[]);
 
   const noAuthority=timeReviewReport({authorityRequired:null});
-  assert.deepEqual(produceTimeReviewActionEvidence(noAuthority,{allowedTeamIds:['team-a']}),[]);
+  assert.deepEqual(produceTimeReviewActionEvidence(noAuthority,{allowedTeamIds:['team-a'],freshnessEnvelope}),[]);
 
   const noObservation=timeReviewReport({generatedAt:null});
-  assert.deepEqual(produceTimeReviewActionEvidence(noObservation,{allowedTeamIds:['team-a']}),[]);
+  assert.deepEqual(produceTimeReviewActionEvidence(noObservation,{allowedTeamIds:['team-a'],freshnessEnvelope}),[]);
 });
 
-test('Time Review producer passes explicit source freshness without deriving it from generatedAt',()=>{
+test('Time Review producer ignores source-supplied freshness and derives it only from the trusted tenant-calendar envelope',()=>{
   const report=timeReviewReport({
     freshness:{
       state:'current',
-      policyRef:'time-review-source-sla-v1',
-      validUntil:'2026-09-19T10:05:00.000Z'
+      policyRef:'untrusted-source-claim',
+      validUntil:'2099-01-01T00:00:00.000Z'
     }
   });
-  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a'],freshnessEnvelope});
   assert.equal(rows.length,1);
   assert.equal(rows[0].freshness.state,'current');
-  assert.equal(rows[0].freshness.policyRef,'time-review-source-sla-v1');
+  assert.equal(rows[0].freshness.policyRef,'server-authoritative-tenant-calendar');
   assert.equal(rows[0].freshness.validUntil,'2026-09-19T10:05:00.000Z');
+});
+
+
+test('Time Review producer classifies observations older than the trusted envelope maximum age as stale',()=>{
+  const report=timeReviewReport({generatedAt:'2026-09-19T09:00:00.000Z'});
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a'],freshnessEnvelope});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].freshness.state,'stale');
+  assert.equal(rows[0].freshness.policyRef,'server-authoritative-tenant-calendar');
+  assert.equal(rows[0].freshness.validUntil,null);
 });
 
 test('Time Review producer preserves explicit confirmation lifecycle and never applies wall-clock expiry',()=>{
@@ -269,7 +281,7 @@ test('Time Review producer preserves explicit confirmation lifecycle and never a
       }]
     }]
   });
-  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a']});
+  const rows=produceTimeReviewActionEvidence(report,{allowedTeamIds:['team-a'],freshnessEnvelope});
   assert.equal(rows.length,1);
   assert.equal(rows[0].confirmation.state,'confirming_source');
   assert.equal(rows[0].confirmation.slaExpired,false);

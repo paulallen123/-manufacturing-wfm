@@ -45,7 +45,11 @@ function fixture(sourceProvider){
     db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha(token),email,Date.now()+60000);
   }
   db.close();
-  const engine=createWorkflowActionEvidenceBridge({dbPath,timeReviewSourceProvider:sourceProvider});
+  const engine=createWorkflowActionEvidenceBridge({
+    dbPath,timeReviewSourceProvider:sourceProvider,
+    now:()=>Date.parse('2026-09-19T15:02:00.000Z'),
+    env:{WFM_TENANT_TIMEZONE:'Europe/London',WFM_TODAY_MAX_AGE_MS:'300000'}
+  });
   return {engine,manager,employee,bravo,close(){engine.close();fs.rmSync(dir,{recursive:true,force:true});}};
 }
 function report(overrides={}){
@@ -70,12 +74,26 @@ test('read-only bridge emits only contract-valid Time Review actions from the au
     assert.equal(result.body.contractVersion,'WFM_WORKFLOW_ACTION_EVIDENCE_V1');
     assert.equal(result.body.workflow,'time-review');
     assert.equal(result.body.source,'/api/weekly-review');
+    assert.equal(result.body.timeZone,'Europe/London');
+    assert.equal(result.body.asOf,'2026-09-19T15:02:00.000Z');
+    assert.equal(result.body.maxAgeMs,300000);
     assert.equal(result.body.items.length,1);
     assert.equal(result.body.items[0].sourceId,'issue-1');
     assert.equal(result.body.items[0].reasonCode,'MISSED_CLOCK_OUT');
-    assert.equal(result.body.items[0].freshness.state,'unknown');
+    assert.equal(result.body.items[0].freshness.state,'current');
     assert.equal(result.body.items[0].confirmation.state,'action_required');
     assert.deepEqual(seen,[{tenant:'alpha',role:'manager',email:'manager@alpha'}]);
+  }finally{f.close();}
+});
+
+test('bridge classifies stale source observations from the trusted tenant-calendar envelope',async()=>{
+  const f=fixture(async()=>({status:200,body:report({generatedAt:'2026-09-19T14:00:00.000Z'})}));
+  try{
+    const result=await call(f.engine,f.manager);
+    assert.equal(result.status,200);
+    assert.equal(result.body.items.length,1);
+    assert.equal(result.body.items[0].freshness.state,'stale');
+    assert.equal(result.body.items[0].freshness.policyRef,'server-authoritative-tenant-calendar');
   }finally{f.close();}
 });
 

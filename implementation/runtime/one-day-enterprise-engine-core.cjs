@@ -278,6 +278,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   const runtimeIdentityProvider = typeof options.runtimeIdentityProvider === 'function'
     ? options.runtimeIdentityProvider
     : () => (options.runtimeIdentity && typeof options.runtimeIdentity === 'object' ? options.runtimeIdentity : null);
+  const tenantCalendarSnapshotProvider = typeof options.tenantCalendarSnapshotProvider === 'function'
+    ? options.tenantCalendarSnapshotProvider
+    : null;
   const readinessEvidenceMaxAgeMs = Math.max(60000, Number(options.readinessEvidenceMaxAgeMs ?? 4 * 60 * 60 * 1000));
   function runtimeIdentitySnapshot() {
     try {
@@ -285,26 +288,36 @@ function createOneDayEnterpriseEngine(options = {}) {
       return value && typeof value === 'object' ? value : null;
     } catch { return null; }
   }
+  function tenantCalendarSnapshot(tenant) {
+    if (!tenantCalendarSnapshotProvider) return null;
+    try {
+      const value = tenantCalendarSnapshotProvider(tenant);
+      return value && typeof value === 'object' && value.schemaVersion === 'tenant-calendar-1' &&
+        value.tenant === tenant && typeof value.localDate === 'string' && typeof value.asOf === 'string' &&
+        typeof value.timeZone === 'string' ? value : null;
+    } catch { return null; }
+  }
 
-  function evidenceBindingFor(detail, run) {
+  function evidenceBindingFor(detail, run, kind) {
     if (!requireCandidateBinding) return null;
     const item = detail && typeof detail === 'object' ? detail : {};
     const observedSha = String(item.exactCandidateSha || item.candidateSha || '');
     const observedDeployment = String(item.exactTargetDeploymentId || item.deploymentId || '');
+    const expectedEpoch = proofEpochForRun(run, kind);
+    const observedEpoch = item._proofEpoch && typeof item._proofEpoch === 'object' ? item._proofEpoch : null;
     let reason = null;
     if (!/^[0-9a-f]{40}$/.test(candidateSha) || !deploymentId) reason = 'CURRENT_CANDIDATE_IDENTITY_UNAVAILABLE';
     else if (!observedSha || !observedDeployment) reason = 'EVIDENCE_CANDIDATE_IDENTITY_MISSING';
     else if (observedSha !== candidateSha || observedDeployment !== deploymentId) reason = 'EVIDENCE_CANDIDATE_IDENTITY_MISMATCH';
     else if (item.tenant && item.tenant !== run.tenant) reason = 'EVIDENCE_TENANT_MISMATCH';
     else if (item.runId && item.runId !== run.id) reason = 'EVIDENCE_RUN_MISMATCH';
-    const operatingState = operatingStateDigestForRun(run);
-    const observedOperatingStateDigest = String(item.operatingStateDigest || '');
-    if (!reason && !observedOperatingStateDigest) reason = 'EVIDENCE_OPERATING_STATE_DIGEST_MISSING';
-    else if (!reason && observedOperatingStateDigest !== operatingState.digest) reason = 'EVIDENCE_OPERATING_STATE_DIGEST_MISMATCH';
+    else if (!observedEpoch) reason = 'EVIDENCE_PROOF_EPOCH_MISSING';
+    else if (Number(observedEpoch.version)!==1 || observedEpoch.kind!==kind || observedEpoch.scope!==expectedEpoch.scope) reason = 'EVIDENCE_PROOF_EPOCH_SCOPE_MISMATCH';
+    else if (observedEpoch.digest!==expectedEpoch.digest) reason = 'EVIDENCE_PROOF_EPOCH_MISMATCH';
     return {
       status: reason ? 'REVALIDATION_REQUIRED' : 'MATCHED', reason,
-      expected: { candidateSha, deploymentId, tenant: run.tenant, runId: run.id, operatingStateDigest: operatingState.digest },
-      observed: { candidateSha: observedSha || null, deploymentId: observedDeployment || null, operatingStateDigest: observedOperatingStateDigest || null }
+      expected: { candidateSha, deploymentId, tenant: run.tenant, runId: run.id, proofEpoch: expectedEpoch },
+      observed: { candidateSha: observedSha || null, deploymentId: observedDeployment || null, proofEpoch: observedEpoch }
     };
   }
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
@@ -433,7 +446,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   const tenantEnvironmentProvisioner = createTenantEnvironmentProvisioner({ db });
 
   const authStmt = db.prepare(
-    'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
+    'SELECT u.email,u.tenant,u.role,u.permissions FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
   );
   const invitationByContract = db.prepare('SELECT * FROM implementation_invitations WHERE tenant=? AND contract_ref_hash=?');
   const invitationById = db.prepare('SELECT * FROM implementation_invitations WHERE id=? AND tenant=?');
@@ -594,11 +607,12 @@ function createOneDayEnterpriseEngine(options = {}) {
       writeJson(res, 401, { error: 'Sign in is required.' });
       return null;
     }
-    if (String(ctx.role).toLowerCase() === 'employee') {
-      writeJson(res, 403, { error: 'Implementation control requires an authorised manager or administrator.' });
+    let permissions=[];try{permissions=JSON.parse(ctx.permissions||'[]');}catch{}
+    if (String(ctx.role).toLowerCase() === 'employee' || !Array.isArray(permissions) || !permissions.includes('company.configure')) {
+      writeJson(res, 403, { error: 'Implementation control requires explicit company configuration permission.' });
       return null;
     }
-    return ctx;
+    return {...ctx,permissions};
   }
 
   function requireInternal(req, res) {
@@ -784,7 +798,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     const row = evidenceByKind.get(run.id, run.tenant, kind);
     if (!row || row.status !== 'PASS') return false;
     const detail = parseJsonSafe(row.detail_json, {});
-    const binding = evidenceBindingFor(detail, run);
+    const binding = evidenceBindingFor(detail, run, kind);
     if (binding?.reason || configurationBindingFor(detail, run, row)?.reason) return false;
     return !storedEvidenceValidationError(run, kind, row, detail);
   }
@@ -865,7 +879,6 @@ function createOneDayEnterpriseEngine(options = {}) {
       exactTargetDeploymentId: deploymentId,
       tenant: run.tenant,
       runId: run.id,
-      operatingStateDigest: operatingStateDigestForRun(run).digest,
       fixtureOnly: false,
       evidenceClass: 'customer-authorised',
       sourceAuthoritative: true,
@@ -1041,14 +1054,15 @@ function createOneDayEnterpriseEngine(options = {}) {
   }
 
   function relevantPayrollPeriodForTenant(tenant) {
-    const state = tenantStateFor(tenant),periods=Array.isArray(state?.payrollControl?.periods)?state.payrollControl.periods:[];
-    const today=new Date().toISOString().slice(0,10);
-    const current=periods.find(period=>period?.start<=today&&period?.end>=today);
-    const selected=current||[...periods].filter(period=>period?.start<=today).sort((a,b)=>String(b.start).localeCompare(String(a.start)))[0]||null;
-    if(!selected)return null;
+    const state = tenantStateFor(tenant),periods=Array.isArray(state?.payrollControl?.periods)?state.payrollControl.periods:[],
+      calendar=tenantCalendarSnapshot(tenant);
+    if(!calendar)return null;
+    const current=periods.filter(period=>period?.start<=calendar.localDate&&period?.end>=calendar.localDate);
+    if(current.length!==1)return null;
+    const selected=current[0];
     return {
       id:selected.id||selected.start||null,start:selected.start||null,end:selected.end||null,
-      source:selected.source||null,
+      source:selected.source||null,asOf:calendar.asOf,timeZone:calendar.timeZone,
       teamStates:Array.isArray(selected.teams)?selected.teams.map(team=>({id:team.id,status:selected.reviews?.[team.id]?.status||null,feedComplete:team.feedComplete===true})).sort((a,b)=>String(a.id).localeCompare(String(b.id))):[],
       batches:Array.isArray(selected.batches)?selected.batches.map(batch=>({id:batch.id,status:batch.status,checksum:batch.checksum||null,rowCount:batch.rowCount||null,employeeCount:batch.employeeCount||null})).sort((a,b)=>String(a.id).localeCompare(String(b.id))):[]
     };
@@ -1079,9 +1093,16 @@ function createOneDayEnterpriseEngine(options = {}) {
   }
 
   function staffologyJourneyForRun(run) {
+    const scopeRow=scopeByRun.get(run.id,run.tenant),scope=parseJsonSafe(scopeRow?.scope_json,{});
+    const providerRequiredByScope=/staffology/i.test(String(scope?.payrollSystem||'')) ||
+      (Array.isArray(scope?.sourceSystems)&&scope.sourceSystems.some(value=>/staffology/i.test(String(value))));
     let profile = null;
     try { profile = JSON.parse(process.env.WFM_STAFFOLOGY_OPERATION_JSON || 'null'); } catch {}
-    if (!profile || typeof profile !== 'object') return { required: false, proven: true, configured: false };
+    if (!profile || typeof profile !== 'object') return {
+      required:providerRequiredByScope,proven:!providerRequiredByScope,configured:false,bindingMatches:false,
+      peopleApplied:false,cohortAccounted:!providerRequiredByScope,fullPayrollVerified:false,
+      claimBoundary:'Customer scope requires Staffology proof when Staffology is named as a payroll/source system.'
+    };
     const resolvedBinding = {
       tenant:String(profile.tenant||''),implementationRunId:String(profile.implementationRunId||''),
       candidateSha:String(profile.candidateSha||''),deploymentId,
@@ -1100,7 +1121,18 @@ function createOneDayEnterpriseEngine(options = {}) {
       return person.identityVerified===true&&person.status==='ready_for_scheduling'&&Boolean(person.staffId)&&
         worker?.onboardingReady===true&&worker.sourceId===person.sourceId&&worker.payrollId===person.payrollId;
     });
-    const peopleApplied=expectedActive.length>0&&activated.length===expectedActive.length;
+    const activatedIds=new Set(activated.map(person=>person.sourceId)),heldIds=new Set();
+    try{
+      const batchTable=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='integration_batches'").get(),
+        recordTable=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='integration_records'").get();
+      if(batchTable&&recordTable){
+        const connectorId=String(profile.connector?.id||'staffology-people');
+        for(const row of db.prepare("SELECT DISTINCT r.external_id FROM integration_records r JOIN integration_batches b ON b.id=r.batch_id WHERE b.tenant=? AND b.connector_id=? AND lower(b.provider)='staffology' AND r.status='held'").all(run.tenant,connectorId))
+          if(cohort.includes(row.external_id))heldIds.add(row.external_id);
+      }
+    }catch{}
+    const accountedIds=new Set([...activatedIds,...heldIds]),cohortAccounted=cohort.length>0&&cohort.every(id=>accountedIds.has(id));
+    const peopleApplied=expectedActive.length>0&&activated.length===expectedActive.length&&cohortAccounted;
     let fullPayrollVerified = false,batchReceipt=null;
     try {
       const exists=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='outbound_staffology_batch_receipts'").get();
@@ -1119,10 +1151,11 @@ function createOneDayEnterpriseEngine(options = {}) {
     const payrollConfigured = Boolean(profile.payroll&&profile.batchManifest);
     return {
       required: true,
-      proven: bindingMatches && peopleApplied && payrollConfigured && fullPayrollVerified,
+      proven: bindingMatches && peopleApplied && cohortAccounted && payrollConfigured && fullPayrollVerified,
       configured: true,bindingMatches,bindingDigest,
       employerId: profile.employerId || null,cohortCount: cohort.length,
-      expectedActiveCohortCount:expectedActive.length,activatedCohortCount:activated.length,
+      expectedActiveCohortCount:expectedActive.length,activatedCohortCount:activated.length,lifecycleHeldCount:heldIds.size,
+      cohortAccounted,accountedCohortCount:accountedIds.size,
       peopleApplied,payrollConfigured,fullPayrollVerified,batchReceipt,
       claimBoundary: 'Current runtime-resolved binding digest, activated source-bound workforce identities and a complete immutable Staffology batch receipt are required.'
     };
@@ -1135,19 +1168,65 @@ function createOneDayEnterpriseEngine(options = {}) {
     return [...roles];
   }
 
-  function operatingStateDigestForRun(run) {
+  function proofEpochDomainsForKind(kind){
+    const map={
+      'configuration-scope':['configuration'],
+      'tenant-environment':['configuration','runtime'],
+      'identity-access':['runtime'],
+      'source-systems':['workforce'],
+      'people-data':['workforce'],
+      'organisation-model':['configuration','workforce'],
+      'time-policies':['configuration','policy'],
+      'absence-policies':['configuration','policy'],
+      'scheduling':['configuration','policy','workforce'],
+      'approvals':['configuration','policy','workforce','runtime'],
+      'clocking':['configuration','policy','workforce','runtime'],
+      'payroll-mapping':['policy','workforce','payroll-provider'],
+      'historical-replay':['policy','payroll-provider'],
+      'security-controls':['runtime'],
+      'resilience':['runtime','payroll-provider'],
+      'scenario-validation':['configuration','policy','workforce','payroll-provider','runtime'],
+      'test-data-cleanup':['workforce','runtime'],
+      'live-data-import':['configuration','workforce'],
+      'role-learning':['workforce'],
+      'privileged-competency':['configuration','policy','workforce','runtime'],
+      'frontline-readiness':['policy','workforce']
+    };
+    return map[kind]||['runtime'];
+  }
+  function proofEpochForRun(run,kind){
     const source=canonicalSourceSummaryForTenant(run.tenant),workforce=workforceReadinessForTenant(run.tenant),
       environment=tenantEnvironmentProvisioner.statusForTenant(run.tenant),payrollPeriod=relevantPayrollPeriodForTenant(run.tenant),
-      provider=staffologyJourneyForRun(run),scopeRow=scopeByRun.get(run.id,run.tenant);
-    const snapshot={
-      tenant:run.tenant,runId:run.id,
-      workforce:{importedPeople:workforce.importedPeople,identityVerified:workforce.identityVerified,readyForScheduling:workforce.readyForScheduling,importedEmailDigests:workforce.importedEmailDigests},
-      configuration:{configurationDigest:environment?.configurationDigest||null,scopeDigest:scopeRow?digestJson(normaliseScope(parseJsonSafe(scopeRow.scope_json,{}))):null},
-      source:source?{connectionId:source.connectionId,batchId:source.batchId,checksum:source.checksum,employeeCount:source.employeeCount,importedAt:source.importedAt}:null,
-      provider:{required:provider.required,bindingDigest:provider.bindingDigest||null,peopleApplied:provider.peopleApplied||false,fullPayrollVerified:provider.fullPayrollVerified||false,batchReceipt:provider.batchReceipt||null},
-      payrollPeriod
+      provider=staffologyJourneyForRun(run),scopeRow=scopeByRun.get(run.id,run.tenant),runtimeIdentity=runtimeIdentitySnapshot(),
+      policyRows=listDecisions.all(run.id,run.tenant).filter(row=>POLICY_DECISIONS[row.decision_key]).map(row=>({
+        key:row.decision_key,status:row.status,updatedAt:row.updated_at,
+        decisionDigest:row.decision_json?sha256(row.decision_json):null
+      })).sort((a,b)=>a.key.localeCompare(b.key));
+    const domains={
+      configuration:{
+        scopeDigest:scopeRow?digestJson(normaliseScope(parseJsonSafe(scopeRow.scope_json,{}))):null,
+        configurationDigest:environment?.configurationDigest||null
+      },
+      policy:{decisions:policyRows},
+      workforce:{
+        source:source?{connectionId:source.connectionId,batchId:source.batchId,checksum:source.checksum,mappingVersion:source.mappingVersion||null,employeeCount:source.employeeCount,importedAt:source.importedAt}:null,
+        importedPeople:workforce.importedPeople,identityVerified:workforce.identityVerified,
+        readyForScheduling:workforce.readyForScheduling,importedEmailDigests:workforce.importedEmailDigests
+      },
+      'payroll-provider':{
+        payrollPeriod,
+        provider:{required:provider.required,configured:provider.configured||false,bindingDigest:provider.bindingDigest||null,
+          cohortCount:provider.cohortCount||0,accountedCohortCount:provider.accountedCohortCount||0,
+          peopleApplied:provider.peopleApplied||false,fullPayrollVerified:provider.fullPayrollVerified||false,batchReceipt:provider.batchReceipt||null}
+      },
+      runtime:{
+        candidateSha,deploymentId,
+        identity:runtimeIdentity?{candidateSha:runtimeIdentity.candidateSha||null,fixtureOnly:runtimeIdentity.fixtureOnly,
+          productionApproved:runtimeIdentity.productionApproved===true,pilotReady:runtimeIdentity.pilotReady===true}:null
+      }
     };
-    return {digest:digestJson(snapshot),snapshot};
+    const names=proofEpochDomainsForKind(kind),snapshot=Object.fromEntries(names.map(name=>[name,domains[name]]));
+    return Object.freeze({version:1,kind,scope:names.join('+'),digest:digestJson(snapshot)});
   }
 
   function readinessForRun(run) {
@@ -1174,6 +1253,12 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     const workforceReadiness = workforceReadinessForTenant(run.tenant);
     const providerJourney = staffologyJourneyForRun(run);
+    const integrationTruth={
+      peopleSourceProven:Boolean(sourceDataSummary),
+      mandatoryProviderRequired:providerJourney.required===true,
+      mandatoryProviderProven:providerJourney.required!==true||providerJourney.proven===true,
+      unifiedReady:Boolean(sourceDataSummary)&&(providerJourney.required!==true||providerJourney.proven===true)
+    };
     const requiredTrainingPopulation = Math.max(
       Number(sourceDataSummary?.employeeCount || 0),
       Number(workforceReadiness.importedPeople || 0)
@@ -1317,7 +1402,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       const detail = derived?.detail || (row ? JSON.parse(row.detail_json) : null);
       // Stored proof survives deployment for audit, but never retains authority
       // for a different candidate. Derived configuration is read from current state.
-      const evidenceBinding = !derived && row?.status === 'PASS' ? evidenceBindingFor(detail, run) : null;
+      const evidenceBinding = !derived && row?.status === 'PASS' ? evidenceBindingFor(detail, run, requirement.key) : null;
       const configurationBinding = !derived && row?.status === 'PASS'
         ? configurationBindingFor(detail || {}, run, row) : null;
       const validationError = !derived && row?.status === 'PASS'
@@ -1371,6 +1456,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (workforceReadinessRequired && !workforceReadiness.invitationDeliveryProven) launchBlockers.push('WORKFORCE_INVITATION_DELIVERY_UNPROVEN');
     if (implementationInvitationRequired && !['DELIVERED','STARTED'].includes(notificationRecovery.state)) launchBlockers.push('IMPLEMENTATION_INVITATION_DELIVERY_UNPROVEN');
     if (providerJourney.required && !providerJourney.proven) launchBlockers.push('MANDATORY_PROVIDER_JOURNEY_UNPROVEN');
+    if (!integrationTruth.unifiedReady) launchBlockers.push('UNIFIED_INTEGRATION_TRUTH_UNPROVEN');
     if (!wholeJourneyProven) launchBlockers.push('WHOLE_GOLDEN_JOURNEY_UNPROVEN');
     const elapsedMinutes = Math.max(0, (Date.now() - run.started_at_ms) / 60000);
     const remainingMinutes = Math.max(0, (run.deadline_at_ms - Date.now()) / 60000);
@@ -1399,7 +1485,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       requirements,
       decisions,
       blockingDecisions,
-      operatingState: operatingStateDigestForRun(run),
+      proofEpochs:Object.fromEntries(REQUIREMENTS.map(item=>[item.key,proofEpochForRun(run,item.key)])),
       learningSummary: learningSummary ? {
         ...learningSummary,
         requiredPopulation: requiredTrainingPopulation,
@@ -1415,6 +1501,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       sourceDataSummary,
       workforceReadiness,
       providerJourney,
+      integrationTruth,
       runtimeIdentity,
       wholeJourneyProven,
       launchBoundary: {
@@ -2067,6 +2154,9 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
 
     const detail = body.detail && typeof body.detail === 'object' ? body.detail : {};
+    if (status === 'PASS' && Object.prototype.hasOwnProperty.call(detail, '_proofEpoch')) {
+      return writeJson(res, 409, { error: 'Proof epochs are server-issued only.', readinessEvidenceAccepted: false, kind });
+    }
     if (status === 'PASS' && POLICY_REQUIREMENT_KINDS.has(kind)) {
       return writeJson(res, 409, {
         error: 'Policy PASS cannot originate from generic internal evidence. Use the authenticated customer-authority decision path or a separately verified signed authority path.',
@@ -2077,14 +2167,15 @@ function createOneDayEnterpriseEngine(options = {}) {
         Object.prototype.hasOwnProperty.call(detail, '_externalAuthorityReceipt'))) {
       return writeJson(res, 409, { error: 'Authority receipts are server-issued or independently verified only.', readinessEvidenceAccepted: false, kind });
     }
-    const evidenceBinding = status === 'PASS' ? evidenceBindingFor(detail, run) : null;
+    const epochBoundDetail = status === 'PASS' ? { ...detail, _proofEpoch: proofEpochForRun(run, kind) } : detail;
+    const evidenceBinding = status === 'PASS' ? evidenceBindingFor(epochBoundDetail, run, kind) : null;
     if (evidenceBinding?.reason) {
       return writeJson(res, 409, {
         error: 'Implementation evidence must be revalidated on the current candidate and deployment.',
         readinessEvidenceAccepted: false, kind, evidenceBinding
       });
     }
-    const configurationBinding = status === 'PASS' ? configurationBindingFor(detail, run) : null;
+    const configurationBinding = status === 'PASS' ? configurationBindingFor(epochBoundDetail, run) : null;
     if (status === 'PASS' && Object.prototype.hasOwnProperty.call(detail, '_configurationValidation')) {
       return writeJson(res, 409, { error: 'Configuration validation receipts are server-issued only.', readinessEvidenceAccepted: false, kind });
     }
@@ -2094,8 +2185,8 @@ function createOneDayEnterpriseEngine(options = {}) {
     const evidenceRecordedAt = nowIso();
     if (status === 'PASS') {
       const strictValidationError = kind === 'tenant-environment'
-        ? tenantEnvironmentEvidenceError(run, { source, created_at: evidenceRecordedAt }, false, detail, true)
-        : validateStrictReadinessEvidence(kind, status, detail, {
+        ? tenantEnvironmentEvidenceError(run, { source, created_at: evidenceRecordedAt }, false, epochBoundDetail, true)
+        : validateStrictReadinessEvidence(kind, status, epochBoundDetail, {
             tenant: run.tenant, implementationRunId: run.id, candidateSha, deploymentId,
             source, evidenceCreatedAt: evidenceRecordedAt, runtimeIdentity: runtimeIdentitySnapshot(),
             nowMs: Date.now(), freshnessMaxAgeMs: readinessEvidenceMaxAgeMs
@@ -2110,7 +2201,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
       const previous = db.prepare('SELECT detail_json FROM implementation_evidence WHERE run_id=? AND tenant=? AND kind=?')
         .all(run.id, run.tenant, kind);
-      if (previous.some(item => { const prior = parseJsonSafe(item.detail_json, {}); return (prior.verifierRunId || prior.verifierDeploymentId) === (detail.verifierRunId || detail.verifierDeploymentId); })) {
+      if (previous.some(item => { const prior = parseJsonSafe(item.detail_json, {}); return (prior.verifierRunId || prior.verifierDeploymentId) === (epochBoundDetail.verifierRunId || epochBoundDetail.verifierDeploymentId); })) {
         return writeJson(res, 409, { error: 'Tenant-environment verifier-run evidence cannot be replayed.', readinessEvidenceAccepted: false, kind });
       }
     }
@@ -2135,7 +2226,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
     }
 
-    let storedDetail = status === 'PASS' ? bindAcceptedConfiguration(detail, run, evidenceRecordedAt) : detail;
+    let storedDetail = status === 'PASS' ? bindAcceptedConfiguration(epochBoundDetail, run, evidenceRecordedAt) : detail;
     if (status === 'PASS' && kind === 'tenant-environment') {
       storedDetail = { ...storedDetail, _tenantEnvironmentValidation: {
         version: 1, validator: 'tenant-environment-v1',
@@ -2401,6 +2492,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
 
     if (policyEvidence) {
+      policyEvidence.detail={...policyEvidence.detail,_proofEpoch:proofEpochForRun(run,policyEvidence.kind)};
       insertEvidence.run(
         run.id,
         run.tenant,

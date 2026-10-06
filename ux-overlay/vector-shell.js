@@ -313,7 +313,7 @@ const siteName=()=>sourceIdentity().site||'Current workspace';
 const siteSentence=()=>sourceIdentity().site?`Here’s what’s happening at ${sourceIdentity().site} today.`:'Here’s what’s happening in your current workspace today.';
 const initials=()=>{const name=sourceIdentity().name;return name?name.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase():'—';};
 
-function scopedStats(){try{if(typeof data==='undefined'||typeof WFM==='undefined'||typeof me!=='function')return {};const own=me(),rows=WFM.scopedStaff(data,own.id,ui?.root);const s=rows?.length?WFM.stats(rows):{};return {rows,total:rows?.length||0,onsite:s?.onsite??s?.in??0,sick:s?.sick??0,late:s?.late??0,missing:s?.missing??0,sync:s?.sync??0};}catch{return {}}}
+function scopedStats(){try{if(state.calendar.status!=='ready'||!state.calendar.value)return {calendarUnavailable:true,rows:[],total:null,onsite:null,sick:null,late:null,missing:null,sync:null};if(typeof data==='undefined'||typeof WFM==='undefined'||typeof me!=='function')return {};const own=me(),rows=WFM.scopedStaff(data,own.id,ui?.root),stats=rows?.length?WFM.stats(rows):{};return {rows,total:rows?.length||0,onsite:stats?.onsite??stats?.in??0,sick:stats?.sick??0,late:stats?.late??0,missing:stats?.missing??0,sync:stats?.sync??0};}catch{return {calendarUnavailable:true,rows:[],total:null,onsite:null,sick:null}}}
 function labourCost(){try{const report=typeof VCU!=='undefined'&&VCU?.report?VCU.report():null;const p=report?.summary?.labourCostPence??report?.summary?.totalLabourCostPence??report?.insight?.labourCostPence;if((typeof p==='number'||(typeof p==='string'&&p.trim()!==''))&&Number.isFinite(Number(p)))return Number(p)/100;}catch{}return null;}
 function money(v){if(!Number.isFinite(v))return '—';return new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP',maximumFractionDigits:v>=10000?1:0,notation:v>=10000?'compact':'standard'}).format(v);}
 function readEvidenceMoney(report,candidates){for(const [path,divisor] of candidates){let value=report;for(const key of path.split('.'))value=value?.[key];if((typeof value==='number'||(typeof value==='string'&&value.trim()!==''))&&Number.isFinite(Number(value)))return Number(value)/(divisor||1);}return null;}
@@ -321,7 +321,7 @@ function verifiedValueEvidence(){try{const report=typeof VCU!=='undefined'&&VCU?
 function verifiedValueMarkup(){const value=verifiedValueEvidence(),realised=value.realised==null?'—':money(value.realised),opportunity=value.opportunity==null?'—':money(value.opportunity);return `<section class="vector-card vector-verified-value" data-vector-value-evidence="${VALUE_MARKER}" aria-label="Verified financial value. Values appear only when authoritative value evidence is available."><div class="vector-card-head"><div><span class="vector-card-kicker">Evidence-backed value</span><h2>Verified value</h2><p>Realised value and opportunities are kept separate so estimates are never presented as savings.</p></div><button type="button" data-vector-route="costs">Open cost evidence ${icon('arrow')}</button></div><div class="vector-value-grid"><div><small>Realised / verified savings</small><strong>${esc(realised)}</strong><span>${value.realised==null?'No verified saving is available from the current value source.':'Verified by the connected value evidence source.'}</span></div><div><small>Identified opportunity</small><strong>${esc(opportunity)}</strong><span>${value.opportunity==null?'No identified opportunity is available from the current value source.':'Opportunity only — not counted as realised savings.'}</span></div></div></section>`;}
 function findMetric(root,pattern){if(!root)return null;const nodes=[...root.querySelectorAll('small,span,b,strong,p,label,h2,h3')];for(const n of nodes){const t=text(n);if(!t||!pattern.test(t))continue;let p=n.parentElement;for(let i=0;p&&i<4;i++,p=p.parentElement){const candidates=[...p.querySelectorAll('strong,b')].map(text).filter(Boolean);const v=candidates.find(x=>x!==t);if(v)return v;}}return null;}
 function parseNumber(v){const m=String(v||'').replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):null;}
-function metrics(source){const s=scopedStats();const total=s.total??null;const onsite=s.onsite??null;const absent=s.sick??null;const overtime=null;const cost=labourCost();const onsitePct=total&&onsite!=null?Math.round((onsite/total)*100):null;const absencePct=total&&absent!=null?((absent/total)*100).toFixed(1):null;const overtimePct=total&&overtime!=null?((overtime/total)*100).toFixed(1):null;return [
+function metrics(source){const s=scopedStats(),calendarUnavailable=s.calendarUnavailable===true;const total=calendarUnavailable?null:(s.total??null);const onsite=calendarUnavailable?null:(s.onsite??null);const absent=calendarUnavailable?null:(s.sick??null);const overtime=null;const cost=labourCost();const onsitePct=total&&onsite!=null?Math.round((onsite/total)*100):null;const absencePct=total&&absent!=null?((absent/total)*100).toFixed(1):null;const overtimePct=total&&overtime!=null?((overtime/total)*100).toFixed(1):null;return [
  {tone:'blue',icon:'people',value:onsite??'—',label:'On site now',detail:onsitePct!=null?onsitePct+'% of workforce':'Current attendance',progress:onsitePct},
  {tone:'cyan',icon:'leave',value:absent??'—',label:'Absent today',detail:absencePct!=null?absencePct+'% absence rate':'Current absence',progress:null},
  {tone:'blue',icon:'clock',value:overtime??'—',label:'In overtime',detail:overtimePct!=null?overtimePct+'% of workforce':'Overtime evidence',progress:null},
@@ -342,21 +342,14 @@ function scopedReportTeams(report){
 function teamLabel(team){return String(team?.name||team?.team||team?.site||team?.id||'Team');}
 const ACTION_CONFIRMATION_STATES=new Set(['action_required','decision_sent','confirming_source','needs_verification','resolved']);
 const ACTION_FRESHNESS_STATES=new Set(['current','stale','unknown']);
-function acceptTimeReviewEvidenceItem(item){
-  if(!item||typeof item!=='object'||Array.isArray(item))return null;
-  const calendar=state.calendar.value;
-  if(state.calendar.status!=='ready'||!calendar)return null;
+function acceptTimeReviewEvidenceItem(item,envelope){
+  if(!item||typeof item!=='object'||Array.isArray(item)||!envelope||typeof envelope!=='object')return null;
   if(item.contractVersion!==ACTION_EVIDENCE_CONTRACT||item.workflow!=='time-review')return null;
   if(!String(item.sourceId||'').trim()||!/^[A-Z0-9_]+$/.test(String(item.reasonCode||''))||!String(item.authorityRequired||'').trim())return null;
-  const observedAt=Date.parse(String(item.observedAt||''));if(!Number.isFinite(observedAt))return null;
-  if(String(item.timeZone||'')!==calendar.timeZone||!Number.isFinite(Number(item.maxAgeMs))||Number(item.maxAgeMs)<=0||
-    observedAt>Date.parse(calendar.asOf)+30000||Date.parse(calendar.asOf)-observedAt>Number(item.maxAgeMs))return null;
-  const freshness=item.freshness,confirmation=item.confirmation;
-  if(!freshness||typeof freshness!=='object'||!ACTION_FRESHNESS_STATES.has(String(freshness.state||'').toLowerCase()))return null;
-  const freshnessState=String(freshness.state||'').toLowerCase(),validUntil=freshness.validUntil==null?null:Date.parse(String(freshness.validUntil));
-  if(freshnessState!=='unknown'&&!String(freshness.policyRef||'').trim())return null;
-  if(freshnessState==='current'&&!Number.isFinite(validUntil))return null;
-  if(freshness.validUntil!=null&&!Number.isFinite(validUntil))return null;
+  const observedAt=Date.parse(String(item.observedAt||'')),asOf=Date.parse(String(envelope.asOf||'')),maxAgeMs=Number(envelope.maxAgeMs);
+  if(!Number.isFinite(observedAt)||!Number.isFinite(asOf)||!Number.isFinite(maxAgeMs)||maxAgeMs<=0)return null;
+  if(observedAt>asOf+30000||asOf-observedAt>maxAgeMs)return null;
+  const confirmation=item.confirmation;
   if(!confirmation||typeof confirmation!=='object'||!ACTION_CONFIRMATION_STATES.has(String(confirmation.state||'').toLowerCase()))return null;
   const confirmationState=String(confirmation.state||'').toLowerCase(),decisionId=String(confirmation.decisionId||'').trim(),slaExpiresAt=confirmation.slaExpiresAt==null?null:Date.parse(String(confirmation.slaExpiresAt));
   if(['decision_sent','confirming_source','needs_verification','resolved'].includes(confirmationState)&&!decisionId)return null;
@@ -365,7 +358,7 @@ function acceptTimeReviewEvidenceItem(item){
   if(confirmationState==='needs_verification'&&confirmation.slaExpired!==true)return null;
   if(confirmationState==='confirming_source'&&confirmation.slaExpired===true)return null;
   if(confirmationState==='resolved'&&(!Number.isFinite(Date.parse(String(confirmation.confirmedAt||'')))||!String(confirmation.auditRef||'').trim()))return null;
-  return item;
+  return {...item,freshness:{state:'current',policyRef:'server-authoritative-tenant-calendar',validUntil:new Date(observedAt+maxAgeMs).toISOString()}};
 }
 function actionStatus(value){return ({action_required:'Action required',decision_sent:'Decision sent',confirming_source:'Confirming source',needs_verification:'Needs verification',resolved:'Resolved'})[String(value||'').toLowerCase()]||'Needs review';}
 function actionDisposition(row){const sourceState=String(row?.confirmationState||'').toLowerCase();if(sourceState==='resolved')return 'resolved';if(sourceState==='decision_sent'||sourceState==='confirming_source')return 'awaiting-source';return 'needs-action';}
@@ -415,12 +408,15 @@ async function loadTimeReviewEvidence(){
   const epoch=state.evidenceEpoch;
   state.timeReviewEvidence={status:'loading',items:[]};
   try{
+    const calendar=await loadTenantCalendar();if(!calendar)throw new Error('tenant calendar unavailable');
     const response=await fetch(TIME_REVIEW_EVIDENCE_PATH,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
     if(!response.ok)throw new Error('time-review evidence unavailable');
     const body=await response.json();
     if(!body||body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items))throw new Error('time-review evidence contract mismatch');
+    const envelopeAsOf=Date.parse(String(body.asOf||'')),calendarAsOf=Date.parse(String(calendar.asOf||'')),maxAgeMs=Number(body.maxAgeMs);
+    if(String(body.timeZone||'')!==String(calendar.timeZone||'')||maxAgeMs!==Number(calendar.maxAgeMs)||!Number.isFinite(envelopeAsOf)||!Number.isFinite(calendarAsOf)||Math.abs(envelopeAsOf-calendarAsOf)>Math.max(30000,maxAgeMs))throw new Error('time-review evidence calendar mismatch');
     if(epoch!==state.evidenceEpoch||employee())return;
-    state.timeReviewEvidence={status:'ready',items:body.items.map(acceptTimeReviewEvidenceItem).filter(Boolean)};
+    state.timeReviewEvidence={status:'ready',items:body.items.map(item=>acceptTimeReviewEvidenceItem(item,body)).filter(Boolean)};
   }catch{
     if(epoch!==state.evidenceEpoch||employee())return;
     state.timeReviewEvidence={status:'unavailable',items:[]};
@@ -633,7 +629,7 @@ function peoplePage(){
  const rows=visiblePeople(),stats=scopedStats();
  return `<section class="vector-welcome"><div><h1>People</h1><p>Your workforce, their skills, their potential.</p></div><span class="vector-evidence-label">${rows.length} people in your authorised scope</span></section>
  <section class="vector-people-stats"><div><small>Total people</small><strong>${rows.length}</strong></div><div><small>On site</small><strong>${stats.onsite??'—'}</strong></div><div><small>Reported sick</small><strong>${stats.sick??'—'}</strong></div><div><small>Skills & training</small><b>Evidence required</b><small>No verified skills summary in this snapshot</small></div></section>
- <section class="vector-card vector-people-card"><div class="vector-card-head"><h2>Your people</h2><label class="vector-people-search">${icon('search')}<input type="search" aria-label="Search people" placeholder="Search people, roles or teams…"></label></div><div class="tablewrap"><table class="vector-people-table"><thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Site</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(p=>{const status=typeof WFM?.status==='function'?WFM.status(p):'';const label=({in:'On site',break:'On break',out:'Clocked out',missing:'No clock-in',sync:'Check source',sick:'Reported sick',leave:'On leave',off:'Off shift',later:'Later today'})[status]||'Review source';return `<tr data-vector-person-row data-search="${esc([p.name,p.job,p.team,p.site].join(' ').toLowerCase())}"><td><span class="vector-person-cell"><span class="vector-person-badge">${esc(String(p.name).split(/\s+/).map(x=>x[0]).slice(0,2).join(''))}</span><b>${esc(p.name)}</b></span></td><td>${esc(p.job)}</td><td>${esc(p.team)}</td><td>${esc(p.site)}</td><td><span class="vector-status">${esc(label)}</span></td><td><button type="button" data-act="person" data-id="${esc(p.id)}" aria-label="Open ${esc(p.name)}">View</button></td></tr>`}).join('')}</tbody></table></div><p class="vector-no-results" hidden>No people match your search.</p></section>`;
+ <section class="vector-card vector-people-card"><div class="vector-card-head"><h2>Your people</h2><label class="vector-people-search">${icon('search')}<input type="search" aria-label="Search people" placeholder="Search people, roles or teams…"></label></div><div class="tablewrap"><table class="vector-people-table"><thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Site</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(p=>{const status=state.calendar.status==='ready'&&typeof WFM?.status==='function'?WFM.status(p):'';const label=state.calendar.status!=='ready'?'Source unavailable':(({in:'On site',break:'On break',out:'Clocked out',missing:'No clock-in',sync:'Check source',sick:'Reported sick',leave:'On leave',off:'Off shift',later:'Later today'})[status]||'Review source');return `<tr data-vector-person-row data-search="${esc([p.name,p.job,p.team,p.site].join(' ').toLowerCase())}"><td><span class="vector-person-cell"><span class="vector-person-badge">${esc(String(p.name).split(/\s+/).map(x=>x[0]).slice(0,2).join(''))}</span><b>${esc(p.name)}</b></span></td><td>${esc(p.job)}</td><td>${esc(p.team)}</td><td>${esc(p.site)}</td><td><span class="vector-status">${esc(label)}</span></td><td><button type="button" data-act="person" data-id="${esc(p.id)}" aria-label="Open ${esc(p.name)}">View</button></td></tr>`}).join('')}</tbody></table></div><p class="vector-no-results" hidden>No people match your search.</p></section>`;
 }
 function syncSettingsMenu(content){
  const existing=content.querySelector(':scope > .vector-settings');if(!state.settingsOpen){existing?.remove();return null;}if(existing)return existing;

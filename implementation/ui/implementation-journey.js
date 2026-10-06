@@ -75,11 +75,17 @@ function stageMarkup(){
   }).join('');
 }
 function integrationMarkup(){
-  const rows=connectionRows();
-  if(!rows.length)return '<div class="wfm-ij-empty"><b>No systems discovered yet.</b><span>System discovery and connection status will appear here automatically.</span></div>';
-  return '<div class="wfm-ij-system-list">'+rows.slice(0,8).map(row=>
+  const rows=connectionRows(),provider=S.status?.providerJourney||{},truth=S.status?.integrationTruth||{};
+  const providerRows=provider.required?[{
+    name:'Staffology payroll',
+    detail:provider.proven?'Current provider journey and full-batch receipt are proven.':'Mandatory provider journey remains unproved for the current tenant, workforce and payroll batch.',
+    state:provider.proven?'complete':'blocked'
+  }]:[];
+  const all=[...providerRows,...rows.filter(row=>!providerRows.some(providerRow=>String(row.name||'').toLowerCase().includes('staffology')))];
+  if(!all.length)return '<div class="wfm-ij-empty"><b>No systems discovered yet.</b><span>System discovery and connection status will appear here automatically.</span></div>';
+  return '<div class="wfm-ij-system-list">'+all.slice(0,8).map(row=>
     '<div class="wfm-ij-system"><div class="wfm-ij-system-name"><span class="wfm-ij-system-glyph">↔</span><div><b>'+safe(row.name)+'</b><small>'+safe(row.detail||'Connection evidence')+'</small></div></div><span class="wfm-ij-pill '+safe(String(row.state||'').toLowerCase())+'">'+safe(stateLabel(row.state))+'</span></div>'
-  ).join('')+'</div>';
+  ).join('')+(truth.unifiedReady===false?'<div class="wfm-ij-empty"><b>Unified integration proof is not ready.</b><span>Source-system and mandatory-provider evidence must agree before go live.</span></div>':'')+'</div>';
 }
 function requirementCard(key,title,description){
   const item=requirement(key);
@@ -209,6 +215,11 @@ function trainingPanel(prestart){
   const l=learningCounts(),progress=trainingProgress();
   return '<section class="wfm-ij-panel wfm-ij-training"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">TRAINING · RUNS THROUGHOUT</span><h2>Learn in the test environment from the beginning</h2><p>Role-based learning, guided practice and competency proof continue alongside configuration and testing.</p></div><div class="wfm-ij-training-score"><strong>'+progress+'%</strong><span>'+safe(prestart?'Available now':'team ready')+'</span></div></div><div class="wfm-ij-progress"><span style="width:'+progress+'%"></span></div><div class="wfm-ij-training-meta"><span><b>'+l.mastered+'</b> skills proven</span><span><b>'+l.total+'</b> assignments</span><span><b>'+l.users+'</b> people in learning</span><span><b>'+(l.privileged?'Yes':'Not yet')+'</b> privileged roles ready</span></div><button class="btn small" type="button" data-ij-training>Open my training guide</button></section>';
 }
+function launchBlockerMarkup(launch){
+  const rows=Array.isArray(launch?.blockers)?launch.blockers:[];
+  if(!rows.length)return '';
+  return '<div class="wfm-ij-import-list" aria-label="Go-live blockers">'+rows.map(code=>'<div class="wfm-ij-import-row"><span><b>'+safe(String(code).replace(/_/g,' '))+'</b><small>Current proof is incomplete or stale for this launch gate.</small></span><span class="wfm-ij-pill blocked">Blocked</span></div>').join('')+'</div>';
+}
 function liveMarkup(){
   const progress=overallProgress();
   const state=S.status?.state||'BUILDING';
@@ -234,7 +245,7 @@ function liveMarkup(){
     '</div>'+
     '<section class="wfm-ij-panel wfm-ij-import-advice"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">DATA READINESS</span><h2>What is needed before live import</h2><p>The system explains the remaining prerequisites rather than leaving the customer to work them out.</p></div><span class="wfm-ij-pill '+(liveImport?.satisfied?'active':'validating')+'">'+(liveImport?.satisfied?'Reconciled':'Preparing')+'</span></div>'+importAdvice()+'</section>'+
     trainingPanel(false)+
-    '<section class="wfm-ij-panel wfm-ij-golive"><div><span class="wfm-ij-kicker">GO LIVE</span><h2>'+(launchReady?'Everything required for launch is proven':'Go live remains protected')+'</h2><p>'+(launchReady?'All implementation, runtime, provider and Golden Journey gates are current and proven. Review the final readiness evidence before activation.':'Launch stays locked until current non-fixture runtime identity, production approval, workforce readiness, provider journey, Golden Journey, integrations, cleanup, live import and role competence are all proven.')+'</p></div><button type="button" class="btn primary" data-ij-route="readiness" '+(launchReady?'':'disabled')+'>'+(launchReady?'Review go-live readiness':'Not ready yet')+'</button></section>'+
+    '<section class="wfm-ij-panel wfm-ij-golive"><div><span class="wfm-ij-kicker">GO LIVE</span><h2>'+(launchReady?'Everything required for launch is proven':'Go live remains protected')+'</h2><p>'+(launchReady?'All implementation, runtime, provider and Golden Journey gates are current and proven. Review the final readiness evidence before activation.':'Launch stays locked until current non-fixture runtime identity, production approval, workforce readiness, provider journey, Golden Journey, integrations, cleanup, live import and role competence are all proven.')+'</p>'+launchBlockerMarkup(launch)+'</div><button type="button" class="btn primary" data-ij-route="readiness" '+(launchReady?'':'disabled')+'>'+(launchReady?'Review go-live readiness':'Not ready yet')+'</button></section>'+
     '<p class="wfm-ij-footnote">Testing '+safe(test?.status||'MISSING')+' · Cleanup '+safe(cleanup?.status||'MISSING')+' · Live import '+safe(liveImport?.status||'MISSING')+'. Progress comes from implementation evidence, not manually ticked boxes.</p>'+
   '</div>';
 }

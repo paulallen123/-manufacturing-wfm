@@ -250,6 +250,8 @@ function validateResilience(item) {
 function validateGoldenJourney(item) {
   if (item.cloudRuntime !== true) return 'Scenario-validation PASS requires execution in the cloud runtime.';
   if (!text(item.testDataClass)) return 'Scenario-validation PASS must label its test-data class rather than imply production evidence.';
+  const correlationId=text(item.correlationId);
+  if(!correlationId) return 'Scenario-validation PASS requires one Golden Journey correlation ID.';
   if (!Array.isArray(item.steps)) return 'Scenario-validation PASS requires enumerated Golden Journey step evidence.';
   const byId = new Map(item.steps.filter(step=>step&&typeof step==='object').map(step=>[text(step.id),step]));
   for (const id of MANDATORY_GOLDEN_JOURNEY_STEPS) {
@@ -257,6 +259,7 @@ function validateGoldenJourney(item) {
     if (!step || text(step.status).toUpperCase() !== 'PASS' || !text(step.evidenceRef)) {
       return 'Scenario-validation PASS is missing proved Golden Journey step: ' + id + '.';
     }
+    if(text(step.correlationId)!==correlationId) return 'Scenario-validation PASS must correlate every mandatory Golden Journey step to one journey.';
   }
   if (Number(item.criticalFailures) !== 0) return 'Scenario-validation PASS requires zero critical failures.';
   return null;
