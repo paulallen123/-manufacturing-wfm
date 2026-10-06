@@ -28,7 +28,7 @@ test('customer runtime patch removes fixed September shifts and development onbo
  assert.doesNotMatch(onboarding,/Jordan New|jordan\.new@example\.test|development only|development build/i);
  assert.match(onboarding,/Delivery is not treated as confirmed/);
  assert.match(onboarding,/VECTOR_CUSTOMER_ONBOARDING_COPY_V2/);
- assert.match(onboarding,/csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\\\n'/,'sealed CSV header must remain after sample-row removal');
+ assert.ok(onboarding.includes("csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\n'};"),'sealed CSV header must remain after sample-row removal');
  assert.doesNotMatch(onboarding,/HR-9101,PAY-9101/,'exact packaged Jordan row must be removed without leaving row fragments');
  const features=fs.readFileSync(path.join(root,'features.js'),'utf8');
  assert.doesNotMatch(features,/For the sample journey, send Leah|All data is synthetic\.|document\.title\s*=.*Local development build/i);
