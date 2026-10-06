@@ -1261,11 +1261,27 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
     return map[kind]||['runtime'];
   }
+  function policyDecisionKeysForRequirement(kind){
+    const map={
+      'time-policies':['time-policy-authority'],
+      'absence-policies':['absence-policy-authority'],
+      'scheduling':['time-policy-authority'],
+      'approvals':['absence-policy-authority'],
+      'clocking':['time-policy-authority'],
+      'payroll-mapping':['time-policy-authority'],
+      'historical-replay':['time-policy-authority'],
+      'scenario-validation':['time-policy-authority','absence-policy-authority'],
+      'privileged-competency':['time-policy-authority'],
+      'frontline-readiness':['absence-policy-authority']
+    };
+    return map[kind]||[];
+  }
   function proofEpochForRun(run,kind){
     const source=canonicalSourceSummaryForTenant(run.tenant),workforce=workforceReadinessForTenant(run.tenant),
       environment=tenantEnvironmentProvisioner.statusForTenant(run.tenant),payrollPeriod=relevantPayrollPeriodForTenant(run.tenant),
       provider=staffologyJourneyForRun(run),scopeRow=scopeByRun.get(run.id,run.tenant),runtimeIdentity=runtimeIdentitySnapshot(),
-      policyRows=listDecisions.all(run.id,run.tenant).filter(row=>POLICY_DECISIONS[row.decision_key]).map(row=>({
+      policyKeys=new Set(policyDecisionKeysForRequirement(kind)),
+      policyRows=listDecisions.all(run.id,run.tenant).filter(row=>policyKeys.has(row.decision_key)).map(row=>({
         key:row.decision_key,status:row.status,updatedAt:row.updated_at,
         decisionDigest:row.decision_json?sha256(row.decision_json):null
       })).sort((a,b)=>a.key.localeCompare(b.key));
