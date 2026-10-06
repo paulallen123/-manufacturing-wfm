@@ -6,6 +6,7 @@ import {spawnSync} from 'node:child_process';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 const patcher=path.join(path.dirname(fileURLToPath(import.meta.url)),'patch-customer-runtime-assets.mjs');
+const exactSealedOnboardingExcerpt="(function(){'use strict';\nconst ON=rootThis(),STATE={report:null,preview:null,csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\nHR-9101,PAY-9101,Jordan New,jordan.new@example.test,s1,Tamworth,Machine operator,2026-10-01,full_time,40,en-GB,CNC,director\\n'};\nfunction rootThis(){return window.WFMOnboarding;}\nasync function invite(source){if(OFFLINE)return toast('Secure invitations require the authenticated development application.');modal('Invitation created — development only','This development build does not contact real employees.');}\n})();";
 test('customer runtime patch removes fixed September shifts and development onboarding copy',t=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'vector-customer-runtime-patch-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const ops=[
@@ -17,7 +18,7 @@ test('customer runtime patch removes fixed September shifts and development onbo
   "The legacy sample has remaining balances but no verified earlier usage. A super user must enter reviewed openings; the system will not invent annual usage from a rough estimate."
  ].join('\\n');
  fs.writeFileSync(path.join(root,'operations-ui.js'),ops);
- fs.writeFileSync(path.join(root,'onboarding-ui.js'),"const ON=rootThis(),STATE={report:null,preview:null,csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\nHR-9101,PAY-9101,Jordan New,jordan.new@example.test,s1,Tamworth,Machine operator,2026-10-01,full_time,40,en-GB,CNC,director\\n'}; Secure invitations require the authenticated development application. Invitation created — development only This development build does not contact real employees.");
+ fs.writeFileSync(path.join(root,'onboarding-ui.js'),exactSealedOnboardingExcerpt);
  fs.writeFileSync(path.join(root,'features.js'),"const copy='Order is safe. All data is synthetic.'; const tip='For the sample journey, send Leah an offer, sign out and sign in as leah@northstar.example, accept it, then return to the manager to confirm.\\\\n\\\\n'; document.title='Manufacturing Workforce · '+(OFFLINE?'Interactive sample':'Local development build');");
  const run=spawnSync(process.execPath,[patcher,root],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);
  const patched=fs.readFileSync(path.join(root,'operations-ui.js'),'utf8');
@@ -27,6 +28,8 @@ test('customer runtime patch removes fixed September shifts and development onbo
  assert.doesNotMatch(onboarding,/Jordan New|jordan\.new@example\.test|development only|development build/i);
  assert.match(onboarding,/Delivery is not treated as confirmed/);
  assert.match(onboarding,/VECTOR_CUSTOMER_ONBOARDING_COPY_V2/);
+ assert.match(onboarding,/csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\\\n'/,'sealed CSV header must remain after sample-row removal');
+ assert.doesNotMatch(onboarding,/HR-9101,PAY-9101/,'exact packaged Jordan row must be removed without leaving row fragments');
  const features=fs.readFileSync(path.join(root,'features.js'),'utf8');
  assert.doesNotMatch(features,/For the sample journey, send Leah|All data is synthetic\.|document\.title\s*=.*Local development build/i);
  assert.match(features,/document\.title='Vector · Workforce'/);
