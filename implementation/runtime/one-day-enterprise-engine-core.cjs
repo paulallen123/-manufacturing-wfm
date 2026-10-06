@@ -1368,17 +1368,16 @@ function createOneDayEnterpriseEngine(options = {}) {
     const requiredRoles=Object.keys(requiredRoleCounts).filter(role=>Number(requiredRoleCounts[role])>0);
     const requiredFrontlineCount=Number(requiredRoleCounts.employee||0);
     const requiredPrivilegedRoleCount=Object.entries(requiredRoleCounts).filter(([role])=>role!=='employee').reduce((sum,[,count])=>sum+Number(count||0),0);
+    const roleLearningPopulationReady=!trainingPopulationRequired
+      ? Boolean(learningSummary)
+      : Boolean(learningSummary)&&Number(learningSummary.users||0)>=requiredTrainingPopulation&&operatingLearningUsersReconciled&&
+        requiredRoles.every(role=>Number(roleCoverage[role]?.users||0)>=Number(requiredRoleCounts[role]||1));
     const frontlineCoverageReady=requiredFrontlineCount===0||(
       Number(roleCoverage.employee?.users||0)>=requiredFrontlineCount&&roleCoverage.employee?.fullyCertified===true&&operatingLearningUsersReconciled
     );
     const privilegedCoverageReady=Object.entries(requiredRoleCounts).filter(([role])=>role!=='employee').every(([role,count])=>
       Number(roleCoverage[role]?.users||0)>=Number(count)&&roleCoverage[role]?.fullyCertified===true);
-    const trainingPopulationReady = !trainingPopulationRequired
-      ? Boolean(learningSummary)
-      : Boolean(learningSummary) &&
-        Number(learningSummary.users || 0) >= requiredTrainingPopulation &&
-        operatingLearningUsersReconciled&&frontlineCoverageReady&&privilegedCoverageReady&&
-        requiredRoles.every(role => Number(roleCoverage[role]?.users || 0) >= Number(requiredRoleCounts[role]||1) && roleCoverage[role]?.fullyCertified === true);
+    const trainingPopulationReady = roleLearningPopulationReady&&frontlineCoverageReady&&privilegedCoverageReady;
 
     const requirements = REQUIREMENTS.map(requirement => {
       const row = map.get(requirement.key);
@@ -1476,7 +1475,7 @@ function createOneDayEnterpriseEngine(options = {}) {
           }
         };
       } else if (learningSummary && requirement.key === 'role-learning') {
-        const ok = trainingPopulationReady && learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
+        const ok = roleLearningPopulationReady && learningSummary.users > 0 && learningSummary.assignments >= learningSummary.users;
         derived = {
           status: ok ? 'PASS' : 'MISSING',
           confidence: ok ? 1 : 0,
@@ -1599,6 +1598,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         operatingLearningUsersReconciled,
         frontlineCoverageReady,
         privilegedCoverageReady,
+        roleLearningPopulationReady,
         populationAndRoleCoverageReady: trainingPopulationReady
       } : null,
       sourceDataSummary,
