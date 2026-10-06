@@ -10,6 +10,18 @@ const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
 assert.equal(origin, expectedOrigin, 'Unexpected role-browser proof origin.');
+const expectedCandidateSha=String(process.env.EXPECTED_CANDIDATE_SHA||process.env.WFM_EXPECTED_CANDIDATE_SHA||'').trim();
+const expectedDeploymentId=String(process.env.EXPECTED_DEPLOYMENT_ID||process.env.EXPECTED_CANDIDATE_DEPLOYMENT||'').trim();
+assert.match(expectedCandidateSha,/^[a-f0-9]{40}$/,'EXPECTED_CANDIDATE_SHA is required for signed role matrix.');
+assert.ok(expectedDeploymentId,'EXPECTED_DEPLOYMENT_ID is required for signed role matrix.');
+async function exactRuntimeIdentity(){
+  const response=await fetch(`${origin}/api/runtime-identity`,{signal:AbortSignal.timeout(15000)});
+  assert.equal(response.status,200,'Runtime identity readback failed.');
+  const identity=await response.json();
+  assert.equal(identity.candidateSha,expectedCandidateSha,'Role matrix SHA mismatch.');
+  assert.equal(identity.deploymentId,expectedDeploymentId,'Role matrix deployment mismatch.');
+  return identity;
+}
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -161,6 +173,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
   }
 }
 
+const runtimeIdentity=await exactRuntimeIdentity();
 const healthResponse=await fetch(`${origin}/api/health`,{signal:AbortSignal.timeout(15000)});
 assert.equal(healthResponse.status,200);
 const health=await healthResponse.json();
@@ -179,7 +192,7 @@ const roles=[];
 for(let i=0;i<specs.length;i++) roles.push(await runRole(specs[i],i));
 
 fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.stringify({
-  capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
+  capturedAt:new Date().toISOString(),origin,release:expectedRelease,candidateSha:runtimeIdentity.candidateSha,deploymentId:runtimeIdentity.deploymentId,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'signed Ed25519 proof-session created the session; CDP bound the server-issued cookie to the corresponding fresh Chrome process',
   renderedEvidence:'manager, employee, payroll, company-admin capability account and separate-tenant manager each produced a hashed non-trivial authenticated DOM after a fresh browser navigation and authenticated browser bootstrap',

@@ -10,6 +10,18 @@ const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
 assert.equal(origin, expectedOrigin, 'Unexpected diagnostic origin.');
+const expectedCandidateSha=String(process.env.EXPECTED_CANDIDATE_SHA||process.env.WFM_EXPECTED_CANDIDATE_SHA||'').trim();
+const expectedDeploymentId=String(process.env.EXPECTED_DEPLOYMENT_ID||process.env.EXPECTED_CANDIDATE_DEPLOYMENT||'').trim();
+assert.match(expectedCandidateSha,/^[a-f0-9]{40}$/,'EXPECTED_CANDIDATE_SHA is required for this signed proof.');
+assert.ok(expectedDeploymentId,'EXPECTED_DEPLOYMENT_ID is required for this signed proof.');
+async function exactRuntimeIdentity(){
+  const response=await fetch(`${origin}/api/runtime-identity`,{signal:AbortSignal.timeout(15000)});
+  assert.equal(response.status,200,'Runtime identity readback failed.');
+  const identity=await response.json();
+  assert.equal(identity.candidateSha,expectedCandidateSha,'Signed proof SHA mismatch.');
+  assert.equal(identity.deploymentId,expectedDeploymentId,'Signed proof deployment mismatch.');
+  return identity;
+}
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -91,6 +103,7 @@ async function inspectRole(spec,index) {
   } finally {try{ws?.close();}catch{};if(proc.exitCode===null&&proc.signalCode===null)proc.kill('SIGTERM');await sleep(500);if(proc.exitCode===null&&proc.signalCode===null)proc.kill('SIGKILL');try{fs.rmSync(profile,{recursive:true,force:true});}catch{}}
 }
 
+const runtimeIdentity=await exactRuntimeIdentity();
 const health=await fetch(`${origin}/api/health`,{signal:AbortSignal.timeout(15000)}).then(r=>{assert.equal(r.status,200);return r.json();});
 assert.equal(health.release,expectedRelease);assert.equal(health.fixtureOnly,true);assert.equal(health.productionApproved,false);assert.equal(health.pilotReady,false);
 const specs=[
@@ -100,7 +113,7 @@ const specs=[
   {slug:'company-admin',email:'superuser@northstar.example',role:'director',tenant:'northstar-demo'}
 ];
 const roles=[];for(let i=0;i<specs.length;i++){try{roles.push(await inspectRole(specs[i],i));}catch(error){const fail={slug:specs[i].slug,email:specs[i].email,role:specs[i].role,tenant:specs[i].tenant,pass:false,error:String(error?.stack||error)};roles.push(fail);fs.writeFileSync(path.join(outDir,`a11y-${specs[i].slug}.json`),JSON.stringify(fail,null,2));console.error(`ROLE_A11Y_DIAGNOSTIC_FAIL=${specs[i].slug}|${error?.message||error}`);}}
-const summary={capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,roles,pass:roles.every(r=>r.pass),claimBoundary:'fixture-only hosted staging diagnostic. Evidence is written before the gate fails. Zero accessible interactive controls is a failure, not a pass. Renderer/network/runtime telemetry is diagnostic only and does not mutate WFM state.'};
+const summary={capturedAt:new Date().toISOString(),origin,release:expectedRelease,candidateSha:runtimeIdentity.candidateSha,deploymentId:runtimeIdentity.deploymentId,sealedRuntimeSha256:expectedRuntimeSha,roles,pass:roles.every(r=>r.pass),claimBoundary:'fixture-only hosted staging diagnostic. Evidence is written before the gate fails. Zero accessible interactive controls is a failure, not a pass. Renderer/network/runtime telemetry is diagnostic only and does not mutate WFM state.'};
 fs.writeFileSync(path.join(outDir,'role-accessibility-diagnostic.json'),JSON.stringify(summary,null,2));
 console.log(`LIVE_ROLE_A11Y_DIAGNOSTIC=${summary.pass?'PASS':'FAIL'}|roles=${roles.length}|failed=${roles.filter(r=>!r.pass).map(r=>r.slug).join(',')||'none'}`);
 assert.equal(summary.pass,true,`Role accessibility diagnostic failed for: ${roles.filter(r=>!r.pass).map(r=>r.slug).join(', ')}`);

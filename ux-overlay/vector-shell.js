@@ -593,7 +593,7 @@ async function renderEmployeeHome(content){
  await loadTenantCalendar();
  const owner=[sourceIdentity().tenant,sourceIdentity().email,sourceIdentity().id].join(':');
  if(state.employeeHome.owner!==owner){state.employeeHomeEpoch++;state.employeeHome={status:'idle',owner,value:null,error:''};}
- if(state.employeeHome.status==='ready'&&state.employeeHome.value){content.innerHTML=employeeHomeMarkup(state.employeeHome.value);content.dataset.vectorEmployeeHome='1';document.title='Vector · Current work';return;}
+ if(state.employeeHome.status==='ready'&&state.employeeHome.value){content.innerHTML=employeeHomeMarkup(state.employeeHome.value);content.dataset.vectorEmployeeHome='1';document.title='Vector · Workforce';return;}
  if(state.employeeHome.status==='loading')return;
  const epoch=++state.employeeHomeEpoch;state.employeeHome.status='loading';content.innerHTML='<div class="vector-empty">Loading your current personal record…</div>';
  try{
@@ -601,7 +601,7 @@ async function renderEmployeeHome(content){
   if(!response.ok)throw Error('Personal source unavailable');
   const value=await response.json();
   if(epoch!==state.employeeHomeEpoch||owner!==state.employeeHome.owner||!employee()||page()!=='overview')return;
-  state.employeeHome={status:'ready',owner,value,error:''};content.innerHTML=employeeHomeMarkup(value);content.dataset.vectorEmployeeHome='1';document.title='Vector · Current work';
+  state.employeeHome={status:'ready',owner,value,error:''};content.innerHTML=employeeHomeMarkup(value);content.dataset.vectorEmployeeHome='1';document.title='Vector · Workforce';
  }catch(error){
   if(epoch!==state.employeeHomeEpoch)return;
   state.employeeHome={status:'error',owner,value:null,error:String(error?.message||'Personal source unavailable')};
@@ -617,7 +617,7 @@ function renderHome(content){clearActionContext();if(content.dataset.vectorHome=
  ${verifiedValueMarkup()}
  <div class="vector-concept-lower"><section class="vector-card vector-focus vector-concept-focus"><div class="vector-card-head"><div><span class="vector-card-kicker">Quick access</span><h2>Today’s focus</h2></div></div><p>Review the evidence, then move straight into the working flow.</p>${[['schedule-publication','Review this week’s plan'],['attendance','Check attendance'],['leave','Review time off']].filter(([r])=>available(r)).map(([r,t])=>`<button type="button" data-vector-route="${r}">${icon('arrow')}${t}</button>`).join('')}</section>${leaveMarkup(leaves)}</div>
  <div class="vector-concept-assistant">${buildAssistant()}</div>`;
- content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Today';focusReturnedActionList(home);
+ content.prepend(home);content.dataset.vectorHome='1';document.title='Vector · Workforce';focusReturnedActionList(home);
 }
 function sectionTabs(content){
  if(content.querySelector(':scope > .vector-section-tabs'))return;

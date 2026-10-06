@@ -10,6 +10,18 @@ const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
 assert.equal(origin, expectedOrigin, 'Unexpected role-control proof origin.');
+const expectedCandidateSha=String(process.env.EXPECTED_CANDIDATE_SHA||process.env.WFM_EXPECTED_CANDIDATE_SHA||'').trim();
+const expectedDeploymentId=String(process.env.EXPECTED_DEPLOYMENT_ID||process.env.EXPECTED_CANDIDATE_DEPLOYMENT||'').trim();
+assert.match(expectedCandidateSha,/^[a-f0-9]{40}$/,'EXPECTED_CANDIDATE_SHA is required for this signed proof.');
+assert.ok(expectedDeploymentId,'EXPECTED_DEPLOYMENT_ID is required for this signed proof.');
+async function exactRuntimeIdentity(){
+  const response=await fetch(`${origin}/api/runtime-identity`,{signal:AbortSignal.timeout(15000)});
+  assert.equal(response.status,200,'Runtime identity readback failed.');
+  const identity=await response.json();
+  assert.equal(identity.candidateSha,expectedCandidateSha,'Signed proof SHA mismatch.');
+  assert.equal(identity.deploymentId,expectedDeploymentId,'Signed proof deployment mismatch.');
+  return identity;
+}
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -184,6 +196,7 @@ async function runRole(spec, index) {
   }
 }
 
+const runtimeIdentity=await exactRuntimeIdentity();
 const healthResponse = await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(15_000) });
 assert.equal(healthResponse.status, 200);
 const health = await healthResponse.json();
@@ -205,6 +218,8 @@ fs.writeFileSync(path.join(outDir, 'role-control-inventory.json'), JSON.stringif
   capturedAt: new Date().toISOString(),
   origin,
   release: expectedRelease,
+  candidateSha:runtimeIdentity.candidateSha,
+  deploymentId:runtimeIdentity.deploymentId,
   sealedRuntimeSha256: expectedRuntimeSha,
   result: 'PASS',
   roles,

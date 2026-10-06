@@ -19,7 +19,15 @@ test('full role browser harnesses use signed Ed25519 proof sessions and never pa
     assert.doesNotMatch(source,/const password\s*=\s*process\.env\.WFM_STAGING_PASSWORD/);
     assert.match(source,/signedProofSession/);
     assert.match(source,/vector-customer-ready-candidate-production\.up\.railway\.app/);
+    assert.match(source,/EXPECTED_CANDIDATE_SHA/);
+    assert.match(source,/EXPECTED_DEPLOYMENT_ID/);
+    assert.match(source,/\/api\/runtime-identity/);
   }
+  const rendered=fs.readFileSync(path.join(root,'scripts/live-role-rendered-ui-proof.mjs'),'utf8');
+  assert.match(rendered,/Vector · Workforce/);
+  assert.match(rendered,/assertCustomerPresentation/);
+  assert.match(rendered,/development\\s\+build/);
+  assert.match(rendered,/sample\\s\+account/);
   const helper=fs.readFileSync(path.join(root,'scripts/signed-proof-session.mjs'),'utf8');
   assert.match(helper,/VECTOR_PROOF_RUNNER_V1/);
   assert.match(helper,/\/api\/proof-runner\/session/);

@@ -10,6 +10,30 @@ const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
 assert.equal(origin, expectedOrigin, 'Unexpected role-render proof origin.');
+const expectedCandidateSha=String(process.env.EXPECTED_CANDIDATE_SHA||process.env.WFM_EXPECTED_CANDIDATE_SHA||'').trim();
+const expectedDeploymentId=String(process.env.EXPECTED_DEPLOYMENT_ID||process.env.EXPECTED_CANDIDATE_DEPLOYMENT||'').trim();
+const expectedTitle='Vector · Workforce';
+assert.match(expectedCandidateSha,/^[a-f0-9]{40}$/,'EXPECTED_CANDIDATE_SHA is required for rendered-role proof.');
+assert.ok(expectedDeploymentId,'EXPECTED_DEPLOYMENT_ID is required for rendered-role proof.');
+const forbiddenRenderedCopy=[
+  /\bdevelopment\s+build\b/i,/\blocal\s+development\b/i,/\binteractive\s+design\b/i,
+  /\binteractive\s+(?:design\s*\/\s*)?prototype\b/i,/\bfictional\s+test\s+account\b/i,
+  /\bsample\s+account\b/i,/\bdownloadable\s+sample\b/i,/\bin\s+this\s+sample\b/i,
+  /\bdesign[-\s]+only\b/i,/\bdesign\s+requirement\b/i,/\bdevelopment\s+sample\b/i,/\blegacy\s+sample\b/i
+];
+function assertCustomerPresentation(view,label){
+  assert.equal(view?.title,expectedTitle,`${label} authenticated title mismatch.`);
+  const text=String(view?.text||'');
+  for(const pattern of forbiddenRenderedCopy)assert.doesNotMatch(text,pattern,`${label} exposed customer-inappropriate copy: ${pattern}`);
+}
+async function exactRuntimeIdentity(){
+  const response=await fetch(`${origin}/api/runtime-identity`,{signal:AbortSignal.timeout(15000)});
+  assert.equal(response.status,200,'Runtime identity readback failed.');
+  const identity=await response.json();
+  assert.equal(identity.candidateSha,expectedCandidateSha,'Rendered proof SHA mismatch.');
+  assert.equal(identity.deploymentId,expectedDeploymentId,'Rendered proof deployment mismatch.');
+  return identity;
+}
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -146,6 +170,8 @@ async function runRole(spec, index) {
     }
     assert.ok(docLength > 10_000, `${spec.slug} authenticated rendered DOM did not reach proof threshold.`);
     assert.ok(apiResponses.some(x => x.path === '/api/bootstrap' && x.status === 200), `${spec.slug} browser did not complete authenticated bootstrap.`);
+    const desktopPresentation=(await send('Runtime.evaluate',{expression:"({title:document.title,text:document.body?.innerText||''})",returnByValue:true},5000)).result?.value||{};
+    assertCustomerPresentation(desktopPresentation,`${spec.slug} desktop`);
 
     await sleep(700);
     const desktopShot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false }, 10_000);
@@ -157,6 +183,8 @@ async function runRole(spec, index) {
     await send('Page.reload', { ignoreCache: true });
     await sleep(1200);
     assert.ok(apiResponses.some(x => x.path === '/api/bootstrap' && x.status === 200), `${spec.slug} mobile reload lost authenticated bootstrap evidence.`);
+    const mobilePresentation=(await send('Runtime.evaluate',{expression:"({title:document.title,text:document.body?.innerText||''})",returnByValue:true},5000)).result?.value||{};
+    assertCustomerPresentation(mobilePresentation,`${spec.slug} mobile`);
     const mobileShot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false }, 10_000);
     const mobileName = `41-role-${spec.slug}-mobile.png`;
     fs.writeFileSync(path.join(outDir, mobileName), Buffer.from(mobileShot.data, 'base64'));
@@ -178,6 +206,8 @@ async function runRole(spec, index) {
       desktopScreenshot: desktopName,
       mobileScreenshot: mobileName,
       observedApiResponses: uniqueApi,
+      authenticatedTitle:{desktop:desktopPresentation.title,mobile:mobilePresentation.title,approved:expectedTitle},
+      customerCopyGuard:{desktop:true,mobile:true},
       browserContext: 'fresh Chrome process/profile; exact server-issued session bound after zero-cookie and unauthenticated-401 checks; credential never passed to Chrome environment',
     };
   } finally {
@@ -196,6 +226,7 @@ async function runRole(spec, index) {
   }
 }
 
+const runtimeIdentity=await exactRuntimeIdentity();
 const healthResponse = await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(15_000) });
 assert.equal(healthResponse.status, 200);
 const health = await healthResponse.json();
@@ -217,7 +248,10 @@ fs.writeFileSync(path.join(outDir, 'role-rendered-ui-evidence.json'), JSON.strin
   capturedAt: new Date().toISOString(),
   origin,
   release: expectedRelease,
+  candidateSha:runtimeIdentity.candidateSha,
+  deploymentId:runtimeIdentity.deploymentId,
   sealedRuntimeSha256: expectedRuntimeSha,
+  approvedAuthenticatedTitle:expectedTitle,
   result: 'PASS',
   roles,
   claimBoundary: 'fixture-only hosted staging; proves four role-specific authenticated rendered browser homes on desktop and mobile plus required server surfaces. It does not claim every role-specific task was clicked end-to-end, physical-device acceptance, production/pilot approval or real employee/payroll data.',
