@@ -31,6 +31,30 @@ const reservePort = () => new Promise((resolve, reject) => {
   });
 });
 
+
+test('authorised manager and payroll startup fail closed when no current period exists without loading history', async () => {
+  for (const spec of [
+    { role:'manager', permissions:[], page:'vector-weekly-signoff', pageFn:'weeklyPage', expected:/No current review week/ },
+    { role:'payroll_admin', permissions:['payroll.view'], page:'payroll-run', pageFn:'payrollPage', expected:/No current payroll week/ }
+  ]) {
+    const calls=[],actor={tenant:'northstar-demo',email:spec.role+'@example.test',personId:'m1',role:spec.role,permissions:spec.permissions};
+    const rootNode={innerHTML:'',close(){}};
+    const context=vm.createContext({
+      console,URL,OFFLINE:false,F:{ready:true,actor},ui:{page:spec.page},data:{},
+      payrollActor:()=>actor,PR:{has:(who,permission)=>Array.isArray(who?.permissions)&&who.permissions.includes(permission)},
+      request:async url=>{calls.push(url);if(url==='/api/current-review-period')return {schemaVersion:'tenant-calendar-1',tenant:'northstar-demo',timeZone:'Europe/London',asOf:'2026-10-06T06:00:00.000Z',localDate:'2026-10-06',localTime:'07:00:00',maxAgeMs:900000,period:null};throw Error('Historical/source read must not occur: '+url);},
+      command:async()=>{throw Error('write not expected');},reload:async()=>{},modal(){},modalActions:()=>'',toast(){},shell:html=>html,render:async()=>{},showLogin(){},fmt:value=>String(value),
+      fetch:async()=>{throw Error('fetch not expected');},
+      document:{addEventListener(){},querySelector(){return null;},getElementById(){return rootNode;}}
+    });
+    vm.runInContext(source,context,{filename:'vector-workflows-no-current.js'});
+    assert.equal(await context.VectorWorkflow.refresh(),true);
+    assert.equal(context.RF.period,'');assert.equal(context.RF.report,null);assert.equal(context.RF.company,null);assert.equal(context.RF.periodState,'none');
+    assert.deepEqual(calls,['/api/current-review-period']);
+    assert.match(context.VectorWorkflow[spec.pageFn](),spec.expected);
+  }
+});
+
 test('Vector workflow controller uses real authentication, saved checks and restart recovery', async t => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-workflow-'));
   const runtime = path.join(directory, 'runtime');

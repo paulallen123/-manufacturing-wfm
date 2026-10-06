@@ -53,6 +53,12 @@ test('zero attendance is preserved when the authoritative tenant calendar is cur
   const result = api.metrics({ querySelectorAll() { throw Error('unrelated presentation must not supply figures'); } });
   assert.equal(result[0].value, 0); assert.equal(result[1].value, 0); assert.equal(result[2].value, '—');
 });
+test('attendance renders em dash only when current authority is genuinely unavailable', () => {
+  const { api } = load({ WFM: { scopedStaff: () => [], stats: () => ({ onsite: 0, sick: 0 }) } });
+  const result = api.metrics({ querySelectorAll() { throw Error('presentation must not manufacture authority'); } });
+  assert.equal(result[0].value, '—'); assert.equal(result[1].value, '—');
+  assert.equal(result[0].detail, 'Source unavailable'); assert.equal(result[1].detail, 'Source unavailable');
+});
 test('five-section navigation keeps every registered workflow reachable exactly once', () => {
   const routes = ['overview', 'personal', 'leave', 'availability', 'offers', 'shifts', 'time-review', 'payroll-run', 'new-extension'];
   const { api } = load({ routes, employee: true });

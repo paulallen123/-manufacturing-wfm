@@ -3,7 +3,7 @@
  * No retired presentation is loaded; the server remains the permission/pay authority. */
 (function () {
   'use strict';
-  const RF = globalThis.RF = { period: '', team: '', report: null, company: null, recoveryActuals: [], financeAttribution: [], epoch: 0 };
+  const RF = globalThis.RF = { period: '', team: '', report: null, company: null, periodState: 'idle', periodCalendar: null, recoveryActuals: [], financeAttribution: [], epoch: 0 };
   const state = { busy: false, receipt: null, owner: '', epoch: 0 };
   const LF = { bootstrap: null, personal: null, busy: false, receipt: null, owner: '', epoch: 0 };
   const actor = () => payrollActor();
@@ -29,17 +29,19 @@
   function clearOwner() {
     const owner = ownerKey();
     if (owner === state.owner) return;
-    state.owner = owner; RF.report = null; RF.company = null; RF.team = ''; state.receipt = null;
+    state.owner = owner; RF.period=''; RF.report = null; RF.company = null; RF.team = ''; RF.periodState='idle'; RF.periodCalendar=null; state.receipt = null;
   }
   async function refresh() {
     if (OFFLINE) throw Error('Connect to the authenticated Vector service to review or change payroll records.');
     clearOwner();
     const currentActor=actor(),canReview=reviewer(),canPayroll=permitted('payroll.view'),epoch=++RF.epoch,owner=state.owner;
-    if(currentActor?.role==='employee'||(!canReview&&!canPayroll)){RF.period='';RF.report=null;RF.company=null;RF.team='';return true;}
+    if(currentActor?.role==='employee'||(!canReview&&!canPayroll)){RF.period='';RF.report=null;RF.company=null;RF.team='';RF.periodState='not-authorised';RF.periodCalendar=null;return true;}
     const calendar=await request('/api/current-review-period');
     if(epoch!==RF.epoch||owner!==state.owner||owner!==ownerKey()||!F.ready)return false;
+    if(!calendar||calendar.schemaVersion!=='tenant-calendar-1'||!calendar.timeZone||!calendar.asOf||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(calendar.localDate||'')))throw Error('The server current-period contract is unavailable.');
+    RF.periodCalendar=calendar;
     const authoritativePeriod=calendar?.period?.id||null;
-    if(!authoritativePeriod)throw Error('The server did not return a current review period.');
+    if(!authoritativePeriod){RF.period='';RF.report=null;RF.company=null;RF.team='';RF.periodState='none';return true;}
     const suffix='?period='+encodeURIComponent(authoritativePeriod);
     const [report,company]=await Promise.all([
       canReview?request('/api/weekly-review'+suffix):null,
@@ -49,7 +51,7 @@
     const reportPeriod=report?.period||null,companyPeriod=company?.period||null;
     if(reportPeriod&&reportPeriod!==authoritativePeriod)throw Error('Manager review differs from the server-authoritative current period.');
     if(companyPeriod&&companyPeriod!==authoritativePeriod)throw Error('Payroll differs from the server-authoritative current period.');
-    RF.period=authoritativePeriod;RF.report=report;RF.company=company;
+    RF.period=authoritativePeriod;RF.report=report;RF.company=company;RF.periodState='current';
     if(!report?.teams.some(team=>team.id===RF.team))RF.team=report?.teams[0]?.id||'';
     return true;
   }
@@ -273,6 +275,7 @@
     workflowModal(kind === 'employee' ? 'Verify employee totals' : 'Verify ' + category.name, `<p>${escape(category?.description || 'Review every daily outcome, including days with zero hours.')} · ${rows.length} records</p>${evidence(rows)}${checked('checked', 'I verified every relevant record and checked for missing or incorrectly classified entries.')}${modalActions('Save verification')}`, form => mutate('review-check', { ...basis, checked: form.has('checked') }));
   }
   function weeklyPage() {
+    if(!RF.report&&RF.periodState==='none')return '<section class="vw-panel"><h1>Weekly sign-off</h1><p>No current review week covers the authoritative tenant date '+escape(RF.periodCalendar?.localDate||'')+'. Historical weeks are available only through an explicit history workflow.</p></section>';
     const team = selected();
     if (!team) return '<section class="vw-panel"><h1>Weekly sign-off</h1><p>No review team is available to your authenticated account.</p></section>';
     const locked = ['signed', 'stale'].includes(team.status), open = team.issues.filter(issue => issue.status === 'open');
@@ -280,6 +283,7 @@
   }
   function payrollPage() {
     const report = RF.company;
+    if (!report&&RF.periodState==='none'&&permitted('payroll.view')) return '<section class="vw-panel"><h1>Payroll preparation</h1><p>No current payroll week covers the authoritative tenant date '+escape(RF.periodCalendar?.localDate||'')+'. No historical payroll is loaded automatically.</p></section>';
     if (!report) return '<section class="vw-panel"><h1>Payroll preparation</h1><p>Explicit payroll viewing permission is required.</p></section>';
     const exportAllowed = permitted('payroll.export');
     return `<section class="vw-panel"><h1>Payroll preparation</h1><p>Approved time, controlled export and recorded hand-off. Provider acceptance is a separate result.</p>${receipt()}<div class="vw-toolbar"><span class="vw-period-label"><b>Current payroll week</b> ${escape(report.period?.start||RF.period)} – ${escape(report.period?.end||'')}</span>${reviewer() ? control('Weekly sign-off', 'weekly') : ''}</div><p><b>${report.teams.filter(team => team.status === 'signed').length}/${report.teams.length} teams signed</b> · ${report.totals.employees} expected employees · ${hours(report.totals.workedMinutes)} worked</p><h2>Release checks</h2>${report.blockers.map(item => `<p class="vw-warning">${escape(item)}</p>`).join('') || '<p>Source controls reconcile for this version.</p>'}${(report.discrepancies || []).map(item => `<div class="vw-row"><span>${escape(item.title || item.code)}<br>${escape(item.explanation || item.message)}</span>${item.fixable ? control('Link for manager review', 'link', item.sessionId, !permitted('payroll.reopen')) : escape(item.fixLabel || 'Review source evidence')}</div>`).join('')}<details><summary>Team approvals</summary>${report.teams.map(team => `<div class="vw-row"><span>${escape(team.name)} · ${escape(team.status)} · ${team.checkedEmployees}/${team.employees.length} checked</span>${team.status === 'signed' || team.status === 'stale' ? control('Return', 'return', team.id, !permitted('payroll.reopen')) : control('Remind owner', 'remind', team.id, !permitted('payroll.remind'))}</div>`).join('')}</details><details><summary>Exact export rows and reconciliation</summary><p>${escape(report.schema)}</p><pre>${escape(JSON.stringify(report.reconciliation, null, 2))}</pre><div class="vw-scroll"><table class="table"><thead><tr><th>Payroll ID</th><th>Date</th><th>Code</th><th>Minutes</th><th>Gross</th></tr></thead><tbody>${report.lines.map(line => `<tr><td>${escape(line.payrollId)}</td><td>${escape(line.date)}</td><td>${escape(line.code)}</td><td>${escape(line.minutes)}</td><td>${escape(line.gross || '')}</td></tr>`).join('')}</tbody></table></div></details>${control('Review and release CSV', 'release', '', !exportAllowed || !report.canRelease)}<h2>Released files</h2>${report.batches.map(batch => `<div class="vw-row"><span><b>${escape(batch.id)}</b> · ${escape(batch.status)}<br>${batch.employeeCount} people · ${batch.rowCount} rows<br><small>${escape(batch.checksum || 'Checksum unavailable')}</small></span><div>${control('Download CSV', 'download', batch.id, !exportAllowed || batch.status === 'void')}${batch.status === 'released' ? control('Record hand-off', 'sent', batch.id, !exportAllowed) + control('Void unsubmitted file', 'void', batch.id, !permitted('payroll.reopen')) : ''}</div></div>`).join('') || '<p>No file released for this week.</p>'}<details><summary>Separate post-release corrections</summary>${adjustments(report)}</details><details><summary>Recent control activity</summary>${report.audit.slice(-15).reverse().map(item => `<p>${escape(item.type)} · ${escape(item.actor)} · ${escape(item.at)}</p>`).join('')}</details><p>${escape(report.exportNote)}</p></section>`;
@@ -325,7 +329,7 @@
   showLogin = function (...args) {
     RF.epoch++; state.epoch++; state.owner = ''; state.receipt = null;
     LF.epoch++; LF.owner = ''; LF.bootstrap = null; LF.personal = null; LF.receipt = null;
-    RF.report = null; RF.company = null; RF.team = '';
+    RF.period=''; RF.report = null; RF.company = null; RF.team = ''; RF.periodState='idle'; RF.periodCalendar=null;
     document.getElementById('modal')?.close?.();
     return previousLogin.apply(this, args);
   };
