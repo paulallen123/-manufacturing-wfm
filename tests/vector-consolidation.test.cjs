@@ -47,8 +47,9 @@ test('consolidation retains the engine repair: absent or invalid cost is not zer
     assert.equal(api.labourCost(), Number(value) / 100);
   }
 });
-test('zero attendance is preserved and overtime is not borrowed from other DOM figures', () => {
+test('zero attendance is preserved when the authoritative tenant calendar is current and overtime is not borrowed from other DOM figures', () => {
   const { api } = load({ WFM: { scopedStaff: () => [], stats: () => ({ onsite: 0, sick: 0 }) } });
+  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-06T05:30:00Z',localDate:'2026-10-06',localTime:'06:30:00',maxAgeMs:900000});
   const result = api.metrics({ querySelectorAll() { throw Error('unrelated presentation must not supply figures'); } });
   assert.equal(result[0].value, 0); assert.equal(result[1].value, 0); assert.equal(result[2].value, '—');
 });
@@ -99,8 +100,10 @@ test('a completed older request cannot overwrite refreshed action evidence after
   const { api, context } = load({ selectors: { '.vector-alerts': queue }, fetch: () => new Promise(resolve => pending.push(resolve)) });
   api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   const oldRequest = api.loadTimeReviewEvidence();
+  await Promise.resolve();
   await context.window.render();
   const newRequest = api.loadTimeReviewEvidence();
+  await Promise.resolve();
   assert.equal(pending.length, 2, 'a screen render must reload authoritative evidence');
   pending[1](response('current-record')); await newRequest;
   pending[0](response('obsolete-record')); await oldRequest;
@@ -111,7 +114,10 @@ test('an in-flight manager response is discarded after the role becomes employee
   const queue = { outerHTML: 'employee-self-service' }; let resolve, employee = false;
   const { api } = load({ isEmployee: () => employee, selectors: { '.vector-alerts': queue }, fetch: () => new Promise(r => { resolve = r; }) });
   api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
-  const request = api.loadTimeReviewEvidence(); employee = true;
+  const request = api.loadTimeReviewEvidence();
+  await Promise.resolve();
+  assert.equal(typeof resolve,'function');
+  employee = true;
   resolve({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [] }) });
   await request; assert.equal(queue.outerHTML, 'employee-self-service');
 });

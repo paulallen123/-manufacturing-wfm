@@ -40,7 +40,7 @@ test('Vector workflow controller uses real authentication, saved checks and rest
   let child;
   async function start() {
     child = spawn(process.execPath, ['--require', path.join(runtime, 'local-paths.cjs'), path.join(runtime, 'security-runtime/bootstrap.cjs')], {
-      env: { ...process.env, WFM_DB: dbPath, PORT: String(port), WFM_HOSTED_STAGING: 'false', NODE_ENV: 'test' },
+      env: { ...process.env, WFM_DB: dbPath, PORT: String(port), WFM_HOSTED_STAGING: 'false', NODE_ENV: 'test', WFM_TENANT_CLOCK_ISO: '2026-09-10T12:00:00Z', WFM_TENANT_TIMEZONE: 'Europe/London' },
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let diagnostics = '';
