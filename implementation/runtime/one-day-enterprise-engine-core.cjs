@@ -281,6 +281,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   const tenantCalendarSnapshotProvider = typeof options.tenantCalendarSnapshotProvider === 'function'
     ? options.tenantCalendarSnapshotProvider
     : null;
+  const staffologyProfileProvider = typeof options.staffologyProfileProvider === 'function'
+    ? options.staffologyProfileProvider
+    : () => null;
   const readinessEvidenceMaxAgeMs = Math.max(60000, Number(options.readinessEvidenceMaxAgeMs ?? 4 * 60 * 60 * 1000));
   function runtimeIdentitySnapshot() {
     try {
@@ -545,6 +548,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   );
   const eventStmt = db.prepare(
     'INSERT INTO implementation_events(run_id,tenant,event,detail_json,created_at) VALUES(?,?,?,?,?)'
+  );
+  const invitationDeliveryEvents = db.prepare(
+    "SELECT detail_json,created_at FROM implementation_events WHERE run_id=? AND tenant=? AND event='CONTRACT_INVITATION_SENT' ORDER BY id DESC LIMIT 20"
   );
 
   function record(runId, tenant, event, detail = {}) {
@@ -924,6 +930,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   function notificationRecoveryForRun(run) {
     const invitation = invitationByContract.get(run.tenant, run.contract_ref_hash);
     const outbox = outboxByContract.get(run.tenant, run.contract_ref_hash);
+    const deliveryReceipt=invitation?invitationDeliveryEvents.all(run.id,run.tenant).map(row=>({detail:parseJsonSafe(row.detail_json,{}),createdAt:row.created_at})).find(row=>
+      row.detail?.invitationId===invitation.id&&String(row.detail?.provider||'').trim()&&String(row.detail?.messageId||'').trim()
+    ):null;
     const attemptRow = notificationAttemptsByContract.get(run.tenant, run.contract_ref_hash);
     const attempts = Math.max(0, Number(attemptRow?.attempts || 0));
     const remainingAttempts = Math.max(0, 3 - attempts);
@@ -970,10 +979,17 @@ function createOneDayEnterpriseEngine(options = {}) {
         terminalAction: 'PROVIDER_OR_ADMIN_AUTHORIZATION_REQUIRED'
       };
     }
-    if (invitation) {
+    if (invitation && deliveryReceipt) {
       return {
         state: 'DELIVERED', attempts, remainingAttempts,
-        automaticActionAvailable: false, terminalAction: null
+        automaticActionAvailable: false, terminalAction: null,
+        deliveryReceipt:{provider:String(deliveryReceipt.detail.provider),messageIdDigest:sha256(String(deliveryReceipt.detail.messageId)).slice(0,24),deliveredAt:deliveryReceipt.createdAt}
+      };
+    }
+    if (invitation) {
+      return {
+        state: 'NOT_PROVEN', attempts, remainingAttempts,
+        automaticActionAvailable: false, terminalAction: 'INVITATION_DELIVERY_RECEIPT_REQUIRED'
       };
     }
     if (!publicOrigin || !/^https:\/\//i.test(publicOrigin)) {
@@ -1068,14 +1084,38 @@ function createOneDayEnterpriseEngine(options = {}) {
     };
   }
 
+  function learningRole(role){
+    const value=String(role||'').toLowerCase();
+    if(value.includes('payroll'))return 'payroll';
+    if(value==='director'||value.includes('admin')||value.includes('super'))return 'admin';
+    if(value.includes('manager')||value.includes('leader'))return 'manager';
+    return 'employee';
+  }
   function workforceReadinessForTenant(tenant) {
     const state = tenantStateFor(tenant);
     const people = Array.isArray(state?.onboarding?.people) ? state.onboarding.people : [];
     const staff = Array.isArray(state?.staff) ? state.staff : [];
     const activeImported = people.filter(person => person && person.status !== 'former' && person.operation !== 'delete');
+    const activeOperating=staff.filter(worker=>worker&&worker.id&&worker.active!==false&&String(worker.status||'').toLowerCase()!=='former'&&worker.operation!=='delete');
+    let users=[];try{users=db.prepare('SELECT email,person_id,role FROM users WHERE tenant=?').all(tenant);}catch{}
+    const userByPerson=new Map(users.filter(user=>user?.person_id).map(user=>[String(user.person_id),user]));
+    const linkedOperating=activeOperating.map(worker=>({worker,user:userByPerson.get(String(worker.id))||null})),operatingRoleCounts={};
+    const linkedUserEmails=new Set();
+    for(const item of linkedOperating)if(item.user){const role=learningRole(item.user.role);operatingRoleCounts[role]=(operatingRoleCounts[role]||0)+1;if(item.user.email)linkedUserEmails.add(String(item.user.email).trim().toLowerCase());}
+    const privilegedUsers=users.filter(user=>learningRole(user.role)!=='employee');
+    for(const user of privilegedUsers){const email=String(user.email||'').trim().toLowerCase();if(linkedUserEmails.has(email))continue;const role=learningRole(user.role);operatingRoleCounts[role]=(operatingRoleCounts[role]||0)+1;}
+    const operatingEmailDigests=[...new Set([
+      ...linkedOperating.filter(item=>item.user?.email).map(item=>sha256(String(item.user.email).trim().toLowerCase()).slice(0,24)),
+      ...privilegedUsers.filter(user=>user?.email).map(user=>sha256(String(user.email).trim().toLowerCase()).slice(0,24))
+    ])].sort();
+    const requiredTrainingIdentityCount=activeOperating.length+privilegedUsers.filter(user=>!linkedUserEmails.has(String(user.email||'').trim().toLowerCase())).length;
     const importedEmailDigests = activeImported.map(person => sha256(String(person.email || '').trim().toLowerCase()).slice(0, 24)).filter(Boolean).sort();
     const identityVerified = activeImported.filter(person => person.identityVerified === true).length;
-    const invited = activeImported.filter(person => Boolean(person.inviteId)).length;
+    const acceptanceReceipts=activeImported.filter(person=>{
+      const receipt=person.invitationAcceptance;
+      return person.identityVerified===true&&receipt&&receipt.source==='authenticated-invitation-acceptance'&&
+        receipt.inviteId===person.inviteId&&Number.isFinite(Date.parse(String(receipt.acceptedAt||'')));
+    }).length;
     const readyForScheduling = activeImported.filter(person => {
       const linked = staff.find(worker => worker.id === person.staffId);
       return person.identityVerified === true && Boolean(person.staffId) &&
@@ -1085,35 +1125,40 @@ function createOneDayEnterpriseEngine(options = {}) {
       importedPeople: activeImported.length,
       importedEmailDigests,
       identityVerified,
-      invitationsIssued: invited,
+      invitationAcceptanceReceipts:acceptanceReceipts,
+      invitationDeliveryProven: activeImported.length === 0 || acceptanceReceipts === activeImported.length,
       readyForScheduling,
-      invitationDeliveryProven: activeImported.length === 0 || invited === activeImported.length,
+      operatingWorkforceCount:activeOperating.length,
+      requiredTrainingIdentityCount,
+      operatingIdentityLinkedCount:linkedOperating.filter(item=>item.user).length,
+      privilegedIdentityCount:privilegedUsers.length,
+      operatingEmailDigests,
+      operatingRoleCounts,
+      allOperatingIdentitiesLinked:activeOperating.length===linkedOperating.filter(item=>item.user).length,
       allReady: activeImported.length === 0 || readyForScheduling === activeImported.length
     };
   }
 
   function staffologyJourneyForRun(run) {
-    const scopeRow=scopeByRun.get(run.id,run.tenant),scope=parseJsonSafe(scopeRow?.scope_json,{});
-    const providerRequiredByScope=/staffology/i.test(String(scope?.payrollSystem||'')) ||
-      (Array.isArray(scope?.sourceSystems)&&scope.sourceSystems.some(value=>/staffology/i.test(String(value))));
-    let profile = null;
-    try { profile = JSON.parse(process.env.WFM_STAFFOLOGY_OPERATION_JSON || 'null'); } catch {}
-    if (!profile || typeof profile !== 'object') return {
-      required:providerRequiredByScope,proven:!providerRequiredByScope,configured:false,bindingMatches:false,
-      peopleApplied:false,cohortAccounted:!providerRequiredByScope,fullPayrollVerified:false,
-      claimBoundary:'Customer scope requires Staffology proof when Staffology is named as a payroll/source system.'
+    const scopeRow=scopeByRun.get(run.id,run.tenant),scope=parseJsonSafe(scopeRow?.scope_json,{}),
+      payrollCapabilityRequired=Boolean(String(scope?.payrollSystem||'').trim())||
+        (Array.isArray(scope?.features)&&scope.features.some(value=>/payroll|pay run|pay output/i.test(String(value))));
+    let profile=null,profileError=null;try{profile=staffologyProfileProvider();}catch(error){profileError=error;}
+    const providerConfigured=Boolean(profile&&profile.binding);
+    const providerRequired=payrollCapabilityRequired&&(providerConfigured||Boolean(profileError));
+    if (!providerConfigured) return {
+      required:providerRequired,proven:!providerRequired,configured:false,bindingMatches:false,
+      configurationError:profileError?String(profileError.code||profileError.message||'STAFFOLOGY_CONFIGURATION_INVALID'):null,
+      peopleApplied:false,cohortAccounted:!providerRequired,fullPayrollVerified:false,
+      claimBoundary:'A canonical Staffology journey is mandatory only when payroll capability is approved and Staffology is configured or its canonical configuration is invalid; provider names are not inferred from customer text.'
     };
-    const resolvedBinding = {
-      tenant:String(profile.tenant||''),implementationRunId:String(profile.implementationRunId||''),
-      candidateSha:String(profile.candidateSha||''),deploymentId,
-      configurationId:String(profile.configurationId||''),employerId:String(profile.employerId||'')
-    };
+    const resolvedBinding = profile.binding;
     const bindingMatches = resolvedBinding.tenant === run.tenant &&
       resolvedBinding.implementationRunId === run.id &&
       resolvedBinding.candidateSha === candidateSha &&
-      Boolean(deploymentId) && String(profile.deploymentId || '') === deploymentId;
+      Boolean(deploymentId) && resolvedBinding.deploymentId === deploymentId;
     const bindingDigest = bindingMatches ? digestJson(resolvedBinding) : null;
-    const cohort = Array.isArray(profile.employeeIds) ? profile.employeeIds : [];
+    const cohort = Array.isArray(profile.cohort) ? [...profile.cohort] : [];
     const state=tenantStateFor(run.tenant),people=Array.isArray(state?.onboarding?.people)?state.onboarding.people:[],staff=Array.isArray(state?.staff)?state.staff:[];
     const expectedActive=people.filter(person=>cohort.includes(person?.sourceId));
     const activated=expectedActive.filter(person=>{
@@ -1150,10 +1195,10 @@ function createOneDayEnterpriseEngine(options = {}) {
     } catch {}
     const payrollConfigured = Boolean(profile.payroll&&profile.batchManifest);
     return {
-      required: true,
-      proven: bindingMatches && peopleApplied && cohortAccounted && payrollConfigured && fullPayrollVerified,
-      configured: true,bindingMatches,bindingDigest,
-      employerId: profile.employerId || null,cohortCount: cohort.length,
+      required: providerRequired,
+      proven: (!providerRequired)|| (bindingMatches && peopleApplied && cohortAccounted && payrollConfigured && fullPayrollVerified),
+      configured: true,bindingMatches,bindingDigest,provider:'staffology',payrollCapabilityRequired,
+      employerId: resolvedBinding.employerId || null,cohortCount: cohort.length,
       expectedActiveCohortCount:expectedActive.length,activatedCohortCount:activated.length,lifecycleHeldCount:heldIds.size,
       cohortAccounted,accountedCohortCount:accountedIds.size,
       peopleApplied,payrollConfigured,fullPayrollVerified,batchReceipt,
@@ -1259,29 +1304,33 @@ function createOneDayEnterpriseEngine(options = {}) {
       mandatoryProviderProven:providerJourney.required!==true||providerJourney.proven===true,
       unifiedReady:Boolean(sourceDataSummary)&&(providerJourney.required!==true||providerJourney.proven===true)
     };
-    const requiredTrainingPopulation = Math.max(
-      Number(sourceDataSummary?.employeeCount || 0),
-      Number(workforceReadiness.importedPeople || 0)
-    );
+    const requiredTrainingPopulation = Number(workforceReadiness.requiredTrainingIdentityCount || 0);
     const trainingPopulationRequired = requiredTrainingPopulation > 0;
-    const requiredRoles = requiredTrainingRoles(customerScope, requiredTrainingPopulation);
     const roleCoverage = learningSummary?.roles && typeof learningSummary.roles === 'object' ? learningSummary.roles : {};
     const learningUserDigests = new Set(Array.isArray(learningSummary?.userEmailDigests) ? learningSummary.userEmailDigests : []);
-    const importedLearningUsersReconciled = Number(workforceReadiness.importedPeople || 0) === 0 ||
-      workforceReadiness.importedEmailDigests.every(value => learningUserDigests.has(value));
-    const requiredFrontlineCount=Number(workforceReadiness.importedPeople||0);
-    const requiredPrivilegedRoleCount=Object.entries(roleCoverage).filter(([role])=>role!=='employee').reduce((sum,[,value])=>sum+Number(value?.users||0),0);
-    const frontlineCoverageReady=requiredFrontlineCount===0||(
-      Number(roleCoverage.employee?.users||0)>=requiredFrontlineCount&&roleCoverage.employee?.fullyCertified===true&&importedLearningUsersReconciled
+    const operatingLearningUsersReconciled = requiredTrainingPopulation===0 || (
+      workforceReadiness.allOperatingIdentitiesLinked===true &&
+      workforceReadiness.operatingEmailDigests.length===requiredTrainingPopulation &&
+      workforceReadiness.operatingEmailDigests.every(value=>learningUserDigests.has(value))
     );
-    const privilegedCoverageReady=requiredPrivilegedRoleCount===0||Object.entries(roleCoverage)
-      .filter(([role])=>role!=='employee').every(([,value])=>Number(value?.users||0)>0&&value?.fullyCertified===true);
+    const requiredRoleCounts={...(workforceReadiness.operatingRoleCounts||{})};
+    const payrollCapabilityRequired=Boolean(String(customerScope?.payrollSystem||'').trim())||
+      (Array.isArray(customerScope?.features)&&customerScope.features.some(value=>/payroll|pay run|pay output/i.test(String(value))));
+    if(payrollCapabilityRequired)requiredRoleCounts.payroll=Math.max(1,Number(requiredRoleCounts.payroll||0));
+    const requiredRoles=Object.keys(requiredRoleCounts).filter(role=>Number(requiredRoleCounts[role])>0);
+    const requiredFrontlineCount=Number(requiredRoleCounts.employee||0);
+    const requiredPrivilegedRoleCount=Object.entries(requiredRoleCounts).filter(([role])=>role!=='employee').reduce((sum,[,count])=>sum+Number(count||0),0);
+    const frontlineCoverageReady=requiredFrontlineCount===0||(
+      Number(roleCoverage.employee?.users||0)>=requiredFrontlineCount&&roleCoverage.employee?.fullyCertified===true&&operatingLearningUsersReconciled
+    );
+    const privilegedCoverageReady=Object.entries(requiredRoleCounts).filter(([role])=>role!=='employee').every(([role,count])=>
+      Number(roleCoverage[role]?.users||0)>=Number(count)&&roleCoverage[role]?.fullyCertified===true);
     const trainingPopulationReady = !trainingPopulationRequired
       ? Boolean(learningSummary)
       : Boolean(learningSummary) &&
         Number(learningSummary.users || 0) >= requiredTrainingPopulation &&
-        importedLearningUsersReconciled&&frontlineCoverageReady&&privilegedCoverageReady&&
-        requiredRoles.every(role => Number(roleCoverage[role]?.users || 0) > 0 && roleCoverage[role]?.fullyCertified === true);
+        operatingLearningUsersReconciled&&frontlineCoverageReady&&privilegedCoverageReady&&
+        requiredRoles.every(role => Number(roleCoverage[role]?.users || 0) >= Number(requiredRoleCounts[role]||1) && roleCoverage[role]?.fullyCertified === true);
 
     const requirements = REQUIREMENTS.map(requirement => {
       const row = map.get(requirement.key);
@@ -1493,7 +1542,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         requiredRoles,
         requiredFrontlineCount,
         requiredPrivilegedRoleCount,
-        importedLearningUsersReconciled,
+        operatingLearningUsersReconciled,
         frontlineCoverageReady,
         privilegedCoverageReady,
         populationAndRoleCoverageReady: trainingPopulationReady

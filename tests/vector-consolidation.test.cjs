@@ -25,7 +25,7 @@ function load(extra = {}) {
   const hook = 'window.VectorWorkforceOperations={marker:MARKER';
   assert.ok(source.includes(hook), 'existing Vector test hook is present');
   const augmented = source.replace(hook,
-    'window.VectorWorkforceOperations={NAV,labourCost,metrics,loadTimeReviewEvidence,setTestCalendar(value){state.calendar={status:"ready",value};},sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
+    'window.VectorWorkforceOperations={NAV,labourCost,metrics,secondaryKpis,conceptKpiMarkup,loadTimeReviewEvidence,setTestCalendar(value){state.calendar={status:"ready",value};},sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
     'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTenantCalendar=async()=>({tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000});state.calendar={status:"ready",value:{tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000}};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");renderEmployeeHome=()=>events.push("employee-current-personal");generalPage=()=>events.push("employee-source");if(employee())renderEmployeeHome({});else apply();},marker:MARKER');
   context.events = events;
   vm.runInNewContext(augmented, context);
@@ -58,6 +58,14 @@ test('attendance renders em dash only when current authority is genuinely unavai
   const result = api.metrics({ querySelectorAll() { throw Error('presentation must not manufacture authority'); } });
   assert.equal(result[0].value, '—'); assert.equal(result[1].value, '—');
   assert.equal(result[0].detail, 'Source unavailable'); assert.equal(result[1].detail, 'Source unavailable');
+});
+
+test('zero workforce values remain explicit zeroes in rendered Today KPI summaries', () => {
+  const { api } = load({ WFM: { scopedStaff: () => [], stats: () => ({ onsite: 0, sick: 0 }) } });
+  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-06T05:30:00Z',localDate:'2026-10-06',localTime:'06:30:00',maxAgeMs:900000});
+  const metrics=api.metrics({querySelectorAll(){return [];}});
+  assert.match(api.secondaryKpis(metrics),/0 \/ 0/);
+  assert.match(api.conceptKpiMarkup(metrics,[],{querySelectorAll(){return [];}}),/>0 \/ 0</);
 });
 test('five-section navigation keeps every registered workflow reachable exactly once', () => {
   const routes = ['overview', 'personal', 'leave', 'availability', 'offers', 'shifts', 'time-review', 'payroll-run', 'new-extension'];

@@ -38,8 +38,11 @@ function createTenantCalendar({env=process.env,now=null}={}){
   return Object.freeze({schemaVersion:'tenant-calendar-1',tenant:tenant?clean(tenant,160):null,site:site?clean(site,120):null,timeZone,asOf:new Date(at).toISOString(),localDate:parts.date,localTime:parts.time,maxAgeMs:Number(maxAgeMs),source:'server-authoritative-tenant-calendar'});
  }
  function periodForState(state,context={}){
-  const snap=snapshot(context),period=currentPeriod(state?.payrollControl?.periods,snap.localDate);
-  return Object.freeze({...snap,period:period?Object.freeze({id:period.id||period.start,start:period.start,end:period.end,deadline:period.deadline||null,source:period.source||null}):null});
+  const snap=snapshot(context),periods=Array.isArray(state?.payrollControl?.periods)?state.payrollControl.periods:[],period=currentPeriod(periods,snap.localDate);
+  const historicalPeriods=periods.filter(row=>row&&typeof row.start==='string'&&typeof row.end==='string'&&row.end<snap.localDate)
+    .sort((a,b)=>String(b.end).localeCompare(String(a.end))).slice(0,12)
+    .map(row=>Object.freeze({id:row.id||row.start,start:row.start,end:row.end,source:row.source||null}));
+  return Object.freeze({...snap,period:period?Object.freeze({id:period.id||period.start,start:period.start,end:period.end,deadline:period.deadline||null,source:period.source||null}):null,historicalPeriods:Object.freeze(historicalPeriods)});
  }
  return Object.freeze({snapshot,periodForState,zoneFor,freshness:input=>freshness({...input,nowMs:Number(clock())})});
 }

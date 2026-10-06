@@ -261,6 +261,14 @@ function validateGoldenJourney(item) {
     }
     if(text(step.correlationId)!==correlationId) return 'Scenario-validation PASS must correlate every mandatory Golden Journey step to one journey.';
   }
+  const payroll=item.payrollProvider;
+  if(!payroll||typeof payroll!=='object'||text(payroll.correlationId)!==correlationId)
+    return 'Scenario-validation PASS requires payroll/provider evidence on the same Golden Journey correlation.';
+  if(!text(payroll.batchId)||!/^[a-f0-9]{64}$/.test(text(payroll.batchChecksum))||
+    !/^[a-f0-9]{64}$/.test(text(payroll.providerBindingDigest))||
+    !/^[a-f0-9]{64}$/.test(text(payroll.batchReceiptDigest))||
+    !/^[a-f0-9]{64}$/.test(text(payroll.readbackDigest))||payroll.fullPayrollVerified!==true)
+    return 'Scenario-validation PASS requires an exact released payroll batch, current provider binding, complete batch receipt and independent readback.';
   if (Number(item.criticalFailures) !== 0) return 'Scenario-validation PASS requires zero critical failures.';
   return null;
 }

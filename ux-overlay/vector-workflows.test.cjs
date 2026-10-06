@@ -42,7 +42,7 @@ test('authorised manager and payroll startup fail closed when no current period 
     const context=vm.createContext({
       console,URL,OFFLINE:false,F:{ready:true,actor},ui:{page:spec.page},data:{},
       payrollActor:()=>actor,PR:{has:(who,permission)=>Array.isArray(who?.permissions)&&who.permissions.includes(permission)},
-      request:async url=>{calls.push(url);if(url==='/api/current-review-period')return {schemaVersion:'tenant-calendar-1',tenant:'northstar-demo',timeZone:'Europe/London',asOf:'2026-10-06T06:00:00.000Z',localDate:'2026-10-06',localTime:'07:00:00',maxAgeMs:900000,period:null};throw Error('Historical/source read must not occur: '+url);},
+      request:async url=>{calls.push(url);if(url==='/api/current-review-period')return {schemaVersion:'tenant-calendar-1',tenant:'northstar-demo',timeZone:'Europe/London',asOf:'2026-10-06T06:00:00.000Z',localDate:'2026-10-06',localTime:'07:00:00',maxAgeMs:900000,period:null,historicalPeriods:[{id:'2026-09-28',start:'2026-09-28',end:'2026-10-04'}]};if(url==='/api/weekly-review?period=2026-09-28')return {period:'2026-09-28',periods:[],teams:[{id:'m1',name:'Team 1',status:'signed',revision:1,issues:[],categories:[],employees:[],blockers:[],workedMinutes:0,holidayMinutes:0,checkedEmployees:0,canSign:false}]};throw Error('Unexpected source read: '+url);},
       command:async()=>{throw Error('write not expected');},reload:async()=>{},modal(){},modalActions:()=>'',toast(){},shell:html=>html,render:async()=>{},showLogin(){},fmt:value=>String(value),
       fetch:async()=>{throw Error('fetch not expected');},
       document:{addEventListener(){},querySelector(){return null;},getElementById(){return rootNode;}}
@@ -51,7 +51,13 @@ test('authorised manager and payroll startup fail closed when no current period 
     assert.equal(await context.VectorWorkflow.refresh(),true);
     assert.equal(context.RF.period,'');assert.equal(context.RF.report,null);assert.equal(context.RF.company,null);assert.equal(context.RF.periodState,'none');
     assert.deepEqual(calls,['/api/current-review-period']);
-    assert.match(context.VectorWorkflow[spec.pageFn](),spec.expected);
+    const noCurrent=context.VectorWorkflow[spec.pageFn]();assert.match(noCurrent,spec.expected);assert.match(noCurrent,/Historical payroll & review/);
+    if(spec.role==='manager'){
+      await context.VectorWorkflow.action('history','2026-09-28');
+      assert.deepEqual(calls,['/api/current-review-period','/api/weekly-review?period=2026-09-28']);
+      assert.equal(context.RF.periodState,'history');assert.equal(context.RF.period,'2026-09-28');
+      assert.match(rootNode.innerHTML,/Historical review week/);assert.match(rootNode.innerHTML,/0 h worked/);
+    }
   }
 });
 

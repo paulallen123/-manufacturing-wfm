@@ -25,6 +25,7 @@ test('periodForState never falls back to latest historical payroll',()=>{
  assert.equal(result.localDate,'2026-10-20');
  assert.equal(result.timeZone,'Europe/London');
  assert.equal(result.period,null);
+ assert.deepEqual(result.historicalPeriods.map(row=>row.id),['next','oct','sep']);
 });
 
 test('calendar snapshot and freshness use one server-authoritative clock and timezone',()=>{

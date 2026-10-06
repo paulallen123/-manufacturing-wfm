@@ -216,7 +216,8 @@ function evidenceDetail(kind) {
     cloudRuntime: true, testDataClass: 'synthetic-unit-journey', criticalFailures: 0,
     totalScenarios: GOLDEN_JOURNEY_STEPS.length, passedScenarios: GOLDEN_JOURNEY_STEPS.length,
     correlationId: 'unit-golden-journey',
-    steps: GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'unit:' + id, correlationId: 'unit-golden-journey' }))
+    steps: GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'unit:' + id, correlationId: 'unit-golden-journey' })),
+    payrollProvider:{correlationId:'unit-golden-journey',batchId:'B-unit',batchChecksum:'a'.repeat(64),providerBindingDigest:'b'.repeat(64),batchReceiptDigest:'c'.repeat(64),readbackDigest:'d'.repeat(64),fullPayrollVerified:true}
   };
   if (kind === 'test-data-cleanup') return { remainingTestRows: 0, liveRowsTouched: 0 };
   if (kind === 'live-data-import') return {
@@ -1715,7 +1716,7 @@ function detail(kind){
  if(kind==='historical-replay')return{...common,dataClass:'customer-authorised',independentCalculation:true,expectedTotal:100,calculatedTotal:100,unexplainedVariance:0};
  if(kind==='security-controls')return{...common,cloudRuntime:true,tenantIsolationVerified:true,crossTenantNegativeTests:1,criticalFailures:0};
  if(kind==='resilience')return{...common,hostedRuntime:true,faultInjected:true,detected:true,classified:true,repairOrContainmentApplied:true,independentVerificationPassed:true,durableAuditVerified:true,replaySafetyVerified:true,rollbackRequired:false,criticalFailures:0};
- if(kind==='scenario-validation')return{...common,cloudRuntime:true,testDataClass:'synthetic-scenario',totalScenarios:GOLDEN_JOURNEY_STEPS.length,passedScenarios:GOLDEN_JOURNEY_STEPS.length,criticalFailures:0,correlationId:'review-golden-journey',steps:GOLDEN_JOURNEY_STEPS.map(id=>({id,status:'PASS',evidenceRef:'review:'+id,correlationId:'review-golden-journey'}))};
+ if(kind==='scenario-validation')return{...common,cloudRuntime:true,testDataClass:'synthetic-scenario',totalScenarios:GOLDEN_JOURNEY_STEPS.length,passedScenarios:GOLDEN_JOURNEY_STEPS.length,criticalFailures:0,correlationId:'review-golden-journey',steps:GOLDEN_JOURNEY_STEPS.map(id=>({id,status:'PASS',evidenceRef:'review:'+id,correlationId:'review-golden-journey'})),payrollProvider:{correlationId:'review-golden-journey',batchId:'B-review',batchChecksum:'a'.repeat(64),providerBindingDigest:'b'.repeat(64),batchReceiptDigest:'c'.repeat(64),readbackDigest:'d'.repeat(64),fullPayrollVerified:true}};
  if(kind==='test-data-cleanup')return{...common,remainingTestRows:0,liveRowsTouched:0};
  if(kind==='live-data-import')return{...common,zeroHuman:true,humanInterventions:0,sourceAuthoritative:true,sourceCount:1,importedCount:1,invalidCount:0,checksumMatch:true};
  return{...common,checked:true};
