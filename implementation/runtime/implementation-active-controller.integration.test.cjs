@@ -71,7 +71,7 @@ function fixture(options = {}) {
     'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL REFERENCES users(email),expires INTEGER NOT NULL);'
   );
   db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('alpha', 1, '{}');
-  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha', 'alpha', 'm1', 'manager', 1, 's', '00', '[]');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha', 'alpha', 'm1', 'manager', 1, 's', '00', JSON.stringify(['company.configure']));
   const token = 'm'.repeat(64);
   db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(token), 'manager@alpha', Date.now() + 60_000);
   db.close();
