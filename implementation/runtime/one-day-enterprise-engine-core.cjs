@@ -1055,6 +1055,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       systemKey: batch.product_key,
       systemName: batch.display_name,
       employeeCount: rows.length,
+      employeeKeys: [...employeeKeys].sort(),
+      employeeKeyDigests: [...employeeKeys].sort().map(value=>sha256(String(value)).slice(0,24)),
       siteCount: sites.size,
       departmentCount: departments.size,
       sites: [...sites].sort(),
@@ -1110,6 +1112,9 @@ function createOneDayEnterpriseEngine(options = {}) {
     ])].sort();
     const requiredTrainingIdentityCount=activeOperating.length+privilegedUsers.filter(user=>!linkedUserEmails.has(String(user.email||'').trim().toLowerCase())).length;
     const importedEmailDigests = activeImported.map(person => sha256(String(person.email || '').trim().toLowerCase()).slice(0, 24)).filter(Boolean).sort();
+    const onboardingSourceIds=[...new Set(activeImported.map(person=>String(person.sourceId||'').trim()).filter(Boolean))].sort();
+    const operatingSourceIds=[...new Set(activeOperating.map(worker=>String(worker.sourceId||worker.id||'').trim()).filter(Boolean))].sort();
+    const operatingPayrollIds=[...new Set(activeOperating.map(worker=>String(worker.payrollId||'').trim()).filter(Boolean))].sort();
     const identityVerified = activeImported.filter(person => person.identityVerified === true).length;
     const acceptanceReceipts=activeImported.filter(person=>{
       const receipt=person.invitationAcceptance;
@@ -1126,7 +1131,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       importedEmailDigests,
       identityVerified,
       invitationAcceptanceReceipts:acceptanceReceipts,
-      invitationDeliveryProven: activeImported.length === 0 || acceptanceReceipts === activeImported.length,
+      invitationAcceptanceProven: activeImported.length === 0 || acceptanceReceipts === activeImported.length,
+      onboardingSourceIds,
+      operatingSourceIds,
+      operatingPayrollIds,
       readyForScheduling,
       operatingWorkforceCount:activeOperating.length,
       requiredTrainingIdentityCount,
@@ -1147,10 +1155,10 @@ function createOneDayEnterpriseEngine(options = {}) {
     const providerConfigured=Boolean(profile&&profile.binding);
     const providerRequired=payrollCapabilityRequired&&(providerConfigured||Boolean(profileError));
     if (!providerConfigured) return {
-      required:providerRequired,proven:!providerRequired,configured:false,bindingMatches:false,
+      required:providerRequired,proven:!providerRequired,configured:false,bindingMatches:false,payrollCapabilityRequired,
       configurationError:profileError?String(profileError.code||profileError.message||'STAFFOLOGY_CONFIGURATION_INVALID'):null,
       peopleApplied:false,cohortAccounted:!providerRequired,fullPayrollVerified:false,
-      claimBoundary:'A canonical Staffology journey is mandatory only when payroll capability is approved and Staffology is configured or its canonical configuration is invalid; provider names are not inferred from customer text.'
+      claimBoundary:'Approved payroll capability requires a canonical payroll-provider journey. This runtime can prove Staffology only when the canonical Staffology loader resolves an exact provider configuration; provider names are never inferred from customer text.'
     };
     const resolvedBinding = profile.binding;
     const bindingMatches = resolvedBinding.tenant === run.tenant &&
@@ -1188,7 +1196,8 @@ function createOneDayEnterpriseEngine(options = {}) {
           const receipt=parseJsonSafe(row.receipt_json,{}),receiptDigest=digestJson(receipt);
           if(receiptDigest===row.receipt_digest&&receipt.bindingDigest===bindingDigest&&receipt.fullPayrollVerified===true&&
             receipt.acknowledgedLineCount===receipt.expectedLineCount&&receipt.heldLineCount===0&&receipt.allIdentitiesAccountedFor===true){
-            fullPayrollVerified=true;batchReceipt={batchId:receipt.batchId,batchChecksum:receipt.batchChecksum,manifestDigest:receipt.manifestDigest,expectedLineCount:receipt.expectedLineCount,acknowledgedLineCount:receipt.acknowledgedLineCount};
+            const readbackLines=(Array.isArray(receipt.lines)?receipt.lines:[]).map(line=>({lineDigest:line.lineDigest,status:line.status,receiptDigest:line.receiptDigest||null})).sort((a,b)=>String(a.lineDigest).localeCompare(String(b.lineDigest)));
+            fullPayrollVerified=true;batchReceipt={batchId:receipt.batchId,batchChecksum:receipt.batchChecksum,manifestDigest:receipt.manifestDigest,expectedLineCount:receipt.expectedLineCount,acknowledgedLineCount:receipt.acknowledgedLineCount,receiptDigest:row.receipt_digest,readbackDigest:digestJson(readbackLines)};
           }
         }
       }
@@ -1200,7 +1209,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       configured: true,bindingMatches,bindingDigest,provider:'staffology',payrollCapabilityRequired,
       employerId: resolvedBinding.employerId || null,cohortCount: cohort.length,
       expectedActiveCohortCount:expectedActive.length,activatedCohortCount:activated.length,lifecycleHeldCount:heldIds.size,
-      cohortAccounted,accountedCohortCount:accountedIds.size,
+      activatedSourceIds:[...activatedIds].sort(),lifecycleHeldSourceIds:[...heldIds].sort(),accountedSourceIds:[...accountedIds].sort(),
+      cohortSourceIds:[...cohort].sort(),cohortAccounted,accountedCohortCount:accountedIds.size,
       peopleApplied,payrollConfigured,fullPayrollVerified,batchReceipt,
       claimBoundary: 'Current runtime-resolved binding digest, activated source-bound workforce identities and a complete immutable Staffology batch receipt are required.'
     };
@@ -1298,11 +1308,25 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     const workforceReadiness = workforceReadinessForTenant(run.tenant);
     const providerJourney = staffologyJourneyForRun(run);
+    const sourceIds=new Set(Array.isArray(sourceDataSummary?.employeeKeys)?sourceDataSummary.employeeKeys:[]),
+      onboardingIds=new Set(workforceReadiness.onboardingSourceIds||[]),
+      operatingIds=new Set(workforceReadiness.operatingSourceIds||[]);
+    const sourceWorkforceIdentityReconciled=sourceIds.size>0&&[...sourceIds].every(id=>onboardingIds.has(id)||operatingIds.has(id));
+    const providerPopulationReconciled=providerJourney.required!==true||(
+      providerJourney.cohortAccounted===true&&providerJourney.peopleApplied===true&&
+      Array.isArray(providerJourney.accountedSourceIds)&&providerJourney.accountedSourceIds.length===Number(providerJourney.cohortCount||0)
+    );
     const integrationTruth={
       peopleSourceProven:Boolean(sourceDataSummary),
+      sourceIdentityCount:sourceIds.size,
+      onboardingIdentityCount:onboardingIds.size,
+      operatingIdentityCount:operatingIds.size,
+      sourceWorkforceIdentityReconciled,
       mandatoryProviderRequired:providerJourney.required===true,
       mandatoryProviderProven:providerJourney.required!==true||providerJourney.proven===true,
-      unifiedReady:Boolean(sourceDataSummary)&&(providerJourney.required!==true||providerJourney.proven===true)
+      providerPopulationReconciled,
+      unifiedReady:Boolean(sourceDataSummary)&&sourceWorkforceIdentityReconciled&&providerPopulationReconciled&&
+        (providerJourney.required!==true||providerJourney.proven===true)
     };
     const requiredTrainingPopulation = Number(workforceReadiness.requiredTrainingIdentityCount || 0);
     const trainingPopulationRequired = requiredTrainingPopulation > 0;
@@ -1396,14 +1420,19 @@ function createOneDayEnterpriseEngine(options = {}) {
           }
         };
       } else if (requirement.key === 'people-data' && sourceDataSummary) {
+        const ok=sourceDataSummary.employeeCount>0&&integrationTruth.sourceWorkforceIdentityReconciled===true;
         derived = {
-          status: sourceDataSummary.employeeCount > 0 ? 'PASS' : 'MISSING',
-          confidence: sourceDataSummary.employeeCount > 0 ? 1 : 0,
-          source: 'validated-canonical-import',
+          status: ok ? 'PASS' : 'REVALIDATION_REQUIRED',
+          confidence: ok ? 1 : 0,
+          source: 'validated-canonical-import+identity-reconciliation',
           detail: {
             batchId: sourceDataSummary.batchId,
             employeeCount: sourceDataSummary.employeeCount,
-            checksum: sourceDataSummary.checksum
+            checksum: sourceDataSummary.checksum,
+            sourceIdentityCount:integrationTruth.sourceIdentityCount,
+            onboardingIdentityCount:integrationTruth.onboardingIdentityCount,
+            operatingIdentityCount:integrationTruth.operatingIdentityCount,
+            identityReconciled:integrationTruth.sourceWorkforceIdentityReconciled
           }
         };
       } else if (requirement.key === 'organisation-model' && sourceDataSummary) {
@@ -1502,8 +1531,9 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (runtimeIdentityRequired && runtimeIdentity.pilotReady !== true) launchBlockers.push('RUNTIME_PILOT_READINESS_REQUIRED');
     if (trainingPopulationRequired && !trainingPopulationReady) launchBlockers.push('TRAINING_POPULATION_OR_ROLE_COVERAGE_INCOMPLETE');
     if (workforceReadinessRequired && !workforceReadiness.allReady) launchBlockers.push('IMPORTED_WORKFORCE_IDENTITY_OR_READINESS_INCOMPLETE');
-    if (workforceReadinessRequired && !workforceReadiness.invitationDeliveryProven) launchBlockers.push('WORKFORCE_INVITATION_DELIVERY_UNPROVEN');
+    if (workforceReadinessRequired && !workforceReadiness.invitationAcceptanceProven) launchBlockers.push('WORKFORCE_INVITATION_ACCEPTANCE_UNPROVEN');
     if (implementationInvitationRequired && !['DELIVERED','STARTED'].includes(notificationRecovery.state)) launchBlockers.push('IMPLEMENTATION_INVITATION_DELIVERY_UNPROVEN');
+    if (runtimeIdentityRequired && providerJourney.payrollCapabilityRequired===true && providerJourney.configured!==true) launchBlockers.push('PAYROLL_PROVIDER_CONFIGURATION_REQUIRED');
     if (providerJourney.required && !providerJourney.proven) launchBlockers.push('MANDATORY_PROVIDER_JOURNEY_UNPROVEN');
     if (!integrationTruth.unifiedReady) launchBlockers.push('UNIFIED_INTEGRATION_TRUTH_UNPROVEN');
     if (!wholeJourneyProven) launchBlockers.push('WHOLE_GOLDEN_JOURNEY_UNPROVEN');
@@ -2260,6 +2290,17 @@ function createOneDayEnterpriseEngine(options = {}) {
       const criticalFailures = Number(detail.criticalFailures);
       if (!Number.isInteger(total) || total <= 0 || passed !== total || criticalFailures !== 0) {
         return writeJson(res, 409, { error: 'Scenario validation PASS requires every scenario to pass with zero critical failures.' });
+      }
+      const provider=staffologyJourneyForRun(run),payroll=detail.payrollProvider||{};
+      if(provider.required===true){
+        const receipt=provider.batchReceipt;
+        if(provider.proven!==true||!receipt||
+          payroll.batchId!==receipt.batchId||payroll.batchChecksum!==receipt.batchChecksum||
+          payroll.providerBindingDigest!==provider.bindingDigest||
+          payroll.batchReceiptDigest!==receipt.receiptDigest||payroll.readbackDigest!==receipt.readbackDigest||
+          payroll.fullPayrollVerified!==true){
+          return writeJson(res,409,{error:'Scenario validation PASS must bind to the exact current payroll batch, canonical provider binding, complete batch receipt and provider readback.',readinessEvidenceAccepted:false,kind});
+        }
       }
     }
     if (status === 'PASS' && kind === 'test-data-cleanup') {

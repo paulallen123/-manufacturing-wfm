@@ -11,3 +11,11 @@ test('repeated implementation observer delivery settles without rewriting an unc
  for(let i=0;i<20&&queued;i++){queued--;context.apply();}
  assert.equal(queued,0,'observer must become idle');assert.equal(writes,1,'only an actual label change may mutate DOM');assert.equal(label,'Implementation');
 });
+
+
+test('implementation integrations separate current readiness from discovery and history',()=>{
+ assert.match(source,/function nonCurrentIntegrationRows\(/);
+ assert.match(source,/Discovery & historical systems/);
+ assert.match(source,/do not count toward current launch readiness/);
+ assert.match(source,/Mandatory provider journey remains unproved/);
+});

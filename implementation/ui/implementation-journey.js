@@ -47,9 +47,15 @@ function learningCounts(){
   return {mastered:Number(l.mastered||0),total:Number(l.assignments||0),users:Number(l.users||0),privileged:Boolean(l.privilegedReady),certified:Boolean(l.fullyCertified)};
 }
 function connectionRows(){
-  const live=S.integrations?.connections||[];
-  if(live.length)return live.map(x=>({id:x.id,name:x.name||x.productKey,state:x.state,detail:x.failureClass||x.lastReconciliation?.status||'',sourceId:x.id}));
-  return (S.integrations?.discovery?.candidates||[]).map(x=>({id:x.id,name:x.name||x.productKey,state:x.status==='CONFIRMED'?'READY_TO_CONNECT':'IDENTIFIED',detail:Math.round(Number(x.confidence||0)*100)+'% confidence',sourceId:x.id}));
+  const currentStates=new Set(['ACTIVE','VALIDATING','DEGRADED','AUTHORIZATION_REQUIRED','REAUTH_REQUIRED']);
+  return (S.integrations?.connections||[]).filter(x=>x&&currentStates.has(String(x.state||''))&&x.archived!==true&&x.historical!==true)
+    .map(x=>({id:x.id,name:x.name||x.productKey,state:x.state,detail:x.failureClass||x.lastReconciliation?.status||'',sourceId:x.id}));
+}
+function nonCurrentIntegrationRows(){
+  const currentIds=new Set(connectionRows().map(row=>row.id)),historical=(S.integrations?.connections||[]).filter(x=>x&&!currentIds.has(x.id))
+    .map(x=>({id:x.id,name:x.name||x.productKey,state:x.state||'HISTORICAL',detail:'Historical connection evidence — not current readiness proof.',sourceId:x.id}));
+  const discovery=(S.integrations?.discovery?.candidates||[]).map(x=>({id:x.id,name:x.name||x.productKey,state:x.status==='CONFIRMED'?'READY_TO_CONNECT':'IDENTIFIED',detail:Math.round(Number(x.confidence||0)*100)+'% confidence · discovery only',sourceId:x.id}));
+  return [...historical,...discovery];
 }
 function stateLabel(value){
   const map={complete:'Complete',progress:'In progress',pending:'Pending',ACTIVE:'Connected',VALIDATING:'Validating',DEGRADED:'Needs review',AUTHORIZATION_REQUIRED:'Authorisation needed',REAUTH_REQUIRED:'Reconnect',CONFIRMED:'Confirmed',IDENTIFIED:'Identified',READY_TO_CONNECT:'Ready to connect',REVALIDATION_REQUIRED:'Evidence needs rechecking for this deployment'};
@@ -75,17 +81,20 @@ function stageMarkup(){
   }).join('');
 }
 function integrationMarkup(){
-  const rows=connectionRows(),provider=S.status?.providerJourney||{},truth=S.status?.integrationTruth||{};
+  const rows=connectionRows(),other=nonCurrentIntegrationRows(),provider=S.status?.providerJourney||{},truth=S.status?.integrationTruth||{};
   const providerRows=provider.required?[{
     name:'Staffology payroll',
     detail:provider.proven?'Current provider journey and full-batch receipt are proven.':'Mandatory provider journey remains unproved for the current tenant, workforce and payroll batch.',
     state:provider.proven?'complete':'blocked'
   }]:[];
-  const all=[...providerRows,...rows.filter(row=>!providerRows.some(providerRow=>String(row.name||'').toLowerCase().includes('staffology')))];
-  if(!all.length)return '<div class="wfm-ij-empty"><b>No systems discovered yet.</b><span>System discovery and connection status will appear here automatically.</span></div>';
-  return '<div class="wfm-ij-system-list">'+all.slice(0,8).map(row=>
-    '<div class="wfm-ij-system"><div class="wfm-ij-system-name"><span class="wfm-ij-system-glyph">↔</span><div><b>'+safe(row.name)+'</b><small>'+safe(row.detail||'Connection evidence')+'</small></div></div><span class="wfm-ij-pill '+safe(String(row.state||'').toLowerCase())+'">'+safe(stateLabel(row.state))+'</span></div>'
-  ).join('')+(truth.unifiedReady===false?'<div class="wfm-ij-empty"><b>Unified integration proof is not ready.</b><span>Source-system and mandatory-provider evidence must agree before go live.</span></div>':'')+'</div>';
+  const current=[...providerRows,...rows.filter(row=>!providerRows.some(providerRow=>String(row.name||'').toLowerCase().includes('staffology')))];
+  const currentMarkup=current.length?'<div class="wfm-ij-system-list">'+current.slice(0,8).map(row=>
+    '<div class="wfm-ij-system"><div class="wfm-ij-system-name"><span class="wfm-ij-system-glyph">↔</span><div><b>'+safe(row.name)+'</b><small>'+safe(row.detail||'Current connection evidence')+'</small></div></div><span class="wfm-ij-pill '+safe(String(row.state||'').toLowerCase())+'">'+safe(stateLabel(row.state))+'</span></div>'
+  ).join('')+'</div>':'<div class="wfm-ij-empty"><b>No current required systems are proven yet.</b><span>Discovery results do not count as readiness evidence.</span></div>';
+  const secondary=other.length?'<details class="wfm-ij-integration-history"><summary>Discovery & historical systems ('+other.length+')</summary><p>These rows are context only and do not count toward current launch readiness.</p><div class="wfm-ij-system-list">'+other.slice(0,8).map(row=>
+    '<div class="wfm-ij-system"><div class="wfm-ij-system-name"><span class="wfm-ij-system-glyph">↔</span><div><b>'+safe(row.name)+'</b><small>'+safe(row.detail||'Non-current evidence')+'</small></div></div><span class="wfm-ij-pill '+safe(String(row.state||'').toLowerCase())+'">'+safe(stateLabel(row.state))+'</span></div>'
+  ).join('')+'</div></details>':'';
+  return currentMarkup+(truth.unifiedReady===false?'<div class="wfm-ij-empty"><b>Unified integration proof is not ready.</b><span>Current source identities, operating workforce and mandatory provider evidence must reconcile before go live.</span></div>':'')+secondary;
 }
 function requirementCard(key,title,description){
   const item=requirement(key);

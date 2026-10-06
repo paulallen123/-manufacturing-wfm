@@ -28,6 +28,7 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
   const absoluteRequires = Array.from(bootstrap.matchAll(/require\(['"]\/app\/([^'"]+)['"]\)/g), m => m[1]);
   const runtimeGroups = {
     'integration-runtime': 'integration',
+    'integrations': 'integrations',
     'implementation-runtime': 'implementation',
     'learning-runtime': 'learning',
     'operations-runtime': 'operations',
