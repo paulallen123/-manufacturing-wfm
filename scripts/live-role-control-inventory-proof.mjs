@@ -3,14 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { signedProofSession } from './signed-proof-session.mjs';
 
-const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
+const expectedOrigin = 'https://vector-customer-ready-candidate-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected role-control proof origin.');
-assert.ok(password && password.length >= 20, 'Staging password is unavailable to role-control proof.');
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -26,18 +25,6 @@ function executable(candidates) {
 const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']);
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
 
-function sessionCookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : [response.headers.get('set-cookie')].filter(Boolean);
-  const first = values[0];
-  assert.ok(first, 'Authenticated login did not return a session cookie.');
-  const pair = first.split(';', 1)[0];
-  const split = pair.indexOf('=');
-  assert.ok(split > 0, 'Session Set-Cookie header is malformed.');
-  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
-}
-
 function safeNavigationCandidate(text) {
   const t = String(text || '').replace(/\s+/g, ' ').trim();
   if (!t || t.length > 120) return false;
@@ -46,28 +33,11 @@ function safeNavigationCandidate(text) {
     || /schedule|readiness|personal|payroll|onboarding|attendance|availability|absence|performance/i.test(t);
 }
 
-async function login(email) {
-  const response = await fetch(`${origin}/api/login`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      origin,
-      referer: `${origin}/`,
-      accept: 'application/json,text/plain,*/*',
-    },
-    body: JSON.stringify({ email, password }),
-    signal: AbortSignal.timeout(15_000),
-  });
-  assert.equal(response.status, 200, `${email} login failed with HTTP ${response.status}.`);
-  return sessionCookieFrom(response);
-}
-
 async function runRole(spec, index) {
   const port = 9700 + index * 25 + Math.floor(Math.random() * 15);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-control-${spec.slug}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
   const chromeEnv = { ...process.env };
-  delete chromeEnv.WFM_STAGING_PASSWORD;
   delete chromeEnv.RAILWAY_TOKEN;
   delete chromeEnv.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, [
@@ -128,7 +98,7 @@ async function runRole(spec, index) {
     const pre = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15_000) });
     assert.equal(pre.status, 401, `${spec.slug} unauthenticated bootstrap did not fail closed.`);
 
-    const session = await login(spec.email);
+    const signed=await signedProofSession(spec.email,origin); const session=signed.cookie;
     const setCookie = await send('Network.setCookie', { name: session.name, value: session.value, url: origin, secure: true, httpOnly: true, sameSite: 'Lax' });
     assert.equal(setCookie.success, true, `${spec.slug} server-issued session could not be bound to Chrome.`);
 
@@ -189,7 +159,7 @@ async function runRole(spec, index) {
       email: spec.email,
       freshCookieCount: before.cookies?.length || 0,
       unauthenticatedBootstrapStatus: pre.status,
-      loginStatus: 200,
+      loginStatus:signed.responseStatus,
       renderedDomLength: html.length,
       accessibilityControlCount: unique.length,
       accessibilityControls: unique.slice(0, 120),

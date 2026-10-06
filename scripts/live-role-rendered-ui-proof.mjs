@@ -3,14 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { signedProofSession } from './signed-proof-session.mjs';
 
-const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
+const expectedOrigin = 'https://vector-customer-ready-candidate-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected role-render proof origin.');
-assert.ok(password && password.length >= 20, 'Staging password is unavailable to role-render proof.');
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -25,34 +24,6 @@ function executable(candidates) {
 }
 const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']);
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
-
-function cookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : [response.headers.get('set-cookie')].filter(Boolean);
-  const first = values[0];
-  assert.ok(first, 'Authenticated login returned no session cookie.');
-  const pair = first.split(';', 1)[0];
-  const split = pair.indexOf('=');
-  assert.ok(split > 0, 'Session Set-Cookie header is malformed.');
-  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
-}
-
-async function login(email) {
-  const response = await fetch(`${origin}/api/login`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      origin,
-      referer: `${origin}/`,
-      accept: 'application/json,text/plain,*/*',
-    },
-    body: JSON.stringify({ email, password }),
-    signal: AbortSignal.timeout(15_000),
-  });
-  assert.equal(response.status, 200, `${email} login failed with HTTP ${response.status}.`);
-  return cookieFrom(response);
-}
 
 async function api(cookie, pathName) {
   return fetch(`${origin}${pathName}`, {
@@ -71,7 +42,6 @@ async function runRole(spec, index) {
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-render-${spec.slug}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
   const chromeEnv = { ...process.env };
-  delete chromeEnv.WFM_STAGING_PASSWORD;
   delete chromeEnv.RAILWAY_TOKEN;
   delete chromeEnv.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, [
@@ -142,7 +112,7 @@ async function runRole(spec, index) {
     const unauth = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15_000) });
     assert.equal(unauth.status, 401, `${spec.slug} unauthenticated bootstrap did not fail closed.`);
 
-    const session = await login(spec.email);
+    const signed=await signedProofSession(spec.email,origin); const session=signed.cookie;
     const set = await send('Network.setCookie', {
       name: session.name,
       value: session.value,
@@ -238,7 +208,7 @@ const specs = [
   { slug: 'manager', email: 'manager@northstar.example', role: 'manager', tenant: 'northstar-demo', surface: '/api/time-review' },
   { slug: 'employee', email: 'maya@northstar.example', role: 'employee', tenant: 'northstar-demo', surface: '/api/personal' },
   { slug: 'payroll', email: 'payroll@northstar.example', role: 'payroll_admin', tenant: 'northstar-demo', surface: '/api/payroll-run' },
-  { slug: 'superuser', email: 'superuser@northstar.example', role: 'superuser', tenant: 'northstar-demo', surface: '/api/onboarding' },
+  { slug: 'company-admin', email: 'superuser@northstar.example', role: 'director', tenant: 'northstar-demo', surface: '/api/onboarding' },
 ];
 const roles = [];
 for (let i = 0; i < specs.length; i++) roles.push(await runRole(specs[i], i));
@@ -253,4 +223,3 @@ fs.writeFileSync(path.join(outDir, 'role-rendered-ui-evidence.json'), JSON.strin
   claimBoundary: 'fixture-only hosted staging; proves four role-specific authenticated rendered browser homes on desktop and mobile plus required server surfaces. It does not claim every role-specific task was clicked end-to-end, physical-device acceptance, production/pilot approval or real employee/payroll data.',
 }, null, 2));
 console.log(`LIVE_ROLE_RENDERED_UI_PROOF=PASS|roles=${roles.length}|screenshots=${roles.length * 2}`);
-delete process.env.WFM_STAGING_PASSWORD;

@@ -3,14 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { signedProofSession } from './signed-proof-session.mjs';
 
-const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
+const expectedOrigin = 'https://vector-customer-ready-candidate-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected role-browser proof origin.');
-assert.ok(password && password.length >= 20, 'Staging password is unavailable to role-browser proof.');
 
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
@@ -26,18 +25,6 @@ const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-function sessionCookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : [response.headers.get('set-cookie')].filter(Boolean);
-  const first = values[0];
-  assert.ok(first, 'Authenticated login did not return a session cookie.');
-  const pair = first.split(';', 1)[0];
-  const split = pair.indexOf('=');
-  assert.ok(split > 0, 'Session Set-Cookie header is malformed.');
-  return { name: pair.slice(0, split), value: pair.slice(split + 1) };
-}
-
 function digest(text) {
   return crypto.createHash('sha256').update(String(text)).digest('hex');
 }
@@ -47,7 +34,6 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
   fs.mkdirSync(profile, { recursive: true });
   const chromeEnv = { ...process.env };
-  delete chromeEnv.WFM_STAGING_PASSWORD;
   delete chromeEnv.RAILWAY_TOKEN;
   delete chromeEnv.WFM_DEMO_PASSWORD;
   const proc = spawn(chrome, [
@@ -101,13 +87,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
     const pre = await fetch(`${origin}/api/bootstrap`, { signal: AbortSignal.timeout(15000) });
     assert.equal(pre.status,401,`${slug} unauthenticated bootstrap did not fail closed.`);
 
-    const loginResponse = await fetch(`${origin}/api/login`,{
-      method:'POST',
-      headers:{'content-type':'application/json','origin':origin,'referer':`${origin}/`,'accept':'application/json,text/plain,*/*'},
-      body:JSON.stringify({email,password}),signal:AbortSignal.timeout(15000)
-    });
-    assert.equal(loginResponse.status,200,`${slug} login failed.`);
-    const session = sessionCookieFrom(loginResponse);
+    const signed = await signedProofSession(email,origin); const session=signed.cookie;
     const cookieSet = await send('Network.setCookie',{name:session.name,value:session.value,url:origin,secure:true,httpOnly:true,sameSite:'Lax'});
     assert.equal(cookieSet.success,true,`${slug} server-issued session could not be bound to the fresh browser.`);
     const browserCookies = await send('Network.getCookies',{urls:[origin]});
@@ -158,7 +138,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
     return {
       slug,email,role:expectedRole,tenant:expectedTenant,capabilityLabel,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
-      freshBootstrapStatus:pre.status,loginStatus:loginResponse.status,payrollStatus:payrollResponse.status,
+      freshBootstrapStatus:pre.status,loginStatus:signed.responseStatus,payrollStatus:payrollResponse.status,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
       rendered:{domLength:desktopHtml.length,domSha256:desktopDomSha256,viewport:'1440x1000 browser window',authenticatedBootstrapAfterNavigation:true},
       observedBrowserApi:[...new Map(browserApi.map(x=>[`${x.path}:${x.status}`,x])).values()],
@@ -201,7 +181,7 @@ for(let i=0;i<specs.length;i++) roles.push(await runRole(specs[i],i));
 fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.stringify({
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
-  authMethod:'real hosted /api/login created the session; CDP bound that server-issued cookie to the corresponding fresh Chrome process; no credential passed to Chrome process environment',
+  authMethod:'signed Ed25519 proof-session created the session; CDP bound the server-issued cookie to the corresponding fresh Chrome process',
   renderedEvidence:'manager, employee, payroll, company-admin capability account and separate-tenant manager each produced a hashed non-trivial authenticated DOM after a fresh browser navigation and authenticated browser bootstrap',
   companyAdminFixtureNote:'the account named superuser@northstar.example is represented by the server as role=director; company-level capability is proven by successful onboarding and payroll surfaces rather than relabelling the authoritative role enum',
   mobileVisualEvidence:'separate dedicated authenticated visual gate covers desktop/mobile screenshots, no horizontal overflow, keyboard focus and live navigation on the same frozen release',
@@ -209,4 +189,3 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant/capability boundaries, and role-specific browser rendering; visual mobile quality is covered separately; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
 },null,2));
 console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_dom=${roles.length}`);
-delete process.env.WFM_STAGING_PASSWORD;

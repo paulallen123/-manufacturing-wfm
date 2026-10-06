@@ -3,14 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { signedProofSession } from './signed-proof-session.mjs';
 
-const expectedOrigin = 'https://wfm-customer-proof-0676-production.up.railway.app';
+const expectedOrigin = 'https://vector-customer-ready-candidate-production.up.railway.app';
 const expectedRelease = '0.6.76-hosted-staging-rc1';
 const expectedRuntimeSha = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const origin = (process.env.WFM_PUBLIC_ORIGIN || expectedOrigin).replace(/\/$/, '');
-const password = process.env.WFM_STAGING_PASSWORD;
 assert.equal(origin, expectedOrigin, 'Unexpected diagnostic origin.');
-assert.ok(password && password.length >= 20, 'Staging password unavailable.');
 const outDir = path.join(process.env.RUNNER_TEMP || '/tmp', 'wfm-evidence-output');
 fs.mkdirSync(outDir, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -26,18 +25,6 @@ function executable(candidates) {
 }
 const chrome = executable(['google-chrome','google-chrome-stable','chromium','chromium-browser']);
 assert.ok(chrome, 'Chrome/Chromium unavailable.');
-
-function sessionCookieFrom(response) {
-  const values = typeof response.headers.getSetCookie === 'function' ? response.headers.getSetCookie() : [response.headers.get('set-cookie')].filter(Boolean);
-  const first = values[0]; assert.ok(first, 'No session cookie.');
-  const pair = first.split(';',1)[0]; const split = pair.indexOf('=');
-  return { name: pair.slice(0,split), value: pair.slice(split+1) };
-}
-
-async function login(email) {
-  const r = await fetch(`${origin}/api/login`, {method:'POST', headers:{'content-type':'application/json',origin,referer:`${origin}/`,accept:'application/json'}, body:JSON.stringify({email,password}), signal:AbortSignal.timeout(15000)});
-  assert.equal(r.status,200,`${email} login ${r.status}`); return sessionCookieFrom(r);
-}
 
 async function inspectRole(spec,index) {
   const port=9850+index*20+Math.floor(Math.random()*10);
@@ -116,5 +103,4 @@ const roles=[];for(let i=0;i<specs.length;i++){try{roles.push(await inspectRole(
 const summary={capturedAt:new Date().toISOString(),origin,release:expectedRelease,sealedRuntimeSha256:expectedRuntimeSha,roles,pass:roles.every(r=>r.pass),claimBoundary:'fixture-only hosted staging diagnostic. Evidence is written before the gate fails. Zero accessible interactive controls is a failure, not a pass. Renderer/network/runtime telemetry is diagnostic only and does not mutate WFM state.'};
 fs.writeFileSync(path.join(outDir,'role-accessibility-diagnostic.json'),JSON.stringify(summary,null,2));
 console.log(`LIVE_ROLE_A11Y_DIAGNOSTIC=${summary.pass?'PASS':'FAIL'}|roles=${roles.length}|failed=${roles.filter(r=>!r.pass).map(r=>r.slug).join(',')||'none'}`);
-delete process.env.WFM_STAGING_PASSWORD;
 assert.equal(summary.pass,true,`Role accessibility diagnostic failed for: ${roles.filter(r=>!r.pass).map(r=>r.slug).join(', ')}`);

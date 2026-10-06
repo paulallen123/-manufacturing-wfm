@@ -1353,19 +1353,33 @@ function createOneDayEnterpriseEngine(options = {}) {
       providerMissingFromAccounted.length===0&&providerUnexpectedAccounted.length===0&&
       providerIds.size===Number(providerJourney.cohortCount||0)
     );
+    const operatingUnboundIdentityCount=Number(workforceReadiness.operatingUnboundIdentityCount||0),
+      declaredScopeCount=Number(customerScope?.employeeCount||0),
+      partition=customerScope?.workforcePartition,
+      authorisedPartition=Boolean(partition&&partition.authoritativeConfirmation===true&&Number.isInteger(Number(partition.employeeCount))&&String(partition.sourceRef||'').trim()),
+      populationScopeReconciled=declaredScopeCount>0&&(
+        Number(workforceReadiness.operatingWorkforceCount||0)===declaredScopeCount||
+        (authorisedPartition&&Number(workforceReadiness.operatingWorkforceCount||0)===Number(partition.employeeCount))
+      ),
+      unifiedWorkforceReconciled=sourceWorkforceIdentityReconciled&&operatingUnboundIdentityCount===0&&populationScopeReconciled;
     const integrationTruth={
       peopleSourceProven:Boolean(sourceDataSummary),
       sourceIdentityCount:sourceIds.size,
       onboardingIdentityCount:onboardingIds.size,
       operatingIdentityCount:operatingIds.size,
-      operatingUnboundIdentityCount:Number(workforceReadiness.operatingUnboundIdentityCount||0),
+      operatingUnboundIdentityCount,
+      declaredScopeCount,
+      authorisedPartition,
+      authorisedPartitionCount:authorisedPartition?Number(partition.employeeCount):null,
+      populationScopeReconciled,
       sourceMissingFromWorkforce,workforceMissingFromSource,
       sourceWorkforceIdentityReconciled,
+      unifiedWorkforceReconciled,
       mandatoryProviderRequired:providerJourney.required===true,
       configuredProviderType:providerJourney.configuredProviderType||providerJourney.provider||null,
       mandatoryProviderProven:providerJourney.required!==true||providerJourney.proven===true,
       providerPopulationReconciled,providerMissingFromAccounted,providerUnexpectedAccounted,
-      unifiedReady:Boolean(sourceDataSummary)&&sourceWorkforceIdentityReconciled&&providerPopulationReconciled&&
+      unifiedReady:Boolean(sourceDataSummary)&&unifiedWorkforceReconciled&&providerPopulationReconciled&&
         (providerJourney.required!==true||providerJourney.proven===true)
     };
     const requiredTrainingPopulation = Number(workforceReadiness.requiredTrainingIdentityCount || 0);
@@ -1459,7 +1473,7 @@ function createOneDayEnterpriseEngine(options = {}) {
           }
         };
       } else if (requirement.key === 'people-data' && sourceDataSummary) {
-        const ok=sourceDataSummary.employeeCount>0&&integrationTruth.sourceWorkforceIdentityReconciled===true;
+        const ok=sourceDataSummary.employeeCount>0&&integrationTruth.unifiedWorkforceReconciled===true;
         derived = {
           status: ok ? 'PASS' : 'REVALIDATION_REQUIRED',
           confidence: ok ? 1 : 0,
@@ -1471,7 +1485,10 @@ function createOneDayEnterpriseEngine(options = {}) {
             sourceIdentityCount:integrationTruth.sourceIdentityCount,
             onboardingIdentityCount:integrationTruth.onboardingIdentityCount,
             operatingIdentityCount:integrationTruth.operatingIdentityCount,
-            identityReconciled:integrationTruth.sourceWorkforceIdentityReconciled
+            identityReconciled:integrationTruth.sourceWorkforceIdentityReconciled,
+            operatingUnboundIdentityCount:integrationTruth.operatingUnboundIdentityCount,
+            populationScopeReconciled:integrationTruth.populationScopeReconciled,
+            unifiedWorkforceReconciled:integrationTruth.unifiedWorkforceReconciled
           }
         };
       } else if (requirement.key === 'organisation-model' && sourceDataSummary) {
@@ -1574,6 +1591,8 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (implementationInvitationRequired && !['DELIVERED','STARTED'].includes(notificationRecovery.state)) launchBlockers.push('IMPLEMENTATION_INVITATION_DELIVERY_UNPROVEN');
     if (providerJourney.payrollCapabilityRequired===true && providerJourney.configured!==true) launchBlockers.push('PAYROLL_PROVIDER_CONFIGURATION_REQUIRED');
     if (providerJourney.required && !providerJourney.proven) launchBlockers.push('MANDATORY_PROVIDER_JOURNEY_UNPROVEN');
+    if (integrationTruth.operatingUnboundIdentityCount > 0) launchBlockers.push('OPERATING_WORKFORCE_UNBOUND_IDENTITIES');
+    if (integrationTruth.populationScopeReconciled !== true) launchBlockers.push('OPERATING_WORKFORCE_SCOPE_COUNT_UNRECONCILED');
     if (!integrationTruth.unifiedReady) launchBlockers.push('UNIFIED_INTEGRATION_TRUTH_UNPROVEN');
     if (!wholeJourneyProven) launchBlockers.push('WHOLE_GOLDEN_JOURNEY_UNPROVEN');
     const elapsedMinutes = Math.max(0, (Date.now() - run.started_at_ms) / 60000);
@@ -2197,6 +2216,18 @@ function createOneDayEnterpriseEngine(options = {}) {
     const erpSystem = compact(body.erpSystem, 120);
     const priorities = compact(body.priorities, 1000);
     const notes = compact(body.notes, 2000);
+    let workforcePartition=null;
+    if(body.workforcePartition!=null){
+      const item=body.workforcePartition;
+      if(!item||typeof item!=='object'||Array.isArray(item)||item.authoritativeConfirmation!==true){
+        const error=new Error('workforcePartition requires explicit authoritativeConfirmation.');error.statusCode=400;throw error;
+      }
+      const partitionCount=Number(item.employeeCount),sourceRef=compact(item.sourceRef,300),label=compact(item.label,160);
+      if(!Number.isInteger(partitionCount)||partitionCount<=0||partitionCount>employeeCount||!sourceRef){
+        const error=new Error('workforcePartition requires a valid employeeCount not exceeding declared scope and a traceable sourceRef.');error.statusCode=400;throw error;
+      }
+      workforcePartition={authoritativeConfirmation:true,employeeCount:partitionCount,sourceRef,label};
+    }
     if (!companyName || countries.length === 0 || sites.length === 0 || !Number.isInteger(employeeCount) || employeeCount <= 0 || employeeCount > 1000000) {
       const error = new Error('companyName, at least one country, at least one site and a valid employeeCount are required.');
       error.statusCode = 400;
@@ -2215,6 +2246,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       hcmSystem,
       erpSystem,
       agencyLabour: Boolean(body.agencyLabour),
+      workforcePartition,
       priorities,
       notes
     };

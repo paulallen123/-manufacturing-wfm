@@ -1385,6 +1385,12 @@ test('customer configuration scope is required, persisted and tenant scoped', as
     );
     assert.equal(invalid.status, 400);
 
+    const invalidPartition = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',
+      { ...scopeFixture('alpha'), workforcePartition: { authoritativeConfirmation: false, employeeCount: 5000, sourceRef: 'customer-partition-plan' } }
+    );
+    assert.equal(invalidPartition.status, 400);
+
     const saved = await call(
       f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',
       scopeFixture('alpha')
@@ -1400,6 +1406,16 @@ test('customer configuration scope is required, persisted and tenant scoped', as
     assert.equal(fetched.status, 200);
     assert.equal(fetched.body.scopeCaptured, true);
     assert.equal(fetched.body.scope.companyName, 'Alpha Manufacturing');
+    assert.equal(fetched.body.scope.workforcePartition, null);
+
+    const partitioned = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/scope',
+      { ...scopeFixture('alpha'), workforcePartition: { authoritativeConfirmation: true, employeeCount: 5000, sourceRef: 'customer-authorised-wave-1', label: 'Wave 1' } }
+    );
+    assert.equal(partitioned.status, 200);
+    assert.deepEqual(partitioned.body.customerScope.workforcePartition, {
+      authoritativeConfirmation: true, employeeCount: 5000, sourceRef: 'customer-authorised-wave-1', label: 'Wave 1'
+    });
 
     const crossTenant = await call(
       f.engine, f.tokens.bravo, 'GET', '/api/implementation/autonomous/scope'
