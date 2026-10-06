@@ -79,11 +79,16 @@ export function validatePublicBundle(root){
       }
     }
     const titleTokenCount=(commentFree.match(/document\.title\s*=/g)||[]).length;
-    const staticTitles=[];
+    const staticTitles=[];let dynamicTitleCount=0;
     const titlePattern=/document\.title\s*=\s*(['"])(.*?)\1/g;
     let match;
-    while((match=titlePattern.exec(commentFree)))staticTitles.push(match[2]);
-    if(titleTokenCount!==staticTitles.length)violations.push({type:'dynamic-document-title',file:relative,count:titleTokenCount-staticTitles.length});
+    while((match=titlePattern.exec(commentFree))){
+      const tail=commentFree.slice(titlePattern.lastIndex),next=(tail.match(/^\s*/)?.[0]?.length??0);
+      if(tail[next]&&![ ';','\n','\r',')','}' ].includes(tail[next]))dynamicTitleCount++;
+      else staticTitles.push(match[2]);
+    }
+    dynamicTitleCount+=Math.max(0,titleTokenCount-staticTitles.length-dynamicTitleCount);
+    if(dynamicTitleCount)violations.push({type:'dynamic-document-title',file:relative,count:dynamicTitleCount});
     for(const title of staticTitles){
       titleAssignments.push({file:relative,title});
       if(title!==APPROVED_AUTHENTICATED_TITLE)violations.push({type:'unapproved-document-title',file:relative,title});
