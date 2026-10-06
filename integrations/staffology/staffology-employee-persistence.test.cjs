@@ -5,6 +5,8 @@ const {DatabaseSync}=require('node:sqlite');
 const {mkdtempSync,rmSync}=require('node:fs');
 const path=require('node:path');
 const os=require('node:os');
+process.env.WFM_STAFFOLOGY_LOCAL_PROOF='true';
+process.env.WFM_TENANT_CLOCK_ISO='2026-10-01T00:00:00Z';
 
 const runtimeRoot=process.env.WFM_RUNTIME||path.resolve(__dirname,'../..');
 const Bridge=require('./canonical-runtime-bridge.cjs');

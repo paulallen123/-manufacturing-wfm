@@ -26,12 +26,14 @@ function freshness({asOf,timeZone,maxAgeMs,nowMs}){
  if(current-observed>maxAgeMs)return {fresh:false,reason:'EVIDENCE_STALE'};
  return {fresh:true,reason:null,timeZone:zone,ageMs:Math.max(0,current-observed),maxAgeMs};
 }
-function createTenantCalendar({env=process.env,now=Date.now}={}){
+function createTenantCalendar({env=process.env,now=null}={}){
  const tenantTimeZone=validZone(env.WFM_TENANT_TIMEZONE||'Europe/London'),siteZones=parseSiteZones(env.WFM_SITE_TIMEZONES_JSON||'');
  const defaultMaxAgeMs=Math.max(60000,Number(env.WFM_TODAY_MAX_AGE_MS||15*60*1000));
+ const injectedIso=String(env.WFM_TENANT_CLOCK_ISO||'').trim(),allowInjectedClock=env.NODE_ENV==='test'||env.WFM_STAFFOLOGY_LOCAL_PROOF==='true'||env.STAFFOLOGY_RUNTIME_MODE==='full';
+ const clock=typeof now==='function'?now:()=>{if(injectedIso&&allowInjectedClock){const ms=Date.parse(injectedIso);if(Number.isFinite(ms))return ms;}return Date.now();};
  function zoneFor(site){return site&&siteZones[site]?siteZones[site]:tenantTimeZone;}
  function snapshot({tenant,site,maxAgeMs=defaultMaxAgeMs}={}){
-  const at=Number(now());if(!Number.isFinite(at))fail('Server calendar clock is invalid.');
+  const at=Number(clock());if(!Number.isFinite(at))fail('Server calendar clock is invalid.');
   const timeZone=zoneFor(site),parts=localParts(at,timeZone);
   return Object.freeze({schemaVersion:'tenant-calendar-1',tenant:tenant?clean(tenant,160):null,site:site?clean(site,120):null,timeZone,asOf:new Date(at).toISOString(),localDate:parts.date,localTime:parts.time,maxAgeMs:Number(maxAgeMs),source:'server-authoritative-tenant-calendar'});
  }
@@ -39,6 +41,6 @@ function createTenantCalendar({env=process.env,now=Date.now}={}){
   const snap=snapshot(context),period=currentPeriod(state?.payrollControl?.periods,snap.localDate);
   return Object.freeze({...snap,period:period?Object.freeze({id:period.id||period.start,start:period.start,end:period.end,deadline:period.deadline||null,source:period.source||null}):null});
  }
- return Object.freeze({snapshot,periodForState,zoneFor,freshness:input=>freshness({...input,nowMs:Number(now())})});
+ return Object.freeze({snapshot,periodForState,zoneFor,freshness:input=>freshness({...input,nowMs:Number(clock())})});
 }
 module.exports={createTenantCalendar,currentPeriod,freshness,validZone};
