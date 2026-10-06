@@ -81,7 +81,7 @@ function patchOnboarding(){
 function patchFeatures(){
  const file=path.join(root,'features.js');if(!fs.existsSync(file))return;
  let source=fs.readFileSync(file,'utf8');if(source.includes('VECTOR_CUSTOMER_FEATURES_COPY_V1'))return;
- source=source.replace(/For the sample journey, send Leah an offer,[\s\S]*?return to the manager to confirm\.\\n\\n/g,'');
+ source=source.replace(/For the sample journey, send Leah an offer,[\s\S]*?return to the manager to confirm\./gi,'');
  source=source.replaceAll(' All data is synthetic.','');
  source=source.replaceAll('All data is synthetic.','');
  source=source.replace(
