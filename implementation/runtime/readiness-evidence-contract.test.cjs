@@ -86,6 +86,7 @@ test('security, scenario and live import evidence are fail-closed without overst
     cloudRuntime: true,
     testDataClass: 'synthetic-edge-suite',
     criticalFailures: 0,
+    correlationId: 'journey-empty',
     steps: []
   }), /Golden Journey step/);
   assert.equal(validateStrictReadinessEvidence('scenario-validation', 'PASS', {
@@ -94,7 +95,7 @@ test('security, scenario and live import evidence are fail-closed without overst
     criticalFailures: 0,
     correlationId: 'journey-contract-test',
     steps: MANDATORY_GOLDEN_JOURNEY_STEPS.map(id => ({ id, status: 'PASS', evidenceRef: 'proof:' + id, correlationId: 'journey-contract-test' })),
-    payrollProvider:{correlationId:'journey-contract-test',batchId:'B-current',batchChecksum:'a'.repeat(64),providerBindingDigest:'b'.repeat(64),batchReceiptDigest:'c'.repeat(64),readbackDigest:'d'.repeat(64),fullPayrollVerified:true}
+    payrollProvider:{correlationId:'journey-contract-test',batchId:'B-current',batchChecksum:'a'.repeat(64),providerBindingDigest:'b'.repeat(64),batchReceiptDigest:'c'.repeat(64),readbackDigest:'d'.repeat(64),releaseEvidenceRef:'proof:payroll-batch-released',acceptanceEvidenceRef:'proof:payroll-provider-accepted',readbackEvidenceRef:'proof:payroll-provider-readback',fullPayrollVerified:true}
   }), null);
   assert.match(validateStrictReadinessEvidence('scenario-validation', 'PASS', {
     cloudRuntime: true,

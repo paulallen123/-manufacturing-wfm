@@ -738,7 +738,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       scopeChangeEventId: change?.id || 0, applied };
   }
 
-  function configurationBindingFor(detail, run, row = null) {
+  function configurationBindingFor(detail, run, row = null, kind = null) {
+    if(kind && !proofEpochDomainsForKind(kind).includes('configuration')) return null;
     const context = configurationContextFor(run);
     if (!context) return null;
     let reason = null;
@@ -793,7 +794,8 @@ function createOneDayEnterpriseEngine(options = {}) {
     return customerAuthorityReceiptError(run, kind, row, detail);
   }
 
-  function bindAcceptedConfiguration(detail, run, acceptedAt) {
+  function bindAcceptedConfiguration(detail, run, acceptedAt, kind = null) {
+    if(kind && !proofEpochDomainsForKind(kind).includes('configuration')) return detail;
     const context = configurationContextFor(run);
     if (!context) return detail;
     const { applied, ...binding } = context;
@@ -805,7 +807,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!row || row.status !== 'PASS') return false;
     const detail = parseJsonSafe(row.detail_json, {});
     const binding = evidenceBindingFor(detail, run, kind);
-    if (binding?.reason || configurationBindingFor(detail, run, row)?.reason) return false;
+    if (binding?.reason || configurationBindingFor(detail, run, row, kind)?.reason) return false;
     return !storedEvidenceValidationError(run, kind, row, detail);
   }
 
@@ -1113,7 +1115,8 @@ function createOneDayEnterpriseEngine(options = {}) {
     const requiredTrainingIdentityCount=activeOperating.length+privilegedUsers.filter(user=>!linkedUserEmails.has(String(user.email||'').trim().toLowerCase())).length;
     const importedEmailDigests = activeImported.map(person => sha256(String(person.email || '').trim().toLowerCase()).slice(0, 24)).filter(Boolean).sort();
     const onboardingSourceIds=[...new Set(activeImported.map(person=>String(person.sourceId||'').trim()).filter(Boolean))].sort();
-    const operatingSourceIds=[...new Set(activeOperating.map(worker=>String(worker.sourceId||worker.id||'').trim()).filter(Boolean))].sort();
+    const operatingSourceIds=[...new Set(activeOperating.map(worker=>String(worker.sourceId||'').trim()).filter(Boolean))].sort();
+    const operatingUnboundIdentityCount=activeOperating.filter(worker=>!String(worker.sourceId||'').trim()).length;
     const operatingPayrollIds=[...new Set(activeOperating.map(worker=>String(worker.payrollId||'').trim()).filter(Boolean))].sort();
     const identityVerified = activeImported.filter(person => person.identityVerified === true).length;
     const acceptanceReceipts=activeImported.filter(person=>{
@@ -1137,6 +1140,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       operatingPayrollIds,
       readyForScheduling,
       operatingWorkforceCount:activeOperating.length,
+      operatingUnboundIdentityCount,
       requiredTrainingIdentityCount,
       operatingIdentityLinkedCount:linkedOperating.filter(item=>item.user).length,
       privilegedIdentityCount:privilegedUsers.length,
@@ -1152,13 +1156,21 @@ function createOneDayEnterpriseEngine(options = {}) {
       payrollCapabilityRequired=Boolean(String(scope?.payrollSystem||'').trim())||
         (Array.isArray(scope?.features)&&scope.features.some(value=>/payroll|pay run|pay output/i.test(String(value))));
     let profile=null,profileError=null;try{profile=staffologyProfileProvider();}catch(error){profileError=error;}
-    const providerConfigured=Boolean(profile&&profile.binding);
-    const providerRequired=payrollCapabilityRequired&&(providerConfigured||Boolean(profileError));
+    const providerConfigured=Boolean(profile&&profile.binding),
+      configuredProviderType=providerConfigured?String(profile.connector?.provider||'staffology').trim().toLowerCase():null,
+      providerRequired=payrollCapabilityRequired;
     if (!providerConfigured) return {
       required:providerRequired,proven:!providerRequired,configured:false,bindingMatches:false,payrollCapabilityRequired,
-      configurationError:profileError?String(profileError.code||profileError.message||'STAFFOLOGY_CONFIGURATION_INVALID'):null,
+      configuredProviderType:null,
+      configurationError:profileError?String(profileError.code||profileError.message||'PAYROLL_PROVIDER_CONFIGURATION_REQUIRED'):null,
       peopleApplied:false,cohortAccounted:!providerRequired,fullPayrollVerified:false,
-      claimBoundary:'Approved payroll capability requires a canonical payroll-provider journey. This runtime can prove Staffology only when the canonical Staffology loader resolves an exact provider configuration; provider names are never inferred from customer text.'
+      claimBoundary:'Customer payroll capability requires a configured canonical provider type and exact provider journey; absence of provider configuration can never satisfy readiness.'
+    };
+    if(configuredProviderType!=='staffology')return {
+      required:providerRequired,proven:!providerRequired,configured:true,bindingMatches:false,payrollCapabilityRequired,
+      configuredProviderType,peopleApplied:false,cohortAccounted:false,fullPayrollVerified:false,
+      configurationError:'PAYROLL_PROVIDER_ADAPTER_REQUIRED',
+      claimBoundary:'The configured payroll provider type must be proved by its canonical adapter; Staffology proof cannot stand in for another provider.'
     };
     const resolvedBinding = profile.binding;
     const bindingMatches = resolvedBinding.tenant === run.tenant &&
@@ -1206,7 +1218,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     return {
       required: providerRequired,
       proven: (!providerRequired)|| (bindingMatches && peopleApplied && cohortAccounted && payrollConfigured && fullPayrollVerified),
-      configured: true,bindingMatches,bindingDigest,provider:'staffology',payrollCapabilityRequired,
+      configured: true,bindingMatches,bindingDigest,provider:'staffology',configuredProviderType,payrollCapabilityRequired,
       employerId: resolvedBinding.employerId || null,cohortCount: cohort.length,
       expectedActiveCohortCount:expectedActive.length,activatedCohortCount:activated.length,lifecycleHeldCount:heldIds.size,
       activatedSourceIds:[...activatedIds].sort(),lifecycleHeldSourceIds:[...heldIds].sort(),accountedSourceIds:[...accountedIds].sort(),
@@ -1310,21 +1322,33 @@ function createOneDayEnterpriseEngine(options = {}) {
     const providerJourney = staffologyJourneyForRun(run);
     const sourceIds=new Set(Array.isArray(sourceDataSummary?.employeeKeys)?sourceDataSummary.employeeKeys:[]),
       onboardingIds=new Set(workforceReadiness.onboardingSourceIds||[]),
-      operatingIds=new Set(workforceReadiness.operatingSourceIds||[]);
-    const sourceWorkforceIdentityReconciled=sourceIds.size>0&&[...sourceIds].every(id=>onboardingIds.has(id)||operatingIds.has(id));
+      operatingIds=new Set(workforceReadiness.operatingSourceIds||[]),
+      workforceIds=new Set([...onboardingIds,...operatingIds]);
+    const sourceMissingFromWorkforce=[...sourceIds].filter(id=>!workforceIds.has(id)).sort(),
+      workforceMissingFromSource=[...workforceIds].filter(id=>!sourceIds.has(id)).sort();
+    const sourceWorkforceIdentityReconciled=sourceIds.size>0&&sourceMissingFromWorkforce.length===0&&workforceMissingFromSource.length===0;
+    const providerIds=new Set(Array.isArray(providerJourney.accountedSourceIds)?providerJourney.accountedSourceIds:[]),
+      providerMissingFromAccounted=providerJourney.required===true&&Array.isArray(providerJourney.cohortSourceIds)
+        ?providerJourney.cohortSourceIds.filter(id=>!providerIds.has(id)).sort():[],
+      providerUnexpectedAccounted=providerJourney.required===true&&Array.isArray(providerJourney.cohortSourceIds)
+        ?[...providerIds].filter(id=>!providerJourney.cohortSourceIds.includes(id)).sort():[];
     const providerPopulationReconciled=providerJourney.required!==true||(
       providerJourney.cohortAccounted===true&&providerJourney.peopleApplied===true&&
-      Array.isArray(providerJourney.accountedSourceIds)&&providerJourney.accountedSourceIds.length===Number(providerJourney.cohortCount||0)
+      providerMissingFromAccounted.length===0&&providerUnexpectedAccounted.length===0&&
+      providerIds.size===Number(providerJourney.cohortCount||0)
     );
     const integrationTruth={
       peopleSourceProven:Boolean(sourceDataSummary),
       sourceIdentityCount:sourceIds.size,
       onboardingIdentityCount:onboardingIds.size,
       operatingIdentityCount:operatingIds.size,
+      operatingUnboundIdentityCount:Number(workforceReadiness.operatingUnboundIdentityCount||0),
+      sourceMissingFromWorkforce,workforceMissingFromSource,
       sourceWorkforceIdentityReconciled,
       mandatoryProviderRequired:providerJourney.required===true,
+      configuredProviderType:providerJourney.configuredProviderType||providerJourney.provider||null,
       mandatoryProviderProven:providerJourney.required!==true||providerJourney.proven===true,
-      providerPopulationReconciled,
+      providerPopulationReconciled,providerMissingFromAccounted,providerUnexpectedAccounted,
       unifiedReady:Boolean(sourceDataSummary)&&sourceWorkforceIdentityReconciled&&providerPopulationReconciled&&
         (providerJourney.required!==true||providerJourney.proven===true)
     };
@@ -1482,7 +1506,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       // for a different candidate. Derived configuration is read from current state.
       const evidenceBinding = !derived && row?.status === 'PASS' ? evidenceBindingFor(detail, run, requirement.key) : null;
       const configurationBinding = !derived && row?.status === 'PASS'
-        ? configurationBindingFor(detail || {}, run, row) : null;
+        ? configurationBindingFor(detail || {}, run, row, requirement.key) : null;
       const validationError = !derived && row?.status === 'PASS'
         ? storedEvidenceValidationError(run, requirement.key, row, detail || {}) : null;
       // Bind invalidation into existing work intent so terminal jobs reopen.
@@ -1533,7 +1557,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (workforceReadinessRequired && !workforceReadiness.allReady) launchBlockers.push('IMPORTED_WORKFORCE_IDENTITY_OR_READINESS_INCOMPLETE');
     if (workforceReadinessRequired && !workforceReadiness.invitationAcceptanceProven) launchBlockers.push('WORKFORCE_INVITATION_ACCEPTANCE_UNPROVEN');
     if (implementationInvitationRequired && !['DELIVERED','STARTED'].includes(notificationRecovery.state)) launchBlockers.push('IMPLEMENTATION_INVITATION_DELIVERY_UNPROVEN');
-    if (runtimeIdentityRequired && providerJourney.payrollCapabilityRequired===true && providerJourney.configured!==true) launchBlockers.push('PAYROLL_PROVIDER_CONFIGURATION_REQUIRED');
+    if (providerJourney.payrollCapabilityRequired===true && providerJourney.configured!==true) launchBlockers.push('PAYROLL_PROVIDER_CONFIGURATION_REQUIRED');
     if (providerJourney.required && !providerJourney.proven) launchBlockers.push('MANDATORY_PROVIDER_JOURNEY_UNPROVEN');
     if (!integrationTruth.unifiedReady) launchBlockers.push('UNIFIED_INTEGRATION_TRUTH_UNPROVEN');
     if (!wholeJourneyProven) launchBlockers.push('WHOLE_GOLDEN_JOURNEY_UNPROVEN');
@@ -2254,7 +2278,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         readinessEvidenceAccepted: false, kind, evidenceBinding
       });
     }
-    const configurationBinding = status === 'PASS' ? configurationBindingFor(epochBoundDetail, run) : null;
+    const configurationBinding = status === 'PASS' ? configurationBindingFor(epochBoundDetail, run, null, kind) : null;
     if (status === 'PASS' && Object.prototype.hasOwnProperty.call(detail, '_configurationValidation')) {
       return writeJson(res, 409, { error: 'Configuration validation receipts are server-issued only.', readinessEvidenceAccepted: false, kind });
     }
@@ -2291,15 +2315,18 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (!Number.isInteger(total) || total <= 0 || passed !== total || criticalFailures !== 0) {
         return writeJson(res, 409, { error: 'Scenario validation PASS requires every scenario to pass with zero critical failures.' });
       }
-      const provider=staffologyJourneyForRun(run),payroll=detail.payrollProvider||{};
+      const provider=staffologyJourneyForRun(run),payroll=detail.payrollProvider||{},steps=new Map((Array.isArray(detail.steps)?detail.steps:[]).map(step=>[step?.id,step]));
       if(provider.required===true){
         const receipt=provider.batchReceipt;
         if(provider.proven!==true||!receipt||
           payroll.batchId!==receipt.batchId||payroll.batchChecksum!==receipt.batchChecksum||
           payroll.providerBindingDigest!==provider.bindingDigest||
           payroll.batchReceiptDigest!==receipt.receiptDigest||payroll.readbackDigest!==receipt.readbackDigest||
+          payroll.releaseEvidenceRef!==steps.get('payroll-batch-released')?.evidenceRef||
+          payroll.acceptanceEvidenceRef!==steps.get('payroll-provider-accepted')?.evidenceRef||
+          payroll.readbackEvidenceRef!==steps.get('payroll-provider-readback')?.evidenceRef||
           payroll.fullPayrollVerified!==true){
-          return writeJson(res,409,{error:'Scenario validation PASS must bind to the exact current payroll batch, canonical provider binding, complete batch receipt and provider readback.',readinessEvidenceAccepted:false,kind});
+          return writeJson(res,409,{error:'Scenario validation PASS must bind the exact current payroll release, canonical provider acceptance, complete batch receipt and provider readback to the same Golden Journey.',readinessEvidenceAccepted:false,kind});
         }
       }
     }
@@ -2316,7 +2343,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
     }
 
-    let storedDetail = status === 'PASS' ? bindAcceptedConfiguration(epochBoundDetail, run, evidenceRecordedAt) : detail;
+    let storedDetail = status === 'PASS' ? bindAcceptedConfiguration(epochBoundDetail, run, evidenceRecordedAt, kind) : detail;
     if (status === 'PASS' && kind === 'tenant-environment') {
       storedDetail = { ...storedDetail, _tenantEnvironmentValidation: {
         version: 1, validator: 'tenant-environment-v1',
@@ -2590,7 +2617,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         'PASS',
         1,
         'customer-authorised-policy-confirmation',
-        JSON.stringify(bindAcceptedConfiguration(policyEvidence.detail, run, acceptedAt)),
+        JSON.stringify(bindAcceptedConfiguration(policyEvidence.detail, run, acceptedAt, policyEvidence.kind)),
         acceptedAt
       );
       record(run.id, run.tenant, 'CUSTOMER_POLICY_AUTHORITY_CONFIRMED', {

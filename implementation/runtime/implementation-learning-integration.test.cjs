@@ -72,8 +72,9 @@ function fixture() {
     ['admin@alpha', 'a1', 'company-admin']
   ];
   for (const [email, personId, role] of users) {
+    const permissions=role==='manager'||role==='company-admin'?['company.configure']:[];
     db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)')
-      .run(email, 'alpha', personId, role, role === 'employee' ? 0 : 1, 's', '00', '[]');
+      .run(email, 'alpha', personId, role, role === 'employee' ? 0 : 1, 's', '00', JSON.stringify(permissions));
   }
 
   const tokens = {
@@ -126,6 +127,13 @@ function fixture() {
   };
 }
 
+const GOLDEN_JOURNEY_STEPS=[
+  'contract-signed','secure-sign-in','integrations-connected','source-discovery','workforce-import','source-reconciliation',
+  'customer-configuration','customer-specific-training','go-live-admission','shift-workforce-management','time-absence-approval',
+  'payroll-batch-released','payroll-provider-accepted','payroll-provider-readback','downstream-state-update','roi-value-evidence',
+  'support-problem-injected','support-problem-detected','support-problem-repaired'
+];
+
 function evidenceDetail(kind) {
   if (kind === 'time-policies') {
     return {
@@ -162,14 +170,51 @@ function evidenceDetail(kind) {
       openingBalanceSourceVerified: false
     };
   }
+  if (kind === 'source-systems') return {
+    fixtureOnly:false,zeroHuman:true,humanInterventions:0,discoveryCompleted:true,authorizationVerified:true,
+    providers:[{provider:'Test HCM',discovered:true,authorized:true,connected:true,mode:'sandbox'}]
+  };
+  if (kind === 'scheduling') return {
+    cloudRuntime:true,sourceAuthoritative:true,rosterSourceVerified:true,skillCoverageVerified:true,
+    availabilityVerified:true,ruleEvaluationVerified:true,publishedScheduleReadbackVerified:true,unresolvedExceptions:0
+  };
+  if (kind === 'approvals') return {
+    cloudRuntime:true,sourceAuthoritative:true,delegationRulesVerified:true,selfApprovalBlocked:true,auditTrailVerified:true,approvalReadbackVerified:true
+  };
+  if (kind === 'clocking') return {
+    cloudRuntime:true,sourceAuthoritative:true,deviceOrSourceVerified:true,duplicateProtectionVerified:true,offlineHandlingVerified:true,timezoneDstVerified:true,attendanceReadbackVerified:true
+  };
+  if (kind === 'payroll-mapping') return {
+    readinessClass:'customer-specific',dataClass:'customer-authorised',mappingAuthorityVerified:true,providerTargetVerified:true,
+    employeeIdentityMappingVerified:true,payCodesVerified:true,absenceMappingVerified:true,roundingPolicyVerified:true,
+    releasedBatchId:'B-learning',batchChecksum:'a'.repeat(64),fullPayrollVerified:true
+  };
+  if (kind === 'historical-replay') return {
+    dataClass:'customer-authorised',independentCalculation:true,expectedTotal:100,calculatedTotal:100,unexplainedVariance:0
+  };
+  if (kind === 'security-controls') return {
+    cloudRuntime:true,tenantIsolationVerified:true,crossTenantNegativeTests:1,criticalFailures:0
+  };
+  if (kind === 'resilience') return {
+    hostedRuntime:true,faultInjected:true,detected:true,classified:true,repairOrContainmentApplied:true,
+    independentVerificationPassed:true,durableAuditVerified:true,replaySafetyVerified:true,rollbackRequired:false,criticalFailures:0
+  };
   if (kind === 'scenario-validation') {
-    return { totalScenarios: 2400, passedScenarios: 2400, criticalFailures: 0 };
+    const correlationId='learning-golden-journey';
+    return {
+      cloudRuntime:true,testDataClass:'synthetic-unit-journey',totalScenarios:GOLDEN_JOURNEY_STEPS.length,
+      passedScenarios:GOLDEN_JOURNEY_STEPS.length,criticalFailures:0,correlationId,
+      steps:GOLDEN_JOURNEY_STEPS.map(id=>({id,status:'PASS',evidenceRef:'learning:'+id,correlationId})),
+      payrollProvider:{correlationId,batchId:'B-learning',batchChecksum:'a'.repeat(64),providerBindingDigest:'b'.repeat(64),
+        batchReceiptDigest:'c'.repeat(64),readbackDigest:'d'.repeat(64),releaseEvidenceRef:'learning:payroll-batch-released',
+        acceptanceEvidenceRef:'learning:payroll-provider-accepted',readbackEvidenceRef:'learning:payroll-provider-readback',fullPayrollVerified:true}
+    };
   }
   if (kind === 'test-data-cleanup') {
     return { remainingTestRows: 0, liveRowsTouched: 0 };
   }
   if (kind === 'live-data-import') {
-    return { sourceCount: 10000, importedCount: 10000, invalidCount: 0, checksumMatch: true };
+    return { fixtureOnly:false,zeroHuman:true,humanInterventions:0,sourceAuthoritative:true,sourceCount:10000,importedCount:10000,invalidCount:0,checksumMatch:true };
   }
   return { checked: true };
 }
@@ -179,6 +224,13 @@ async function passTechnicalEvidence(f, runId) {
   let latest = null;
   for (const item of REQUIREMENTS) {
     if (training.has(item.key)) continue;
+    if(item.key==='time-policies'||item.key==='absence-policies'){
+      const key=item.key==='time-policies'?'time-policy-authority':'absence-policy-authority';
+      const policy={...evidenceDetail(item.key),authoritativeConfirmation:true};
+      delete policy.evidenceClass;delete policy.sourceAuthoritative;delete policy.effectiveDated;delete policy.fixtureOnly;
+      const decided=await call(f.implementation,f.tokens.manager,'POST','/api/implementation/autonomous/decision',{runId,key,action:'ACCEPTED',detail:policy});
+      assert.equal(decided.status,200,item.key+': '+JSON.stringify(decided.body));latest=decided.body;continue;
+    }
     const tenant = item.key === 'tenant-environment';
     const detail = tenant ? {
       fixtureOnly: false, zeroHuman: true, humanInterventions: 0,
@@ -309,7 +361,7 @@ test('enterprise implementation cannot go READY until real role competence is pr
         sites: ['Plant 1'],
         employeeCount: 10000,
         sourceSystems: ['ERP', 'Payroll', 'HCM'],
-        features: ['Scheduling', 'Time & attendance', 'Absence', 'Payroll output'],
+        features: ['Scheduling', 'Time & attendance', 'Absence'],
         workPatterns: ['24/7 rotating shifts'],
         clockingMethods: ['Existing access control', 'Mobile fallback'],
         agencyLabour: true,
@@ -376,10 +428,12 @@ test('enterprise implementation cannot go READY until real role competence is pr
       '/api/implementation/autonomous/status'
     );
     assert.equal(status.status, 200);
-    assert.equal(status.body.operationalReady, true);
-    assert.equal(status.body.state, 'READY');
     assert.equal(status.body.learningSummary.privilegedReady, true);
     assert.equal(status.body.learningSummary.fullyCertified, true);
+    assert.equal(status.body.requirements.find(x=>x.key==='privileged-competency').satisfied,true);
+    assert.equal(status.body.requirements.find(x=>x.key==='frontline-readiness').satisfied,true);
+    assert.equal(status.body.operationalReady, false);
+    assert.ok(status.body.launchBoundary.blockers.includes('UNIFIED_INTEGRATION_TRUTH_UNPROVEN'));
   } finally {
     f.close();
   }

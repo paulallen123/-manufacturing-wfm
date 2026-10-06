@@ -19,6 +19,9 @@ const MANDATORY_GOLDEN_JOURNEY_STEPS = Object.freeze([
   'go-live-admission',
   'shift-workforce-management',
   'time-absence-approval',
+  'payroll-batch-released',
+  'payroll-provider-accepted',
+  'payroll-provider-readback',
   'downstream-state-update',
   'roi-value-evidence',
   'support-problem-injected',
@@ -269,6 +272,11 @@ function validateGoldenJourney(item) {
     !/^[a-f0-9]{64}$/.test(text(payroll.batchReceiptDigest))||
     !/^[a-f0-9]{64}$/.test(text(payroll.readbackDigest))||payroll.fullPayrollVerified!==true)
     return 'Scenario-validation PASS requires an exact released payroll batch, current provider binding, complete batch receipt and independent readback.';
+  const releaseStep=byId.get('payroll-batch-released'),acceptStep=byId.get('payroll-provider-accepted'),readbackStep=byId.get('payroll-provider-readback');
+  if(text(payroll.releaseEvidenceRef)!==text(releaseStep?.evidenceRef)||
+    text(payroll.acceptanceEvidenceRef)!==text(acceptStep?.evidenceRef)||
+    text(payroll.readbackEvidenceRef)!==text(readbackStep?.evidenceRef))
+    return 'Scenario-validation PASS must bind payroll release, provider acceptance and provider readback steps to the exact payroll/provider evidence refs.';
   if (Number(item.criticalFailures) !== 0) return 'Scenario-validation PASS requires zero critical failures.';
   return null;
 }
