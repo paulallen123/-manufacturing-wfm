@@ -4,6 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
+RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
 RUN node --test implementation/ui/implementation-observer.test.cjs
@@ -119,7 +120,7 @@ RUN node -e "const fs=require('fs');const sha=String(process.env.RAILWAY_GIT_COM
 # Autonomous integration fabric. The control plane is separately reviewable and
 # uses only Node built-ins plus the existing per-tenant SQLite runtime.
 RUN mkdir -p /app/integration-runtime
-COPY integration/runtime/autonomous-integration-hub.cjs integration/runtime/gusto-company-connector.cjs integration/runtime/gusto-oauth-landing.cjs /app/integration-runtime/
+COPY integration/runtime/autonomous-integration-hub.cjs integration/runtime/gusto-company-connector.cjs integration/runtime/gusto-oauth-landing.cjs integration/runtime/gusto-webhook-receiver.mjs integration/runtime/gusto-webhook-preload.mjs /app/integration-runtime/
 RUN mkdir -p /app/integration-fabric-runtime /app/integration-fabric-catalog
 COPY integration-fabric/runtime/api-version-routing.mjs integration-fabric/runtime/batch-reconciliation.mjs integration-fabric/runtime/connection-test-plan.mjs integration-fabric/runtime/connector-registry.mjs integration-fabric/runtime/dataset-coverage.mjs integration-fabric/runtime/evidence-provenance.mjs integration-fabric/runtime/governed-read-projection-registry.mjs integration-fabric/runtime/governed-read-projection.mjs integration-fabric/runtime/privileged-bootstrap-guard.mjs integration-fabric/runtime/regional-route-authority.mjs integration-fabric/runtime/rpc-read-authority.mjs integration-fabric/runtime/schema-negotiation.mjs integration-fabric/runtime/scope-partition.mjs integration-fabric/runtime/semantic-envelope.mjs integration-fabric/runtime/session-broker.mjs integration-fabric/runtime/session-read-authority.mjs integration-fabric/runtime/static-credential-authority.mjs /app/integration-fabric-runtime/
 COPY integration-fabric/systems.json integration-fabric/protocol-profiles.json integration-fabric/opportunity-profiles.json integration-fabric/openapi.yaml /app/integration-fabric-catalog/

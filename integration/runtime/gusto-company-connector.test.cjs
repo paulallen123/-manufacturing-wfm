@@ -240,9 +240,9 @@ test('callback rejects a non-company subject, a different company, and a mismatc
 test('state and encrypted credentials survive restart while tenant, environment, and encryption-key boundaries remain enforced', async t => {
   const dir = mkdtempSync(join(tmpdir(), 'gusto-connector-'));
   const path = join(dir, 'integration.sqlite');
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
   const remote = provider();
   let db = new DatabaseSync(path);
+  t.after(() => { try { db.close(); } finally { rmSync(dir, { recursive: true, force: true }); } });
   const first = create({ db, env: environment(), fetchImpl: remote.fetch, now: () => START });
   const { state } = begin(first);
   db.close();
@@ -251,7 +251,6 @@ test('state and encrypted credentials survive restart while tenant, environment,
   assert.deepEqual(await second.completeAuthorization({ ...BEGIN, state, code: CODE }), VERIFIED);
   db.close();
   db = new DatabaseSync(path);
-  t.after(() => db.close());
   const third = create({ db, env: environment(), fetchImpl: remote.fetch, now: () => START });
   assert.deepEqual(await third.verifyConnection({ tenant: BEGIN.tenant, connectionId: BEGIN.connectionId }), VERIFIED);
   await assert.rejects(() => third.verifyConnection({ tenant: 'tenant-b', connectionId: BEGIN.connectionId }), codeIs('GUSTO_CONNECTION_NOT_FOUND', 404));
