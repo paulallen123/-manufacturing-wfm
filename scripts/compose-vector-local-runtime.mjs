@@ -92,6 +92,14 @@ function composeStaffology(runtime) {
   const permissionAnchor = "new Set(['company.configure','payroll.view','payroll.export','payroll.reopen','payroll.remind'])";
   if (server.split(permissionAnchor).length !== 2) throw Error('SERVER_ACCOUNT_PERMISSION_ANCHOR_CHANGED');
   server = server.replace(permissionAnchor, "new Set(['company.configure','payroll.view','payroll.export','payroll.reopen','payroll.remind','time.ingest'])");
+  // Personal business evidence shares the server-authoritative tenant clock.
+  // Keep authentication/session and clock-event wall clocks unchanged.
+  const personalReadAnchor = 'const id=PV.identity(s,pa);personal.register(pa,id);const now=Date.now();';
+  if (server.split(personalReadAnchor).length !== 2) throw Error('SERVER_PERSONAL_CALENDAR_ANCHOR_CHANGED');
+  server = server.replace(personalReadAnchor, 'const id=PV.identity(s,pa);personal.register(pa,id);const now=Date.parse(tenantCalendar.snapshot({tenant:pa.tenant,site:id.site}).asOf);');
+  const personalWorkAnchor = 'PV.workCommand(state,pa,input.command,input.payload||{},Date.now())';
+  if (server.split(personalWorkAnchor).length !== 2) throw Error('SERVER_PERSONAL_WORK_CALENDAR_ANCHOR_CHANGED');
+  server = server.replace(personalWorkAnchor, 'PV.workCommand(state,pa,input.command,input.payload||{},Date.parse(tenantCalendar.snapshot({tenant:pa.tenant,site:PV.identity(state,pa).site}).asOf))');
   fs.writeFileSync(serverPath, server);
   const receipt = {
     schemaVersion: 1,

@@ -185,6 +185,14 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.equal(employee.workflow.state().receipt, null);
   });
   const leaveEmployee = await client('maya@northstar.example');
+  await t.test('personal shift and leave evidence uses the same authoritative calendar as weekly review', async () => {
+    const calendar = await leaveEmployee.request('/api/tenant-calendar');
+    const personal = await leaveEmployee.request('/api/personal');
+    assert.equal(calendar.asOf, '2026-09-10T12:00:00.000Z');
+    assert.equal(personal.serverTime, calendar.asOf);
+    assert.ok(personal.shifts.length >= 3, 'the reviewed fixture has scheduled shifts after the authoritative date');
+    assert.ok(personal.shifts.every(shift => Date.parse(shift.end) > Date.parse(calendar.asOf)));
+  });
   let leaveRequestId, leaveDate, leaveAvailableBefore;
   await t.test('leave request cannot show success when the saved balance was not reserved', async () => {
     const uncertain = await client('maya@northstar.example');
