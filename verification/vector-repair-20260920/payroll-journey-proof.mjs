@@ -2,10 +2,11 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {mkdtempSync,writeFileSync,rmSync,mkdirSync} from 'node:fs';
 import {join,resolve} from 'node:path';
+import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {verifiedRuntimeProvenance} from './runtime-provenance.mjs';
-const root=resolve(process.env.WFM_PROOF_REPO||process.cwd()),dir=mkdtempSync('/tmp/vector-payroll-proof-');
+const root=resolve(process.env.WFM_PROOF_REPO||process.cwd()),dir=mkdtempSync(join(tmpdir(),'vector-payroll-proof-'));
 const runtime=verifiedRuntimeProvenance(process.env.WFM_LOCAL_RUNTIME || join(root,'candidate-runtime'));
 const origin='http://127.0.0.1:4108',period='2026-09-07',checks=[];let server;
 async function start(){server=spawn(process.execPath,['--require',join(process.env.WFM_LOCAL_RUNTIME || join(root,'candidate-runtime'),'local-paths.cjs'),join(process.env.WFM_LOCAL_RUNTIME || join(root,'candidate-runtime'),'security-runtime/bootstrap.cjs')],{env:{...process.env,PORT:'4108',WFM_DB:join(dir,'state.sqlite'),WFM_HOSTED_STAGING:'false'},stdio:['ignore','pipe','pipe']});await new Promise((resolve,reject)=>{let output='';const timer=setTimeout(()=>reject(Error('Startup timeout')),20000);server.stdout.on('data',s=>{output+=s;if(output.includes(origin)){clearTimeout(timer);resolve()}});server.once('exit',code=>{clearTimeout(timer);reject(Error('Server exited '+code))})});}
