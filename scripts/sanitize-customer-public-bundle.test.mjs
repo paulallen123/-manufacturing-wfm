@@ -23,3 +23,16 @@ test('sanitizer does not make the release gate permissive for unknown customer c
  sanitizeCustomerBundle(root);
  assert.throws(()=>validatePublicBundle(root),/VECTOR_CUSTOMER_PUBLIC_BUNDLE_REJECTED/);
 });
+
+test('authenticated HTML entry uses the approved title before scripts run and preserves environment disclosures',t=>{
+ const root=fixture(t);
+ fs.writeFileSync(path.join(root,'app.js'),"document.title='"+APPROVED_AUTHENTICATED_TITLE+"';");
+ fs.writeFileSync(path.join(root,'index.html'),'<html><head><title>Manufacturing Workforce · Interactive Design</title></head><body>Fixture/demo data only. Production approved: false.</body></html>');
+ const result=sanitizeCustomerBundle(root);
+ assert.equal(result.changed,1);
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ assert.ok(html.includes('<title>'+APPROVED_AUTHENTICATED_TITLE+'</title>'));
+ assert.ok(html.includes('Fixture/demo data only. Production approved: false.'));
+ assert.equal(validatePublicBundle(root).approvedTitle,APPROVED_AUTHENTICATED_TITLE);
+ assert.equal(sanitizeCustomerBundle(root).changed,0,'repeat composition must preserve the approved bytes');
+});

@@ -68,6 +68,12 @@ export function validatePublicBundle(root){
   const violations=[],titleAssignments=[];
   const files=jsFiles(root);
   if(!files.length)throw new Error('PUBLIC_BUNDLE_HAS_NO_JAVASCRIPT');
+  const indexPath=path.join(root,'index.html');
+  if(fs.existsSync(indexPath)){
+    const html=fs.readFileSync(indexPath,'utf8'),titles=[...html.matchAll(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/gi)];
+    if(titles.length!==1)violations.push({type:'html-title-count-invalid',file:'index.html',count:titles.length});
+    else if(titles[0][1]!==APPROVED_AUTHENTICATED_TITLE)violations.push({type:'unapproved-html-title',file:'index.html',title:displaySnippet(titles[0][1])});
+  }
   for(const file of files){
     const relative=path.relative(root,file)||path.basename(file),source=fs.readFileSync(file,'utf8');
     const {literals,commentFree}=literalsAndCommentFree(source);

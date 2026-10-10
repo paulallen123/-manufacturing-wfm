@@ -37,3 +37,12 @@ test('dynamic document titles fail closed because their rendered value cannot be
  fs.writeFileSync(path.join(root,'dynamic.js'),"const suffix='Workforce';document.title='Vector · '+suffix;");
  assert.throws(()=>validatePublicBundle(root),/dynamic-document-title/);
 });
+
+test('approved script assignments cannot hide a legacy or ambiguous HTML entry title',t=>{
+ const root=fixture(t);
+ fs.writeFileSync(path.join(root,'app.js'),"document.title='"+APPROVED_AUTHENTICATED_TITLE+"';");
+ for(const head of ['<title>Manufacturing Workforce · Interactive Design</title>','', '<title>'+APPROVED_AUTHENTICATED_TITLE+'</title><title>Other</title>']){
+  fs.writeFileSync(path.join(root,'index.html'),'<html><head>'+head+'</head><body></body></html>');
+  assert.throws(()=>validatePublicBundle(root),/unapproved-html-title|html-title-count-invalid/);
+ }
+});

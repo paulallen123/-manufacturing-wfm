@@ -55,6 +55,13 @@ export function sanitizeCustomerBundle(root){
  if(!root||!fs.existsSync(root)||!fs.statSync(root).isDirectory())throw new Error('CUSTOMER_BUNDLE_ROOT_INVALID');
  let changed=0;
  const changedFiles=[];
+ const indexPath=path.join(root,'index.html');
+ if(fs.existsSync(indexPath)){
+  const before=fs.readFileSync(indexPath,'utf8'),titles=[...before.matchAll(/<title\b[^>]*>[\s\S]*?<\/title\s*>/gi)];
+  if(titles.length!==1)throw new Error('CUSTOMER_HTML_TITLE_COUNT_INVALID');
+  const after=before.replace(/<title\b[^>]*>[\s\S]*?<\/title\s*>/i,'<title>'+APPROVED_TITLE+'</title>');
+  if(after!==before){fs.writeFileSync(indexPath,after);changed++;changedFiles.push('index.html');}
+ }
  for(const file of files(root)){
   const before=fs.readFileSync(file,'utf8');
   let after=normalizeTitles(before);
