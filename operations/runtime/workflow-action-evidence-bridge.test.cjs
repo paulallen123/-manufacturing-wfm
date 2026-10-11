@@ -173,6 +173,13 @@ test('incomplete source records remain absent instead of gaining presentation-ow
   }finally{f.close();}
 });
 
+test('bridge preserves source authentication and authorization denials without leaking source details',async()=>{
+  for(const status of [401,403]){
+    const f=fixture(async()=>({status,body:{error:'private source detail',teams:[{id:'secret-team'}]}}));
+    try{const denied=await call(f.engine,f.manager);assert.equal(denied.status,status);assert.equal(denied.headers['cache-control'],'no-store');assert.ok(denied.body.error);assert.doesNotMatch(JSON.stringify(denied.body),/private source detail|secret-team/);assert.equal(denied.body.items,undefined);}finally{f.close();}
+  }
+});
+
 test('source failure and non-GET access fail closed without exposing a synthetic fallback',async()=>{
   const f=fixture(async()=>({status:503,body:null}));
   try{

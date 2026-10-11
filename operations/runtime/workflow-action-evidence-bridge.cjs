@@ -206,6 +206,10 @@ function createWorkflowActionEvidenceBridge(options = {}) {
       });
     }
 
+    if (source && [401,403].includes(Number(source.status))) {
+      return writeJson(res, Number(source.status), {error: Number(source.status) === 401
+        ? 'Sign in is required.' : 'Workflow action evidence requires authorised Time Review access.'});
+    }
     if (!source || Number(source.status) !== 200 || !source.body || typeof source.body !== 'object' || Array.isArray(source.body)) {
       return writeJson(res, 502, { error: 'Authoritative Time Review evidence is unavailable.' });
     }

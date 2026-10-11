@@ -4,17 +4,21 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function loadVectorHelpers() {
+function loadVectorHelpers(options={}) {
   const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
   const instrumented = source.replace(
     'window.VectorWorkforceOperations={marker:MARKER',
-    'window.VectorWorkforceOperations={alertsMarkup,readActionContext,rememberActionContext,marker:MARKER'
+    'window.VectorWorkforceOperations={alertsMarkup,readActionContext,rememberActionContext,renderEmployeeHome,retryEmployeeHome:typeof retryEmployeeHome==="function"?retryEmployeeHome:null,state,marker:MARKER'
   );
   assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
   const sandbox = {
+    fetch:options.fetch,
+    ui:options.ui||{page:'overview'},
+    me:()=>options.actor||{},isEmployee:()=>options.actor?.role==='employee',
     window: { render: undefined, addEventListener() {}, location: { href: 'https://example.test/' } },
     document: {
+      get title(){return this._title||'';},set title(value){this._title=value;options.onTitleWrite?.(value);},
       addEventListener() {},
       documentElement: {},
       querySelectorAll() { return []; },
@@ -145,4 +149,88 @@ test('action ordering cannot create synthetic urgency styling', () => {
   const css = fs.readFileSync(path.join(__dirname, 'vector-shell.css'), 'utf8');
   assert.doesNotMatch(css, /\.vector-alert-row:first-child>button\s*\{/);
   assert.match(css, /\.vector-alert-row>button\{[^}]*background:#edf3fb;[^}]*color:#355375;/);
+});
+
+test('employee home redraws only when content changes, allowing the mutation observer to settle',async()=>{
+  const actor={tenant:'alpha',email:'employee@alpha',id:'e1',role:'employee',name:'Alex'};
+  let titleWrites=0;const api=loadVectorHelpers({actor,onTitleWrite:()=>titleWrites++});
+  api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:'2026-10-11T09:00:00Z',localDate:'2026-10-11',timeZone:'Europe/London',maxAgeMs:300000}};
+  api.state.employeeHome={status:'ready',owner:'alpha:employee@alpha:e1',value:{identity:{name:'Alex'},leave:{availableMinutes:600},shifts:[],requests:[]}};
+  const host=()=>({html:'',writes:0,dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;this.writes++;},querySelector(){return this.html.includes('data-vector-employee-home')?{}:null;}});
+  const content=host();
+  for(let i=0;i<4;i++)await api.renderEmployeeHome(content);
+  assert.equal(content.writes,1,'an observer-triggered rerender of identical home content must not trigger another mutation');
+  assert.equal(titleWrites,1,'reassigning the same document title must not retrigger the document observer');
+  assert.match(content.html,/10 h/);
+  api.state.employeeHome.value.leave.availableMinutes=660;
+  await api.renderEmployeeHome(content);assert.equal(content.writes,2);assert.match(content.html,/11 h/);
+  content.innerHTML='<h1>Replacement content</h1>';
+  await api.renderEmployeeHome(content);assert.equal(content.writes,4,'replaced content must be restored even when the source value is unchanged');
+  const replacement=host();await api.renderEmployeeHome(replacement);assert.equal(replacement.writes,1,'a new host must receive the current home');
+});
+
+test('employee home failure settles until explicit retry and recovery settles too',async()=>{
+  let calls=0,unavailable=true;
+  const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'};
+  const api=loadVectorHelpers({actor,fetch:async()=>{calls++;return {ok:!unavailable,json:async()=>({identity:{name:'Worker'},leave:{availableMinutes:60},shifts:[],requests:[]})};}});
+  api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+  const content={html:'',writes:0,dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;this.writes++;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
+  for(let i=0;i<4;i++)await api.renderEmployeeHome(content);
+  assert.equal(calls,1,'observer passes must not retry an unavailable source');
+  assert.equal(content.writes,2,'loading and error are rendered only once');
+  assert.match(content.html,/data-vector-retry-employee-home/);
+  content.innerHTML='<h1>Replaced content</h1>';
+  await api.renderEmployeeHome(content);assert.equal(calls,1);assert.match(content.html,/Current work is unavailable/);
+  unavailable=false;
+  await api.retryEmployeeHome(content);
+  for(let i=0;i<4;i++)await api.renderEmployeeHome(content);
+  assert.equal(calls,2,'explicit retry makes one new request');assert.equal(api.state.employeeHome.status,'ready');
+  assert.match(content.html,/Worker/);
+});
+
+test('employee home discards delayed results after navigation, account change or host removal and can recover',async()=>{
+  for(const change of ['navigation-success','navigation-failure','account','detached']){
+    let release,calls=0;
+    const pending=new Promise(resolve=>{release=resolve;});
+    const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'},ui={page:'overview'};
+    const api=loadVectorHelpers({actor,ui,fetch:async()=>{calls++;if(calls===1)return pending;return {ok:true,json:async()=>({identity:{name:'Current worker'},shifts:[],requests:[]})};}});
+    api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+    const content={isConnected:true,html:'',dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
+    const running=api.renderEmployeeHome(content);await new Promise(resolve=>setImmediate(resolve));
+    if(change.startsWith('navigation'))ui.page='leave';
+    if(change==='account'){actor.email='second@alpha';actor.id='u2';}
+    if(change==='detached')content.isConnected=false;
+    content.innerHTML='<h1>New screen</h1>';
+    release({ok:change!=='navigation-failure',json:async()=>({identity:{name:'Previous worker'},shifts:[],requests:[]})});
+    await running;
+    assert.equal(content.html,'<h1>New screen</h1>',change+' cannot overwrite the current view');
+    assert.equal(api.state.employeeHome.status,'idle',change+' releases obsolete loading state');
+    ui.page='overview';content.isConnected=true;
+    await api.renderEmployeeHome(content);
+    assert.equal(calls,2,change+' can load again');assert.match(content.html,/Current worker/);
+  }
+});
+
+function timeEvidenceHarness({role='manager',allowed=true,calendarLoad}={}){
+  const source=fs.readFileSync(path.join(__dirname,'vector-shell.js'),'utf8');
+  const start=source.indexOf('function actionEvidenceOwnerKey()'),end=source.indexOf('function invalidateTenantCalendar()',start);
+  assert.ok(start>0&&end>start);
+  const calendar={asOf:'2026-10-11T09:00:00Z',timeZone:'Europe/London',maxAgeMs:300000};
+  const sandbox={state:{evidenceEpoch:0,timeReviewEvidence:{status:'idle',items:[],owner:''}},role,allowed,calls:[],
+    sourceIdentity:()=>({tenant:'alpha',email:'user@alpha',id:'u1',role:sandbox.role}),employee:()=>sandbox.role==='employee',
+    available:route=>route==='attendance'&&sandbox.allowed,refreshActionSurfaces:()=>{},loadTenantCalendar:calendarLoad||(()=>Promise.resolve(calendar)),
+    TIME_REVIEW_EVIDENCE_PATH:'/api/workforce/lifecycle/action-evidence/time-review',ACTION_EVIDENCE_CONTRACT:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',acceptTimeReviewEvidenceItem:item=>item,
+    fetch:async url=>{sandbox.calls.push(url);return {ok:true,json:async()=>({contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',workflow:'time-review',items:[{sourceId:'issue-1'}],...calendar})};}
+  };
+  vm.runInNewContext(source.slice(start,end)+';api={loadTimeReviewEvidence};',sandbox);return {sandbox,calendar};
+}
+test('payroll and employee screens do not request unavailable manager Time Review evidence',async()=>{
+  for(const role of ['payroll_admin','employee']){const {sandbox}=timeEvidenceHarness({role,allowed:false});assert.equal(await sandbox.api.loadTimeReviewEvidence(),false);assert.deepEqual(sandbox.calls,[]);}
+});
+test('authorised manager screens still load source-confirmed action evidence',async()=>{
+  const {sandbox}=timeEvidenceHarness();assert.equal(await sandbox.api.loadTimeReviewEvidence(),true);assert.equal(sandbox.calls.length,1);assert.equal(sandbox.state.timeReviewEvidence.items[0].sourceId,'issue-1');
+});
+test('losing access while the calendar loads prevents the manager evidence request',async()=>{
+  let release;const pending=new Promise(resolve=>{release=resolve;});const {sandbox,calendar}=timeEvidenceHarness({calendarLoad:()=>pending});
+  const result=sandbox.api.loadTimeReviewEvidence();sandbox.allowed=false;release(calendar);assert.equal(await result,false);assert.deepEqual(sandbox.calls,[]);
 });
