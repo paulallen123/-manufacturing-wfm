@@ -134,7 +134,14 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
   function reconcileProviderRecovery(a){
     if(!enabled||!providerRecovery)return;
     assert(admin(a),'Company configuration permission required.',403);
-    for(const attempt of db.prepare('SELECT * FROM support_recovery_attempts WHERE tenant=?').all(a.tenant))saveRecovery(a,attempt,readRecovery(a,attempt));
+    let reconciliationError=null;
+    // Each outcome has its own audited transaction; one outage must not block
+    // another completion from committing before overdue work is evaluated.
+    for(const attempt of db.prepare('SELECT * FROM support_recovery_attempts WHERE tenant=?').all(a.tenant)){
+      try{saveRecovery(a,attempt,readRecovery(a,attempt));}
+      catch(error){reconciliationError??=error;}
+    }
+    if(reconciliationError)throw reconciliationError;
   }
   function executeProviderRecovery(a,id,input,execute,preflight){
     guard();assert(admin(a),'Company configuration permission required.',403);
