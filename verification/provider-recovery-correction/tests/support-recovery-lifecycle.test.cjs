@@ -149,3 +149,61 @@ for(const mode of ['inside-start-audit','before-executor','after-executor'])test
  else{assert.equal(replay.executed,true);assert.equal(replay.replayed,true);assert.equal(replay.supportRecovery.state,'verifying-recovery');}
  const count=f.db.prepare("SELECT COUNT(*) n FROM provider_recovery_authority_events WHERE event_type='bounded-recovery-lease-acquired'").get().n;assert.equal(count,mode==='before-executor'?0:1);
 });
+
+function completeProviderWithoutSupportScan(f,inv,result){
+ f.jobs.checkpoint(inv.providerRunId,'bounded-synthetic-worker',{leaseGeneration:result.leaseGeneration,nextRequest:null,pages:1,sourceRecords:1,stagedRecords:1,sourceAt:new Date(f.now()).toISOString(),ingestedAt:new Date(f.now()).toISOString(),freshnessSloSeconds:3600});
+ f.jobs.complete(inv.providerRunId,'bounded-synthetic-worker',{leaseGeneration:result.leaseGeneration});
+}
+
+test('support scan commits unreconciled completion before deciding work is overdue',t=>{
+ const f=fixture(t),inv=f.attest(f.retry()),result=f.execute(inv,f.permit(inv));
+ completeProviderWithoutSupportScan(f,inv,result);
+ assert.equal(f.jobs.detail(f.actor,inv.providerRunId).state,'completed');
+ assert.equal(f.db.prepare('SELECT state FROM support_recovery_attempts WHERE investigation_id=?').get(inv.id).state,'verifying-recovery');
+ f.advance(16*60000);f.support.scan();
+ assert.equal(f.incident(inv).recovery.verified,true);
+ assert.equal(f.support.report(f.actor).incidents.some(x=>x.code==='investigation-overdue'),false);
+ assert.equal(f.db.prepare("SELECT COUNT(*) n FROM support_events WHERE action='provider-recovery-recovered-internal'").get().n,1);
+});
+
+test('overdue sentinel does not keep escalating after the original recovery commits',t=>{
+ const f=fixture(t),inv=f.attest(f.retry()),result=f.execute(inv,f.permit(inv));
+ completeProviderWithoutSupportScan(f,inv,result);
+ f.db.exec("CREATE TRIGGER scan_audit_outage BEFORE INSERT ON support_events WHEN NEW.action='provider-recovery-recovered-internal' BEGIN SELECT RAISE(ABORT,'scan audit outage'); END;");
+ f.advance(16*60000);assert.throws(()=>f.support.scan(),/scan audit outage/);
+ assert.equal(f.incident(inv).recovery.verified,false);
+ const overdue=f.support.report(f.actor).incidents.find(x=>x.code==='investigation-overdue');
+ assert.ok(overdue);assert.equal(overdue.evidence.pending,1);
+ f.db.exec('DROP TRIGGER scan_audit_outage');f.support.reconcileProviderRecovery(f.actor);
+ assert.equal(f.incident(inv).recovery.verified,true);
+ f.advance(16*60000);f.support.scan();
+ const after=f.support.report(f.actor).incidents.find(x=>x.id===overdue.id);
+ assert.equal(after.last_seen,overdue.last_seen,'historical overdue incident must not refresh itself as new pending work');
+ assert.deepEqual(after.evidence,overdue.evidence);
+ assert.equal(f.support.report(f.actor).incidentCount,2);
+});
+
+test('one failed audit does not block another completed recovery in the same tenant',t=>{
+ const f=fixture(t),invs=['first','second'].map(key=>f.attest(f.retry(key)));
+ const results=invs.map(inv=>f.execute(inv,f.permit(inv)));
+ invs.forEach((inv,index)=>completeProviderWithoutSupportScan(f,inv,results[index]));
+ const attempts=f.db.prepare('SELECT * FROM support_recovery_attempts WHERE tenant=?').all(f.actor.tenant);
+ assert.equal(attempts.length,2);assert(attempts.every(x=>x.state==='verifying-recovery'));
+ // Scope the fault to the first actual traversal entry, independent of UUID order.
+ const failed=attempts[0],healthy=attempts[1];
+ f.db.exec("CREATE TEMP TABLE failed_support_outcomes(incident_id TEXT PRIMARY KEY);");
+ f.db.prepare('INSERT INTO failed_support_outcomes VALUES(?)').run(failed.incident_id);
+ f.db.exec("CREATE TEMP TRIGGER isolated_completion_audit_outage BEFORE INSERT ON support_events WHEN NEW.action='provider-recovery-recovered-internal' AND NEW.record_id IN (SELECT incident_id FROM failed_support_outcomes) BEGIN SELECT RAISE(ABORT,'isolated completion audit outage'); END;");
+ f.advance(16*60000);assert.throws(()=>f.support.scan(),/isolated completion audit outage/);
+ const report=f.support.report(f.actor),failedIncident=report.incidents.find(x=>x.id===failed.incident_id),healthyIncident=report.incidents.find(x=>x.id===healthy.incident_id);
+ assert.equal(failedIncident.recovery.verified,false);
+ assert.equal(healthyIncident.job_status,'recovered-internal');assert.equal(healthyIncident.recovery.verified,true);
+ assert.equal(report.incidents.find(x=>x.code==='investigation-overdue').evidence.pending,1);
+ const outcomes=()=>f.db.prepare("SELECT record_id FROM support_events WHERE action='provider-recovery-recovered-internal'").all();
+ assert.deepEqual(outcomes().map(x=>x.record_id),[healthy.incident_id]);
+ f.reopen();f.support.scan();
+ assert(invs.every(inv=>f.incident(inv).recovery.verified));
+ assert.equal(outcomes().length,2,'restart commits only the formerly failed audit');
+ assert.equal(new Set(outcomes().map(x=>x.record_id)).size,2);
+ assert.equal(f.db.prepare("SELECT COUNT(*) n FROM provider_recovery_authority_events WHERE event_type='bounded-recovery-lease-acquired'").get().n,2);
+});
