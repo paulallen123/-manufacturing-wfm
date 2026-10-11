@@ -77,6 +77,7 @@ function stageMarkup(){
   return stages.map((stage,index)=>{
     let st=stage[0]==='Go live'?(S.status?.operationalReady?'complete':'pending'):groupState(stage[1],stage[2]);
     if(stage[0]==='Integrations'&&st==='complete'&&(S.status?.integrationTruth?.unifiedReady!==true||(S.status?.providerJourney?.required&&S.status?.providerJourney?.proven!==true)))st='progress';
+    if(stage[0]==='Training'&&st==='complete'&&!learningCounts().populationReady)st='progress';
     const caption=stage[0]==='Training'&&st!=='complete'?'From day one':stateLabel(st);
     return '<div class="wfm-ij-stage '+st+'"><span class="wfm-ij-stage-dot">'+stateIcon(st)+'</span><div><b>'+safe(stage[0])+'</b><small>'+safe(caption)+'</small></div></div>'+(index<stages.length-1?'<span class="wfm-ij-stage-line"></span>':'');
   }).join('');

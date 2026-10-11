@@ -30,6 +30,7 @@ function status(overrides={}){
   return {requirements:[{key:'source-systems',satisfied:true},{key:'role-learning',satisfied:false},{key:'privileged-competency',satisfied:false},{key:'frontline-readiness',satisfied:false}],integrationTruth:{unifiedReady:false},providerJourney:{required:true,proven:false},learningSummary:{masteryPercent:100,mastered:124,assignments:124,users:12,requiredPopulation:50,privilegedReady:true,fullyCertified:true,populationReconciliationRequired:true,populationAndRoleCoverageReady:false,privilegedCoverageReady:true},...overrides};
 }
 function integrationStage(html){return html.match(/<div class="wfm-ij-stage [^>]+>.*?<b>Integrations<\/b><small>(.*?)<\/small>/)?.[1];}
+function trainingStage(html){return html.match(/<b>Training<\/b><small>(.*?)<\/small>/)?.[1];}
 test('connected source alone does not present blocked unified integrations as complete',()=>{
   assert.notEqual(integrationStage(render(status()).stages),'Complete');
 });
@@ -53,12 +54,15 @@ test('full learning completion does not claim readiness for an unreconciled popu
 });
 test('population coverage alone cannot replace missing training-control evidence',()=>{
   const base=status(); base.learningSummary.populationAndRoleCoverageReady=true;
-  assert.doesNotMatch(render(base).training,/team ready/i);
+  const view=render(base);
+  assert.doesNotMatch(view.training,/team ready/i);
+  assert.notEqual(trainingStage(view.stages),'Complete');
 });
 test('all current training controls and population coverage can present team readiness',()=>{
   const base=status(); for(const row of base.requirements)row.satisfied=true;
   base.learningSummary.populationAndRoleCoverageReady=true; base.learningSummary.users=50;
-  const html=render(base).training;
+  const view=render(base),html=view.training;
+  assert.equal(trainingStage(view.stages),'Complete');
   assert.match(html,/team ready/i);
   assert.match(html,/<b>Yes<\/b> privileged roles ready/);
   assert.doesNotMatch(html,/population coverage incomplete/i);
@@ -66,5 +70,14 @@ test('all current training controls and population coverage can present team rea
 test('missing population coverage cannot present team readiness even with satisfied controls',()=>{
   const base=status();for(const row of base.requirements)row.satisfied=true;
   delete base.learningSummary.populationAndRoleCoverageReady;
-  assert.doesNotMatch(render(base).training,/team ready/i);
+  const view=render(base);
+  assert.doesNotMatch(view.training,/team ready/i);
+  assert.notEqual(trainingStage(view.stages),'Complete');
+});
+
+test('false population coverage prevents a complete Training stage even when controls are satisfied',()=>{
+  const base=status(); for(const row of base.requirements)row.satisfied=true;
+  const view=render(base);
+  assert.notEqual(trainingStage(view.stages),'Complete');
+  assert.doesNotMatch(view.training,/team ready/i);
 });
