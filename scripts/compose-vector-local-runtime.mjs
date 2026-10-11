@@ -176,6 +176,7 @@ fs.mkdirSync(output, { recursive: true });
 execFileSync('tar', ['--no-same-owner', '-xzf', archive, '-C', output]);
 const run = (file, args = []) => { recordInput(file); return execFileSync(process.execPath, [path.join(root, file), ...args], { stdio: 'inherit' }); };
 const publicRoot = path.join(output, 'public');
+run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
 run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
 run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
@@ -187,7 +188,8 @@ const groups = {
     'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
     'agents-api-adapter.cjs', 'agents-api-bootstrap-route.cjs', 'implementation-work-controller.cjs',
     'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
-    'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs'
+    'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs',
+    'workspace-setup.cjs','organisation-access-setup.cjs','customer-workspace.cjs','organisation-access-lifecycle.cjs'
   ],
   learning: [
     'adaptive-learning-engine.cjs', 'training-workflow-manifest.cjs',

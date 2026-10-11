@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { Readable } = require('node:stream');
-const { createHash } = require('node:crypto');
+const { createHash,createHmac } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createOneDayEnterpriseEngine, REQUIREMENTS } = require('./one-day-enterprise-engine.cjs');
 
@@ -42,6 +42,10 @@ function fixture(options = {}) {
   const sentInvitations = [];
   let invitationAttempts = 0;
   const engineOptions = {
+    configurationCompiler: options.configurationCompiler,
+    verifySignedContract: options.verifySignedContract,
+    provisionInitialOwner: options.provisionInitialOwner,
+    createCanonicalTenant: options.createCanonicalTenant,
     strictEvidence: options.strictEvidence,
     agentsApiEnabled: false,
     dbPath,
@@ -149,6 +153,202 @@ const GOLDEN_JOURNEY_STEPS = [
   'downstream-state-update','roi-value-evidence',
   'support-problem-injected','support-problem-detected','support-problem-repaired'
 ];
+
+function setupAnswers() {
+  return {organisation:{name:'New Works',countries:['UK'],sites:[{code:'NW',name:'New Factory',timezone:'Europe/London'}]},
+    workforce:{count:10,languages:['en'],shiftPatterns:2},
+    capabilities:{modules:['core','scheduling','integrations'],trainingRoles:['employee','manager']},
+    connections:{timing:'later',systems:[]}};
+}
+function signingFixture(t,extra={}){
+  const secret='isolated-signing-test-secret',bindings=new Map();let provisions=0;
+  const owner='first.owner@alpha.test';
+  const f=fixture({sendInvitation:extra.sendInvitation,configurationCompiler:require('./test-support/sealed-compiler.cjs')(t),
+    verifySignedContract({rawBody,headers}){
+      const expected=createHmac('sha256',secret).update(rawBody).digest('hex');
+      if(headers['x-test-signature']!==expected)throw Object.assign(Error('Invalid signing signature'),{statusCode:403});
+      const event=JSON.parse(rawBody.toString('utf8'));const binding=bindings.get(event.eventId);
+      if(!binding)throw Object.assign(Error('Unknown verified contract'),{statusCode:403});return binding;
+    },
+    provisionInitialOwner({db,tenant,email,role,costs,permissions}){
+      provisions++;
+      // Isolated account fixture only. No real credential or identity authority.
+      db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run(email,tenant,'fixture-owner-root',role,costs,'fixture-disabled','00',JSON.stringify(permissions));
+    }});
+  const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  const initial={verified:true,ownerAuthorized:true,customerId:'customer-a',customerAuthorityRef:'crm/customer-a',tenant:'alpha',provider:'test-signature-provider',eventId:'signed-a',contractRef:'first-contract',relationship:'initial',ownerEmail:owner,ownerAuthorityRef:'signed-owner-a',profile:{organisationName:'Alpha Works'}};
+  const send=async(binding=initial,body={eventId:binding.eventId},signature)=>{
+    bindings.set(binding.eventId,binding);
+    return call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',body,{...f.contractWebhook,'x-test-signature':signature??createHmac('sha256',secret).update(JSON.stringify(body)).digest('hex')});
+  };
+  return {...f,db,owner,initial,send,get provisions(){return provisions;}};
+}
+for(const background of [false,true])for(const success of [false,true])test('revocation during '+(background?'background':'initial')+' invitation '+(success?'success':'failure')+' prevents later sends and preserves cancellation',async t=>{
+  let entered,finish,count=0;const started=new Promise(resolve=>{entered=resolve;});
+  const f=signingFixture(t,{async sendInvitation(){
+    count++;if(background&&count<=2)throw Error('temporary outage');
+    if(count>(background?3:1))return {provider:'fixture',messageId:'forbidden-retry'};
+    entered();return await new Promise((resolve,reject)=>{finish=()=>success?resolve({provider:'fixture',messageId:'already-dispatched'}):reject(Error('transport failed'));});
+  }});
+  let pending;
+  if(background){assert.equal((await f.send()).status,201);f.db.exec('UPDATE implementation_notification_outbox SET next_attempt_at_ms=0');pending=f.engine.retryDueNotifications();}
+  else pending=f.send();
+  await started;f.db.prepare('UPDATE users SET permissions=? WHERE email=?').run('[]',f.owner);finish();const result=await pending;
+  assert.equal(count,background?3:1,'No invitation send may start after revocation');
+  assert.equal(f.db.prepare('SELECT status FROM implementation_invitations').get().status,'REVOKED');
+  assert.equal(f.db.prepare('SELECT state FROM implementation_notification_outbox').get().state,'BLOCKED');
+  if(background)assert.equal(result.delivered,0);else{assert.equal(result.body.notification.delivered,false);assert.equal(result.body.notification.blocked,true);}
+});
+for(const change of ['permission','session','freeze']) test('setup apply rechecks '+change+' after reading the body inside its transaction',async t=>{
+  const f=signingFixture(t);assert.equal((await f.send()).status,201);
+  const token='race-owner-session';f.db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(token),f.owner,Date.now()+60000);
+  const route='/api/implementation/autonomous/setup';
+  const saved=await call(f.engine,token,'POST',route,{expectedRevision:0,answers:setupAnswers()});assert.equal(saved.status,200);
+  const before=f.db.prepare('SELECT * FROM workspace_setup_drafts').all();
+  const req=Readable.from((async function*(){
+    if(change==='permission')f.db.prepare('UPDATE users SET permissions=? WHERE email=?').run('[]',f.owner);
+    if(change==='session')f.db.prepare('DELETE FROM sessions WHERE email=?').run(f.owner);
+    if(change==='freeze')f.db.exec("CREATE TABLE identity_tenant_control(tenant TEXT PRIMARY KEY,privileged_freeze INTEGER); INSERT INTO identity_tenant_control VALUES('alpha',1)");
+    yield JSON.stringify({expectedRevision:1,reviewToken:saved.body.reviewToken});
+  })());
+  req.method='POST';req.url=route+'/apply';req.headers={cookie:'wfm_session='+token};const res=response();
+  await f.engine.handleRequest(req,res);
+  assert.ok([401,403].includes(res.statusCode),res.body);
+  assert.deepEqual(f.db.prepare('SELECT * FROM workspace_setup_drafts').all(),before);
+  assert.equal(f.db.prepare('SELECT state FROM tenant_environments').get().state,'SETUP_REQUIRED');
+});
+test('signed input without a real verifier is disabled and creates no workspace',async t=>{
+  const f=fixture();t.after(()=>f.close());
+  const result=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{state:'SIGNED',tenant:'alpha',contractId:'unverified',recipientEmail:'first@alpha.test'},f.contractWebhook);
+  assert.equal(result.status,503);assert.equal(f.sentInvitations.length,0);
+  const db=new DatabaseSync(f.dbPath);assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,0);db.close();
+});
+test('verified signing creates a new owner once and renewal preserves completed questionnaire and namespace',async t=>{
+  const f=signingFixture(t);
+  const bad=await f.send(f.initial,{eventId:'signed-a'},'invalid');assert.equal(bad.status,403);assert.equal(f.provisions,0);
+  const signed=await f.send(f.initial,{eventId:'signed-a',tenant:'bravo',recipientEmail:'attacker@bravo.test'});
+  assert.equal(signed.status,201,JSON.stringify(signed.body));assert.equal(f.provisions,1);
+  const owner=f.db.prepare('SELECT * FROM users WHERE email=?').get(f.owner);assert.equal(owner.tenant,'alpha');assert.equal(owner.costs,0);assert.deepEqual(JSON.parse(owner.permissions),['company.configure']);
+  const workspace=f.db.prepare('SELECT * FROM customer_workspaces').get();const environment=f.db.prepare('SELECT * FROM tenant_environments').get();
+  assert.equal(environment.state,'SETUP_REQUIRED');assert.equal(environment.run_id,workspace.initial_run_id);
+  // This route test uses an isolated session. Separate WebAuthn proof must enrol/authenticate the new owner.
+  const token='new-owner-session-fixture';f.db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(token),f.owner,Date.now()+60000);
+  const route='/api/implementation/autonomous/setup';
+  const saved=await call(f.engine,token,'POST',route,{expectedRevision:0,answers:setupAnswers()});assert.equal(saved.status,200);
+  assert.equal((await call(f.engine,token,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  const completed=(await call(f.engine,token,'GET',route)).body;assert.equal(completed.questionnaireComplete,true);
+  assert.equal((await f.send()).status,200);assert.equal(f.provisions,1);assert.equal(f.sentInvitations.length,1);
+  const renewal=await f.send({...f.initial,eventId:'renewal-event',contractRef:'renewal-contract',relationship:'renewal',existingWorkspaceId:workspace.workspace_id});
+  assert.equal(renewal.status,200,JSON.stringify(renewal.body));assert.equal(f.provisions,1);assert.equal(f.sentInvitations.length,1);
+  const after=(await call(f.engine,token,'GET',route)).body;assert.equal(after.runId,completed.runId);assert.equal(after.completedAt,completed.completedAt);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,1);
+  assert.equal(f.db.prepare('SELECT namespace FROM tenant_environments').get().namespace,environment.namespace);
+  const conflicting=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'third-contract',recipientEmail:f.owner},f.internal);
+  assert.equal(conflicting.status,409);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,1);
+});
+test('signing audit interruption rolls back owner, workspace, run and notification reservation',async t=>{
+  const f=signingFixture(t);
+  f.db.exec("CREATE TRIGGER refuse_signing BEFORE INSERT ON customer_workspace_events BEGIN SELECT RAISE(ABORT,'audit unavailable'); END");
+  assert.equal((await f.send()).status,500);
+  for(const table of ['customer_workspaces','implementation_runs','tenant_environments','organisation_access_setup','implementation_invitations','implementation_notification_outbox'])assert.equal(f.db.prepare('SELECT COUNT(*) n FROM '+table).get().n,0,table);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM users WHERE email=?').get(f.owner).n,0);assert.equal(f.sentInvitations.length,0);
+  f.db.exec('DROP TRIGGER refuse_signing');assert.equal((await f.send()).status,201);
+});
+test('replayed signing cannot issue fresh invitation authority after expiry',async t=>{
+  const f=signingFixture(t);assert.equal((await f.send()).status,201);
+  const before=f.db.prepare('SELECT id,token_hash FROM implementation_invitations').get();
+  f.db.exec('UPDATE implementation_invitations SET expires_at_ms=1');
+  assert.equal((await f.send()).status,200);
+  assert.deepEqual(f.db.prepare('SELECT id,token_hash FROM implementation_invitations').get(),before);
+  assert.equal(f.sentInvitations.length,1);assert.equal(f.provisions,1);
+});
+for(const mutation of ["UPDATE users SET permissions='[]' WHERE email=?",'DELETE FROM users WHERE email=?']) {
+  test('canonical owner revocation atomically closes initial authority: '+mutation,async t=>{
+    const f=signingFixture(t);assert.equal((await f.send()).status,201);
+    f.db.exec("CREATE TRIGGER refuse_revocation_audit BEFORE INSERT ON organisation_access_setup_events WHEN NEW.action='INITIAL_OWNER_ACCESS_REVOKED' BEGIN SELECT RAISE(ABORT,'revocation audit unavailable'); END");
+    assert.throws(()=>f.db.prepare(mutation).run(f.owner),/revocation audit unavailable/);
+    assert.equal(f.db.prepare('SELECT state FROM organisation_access_initial_authority').get().state,'CONSUMED');
+    assert.equal(f.db.prepare('SELECT permissions FROM users WHERE email=?').get(f.owner).permissions,'["company.configure"]');
+    f.db.exec('DROP TRIGGER refuse_revocation_audit');f.db.prepare(mutation).run(f.owner);
+    assert.equal(f.db.prepare('SELECT state FROM organisation_access_initial_authority').get().state,'REVOKED');
+    assert.equal(f.db.prepare('SELECT status FROM implementation_invitations').get().status,'REVOKED');
+    assert.equal((await f.send()).status,200);assert.equal(f.provisions,1);assert.equal(f.sentInvitations.length,1);
+  });
+}
+test('permanent workspace rejects legacy scope and activation replay cannot overwrite a reviewed setup',async t=>{
+  const f=signingFixture(t);await f.send();
+  const before=f.db.prepare('SELECT * FROM tenant_environments').all();
+  const replay=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:f.initial.contractRef,recipientEmail:f.owner,scope:{companyName:'Overwrite',employeeCount:1,countries:['UK'],sites:['Other']}},f.internal);
+  assert.equal(replay.status,200);assert.deepEqual(f.db.prepare('SELECT * FROM tenant_environments').all(),before);
+  const denied=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/scope',{companyName:'Overwrite',employeeCount:1,countries:['UK'],sites:['Other']});
+  assert.equal(denied.status,409);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM implementation_scope').get().n,0);
+});
+async function setupFixture(t) {
+  const compiler=require('./test-support/sealed-compiler.cjs')(t);
+  const f=fixture({configurationCompiler:compiler});
+  const connections=[];
+  f.inspectDb=()=>{const db=new DatabaseSync(f.dbPath);connections.push(db);return db;};
+  t.after(()=>{for(const db of connections)db.close();f.close();});
+  const start=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',
+    {tenant:'alpha',contractRef:'setup-contract',recipientEmail:'manager@alpha.test'},f.internal);
+  assert.ok([200,201].includes(start.status),JSON.stringify(start.body));
+  return f;
+}
+test('setup routes require manager authority and bind drafts to the session tenant/current run',async t=>{
+  const f=await setupFixture(t), route='/api/implementation/autonomous/setup';
+  for(const method of ['GET','POST']) {
+    assert.equal((await call(f.engine,null,method,route,{})).status,401);
+    assert.equal((await call(f.engine,f.tokens.employee,method,route,{})).status,403);
+  }
+  const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()});
+  assert.equal(saved.status,200); assert.equal(saved.body.tenant,'alpha');
+  assert.equal((await call(f.engine,f.tokens.bravo,'GET',route)).status,409);
+  assert.equal((await call(f.engine,f.tokens.bravo,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,409);
+});
+test('reviewed setup applies metadata through the fenced effect and keeps all 21 readiness controls',async t=>{
+  const f=await setupFixture(t), route='/api/implementation/autonomous/setup';
+  const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()});
+  assert.equal(saved.status,200);
+  const db=f.inspectDb();
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_scope').get().n,0);
+  const applied=await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken});
+  assert.equal(applied.status,200,JSON.stringify(applied.body)); assert.equal(applied.body.status,'APPLIED');
+  const env=db.prepare('SELECT * FROM tenant_environments WHERE tenant=?').get('alpha');
+  const config=JSON.parse(env.configuration_json);
+  assert.equal(config.companyName,'New Works'); assert.equal(config.workspaceSetup.organisation.sites[0].timezone,'Europe/London');
+  assert.equal(config.workspaceSetup.workforce.shiftPatterns,2);
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_work_receipts').get().n,1);
+  const current=f.engine.statusForTenant('alpha'); assert.equal(current.requirements.length,21); assert.equal(current.operationalReady,false);
+  assert.equal(current.requirements.find(r=>r.key==='source-systems').satisfied,false);
+  assert.equal(current.requirements.find(r=>r.key==='identity-access').satisfied,false);
+  assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+});
+for(const table of ['implementation_events','tenant_environment_events','workspace_setup_events']) {
+  test('setup application rolls back scope, environment, jobs and draft when '+table+' audit fails',async t=>{
+    const f=await setupFixture(t), route='/api/implementation/autonomous/setup';
+    const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()}); assert.equal(saved.status,200);
+    const db=f.inspectDb();
+    const before=JSON.stringify(db.prepare('SELECT * FROM implementation_work_jobs').all());
+    db.exec('CREATE TRIGGER refuse_setup_apply BEFORE INSERT ON '+table+" BEGIN SELECT RAISE(ABORT,'test audit unavailable'); END");
+    const result=await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken});
+    assert.equal(result.status,500);
+    assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_scope').get().n,0);
+    assert.equal(db.prepare('SELECT COUNT(*) n FROM tenant_environments').get().n,0);
+    assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_work_receipts').get().n,0);
+    assert.equal(JSON.stringify(db.prepare('SELECT * FROM implementation_work_jobs').all()),before);
+    assert.equal((await call(f.engine,f.tokens.manager,'GET',route)).body.status,'DRAFT');
+    db.exec('DROP TRIGGER refuse_setup_apply');
+    assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  });
+}
+test('legacy scope write cannot commit when the required scope audit fails',async t=>{
+  const f=await setupFixture(t), db=f.inspectDb();
+  db.exec("CREATE TRIGGER refuse_scope_audit BEFORE INSERT ON implementation_events WHEN NEW.event='CUSTOMER_SCOPE_SUBMITTED' BEGIN SELECT RAISE(ABORT,'scope audit unavailable'); END");
+  const result=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/scope',
+    {companyName:'Works',countries:['UK'],sites:['Main'],employeeCount:10});
+  assert.equal(result.status,500); assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_scope').get().n,0);
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM tenant_environments').get().n,0);
+});
 
 function evidenceDetail(kind) {
   if (kind === 'time-policies') {
@@ -402,8 +602,17 @@ test('hosted evidence admission refuses another candidate without recording a PA
   } finally { f.close(); }
 });
 
-test('provider-neutral signed contract webhook starts implementation immediately and sends one invitation', async () => {
-  const f = fixture();
+function verifiedFixtureEvent({rawBody}) {
+  // Explicit test authority adapter for legacy notification regressions only.
+  const input=JSON.parse(rawBody.toString('utf8'));
+  if(input.event==='draft')return null;
+  if(!['external-contract-001','external-auto-mail-retry','external-ambiguous-mail','external-mail-retry'].includes(input.contractId))throw Error('Unknown fixture contract');
+  return {verified:true,ownerAuthorized:true,customerId:'fixture-alpha',customerAuthorityRef:'fixture-customer-authority',
+    tenant:'alpha',provider:'fixture-provider',eventId:input.contractId+'-signed',contractRef:input.contractId,
+    relationship:'initial',ownerEmail:'manager@alpha',ownerAuthorityRef:'fixture-owner-authority',profile:{organisationName:'Alpha'}};
+}
+test('verified signed contract starts implementation immediately and sends one invitation', async () => {
+  const f = fixture({verifySignedContract:verifiedFixtureEvent});
   try {
     const denied = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
@@ -590,7 +799,7 @@ test('repeated trusted activation retries a failed invitation without duplicatin
 });
 
 test('one trusted contract event automatically recovers a transient invitation failure', async () => {
-  const f = fixture({ failFirstInvitation: true });
+  const f = fixture({ failFirstInvitation: true,verifySignedContract:verifiedFixtureEvent });
   try {
     const result = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
@@ -617,7 +826,7 @@ test('one trusted contract event automatically recovers a transient invitation f
 });
 
 test('automatic retry preserves an ambiguously accepted invitation and delivery identity', async () => {
-  const f = fixture({ acceptThenFailFirstInvitation: true });
+  const f = fixture({ acceptThenFailFirstInvitation: true,verifySignedContract:verifiedFixtureEvent });
   try {
     const result = await call(
       f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
@@ -649,18 +858,21 @@ test('automatic retry preserves an ambiguously accepted invitation and delivery 
 });
 
 test('signed contract webhook replay uses the same bounded notification recovery', async () => {
-  const f = fixture({ failInvitationAttempts: 2 });
+  const f = fixture({ failInvitationAttempts: 2,verifySignedContract:verifiedFixtureEvent });
   try {
     const event = {
       event: 'contract_signed', tenant: 'alpha', contractId: 'external-mail-retry',
       implementationContactEmail: 'manager@alpha', targetHours: 8
     };
     const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed', event, f.contractWebhook);
+    const pending=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',event,f.contractWebhook);
+    assert.equal(pending.body.notification.delivered,false,'Replay must respect the existing retry delay');
+    const dueDb=new DatabaseSync(f.dbPath);dueDb.exec('UPDATE implementation_notification_outbox SET next_attempt_at_ms=0');dueDb.close();
     const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed', event, f.contractWebhook);
     assert.equal(first.status, 201);
     assert.equal(first.body.notification.delivered, false);
     assert.equal(replay.status, 200);
-    assert.equal(replay.body.notification.delivered, true);
+    assert.equal(replay.body.notification.delivered, true,JSON.stringify({notification:replay.body.notification,attempts:f.invitationAttempts}));
     assert.equal(replay.body.implementation.runId, first.body.implementation.runId);
     assert.equal(f.invitationAttempts, 3);
     const db = new DatabaseSync(f.dbPath);
@@ -1764,6 +1976,20 @@ test('current admission: manager cookie and unauthenticated caller cannot publis
 
 async function admitEvidenceComplete(f){await call(f,'scope',scope(),'manager');for(const{key}of REQUIREMENTS){if(key!=='configuration-scope')assert.equal((await submit(f,key)).status,200,key);}const status=await call(f,'status',undefined,'manager');assert.equal(status.body.completedRequirements,REQUIREMENTS.length);assert.equal(status.body.operationalReady,false);assert.ok(status.body.launchBoundary.blockers.includes('UNIFIED_INTEGRATION_TRUTH_UNPROVEN'));return status.body;}
 test('current admission: same-count scope changes invalidate only affected proof epochs and cannot resurrect prior configuration authority',async()=>{const f=fixture();try{await admitEvidenceComplete(f);const before=f.audit(),old=scope();const changed={...old,countries:['Germany'],sites:['Plant2'],erpSystem:'ERP-DE'};const updated=await call(f,'scope',changed,'manager');assert.equal(updated.body.operationalReady,false);assert.ok(updated.body.requirements.filter(x=>x.status==='REVALIDATION_REQUIRED').length>0);const scoped=new Map(updated.body.requirements.map(x=>[x.key,x]));assert.equal(scoped.get('tenant-environment').status,'REVALIDATION_REQUIRED');assert.equal(scoped.get('time-policies').status,'REVALIDATION_REQUIRED');assert.equal(scoped.get('identity-access').satisfied,true);assert.equal(scoped.get('security-controls').satisfied,true);assert.equal(scoped.get('source-systems').satisfied,true);assert.deepEqual(f.audit().evidence,before.evidence);f.reopen(true);assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);const back=await call(f,'scope',old,'manager');assert.equal(back.body.operationalReady,false,'Prior identical configuration must not resurrect old-revision authority');assert.deepEqual(f.audit().evidence,before.evidence);assert.equal(f.audit().environments[0].environment_id,before.environments[0].environment_id);}finally{f.close();}});
+test('current admission: restored person binding cannot resurrect identity and security receipts',async()=>{
+  const f=fixture();try{
+    await admitEvidenceComplete(f);const before=f.audit().evidence;
+    const d=new DatabaseSync(f.dbPath);const owner=d.prepare('SELECT email,person_id FROM users WHERE tenant=? AND role<>?').get('review-alpha','employee');
+    d.prepare('UPDATE users SET person_id=? WHERE email=?').run('changed-authority-anchor',owner.email);
+    const changed=await call(f,'status',undefined,'manager');
+    for(const key of ['identity-access','security-controls'])assert.equal(row(changed,key).status,'REVALIDATION_REQUIRED',key);
+    d.prepare('UPDATE users SET person_id=? WHERE email=?').run(owner.person_id,owner.email);d.close();
+    const restored=await call(f,'status',undefined,'manager');
+    for(const key of ['identity-access','security-controls'])assert.equal(row(restored,key).status,'REVALIDATION_REQUIRED',key);
+    assert.deepEqual(f.audit().evidence,before);
+  }finally{f.close();}
+});
+
 test('current admission: identical scope resubmission preserves ready receipts and existing effect/job identity',async()=>{const f=fixture();try{await admitEvidenceComplete(f);const before=f.audit(),d=new DatabaseSync(f.dbPath),count=d.prepare('SELECT COUNT(*) AS n FROM tenant_environment_events').get().n;d.close();const again=await call(f,'scope',scope(),'manager');assert.equal(again.body.completedRequirements,REQUIREMENTS.length);assert.equal(again.body.operationalReady,false);assert.deepEqual(f.audit().evidence,before.evidence);assert.deepEqual(f.audit().jobs.map(x=>[x.id,x.intent_digest,x.status]),before.jobs.map(x=>[x.id,x.intent_digest,x.status]));const check=new DatabaseSync(f.dbPath);assert.equal(check.prepare('SELECT COUNT(*) AS n FROM tenant_environment_events').get().n,count);check.close();}finally{f.close();}});
 test('current admission: configuration-bound evidence rejects stale digest while caller-issued seals are always refused',async()=>{const f=fixture();try{await call(f,'scope',scope(),'manager');assert.equal((await submit(f,'scheduling',{...detail('scheduling'),configurationDigest:'prior-configuration'})).status,409);assert.equal((await submit(f,'identity-access',{...detail('identity-access'),_configurationValidation:{version:1}})).status,409);assert.equal(f.audit().evidence.length,0);}finally{f.close();}});
 

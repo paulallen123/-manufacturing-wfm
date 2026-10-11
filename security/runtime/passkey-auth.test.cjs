@@ -46,27 +46,7 @@ function fixture(t, extra = {}) {
   return f;
 }
 
-// Independent test authenticator signs real WebAuthn transcripts. Production verification is never mocked.
-function authenticator(options, overrides={}) {
-  const keys=generateKeyPairSync('ec',{namedCurve:'prime256v1'});
-  const jwk=keys.publicKey.export({format:'jwk'});
-  const id=randomBytes(32);
-  const cose=encodeCBOR(new Map([[1,2],[3,-7],[-1,1],[-2,Buffer.from(jwk.x,'base64url')],[-3,Buffer.from(jwk.y,'base64url')]]));
-  const rp=overrides.rp||'vector.test';
-  const client=(type,challenge,origin='https://vector.test')=>Buffer.from(JSON.stringify({type,challenge,origin,crossOrigin:false}));
-  const data=(flags,counter)=>{const n=Buffer.alloc(4);n.writeUInt32BE(counter);return Buffer.concat([hash(rp),Buffer.from([flags]),n]);};
-  const length=Buffer.alloc(2);length.writeUInt16BE(id.length);
-  const authData=Buffer.concat([data(overrides.flags??0x45,0),Buffer.alloc(16),length,id,cose]);
-  const attestation=encodeCBOR(new Map([['fmt','none'],['attStmt',new Map()],['authData',authData]]));
-  return {id:b64(id),registration:{id:b64(id),rawId:b64(id),type:'public-key',clientExtensionResults:{credProps:{rk:true}},
-    response:{attestationObject:b64(attestation),clientDataJSON:b64(client('webauthn.create',overrides.challenge||options.challenge,overrides.origin)),transports:['internal']}},
-    assertion(authOptions, change={}) {
-      const cd=client('webauthn.get',change.challenge||authOptions.challenge,change.origin);
-      const ad=data(change.flags??0x05,change.counter??1);
-      const signature=sign('sha256',Buffer.concat([ad,hash(cd)]),change.privateKey||keys.privateKey);
-      return {id:b64(id),rawId:b64(id),type:'public-key',clientExtensionResults:{},response:{clientDataJSON:b64(cd),authenticatorData:b64(ad),signature:b64(signature),userHandle:change.userHandle??options.user.id}};
-    }};
-}
+const {authenticator}=require('./test-support/authenticator.cjs');
 async function enroll(f, options={}) {
   const started=await f.call('register/options',{},f.session);
   assert.equal(started.statusCode,200,started.text);
@@ -154,6 +134,19 @@ test('origin, transport and body authority injection are denied before enrolment
   assert.equal((await f.call('register/options',{},f.session,{origin:'https://evil.test'})).statusCode,403);
   assert.equal((await f.call('register/options',{},f.session,{'x-forwarded-proto':'http'})).statusCode,403);
   assert.equal((await f.call('register/options',{tenant:'other',role:'director'},f.session)).statusCode,400);
+});
+test('revoked historical passkey cannot be replaced through a fresh contract invitation',async t=>{
+  const f=fixture(t);assert.equal((await enroll(f)).finished.statusCode,200);
+  f.db.exec('UPDATE passkey_credentials SET revoked_at=1');
+  const invitation=randomBytes(32).toString('base64url');
+  f.db.prepare('INSERT INTO implementation_invitations VALUES(?,?,?,?,?,?)').run('new-invite','fixture',hash('manager@fixture.example').toString('hex'),hash(invitation).toString('hex'),'PENDING',Date.now()+600000);
+  assert.equal((await f.call('register/options',{invitation})).statusCode,401);
+});
+test('revoked initial owner cannot enrol through a pending invitation',async t=>{
+  const f=fixture(t),invitation=randomBytes(32).toString('base64url');
+  f.db.exec("CREATE TABLE organisation_access_initial_authority(tenant TEXT,owner_email TEXT,state TEXT); INSERT INTO organisation_access_initial_authority VALUES('fixture','manager@fixture.example','REVOKED')");
+  f.db.prepare('INSERT INTO implementation_invitations VALUES(?,?,?,?,?,?)').run('i1','fixture',hash('manager@fixture.example').toString('hex'),hash(invitation).toString('hex'),'PENDING',Date.now()+600000);
+  assert.equal((await f.call('register/options',{invitation})).statusCode,401);
 });
 test('secure invitation enrols only its existing recipient once',async t=>{
   const f=fixture(t);const invitation=randomBytes(32).toString('base64url');
