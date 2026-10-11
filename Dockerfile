@@ -8,6 +8,7 @@ RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
 RUN node --test implementation/ui/implementation-observer.test.cjs
+RUN node --test scripts/patch-payroll-money.test.mjs
 RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
@@ -89,8 +90,8 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
  && rm -f /tmp/runtime.tgz
 COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/canonical-runtime-bridge.cjs integrations/staffology/canonical-production-boundaries.cjs integrations/staffology/canonical-operations.cjs /workspace/integrations/staffology/
 COPY verification/provider-recovery-correction/operations/runtime/ /workspace/verification/provider-recovery-correction/operations/runtime/
-COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs /workspace/operations/runtime/
-COPY scripts/compose-vector-local-runtime.mjs /workspace/scripts/compose-vector-local-runtime.mjs
+COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
+COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs /workspace/scripts/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
 COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs scripts/patch-customer-runtime-assets.mjs /tmp/

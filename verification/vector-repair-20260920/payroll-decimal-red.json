@@ -1,0 +1,171 @@
+{
+  "observedAt": "2026-10-11T08:18:47.237Z",
+  "scope": "OFFLINE synthetic gross-work calculation only; no statutory/net-pay/provider/customer or hosted readiness claim",
+  "node": "v22.23.2",
+  "rounding": "exact decimal rational, half up to integer pence per continuous pay component",
+  "modules": [
+    {
+      "file": "engine.js",
+      "sha256": "fbbb53355db38e7106d7fe4afd3299257c490b49cc49555ccefcb7b354eb25d6"
+    },
+    {
+      "file": "cost-engine.js",
+      "sha256": "9dce4e7281da433d1b8ae2efa783bd0e30fef43d4c4f6e0e210478ff0c3475f5"
+    },
+    {
+      "file": "work-rules.js",
+      "sha256": "8ee62625cdde58e49fd906cf02de468f6a3dec853d06fe928fa4210dff4e576d"
+    },
+    {
+      "file": "payroll-control.js",
+      "sha256": "3740eb76938b6e58d56669fea5f4a6ff232878ca950e94213e506e7b822ccbdb"
+    }
+  ],
+  "results": [
+    {
+      "rate": "8.03",
+      "minutes": 30,
+      "expectedPence": 402,
+      "actualPence": 401,
+      "pricingComplete": true,
+      "internalReconciliationOk": true,
+      "status": "FAIL",
+      "lines": [
+        {
+          "employee": "e1",
+          "payrollId": "SYNTH-001",
+          "name": "Synthetic rounding probe",
+          "team": "Synthetic team",
+          "date": "2026-09-14",
+          "code": "WORKED_BASIC",
+          "minutes": 30,
+          "hours": "0.5000",
+          "rate": "8.03",
+          "multiplier": 1,
+          "allowance": "0.00",
+          "gross": "4.01",
+          "grossPence": 401,
+          "approvedBy": "synthetic-reviewer",
+          "approvedAt": "2026-09-21T10:00:00Z",
+          "sources": "synthetic-observed-1"
+        }
+      ]
+    },
+    {
+      "rate": "10.00",
+      "minutes": 75,
+      "expectedPence": 1250,
+      "actualPence": 1250,
+      "pricingComplete": true,
+      "internalReconciliationOk": true,
+      "status": "PASS",
+      "lines": [
+        {
+          "employee": "e1",
+          "payrollId": "SYNTH-001",
+          "name": "Synthetic rounding probe",
+          "team": "Synthetic team",
+          "date": "2026-09-14",
+          "code": "WORKED_BASIC",
+          "minutes": 75,
+          "hours": "1.2500",
+          "rate": "10.00",
+          "multiplier": 1,
+          "allowance": "0.00",
+          "gross": "12.50",
+          "grossPence": 1250,
+          "approvedBy": "synthetic-reviewer",
+          "approvedAt": "2026-09-21T10:00:00Z",
+          "sources": "synthetic-observed-1"
+        }
+      ]
+    },
+    {
+      "rate": "19.20",
+      "minutes": 450,
+      "expectedPence": 14400,
+      "actualPence": 14400,
+      "pricingComplete": true,
+      "internalReconciliationOk": true,
+      "status": "PASS",
+      "lines": [
+        {
+          "employee": "e1",
+          "payrollId": "SYNTH-001",
+          "name": "Synthetic rounding probe",
+          "team": "Synthetic team",
+          "date": "2026-09-14",
+          "code": "WORKED_BASIC",
+          "minutes": 450,
+          "hours": "7.5000",
+          "rate": "19.20",
+          "multiplier": 1,
+          "allowance": "0.00",
+          "gross": "144.00",
+          "grossPence": 14400,
+          "approvedBy": "synthetic-reviewer",
+          "approvedAt": "2026-09-21T10:00:00Z",
+          "sources": "synthetic-observed-1"
+        }
+      ]
+    },
+    {
+      "rate": "10.1234",
+      "minutes": 60,
+      "expectedPence": 1012,
+      "actualPence": 1012,
+      "pricingComplete": true,
+      "internalReconciliationOk": true,
+      "status": "PASS",
+      "lines": [
+        {
+          "employee": "e1",
+          "payrollId": "SYNTH-001",
+          "name": "Synthetic rounding probe",
+          "team": "Synthetic team",
+          "date": "2026-09-14",
+          "code": "WORKED_BASIC",
+          "minutes": 60,
+          "hours": "1.0000",
+          "rate": "10.12",
+          "multiplier": 1,
+          "allowance": "0.00",
+          "gross": "10.12",
+          "grossPence": 1012,
+          "approvedBy": "synthetic-reviewer",
+          "approvedAt": "2026-09-21T10:00:00Z",
+          "sources": "synthetic-observed-1"
+        }
+      ]
+    },
+    {
+      "rate": "20.01",
+      "minutes": 30,
+      "expectedPence": 1001,
+      "actualPence": 1001,
+      "pricingComplete": true,
+      "internalReconciliationOk": true,
+      "status": "PASS",
+      "lines": [
+        {
+          "employee": "e1",
+          "payrollId": "SYNTH-001",
+          "name": "Synthetic rounding probe",
+          "team": "Synthetic team",
+          "date": "2026-09-14",
+          "code": "WORKED_BASIC",
+          "minutes": 30,
+          "hours": "0.5000",
+          "rate": "20.01",
+          "multiplier": 1,
+          "allowance": "0.00",
+          "gross": "10.01",
+          "grossPence": 1001,
+          "approvedBy": "synthetic-reviewer",
+          "approvedAt": "2026-09-21T10:00:00Z",
+          "sources": "synthetic-observed-1"
+        }
+      ]
+    }
+  ]
+}

@@ -118,6 +118,11 @@ function composeStaffology(runtime) {
   fs.writeFileSync(path.join(runtime, 'STAFFOLOGY_ASSEMBLY.json'), JSON.stringify(receipt, null, 2) + '\n');
   return receipt;
 }
+function patchPayrollMoney(runtime) {
+  recordInput('scripts/patch-payroll-money.mjs');
+  recordInput('operations/runtime/payroll-money.cjs');
+  execFileSync(process.execPath, [path.join(root, 'scripts/patch-payroll-money.mjs'), path.join(runtime, 'public')], {stdio:'inherit'});
+}
 function patchAuthoritativeCalendar(runtime){
  const browserCalendar="const calendarSnapshot=()=>{if(typeof module!=='undefined'&&module.exports){try{return require('../operations-runtime/tenant-calendar.cjs').createTenantCalendar({env:process.env}).snapshot();}catch{return null;}}return root.WFMTenantCalendarSnapshot||null;};const requireCalendar=()=>{const value=calendarSnapshot();if(!value||!value.asOf||!value.localDate||!value.timeZone)throw Error('Tenant calendar authority unavailable.');return value;};";
  const corePath=path.join(runtime,'public','core.js');if(fs.existsSync(corePath)){let text=fs.readFileSync(corePath,'utf8');const anchor="const NOW='2026-09-14T08:38:00+01:00';";if(text.includes(anchor)){text=text.replace(anchor,browserCalendar+"\nconst currentNow=()=>requireCalendar().asOf;");text=text.replace(/\bNOW\b/g,'currentNow()').replace('const api={currentNow(),seed','const api={NOW:currentNow(),seed');fs.writeFileSync(corePath,text);}}
@@ -143,7 +148,7 @@ function patchCustomerFacingCopy(runtime) {
 }
 recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
-  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);
+  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
 }
@@ -192,6 +197,7 @@ for (const [group, files] of Object.entries(groups)) for (const file of files) {
 composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);
+patchPayrollMoney(output);
 // Copy the lockfile-installed dependency closure; never install from the proof process.
 const securityDependencies = path.join(root, 'security/runtime/node_modules');
 if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');
