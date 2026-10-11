@@ -20,6 +20,7 @@ function load(extra = {}) {
     ui: { page: 'overview' }, history: { replaceState() {}, pushState() {} }, location: { hash: '' },
     isEmployee: () => Boolean(extra.employee), URL, Intl, Date,
     data: { requests: [] }, people: () => [], me: () => ({ id: 'manager' }),
+    F: { ready: true, actor: { personId: 'manager', email: 'fixture@example.test', tenant: null, role: extra.employee ? 'employee' : 'manager' } },
     ...extra
   };
   const hook = 'window.VectorWorkforceOperations={marker:MARKER';
@@ -126,12 +127,13 @@ test('a completed older request cannot overwrite refreshed action evidence after
 
 test('an in-flight manager response is discarded after the role becomes employee', async () => {
   const queue = { outerHTML: 'employee-self-service' }; let resolve, employee = false;
-  const { api } = load({ isEmployee: () => employee, selectors: { '.vector-alerts': queue }, fetch: () => new Promise(r => { resolve = r; }) });
+  const { api, context } = load({ isEmployee: () => employee, selectors: { '.vector-alerts': queue }, fetch: () => new Promise(r => { resolve = r; }) });
   api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   const request = api.loadTimeReviewEvidence();
   await Promise.resolve();
   assert.equal(typeof resolve,'function');
   employee = true;
+  context.F.actor = { ...context.F.actor, role: 'employee' };
   resolve({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [] }) });
   await request; assert.equal(queue.outerHTML, 'employee-self-service');
 });
