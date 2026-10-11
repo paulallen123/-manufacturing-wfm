@@ -8,7 +8,7 @@ function loadVectorHelpers(options={}) {
   const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
   const instrumented = source.replace(
     'window.VectorWorkforceOperations={marker:MARKER',
-    'window.VectorWorkforceOperations={sourceIdentity,alertsMarkup,readActionContext,rememberActionContext,renderEmployeeHome,retryEmployeeHome:typeof retryEmployeeHome==="function"?retryEmployeeHome:null,state,marker:MARKER'
+    'window.VectorWorkforceOperations={render:window.render,sourceIdentity,alertsMarkup,readActionContext,rememberActionContext,renderEmployeeHome,retryEmployeeHome:typeof retryEmployeeHome==="function"?retryEmployeeHome:null,state,marker:MARKER'
   );
   assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
@@ -17,7 +17,7 @@ function loadVectorHelpers(options={}) {
     ui:options.ui||{page:'overview'},
     ...(options.auth===undefined?{}:{F:options.auth}),
     me:()=>options.actor||{},isEmployee:()=>options.actor?.role==='employee',
-    window: { render: undefined, addEventListener() {}, location: { href: 'https://example.test/' } },
+    window: { render: options.render, addEventListener() {}, location: { href: 'https://example.test/' } },
     document: {
       get title(){return this._title||'';},set title(value){this._title=value;options.onTitleWrite?.(value);},
       addEventListener() {},
@@ -217,6 +217,30 @@ test('employee home discards delayed results after navigation, account change or
     await api.renderEmployeeHome(content);
     assert.equal(calls,2,change+' can load again');assert.match(content.html,/Current worker/);
   }
+});
+
+test('authoritative screen render refreshes the employee personal record rather than retaining old balances',async()=>{
+ let calls=0,availableMinutes=600;
+ const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'};
+ const api=loadVectorHelpers({actor,render:async()=>{},fetch:async()=>{calls++;return {ok:true,json:async()=>({identity:{name:'Worker'},leave:{availableMinutes},shifts:[],requests:[]})};}});
+ api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+ const content={html:'',dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
+ await api.renderEmployeeHome(content);assert.match(content.html,/10 h/);assert.equal(calls,1);
+ availableMinutes=540;await api.render();await api.renderEmployeeHome(content);
+ assert.equal(calls,2,'returning after an authoritative workflow redraw must fetch a fresh personal record');assert.match(content.html,/9 h/);
+ for(let i=0;i<3;i++)await api.renderEmployeeHome(content);assert.equal(calls,2,'observer-only passes still use the settled record');
+});
+
+test('a previous personal fetch cannot overwrite the fresh record after authoritative redraw',async()=>{
+ let release,calls=0;const pending=new Promise(resolve=>{release=resolve;});
+ const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'};
+ const api=loadVectorHelpers({actor,render:async()=>{},fetch:async()=>{calls++;return calls===1?pending:{ok:true,json:async()=>({identity:{name:'Worker'},leave:{availableMinutes:540},shifts:[],requests:[]})};}});
+ api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+ const content={html:'',dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
+ const first=api.renderEmployeeHome(content);await new Promise(resolve=>setImmediate(resolve));
+ await api.render();await api.renderEmployeeHome(content);assert.equal(calls,2);assert.match(content.html,/9 h/);
+ release({ok:true,json:async()=>({identity:{name:'Worker'},leave:{availableMinutes:600},shifts:[],requests:[]})});await first;
+ assert.match(content.html,/9 h/);assert.equal(api.state.employeeHome.value.leave.availableMinutes,540);
 });
 
 function timeEvidenceHarness({role='manager',allowed=true,calendarLoad}={}){
