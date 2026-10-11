@@ -40,7 +40,16 @@ async function browser(t,kind,role='manager',actorRole=role){
  const profile=fs.mkdtempSync(path.join(os.tmpdir(),'render-assertions-'));
  const proc=spawn(process.env.CHROMIUM_PATH||'/usr/bin/chromium',['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-background-networking','--no-first-run','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',env:{PATH:process.env.PATH,HOME:profile}});
  let ws;
- t.after(async()=>{ws?.close();const exited=once(proc,'exit');proc.kill('SIGTERM');await Promise.race([exited,delay(2000)]);if(proc.exitCode===null)proc.kill('SIGKILL');await new Promise(r=>server.close(r));fs.rmSync(profile,{recursive:true,force:true});});
+ t.after(async()=>{
+  ws?.close();
+  if(proc.exitCode===null && proc.signalCode===null){
+   const exited=once(proc,'exit');proc.kill('SIGTERM');await Promise.race([exited,delay(2000)]);
+   if(proc.exitCode===null && proc.signalCode===null){proc.kill('SIGKILL');await Promise.race([exited,delay(2000)]);}
+  }
+  assert.ok(proc.exitCode!==null || proc.signalCode!==null,'Chromium did not stop before profile cleanup');
+  await new Promise(r=>server.close(r));
+  fs.rmSync(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});
+ });
  let port;for(let i=0;i<100;i++){try{port=fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0];break;}catch{await delay(50);}}
  assert.ok(port,'Chromium did not start');const targets=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();ws=new WebSocket(targets.find(x=>x.type==='page').webSocketDebuggerUrl);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j;});
  let id=0;const pending=new Map(),evidence=createNavigationEvidence(origin);
