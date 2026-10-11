@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { createNavigationEvidence, proveRoleView } from './rendered-role-assertions.mjs';
 import { signedProofSession } from './signed-proof-session.mjs';
 
 const expectedOrigin = 'https://vector-customer-ready-candidate-production.up.railway.app';
@@ -37,10 +38,6 @@ const chrome = executable(['google-chrome', 'google-chrome-stable', 'chromium', 
 assert.ok(chrome, 'No Chrome/Chromium executable is available on the pinned runner.');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-function digest(text) {
-  return crypto.createHash('sha256').update(String(text)).digest('hex');
-}
-
 async function runRole({slug, email, expectedRole, expectedTenant, expectedPayrollStatus, requiredSurface, capabilityLabel}, roleIndex) {
   const port = 9300 + roleIndex * 30 + Math.floor(Math.random() * 20);
   const profile = path.join(process.env.RUNNER_TEMP || '/tmp', `wfm-role-${slug}-${crypto.randomBytes(4).toString('hex')}`);
@@ -70,7 +67,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
       ws.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
       ws.addEventListener('error',e=>{clearTimeout(timer);reject(e.error||new Error('CDP error'));},{once:true});
     });
-    let id=1; const pending=new Map(); const browserApi=[];
+    let id=1; const pending=new Map(); const navigationEvidence=createNavigationEvidence(origin); const browserApi=navigationEvidence.responses;
     ws.addEventListener('message',event=>{
       const msg=JSON.parse(typeof event.data==='string'?event.data:Buffer.from(event.data).toString('utf8'));
       if (msg.id) {
@@ -78,12 +75,7 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
         msg.error?p.reject(new Error(`${p.method}: ${msg.error.message}`)):p.resolve(msg.result||{});
         return;
       }
-      if(msg.method==='Network.responseReceived'){
-        try{
-          const u=new URL(msg.params.response.url);
-          if(u.origin===origin&&u.pathname.startsWith('/api/')) browserApi.push({path:u.pathname,status:msg.params.response.status});
-        }catch{}
-      }
+      navigationEvidence.onEvent(msg);
     });
     const send=(method,params={},timeoutMs=12000)=>new Promise((resolve,reject)=>{
       const n=id++;
@@ -125,37 +117,19 @@ async function runRole({slug, email, expectedRole, expectedTenant, expectedPayro
       assert.equal(surfaceStatus,200,`${slug} required surface ${requiredSurface} failed.`);
     }
 
-    async function currentDom() {
-      const doc=await send('DOM.getDocument',{depth:2,pierce:true},5000);
-      const html=await send('DOM.getOuterHTML',{nodeId:doc.root.nodeId},5000);
-      return String(html.outerHTML||'');
-    }
-    const bootstrapBeforeRender=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
-    await send('Page.navigate',{url:origin});
-    const deadline=Date.now()+20000;
-    let desktopHtml='';
-    while(Date.now()<deadline){
-      try{
-        desktopHtml=await currentDom();
-        const count=browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length;
-        if(desktopHtml.length>1000&&count>bootstrapBeforeRender) break;
-      }catch{}
-      await sleep(300);
-    }
-    assert.ok(desktopHtml.length>1000,`${slug} authenticated rendered DOM was unexpectedly empty.`);
-    assert.ok(browserApi.filter(x=>x.path==='/api/bootstrap'&&x.status===200).length>bootstrapBeforeRender,`${slug} browser did not perform a fresh authenticated bootstrap after navigation.`);
-    const desktopDomSha256=digest(desktopHtml);
+    const renderedApp = await proveRoleView({ send, evidence: navigationEvidence, role: expectedRole, expectedActor: { role: expectedRole, tenant: expectedTenant, email },
+      navigate: () => send('Page.navigate', { url: origin }) });
 
-    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|capability=${capabilityLabel}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|renderedDom=${desktopHtml.length}/${desktopDomSha256.slice(0,12)}`);
+    console.log(`ROLE_BROWSER_SESSION_PASS=${slug}|role=${expectedRole}|tenant=${expectedTenant}|capability=${capabilityLabel}|payroll=${payrollResponse.status}|surface=${requiredSurface||'none'}:${surfaceStatus??'n/a'}|renderedRoute=${renderedApp.navigation.route}`);
     return {
       slug,email,role:expectedRole,tenant:expectedTenant,capabilityLabel,
       freshBrowserCookieCount:beforeCookies.cookies?.length||0,
       freshBootstrapStatus:pre.status,loginStatus:signed.responseStatus,payrollStatus:payrollResponse.status,
       requiredSurface,requiredSurfaceStatus:surfaceStatus,
-      rendered:{domLength:desktopHtml.length,domSha256:desktopDomSha256,viewport:'1440x1000 browser window',authenticatedBootstrapAfterNavigation:true},
+      rendered:renderedApp,
       observedBrowserApi:[...new Map(browserApi.map(x=>[`${x.path}:${x.status}`,x])).values()],
       browserContext:'fresh Chrome process/profile received the exact server-issued authenticated session cookie; cookie value never logged or persisted',
-      uiClaimBoundary:'role/capability-specific authenticated home produced a non-trivial rendered DOM in a fresh browser; visual mobile/keyboard/overflow quality is proven separately by the dedicated authenticated visual gate; not every task is clicked end-to-end'
+      uiClaimBoundary:'visible role home and named read-only route transition in a fresh browser; zero business journeys; mobile/keyboard/overflow quality is not established by this runner'
     };
   } finally {
     try{ws?.close();}catch{}
@@ -195,10 +169,10 @@ fs.writeFileSync(path.join(outDir,'separate-role-browser-contexts.json'),JSON.st
   capturedAt:new Date().toISOString(),origin,release:expectedRelease,candidateSha:runtimeIdentity.candidateSha,deploymentId:runtimeIdentity.deploymentId,sealedRuntimeSha256:expectedRuntimeSha,
   processIsolation:'five fresh Chrome profiles/processes; each had zero cookies before authentication and unauthenticated /api/bootstrap returned 401',
   authMethod:'signed Ed25519 proof-session created the session; CDP bound the server-issued cookie to the corresponding fresh Chrome process',
-  renderedEvidence:'manager, employee, payroll, company-admin capability account and separate-tenant manager each produced a hashed non-trivial authenticated DOM after a fresh browser navigation and authenticated browser bootstrap',
+  renderedEvidence:'manager, employee, payroll, company-admin capability account and separate-tenant manager each exposed a visible role home and named read-only destination with fresh request-scoped response evidence',
   companyAdminFixtureNote:'the account named superuser@northstar.example is represented by the server as role=director; company-level capability is proven by successful onboarding and payroll surfaces rather than relabelling the authoritative role enum',
-  mobileVisualEvidence:'separate dedicated authenticated visual gate covers desktop/mobile screenshots, no horizontal overflow, keyboard focus and live navigation on the same frozen release',
+  mobileVisualEvidence:'not established by this runner; requires separately verified evidence',
   roles,result:'PASS',
   claimBoundary:'fictional fixture staging; proves separate authenticated browser session contexts, server-side role/tenant/capability boundaries, and role-specific browser rendering; visual mobile quality is covered separately; not every role-specific task is clicked end-to-end; no production/pilot approval and no real employee/payroll data'
 },null,2));
-console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_dom=${roles.length}`);
+console.log(`LIVE_SEPARATE_ROLE_BROWSER_SESSION_PROOF=PASS|contexts=${roles.length}|rendered_routes=${roles.length}`);

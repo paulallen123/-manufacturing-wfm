@@ -84,6 +84,111 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
   const cleanFingerprint=v=>String(v??'').trim().replace(/[^A-Za-z0-9_.:-]/g,'').slice(0,120);
   const transaction=fn=>{db.exec('BEGIN IMMEDIATE');try{const value=fn();db.exec('COMMIT');return value;}catch(e){db.exec('ROLLBACK');throw e;}};
   function event(a,action,id,t,evidence=null){db.prepare('INSERT INTO support_events(tenant,actor,action,record_id,created_at,evidence_json) VALUES(?,?,?,?,?,?)').run(a.tenant,a.email,action,id,t,evidence===null?null:JSON.stringify(evidence));}
+  // Additive lifecycle ledger: legacy intake rows remain intact. No permit is minted,
+  // provider called, or report text interpreted as execution authority here.
+  let providerRecovery=null;
+  db.exec(`CREATE TABLE IF NOT EXISTS support_recovery_attempts(
+    tenant TEXT NOT NULL,investigation_id TEXT NOT NULL,incident_id TEXT NOT NULL REFERENCES support_incidents(id),
+    provider_run_id TEXT NOT NULL,evidence_digest TEXT NOT NULL,permit_digest TEXT NOT NULL,grant_jti TEXT NOT NULL,
+    worker_id TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('executing','verifying-recovery','recovered-internal','contained')),
+    result_json TEXT,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,
+    PRIMARY KEY(tenant,investigation_id));`);
+  const digest=value=>createHash('sha256').update(String(value)).digest('hex');
+  function connectProviderRecovery(bridge){
+    assert(bridge&&['detail','events','runDetail','status'].every(k=>typeof bridge[k]==='function'),'Invalid support recovery bridge.',500);
+    providerRecovery=bridge;
+  }
+  function recoveryAttempt(a,id){return db.prepare('SELECT * FROM support_recovery_attempts WHERE tenant=? AND investigation_id=?').get(a.tenant,id);}
+  function matchingIncident(a,inv){
+    return db.prepare("SELECT * FROM support_incidents WHERE tenant=? AND area='integrations'").all(a.tenant).find(row=>{
+      const e=JSON.parse(row.evidence);return e.source==='provider-investigation'&&e.verification==='deterministic-observation'&&e.investigationId===inv.id&&e.providerRunId===inv.providerRunId&&e.evidenceDigest===inv.evidenceDigest;
+    });
+  }
+  function readRecovery(a,attempt){
+    // A receipt is accepted from the existing durable authority log and current
+    // job store, never from the executor's return value or customer input.
+    const prior=attempt.result_json?JSON.parse(attempt.result_json):null;
+    if(!providerRecovery||!providerRecovery.status().configured)return {state:'contained',verified:false,reason:'executor-unavailable',result:prior};
+    const events=providerRecovery.events(a,attempt.investigation_id);
+    const receipt=events.find(e=>e.type==='bounded-recovery-lease-acquired'&&e.grantJti===attempt.grant_jti&&e.executorId===attempt.worker_id);
+    if(!receipt)return {state:'contained',verified:false,reason:'no-durable-execution-receipt',result:prior};
+    const run=providerRecovery.runDetail(a,attempt.provider_run_id),generation=receipt.detail.leaseGeneration;
+    const result={executed:true,action:receipt.action,investigationId:attempt.investigation_id,providerRunId:attempt.provider_run_id,state:receipt.detail.state,leaseOwner:receipt.detail.leaseOwner,leaseExpiresAt:receipt.detail.leaseExpiresAt,leaseGeneration:generation,grantJti:attempt.grant_jti,providerNetworkCall:false,businessMutation:false};
+    if(!Number.isSafeInteger(generation)||run.tenant!==a.tenant||run.leaseGeneration!==generation)return {state:'contained',verified:false,reason:'lease-generation-changed',result};
+    const d=run.diagnostics||{};
+    if(run.state==='completed'&&d.reconciliation==='reconciled'&&d.freshness?.status==='fresh'&&d.authentication?.status!=='expired'&&run.events.some(e=>e.type==='completed'&&e.workerId===attempt.worker_id&&e.detail.complete===true))return {state:'recovered-internal',verified:true,reason:'durable-completion-and-internal-reconciliation',result};
+    if(run.state==='running'&&run.leaseOwner===attempt.worker_id&&!d.leaseExpired)return {state:'verifying-recovery',verified:false,reason:'lease-only-awaiting-adapter-completion',result};
+    return {state:'contained',verified:false,reason:'adapter-outcome-not-verified',result};
+  }
+  function saveRecovery(a,attempt,outcome){
+    const serialized=JSON.stringify(outcome.result);
+    if(attempt.state===outcome.state&&attempt.result_json===serialized)return outcome;
+    return transaction(()=>{
+      const current=recoveryAttempt(a,attempt.investigation_id);
+      assert(current&&current.permit_digest===attempt.permit_digest,'Support recovery identity changed.',409);
+      db.prepare('UPDATE support_recovery_attempts SET state=?,result_json=?,updated_at=? WHERE tenant=? AND investigation_id=?').run(outcome.state,serialized,now(),a.tenant,attempt.investigation_id);
+      event(a,'provider-recovery-'+outcome.state,attempt.incident_id,now(),{investigationId:attempt.investigation_id,providerRunId:attempt.provider_run_id,grantJti:attempt.grant_jti,reason:outcome.reason,verified:outcome.verified});
+      return outcome;
+    });
+  }
+  function reconcileProviderRecovery(a){
+    if(!enabled||!providerRecovery)return;
+    assert(admin(a),'Company configuration permission required.',403);
+    for(const attempt of db.prepare('SELECT * FROM support_recovery_attempts WHERE tenant=?').all(a.tenant))saveRecovery(a,attempt,readRecovery(a,attempt));
+  }
+  function executeProviderRecovery(a,id,input,execute,preflight){
+    guard();assert(admin(a),'Company configuration permission required.',403);
+    assert(providerRecovery&&providerRecovery.status().configured,'Bounded provider recovery is not connected.',503);
+    const inv=providerRecovery.detail(a,id);assert(inv.tenant===a.tenant,'Provider investigation not found.',404);
+    assert(input&&typeof input.permit==='string'&&input.permit.length<=10000,'Recovery permit is required.');
+    const permitDigest=digest(input.permit),old=recoveryAttempt(a,id);
+    if(old){
+      assert(old.permit_digest===permitDigest,'This investigation already has a retained recovery attempt; review its outcome.',409);
+      const outcome=saveRecovery(a,old,readRecovery(a,old));
+      return {...(outcome.result||{executed:false}),replayed:true,supportRecovery:{state:outcome.state,verified:outcome.verified,reason:outcome.reason}};
+    }
+    const incidentRow=matchingIncident(a,inv);assert(incidentRow,'A matching deterministic support finding is required.',409);
+    const grant=db.prepare('SELECT * FROM agent_action_grants WHERE tenant=? AND token_digest=?').get(a.tenant,permitDigest);
+    assert(grant,'A registered same-tenant recovery permit is required.',403);
+    // Preserve the existing executor's token verification, freshness checks,
+    // single-use grant consumption and fenced lease transaction unchanged.
+    const worker=String(input.workerId||'').trim();assert(/^[A-Za-z0-9_.:@/-]{1,100}$/.test(worker),'A bounded worker identity is required.');
+    assert(typeof preflight==='function','Read-only recovery admission is unavailable.',503);
+    preflight(); // Rejected authority never reserves the investigation. No effect or grant consumption.
+    transaction(()=>{
+      db.prepare('INSERT INTO support_recovery_attempts VALUES(?,?,?,?,?,?,?,?,?,?,?,?)').run(a.tenant,id,incidentRow.id,inv.providerRunId,inv.evidenceDigest,permitDigest,grant.jti,worker,'executing',null,now(),now());
+      event(a,'provider-recovery-started',incidentRow.id,now(),{investigationId:id,providerRunId:inv.providerRunId,grantJti:grant.jti,workerId:worker,evidenceDigest:inv.evidenceDigest});
+    });
+    try{execute();}
+    catch(error){
+      const released=error.recoveryPreDispatchRejected===true&&transaction(()=>{
+        const attempt=recoveryAttempt(a,id),retained=db.prepare('SELECT consumed_at FROM agent_action_grants WHERE tenant=? AND jti=?').get(a.tenant,grant.jti);
+        if(!attempt||attempt.permit_digest!==permitDigest||!retained||retained.consumed_at!==null)return false;
+        if(providerRecovery.events(a,id).some(e=>e.type==='bounded-recovery-lease-acquired'&&e.grantJti===grant.jti))return false;
+        event(a,'provider-recovery-rejected-before-dispatch',attempt.incident_id,now(),{investigationId:id,grantJti:grant.jti,code:String(error.code||'validation-rejected')});
+        db.prepare('DELETE FROM support_recovery_attempts WHERE tenant=? AND investigation_id=? AND permit_digest=?').run(a.tenant,id,permitDigest);
+        return true;
+      });
+      if(!released)saveRecovery(a,recoveryAttempt(a,id),readRecovery(a,recoveryAttempt(a,id)));
+      throw error;
+    }
+    const outcome=saveRecovery(a,recoveryAttempt(a,id),readRecovery(a,recoveryAttempt(a,id)));
+    return {...(outcome.result||{executed:false}),supportRecovery:{state:outcome.state,verified:outcome.verified,reason:outcome.reason},claimBoundary:'Only a bounded lease and internally reconciled adapter outcome are tracked; no provider completeness, customer resolution or external delivery is established.'};
+  }
+  function incidentRecovery(a,row){
+    if(!providerRecovery)return null;
+    const e=JSON.parse(row.evidence);
+    if(e.source!=='provider-investigation'||e.verification!=='deterministic-observation')return {state:'manual-review',verified:false,reason:'no-authorized-deterministic-repair'};
+    try{
+      const inv=providerRecovery.detail(a,e.investigationId);
+      if(inv.tenant!==a.tenant||inv.providerRunId!==e.providerRunId||inv.evidenceDigest!==e.evidenceDigest)return {state:'contained',verified:false,reason:'finding-binding-changed'};
+      const attempt=recoveryAttempt(a,inv.id);
+      if(attempt){const outcome=readRecovery(a,attempt),committed=attempt.state===outcome.state&&attempt.result_json===JSON.stringify(outcome.result);return {state:committed?outcome.state:'verifying-recovery',verified:committed&&outcome.verified,reason:committed?outcome.reason:'support-outcome-audit-pending',investigationId:inv.id,providerRunId:inv.providerRunId};}
+      if(inv.status==='needs_review')return {state:'manual-review',verified:false,reason:'no-bounded-runbook'};
+      if(inv.status!=='ready_for_bounded_executor')return {state:'awaiting-verification',verified:false,reason:'independent-verification-required'};
+      return {state:providerRecovery.status().configured?'awaiting-permit':'blocked-no-authority',verified:false,reason:'explicit-one-shot-permit-required'};
+    }catch{return {state:'contained',verified:false,reason:'recovery-evidence-unavailable'};}
+  }
   function incident(tenant,area,code,severity,evidence,t,fingerprintKey=''){
     const fingerprint=[area,code,cleanFingerprint(fingerprintKey)].filter(Boolean).join(':');
     const old=db.prepare('SELECT id,evidence FROM support_incidents WHERE tenant=? AND fingerprint=?').get(tenant,fingerprint);
@@ -151,12 +256,14 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
         const groups=db.prepare(`SELECT area,symptom,COUNT(*) reports,COUNT(DISTINCT reporter) reporters FROM support_cases
           WHERE tenant=? AND created_at>? AND symptom!='how-to' GROUP BY area,symptom HAVING COUNT(DISTINCT reporter)>=2`).all(tenant,t-24*HOUR);
         for(const g of groups)incident(tenant,g.area,'repeated-'+g.symptom,'review',{reports:g.reports,distinctReporters:g.reporters,verification:'unverified',windowHours:24},t);
-        const delayed=db.prepare('SELECT COUNT(*) n,MIN(created_at) oldest FROM support_jobs WHERE tenant=? AND created_at<=?').get(tenant,t-15*MINUTE);
-        if(delayed.n)incident(tenant,'application','investigation-overdue','high',{pending:delayed.n,oldest:delayed.oldest,reason:'No repair worker is connected.'},t);
+        const unresolved=db.prepare('SELECT i.*,j.created_at FROM support_jobs j JOIN support_incidents i ON i.id=j.incident_id WHERE j.tenant=? AND j.created_at<=?').all(tenant,t-15*MINUTE).filter(row=>incidentRecovery({tenant,permissions:['company.configure']},row)?.verified!==true);
+        const delayed={n:unresolved.length,oldest:unresolved.length?Math.min(...unresolved.map(row=>row.created_at)):null};
+        if(delayed.n)incident(tenant,'application','investigation-overdue','high',{pending:delayed.n,oldest:delayed.oldest,reason:providerRecovery?'Support investigations remain unresolved; authority, verification or review is required.':'No repair worker is connected.'},t);
         db.prepare('UPDATE support_monitor SET last_scan=? WHERE tenant=?').run(t,tenant);
       }
       db.prepare('DELETE FROM support_buckets WHERE minute<?').run(t-48*HOUR);
     });
+    if(providerRecovery)for(const {id:tenant} of db.prepare('SELECT id FROM tenants').all())reconcileProviderRecovery({tenant,email:'system:support-recovery',permissions:['company.configure']});
     // Clear the collection outage only after the entire scan commits.
     degraded=false;
   }
@@ -165,12 +272,12 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
     const cases=db.prepare('SELECT id,area,symptom,description,created_at FROM support_cases WHERE tenant=? AND reporter=? ORDER BY created_at DESC,id LIMIT 100').all(a.tenant,a.email).map(x=>({...x,status:'reported'}));
     const withNotes=rows=>rows.map(r=>({...r,notes:db.prepare('SELECT note,created_at FROM support_case_notes WHERE case_id=? ORDER BY created_at LIMIT 100').all(r.id)}));
     const result={enabled,canReview,cases:withNotes(cases),caseCount:db.prepare('SELECT COUNT(*) n FROM support_cases WHERE tenant=? AND reporter=?').get(a.tenant,a.email).n,
-      service:{collection:!enabled?'disabled':degraded?'degraded':!m?.last_scan||t-m.last_scan>2*MINUTE?'unknown':'running',lastScan:m?.last_scan||null,repairWorker:'not-connected',automaticRepairs:false},
+      service:{collection:!enabled?'disabled':degraded?'degraded':!m?.last_scan||t-m.last_scan>2*MINUTE?'unknown':'running',lastScan:m?.last_scan||null,repairWorker:providerRecovery?.status().configured?'bounded-provider-recovery':'not-connected',automaticRepairs:false,externalDelivery:'not-connected',recoveryMode:providerRecovery?'explicit-authority-only':'not-connected'},
       notice:'Reports are acknowledged and queued for investigation. A reported problem is not yet a confirmed bug or a verified fix.'};
     if(canReview){
       const rows=db.prepare('SELECT * FROM support_buckets WHERE tenant=? AND minute>?').all(a.tenant,t-HOUR);
       result.detectors=AREAS.map(area=>({area,...evaluate(rows.filter(r=>r.area===area),t,m?.observed_since??t)}));
-      result.incidents=db.prepare(`SELECT i.*,j.status job_status FROM support_incidents i JOIN support_jobs j ON j.incident_id=i.id WHERE i.tenant=? ORDER BY i.last_seen DESC LIMIT 100`).all(a.tenant).map(({tenant,fingerprint,evidence,...r})=>({...r,evidence:JSON.parse(evidence),status:'needs-investigation'}));
+      result.incidents=db.prepare(`SELECT i.*,j.status job_status FROM support_incidents i JOIN support_jobs j ON j.incident_id=i.id WHERE i.tenant=? ORDER BY i.last_seen DESC LIMIT 100`).all(a.tenant).map(row=>{const {tenant,fingerprint,evidence,...r}=row,recovery=incidentRecovery(a,row);return {...r,evidence:JSON.parse(evidence),job_status:recovery?.state||r.job_status,status:recovery?.state||'needs-investigation',...(recovery?{recovery}: {})};});
       result.incidentCount=db.prepare('SELECT COUNT(*) n FROM support_incidents WHERE tenant=?').get(a.tenant).n;
       result.reports=withNotes(db.prepare('SELECT id,area,symptom,description,created_at FROM support_cases WHERE tenant=? ORDER BY created_at DESC,id LIMIT 100').all(a.tenant));
       result.reportCount=db.prepare('SELECT COUNT(*) n FROM support_cases WHERE tenant=?').get(a.tenant).n;
@@ -197,6 +304,6 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
       advisories:rows.map(r=>({id:r.id,component:r.area,signal:r.code,severity:r.severity,firstSeen:r.first_seen,lastSeen:r.last_seen,verification:'unverified',recommendedAction:'Check the affected component in an isolated environment.'})),
       delivery:'not-connected',notice:'Customer descriptions and identities are excluded. This is a read-only export; no other environment has been notified.'};
   }
-  return {submit,addDetail,observe,scan,report,advisories,recordSystemFinding,markDegraded(){degraded=true;}};
+  return {submit,addDetail,observe,scan,report,advisories,recordSystemFinding,connectProviderRecovery,executeProviderRecovery,reconcileProviderRecovery,markDegraded(){degraded=true;}};
 }
 module.exports={AREAS,SYMPTOMS,DEFAULTS,areaForPath,evaluate,createStore};

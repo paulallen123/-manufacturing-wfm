@@ -49,6 +49,12 @@ function composeStaffology(runtime) {
   }
 
   fs.writeFileSync(path.join(runtime,'PROVIDER_RECOVERY_ASSEMBLY.json'),JSON.stringify({schemaVersion:1,files:recoveryAssembly,claimBoundary:'Explicit source overlay; scoped build metadata, not hosted recovery proof.'},null,2)+'\n');
+  const supportUiSource='verification/provider-recovery-correction/ui/support-ui.js';
+  const supportUiTarget=path.join(runtime,'public/support-ui.js'),supportUiReplacement=fs.readFileSync(path.join(root,supportUiSource));
+  const supportUiSealed='b3089fec672bbe4ad5d12dd07293869ac9fec4b70a6f0de756efb66c19422c8e';
+  if(![supportUiSealed,sha256(supportUiReplacement)].includes(sha256(fs.readFileSync(supportUiTarget))))throw Error('SUPPORT_UI_SOURCE_DRIFT');
+  recordInput(supportUiSource);fs.writeFileSync(supportUiTarget,supportUiReplacement);
+  fs.writeFileSync(path.join(runtime,'SUPPORT_UI_ASSEMBLY.json'),JSON.stringify({source:supportUiSource,sealedSha256:supportUiSealed,replacementSha256:sha256(supportUiReplacement)},null,2)+'\n');
   const integrationDir = path.join(runtime, 'integrations', 'staffology');
   fs.mkdirSync(integrationDir, {recursive: true});
   for (const file of ['staffology-adapter.cjs', 'canonical-runtime-bridge.cjs', 'canonical-production-boundaries.cjs', 'canonical-operations.cjs']) {

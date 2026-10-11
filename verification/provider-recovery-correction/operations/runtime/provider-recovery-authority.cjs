@@ -56,14 +56,26 @@ function createExecutor({db,providerJobs,investigations,authority,now=Date.now}=
   event({...base,provenance,grantJti:issued.grant.jti},'permit-issued',{externalObservation:{trust:provenance.trust,usableForReasoning:provenance.usableForReasoning,ignoredForAuthority:true,security:provenance.security},claimBoundary:'External content provenance is retained for audit only; deterministic retained provider-run state plus attested dry-run verification select the action and target.'});
   return {permit:issued.token,grant:{...issued.grant},providerObservation:provenance,target:{investigationId:base.investigation.id,providerRunId:base.run.id,targetDigest:base.targetDigest},claimBoundary:'This permit can only reacquire an already verified retry/replay provider job lease. It cannot change payroll, schedules, permissions, employment, qualifications or production records and it does not itself call the provider.'};
  }
- function executePermit(actor,id,{permit,workerId,leaseMs=60_000}={}){
+ function preflightPermit(actor,id,{permit,workerId}={}){
   const base=current(actor,id),executorId=clean(workerId,100);if(!executorId)fail('Bounded recovery worker identity is required.',400,'WFM_PROVIDER_RECOVERY_WORKER');
-  const consumed=authority.consumeActionToken({token:permit,tenant:base.tenant,agentScope:AGENT_SCOPE,toolId:TOOL_ID,actionType:base.action,targetDigest:base.targetDigest,decisionDigest:base.safety.decisionDigest,executorId});
+  const {grant}=authority.verifyActionToken({token:permit,tenant:base.tenant,agentScope:AGENT_SCOPE,toolId:TOOL_ID,actionType:base.action,targetDigest:base.targetDigest,decisionDigest:base.safety.decisionDigest});
+  const row=db.prepare('SELECT * FROM agent_action_grants WHERE jti=?').get(grant.jti);
+  if(!row||row.tenant!==base.tenant)fail('Recovery grant is not registered.',403,'WFM_AGENT_ACTION_NOT_REGISTERED');
+  if(row.consumed_at!==null)fail('Recovery grant has already been consumed.',409,'WFM_AGENT_ACTION_REPLAY');
+  return {validated:true}; // Read-only admission; executePermit repeats every check before consumption.
+ }
+ function executePermit(actor,id,{permit,workerId,leaseMs=60_000}={}){
+  let base,executorId,consumed;
+  try{
+   base=current(actor,id);executorId=clean(workerId,100);if(!executorId)fail('Bounded recovery worker identity is required.',400,'WFM_PROVIDER_RECOVERY_WORKER');
+   consumed=authority.consumeActionToken({token:permit,tenant:base.tenant,agentScope:AGENT_SCOPE,toolId:TOOL_ID,actionType:base.action,targetDigest:base.targetDigest,decisionDigest:base.safety.decisionDigest,executorId});
+  }catch(error){error.recoveryPreDispatchRejected=true;throw error;} // acquire has not been invoked; durable grant state must also confirm non-consumption.
+
   let run;try{run=providerJobs.acquire(base.run.id,executorId,{leaseMs,beforeAcquire:()=>current(actor,id),onAcquired:acquired=>event({...base,run:acquired,executorId,grantJti:consumed.jti},'bounded-recovery-lease-acquired',{state:acquired.state,leaseOwner:acquired.leaseOwner,leaseExpiresAt:acquired.leaseExpiresAt,leaseGeneration:acquired.leaseGeneration,action:base.action})});}catch(error){event({...base,executorId,grantJti:consumed.jti},'permit-consumed-acquire-failed',{code:clean(error.code||'',80),status:Number(error.status||500),messageDigest:digest(String(error.message||error))});throw error;}
   return {executed:true,action:base.action,investigationId:base.investigation.id,providerRunId:run.id,state:run.state,leaseOwner:run.leaseOwner,leaseExpiresAt:run.leaseExpiresAt,leaseGeneration:run.leaseGeneration,grantJti:consumed.jti,providerNetworkCall:false,businessMutation:false,claimBoundary:'Execution is limited to reacquiring the durable provider job from an independently verified retry/checkpoint-replay state. The normal provider adapter still owns any subsequent network call and normal integration validation/reconciliation.'};
  }
  function status(){return {configured:true,toolId:TOOL_ID,agentScope:AGENT_SCOPE,actions:[...ACTIONS].sort(),requiresSignedExternalObservation:true,requiresAttestedIndependentVerification:true,providerNetworkCall:false,businessMutation:false,claimBoundary:'Bounded executor only reacquires verified provider retry/replay work. Signed external output remains untrusted and cannot select authority.'};}
  function events(actor,id){requireAdmin(actor);const inv=investigations.detail(actor,id);return db.prepare('SELECT event_type,action_type,target_digest,verification_digest,provenance_digest,grant_jti,executor_id,detail_json,created_at FROM provider_recovery_authority_events WHERE tenant=? AND investigation_id=? ORDER BY id').all(actor.tenant,inv.id).map(r=>({type:r.event_type,action:r.action_type,targetDigest:r.target_digest,verificationDigest:r.verification_digest,provenanceDigest:r.provenance_digest||null,grantJti:r.grant_jti||null,executorId:r.executor_id||null,detail:JSON.parse(r.detail_json),createdAt:r.created_at}));}
- return {issuePermit,executePermit,status,events};
+ return {issuePermit,preflightPermit,executePermit,status,events};
 }
 module.exports={TOOL_ID,AGENT_SCOPE,ACTIONS,createExecutor,digest};
