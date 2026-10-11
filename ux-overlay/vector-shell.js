@@ -418,7 +418,7 @@ function refreshActionSurfaces(){
   const badge=document.querySelector('.vector-notification-count');if(badge){badge.textContent=String(groups.needs.length);badge.hidden=!groups.needs.length;}
 }
 function actionEvidenceOwnerKey(){const identity=sourceIdentity();return [identity.tenant||'',identity.email||'',identity.id||'',identity.role||'',employee()?'employee':'authorised-review'].join(':');}
-function timeReviewEvidenceAllowed(){return !employee()&&available('attendance');}
+function timeReviewEvidenceAllowed(){return !employee()&&['manager','director','supervisor'].includes(sourceIdentity().role)&&available('attendance');}
 function invalidateTimeReviewEvidence(owner=actionEvidenceOwnerKey()){state.evidenceEpoch++;state.timeReviewEvidence={status:'idle',items:[],owner};}
 function syncTimeReviewEvidenceOwner(){const owner=actionEvidenceOwnerKey();if(state.timeReviewEvidence.owner!==owner){invalidateTimeReviewEvidence(owner);return true;}return false;}
 function timeReviewEvidenceCurrent(epoch,owner){if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey())return false;if(!timeReviewEvidenceAllowed()){invalidateTimeReviewEvidence(owner);return false;}return true;}
