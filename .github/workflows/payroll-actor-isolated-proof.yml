@@ -1,0 +1,29 @@
+name: Isolated payroll actor proof
+
+on:
+  push:
+    branches:
+      - codex/proof-payroll-actor-ci-20261011
+
+permissions:
+  contents: read
+
+concurrency:
+  group: isolated-payroll-actor-proof
+  cancel-in-progress: true
+
+jobs:
+  linux-admission:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact isolated proof commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Build and test the exact customer runtime
+        env:
+          PROOF_SHA: ${{ github.sha }}
+        run: docker build --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="$PROOF_SHA" -t vector-payroll-actor-proof .
