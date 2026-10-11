@@ -306,7 +306,14 @@ function rememberActionContext(row){const sourceId=String(row?.sourceId||'').tri
 function clearActionContext(){try{sessionStorage.removeItem(ACTION_CONTEXT_KEY);}catch{}}
 function focusReturnedActionList(root){if(!state.returnFocus)return;const target=root?.querySelector?.('.vector-alerts');if(!target)return;state.returnFocus=false;target.tabIndex=-1;queueMicrotask(()=>{try{target.focus({preventScroll:false});}catch{target.focus();}});}
 function ensureActionContext(content){const existing=content.querySelector(':scope > .vector-action-context'),ctx=readActionContext();if(page()!=='attendance'||!ctx){existing?.remove();clearActionContext();return;}if(existing)return;const bar=document.createElement('section');bar.className='vector-card vector-action-context';bar.dataset.vectorActionContext='1';bar.dataset.vectorSourceId=ctx.sourceId;bar.setAttribute('role','navigation');bar.setAttribute('aria-label','Return to Items to review');bar.style.margin='0 0 12px';bar.innerHTML=`<div class="vector-card-head"><button type="button" data-vector-return-context>← Back to Items to review</button><span>Opened from Home · ${esc(ctx.title)}</span></div>`;content.prepend(bar);}
-function sourceIdentity(){try{if(typeof me!=='function')return {};const own=me()||{};const name=typeof own.name==='string'&&own.name.trim()?own.name.trim():null;const siteCandidates=[own.siteName,own.plantName,own.locationName,own.site?.name,own.plant?.name,own.location?.name],site=siteCandidates.find(v=>typeof v==='string'&&v.trim())?.trim()||null,tenant=own.tenant??own.tenantId??(typeof data!=='undefined'?(data.tenant??data.tenantId):null);return {id:own.id||null,email:own.email||null,tenant:tenant||null,role:own.role||null,name,site};}catch{return {}}}
+function sourceIdentity(){try{if(typeof me!=='function')return {};
+ const own=me()||{},authenticated=typeof F!=='undefined';
+ if(authenticated&&(!F.ready||!F.actor))return {};
+ const actor=authenticated?F.actor:own,name=typeof own.name==='string'&&own.name.trim()?own.name.trim():null;
+ const siteCandidates=[own.siteName,own.plantName,own.locationName,own.site?.name,own.plant?.name,own.location?.name],site=siteCandidates.find(v=>typeof v==='string'&&v.trim())?.trim()||null;
+ const tenant=actor.tenant??actor.tenantId??(!authenticated&&typeof data!=='undefined'?(data.tenant??data.tenantId):null);
+ return {id:actor.personId||actor.id||null,email:actor.email||null,tenant:tenant||null,role:actor.role||null,name,site};
+}catch{return {}}}
 const displayName=()=>sourceIdentity().name||'Signed-in user';
 const firstName=()=>{const name=sourceIdentity().name;return name?name.split(/\s+/)[0]:'there';};
 const siteName=()=>sourceIdentity().site||'Current workspace';

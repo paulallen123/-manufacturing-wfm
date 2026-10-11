@@ -1,20 +1,37 @@
 (function(){
 'use strict';
 const MARKER='VECTOR_DEMAND_DECISION_INTELLIGENCE_V1';
-let summary=null,loading=false,lastLoad=0,queued=false;
+let summary=null,loading=false,lastLoad=0,queued=false,owner='',epoch=0;
+function currentOwner(){
+ try{
+  const actor=typeof F!=='undefined'?(F.ready?F.actor:null):(typeof me==='function'?me():null),tenant=actor?.tenant??actor?.tenantId??(typeof F==='undefined'&&typeof data!=='undefined'?(data.tenant??data.tenantId):null),role=String(actor?.role||'').toLowerCase();
+  if(!actor||!(actor.email||actor.personId||actor.id)||!tenant||!role||role==='employee')return '';
+  return JSON.stringify([tenant,actor.email||'',actor.personId||actor.id||'',role]);
+ }catch{return '';}
+}
+function syncOwner(){
+ const next=currentOwner();
+ if(next!==owner){owner=next;epoch++;summary=null;loading=false;lastLoad=0;document.querySelector('[data-vector-demand-decision-intelligence]')?.remove();}
+ return next;
+}
+function currentRequest(requestOwner,requestEpoch){return syncOwner()===requestOwner&&epoch===requestEpoch;}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function label(key){return String(key||'').split('-').filter(Boolean).map(x=>x[0].toUpperCase()+x.slice(1)).join(' ');}
 function schedule(){if(queued)return;queued=true;queueMicrotask(()=>{queued=false;render();});}
 async function load(force=false){
+  const requestOwner=syncOwner();if(!requestOwner)return;
   const now=Date.now(); if(loading||(!force&&now-lastLoad<30000))return;
-  loading=true;lastLoad=now;
+  loading=true;lastLoad=now;const requestEpoch=epoch;
   try{
     const r=await fetch('/api/operations/intelligence/summary',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
-    if(!r.ok){summary=null;return;}
-    summary=await r.json();
-  }catch{summary=null;}finally{loading=false;schedule();}
+    if(!r.ok){if(currentRequest(requestOwner,requestEpoch))summary=null;return;}
+    const value=await r.json();
+    if(value?.contractVersion!=='VECTOR_DEMAND_DECISION_SUMMARY_V1'||value.tenant!==JSON.parse(requestOwner)[0])throw Error('Decision intelligence source mismatch');
+    if(currentRequest(requestOwner,requestEpoch))summary=value;
+  }catch{if(currentRequest(requestOwner,requestEpoch))summary=null;}finally{if(currentRequest(requestOwner,requestEpoch)){loading=false;schedule();}}
 }
 function render(){
+  if(!syncOwner())return;
   const host=document.querySelector('.vector-concept-dashboard');
   const existing=document.querySelector('[data-vector-demand-decision-intelligence]');
   if(!host){if(existing)existing.remove();return;}

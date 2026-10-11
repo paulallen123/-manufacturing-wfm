@@ -8,13 +8,14 @@ function loadVectorHelpers(options={}) {
   const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
   const instrumented = source.replace(
     'window.VectorWorkforceOperations={marker:MARKER',
-    'window.VectorWorkforceOperations={alertsMarkup,readActionContext,rememberActionContext,renderEmployeeHome,retryEmployeeHome:typeof retryEmployeeHome==="function"?retryEmployeeHome:null,state,marker:MARKER'
+    'window.VectorWorkforceOperations={sourceIdentity,alertsMarkup,readActionContext,rememberActionContext,renderEmployeeHome,retryEmployeeHome:typeof retryEmployeeHome==="function"?retryEmployeeHome:null,state,marker:MARKER'
   );
   assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
   const sandbox = {
     fetch:options.fetch,
     ui:options.ui||{page:'overview'},
+    ...(options.auth===undefined?{}:{F:options.auth}),
     me:()=>options.actor||{},isEmployee:()=>options.actor?.role==='employee',
     window: { render: undefined, addEventListener() {}, location: { href: 'https://example.test/' } },
     document: {
@@ -149,6 +150,13 @@ test('action ordering cannot create synthetic urgency styling', () => {
   const css = fs.readFileSync(path.join(__dirname, 'vector-shell.css'), 'utf8');
   assert.doesNotMatch(css, /\.vector-alert-row:first-child>button\s*\{/);
   assert.match(css, /\.vector-alert-row>button\{[^}]*background:#edf3fb;[^}]*color:#355375;/);
+});
+
+test('shell identity uses authenticated actor with the real display-only me shape and clears after sign-out',async()=>{
+ const display={id:'e0',name:'Maya Bennett',title:'Employee',costs:false},auth={ready:true,actor:{tenant:'northstar-demo',email:'maya@northstar.example',personId:'e0',role:'employee'}};
+ const api=loadVectorHelpers({actor:display,auth});
+ assert.equal(api.sourceIdentity().tenant,'northstar-demo');assert.equal(api.sourceIdentity().email,'maya@northstar.example');assert.equal(api.sourceIdentity().role,'employee');assert.equal(api.sourceIdentity().id,'e0');assert.equal(api.sourceIdentity().name,'Maya Bennett');
+ auth.ready=false;assert.equal(api.sourceIdentity().tenant,undefined,'stale display identity cannot survive sign-out');
 });
 
 test('employee home redraws only when content changes, allowing the mutation observer to settle',async()=>{
