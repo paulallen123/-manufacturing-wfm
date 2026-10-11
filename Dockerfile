@@ -37,6 +37,9 @@ RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime
       > /proof/staffology-private-artifacts/staffology-full.tap 2>&1; status=$?; \
     cat /proof/staffology-private-artifacts/staffology-full.tap; exit $status) \
  && node --test scripts/compose-vector-local-runtime.contract.test.cjs
+RUN WFM_SUPPORT_HTTP_RUNTIME=/proof/staffology-full-runtime \
+    WFM_SUPPORT_HTTP_HARNESS=/proof/verification/vector-repair-20260921/attendance-runtime-harness.mjs \
+    node --test verification/provider-recovery-correction/tests/support-recovery-http.test.cjs
 RUN node scripts/validate-development-proof-readiness.mjs \
  && node scripts/validate-proof-blocker-classifier.mjs \
  && node scripts/validate-proof-stage-router.mjs \

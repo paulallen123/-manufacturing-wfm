@@ -23,7 +23,7 @@ test('local proof assembly includes the same required bootstrap dependencies', (
   for (const file of relativeRequires) assert.ok(group.includes(`'${file}'`), `local proof omitted required module: ${file}`);
 });
 
-test('local proof assembly includes absolute bootstrap runtime dependencies and training closure', () => {
+test('local proof assembly includes absolute bootstrap runtime dependencies and training closure', t => {
   const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
   const absoluteRequires = Array.from(bootstrap.matchAll(/require\(['"]\/app\/([^'"]+)['"]\)/g), m => m[1]);
   const runtimeGroups = {
@@ -36,6 +36,13 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
     'trust-runtime': 'trust'
   };
   for (const required of absoluteRequires) {
+    if (required === 'lib/configuration-compiler.cjs') {
+      // This dependency comes from the hash-verified sealed archive, not a source-copy group.
+      const compiler = require('../implementation/runtime/test-support/sealed-compiler.cjs')(t);
+      assert.equal(typeof compiler.compile, 'function');
+      assert.match(composer, /run\('scripts\/patch-workspace-compiler\.mjs', \[path\.join\(output,'lib\/configuration-compiler\.cjs'\)\]\)/);
+      continue;
+    }
     if (required === 'server.cjs') {
       assert.match(composer, /artifact\/wfm-0\.6\.76-hosted-staging-rc1\.tar\.gz/, 'base server must remain sourced from the pinned sealed runtime artifact');
       continue;
