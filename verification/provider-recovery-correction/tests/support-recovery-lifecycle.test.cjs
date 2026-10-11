@@ -149,3 +149,36 @@ for(const mode of ['inside-start-audit','before-executor','after-executor'])test
  else{assert.equal(replay.executed,true);assert.equal(replay.replayed,true);assert.equal(replay.supportRecovery.state,'verifying-recovery');}
  const count=f.db.prepare("SELECT COUNT(*) n FROM provider_recovery_authority_events WHERE event_type='bounded-recovery-lease-acquired'").get().n;assert.equal(count,mode==='before-executor'?0:1);
 });
+
+function completeProviderWithoutSupportScan(f,inv,result){
+ f.jobs.checkpoint(inv.providerRunId,'bounded-synthetic-worker',{leaseGeneration:result.leaseGeneration,nextRequest:null,pages:1,sourceRecords:1,stagedRecords:1,sourceAt:new Date(f.now()).toISOString(),ingestedAt:new Date(f.now()).toISOString(),freshnessSloSeconds:3600});
+ f.jobs.complete(inv.providerRunId,'bounded-synthetic-worker',{leaseGeneration:result.leaseGeneration});
+}
+
+test('support scan commits unreconciled completion before deciding work is overdue',t=>{
+ const f=fixture(t),inv=f.attest(f.retry()),result=f.execute(inv,f.permit(inv));
+ completeProviderWithoutSupportScan(f,inv,result);
+ assert.equal(f.jobs.detail(f.actor,inv.providerRunId).state,'completed');
+ assert.equal(f.db.prepare('SELECT state FROM support_recovery_attempts WHERE investigation_id=?').get(inv.id).state,'verifying-recovery');
+ f.advance(16*60000);f.support.scan();
+ assert.equal(f.incident(inv).recovery.verified,true);
+ assert.equal(f.support.report(f.actor).incidents.some(x=>x.code==='investigation-overdue'),false);
+ assert.equal(f.db.prepare("SELECT COUNT(*) n FROM support_events WHERE action='provider-recovery-recovered-internal'").get().n,1);
+});
+
+test('overdue sentinel does not keep escalating after the original recovery commits',t=>{
+ const f=fixture(t),inv=f.attest(f.retry()),result=f.execute(inv,f.permit(inv));
+ completeProviderWithoutSupportScan(f,inv,result);
+ f.db.exec("CREATE TRIGGER scan_audit_outage BEFORE INSERT ON support_events WHEN NEW.action='provider-recovery-recovered-internal' BEGIN SELECT RAISE(ABORT,'scan audit outage'); END;");
+ f.advance(16*60000);assert.throws(()=>f.support.scan(),/scan audit outage/);
+ assert.equal(f.incident(inv).recovery.verified,false);
+ const overdue=f.support.report(f.actor).incidents.find(x=>x.code==='investigation-overdue');
+ assert.ok(overdue);assert.equal(overdue.evidence.pending,1);
+ f.db.exec('DROP TRIGGER scan_audit_outage');f.support.reconcileProviderRecovery(f.actor);
+ assert.equal(f.incident(inv).recovery.verified,true);
+ f.advance(16*60000);f.support.scan();
+ const after=f.support.report(f.actor).incidents.find(x=>x.id===overdue.id);
+ assert.equal(after.last_seen,overdue.last_seen,'historical overdue incident must not refresh itself as new pending work');
+ assert.deepEqual(after.evidence,overdue.evidence);
+ assert.equal(f.support.report(f.actor).incidentCount,2);
+});
