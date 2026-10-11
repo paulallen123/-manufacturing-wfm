@@ -70,7 +70,16 @@ jobs:
           set -euo pipefail
           node --test tests/runtime-process-uid.test.cjs
           docker exec wfm-proof cat /proc/1/status | bash scripts/verify-runtime-process-uid.sh
-          docker exec wfm-proof sh -lc '! command -v npm && ! command -v npx && ! command -v corepack && ! command -v yarn && ! command -v pnpm'
+          docker exec wfm-proof sh -ec '
+            test ! -e /usr/local/lib/node_modules/npm
+            test ! -e /usr/local/lib/node_modules/corepack
+            for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
+              if command -v "$p" >/dev/null 2>&1; then
+                echo "Unexpected package manager in final runtime: $p" >&2
+                exit 1
+              fi
+            done
+          '
 
       - name: Prove hosted HTTP boundary
         run: |
