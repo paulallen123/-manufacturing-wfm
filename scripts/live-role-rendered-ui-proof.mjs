@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { createNavigationEvidence, proveRoleView } from './rendered-role-assertions.mjs';
 import { signedProofSession } from './signed-proof-session.mjs';
 
 const expectedOrigin = 'https://vector-customer-ready-candidate-production.up.railway.app';
@@ -98,7 +99,8 @@ async function runRole(spec, index) {
 
     let nextId = 1;
     const pending = new Map();
-    const apiResponses = [];
+    const navigationEvidence = createNavigationEvidence(origin);
+    const apiResponses = navigationEvidence.responses;
     ws.addEventListener('message', event => {
       const msg = JSON.parse(typeof event.data === 'string' ? event.data : Buffer.from(event.data).toString('utf8'));
       if (msg.id) {
@@ -108,14 +110,7 @@ async function runRole(spec, index) {
         msg.error ? item.reject(new Error(`${item.method}: ${msg.error.message}`)) : item.resolve(msg.result || {});
         return;
       }
-      if (msg.method === 'Network.responseReceived') {
-        try {
-          const u = new URL(msg.params.response.url);
-          if (u.origin === origin && u.pathname.startsWith('/api/')) {
-            apiResponses.push({ path: u.pathname, status: msg.params.response.status });
-          }
-        } catch {}
-      }
+      navigationEvidence.onEvent(msg);
     });
     const send = (method, params = {}, timeoutMs = 12_000) => new Promise((resolve, reject) => {
       const id = nextId++;
@@ -155,40 +150,18 @@ async function runRole(spec, index) {
     const surfaceResponse = await api(session, spec.surface);
     assert.equal(surfaceResponse.status, 200, `${spec.slug} required surface ${spec.surface} failed.`);
 
-    await send('Page.navigate', { url: origin });
-    const deadline = Date.now() + 20_000;
-    let docLength = 0;
-    while (Date.now() < deadline) {
-      try {
-        const doc = await send('DOM.getDocument', { depth: 2, pierce: true }, 5000);
-        const html = await send('DOM.getOuterHTML', { nodeId: doc.root.nodeId }, 5000);
-        docLength = String(html.outerHTML || '').length;
-        const bootstrapped = apiResponses.some(x => x.path === '/api/bootstrap' && x.status === 200);
-        if (docLength > 10_000 && bootstrapped) break;
-      } catch {}
-      await sleep(300);
-    }
-    assert.ok(docLength > 10_000, `${spec.slug} authenticated rendered DOM did not reach proof threshold.`);
-    assert.ok(apiResponses.some(x => x.path === '/api/bootstrap' && x.status === 200), `${spec.slug} browser did not complete authenticated bootstrap.`);
-    const desktopPresentation=(await send('Runtime.evaluate',{expression:"({title:document.title,text:document.body?.innerText||''})",returnByValue:true},5000)).result?.value||{};
-    assertCustomerPresentation(desktopPresentation,`${spec.slug} desktop`);
-
-    await sleep(700);
+    const desktopProof = await proveRoleView({ send, evidence: navigationEvidence, role: spec.role, expectedActor: { role: spec.role, tenant: spec.tenant, email: spec.email },
+      navigate: () => send('Page.navigate', { url: origin }), presentation: assertCustomerPresentation });
     const desktopShot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false }, 10_000);
     const desktopName = `40-role-${spec.slug}-desktop.png`;
     fs.writeFileSync(path.join(outDir, desktopName), Buffer.from(desktopShot.data, 'base64'));
-    assert.ok(fs.statSync(path.join(outDir, desktopName)).size > 10_000, `${spec.slug} desktop screenshot is unexpectedly small.`);
 
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-    await send('Page.reload', { ignoreCache: true });
-    await sleep(1200);
-    assert.ok(apiResponses.some(x => x.path === '/api/bootstrap' && x.status === 200), `${spec.slug} mobile reload lost authenticated bootstrap evidence.`);
-    const mobilePresentation=(await send('Runtime.evaluate',{expression:"({title:document.title,text:document.body?.innerText||''})",returnByValue:true},5000)).result?.value||{};
-    assertCustomerPresentation(mobilePresentation,`${spec.slug} mobile`);
+    const mobileProof = await proveRoleView({ send, evidence: navigationEvidence, role: spec.role, expectedActor: { role: spec.role, tenant: spec.tenant, email: spec.email },
+      navigate: () => send('Page.navigate', { url: origin }), presentation: assertCustomerPresentation });
     const mobileShot = await send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false }, 10_000);
     const mobileName = `41-role-${spec.slug}-mobile.png`;
     fs.writeFileSync(path.join(outDir, mobileName), Buffer.from(mobileShot.data, 'base64'));
-    assert.ok(fs.statSync(path.join(outDir, mobileName)).size > 8_000, `${spec.slug} mobile screenshot is unexpectedly small.`);
 
     const uniqueApi = [...new Map(apiResponses.map(x => [`${x.path}:${x.status}`, x])).values()];
     console.log(`ROLE_RENDERED_UI_PASS=${spec.slug}|role=${spec.role}|tenant=${spec.tenant}|surface=${spec.surface}:200|desktop=${desktopName}|mobile=${mobileName}`);
@@ -202,11 +175,11 @@ async function runRole(spec, index) {
       authenticatedBootstrapStatus: identityResponse.status,
       requiredSurface: spec.surface,
       requiredSurfaceStatus: surfaceResponse.status,
-      renderedDomLength: docLength,
+      renderedApp: { desktop: desktopProof, mobile: mobileProof },
       desktopScreenshot: desktopName,
       mobileScreenshot: mobileName,
       observedApiResponses: uniqueApi,
-      authenticatedTitle:{desktop:desktopPresentation.title,mobile:mobilePresentation.title,approved:expectedTitle},
+      authenticatedTitle:{desktop:desktopProof.home.title,mobile:mobileProof.home.title,approved:expectedTitle},
       customerCopyGuard:{desktop:true,mobile:true},
       browserContext: 'fresh Chrome process/profile; exact server-issued session bound after zero-cookie and unauthenticated-401 checks; credential never passed to Chrome environment',
     };
@@ -254,6 +227,6 @@ fs.writeFileSync(path.join(outDir, 'role-rendered-ui-evidence.json'), JSON.strin
   approvedAuthenticatedTitle:expectedTitle,
   result: 'PASS',
   roles,
-  claimBoundary: 'fixture-only hosted staging; proves four role-specific authenticated rendered browser homes on desktop and mobile plus required server surfaces. It does not claim every role-specific task was clicked end-to-end, physical-device acceptance, production/pilot approval or real employee/payroll data.',
+  claimBoundary: 'fixture-only hosted staging; proves visible role homes and named read-only route transitions on desktop and mobile plus required server surfaces; screenshots capture the destinations, and zero business journeys are asserted. It does not claim every role-specific task was clicked end-to-end, physical-device acceptance, production/pilot approval or real employee/payroll data.',
 }, null, 2));
 console.log(`LIVE_ROLE_RENDERED_UI_PROOF=PASS|roles=${roles.length}|screenshots=${roles.length * 2}`);

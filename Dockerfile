@@ -90,6 +90,7 @@ RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp
  && rm -f /tmp/runtime.tgz
 COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/canonical-runtime-bridge.cjs integrations/staffology/canonical-production-boundaries.cjs integrations/staffology/canonical-operations.cjs /workspace/integrations/staffology/
 COPY verification/provider-recovery-correction/operations/runtime/ /workspace/verification/provider-recovery-correction/operations/runtime/
+COPY verification/provider-recovery-correction/ui/ /workspace/verification/provider-recovery-correction/ui/
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
 COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs /workspace/scripts/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
