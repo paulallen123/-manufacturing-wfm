@@ -4,7 +4,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { createNavigationEvidence, proveRoleView } from './rendered-role-assertions.mjs';
@@ -38,23 +38,37 @@ async function browser(t,kind,role='manager',actorRole=role){
  const server=http.createServer((req,res)=>{res.setHeader('Cache-Control','no-store');if(req.url.startsWith('/api/')){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(responses[req.url]));}else{res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fixture(kind,role));}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
  const profile=fs.mkdtempSync(path.join(os.tmpdir(),'render-assertions-'));
- const proc=spawn(process.env.CHROMIUM_PATH||'/usr/bin/chromium',['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-background-networking','--no-first-run','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',env:{PATH:process.env.PATH,HOME:profile}});
- let ws;
+ const proc=spawn(process.env.CHROMIUM_PATH||'/usr/bin/chromium',['--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-background-networking','--no-first-run','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',detached:process.platform!=='win32',env:{PATH:process.env.PATH,HOME:profile}});
+ let ws,send;
  t.after(async()=>{
+  const stopped=()=>proc.exitCode!==null || proc.signalCode!==null;
+  const exited=stopped()?Promise.resolve():once(proc,'exit');
+  const signalGroup=signal=>{
+   if(process.platform==='win32'){if(!stopped())proc.kill(signal);return;}
+   try{process.kill(-proc.pid,signal);}catch(error){if(error.code!=='ESRCH')throw error;}
+  };
+  // Close the browser cleanly before detaching CDP. The dedicated process group
+  // also owns any Chromium children surviving their launcher during shutdown.
+  if(send && ws?.readyState===1)await Promise.race([send('Browser.close').catch(()=>{}),delay(2000)]);
   ws?.close();
-  if(proc.exitCode===null && proc.signalCode===null){
-   const exited=once(proc,'exit');proc.kill('SIGTERM');await Promise.race([exited,delay(2000)]);
-   if(proc.exitCode===null && proc.signalCode===null){proc.kill('SIGKILL');await Promise.race([exited,delay(2000)]);}
+  if(!stopped()){signalGroup('SIGTERM');await Promise.race([exited,delay(2000)]);}
+  signalGroup('SIGKILL');
+  if(!stopped())await Promise.race([exited,delay(2000)]);
+  try {
+   assert.ok(stopped(),'Chromium did not stop before profile cleanup');
+   await new Promise(r=>server.close(r));
+   fs.rmSync(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});
+  } catch (error) {
+   const owned=process.platform==='win32'?null:spawnSync('ps',['-o','pid,ppid,pgid,sid,stat,comm','-s',String(proc.pid)],{encoding:'utf8',timeout:1000});
+   t.diagnostic(JSON.stringify({browserPid:proc.pid,exitCode:proc.exitCode,signalCode:proc.signalCode,ownedSession:owned?.stdout?.trim()||null,diagnosticError:owned?.error?.message||owned?.stderr?.trim()||null}));
+   throw error;
   }
-  assert.ok(proc.exitCode!==null || proc.signalCode!==null,'Chromium did not stop before profile cleanup');
-  await new Promise(r=>server.close(r));
-  fs.rmSync(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});
  });
  let port;for(let i=0;i<100;i++){try{port=fs.readFileSync(path.join(profile,'DevToolsActivePort'),'utf8').split('\n')[0];break;}catch{await delay(50);}}
  assert.ok(port,'Chromium did not start');const targets=await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();ws=new WebSocket(targets.find(x=>x.type==='page').webSocketDebuggerUrl);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j;});
  let id=0;const pending=new Map(),evidence=createNavigationEvidence(origin);
  ws.onmessage=event=>{const msg=JSON.parse(event.data);if(msg.id){const p=pending.get(msg.id);pending.delete(msg.id);msg.error?p.reject(Error(msg.error.message)):p.resolve(msg.result);}else evidence.onEvent(msg);};
- const send=(method,params={})=>new Promise((resolve,reject)=>{const n=++id;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}));});
+ send=(method,params={})=>new Promise((resolve,reject)=>{const n=++id;pending.set(n,{resolve,reject});ws.send(JSON.stringify({id:n,method,params}));});
  await send('Page.enable');await send('Network.enable');
  return {send,evidence,role,expectedActor,origin,timeoutMs:450,navigate:()=>send('Page.navigate',{url:origin})};
 }
