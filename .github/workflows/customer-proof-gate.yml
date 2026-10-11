@@ -48,7 +48,7 @@ jobs:
           tar -tzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz >/dev/null
 
       - name: Build exact customer-proof container
-        run: docker build --pull=false -t manufacturing-wfm:customer-proof .
+        run: docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA=${{ github.sha }} -t manufacturing-wfm:customer-proof .
 
       - name: Start isolated proof container
         run: |
