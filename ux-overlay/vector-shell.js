@@ -410,31 +410,32 @@ function refreshActionSurfaces(){
   const current=document.querySelector('.vector-alerts');if(current)current.outerHTML=current.classList?.contains?.('vector-priorities')?priorityMarkup(rows):alertsMarkup(rows);
   const badge=document.querySelector('.vector-notification-count');if(badge){badge.textContent=String(groups.needs.length);badge.hidden=!groups.needs.length;}
 }
-function timeReviewActor(){try{return typeof F==='object'&&F?F.actor||null:null;}catch{return null;}}
-function canReadTimeReviewEvidence(){return ['manager','director','supervisor'].includes(timeReviewActor()?.role);}
-function actionEvidenceOwnerKey(){const actor=timeReviewActor();return actor?[actor.tenant||'',actor.email||'',actor.personId||'',actor.role||''].join(':'):'unauthenticated';}
+function actionEvidenceOwnerKey(){const actor=authenticatedActor();return actor?[actor.tenant||'',actor.email||'',actor.personId||'',actor.role||''].join(':'):'unauthenticated';}
+function authenticatedActor(){try{return typeof F==='object'&&F?F.actor||null:null;}catch{return null;}}
+function timeReviewEvidenceAllowed(){return !employee()&&['manager','director','supervisor'].includes(authenticatedActor()?.role)&&available('attendance');}
 function invalidateTimeReviewEvidence(owner=actionEvidenceOwnerKey()){state.evidenceEpoch++;state.timeReviewEvidence={status:'idle',items:[],owner};}
 function syncTimeReviewEvidenceOwner(){const owner=actionEvidenceOwnerKey();if(state.timeReviewEvidence.owner!==owner){invalidateTimeReviewEvidence(owner);return true;}return false;}
+function timeReviewEvidenceCurrent(epoch,owner){if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey())return false;if(!timeReviewEvidenceAllowed()){invalidateTimeReviewEvidence(owner);return false;}return true;}
 async function loadTimeReviewEvidence(){
   syncTimeReviewEvidenceOwner();
   const owner=actionEvidenceOwnerKey();
-  if(!canReadTimeReviewEvidence()){refreshActionSurfaces();return false;}
+  if(!timeReviewEvidenceAllowed()){invalidateTimeReviewEvidence(owner);refreshActionSurfaces();return false;}
   if(state.timeReviewEvidence.status!=='idle')return state.timeReviewEvidence.status==='ready';
   const epoch=state.evidenceEpoch;
   state.timeReviewEvidence={status:'loading',items:[],owner};
   try{
     const calendar=await loadTenantCalendar();if(!calendar)throw new Error('tenant calendar unavailable');
-    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||!canReadTimeReviewEvidence())return false;
+    if(!timeReviewEvidenceCurrent(epoch,owner))return false;
     const response=await fetch(TIME_REVIEW_EVIDENCE_PATH,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
     if(!response.ok)throw new Error('time-review evidence unavailable');
     const body=await response.json();
     if(!body||body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items))throw new Error('time-review evidence contract mismatch');
     const envelopeAsOf=Date.parse(String(body.asOf||'')),calendarAsOf=Date.parse(String(calendar.asOf||'')),maxAgeMs=Number(body.maxAgeMs);
     if(String(body.timeZone||'')!==String(calendar.timeZone||'')||maxAgeMs!==Number(calendar.maxAgeMs)||!Number.isFinite(envelopeAsOf)||!Number.isFinite(calendarAsOf)||Math.abs(envelopeAsOf-calendarAsOf)>Math.max(30000,maxAgeMs))throw new Error('time-review evidence calendar mismatch');
-    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||!canReadTimeReviewEvidence())return false;
+    if(!timeReviewEvidenceCurrent(epoch,owner))return false;
     state.timeReviewEvidence={status:'ready',items:body.items.map(item=>acceptTimeReviewEvidenceItem(item,body)).filter(Boolean),owner};
   }catch{
-    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||!canReadTimeReviewEvidence())return false;
+    if(!timeReviewEvidenceCurrent(epoch,owner))return false;
     state.timeReviewEvidence={status:'unavailable',items:[],owner};
   }
   refreshActionSurfaces();return state.timeReviewEvidence.status==='ready';
@@ -591,23 +592,49 @@ function employeeHomeMarkup(v){
  <section class="vector-card"><div class="vector-card-head"><h2>Upcoming assignments</h2><button type="button" data-vector-route="shifts">Open shifts ${icon('arrow')}</button></div>${shifts.length?shifts.map(shift=>`<button type="button" class="vector-leave-row" data-vector-route="shifts"><span><b>${esc(shift.job||v?.identity?.job||'Assignment')}</b><small>${esc(shift.site||v?.identity?.site||'Current site')}</small></span><em>${esc(fmtTime(shift.start))}</em><strong>Published</strong>${icon('chevron')}</button>`).join(''):'<div class="vector-empty">No upcoming published assignments are in your current personal record.</div>'}</section>
  <section class="vector-card"><div class="vector-card-head"><h2>Recent leave requests</h2><button type="button" data-vector-route="leave">Open leave ${icon('arrow')}</button></div>${requests.length?requests.map(r=>`<div class="vector-alert-row"><i class="blue"></i><b>${esc(r.kind||'Leave')}<small> · ${esc(r.status||'recorded')}</small></b><span>${esc(r.date||r.start||'')}</span></div>`).join(''):'<div class="vector-empty">No leave requests are recorded.</div>'}</section>`;
 }
+const employeeHomeRenderCache=new WeakMap();
+function updateEmployeeHomeContent(content,value){
+ const markup=employeeHomeMarkup(value);
+ if(employeeHomeRenderCache.get(content)!==markup||!content.querySelector('[data-vector-employee-home]')){content.innerHTML=markup;employeeHomeRenderCache.set(content,markup);}
+ content.dataset.vectorEmployeeHome='1';if(document.title!=='Vector · Workforce')document.title='Vector · Workforce';
+}
+function renderEmployeeHomeError(content){
+ if(!content.querySelector('[data-vector-employee-home-error]'))content.innerHTML='<section class="vector-card" role="alert" data-vector-employee-home-error="1"><h1>Current work is unavailable</h1><p>Vector could not verify your authenticated personal record. No sample shift or legacy date is shown.</p><button type="button" data-vector-retry-employee-home>Try again</button></section>';
+}
+async function retryEmployeeHome(content){
+ if(!employee()||page()!=='overview'||state.employeeHome.status!=='error')return;
+ state.employeeHomeEpoch++;state.employeeHome={status:'idle',owner:'',value:null,error:''};
+ return renderEmployeeHome(content);
+}
+document.addEventListener('click',event=>{if(event.target.closest('[data-vector-retry-employee-home]')){const content=document.querySelector('.content');if(content)void retryEmployeeHome(content);}});
+function employeeHomeOwnerKey(){const actor=authenticatedActor();return actor?[actor.tenant,actor.email,actor.personId].join(':'):'unauthenticated';}
+function employeeHomeCurrent(epoch,owner,content){
+ if(epoch!==state.employeeHomeEpoch)return false;
+ if(owner!==employeeHomeOwnerKey()||!employee()||page()!=='overview'||content.isConnected===false){
+  state.employeeHomeEpoch++;state.employeeHome={status:'idle',owner:'',value:null,error:''};queueMicrotask(apply);return false;
+ }
+ return true;
+}
 async function renderEmployeeHome(content){
+ const renderEpoch=state.employeeHomeEpoch;
  await loadTenantCalendar();
- const owner=[sourceIdentity().tenant,sourceIdentity().email,sourceIdentity().id].join(':');
+ if(renderEpoch!==state.employeeHomeEpoch||!employee()||page()!=='overview'||content.isConnected===false)return;
+ const owner=employeeHomeOwnerKey();
  if(state.employeeHome.owner!==owner){state.employeeHomeEpoch++;state.employeeHome={status:'idle',owner,value:null,error:''};}
- if(state.employeeHome.status==='ready'&&state.employeeHome.value){content.innerHTML=employeeHomeMarkup(state.employeeHome.value);content.dataset.vectorEmployeeHome='1';document.title='Vector · Workforce';return;}
+ if(state.employeeHome.status==='ready'&&state.employeeHome.value){updateEmployeeHomeContent(content,state.employeeHome.value);return;}
+ if(state.employeeHome.status==='error'){renderEmployeeHomeError(content);return;}
  if(state.employeeHome.status==='loading')return;
  const epoch=++state.employeeHomeEpoch;state.employeeHome.status='loading';content.innerHTML='<div class="vector-empty">Loading your current personal record…</div>';
  try{
   const response=await fetch('/api/personal',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
   if(!response.ok)throw Error('Personal source unavailable');
   const value=await response.json();
-  if(epoch!==state.employeeHomeEpoch||owner!==state.employeeHome.owner||!employee()||page()!=='overview')return;
-  state.employeeHome={status:'ready',owner,value,error:''};content.innerHTML=employeeHomeMarkup(value);content.dataset.vectorEmployeeHome='1';document.title='Vector · Workforce';
+  if(!employeeHomeCurrent(epoch,owner,content))return;
+  state.employeeHome={status:'ready',owner,value,error:''};updateEmployeeHomeContent(content,value);
  }catch(error){
-  if(epoch!==state.employeeHomeEpoch)return;
+  if(!employeeHomeCurrent(epoch,owner,content))return;
   state.employeeHome={status:'error',owner,value:null,error:String(error?.message||'Personal source unavailable')};
-  content.innerHTML='<section class="vector-card" role="alert"><h1>Current work is unavailable</h1><p>Vector could not verify your authenticated personal record. No sample shift or legacy date is shown.</p></section>';
+  renderEmployeeHomeError(content);
  }
 }
 function renderHome(content){clearActionContext();if(content.dataset.vectorHome==='1'){focusReturnedActionList(content);return;}

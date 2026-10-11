@@ -480,6 +480,8 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.match(payroll.workflow.payrollPage(), /Payroll preparation/);
     assert.match(payroll.workflow.payrollPage(), /disabled[^>]*>Review and release CSV|Review and release CSV/);
     assert.ok(payroll.context.RF.company.blockers.length, 'release remains blocked, not bypassed');
+    await assert.rejects(payroll.context.request('/api/weekly-review'),error=>error.status===403);
+    await assert.rejects(payroll.context.request('/api/workforce/lifecycle/action-evidence/time-review'),error=>error.status===403);
   });
   await t.test('accepted command without observed saved result cannot produce success receipt', async () => {
     const uncertain = await client('manager@northstar.example');
