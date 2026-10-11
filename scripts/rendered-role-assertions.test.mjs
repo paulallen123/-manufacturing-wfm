@@ -24,11 +24,11 @@ function fixture(kind,role){
  ${missing?'':`<div class="app" data-vector-shell="test" style="${hidden}"><main class="content"><section class="${c.homeClass}" ${role==='employee'?'data-vector-employee-home="1"':''}><h1>${c.home}</h1></section><button data-vector-route="${c.route}">${c.label}</button></main></div>`}
  <script>
  history.replaceState({},'',location.pathname+'#vector/${role==='payroll_admin'?'payroll-run':'overview'}');
- if(!${kind==='stale-mobile'} || !sessionStorage.loaded)fetch('/api/bootstrap'); sessionStorage.loaded='1';
+ if(!${kind==='stale-mobile'} || !sessionStorage.loaded)fetch('/api/bootstrap').then(response=>response.json()); sessionStorage.loaded='1';
  document.querySelector('[data-vector-route]')?.addEventListener('click',async()=>{
  if(${kind==='inert-navigation'})return;
  history.pushState({},'','#vector/${c.route}');
- ${kind==='no-route-response'?'':`await fetch('${c.api}');`}
+ ${kind==='no-route-response'?'':`await fetch('${c.api}').then(response=>response.json());`}
  ${kind==='hash-only'?'':`document.querySelector('.content').innerHTML='<section><h1 style="${kind==='offscreen-outcome'?'position:fixed;left:-9999px':''}">${c.heading}</h1><button>View details</button></section>';`}
  });</script>`;
 }

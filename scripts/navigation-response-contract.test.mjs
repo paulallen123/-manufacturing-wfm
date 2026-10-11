@@ -74,3 +74,39 @@ test('unavailable completed body fails closed without disclosing original error'
   await assert.rejects(() => proveRoleView(f), { message: 'Fresh API response body could not be decoded.' });
   assert.equal(f.reads(), 1);
 });
+
+for (const phase of ['home', 'destination']) test(`rejects ${phase} replaced with login while body validation is deferred`, async () => {
+  const f = fixture();
+  let release, bodyStarted, invalid = false;
+  const deferred = new Promise(resolve => { release = resolve; });
+  const started = new Promise(resolve => { bodyStarted = resolve; });
+  const send = async (method, params) => {
+    if (method === 'Network.getResponseBody' && params.requestId === phase) { bodyStarted(); await deferred; }
+    if (method === 'Runtime.evaluate' && invalid) return { result: { value: { app: false, heading: '', route: '', title: 'Sign in' } } };
+    return f.send(method, params);
+  };
+  const result = proveRoleView({ ...f, send });
+  const rejected = assert.rejects(result, /visible.*heading|Named navigation did not reach/);
+  await started;
+  invalid = true;
+  release();
+  await rejected;
+});
+
+for (const change of ['new bootstrap request', 'new document']) {
+  for (const phase of ['home', 'destination']) test(`rejects stale ${phase} response after ${change}`, async () => {
+    const f = fixture();
+    let changed = false;
+    const send = async (method, params) => {
+      const result = await f.send(method, params);
+      if (!changed && method === 'Network.getResponseBody' && params.requestId === phase) {
+        changed = true;
+        f.evidence.onEvent(change === 'new document'
+          ? { method: 'Page.frameNavigated', params: { frame: { id: 'new-main' } } }
+          : { method: 'Network.requestWillBeSent', params: { requestId: 'new-actor', request: { url: 'https://fixture.invalid/api/bootstrap', method: 'GET' } } });
+      }
+      return result;
+    };
+    await assert.rejects(() => proveRoleView({ ...f, send }), /Navigation changed|response was superseded/);
+  });
+}
