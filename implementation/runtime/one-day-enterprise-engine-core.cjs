@@ -12,6 +12,10 @@ const {
 const { DatabaseSync } = require('node:sqlite');
 const { createImplementationWorkController } = require('./implementation-work-controller.cjs');
 const { createTenantEnvironmentProvisioner } = require('./tenant-environment-provisioner.cjs');
+const { createWorkspaceSetup, normalizeAnswers } = require('./workspace-setup.cjs');
+const { createOrganisationAccessSetup } = require('./organisation-access-setup.cjs');
+const { createCustomerWorkspaceRegistry } = require('./customer-workspace.cjs');
+const { installOrganisationAccessLifecycle } = require('./organisation-access-lifecycle.cjs');
 const { validateStrictReadinessEvidence, validEffectiveDate } = require('./readiness-evidence-contract.cjs');
 
 const PREFIX = '/api/implementation/autonomous';
@@ -247,7 +251,7 @@ function writeJson(res, status, body) {
   return true;
 }
 
-async function readJson(req, maxBytes = 256 * 1024) {
+async function readRaw(req, maxBytes = 256 * 1024) {
   let size = 0;
   const chunks = [];
   for await (const chunk of req) {
@@ -260,9 +264,14 @@ async function readJson(req, maxBytes = 256 * 1024) {
     }
     chunks.push(buffer);
   }
-  if (!chunks.length) return {};
+  return Buffer.concat(chunks);
+}
+
+async function readJson(req, maxBytes = 256 * 1024) {
+  const raw=await readRaw(req,maxBytes);
+  if(!raw.length)return {};
   try {
-    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    return JSON.parse(raw.toString('utf8'));
   } catch {
     const error = new Error('Invalid JSON body.');
     error.statusCode = 400;
@@ -447,6 +456,30 @@ function createOneDayEnterpriseEngine(options = {}) {
     db, requirements: REQUIREMENTS, candidateSha, deploymentId, requireCandidateBinding
   });
   const tenantEnvironmentProvisioner = createTenantEnvironmentProvisioner({ db });
+  const organisationAccess = createOrganisationAccessSetup({db,provisionInitialOwner:options.provisionInitialOwner});
+  installOrganisationAccessLifecycle(db);
+  const customerWorkspaces = createCustomerWorkspaceRegistry({db,createInitialWorkspace(binding){
+    if(!publicOrigin.startsWith('https://')||!dedicatedInvitationRecoverySecret)throw Object.assign(Error('Secure workspace invitation delivery is not configured.'),{statusCode:503});
+    if(!db.prepare('SELECT id FROM tenants WHERE id=?').get(binding.tenant)){
+      if(typeof options.createCanonicalTenant!=='function')throw Object.assign(Error('Clean customer workspace creation is not configured.'),{statusCode:503});
+      const result=options.createCanonicalTenant({db,binding});
+      if(result&&typeof result.then==='function')throw Error('Canonical tenant creation must be synchronous.');
+    }
+    if(!db.prepare('SELECT id FROM tenants WHERE id=?').get(binding.tenant))throw Error('Canonical customer tenant creation did not persist.');
+    if(db.prepare('SELECT 1 FROM implementation_runs WHERE tenant=?').get(binding.tenant))throw Object.assign(Error('This tenant already has implementation history. An explicit customer workspace association is required.'),{statusCode:409});
+    const runId=randomUUID(),started=Date.now(),ts=nowIso(),targetHours=8;
+    insertRun.run(runId,binding.tenant,sha256(binding.contractRef),'BUILDING',started,started+targetHours*60*60*1000,targetHours,ts,ts);
+    const profile=organisationAccess.reserve({binding:{...binding,runId},profile:binding.profile});
+    const access=organisationAccess.ensureAccess({tenant:binding.tenant,runId,expectedRevision:profile.revision});
+    if(!['SECURE_ENROLMENT_REQUIRED','ENROLLED'].includes(access.access))throw Object.assign(Error('Authorised initial-owner access is not configured.'),{statusCode:503});
+    tenantEnvironmentProvisioner.reserve({tenant:binding.tenant,runId});
+    const invitation={id:randomUUID(),tenant:binding.tenant,contract_ref_hash:sha256(binding.contractRef),recipient_hash:recipientDigest(binding.ownerEmail),expires_at_ms:started+7*24*60*60*1000};
+    const token=deterministicInvitationToken(invitation);
+    insertInvitation.run(invitation.id,invitation.tenant,invitation.contract_ref_hash,invitation.recipient_hash,sha256(token),'PENDING',targetHours,invitation.expires_at_ms,null,ts,ts);
+    scheduleNotificationRecovery(invitation,binding.ownerEmail,started-notificationRetryDelayMs);
+    record(runId,binding.tenant,'VERIFIED_CUSTOMER_WORKSPACE_CREATED',{provider:binding.provider,contractRefDigest:sha256(binding.contractRef).slice(0,16),targetHours});
+    return {initialSetupRunId:runId};
+  }});
 
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role,u.permissions FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
@@ -506,7 +539,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   const runById = db.prepare('SELECT * FROM implementation_runs WHERE id=? AND tenant=?');
   const runByIdAnyTenant = db.prepare('SELECT * FROM implementation_runs WHERE id=?');
   const currentRun = db.prepare(
-    "SELECT * FROM implementation_runs WHERE tenant=? ORDER BY started_at_ms DESC LIMIT 1"
+    "SELECT * FROM implementation_runs WHERE tenant=? ORDER BY (id=(SELECT initial_run_id FROM customer_workspaces WHERE tenant=implementation_runs.tenant)) DESC,started_at_ms DESC LIMIT 1"
   );
   const runByContract = db.prepare(
     'SELECT * FROM implementation_runs WHERE tenant=? AND contract_ref_hash=?'
@@ -556,7 +589,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   function record(runId, tenant, event, detail = {}) {
     try {
       eventStmt.run(runId || null, tenant || null, event, JSON.stringify(detail), nowIso());
-    } catch {}
+    } catch(error) { if(db.isTransaction) throw error; }
   }
 
   function executeTenantEnvironmentEffect(run, scope, trigger = 'implementation-orchestrator') {
@@ -618,6 +651,17 @@ function createOneDayEnterpriseEngine(options = {}) {
       writeJson(res, 403, { error: 'Implementation control requires explicit company configuration permission.' });
       return null;
     }
+    const tableExists=name=>Boolean(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(name));
+    const control=tableExists('identity_tenant_control')?db.prepare('SELECT * FROM identity_tenant_control WHERE tenant=?').get(ctx.tenant):null;
+    if(control?.privileged_freeze||db.prepare("SELECT 1 FROM organisation_access_initial_authority WHERE tenant=? AND lower(owner_email)=lower(?) AND state='REVOKED'").get(ctx.tenant,ctx.email)){
+      writeJson(res,403,{error:'Workspace access is frozen or requires authorised restoration.'});return null;
+    }
+    if(tableExists('identity_session_bindings')){
+      const binding=db.prepare('SELECT * FROM identity_session_bindings WHERE token_hash=?').get(sha256(cookieSessionToken(req)));
+      if(binding&&(binding.tenant!==ctx.tenant||binding.session_epoch!==Number(control?.session_epoch||1)||binding.policy_version!==Number(control?.policy_version||1))){
+        writeJson(res,401,{error:'Sign in again to continue workspace setup.'});return null;
+      }
+    }
     return {...ctx,permissions};
   }
 
@@ -646,17 +690,18 @@ function createOneDayEnterpriseEngine(options = {}) {
   }
 
   async function handleContractSigned(req, res) {
-    const body = await readJson(req);
-    const state = compact(body.state || body.status || body.event, 40).trim().toUpperCase();
-    if (!['SIGNED', 'COMPLETED', 'CONTRACT_SIGNED'].includes(state)) {
-      return writeJson(res, 202, { ignored: true, reason: 'Contract is not in a signed/completed state.' });
+    if(typeof options.verifySignedContract!=='function')return writeJson(res,503,{error:'Verified signing-provider intake is not configured.'});
+    const rawBody=await readRaw(req);
+    const binding=await options.verifySignedContract({rawBody,headers:{...req.headers}});
+    if(binding===null)return writeJson(res,202,{ignored:true,reason:'No verified completed signing event.'});
+    const workspace=customerWorkspaces.accept(binding);
+    if(!workspace.created){
+      if(binding.relationship==='initial')await retryDueNotifications({tenant:workspace.tenant,contractHash:sha256(binding.contractRef)});
+      const run=runById.get(workspace.initialSetupRunId,workspace.tenant),recovery=notificationRecoveryForRun(run);
+      return writeJson(res,200,{workspace,questionnaireReset:false,implementation:readinessForRun(run),notification:{delivered:recovery.state==='DELIVERED'||recovery.state==='STARTED',recovery}});
     }
-    return await activateContract({
-      tenant: body.tenant,
-      contractRef: body.contractRef || body.contractId,
-      recipientEmail: body.recipientEmail || body.implementationContactEmail,
-      targetHours: body.targetHours || 8
-    }, res);
+    if(binding.relationship!=='initial')return writeJson(res,200,{workspace,questionnaireReset:false,implementation:readinessForRun(runById.get(workspace.initialSetupRunId,workspace.tenant))});
+    return await activateContract({tenant:workspace.tenant,contractRef:binding.contractRef,recipientEmail:binding.ownerEmail,targetHours:8},res,{createdWorkspace:workspace.created});
   }
 
   function parseDecision(row) {
@@ -974,7 +1019,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         terminalAction: 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED'
       };
     }
-    if (outbox?.state === 'EXHAUSTED' || attempts >= 3) {
+    if (outbox?.state === 'EXHAUSTED' || (attempts >= 3 && !(invitation && deliveryReceipt && !outbox))) {
       return {
         state: 'EXHAUSTED', attempts, remainingAttempts: 0,
         automaticActionAvailable: false,
@@ -1239,24 +1284,24 @@ function createOneDayEnterpriseEngine(options = {}) {
     const map={
       'configuration-scope':['configuration'],
       'tenant-environment':['configuration','runtime'],
-      'identity-access':['runtime'],
+      'identity-access':['runtime','authority'],
       'source-systems':['workforce'],
       'people-data':['workforce'],
       'organisation-model':['configuration','workforce'],
       'time-policies':['configuration','policy'],
       'absence-policies':['configuration','policy'],
       'scheduling':['configuration','policy','workforce'],
-      'approvals':['configuration','policy','workforce','runtime'],
-      'clocking':['configuration','policy','workforce','runtime'],
+      'approvals':['configuration','policy','workforce','runtime','authority'],
+      'clocking':['configuration','policy','workforce','runtime','authority'],
       'payroll-mapping':['policy','workforce','payroll-provider'],
       'historical-replay':['policy','payroll-provider'],
-      'security-controls':['runtime'],
+      'security-controls':['runtime','authority'],
       'resilience':['runtime','payroll-provider'],
-      'scenario-validation':['configuration','policy','workforce','payroll-provider','runtime'],
+      'scenario-validation':['configuration','policy','workforce','payroll-provider','runtime','authority'],
       'test-data-cleanup':['workforce','runtime'],
       'live-data-import':['configuration','workforce'],
       'role-learning':['workforce'],
-      'privileged-competency':['configuration','policy','workforce','runtime'],
+      'privileged-competency':['configuration','policy','workforce','runtime','authority'],
       'frontline-readiness':['policy','workforce']
     };
     return map[kind]||['runtime'];
@@ -1286,6 +1331,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         decisionDigest:row.decision_json?sha256(row.decision_json):null
       })).sort((a,b)=>a.key.localeCompare(b.key));
     const domains={
+      authority:{revision:db.prepare('SELECT revision FROM organisation_authority_epochs WHERE tenant=?').get(run.tenant)?.revision||0},
       configuration:{
         scopeDigest:scopeRow?digestJson(normaliseScope(parseJsonSafe(scopeRow.scope_json,{}))):null,
         configurationDigest:environment?.configurationDigest||null
@@ -1713,7 +1759,23 @@ function createOneDayEnterpriseEngine(options = {}) {
     );
   }
 
+  function activeInvitation(invitation,nowMs=Date.now()) {
+    const current=invitationById.get(invitation.id,invitation.tenant);
+    if(!current||current.status!=='PENDING'||Number(current.expires_at_ms)<=Number(nowMs)||current.contract_ref_hash!==invitation.contract_ref_hash)return false;
+    const outbox=outboxByContract.get(current.tenant,current.contract_ref_hash);
+    if(outbox&&outbox.state!=='PENDING')return false;
+    const setup=db.prepare('SELECT * FROM organisation_access_setup WHERE tenant=? AND contract_hash=?').get(current.tenant,current.contract_ref_hash);
+    if(setup){
+      const authority=db.prepare('SELECT state FROM organisation_access_initial_authority WHERE tenant=? AND run_id=?').get(setup.tenant,setup.run_id);
+      const user=db.prepare('SELECT role,permissions FROM users WHERE tenant=? AND email=?').get(setup.tenant,setup.owner_email);
+      const permissions=parseJsonSafe(user?.permissions,[]);
+      if(authority?.state!=='CONSUMED'||!user||user.role==='employee'||!Array.isArray(permissions)||!permissions.includes('company.configure'))return false;
+    }
+    return true;
+  }
+
   async function deliverInvitation(invitation, recipientEmail, rawToken) {
+    if(!activeInvitation(invitation))throw Object.assign(Error('Invitation is no longer active.'),{code:'INVITATION_CANCELLED'});
     const startUrl = publicOrigin + '/?implementation_invite=' + encodeURIComponent(rawToken);
     return await invitationSender({
       to: recipientEmail,
@@ -1726,7 +1788,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   }
 
   function scheduleNotificationRecovery(invitation, recipientEmail, nowMs = Date.now()) {
-    if (!invitationRecoverySecret) return false;
+    if (!invitationRecoverySecret || !activeInvitation(invitation)) return false;
     const ts = nowIso();
     upsertNotificationOutbox.run(
       invitation.tenant,
@@ -1775,7 +1837,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       result.examined += 1;
       const invitation = invitationById.get(outbox.invitation_id, outbox.tenant);
       const run = runByContract.get(outbox.tenant, outbox.contract_ref_hash);
-      if (!invitation || !run || invitation.status !== 'PENDING' || Number(nowMs) > invitation.expires_at_ms) {
+      if (!invitation || !run || !activeInvitation(invitation,nowMs)) {
         updateNotificationOutboxState.run('BLOCKED', nowIso(), outbox.tenant, outbox.contract_ref_hash);
         result.blocked += 1;
         continue;
@@ -1813,6 +1875,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       try {
         const delivery = await deliverInvitation(invitation, recipientEmail, rawToken);
         finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
+        if(!activeInvitation(invitation)){result.blocked+=1;continue;}
         deleteNotificationOutbox.run(outbox.tenant, outbox.contract_ref_hash);
         record(run.id, outbox.tenant, 'CONTRACT_INVITATION_SENT', {
           invitationId: invitation.id,
@@ -1825,6 +1888,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         result.delivered += 1;
       } catch (error) {
         finishNotificationAttempt(outbox.tenant, outbox.contract_ref_hash);
+        if(!activeInvitation(invitation)){result.blocked+=1;continue;}
         if (error?.permanent === true) {
           const attempts = Number(
             notificationAttemptsByContract.get(outbox.tenant, outbox.contract_ref_hash)?.attempts || 0
@@ -1856,7 +1920,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     return result;
   }
 
-  async function activateContract(body, res) {
+  async function activateContract(body, res, activation = {}) {
     const tenant = compact(body.tenant, 120);
     const contractRef = compact(body.contractRef, 300);
     const recipientEmail = compact(body.recipientEmail, 240).trim().toLowerCase();
@@ -1865,11 +1929,16 @@ function createOneDayEnterpriseEngine(options = {}) {
       return writeJson(res, 400, { error: 'tenant, contractRef and a valid recipientEmail are required.' });
     }
     const contractHash = sha256(contractRef);
+    const permanentWorkspace=customerWorkspaces.forTenant(tenant);
+    if(permanentWorkspace && runById.get(permanentWorkspace.initialSetupRunId,tenant)?.contract_ref_hash!==contractHash){
+      return writeJson(res,409,{error:'Associate this contract with the existing customer workspace through verified signing. Initial setup cannot be restarted.'});
+    }
+    if(permanentWorkspace&&!activation.createdWorkspace)return writeJson(res,200,{workspace:permanentWorkspace,questionnaireReset:false,implementation:readinessForRun(runById.get(permanentWorkspace.initialSetupRunId,tenant))});
     // A trusted signed/activated contract is the implementation start signal.
     // Do not wait for an email click or other human acknowledgement before
     // provisioning the implementation run. Notification is advisory only.
     let autoStartedRun = runByContract.get(tenant, contractHash);
-    const createdRun = !autoStartedRun;
+    const createdRun = !autoStartedRun || activation.createdWorkspace===true;
     if (!autoStartedRun) {
       const started = Date.now();
       const deadline = started + targetHours * 60 * 60 * 1000;
@@ -1978,6 +2047,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     let retryExhausted = false;
     let retryInProgress = false;
     let providerBlocked = false;
+    let invitationCancelled = false;
     let id = invitation?.id || null;
     let rawToken = invitation ? deterministicInvitationToken(invitation) : null;
     let expiresAtMs = invitation?.expires_at_ms || null;
@@ -1993,8 +2063,9 @@ function createOneDayEnterpriseEngine(options = {}) {
     // Make one automatic recovery attempt within the trusted activation. A
     // third durable attempt remains available to a later provider replay or
     // restart, so a slow outage cannot create an unbounded mail loop.
-    const localAttemptLimit = recoveringExisting ? 1 : 2;
+    const localAttemptLimit = recoveringExisting && !activation.createdWorkspace ? 1 : 2;
     for (let localAttempt = 0; localAttempt < localAttemptLimit && !notificationDelivered; localAttempt += 1) {
+      if(invitation&&!activeInvitation(invitation)){providerBlocked=true;invitationCancelled=true;break;}
       const claim = claimNotificationAttempt(tenant, contractHash);
       if (!claim.reserved) {
         if (claim.inProgress) {
@@ -2029,6 +2100,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       try {
         const delivery = await deliverInvitation(invitation, recipientEmail, rawToken);
         finishNotificationAttempt(tenant, contractHash);
+        if(!activeInvitation(invitation)){providerBlocked=true;invitationCancelled=true;break;}
         notificationDelivered = true;
         deleteNotificationOutbox.run(tenant, contractHash);
         record(autoStartedRun.id, tenant, 'CONTRACT_INVITATION_SENT', {
@@ -2040,6 +2112,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         });
       } catch (error) {
         finishNotificationAttempt(tenant, contractHash);
+        if(!activeInvitation(invitation)){providerBlocked=true;invitationCancelled=true;break;}
         if (error?.permanent === true) {
           if (scheduleNotificationRecovery(invitation, recipientEmail)) {
             updateNotificationOutboxState.run('PROVIDER_BLOCKED', nowIso(), tenant, contractHash);
@@ -2057,7 +2130,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         // bounded in-request attempts, persist only an encrypted recipient and
         // reconstructible token identity so recovery survives a safe restart.
         if (localAttempt === localAttemptLimit - 1) {
-          if (recoveringExisting) {
+          if (recoveringExisting && !activation.createdWorkspace) {
             updateNotificationOutboxState.run('EXHAUSTED', nowIso(), tenant, contractHash);
             retryExhausted = true;
           } else if (!scheduleNotificationRecovery(invitation, recipientEmail)) {
@@ -2079,7 +2152,7 @@ function createOneDayEnterpriseEngine(options = {}) {
         retryExhausted,
         retryInProgress,
         blocked: providerBlocked,
-        reason: providerBlocked ? 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED' : undefined,
+        reason: invitationCancelled ? 'INVITATION_CANCELLED' : providerBlocked ? 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED' : undefined,
         pendingRetry: !notificationDelivered && outboxByContract.get(tenant, contractHash)?.state === 'PENDING'
       }
     });
@@ -2247,6 +2320,7 @@ function createOneDayEnterpriseEngine(options = {}) {
       erpSystem,
       agencyLabour: Boolean(body.agencyLabour),
       workforcePartition,
+      ...(body.workspaceSetup != null ? {workspaceSetup:normalizeAnswers(body.workspaceSetup)} : {}),
       priorities,
       notes
     };
@@ -2264,15 +2338,12 @@ function createOneDayEnterpriseEngine(options = {}) {
     });
   }
 
-  async function handleScope(ctx, req, res) {
-    const run = currentRun.get(ctx.tenant);
-    if (!run) return writeJson(res, 409, { error: 'Start the implementation before providing configuration scope.' });
-    const scope = normaliseScope(await readJson(req));
-    const existing = scopeByRun.get(run.id, ctx.tenant);
+  function applyScopeConfiguration(run, scope, actorHash) {
+    const existing = scopeByRun.get(run.id, run.tenant);
     const ts = nowIso();
-    upsertScope.run(run.id, ctx.tenant, JSON.stringify(scope), sha256(ctx.email).slice(0, 16), existing?.created_at || ts, ts);
-    record(run.id, ctx.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
-      by: sha256(ctx.email).slice(0, 16),
+    upsertScope.run(run.id, run.tenant, JSON.stringify(scope), actorHash, existing?.created_at || ts, ts);
+    record(run.id, run.tenant, existing ? 'CUSTOMER_SCOPE_UPDATED' : 'CUSTOMER_SCOPE_SUBMITTED', {
+      by: actorHash,
       configurationChanged: Boolean(existing && JSON.stringify(normaliseScope(parseJsonSafe(existing.scope_json, {}))) !== JSON.stringify(scope)),
       employees: scope.employeeCount,
       countries: scope.countries.length,
@@ -2280,8 +2351,68 @@ function createOneDayEnterpriseEngine(options = {}) {
       sourceSystems: scope.sourceSystems.length,
       features: scope.features.length
     });
-    executeTenantEnvironmentEffect(run, scope, existing ? 'customer-scope-update' : 'customer-scope-submit');
+    const effect=executeTenantEnvironmentEffect(run, scope, existing ? 'customer-scope-update' : 'customer-scope-submit');
+    const environment=effect?.environment;
+    if(!environment || environment.runId!==run.id || JSON.stringify(normaliseScope(environment.configuration))!==JSON.stringify(scope)) {
+      const error=new Error('The workspace configuration could not be applied. Retry after the current work completes.');
+      error.statusCode=409; throw error;
+    }
     ensurePolicyQuestions(run, scope);
+    return {scopeDigest:digestJson(scope),configurationDigest:environment.configurationDigest};
+  }
+
+  const workspaceSetup = options.configurationCompiler ? createWorkspaceSetup({
+    db,compiler:options.configurationCompiler,candidateSha,deploymentId,
+    getAppliedState({tenant,runId}) {
+      const row=scopeByRun.get(runId,tenant), environment=tenantEnvironmentProvisioner.statusForTenant(tenant);
+      return {scopeDigest:row?digestJson(normaliseScope(JSON.parse(row.scope_json))):null,
+        configurationDigest:environment?.runId===runId?environment.configurationDigest:null};
+    },
+    applyConfiguration({tenant,runId,actor,answers,compiled}) {
+      const run=runById.get(runId,tenant);
+      if(!run || currentRun.get(tenant)?.id!==runId) { const error=Error('The current implementation run changed.'); error.statusCode=409; throw error; }
+      const previous=scopeByRun.get(runId,tenant), old=previous?JSON.parse(previous.scope_json):{};
+      const scope=normaliseScope({...old,companyName:answers.organisation.name,countries:answers.organisation.countries,
+        sites:compiled.scope.sites.map(site=>site.name),employeeCount:answers.workforce.count,
+        features:compiled.scope.modules,workspaceSetup:answers,
+        sourceSystems:answers.connections.timing==='now'?compiled.scope.integrations.map(system=>system.provider):(old.sourceSystems||[])});
+      return applyScopeConfiguration(run,scope,actor);
+    }
+  }) : null;
+
+  async function handleWorkspaceSetup(ctx,req,res,apply=false) {
+    if(!workspaceSetup) return writeJson(res,503,{error:'Workspace setup is unavailable on this deployment.'});
+    const run=currentRun.get(ctx.tenant);
+    if(!run) return writeJson(res,409,{error:'Start the implementation before setting up the workspace.'});
+    const bound={tenant:ctx.tenant,runId:run.id};
+    if(req.method==='GET') return writeJson(res,200,workspaceSetup.read(bound));
+    const body=await readJson(req), allowed=apply?['expectedRevision','reviewToken']:['expectedRevision','answers'];
+    if(!body || typeof body!=='object' || Array.isArray(body) || Object.keys(body).some(key=>!allowed.includes(key))) return writeJson(res,400,{error:'Unsupported workspace setup fields.'});
+    db.exec('BEGIN IMMEDIATE');let result;
+    try{
+      const current=requireManager(req,res);
+      if(!current){db.exec('ROLLBACK');return true;}
+      if(current.tenant!==bound.tenant||current.email!==ctx.email||currentRun.get(current.tenant)?.id!==bound.runId)throw Object.assign(Error('Workspace authority changed. Reload before continuing.'),{statusCode:409});
+      result=workspaceSetup[apply?'apply':'save']({...bound,...body,actor:sha256(current.email).slice(0,16)});
+      db.exec('COMMIT');
+    }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
+    return writeJson(res,200,result);
+  }
+
+  async function handleScope(ctx, req, res) {
+    const run = currentRun.get(ctx.tenant);
+    if (!run) return writeJson(res, 409, { error: 'Start the implementation before providing configuration scope.' });
+    const scope = normaliseScope(await readJson(req));
+    const existing = scopeByRun.get(run.id, ctx.tenant);
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const current=requireManager(req,res);
+      if(!current){db.exec('ROLLBACK');return true;}
+      if(current.tenant!==ctx.tenant||current.email!==ctx.email||currentRun.get(current.tenant)?.id!==run.id)throw Object.assign(Error('Workspace authority changed.'),{statusCode:409});
+      if(customerWorkspaces.forTenant(current.tenant))throw Object.assign(Error('Use the reviewed workspace setup or explicit workspace settings to change this customer configuration.'),{statusCode:409});
+      applyScopeConfiguration(run,scope,sha256(ctx.email).slice(0,16));
+      db.exec('COMMIT');
+    } catch(error) { try { db.exec('ROLLBACK'); } catch {} throw error; }
     return writeJson(res, existing ? 200 : 201, recompute(run));
   }
 
@@ -2771,6 +2902,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/start') return await handleStart(ctx, req, res);
       if (req.method === 'GET' && path === PREFIX + '/scope') return handleScopeGet(ctx, res);
       if (req.method === 'POST' && path === PREFIX + '/scope') return await handleScope(ctx, req, res);
+      if (['GET','POST'].includes(req.method) && path === PREFIX + '/setup') return await handleWorkspaceSetup(ctx,req,res);
+      if (req.method === 'POST' && path === PREFIX + '/setup/apply') return await handleWorkspaceSetup(ctx,req,res,true);
       if (req.method === 'POST' && path === PREFIX + '/decision') return await handleDecision(ctx, req, res);
       return writeJson(res, 404, { error: 'Autonomous implementation endpoint not found.' });
     } catch (error) {

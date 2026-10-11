@@ -64,7 +64,11 @@ function createPasskeyAuth(options={}) {
       if(!invite)throw denied();
       const users=db.prepare('SELECT email,tenant,role FROM users WHERE tenant=?').all(invite.tenant).filter(u=>hash(u.email.trim().toLowerCase())===invite.recipient_hash);
       if(users.length!==1)throw denied();const u=users[0];
-      if(get('SELECT id FROM passkey_credentials WHERE tenant=? AND email=? AND revoked_at IS NULL',u.tenant,u.email))throw denied();
+      // Signing invitations authorize initial enrolment only. Historical credentials
+      // require authenticated device addition or separately authorised recovery.
+      if(get('SELECT id FROM passkey_credentials WHERE tenant=? AND email=?',u.tenant,u.email))throw denied();
+      if(get("SELECT name FROM sqlite_master WHERE type='table' AND name='organisation_access_initial_authority'")&&
+        get("SELECT 1 FROM organisation_access_initial_authority WHERE tenant=? AND lower(owner_email)=lower(?) AND state='REVOKED'",u.tenant,u.email))throw denied();
       const control=scope(u);if(control.frozen)throw denied();
       return {...u,kind:'invitation',source:tokenHash,...control};
     }

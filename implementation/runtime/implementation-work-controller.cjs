@@ -59,13 +59,14 @@ function createImplementationWorkController(options = {}) {
   const bindingDigest = digest({ candidateSha: candidateSha || null, deploymentId: deploymentId || null });
 
   function atomic(fn) {
-    db.exec('BEGIN IMMEDIATE');
+    const savepoint = db.isTransaction ? 'work_' + randomUUID().replace(/-/g, '') : null;
+    db.exec(savepoint ? 'SAVEPOINT ' + savepoint : 'BEGIN IMMEDIATE');
     try {
       const result = fn();
-      db.exec('COMMIT');
+      db.exec(savepoint ? 'RELEASE ' + savepoint : 'COMMIT');
       return result;
     } catch (error) {
-      try { db.exec('ROLLBACK'); } catch {}
+      try { db.exec(savepoint ? 'ROLLBACK TO ' + savepoint + '; RELEASE ' + savepoint : 'ROLLBACK'); } catch {}
       throw error;
     }
   }
@@ -204,8 +205,7 @@ function createImplementationWorkController(options = {}) {
     const nowMs = Number(clock());
     const stamp = new Date(nowMs).toISOString();
 
-    db.exec('BEGIN IMMEDIATE');
-    try {
+    atomic(() => {
       for (const spec of requirements) {
         const item = byKey.get(spec.key) || { key: spec.key, dependsOn: spec.dependsOn, satisfied: false, source: null, detail: null };
         item.dependsOn = spec.dependsOn;
@@ -273,11 +273,7 @@ function createImplementationWorkController(options = {}) {
           updateState.run(desired, 0, 0, blockReason || null, existing.last_error || null, stamp, existing.id);
         }
       }
-      db.exec('COMMIT');
-    } catch (error) {
-      try { db.exec('ROLLBACK'); } catch {}
-      throw error;
-    }
+    });
     return plan(runId, tenant);
   }
 
@@ -386,8 +382,9 @@ function createImplementationWorkController(options = {}) {
       requireLiveLease(row);
       const detail = effect();
       if (detail && typeof detail.then === 'function') throw refused('Local effect must be synchronous.');
-      requireLiveLease(row);
-      return completeOwned({ ...args, outcome: 'EFFECT_RECORDED', detail }, row);
+      const current = ownedRow(args);
+      requireLiveLease(current);
+      return completeOwned({ ...args, outcome: 'EFFECT_RECORDED', detail }, current);
     });
   }
 

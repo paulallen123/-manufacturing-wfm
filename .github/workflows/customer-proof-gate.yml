@@ -48,7 +48,7 @@ jobs:
           tar -tzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz >/dev/null
 
       - name: Build exact customer-proof container
-        run: docker build --pull=false -t manufacturing-wfm:customer-proof .
+        run: docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA=${{ github.sha }} -t manufacturing-wfm:customer-proof .
 
       - name: Start isolated proof container
         run: |
@@ -59,6 +59,7 @@ jobs:
             -e NODE_ENV=staging \
             -e NODE_OPTIONS=--experimental-sqlite \
             -e WFM_HOSTED_STAGING=true \
+            -e WFM_CANDIDATE_SHA="$GITHUB_SHA" \
             -e WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid \
             -e WFM_DB=/tmp/wfm-proof.sqlite \
             -e WFM_STAGING_PASSWORD="$CI_PASSWORD" \
@@ -67,8 +68,18 @@ jobs:
       - name: Prove runtime identity and reduced attack surface
         run: |
           set -euo pipefail
-          test "$(docker exec wfm-proof id -u)" != "0"
-          docker exec wfm-proof sh -lc '! command -v npm && ! command -v npx && ! command -v corepack && ! command -v yarn && ! command -v pnpm'
+          node --test tests/runtime-process-uid.test.cjs
+          docker exec wfm-proof cat /proc/1/status | bash scripts/verify-runtime-process-uid.sh
+          docker exec wfm-proof sh -ec '
+            test ! -e /usr/local/lib/node_modules/npm
+            test ! -e /usr/local/lib/node_modules/corepack
+            for p in npm npx corepack yarn yarnpkg pnpm pnpx; do
+              if command -v "$p" >/dev/null 2>&1; then
+                echo "Unexpected package manager in final runtime: $p" >&2
+                exit 1
+              fi
+            done
+          '
 
       - name: Prove hosted HTTP boundary
         run: |
@@ -86,6 +97,8 @@ jobs:
             sleep 0.25
           done
           proxy_curl http://127.0.0.1:3000/api/health
+          proxy_curl http://127.0.0.1:3000/api/runtime-identity >/tmp/runtime-identity.json
+          node -e 'const p=require("/tmp/runtime-identity.json");if(p.candidateSha!==process.env.GITHUB_SHA||p.sourceBinding!=="build-file-matched"||p.fixtureOnly!==true||p.productionApproved!==false||p.pilotReady!==false)throw Error("Exact source and fixture identity required");console.log("VECTOR_RUNTIME_IDENTITY=PASS SHA="+p.candidateSha)'
           proxy_curl http://127.0.0.1:3000/ >/dev/null
           proxy_curl http://127.0.0.1:3000/kiosk.html >/dev/null
           status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}' \

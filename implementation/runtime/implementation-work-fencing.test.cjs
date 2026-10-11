@@ -46,6 +46,62 @@ function refusalIsAtomic(f, fn) {
   assert.equal(f.snapshot(), before, 'refusal must leave jobs and receipts unchanged');
 }
 
+test('a reentrant effect cannot publish a receipt after invalidating its own claim',t=>{
+  const f=fixture(t,true),job=f.claim(),before=f.snapshot();
+  assert.throws(()=>f.c.executeLocalEffect(resultFor(job),()=>{
+    f.reconcile(2);return {configurationDigest:'invalidated'};
+  }),/stale|RUNNING|intent|claim|lease/i);
+  assert.equal(f.snapshot(),before);
+});
+
+test('a caught failed local effect rolls back its writes while an outer write commits',t=>{
+  const f=fixture(t,true),job=f.claim(),before=f.snapshot();
+  f.db.exec('CREATE TABLE local_effect(value TEXT); BEGIN IMMEDIATE');
+  f.db.prepare('INSERT INTO local_effect VALUES(?)').run('unrelated');
+  assert.throws(()=>f.c.executeLocalEffect(resultFor(job),()=>{
+    f.db.prepare('INSERT INTO local_effect VALUES(?)').run('partial-effect');throw Error('effect interrupted');
+  }),/effect interrupted/);
+  f.db.exec('COMMIT');
+  assert.deepEqual(f.db.prepare('SELECT value FROM local_effect').all().map(row=>row.value),['unrelated']);
+  assert.equal(f.snapshot(),before);
+});
+
+test('outer rollback undoes reconciliation, claim, local effect and receipt together', t => {
+  const f = fixture(t, true);
+  f.db.exec('CREATE TABLE configuration(value TEXT)');
+  const before = f.snapshot();
+  f.db.exec('BEGIN IMMEDIATE');
+  try {
+    f.reconcile(2);
+    const job = f.claim();
+    f.c.executeLocalEffect(resultFor(job), () => {
+      f.db.prepare('INSERT INTO configuration VALUES(?)').run('configured');
+      return {configurationDigest:'test'};
+    });
+    assert.equal(f.db.isTransaction, true);
+    assert.equal(f.db.prepare('SELECT COUNT(*) n FROM implementation_work_receipts').get().n, 1);
+  } finally { f.db.exec('ROLLBACK'); }
+  assert.equal(f.snapshot(), before);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM configuration').get().n, 0);
+});
+
+test('failed nested effect rolls back only itself and preserves caller transaction', t => {
+  const f = fixture(t, true);
+  f.db.exec('CREATE TABLE configuration(value TEXT)');
+  const job = f.claim();
+  f.db.exec('BEGIN IMMEDIATE');
+  try {
+    f.db.prepare('INSERT INTO configuration VALUES(?)').run('caller');
+    assert.throws(() => f.c.executeLocalEffect(resultFor(job), () => {
+      f.db.prepare('INSERT INTO configuration VALUES(?)').run('failed');
+      throw new Error('application interrupted');
+    }), /application interrupted/);
+    assert.equal(f.db.isTransaction, true);
+    assert.deepEqual(f.db.prepare('SELECT value FROM configuration').all().map(x => x.value), ['caller']);
+    f.db.exec('COMMIT');
+  } catch(error) { if(f.db.isTransaction) f.db.exec('ROLLBACK'); throw error; }
+});
+
 test('local configuration effect cannot run after its claim expires', t => {
   const f=fixture(t, true); const job=f.claim(); f.advance(1000);
   f.db.exec('CREATE TABLE configuration(value TEXT)');

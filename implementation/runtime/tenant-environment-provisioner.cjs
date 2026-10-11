@@ -2,6 +2,7 @@
 
 const { createHash, randomUUID } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { normalizeAnswers } = require('./workspace-setup.cjs');
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
@@ -21,6 +22,17 @@ function safeList(value, limit = 100) {
 }
 
 function normaliseConfiguration(scope) {
+  let workforcePartition;
+  if (scope.workforcePartition != null) {
+    const value = scope.workforcePartition;
+    const employeeCount = Number(value.employeeCount);
+    const sourceRef = String(value.sourceRef || '').trim();
+    if (value.authoritativeConfirmation !== true || !Number.isSafeInteger(employeeCount) ||
+        employeeCount < 1 || employeeCount > Number(scope.employeeCount) || !sourceRef) {
+      throw new Error('A workforce partition requires authoritative confirmation, a valid count and source reference.');
+    }
+    workforcePartition = { authoritativeConfirmation: true, employeeCount, sourceRef, label: String(value.label || '').trim() };
+  }
   return {
     companyName: String(scope.companyName || '').trim(),
     employeeCount: Number(scope.employeeCount || 0),
@@ -35,7 +47,9 @@ function normaliseConfiguration(scope) {
     erpSystem: String(scope.erpSystem || '').trim(),
     agencyLabour: Boolean(scope.agencyLabour),
     priorities: String(scope.priorities || '').slice(0, 1000),
-    notes: String(scope.notes || '').slice(0, 2000)
+    notes: String(scope.notes || '').slice(0, 2000),
+    ...(workforcePartition ? { workforcePartition } : {}),
+    ...(scope.workspaceSetup != null ? {workspaceSetup:normalizeAnswers(scope.workspaceSetup)} : {})
   };
 }
 
@@ -89,11 +103,20 @@ function createTenantEnvironmentProvisioner(options = {}) {
     const encoded = stableJson(configuration);
     const digest = sha256(encoded);
     const now = new Date().toISOString();
-    if (ownsDb) db.exec('BEGIN IMMEDIATE;');
+    // A shared connection may already belong to the caller's fenced transaction.
+    // Savepoints keep the configuration and its audit atomic without committing it.
+    const savepoint = 'tenant_environment_' + randomUUID().replaceAll('-', '');
+    db.exec(ownsDb ? 'BEGIN IMMEDIATE;' : 'SAVEPOINT ' + savepoint);
     try {
       const existing = get.get(tenant);
+      if (existing && existing.run_id !== runId) {
+        const error = new Error('This tenant environment belongs to another implementation run.');
+        error.code = 'TENANT_ENVIRONMENT_RUN_CONFLICT';
+        error.statusCode = 409;
+        throw error;
+      }
       if (existing && existing.configuration_digest === digest && existing.run_id === runId && existing.state === 'READY') {
-        if (ownsDb) db.exec('COMMIT;');
+        db.exec(ownsDb ? 'COMMIT;' : 'RELEASE SAVEPOINT ' + savepoint);
         return publicEnvironment(existing);
       }
       if (existing) {
@@ -105,15 +128,30 @@ function createTenantEnvironmentProvisioner(options = {}) {
         insert.run(tenant, environmentId, namespace, runId, 'READY', encoded, digest, now, now);
         event.run(tenant, environmentId, 'ENVIRONMENT_PROVISIONED', digest, now);
       }
-      if (ownsDb) db.exec('COMMIT;');
+      db.exec(ownsDb ? 'COMMIT;' : 'RELEASE SAVEPOINT ' + savepoint);
     } catch (error) {
-      if (ownsDb) try { db.exec('ROLLBACK;'); } catch {}
+      try { db.exec(ownsDb ? 'ROLLBACK;' : 'ROLLBACK TO SAVEPOINT ' + savepoint + '; RELEASE SAVEPOINT ' + savepoint); } catch {}
       throw error;
     }
     return publicEnvironment(get.get(tenant));
   }
 
   return {
+    reserve({tenant,runId}) {
+      if(typeof tenant!=='string'||!tenant.trim()||typeof runId!=='string'||!runId.trim())throw Error('tenant and runId are required.');
+      const sp='reserve_'+randomUUID().replaceAll('-','');
+      db.exec('SAVEPOINT '+sp);
+      try {
+        const existing=get.get(tenant);
+        if(existing&&existing.run_id!==runId)throw Object.assign(Error('This tenant environment belongs to another implementation run.'),{statusCode:409,code:'TENANT_ENVIRONMENT_RUN_CONFLICT'});
+        if(!existing){
+          const id=randomUUID(),namespace='tenant_'+sha256(tenant+':'+id).slice(0,24),ts=new Date().toISOString(),digest=sha256('{}');
+          insert.run(tenant,id,namespace,runId,'SETUP_REQUIRED','{}',digest,ts,ts);
+          event.run(tenant,id,'WORKSPACE_RESERVED',digest,ts);
+        }
+        db.exec('RELEASE '+sp);return publicEnvironment(get.get(tenant));
+      }catch(error){try{db.exec('ROLLBACK TO '+sp+'; RELEASE '+sp);}catch{}throw error;}
+    },
     provision,
     statusForTenant(tenant) { return publicEnvironment(get.get(String(tenant || '').trim())); },
     close() { if (ownsDb) try { db.close(); } catch {} }

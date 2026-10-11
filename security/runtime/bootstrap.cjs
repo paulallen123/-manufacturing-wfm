@@ -388,6 +388,9 @@ http.createServer = function guardedCreateServer(listener) {
     try {
       implementationEngine = createOneDayEnterpriseEngine({
         dbPath: process.env.WFM_DB,
+        configurationCompiler: require('/app/lib/configuration-compiler.cjs'),
+        // Signing stays disabled until a reviewed provider verifier, clean tenant
+        // factory and authoritative first-owner adapter are supplied together.
         runtimeIdentityProvider: () => runtimeIdentity.snapshot(),
         tenantCalendarSnapshotProvider: tenant => tenantCalendar.snapshot({ tenant }),
         staffologyProfileProvider: () => {
