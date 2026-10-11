@@ -107,6 +107,24 @@ for (const change of ['new bootstrap request', 'new document']) {
       }
       return result;
     };
-    await assert.rejects(() => proveRoleView({ ...f, send }), /Navigation changed|response was superseded/);
+    await assert.rejects(() => proveRoleView({ ...f, send }), /Navigation changed|response was superseded|Missing fresh/);
   });
 }
+
+for (const oldDocument of [false, true]) test(`ignores older ${oldDocument ? 'document' : 'same-endpoint'} response completing after current response`, async () => {
+  const f = fixture(), url = 'https://fixture.invalid/api/bootstrap';
+  const navigate = async () => {
+    f.evidence.onEvent({ method: 'Network.requestWillBeSent', params: { requestId: 'older', request: { url, method: 'GET' } } });
+    if (oldDocument) f.evidence.onEvent({ method: 'Page.frameNavigated', params: { frame: { id: 'current-main' } } });
+    await f.navigate();
+    f.evidence.onEvent({ method: 'Network.responseReceived', params: { requestId: 'older', response: { url, status: 200, mimeType: 'application/json' } } });
+    f.evidence.onEvent({ method: 'Network.loadingFinished', params: { requestId: 'older' } });
+  };
+  const send = async (method, params) => {
+    assert.ok(method !== 'Network.getResponseBody' || params.requestId !== 'older', 'Selected obsolete response body');
+    return f.send(method, params);
+  };
+  const result = await proveRoleView({ ...f, send, navigate });
+  assert.equal(result.navigation.route, 'leave');
+  assert.equal(f.reads(), 2);
+});

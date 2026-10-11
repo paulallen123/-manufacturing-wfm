@@ -14,15 +14,18 @@ const contracts = {
 export function createNavigationEvidence(origin) {
   let sequence = 0, generation = 0;
   const requests = new Map(), responses = [], bodies = new WeakMap(), latestStarted = new Map();
+  const latestResponse = (mark, path) => responses.findLast(r => r.path === path && r.sequence > mark &&
+    r.sequence === latestStarted.get(path) && bodies.get(r)?.generation === generation);
   return {
     responses,
     checkpoint: () => sequence,
     since: mark => responses.filter(r => r.sequence > mark),
     generation: () => generation,
+    latestResponse,
     assertCurrent(response, observedGeneration) {
       assert.ok(observedGeneration === generation && bodies.get(response)?.generation === generation,
         'Navigation changed while validating the response.');
-      assert.ok(latestStarted.get(response.path) === response.sequence && responses.filter(r => r.path === response.path).at(-1) === response,
+      assert.ok(latestResponse(-Infinity, response.path) === response,
         'Selected API response was superseded while validating the screen.');
     },
     async readResponse(response, send) {
@@ -166,9 +169,8 @@ export async function proveRoleView({ send, evidence, role, expectedActor, navig
   await navigate();
   let personalId;
   const requireResponse = async (mark, path) => {
-    const candidates = evidence.since(mark).filter(r => r.path === path && r.status === 200);
-    assert.ok(candidates.length, `Missing fresh ${path} response for this navigation.`);
-    const response = candidates[candidates.length - 1], generation = evidence.generation();
+    const response = evidence.latestResponse(mark, path), generation = evidence.generation();
+    assert.ok(response?.status === 200, `Missing fresh ${path} response for this navigation.`);
     const value = await evidence.readResponse(response, send);
     validateResponse(value, path, expectedActor, personalId);
     evidence.assertCurrent(response, generation);
