@@ -266,3 +266,11 @@ test('losing access while the calendar loads prevents the manager evidence reque
   let release;const pending=new Promise(resolve=>{release=resolve;});const {sandbox,calendar}=timeEvidenceHarness({calendarLoad:()=>pending});
   const result=sandbox.api.loadTimeReviewEvidence();sandbox.allowed=false;release(calendar);assert.equal(await result,false);assert.deepEqual(sandbox.calls,[]);
 });
+
+
+test('denied UI roles make zero evidence requests even when navigation is present',async()=>{
+ for(const role of ['employee','payroll_admin','viewer','','MANAGER']){const {sandbox}=timeEvidenceHarness({role,allowed:true});assert.equal(await sandbox.api.loadTimeReviewEvidence(),false,role);assert.deepEqual(sandbox.calls,[],role);}
+});
+test('manager director and supervisor retain permitted UI evidence reads',async()=>{
+ for(const role of ['manager','director','supervisor']){const {sandbox}=timeEvidenceHarness({role,allowed:true});assert.equal(await sandbox.api.loadTimeReviewEvidence(),true,role);assert.equal(sandbox.calls.length,1,role);}
+});
