@@ -245,6 +245,13 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
   function scan(){
     if(!enabled)return;
     const t=now();
+    let reconciliationError=null;
+    // Only a committed outcome audit may clear overdue work. Keep collecting
+    // unresolved work if reconciliation fails, then surface the audit failure.
+    if(providerRecovery)for(const {id:tenant} of db.prepare('SELECT id FROM tenants').all()){
+      try{reconcileProviderRecovery({tenant,email:'system:support-recovery',permissions:['company.configure']});}
+      catch(error){reconciliationError??=error;}
+    }
     transaction(()=>{
       for(const {id:tenant}of db.prepare('SELECT id FROM tenants').all()){
         let monitor=db.prepare('SELECT * FROM support_monitor WHERE tenant=?').get(tenant);
@@ -256,14 +263,14 @@ function createStore(db,{clock=Date.now,enabled=true}={}){
         const groups=db.prepare(`SELECT area,symptom,COUNT(*) reports,COUNT(DISTINCT reporter) reporters FROM support_cases
           WHERE tenant=? AND created_at>? AND symptom!='how-to' GROUP BY area,symptom HAVING COUNT(DISTINCT reporter)>=2`).all(tenant,t-24*HOUR);
         for(const g of groups)incident(tenant,g.area,'repeated-'+g.symptom,'review',{reports:g.reports,distinctReporters:g.reporters,verification:'unverified',windowHours:24},t);
-        const unresolved=db.prepare('SELECT i.*,j.created_at FROM support_jobs j JOIN support_incidents i ON i.id=j.incident_id WHERE j.tenant=? AND j.created_at<=?').all(tenant,t-15*MINUTE).filter(row=>incidentRecovery({tenant,permissions:['company.configure']},row)?.verified!==true);
+        const unresolved=db.prepare("SELECT i.*,j.created_at FROM support_jobs j JOIN support_incidents i ON i.id=j.incident_id WHERE j.tenant=? AND j.created_at<=? AND NOT (i.area='application' AND i.code='investigation-overdue')").all(tenant,t-15*MINUTE).filter(row=>incidentRecovery({tenant,permissions:['company.configure']},row)?.verified!==true);
         const delayed={n:unresolved.length,oldest:unresolved.length?Math.min(...unresolved.map(row=>row.created_at)):null};
         if(delayed.n)incident(tenant,'application','investigation-overdue','high',{pending:delayed.n,oldest:delayed.oldest,reason:providerRecovery?'Support investigations remain unresolved; authority, verification or review is required.':'No repair worker is connected.'},t);
         db.prepare('UPDATE support_monitor SET last_scan=? WHERE tenant=?').run(t,tenant);
       }
       db.prepare('DELETE FROM support_buckets WHERE minute<?').run(t-48*HOUR);
     });
-    if(providerRecovery)for(const {id:tenant} of db.prepare('SELECT id FROM tenants').all())reconcileProviderRecovery({tenant,email:'system:support-recovery',permissions:['company.configure']});
+    if(reconciliationError)throw reconciliationError;
     // Clear the collection outage only after the entire scan commits.
     degraded=false;
   }

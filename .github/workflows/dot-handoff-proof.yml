@@ -1,4 +1,4 @@
-name: Isolated Dot handoff proof
+name: Isolated support ordering proof
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
-      - name: Node22 browser, durability and composed HTTP admission
+      - name: Node22 support, durability and composed HTTP admission
         run: docker build --progress=plain -f .github/ci/Dockerfile.dot-handoff -t vector-dot-handoff-tests .
   full-runtime:
     if: github.actor == github.repository_owner
