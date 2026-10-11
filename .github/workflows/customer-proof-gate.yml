@@ -59,6 +59,7 @@ jobs:
             -e NODE_ENV=staging \
             -e NODE_OPTIONS=--experimental-sqlite \
             -e WFM_HOSTED_STAGING=true \
+            -e WFM_CANDIDATE_SHA="$GITHUB_SHA" \
             -e WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid \
             -e WFM_DB=/tmp/wfm-proof.sqlite \
             -e WFM_STAGING_PASSWORD="$CI_PASSWORD" \
@@ -87,6 +88,8 @@ jobs:
             sleep 0.25
           done
           proxy_curl http://127.0.0.1:3000/api/health
+          proxy_curl http://127.0.0.1:3000/api/runtime-identity >/tmp/runtime-identity.json
+          node -e 'const p=require("/tmp/runtime-identity.json");if(p.candidateSha!==process.env.GITHUB_SHA||p.sourceBinding!=="build-file-matched"||p.fixtureOnly!==true||p.productionApproved!==false||p.pilotReady!==false)throw Error("Exact source and fixture identity required");console.log("VECTOR_RUNTIME_IDENTITY=PASS SHA="+p.candidateSha)'
           proxy_curl http://127.0.0.1:3000/ >/dev/null
           proxy_curl http://127.0.0.1:3000/kiosk.html >/dev/null
           status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}' \
