@@ -20,7 +20,10 @@ function fixture(t,{connected=true,databasePath,principal=defaultActor}={}){
  const attestationVerifier=BAP.createVerifier({trustedKeys:{[identity.keyId]:publicKey.export({type:'spki',format:'pem'})},policies:[identity],now});
  const f={dir,runtime,database,actor,foreign:{...actor,tenant:'support-test-b'},now,advance:ms=>{clock+=ms;}};
  function open(){
-  f.db=new DatabaseSync(database);f.db.exec("PRAGMA foreign_keys=ON;CREATE TABLE IF NOT EXISTS tenants(id TEXT PRIMARY KEY);");
+  f.db=new DatabaseSync(database);
+  // The HTTP fixture shares this file with a separate live application process.
+  // Wait for short writer transactions; never replace the asserted audit fault.
+  f.db.exec("PRAGMA busy_timeout=5000;PRAGMA foreign_keys=ON;CREATE TABLE IF NOT EXISTS tenants(id TEXT PRIMARY KEY);");
   if(!databasePath)f.db.exec("INSERT OR IGNORE INTO tenants VALUES('support-test-a'),('support-test-b');");
   f.support=Support.createStore(f.db,{clock:now});f.jobs=PJ.createStore(f.db,{now});
   f.verifier=VW.createStore(f.db,{now,buildIdentity:VW.readBuildIdentity(runtime),attestationVerifier});
