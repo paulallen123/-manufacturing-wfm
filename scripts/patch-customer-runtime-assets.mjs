@@ -8,6 +8,15 @@ function replaceOnce(source,from,to,label){
  if(count!==1)throw new Error(label+':'+count);
  return source.replace(from,to);
 }
+function patchAppHeading(){
+ const file=path.join(root,'app.js');if(!fs.existsSync(file))return;
+ let source=fs.readFileSync(file,'utf8');if(source.includes('VECTOR_AUTHORITATIVE_HEADING_DATE_V1'))return;
+ const heading="function heading(title,sub,actions=''){";
+ const helper="function vectorHeadingDate(){const c=globalThis.WFMTenantCalendarSnapshot;if(!c||typeof c.asOf!=='string'||typeof c.timeZone!=='string'||!c.timeZone.trim())return 'DATE UNAVAILABLE';try{return new Intl.DateTimeFormat('en-GB',{timeZone:c.timeZone,weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(c.asOf)).toUpperCase();}catch{return 'DATE UNAVAILABLE';}}\n";
+ source=replaceOnce(source,heading,helper+heading,'APP_HEADING_DATE_ANCHOR');
+ source=replaceOnce(source,'<div class="eyebrow">MONDAY, 14 SEPTEMBER 2026</div>','<div class="eyebrow">${esc(vectorHeadingDate())}</div>','APP_HEADING_DATE_ANCHOR');
+ source+='\n/* VECTOR_AUTHORITATIVE_HEADING_DATE_V1 */\n';fs.writeFileSync(file,source);
+}
 function patchOperations(){
  const file=path.join(root,'operations-ui.js');if(!fs.existsSync(file))return;
  let source=fs.readFileSync(file,'utf8');if(source.includes('VECTOR_CUSTOMER_OPERATIONS_CURRENT_DATE_V1'))return;
@@ -95,5 +104,5 @@ function patchFeatures(){
  if(/document\.title\s*=.*Local development build/i.test(source))throw new Error('FEATURES_CUSTOMER_DEVELOPMENT_TITLE_REMAINS');
  source+='\n/* VECTOR_CUSTOMER_FEATURES_COPY_V1 */\n';fs.writeFileSync(file,source);
 }
-patchOperations();patchOnboarding();patchFeatures();
+patchAppHeading();patchOperations();patchOnboarding();patchFeatures();
 console.log('VECTOR_CUSTOMER_RUNTIME_ASSET_PATCH=PASS');

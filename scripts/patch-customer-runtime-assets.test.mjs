@@ -2,10 +2,47 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {spawnSync} from 'node:child_process';
+import {spawnSync,execFileSync} from 'node:child_process';
+import vm from 'node:vm';
 import test from 'node:test';
 import {fileURLToPath} from 'node:url';
 const patcher=path.join(path.dirname(fileURLToPath(import.meta.url)),'patch-customer-runtime-assets.mjs');
+const archive=path.resolve(path.dirname(patcher),'../artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz');
+function headingFixture(t){
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'vector-current-heading-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+ const file=path.join(root,'app.js');fs.writeFileSync(file,execFileSync('tar',['-xOf',archive,'public/app.js']));
+ const run=spawnSync(process.execPath,[patcher,root],{encoding:'utf8'});assert.equal(run.status,0,run.stderr);
+ const source=fs.readFileSync(file,'utf8'),context=vm.createContext({esc:value=>String(value).replaceAll('<','&lt;').replaceAll('>','&gt;')});
+ vm.runInContext(source.split('\n').filter(line=>/^function (heading|vectorHeadingDate)\(/.test(line)).join('\n'),context);
+ const label=calendar=>{context.WFMTenantCalendarSnapshot=calendar;return vm.runInContext("heading('Work','Source-bound date').match(/class=\"eyebrow\">([^<]*)</)[1]",context);};
+ return {root,file,source,label};
+}
+test('shipped screen headings use the authoritative instant in the tenant timezone',t=>{
+ const {label}=headingFixture(t);
+ for(const [asOf,timeZone,expected] of [
+  ['2026-10-11T09:36:00.000Z','Europe/London','SUNDAY, 11 OCTOBER 2026'],
+  ['2026-10-11T00:30:00.000Z','America/Los_Angeles','SATURDAY, 10 OCTOBER 2026'],
+  ['2026-03-29T23:30:00.000Z','Europe/London','MONDAY, 30 MARCH 2026'],
+  ['2026-12-31T15:30:00.000Z','Asia/Tokyo','FRIDAY, 1 JANUARY 2027']
+ ])assert.equal(label({asOf,timeZone}),expected);
+});
+test('screen heading date fails closed when calendar authority is absent or invalid',t=>{
+ const {label}=headingFixture(t);
+ for(const calendar of [undefined,null,{}, {asOf:'bad',timeZone:'Europe/London'}, {asOf:'2026-10-11T00:00:00Z'}, {asOf:'2026-10-11T00:00:00Z',timeZone:'<script>'}])assert.equal(label(calendar),'DATE UNAVAILABLE');
+});
+test('screen heading follows a refreshed calendar snapshot and patch is idempotent',t=>{
+ const {label,root,file,source}=headingFixture(t);
+ assert.equal(label({asOf:'2026-10-11T22:59:59Z',timeZone:'Europe/London'}),'SUNDAY, 11 OCTOBER 2026');
+ assert.equal(label({asOf:'2026-10-11T23:00:00Z',timeZone:'Europe/London'}),'MONDAY, 12 OCTOBER 2026');
+ assert.equal(spawnSync(process.execPath,[patcher,root],{encoding:'utf8'}).status,0);
+ assert.equal(fs.readFileSync(file,'utf8'),source);
+});
+test('screen heading patch refuses changed source anchors',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'vector-heading-drift-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+ fs.writeFileSync(path.join(root,'app.js'),'function heading(){return "unexpected format";}');
+ const run=spawnSync(process.execPath,[patcher,root],{encoding:'utf8'});
+ assert.notEqual(run.status,0);assert.match(run.stderr,/APP_HEADING_DATE_ANCHOR/);
+});
 const exactSealedOnboardingExcerpt="(function(){'use strict';\nconst ON=rootThis(),STATE={report:null,preview:null,csv:'source_id,payroll_id,name,email,manager_id,site,job,start_date,contract_type,weekly_hours,language,skills,role\\nHR-9101,PAY-9101,Jordan New,jordan.new@example.test,s1,Tamworth,Machine operator,2026-10-01,full_time,40,en-GB,CNC,director\\n'};\nfunction rootThis(){return window.WFMOnboarding;}\nfunction previewModal(){modal('Preview employee CSV',\`<p>No employee is created during preview. Use fictional data in this development build.</p><label>CSV<textarea name=\"csv\" rows=\"9\" required>${esc(STATE.csv)}</textarea></label>\`);}\nasync function invite(source){if(OFFLINE)return toast('Secure invitations require the authenticated development application.');modal('Invitation created — development only','This development build does not contact real employees.');}\n})();";
 test('customer runtime patch removes fixed September shifts and development onboarding copy',t=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'vector-customer-runtime-patch-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
