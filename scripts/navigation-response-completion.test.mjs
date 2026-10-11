@@ -50,5 +50,5 @@ for (const failedPhase of ['home', 'destination']) test(`visible ${failedPhase} 
     return {};
   };
   const navigate = async () => { headers(evidence, 'home'); if (failedPhase === 'home') fail(evidence, 'home'); else finish(evidence, 'home'); };
-  await assert.rejects(() => proveRoleView({ send, evidence, navigate, role: 'manager', expectedActor:{role:'manager',tenant:'fixture',email:'fixture@example.invalid'}, timeoutMs: 60 }), /Missing fresh .* response/);
+  await assert.rejects(() => proveRoleView({ send, evidence, navigate, role: 'manager', expectedActor:{role:'manager',tenant:'fixture',email:'fixture@example.invalid'}, timeoutMs: 60 }), /Missing fresh .* response|response was superseded/);
 });

@@ -12,12 +12,19 @@ const contracts = {
 // Scope responses to requests STARTED after the navigation checkpoint. Merely
 // clearing a response array allows a late response from an old document to pass.
 export function createNavigationEvidence(origin) {
-  let sequence = 0;
-  const requests = new Map(), responses = [], bodies = new WeakMap();
+  let sequence = 0, generation = 0;
+  const requests = new Map(), responses = [], bodies = new WeakMap(), latestStarted = new Map();
   return {
     responses,
     checkpoint: () => sequence,
     since: mark => responses.filter(r => r.sequence > mark),
+    generation: () => generation,
+    assertCurrent(response, observedGeneration) {
+      assert.ok(observedGeneration === generation && bodies.get(response)?.generation === generation,
+        'Navigation changed while validating the response.');
+      assert.ok(latestStarted.get(response.path) === response.sequence && responses.filter(r => r.path === response.path).at(-1) === response,
+        'Selected API response was superseded while validating the screen.');
+    },
     async readResponse(response, send) {
       const source = bodies.get(response);
       assert.ok(source, 'Response has no completed request identity.');
@@ -32,13 +39,19 @@ export function createNavigationEvidence(origin) {
       return source.value;
     },
     onEvent(msg) {
+      // Hash routes share an actor/document; hard navigation invalidates its reads.
+      if (msg.method === 'Page.frameNavigated' && !msg.params.frame.parentId) generation++;
       if (msg.method === 'Network.requestWillBeSent') {
         const p = msg.params;
         const prior = requests.get(p.requestId);
         // CDP reuses requestId for redirects. Never refresh a chain's start
         // when only its final hop began after the navigation checkpoint.
         const started = p.redirectResponse ? prior?.sequence ?? -Infinity : ++sequence;
-        requests.set(p.requestId, { sequence: started, method: p.request.method, url: p.request.url });
+        requests.set(p.requestId, { sequence: started, generation: p.redirectResponse ? prior?.generation ?? -Infinity : generation, method: p.request.method, url: p.request.url });
+        const url = new URL(p.request.url);
+        if (url.origin === origin && url.pathname.startsWith('/api/') && p.request.method === 'GET') {
+          latestStarted.set(url.pathname, Math.max(started, latestStarted.get(url.pathname) ?? -Infinity));
+        }
       }
       if (msg.method === 'Network.responseReceived') {
         const p = msg.params, request = requests.get(p.requestId);
@@ -52,7 +65,7 @@ export function createNavigationEvidence(origin) {
       if (msg.method === 'Network.loadingFinished') {
         const request = requests.get(msg.params.requestId);
         if (request?.response) {
-          bodies.set(request.response, { requestId: msg.params.requestId, mimeType: request.mimeType });
+          bodies.set(request.response, { requestId: msg.params.requestId, mimeType: request.mimeType, generation: request.generation });
           responses.push(request.response);
         }
         requests.delete(msg.params.requestId);
@@ -155,13 +168,19 @@ export async function proveRoleView({ send, evidence, role, expectedActor, navig
   const requireResponse = async (mark, path) => {
     const candidates = evidence.since(mark).filter(r => r.path === path && r.status === 200);
     assert.ok(candidates.length, `Missing fresh ${path} response for this navigation.`);
-    const value = await evidence.readResponse(candidates[candidates.length - 1], send);
+    const response = candidates[candidates.length - 1], generation = evidence.generation();
+    const value = await evidence.readResponse(response, send);
     validateResponse(value, path, expectedActor, personalId);
-    return value;
+    evidence.assertCurrent(response, generation);
+    return { value, response, generation };
   };
-  const home = await until(() => snapshot(send, contract, 'home'), async view => {
+  const home = await until(async () => {
     const bootstrap = await requireResponse(start, '/api/bootstrap');
-    personalId = bootstrap.actor.personnelId || bootstrap.actor.personId;
+    personalId = bootstrap.value.actor.personnelId || bootstrap.value.actor.personId;
+    const view = await snapshot(send, contract, 'home');
+    evidence.assertCurrent(bootstrap.response, bootstrap.generation);
+    return view;
+  }, view => {
     assert.ok(view.app && view.heading, `${role} visible role app home/heading is missing.`);
     presentation(view, `${role} home`);
   }, timeoutMs);
@@ -182,8 +201,15 @@ export async function proveRoleView({ send, evidence, role, expectedActor, navig
   }
   if (!control.point) control = await readyControl();
   await click(send, control);
-  const destination = await until(() => snapshot(send, contract, 'destination'), async view => {
-    await requireResponse(routeStart, contract.api);
+  const destination = await until(async () => {
+    const bootstrap = await requireResponse(start, '/api/bootstrap');
+    personalId = bootstrap.value.actor.personnelId || bootstrap.value.actor.personId;
+    const response = await requireResponse(routeStart, contract.api);
+    const view = await snapshot(send, contract, 'destination');
+    evidence.assertCurrent(bootstrap.response, bootstrap.generation);
+    evidence.assertCurrent(response.response, response.generation);
+    return view;
+  }, view => {
     assert.equal(view.route, contract.route, 'Named navigation did not reach the required route.');
     assert.ok(view.app && view.heading && view.heading !== home.heading, 'Named navigation has no visible destination heading.');
     presentation(view, `${role} ${contract.route}`);
