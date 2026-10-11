@@ -67,7 +67,8 @@ jobs:
       - name: Prove runtime identity and reduced attack surface
         run: |
           set -euo pipefail
-          test "$(docker exec wfm-proof id -u)" != "0"
+          node --test tests/runtime-process-uid.test.cjs
+          docker exec wfm-proof cat /proc/1/status | bash scripts/verify-runtime-process-uid.sh
           docker exec wfm-proof sh -lc '! command -v npm && ! command -v npx && ! command -v corepack && ! command -v yarn && ! command -v pnpm'
 
       - name: Prove hosted HTTP boundary
