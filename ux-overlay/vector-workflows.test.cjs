@@ -103,6 +103,38 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.equal(await asset.text(), source);
     assert.doesNotMatch(html, /src="review-ui\.js"/);
   });
+  await t.test('authenticated calendar loads before browser domain modules and stays tenant scoped', async () => {
+    const denied = await fetch(origin + '/api/tenant-calendar.js');
+    assert.equal(denied.status, 401);
+    const html = await fetch(origin + '/').then(response => response.text());
+    const calendarTag = '<script src="/api/tenant-calendar.js"></script>';
+    assert.equal(html.split(calendarTag).length, 2, 'one blocking calendar bootstrap is required');
+    assert.ok(html.indexOf(calendarTag) < html.indexOf('src="core.js"'), 'calendar must precede the first consumer');
+    for (const [email, tenant] of [['maya@northstar.example', 'northstar-demo'], ['other@isolation.example', 'isolation-test']]) {
+      const login = await fetch(origin + '/api/login', {method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({email,password:'Factory-local-demo-2026!'})});
+      assert.equal(login.status, 200);
+      const cookie = login.headers.get('set-cookie').split(';')[0];
+      const headers = {Cookie:cookie};
+      const calendar = await fetch(origin + '/api/tenant-calendar', {headers}).then(response => response.json());
+      const response = await fetch(origin + '/api/tenant-calendar.js?tenant=northstar-demo', {headers});
+      assert.equal(response.status, 200);
+      assert.match(response.headers.get('content-type'), /javascript/);
+      assert.match(response.headers.get('cache-control'), /no-store/);
+      assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+      const context = vm.createContext({console});context.window = context;
+      vm.runInContext(await response.text(), context, {filename:'authenticated-tenant-calendar.js'});
+      assert.equal(context.WFMTenantCalendarSnapshot.tenant, tenant);
+      assert.equal(context.WFMTenantCalendarSnapshot.asOf, calendar.asOf);
+      assert.equal(context.WFMTenantCalendarSnapshot.timeZone, calendar.timeZone);
+      for (const file of ['core.js','engine.js','cost-engine.js','work-rules.js']) {
+        vm.runInContext(fs.readFileSync(path.join(runtime,'public',file),'utf8'), context, {filename:file});
+      }
+      assert.equal(context.WFM.NOW, calendar.asOf);
+      assert.equal(context.WFMEngine.AS_OF, calendar.asOf);
+      assert.equal(typeof context.WFMCost.priceShifts, 'function');
+      assert.equal(typeof context.WFMWorkRules.priceSeries, 'function');
+    }
+  });
   async function client(email) {
     let cookie = '';
     const request = async (url, method = 'GET', payload) => {
