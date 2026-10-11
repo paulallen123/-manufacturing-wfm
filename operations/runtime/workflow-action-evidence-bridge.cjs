@@ -182,7 +182,7 @@ function createWorkflowActionEvidenceBridge(options = {}) {
       writeJson(res, 401, { error: 'Sign in is required.' });
       return null;
     }
-    if (String(ctx.role || '').toLowerCase() === 'employee') {
+    if (!['manager', 'director', 'supervisor'].includes(String(ctx.role || ''))) {
       writeJson(res, 403, { error: 'Workflow action evidence requires an authorised manager or administrator.' });
       return null;
     }

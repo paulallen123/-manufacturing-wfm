@@ -410,29 +410,31 @@ function refreshActionSurfaces(){
   const current=document.querySelector('.vector-alerts');if(current)current.outerHTML=current.classList?.contains?.('vector-priorities')?priorityMarkup(rows):alertsMarkup(rows);
   const badge=document.querySelector('.vector-notification-count');if(badge){badge.textContent=String(groups.needs.length);badge.hidden=!groups.needs.length;}
 }
-function actionEvidenceOwnerKey(){const identity=sourceIdentity();return [identity.tenant||'',identity.email||'',identity.id||'',identity.role||'',employee()?'employee':'authorised-review'].join(':');}
+function timeReviewActor(){try{return typeof F==='object'&&F?F.actor||null:null;}catch{return null;}}
+function canReadTimeReviewEvidence(){return ['manager','director','supervisor'].includes(timeReviewActor()?.role);}
+function actionEvidenceOwnerKey(){const actor=timeReviewActor();return actor?[actor.tenant||'',actor.email||'',actor.personId||'',actor.role||''].join(':'):'unauthenticated';}
 function invalidateTimeReviewEvidence(owner=actionEvidenceOwnerKey()){state.evidenceEpoch++;state.timeReviewEvidence={status:'idle',items:[],owner};}
 function syncTimeReviewEvidenceOwner(){const owner=actionEvidenceOwnerKey();if(state.timeReviewEvidence.owner!==owner){invalidateTimeReviewEvidence(owner);return true;}return false;}
 async function loadTimeReviewEvidence(){
   syncTimeReviewEvidenceOwner();
   const owner=actionEvidenceOwnerKey();
-  if(employee()){refreshActionSurfaces();return false;}
+  if(!canReadTimeReviewEvidence()){refreshActionSurfaces();return false;}
   if(state.timeReviewEvidence.status!=='idle')return state.timeReviewEvidence.status==='ready';
   const epoch=state.evidenceEpoch;
   state.timeReviewEvidence={status:'loading',items:[],owner};
   try{
     const calendar=await loadTenantCalendar();if(!calendar)throw new Error('tenant calendar unavailable');
-    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||employee())return false;
+    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||!canReadTimeReviewEvidence())return false;
     const response=await fetch(TIME_REVIEW_EVIDENCE_PATH,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
     if(!response.ok)throw new Error('time-review evidence unavailable');
     const body=await response.json();
     if(!body||body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items))throw new Error('time-review evidence contract mismatch');
     const envelopeAsOf=Date.parse(String(body.asOf||'')),calendarAsOf=Date.parse(String(calendar.asOf||'')),maxAgeMs=Number(body.maxAgeMs);
     if(String(body.timeZone||'')!==String(calendar.timeZone||'')||maxAgeMs!==Number(calendar.maxAgeMs)||!Number.isFinite(envelopeAsOf)||!Number.isFinite(calendarAsOf)||Math.abs(envelopeAsOf-calendarAsOf)>Math.max(30000,maxAgeMs))throw new Error('time-review evidence calendar mismatch');
-    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||employee())return false;
+    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||!canReadTimeReviewEvidence())return false;
     state.timeReviewEvidence={status:'ready',items:body.items.map(item=>acceptTimeReviewEvidenceItem(item,body)).filter(Boolean),owner};
   }catch{
-    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||employee())return false;
+    if(epoch!==state.evidenceEpoch||owner!==actionEvidenceOwnerKey()||!canReadTimeReviewEvidence())return false;
     state.timeReviewEvidence={status:'unavailable',items:[],owner};
   }
   refreshActionSurfaces();return state.timeReviewEvidence.status==='ready';

@@ -30,14 +30,14 @@ async function call(engine,token,method='GET',url=TIME_REVIEW_PATH){
   assert.equal(await engine.handleRequest(req,res),true);
   return {status:res.statusCode,body:res.body?JSON.parse(res.body):null,headers:res.headers};
 }
-function fixture(sourceProvider){
+function fixture(sourceProvider, role='manager'){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'wfm-action-bridge-'));
   const dbPath=path.join(dir,'db.sqlite');
   const db=new DatabaseSync(dbPath);
   db.exec("CREATE TABLE tenants(id TEXT PRIMARY KEY,version INTEGER NOT NULL,state TEXT NOT NULL);CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,person_id TEXT NOT NULL,role TEXT NOT NULL,costs INTEGER NOT NULL,salt TEXT NOT NULL,password_hash TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT '[]');CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,expires INTEGER NOT NULL);");
   db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('alpha',1,'{}');
   db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('bravo',1,'{}');
-  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha','alpha','m1','manager',1,'s','00','[]');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@alpha','alpha','m1',role,1,'s','00','[]');
   db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('employee@alpha','alpha','e1','employee',0,'s','00','[]');
   db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run('manager@bravo','bravo','m2','manager',1,'s','00','[]');
   const manager='a'.repeat(64),employee='e'.repeat(64),bravo='b'.repeat(64);
@@ -244,5 +244,17 @@ test('default source reader binds action evidence to weekly review and forwards 
     assert.equal(seenUrl,'/api/weekly-review?period=2026-09-07');
   }finally{
     await new Promise(resolve=>source.close(resolve));
+  }
+});
+
+test('payroll and other non-manager roles are refused before reading manager Time Review evidence',async()=>{
+  for(const role of ['payroll_admin','viewer','', 'MANAGER']){
+    let calls=0;
+    const f=fixture(async()=>{calls++;return {status:200,body:report()};},role);
+    try{
+      const result=await call(f.engine,f.manager);
+      assert.equal(result.status,403,role+' must not receive manager-only evidence');
+      assert.equal(calls,0,'denied role must not issue a source request');
+    }finally{f.close();}
   }
 });

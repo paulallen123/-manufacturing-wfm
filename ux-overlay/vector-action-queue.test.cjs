@@ -4,11 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-function loadVectorHelpers() {
+function loadVectorHelpers(options = {}) {
   const source = fs.readFileSync(path.join(__dirname, 'vector-shell.js'), 'utf8');
   const instrumented = source.replace(
     'window.VectorWorkforceOperations={marker:MARKER',
-    'window.VectorWorkforceOperations={alertsMarkup,readActionContext,rememberActionContext,marker:MARKER'
+    'window.VectorWorkforceOperations={loadTimeReviewEvidence,alertsMarkup,readActionContext,rememberActionContext,marker:MARKER'
   );
   assert.notEqual(instrumented, source, 'Vector action markup test hook could not be attached.');
   const classList = { add() {}, remove() {}, toggle() {} };
@@ -35,7 +35,8 @@ function loadVectorHelpers() {
     URL,
     Intl,
     Date,
-    console
+    console,
+    ...options
   };
   sandbox.window.window = sandbox.window;
   sandbox.window.document = sandbox.document;
@@ -145,4 +146,68 @@ test('action ordering cannot create synthetic urgency styling', () => {
   const css = fs.readFileSync(path.join(__dirname, 'vector-shell.css'), 'utf8');
   assert.doesNotMatch(css, /\.vector-alert-row:first-child>button\s*\{/);
   assert.match(css, /\.vector-alert-row>button\{[^}]*background:#edf3fb;[^}]*color:#355375;/);
+});
+
+async function loadRoleEvidence(role){
+  const calls=[];
+  const vector=loadVectorHelpers({
+    me:()=>({id:'p1',name:'Test fixture',title:role,costs:true,permissions:[]}),
+    F:{actor:{personId:'p1',email:'fixture@alpha',tenant:'alpha',role}},
+    isEmployee:()=>role==='employee',
+    data:{tenant:'alpha'},
+    fetch:async url=>{
+      calls.push(url);
+      if(url==='/api/tenant-calendar')return {ok:true,json:async()=>({schemaVersion:'tenant-calendar-1',tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-11T09:00:00Z',localDate:'2026-10-11',maxAgeMs:900000})};
+      assert.equal(url,'/api/workforce/lifecycle/action-evidence/time-review');
+      return {ok:true,json:async()=>({contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',workflow:'time-review',items:[],timeZone:'Europe/London',asOf:'2026-10-11T09:00:00Z',maxAgeMs:900000})};
+    }
+  });
+  return {ready:await vector.loadTimeReviewEvidence(),calls};
+}
+
+test('payroll and other non-manager shells do not request manager Time Review evidence',async()=>{
+  for(const role of ['payroll_admin','employee','viewer',undefined]){
+    const result=await loadRoleEvidence(role);
+    assert.equal(result.ready,false,String(role));
+    assert.deepEqual(result.calls,[],String(role)+' must not make a manager evidence request');
+  }
+});
+
+test('manager director and supervisor shells retain current Time Review evidence reads',async()=>{
+  for(const role of ['manager','director','supervisor']){
+    const result=await loadRoleEvidence(role);
+    assert.equal(result.ready,true,role);
+    assert.deepEqual(result.calls,['/api/tenant-calendar','/api/workforce/lifecycle/action-evidence/time-review']);
+  }
+});
+
+test('display identity cannot grant manager evidence access over a payroll session',async()=>{
+  const calls=[];
+  const vector=loadVectorHelpers({
+    me:()=>({id:'p1',role:'manager',name:'Display identity'}),
+    F:{actor:{personId:'p1',email:'payroll@alpha',tenant:'alpha',role:'payroll_admin'}},
+    isEmployee:()=>false,
+    fetch:async url=>{calls.push(url);throw Error('request forbidden');}
+  });
+  assert.equal(await vector.loadTimeReviewEvidence(),false);
+  assert.deepEqual(calls,[]);
+});
+
+test('same displayed person cannot accept pending evidence after authenticated tenant changes',async()=>{
+  const auth={actor:{personId:'p1',email:'manager@alpha',tenant:'alpha',role:'manager'}};
+  let release,started;const pending=new Promise(resolve=>{started=resolve;});
+  const vector=loadVectorHelpers({
+    me:()=>({id:'p1',name:'Same display',title:'manager',costs:true,permissions:[]}),
+    F:auth,isEmployee:()=>false,
+    fetch:async url=>{
+      if(url==='/api/tenant-calendar')return {ok:true,json:async()=>({schemaVersion:'tenant-calendar-1',tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-11T09:00:00Z',localDate:'2026-10-11',maxAgeMs:900000})};
+      assert.equal(url,'/api/workforce/lifecycle/action-evidence/time-review');
+      started();return new Promise(resolve=>{release=()=>resolve({ok:true,json:async()=>({contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',workflow:'time-review',items:[],timeZone:'Europe/London',asOf:'2026-10-11T09:00:00Z',maxAgeMs:900000})});});
+    }
+  });
+  const result=vector.loadTimeReviewEvidence();
+  const outcome=await Promise.race([pending.then(()=> 'pending'),result.then(()=> 'finished')]);
+  assert.equal(outcome,'pending','authorised manager must request evidence');
+  auth.actor={personId:'p1',email:'manager@beta',tenant:'beta',role:'manager'};release();
+  assert.equal(await result,false,'old tenant response must not become current evidence');
 });
