@@ -92,9 +92,11 @@ const PROFILES = Object.freeze({
     redactPath(pathname) {
       return pathname.replace(/^\/v1\/companies\/[^/]+$/, '/v1/companies/{company_id}');
     },
-    verify(payload) {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Gusto demo company response is not a JSON object.');
-      return { assertion: 'demo-company-read-200', bodyShape: 'object' };
+    verify(payload, bundle) {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)
+        || typeof payload.uuid !== 'string' || payload.uuid !== bundle.companyId)
+        throw new Error('Gusto demo company response does not identify the requested company.');
+      return { assertion: 'demo-company-id-matched', bodyShape: 'object' };
     }
   })
 });
@@ -178,7 +180,7 @@ export async function certifyProviderSandbox({
   try { payload = JSON.parse(body.toString('utf8')); }
   catch { throw new Error('Provider sandbox returned invalid JSON.'); }
 
-  const providerAssertion = profile.verify(payload);
+  const providerAssertion = profile.verify(payload, secretBundle);
   const observedAt = new Date(nowMs).toISOString();
   const evidence = {
     configurationFingerprint: plan.configurationFingerprint,
