@@ -694,9 +694,9 @@ function createOneDayEnterpriseEngine(options = {}) {
     const rawBody=await readRaw(req);
     const binding=await options.verifySignedContract({rawBody,headers:{...req.headers}});
     if(binding===null)return writeJson(res,202,{ignored:true,reason:'No verified completed signing event.'});
-    const workspace=customerWorkspaces.accept(binding);
+    const workspace=binding?.operation==='adopt-existing'?customerWorkspaces.adoptExisting(binding):customerWorkspaces.accept(binding);
     if(!workspace.created){
-      if(binding.relationship==='initial')await retryDueNotifications({tenant:workspace.tenant,contractHash:sha256(binding.contractRef)});
+      if(binding.relationship==='initial'&&!workspace.adopted)await retryDueNotifications({tenant:workspace.tenant,contractHash:sha256(binding.contractRef)});
       const run=runById.get(workspace.initialSetupRunId,workspace.tenant),recovery=notificationRecoveryForRun(run);
       return writeJson(res,200,{workspace,questionnaireReset:false,implementation:readinessForRun(run),notification:{delivered:recovery.state==='DELIVERED'||recovery.state==='STARTED',recovery}});
     }
@@ -1930,6 +1930,9 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     const contractHash = sha256(contractRef);
     const permanentWorkspace=customerWorkspaces.forTenant(tenant);
+    if(!permanentWorkspace&&(currentRun.get(tenant)||db.prepare('SELECT 1 FROM tenant_environments WHERE tenant=?').get(tenant))){
+      return writeJson(res,409,{code:'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED',error:'Verified association of the existing customer workspace is required before activation.'});
+    }
     if(permanentWorkspace && runById.get(permanentWorkspace.initialSetupRunId,tenant)?.contract_ref_hash!==contractHash){
       return writeJson(res,409,{error:'Associate this contract with the existing customer workspace through verified signing. Initial setup cannot be restarted.'});
     }
@@ -2375,7 +2378,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       const scope=normaliseScope({...old,companyName:answers.organisation.name,countries:answers.organisation.countries,
         sites:compiled.scope.sites.map(site=>site.name),employeeCount:answers.workforce.count,
         features:compiled.scope.modules,workspaceSetup:answers,
-        sourceSystems:answers.connections.timing==='now'?compiled.scope.integrations.map(system=>system.provider):(old.sourceSystems||[])});
+        // These selectors are active scope claims. Deferral removes their active
+        // meaning; historical scope events and provider connections remain intact.
+        ...(answers.connections.timing==='later'?{payrollSystem:'',hcmSystem:'',erpSystem:''}:{}),
+        sourceSystems:answers.connections.timing==='now'?compiled.scope.integrations.map(system=>system.provider):[]});
       return applyScopeConfiguration(run,scope,actor);
     }
   }) : null;

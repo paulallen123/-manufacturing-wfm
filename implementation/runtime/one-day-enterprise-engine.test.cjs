@@ -118,6 +118,18 @@ function response() {
   };
 }
 
+test('legacy activation rejects before all writes when an unassociated run or environment already exists',async t=>{
+  for(const kind of ['run','environment','both']){
+    const f=fixture();const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+    if(kind!=='environment')db.prepare('INSERT INTO implementation_runs VALUES(?,?,?,?,?,?,?,?,?)').run('legacy-run','alpha',sha256('legacy-contract'),'BUILDING',Date.now(),Date.now()+3600000,1,new Date().toISOString(),new Date().toISOString());
+    if(kind!=='run')db.prepare('INSERT INTO tenant_environments VALUES(?,?,?,?,?,?,?,?,?)').run('alpha','legacy-env','legacy-namespace','legacy-run','READY','{}','legacy-digest','old','old');
+    const tables=['implementation_runs','implementation_scope','implementation_invitations','implementation_notification_outbox','tenant_environments','implementation_work_jobs','implementation_events','tenant_environment_events'];
+    const snapshot=()=>tables.map(table=>db.prepare('SELECT * FROM '+table).all());const before=snapshot();
+    const result=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'new-contract',recipientEmail:'manager@alpha'},f.internal);
+    assert.equal(result.status,409,JSON.stringify(result.body));assert.equal(result.body.code,'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');assert.deepEqual(snapshot(),before);assert.equal(f.invitationAttempts,0);
+  }
+});
+
 async function waitFor(predicate, timeoutMs = 500) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -126,6 +138,79 @@ async function waitFor(predicate, timeoutMs = 500) {
   }
   assert.fail('Timed out waiting for automatic recovery.');
 }
+
+test('trusted adoption resolves identity independently of spoofed body and preserves completed setup through fresh-session renewal and upgrade',async t=>{
+  let trusted;
+  const f=fixture({configurationCompiler:require('./test-support/sealed-compiler.cjs')(t),verifySignedContract(){return trusted;},provisionInitialOwner(){throw Error('Adoption must preserve the existing owner');}});
+  const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  const started=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'legacy-contract',recipientEmail:'manager@alpha'},f.internal);
+  assert.equal(started.status,201);
+  const route='/api/implementation/autonomous/setup';
+  const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()});
+  assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  const env=db.prepare('SELECT * FROM tenant_environments WHERE tenant=?').get('alpha');
+  trusted={operation:'adopt-existing',verified:true,ownerAuthorized:true,customerId:'legacy-customer',customerAuthorityRef:'fixture-verified-customer',tenant:'alpha',provider:'fixture-verified-provider',eventId:'adoption',contractRef:'renewal',relationship:'renewal',ownerEmail:'manager@alpha',ownerAuthorityRef:'fixture-existing-owner',existingRunId:started.body.implementation.runId,existingEnvironmentId:env.environment_id,existingNamespace:env.namespace};
+  const tables=['implementation_runs','implementation_scope','tenant_environments','workspace_setup_drafts','workspace_setup_events','users','implementation_invitations','implementation_notification_outbox','implementation_events','implementation_work_jobs'];
+  const preserved=()=>tables.map(table=>db.prepare('SELECT * FROM '+table).all());const before=preserved();
+  const spoof={operation:'adopt-existing',verified:true,ownerAuthorized:true,tenant:'bravo',existingRunId:'attacker-run',ownerEmail:'manager@bravo',customerId:'attacker'};
+  const send=()=>call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',spoof,f.contractWebhook);
+  const adopted=await send();assert.equal(adopted.status,200,JSON.stringify(adopted.body));assert.equal(adopted.body.workspace.tenant,'alpha');assert.equal(adopted.body.workspace.initialSetupRunId,env.run_id);assert.equal(adopted.body.questionnaireReset,false);
+  assert.deepEqual(preserved(),before);assert.equal((await send()).body.workspace.workspaceId,adopted.body.workspace.workspaceId);assert.deepEqual(preserved(),before);
+  const complete=(await call(f.engine,f.tokens.manager,'GET',route)).body;assert.equal(complete.questionnaireComplete,true);
+  const fresh='fresh-session-after-adoption';db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(fresh),'manager@alpha',Date.now()+60_000);
+  assert.deepEqual((await call(f.engine,fresh,'GET',route)).body,complete);
+  for(const relationship of ['renewal','amendment']){
+    trusted={...trusted,eventId:relationship+'-next',contractRef:relationship+'-next',relationship,existingWorkspaceId:adopted.body.workspace.workspaceId};
+    for(const key of ['operation','existingRunId','existingEnvironmentId','existingNamespace'])delete trusted[key];
+    assert.equal((await send()).status,200);assert.deepEqual(preserved(),before);assert.deepEqual((await call(f.engine,fresh,'GET',route)).body,complete);
+  }
+  const bypass=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'unverified-renewal',recipientEmail:'manager@alpha'},f.internal);
+  assert.equal(bypass.status,409);assert.deepEqual(preserved(),before);assert.equal(f.invitationAttempts,1);
+  trusted={...trusted,operation:'adopt-existing',existingWorkspaceId:undefined,existingRunId:env.run_id,existingEnvironmentId:env.environment_id,existingNamespace:env.namespace,verified:false};
+  assert.equal((await send()).status,403);assert.deepEqual(preserved(),before);
+});
+
+test('initial adoption and replay preserve a pending legacy invitation without acquiring notification authority',async t=>{
+  let trusted;
+  const f=fixture({failInvitationAttempts:2,notificationRetryDelayMs:0,verifySignedContract(){return trusted;}});
+  const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  const started=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'legacy-contract',recipientEmail:'manager@alpha',scope:scopeFixture()},f.internal);
+  assert.equal(started.status,201);assert.equal(started.body.notification.pendingRetry,true);assert.equal(f.invitationAttempts,2);
+  const env=db.prepare('SELECT * FROM tenant_environments').get();
+  trusted={operation:'adopt-existing',verified:true,ownerAuthorized:true,customerId:'legacy-customer',customerAuthorityRef:'fixture-verified-customer',tenant:'alpha',provider:'fixture-verified-provider',eventId:'adoption',contractRef:'legacy-contract',relationship:'initial',ownerEmail:'manager@alpha',ownerAuthorityRef:'fixture-existing-owner',existingRunId:env.run_id,existingEnvironmentId:env.environment_id,existingNamespace:env.namespace};
+  const tables=['implementation_invitations','implementation_notification_outbox','implementation_notification_attempts','implementation_events','tenant_environments','implementation_runs','implementation_scope'];
+  const snapshot=()=>tables.map(table=>db.prepare('SELECT * FROM '+table).all()),before=snapshot();
+  for(let i=0;i<2;i++){
+    const adopted=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook);
+    assert.equal(adopted.status,200);assert.deepEqual(snapshot(),before,'Adoption must not dispatch or mutate legacy invitation recovery');assert.equal(f.invitationAttempts,2);
+  }
+  for(const key of ['operation','existingRunId','existingEnvironmentId','existingNamespace'])delete trusted[key];
+  const replay=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook);
+  assert.equal(replay.status,200);assert.deepEqual(snapshot(),before,'A normal signing replay must retain the adopted workspace boundary');assert.equal(f.invitationAttempts,2);
+});
+
+test('HTTP adoption audit failures roll back associations and successful adoption performs no later legacy audit writes',async t=>{
+  let trusted;
+  const f=fixture({failInvitationAttempts:2,notificationRetryDelayMs:0,verifySignedContract(){return trusted;}});
+  const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  const started=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'legacy-contract',recipientEmail:'manager@alpha',scope:scopeFixture()},f.internal);
+  assert.equal(started.status,201);assert.equal(started.body.notification.pendingRetry,true);
+  const env=db.prepare('SELECT * FROM tenant_environments').get();
+  trusted={operation:'adopt-existing',verified:true,ownerAuthorized:true,customerId:'legacy-customer',customerAuthorityRef:'fixture-verified-customer',tenant:'alpha',provider:'fixture-verified-provider',eventId:'adoption',contractRef:'legacy-contract',relationship:'initial',ownerEmail:'manager@alpha',ownerAuthorityRef:'fixture-existing-owner',existingRunId:env.run_id,existingEnvironmentId:env.environment_id,existingNamespace:env.namespace};
+  const legacyTables=['implementation_invitations','implementation_notification_outbox','implementation_notification_attempts','implementation_events','tenant_environments','implementation_runs','implementation_scope'];
+  const snapshot=tables=>tables.map(table=>db.prepare('SELECT * FROM '+table).all()),before=snapshot(legacyTables);
+  const associations=['customer_workspaces','customer_workspace_contracts','customer_workspace_events','customer_workspace_adoptions'];
+  for(const table of ['customer_workspace_events','customer_workspace_adoptions']){
+    db.exec(`CREATE TRIGGER refuse_adoption_audit BEFORE INSERT ON ${table} BEGIN SELECT RAISE(ABORT,'adoption audit unavailable'); END`);
+    const failed=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook);
+    assert.equal(failed.status,500);assert.deepEqual(snapshot(legacyTables),before);assert.ok(snapshot(associations).every(rows=>rows.length===0));assert.equal(f.invitationAttempts,2);
+    db.exec('DROP TRIGGER refuse_adoption_audit');
+  }
+  db.exec("CREATE TRIGGER refuse_legacy_audit BEFORE INSERT ON implementation_events BEGIN SELECT RAISE(ABORT,'legacy audit unavailable'); END");
+  const adopted=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook);
+  assert.equal(adopted.status,200);assert.deepEqual(snapshot(legacyTables),before);assert.ok(snapshot(associations).every(rows=>rows.length===1));assert.equal(f.invitationAttempts,2);
+});
+
 
 async function call(engine, token, method, url, body, extraHeaders = {}) {
   const req = Readable.from(body === undefined ? [] : [JSON.stringify(body)]);
@@ -772,8 +857,8 @@ test('notification transport failure cannot block trusted zero-touch implementat
   }
 });
 
-test('repeated trusted activation retries a failed invitation without duplicating implementation', async () => {
-  const f = fixture({ failInvitationAttempts: 2 });
+test('legacy activation replay is blocked while the authorised recovery worker retries the same invitation', async () => {
+  const f = fixture({ failInvitationAttempts: 2, notificationRetryDelayMs:0 });
   try {
     const event = { tenant: 'alpha', contractRef: 'contract-mail-retry', targetHours: 8, recipientEmail: 'manager@alpha' };
     const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
@@ -781,10 +866,11 @@ test('repeated trusted activation retries a failed invitation without duplicatin
     assert.equal(first.body.notification.delivered, false);
     assert.equal(first.body.invitation, null);
     const repeated = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
-    assert.equal(repeated.status, 200);
-    assert.equal(repeated.body.implementation.runId, first.body.implementation.runId);
-    assert.equal(repeated.body.notification.delivered, true);
-    assert.equal(repeated.body.invitation.state, 'AWAITING_CUSTOMER_START');
+    assert.equal(repeated.status, 409);
+    assert.equal(repeated.body.code, 'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');
+    assert.equal(f.invitationAttempts, 2);
+    const recovery=await f.engine.retryDueNotifications({nowMs:Date.now()+60_000});
+    assert.equal(recovery.delivered,1);
     assert.equal(f.sentInvitations.length, 1);
     assert.equal(f.invitationAttempts, 3);
     const db = new DatabaseSync(f.dbPath);
@@ -884,16 +970,19 @@ test('signed contract webhook replay uses the same bounded notification recovery
 });
 
 test('failed invitation retries stop at a durable three-attempt budget', async () => {
-  const f = fixture({ failInvitationDelivery: true });
+  const f = fixture({ failInvitationDelivery: true, notificationRetryDelayMs:0 });
   try {
     const event = { tenant: 'alpha', contractRef: 'contract-mail-budget', targetHours: 8, recipientEmail: 'manager@alpha' };
     const results = [];
     for (let i = 0; i < 4; i += 1) {
       results.push(await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal));
     }
-    assert.deepEqual(results.map(result => result.status), [201, 200, 200, 200]);
-    assert.equal(results[3].body.notification.retryExhausted, true);
-    assert.equal(results[3].body.implementation.runId, results[0].body.implementation.runId);
+    assert.deepEqual(results.map(result => result.status), [201, 409, 409, 409]);
+    assert.ok(results.slice(1).every(result=>result.body.code==='LEGACY_WORKSPACE_ASSOCIATION_REQUIRED'));
+    assert.equal(f.invitationAttempts,2);
+    const recovery=await f.engine.retryDueNotifications({nowMs:Date.now()+60_000});
+    assert.equal(recovery.exhausted,1);
+    await f.engine.retryDueNotifications({nowMs:Date.now()+120_000});
     assert.equal(f.invitationAttempts, 3);
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM implementation_runs').get().count, 1);
@@ -932,8 +1021,10 @@ test('simultaneous delayed retry and trusted replay cannot duplicate delivery or
     sweep = f.engine.retryDueNotifications({ nowMs: Date.now() + 60_000 });
     await finalStarted;
     const replay = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
-    assert.equal(replay.body.notification.retryInProgress, true);
-    assert.equal(replay.body.notification.retryExhausted, false);
+    assert.equal(replay.status,409);
+    assert.equal(replay.body.code,'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');
+    const during=await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/status');
+    assert.notEqual(during.body.notificationRecovery.state,'EXHAUSTED');
 
     releaseFinalAttempt();
     const recovery = await sweep;
@@ -955,7 +1046,7 @@ test('simultaneous delayed retry and trusted replay cannot duplicate delivery or
 });
 
 test('implementation status explains pending and exhausted invitation recovery without exposing secrets', async () => {
-  const f = fixture({ failInvitationDelivery: true });
+  const f = fixture({ failInvitationDelivery: true, notificationRetryDelayMs:0 });
   try {
     const event = { tenant: 'alpha', contractRef: 'contract-mail-health', targetHours: 8, recipientEmail: 'manager@alpha' };
     const first = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
@@ -972,7 +1063,8 @@ test('implementation status explains pending and exhausted invitation recovery w
     assert.equal('contractRef' in recovering.body.notificationRecovery, false);
 
     const final = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
-    assert.equal(final.body.notification.retryExhausted, true);
+    assert.equal(final.status,409);assert.equal(final.body.code,'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');
+    assert.equal((await f.engine.retryDueNotifications({nowMs:Date.now()+60_000})).exhausted,1);
     const exhausted = await call(f.engine, f.tokens.manager, 'GET', '/api/implementation/autonomous/status');
     assert.equal(exhausted.body.notificationRecovery.state, 'EXHAUSTED');
     assert.equal(exhausted.body.notificationRecovery.attempts, 3);
@@ -1152,7 +1244,7 @@ test('provider credential rejection stops after one attempt and requests authori
     assert.equal(status.body.notificationRecovery.terminalAction, 'MESSAGE_PROVIDER_AUTHORIZATION_REQUIRED');
 
     const repeated = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-activated', event, f.internal);
-    assert.equal(repeated.body.notification.blocked, true);
+    assert.equal(repeated.status,409);assert.equal(repeated.body.code,'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');
     assert.equal(f.invitationAttempts, 1);
 
     const db = new DatabaseSync(f.dbPath);
@@ -1356,7 +1448,7 @@ test('implementation entry preflight exposes missing requirements before a contr
   }
 });
 
-test('contract activation is idempotent and auto-starts implementation without a customer click', async () => {
+test('initial internal activation auto-starts once and replay requires a permanent workspace association', async () => {
   const f = fixture();
   try {
     const denied = await call(
@@ -1372,9 +1464,8 @@ test('contract activation is idempotent and auto-starts implementation without a
       f.internal
     );
     assert.equal(first.result.status, 201);
-    assert.equal(second.status, 200);
-    assert.equal(second.body.invitation.state, 'AWAITING_CUSTOMER_START');
-    assert.equal(second.body.invitation.startedRunId, null);
+    assert.equal(second.status, 409);
+    assert.equal(second.body.code, 'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');
     assert.equal(f.sentInvitations.length, 1);
 
     const beforeStart = await call(
@@ -1994,7 +2085,17 @@ test('current admission: identical scope resubmission preserves ready receipts a
 test('current admission: configuration-bound evidence rejects stale digest while caller-issued seals are always refused',async()=>{const f=fixture();try{await call(f,'scope',scope(),'manager');assert.equal((await submit(f,'scheduling',{...detail('scheduling'),configurationDigest:'prior-configuration'})).status,409);assert.equal((await submit(f,'identity-access',{...detail('identity-access'),_configurationValidation:{version:1}})).status,409);assert.equal(f.audit().evidence.length,0);}finally{f.close();}});
 
 test('current admission: receipts accepted before first configuration cannot acquire its authority retroactively',async()=>{const f=fixture();try{for(const{key}of REQUIREMENTS)if(!['configuration-scope','time-policies','absence-policies'].includes(key))assert.equal((await submit(f,key)).status,200,key);const before=f.audit();assert.ok(before.evidence.every(x=>!JSON.parse(x.detail_json)._configurationValidation));const changed={...scope(),countries:['Germany'],sites:['Plant2'],erpSystem:'ERP-DE'};const captured=await call(f,'scope',changed,'manager');assert.equal(captured.body.operationalReady,false);assert.ok(captured.body.requirements.filter(x=>x.status==='REVALIDATION_REQUIRED').length>0);const capturedMap=new Map(captured.body.requirements.map(x=>[x.key,x]));assert.equal(capturedMap.get('tenant-environment').status,'REVALIDATION_REQUIRED');assert.equal(capturedMap.get('identity-access').satisfied,true);assert.equal(capturedMap.get('security-controls').satisfied,true);assert.deepEqual(f.audit().evidence,before.evidence);}finally{f.close();}});
-test('current admission: trusted contract scope changes share the revision boundary and cannot resurrect prior scope receipts',async()=>{const f=fixture();try{const d=new DatabaseSync(f.dbPath);d.prepare('UPDATE implementation_runs SET contract_ref_hash=? WHERE id=?').run(hash('review-existing-contract'),'run-review');d.close();await admitEvidenceComplete(f);const before=f.audit();const activate=s=>call(f,'contract-activated',{tenant:'review-alpha',contractRef:'review-existing-contract',recipientEmail:'synthetic@example.invalid',scope:s});const changed={...scope(),countries:['Germany'],sites:['Plant2'],erpSystem:'ERP-DE'};await activate(changed);assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);await activate(scope());assert.equal((await call(f,'status',undefined,'manager')).body.operationalReady,false);assert.deepEqual(f.audit().evidence,before.evidence);assert.equal(f.audit().environments[0].environment_id,before.environments[0].environment_id);}finally{f.close();}});
+test('current admission: unassociated activation cannot mutate scope or resurrect prior receipts',async()=>{
+  const f=fixture();try{
+    const d=new DatabaseSync(f.dbPath);d.prepare('UPDATE implementation_runs SET contract_ref_hash=? WHERE id=?').run(hash('review-existing-contract'),'run-review');d.close();
+    await admitEvidenceComplete(f);const before=f.audit();
+    for(const requested of [{...scope(),countries:['Germany'],sites:['Plant2'],erpSystem:'ERP-DE'},scope()]){
+      const denied=await call(f,'contract-activated',{tenant:'review-alpha',contractRef:'review-existing-contract',recipientEmail:'synthetic@example.invalid',scope:requested});
+      assert.equal(denied.status,409);assert.equal(denied.body.code,'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');
+      assert.deepEqual(f.audit(),before,'Rejected activation must leave all durable state unchanged');
+    }
+  }finally{f.close();}
+});
 
 
 test('current admission: orchestration does not enter normal operation from evidence rows alone',async()=>{

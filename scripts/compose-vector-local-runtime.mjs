@@ -160,8 +160,10 @@ function patchCustomerFacingCopy(runtime) {
     fs.writeFileSync(file,text);
   }
 }
+const run = (file, args = []) => { recordInput(file); return execFileSync(process.execPath, [path.join(root, file), ...args], { stdio: 'inherit' }); };
 recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
+  run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
   const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
@@ -174,7 +176,6 @@ const names = execFileSync('tar', ['-tzf', archive], { encoding: 'utf8' }).trim(
 if (names.some(name => path.isAbsolute(name) || name.split('/').includes('..'))) throw Error('UNSAFE_ARCHIVE_PATH');
 fs.mkdirSync(output, { recursive: true });
 execFileSync('tar', ['--no-same-owner', '-xzf', archive, '-C', output]);
-const run = (file, args = []) => { recordInput(file); return execFileSync(process.execPath, [path.join(root, file), ...args], { stdio: 'inherit' }); };
 const publicRoot = path.join(output, 'public');
 run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
 run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
