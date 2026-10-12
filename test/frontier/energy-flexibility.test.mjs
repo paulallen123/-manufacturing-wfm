@@ -6,6 +6,25 @@ const NOW='2026-09-18T06:00:00.000Z';
 function baseInput(){return {now:NOW,tenantId:'synthetic-tenant',siteId:'synthetic-site',minimumNetBenefit:0,latestKnownSignalRevision:2,energySignal:{tenantId:'synthetic-tenant',siteId:'synthetic-site',status:'active',revision:2,type:'turn_down',publishedAt:'2026-09-18T05:50:00.000Z',freshUntil:'2026-09-18T07:00:00.000Z',windowEnd:'2026-09-18T08:00:00.000Z',acceptanceDeadline:'2026-09-18T06:30:00.000Z',confidence:0.98},process:{tenantId:'synthetic-tenant',siteId:'synthetic-site',flexibilityClass:'shiftable',batchContinuityRequired:false,stateFresh:true,confidence:0.95},options:[{id:'baseline',kind:'do_nothing',workforce:{staffingCount:5,minimumStaffing:4,restCompliant:true,qualificationsValid:true,confidence:1},energy:{},labour:{},production:{},scheduleChurnCost:0},{id:'shift-later',kind:'shift_later',tenantId:'synthetic-tenant',siteId:'synthetic-site',approvalRequired:true,shiftMinutes:60,workforce:{staffingCount:5,minimumStaffing:4,restCompliant:true,qualificationsValid:true,supervisorRequired:true,supervisorAvailable:true,requiredSkills:{furnace:1},skillCoverage:{furnace:2},confidence:0.97},energy:{grossSaving:700,flexibilityReward:200,uncertaintyPct:0.1},labour:{premiumCost:150,upperBoundCost:170},production:{penaltyCost:50,upperBoundPenalty:70,hardServiceBreach:false,qualityRisk:'acceptable'},scheduleChurnCost:25,upperBoundScheduleChurnCost:35,controls:{}}]};}
 
 test('safe option remains conservatively ranked with double-count protection',()=>{const r=evaluateEnergyFlexibility(baseInput());assert.equal(r.status,'recommend_options');assert.equal(r.rankedOptions[0].economics.grossEnergyValue,700);assert.equal(r.rankedOptions[0].economics.doubleCountGuardApplied,true);assert.equal(r.rankedOptions[0].economics.conservativeNetValue,355);assert.equal(r.rankedOptions[0].actionContract.type,'workflow_handoff_only');assert.ok(isParetoBetterThanBaseline(r.rankedOptions[0],r.baseline));});
+test('unknown signal lifecycle refuses advisory handoff',()=>{
+ for(const status of ['pending_confirmation','',undefined,'ACTIVE']){
+  const input=baseInput();input.energySignal.status=status;
+  const result=evaluateEnergyFlexibility(input);
+  assert.equal(result.signalFresh,false);
+  assert.equal(result.status,'no_safe_or_valuable_flexibility');
+  assert.equal(result.rankedOptions.length,0);
+  assert.ok(result.signalFailures.includes('energy_signal_unknown_status'));
+  assert.equal(result.rejectedOptions.find(x=>x.id==='shift-later').actionContract,null);
+ }
+});
+test('unknown highest-revision event cannot be bypassed by a prior active event',()=>{
+ const input=baseInput();input.energyEvents=[input.energySignal,{...input.energySignal,revision:3,status:'pending_confirmation',publishedAt:'2026-09-18T05:55:00.000Z'}];
+ input.latestKnownSignalRevision=3;delete input.energySignal;
+ const result=evaluateEnergyFlexibility(input);
+ assert.equal(result.effectiveSignalRevision,3);
+ assert.ok(result.signalFailures.includes('energy_signal_unknown_status'));
+ assert.equal(result.rankedOptions.length,0);
+});
 
 test('out-of-order cancellation wins deterministically',()=>{const i=baseInput(),newer={...i.energySignal,revision:3,publishedAt:'2026-09-18T05:55:00.000Z',status:'cancelled'},older={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'};assert.equal(reduceEnergySignalEvents([newer,older,i.energySignal]).revision,3);i.energyEvents=[newer,older,i.energySignal];i.latestKnownSignalRevision=3;delete i.energySignal;const r=evaluateEnergyFlexibility(i);assert.equal(r.signalFresh,false);assert.ok(r.signalFailures.includes('energy_signal_cancelled'));});
 
@@ -40,3 +59,4 @@ function scenario(index,r){const fresh=r()>0.08,cancelled=r()<0.03,revisionOk=r(
 test('1,500-scenario conservative benchmark preserves safety and value thresholds',()=>{const r=lcg(0x5eed1234);let known=0,found=0,flex=0,better=0,stale=0,hard=0,badActuation=0;for(let i=0;i<1500;i++){const s=scenario(i,r),o=evaluateEnergyFlexibility(s.input);if(s.known){known++;if(o.rankedOptions.length)found++;}if(s.flexible){flex++;if(o.rankedOptions.some(x=>isParetoBetterThanBaseline(x,o.baseline)))better++;}if(!o.signalFresh&&o.rankedOptions.length)stale++;if(o.rankedOptions.some(x=>x.hardConstraintFailures.length))hard++;if(o.rankedOptions.some(x=>x.actionContract?.type!=='workflow_handoff_only'))badActuation++;}const summary={scenarios:1500,knownFeasible:known,discovery:found/known,flexible:flex,paretoBetter:better/flex,staleExecutable:stale,hardViolationRecommended:hard,directActuationOutput:badActuation};console.log('ENERGY_FLEX_BENCHMARK='+JSON.stringify(summary));assert.ok(known>100);assert.ok(found/known>=0.95);assert.equal(stale,0);assert.equal(hard,0);assert.equal(badActuation,0);assert.ok(better/flex>=0.15);});
 
 test('500 adversarial replay/permutation cases preserve effective decision state',()=>{const r=lcg(0x1d3a0707);for(let n=0;n<500;n++){const i=baseInput();const rev1={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'},rev2={...i.energySignal};const canonical=structuredClone(i);canonical.energyEvents=[rev1,rev2];delete canonical.energySignal;const expected=evaluateEnergyFlexibility(canonical);const events=[];for(let k=0;k<2+Math.floor(r()*8);k++) events.push(r()<0.65?structuredClone(rev2):structuredClone(rev1));events.push(structuredClone(rev1),structuredClone(rev2));events.sort(()=>r()-0.5);const replay=structuredClone(i);replay.energyEvents=events;delete replay.energySignal;const actual=evaluateEnergyFlexibility(replay);assert.equal(actual.effectiveSignalRevision,2);assert.equal(actual.reproducibilityHash,expected.reproducibilityHash);assert.deepEqual(actual.rankedOptions,expected.rankedOptions);}});
+

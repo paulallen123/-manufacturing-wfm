@@ -34,6 +34,7 @@ function signalState(signal,now,input,reduction){
   if(!signal) return {fresh:false,reasons:['missing_energy_signal']};
   if(reduction?.conflict) reasons.push('energy_signal_revision_conflict');
   if(['cancelled','superseded'].includes(signal.status)) reasons.push(`energy_signal_${signal.status}`);
+  else if(signal.status!=='active') reasons.push('energy_signal_unknown_status');
   const published=ms(signal.publishedAt),freshUntil=ms(signal.freshUntil),windowEnd=ms(signal.windowEnd),deadline=ms(signal.acceptanceDeadline);
   if(published===null) reasons.push('energy_signal_missing_publication_time');
   if(published!==null&&published>now) reasons.push('energy_signal_from_future');
@@ -178,3 +179,4 @@ export function isParetoBetterThanBaseline(option,baseline){
   if(!baseline) return option.selectionValue>0;
   return option.selectionValue>baseline.selectionValue;
 }
+
