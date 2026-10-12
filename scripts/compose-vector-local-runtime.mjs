@@ -188,6 +188,7 @@ recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
   run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
   const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);
+  run('scripts/patch-native-setup-containment.mjs', [output]);
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
 }
@@ -213,7 +214,8 @@ const groups = {
     'agents-api-adapter.cjs', 'agents-api-bootstrap-route.cjs', 'implementation-work-controller.cjs',
     'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
     'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs',
-    'workspace-setup.cjs','organisation-access-setup.cjs','customer-workspace.cjs','setup-only-policy.cjs','organisation-access-lifecycle.cjs'
+    'workspace-setup.cjs','organisation-access-setup.cjs','customer-workspace.cjs','setup-only-policy.cjs','organisation-access-lifecycle.cjs',
+    'implementation-run-schema.cjs','native-setup-containment.cjs'
   ],
   learning: [
     'adaptive-learning-engine.cjs', 'training-workflow-manifest.cjs',
@@ -238,6 +240,7 @@ composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);
 patchPayrollMoney(output);
+run('scripts/patch-native-setup-containment.mjs', [output]);
 // Copy the lockfile-installed dependency closure; never install from the proof process.
 const securityDependencies = path.join(root, 'security/runtime/node_modules');
 if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');

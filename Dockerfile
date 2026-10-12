@@ -10,6 +10,7 @@ RUN node --test verification/provider-recovery-correction/autonomy-correction/te
 RUN node --test implementation/ui/implementation-observer.test.cjs
 RUN node --test implementation/ui/workspace-setup.test.cjs implementation/runtime/workspace-setup.test.cjs implementation/runtime/customer-workspace.test.cjs implementation/runtime/organisation-access-setup.test.cjs
 RUN node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/clean-customer-state.test.cjs implementation/runtime/setup-customer-state.test.cjs
+RUN node --test implementation/runtime/native-setup-containment.test.cjs
 RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs verification/first-use-regressions-20261012/deferred-connections.test.cjs
 RUN node --test scripts/patch-payroll-money.test.mjs
 RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
@@ -24,6 +25,9 @@ RUN node --test verification/provider-recovery-correction/autonomy-correction/te
 RUN VECTOR_SEALED_PROOF_ROOT=/proof node --test verification/provider-recovery-correction/tests/*.test.cjs \
  && node scripts/validate-canary-rollback-controller.mjs
 RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime \
+  && VECTOR_NATIVE_SETUP_RUNTIME_ROOT=/proof/staffology-full-runtime/implementation-runtime node --test implementation/runtime/native-setup-containment.test.cjs \
+  && VECTOR_NATIVE_CONTAINMENT_MODE=build-controls VECTOR_NATIVE_CONTAINMENT_LOCAL_PATHS=1 VECTOR_NATIVE_CONTAINMENT_RUNTIME=/proof/staffology-full-runtime node --test verification/setup-only-native-containment.test.cjs \
+  && VECTOR_NATIVE_CONTAINMENT_MODE=runtime VECTOR_NATIVE_CONTAINMENT_LOCAL_PATHS=1 VECTOR_NATIVE_CONTAINMENT_RUNTIME=/proof/staffology-full-runtime node --test verification/setup-only-native-containment.test.cjs \
  && VECTOR_SETUP_POLICY_RUNTIME_ROOT=/proof/staffology-full-runtime/implementation-runtime node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/customer-workspace.test.cjs \
  && mkdir -p /proof/staffology-private-artifacts \
  && cp /proof/staffology-full-runtime/STAFFOLOGY_ASSEMBLY.json /proof/staffology-full-runtime/LOCAL_PROOF_PROVENANCE.json /proof/staffology-private-artifacts/ \
@@ -102,7 +106,7 @@ COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/cano
 COPY verification/provider-recovery-correction/operations/runtime/ /workspace/verification/provider-recovery-correction/operations/runtime/
 COPY verification/provider-recovery-correction/ui/ /workspace/verification/provider-recovery-correction/ui/
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
-COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/
+COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs scripts/patch-native-setup-containment.mjs /workspace/scripts/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
 COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs scripts/patch-customer-runtime-assets.mjs /tmp/
@@ -149,7 +153,7 @@ COPY integration-fabric/protocol-profiles.json integration-fabric/opportunity-pr
 # One-day implementation and adaptive learning overlays. These remain additive,
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
 RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
-COPY implementation/runtime/workspace-setup.cjs implementation/runtime/organisation-access-setup.cjs implementation/runtime/customer-workspace.cjs implementation/runtime/setup-only-policy.cjs implementation/runtime/organisation-access-lifecycle.cjs /app/implementation-runtime/
+COPY implementation/runtime/workspace-setup.cjs implementation/runtime/organisation-access-setup.cjs implementation/runtime/customer-workspace.cjs implementation/runtime/setup-only-policy.cjs implementation/runtime/organisation-access-lifecycle.cjs implementation/runtime/implementation-run-schema.cjs implementation/runtime/native-setup-containment.cjs /app/implementation-runtime/
 COPY scripts/patch-workspace-compiler.mjs /tmp/patch-workspace-compiler.mjs
 RUN node /tmp/patch-workspace-compiler.mjs /app/lib/configuration-compiler.cjs && rm /tmp/patch-workspace-compiler.mjs
 COPY implementation/runtime/one-day-enterprise-engine.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/agents-api-adapter.cjs implementation/runtime/agents-api-bootstrap-route.cjs implementation/runtime/implementation-work-controller.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/configuration-inference-engine.cjs implementation/runtime/implementation-digital-twin.cjs implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/
@@ -181,8 +185,10 @@ COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-
 # Tests execute against the exact files copied into this image; test sources are removed
 # afterwards so they do not expand the runtime attack surface.
 RUN mkdir -p /tmp/wfm-tests/implementation/runtime /tmp/wfm-tests/learning/runtime /tmp/wfm-tests/security/runtime /tmp/wfm-tests/integration/runtime /tmp/wfm-tests/integration/worker /tmp/wfm-tests/operations/runtime /tmp/wfm-tests/reporting/runtime /tmp/wfm-tests/trust/runtime
-COPY implementation/runtime/workspace-setup.cjs implementation/runtime/organisation-access-setup.cjs implementation/runtime/customer-workspace.cjs implementation/runtime/setup-only-policy.cjs implementation/runtime/organisation-access-lifecycle.cjs /tmp/wfm-tests/implementation/runtime/
-COPY implementation/runtime/setup-only-policy.test.cjs implementation/runtime/customer-workspace.test.cjs /tmp/wfm-tests/implementation/runtime/
+COPY implementation/runtime/workspace-setup.cjs implementation/runtime/organisation-access-setup.cjs implementation/runtime/customer-workspace.cjs implementation/runtime/setup-only-policy.cjs implementation/runtime/organisation-access-lifecycle.cjs implementation/runtime/implementation-run-schema.cjs implementation/runtime/native-setup-containment.cjs /tmp/wfm-tests/implementation/runtime/
+COPY implementation/runtime/setup-only-policy.test.cjs implementation/runtime/customer-workspace.test.cjs implementation/runtime/native-setup-containment.test.cjs /tmp/wfm-tests/implementation/runtime/
+COPY verification/setup-only-native-containment.test.cjs /tmp/wfm-tests/verification/setup-only-native-containment.test.cjs
+COPY scripts/patch-native-setup-containment.mjs /tmp/wfm-tests/scripts/patch-native-setup-containment.mjs
 COPY implementation/runtime/test-support/sealed-compiler.cjs /tmp/wfm-tests/implementation/runtime/test-support/sealed-compiler.cjs
 COPY implementation/runtime/one-day-enterprise-engine.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/agents-api-adapter.cjs implementation/runtime/agents-api-adapter.test.cjs implementation/runtime/agents-api-bootstrap-route.cjs implementation/runtime/agents-api-bootstrap-route.test.cjs implementation/runtime/implementation-work-controller.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/readiness-evidence-contract.test.cjs implementation/runtime/readiness-evidence-wrapper.test.cjs implementation/runtime/configuration-inference-engine.cjs implementation/runtime/implementation-digital-twin.cjs implementation/runtime/implementation-digital-twin.test.cjs implementation/runtime/tenant-environment-provisioner.cjs implementation/runtime/tenant-environment-provisioner.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs implementation/runtime/configuration-inference-engine.test.cjs implementation/runtime/implementation-learning-integration.test.cjs /tmp/wfm-tests/implementation/runtime/
 COPY learning/runtime/adaptive-learning-engine.cjs learning/runtime/adaptive-learning-engine.test.cjs learning/runtime/training-workflow-manifest.cjs learning/runtime/training-workflow-manifest.test.cjs learning/runtime/training-twin.cjs learning/runtime/training-twin.test.cjs learning/runtime/training-scenario-engine.cjs learning/runtime/training-scenario-engine.test.cjs learning/runtime/training-delivery-service.cjs learning/runtime/training-delivery-service.test.cjs learning/runtime/training-video-contract.cjs learning/runtime/training-video-contract.test.cjs learning/runtime/training-artifact-registry.cjs learning/runtime/training-artifact-registry.test.cjs learning/runtime/training-regeneration-planner.cjs learning/runtime/training-regeneration-planner.test.cjs /tmp/wfm-tests/learning/runtime/
@@ -197,6 +203,8 @@ COPY reporting/runtime/vector-reporting-service.cjs reporting/runtime/vector-rep
 COPY trust/runtime/vector-trust-spine.cjs trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/trust/runtime/
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
+  && VECTOR_NATIVE_SETUP_RUNTIME_ROOT=/app/implementation-runtime node --test /tmp/wfm-tests/implementation/runtime/native-setup-containment.test.cjs \
+  && VECTOR_NATIVE_CONTAINMENT_MODE=runtime VECTOR_NATIVE_CONTAINMENT_LOCAL_PATHS=0 VECTOR_NATIVE_CONTAINMENT_RUNTIME=/app node --test /tmp/wfm-tests/verification/setup-only-native-containment.test.cjs \
  && VECTOR_SETUP_POLICY_RUNTIME_ROOT=/app/implementation-runtime node --test /tmp/wfm-tests/implementation/runtime/setup-only-policy.test.cjs /tmp/wfm-tests/implementation/runtime/customer-workspace.test.cjs \
  && node --test \
       /tmp/wfm-tests/implementation/runtime/readiness-evidence-contract.test.cjs \

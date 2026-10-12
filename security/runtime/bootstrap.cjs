@@ -17,6 +17,10 @@ const { createAutonomousIntegrationHub } = require('/app/integration-runtime/aut
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
 const { createOneDayEnterpriseEngine } = require('/app/implementation-runtime/one-day-enterprise-engine.cjs');
+const { installNativeSetupFactory } = require('/app/implementation-runtime/native-setup-containment.cjs');
+const { initializeImplementationRunSchema } = require('/app/implementation-runtime/implementation-run-schema.cjs');
+const { initializeCustomerWorkspaceSchema } = require('/app/implementation-runtime/customer-workspace.cjs');
+const { initializeSetupOnlySchema, createSetupOnlyReader } = require('/app/implementation-runtime/setup-only-policy.cjs');
 const { loadConfiguration: loadStaffologyConfiguration } = require('/app/integrations/staffology/canonical-operations.cjs');
 const { createTenantCalendar } = require('/app/operations-runtime/tenant-calendar.cjs');
 const { createWorkforceLifecycleGuard } = require('/app/operations-runtime/workforce-lifecycle-guard.cjs');
@@ -573,4 +577,15 @@ http.createServer = function guardedCreateServer(listener) {
   });
 };
 
+// Install trusted code before native boot. The native entry binds these helpers
+// to its actual connection after foundational schema and before seed/stores.
+// No engine instance, adoption migration, tenant factory or actor is supplied.
+installNativeSetupFactory({
+  initializeSchema: db => {
+    initializeImplementationRunSchema({db});
+    initializeCustomerWorkspaceSchema({db});
+    initializeSetupOnlySchema({db});
+  },
+  createReader: createSetupOnlyReader
+});
 require('/app/server.cjs');

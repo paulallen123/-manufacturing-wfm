@@ -12,6 +12,17 @@ for(const name of ['customer-workspace.cjs','setup-only-policy.cjs'])assert.equa
 const {createCustomerWorkspaceRegistry}=require(path.join(runtimeRoot,'customer-workspace.cjs'));
 const {createSetupOnlyPolicy}=require(path.join(runtimeRoot,'setup-only-policy.cjs'));
 const sha=value=>createHash('sha256').update(value).digest('hex');
+test('native containment registry schema initializer requires no creation adapter and writes no rows',()=>{
+  const db=new DatabaseSync(':memory:');try{
+    const {initializeCustomerWorkspaceSchema}=require(path.join(runtimeRoot,'customer-workspace.cjs'));
+    assert.equal(typeof initializeCustomerWorkspaceSchema,'function');
+    initializeCustomerWorkspaceSchema({db});initializeCustomerWorkspaceSchema({db});
+    const tables=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'customer_workspace%' ORDER BY name").all();
+    assert.equal(tables.length,7);
+    for(const {name}of tables)assert.equal(db.prepare('SELECT count(*) AS n FROM '+name).get().n,0);
+    assert.equal(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE name='customer_workspace_runtime_state'").get().n,0,'Registry DDL must not construct policy or migrate');
+  }finally{db.close();}
+});
 const initial=()=>({verified:true,ownerAuthorized:true,customerId:'customer-a',customerAuthorityRef:'crm/customer-a',tenant:'alpha',provider:'verified-provider',eventId:'event-a',contractRef:'contract-a',relationship:'initial',ownerEmail:'owner@alpha.test',ownerAuthorityRef:'contract-owner-a'});
 function fixture(t){
   const db=new DatabaseSync(':memory:');db.exec('CREATE TABLE tenants(id TEXT PRIMARY KEY);CREATE TABLE implementation_runs(id TEXT PRIMARY KEY,tenant TEXT,contract_ref_hash TEXT);');db.prepare('INSERT INTO tenants VALUES(?)').run('alpha');
