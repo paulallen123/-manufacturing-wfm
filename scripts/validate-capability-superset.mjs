@@ -29,6 +29,8 @@ function verifyRetirementReceipts(capability,requiredProof) {
   if(!Array.isArray(receipts)||receipts.length!==requiredProof.size)
     fail(`${capability.id}: one evidence receipt is required for every retirement proof.`);
   const evidenceRoot=path.join(root,'release','retirement-evidence');
+  if(!fs.existsSync(evidenceRoot)||fs.realpathSync(evidenceRoot)!==evidenceRoot)
+    fail(`${capability.id}: retirement evidence directory is missing or redirected.`);
   const seen=new Set();
   for(const descriptor of receipts){
     const proofType=descriptor?.proofType;

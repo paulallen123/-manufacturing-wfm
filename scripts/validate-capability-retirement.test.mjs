@@ -79,6 +79,12 @@ test('bound receipts admit only the exact candidate and current evidence bytes',
   fs.writeFileSync(file,original);
   receipt.evidencePath='../elsewhere.json';save(dir,copy);
   assert.notEqual(run(dir).status,0);
+  receipt.evidencePath='release/retirement-evidence/receipt-0.json';save(dir,copy);
+  const evidenceRoot=path.join(dir,'release/retirement-evidence');
+  const elsewhere=path.join(dir,'elsewhere');
+  fs.renameSync(evidenceRoot,elsewhere);
+  fs.symlinkSync(elsewhere,evidenceRoot,'dir');
+  assert.notEqual(run(dir).status,0,'a symlinked evidence directory must not escape its declared location');
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 
