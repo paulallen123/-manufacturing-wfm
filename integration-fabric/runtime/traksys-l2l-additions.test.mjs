@@ -23,12 +23,13 @@ test('TrakSYS reuses existing industrial and API adapters behind the safe read b
   assert.equal(c.nextEvidenceGate,'sandbox-authentication');
 });
 
-test('L2L remains deliberately adapter-less until an authoritative integration contract is available',()=>{
+test('L2L uses only the documented application REST path without control authority',()=>{
   const c=connectorById('l2l-connected-manufacturing-operations');
   assert.ok(c,'L2L connector record must exist');
-  assert.equal(c.evidenceLevel,'discovery-queued');
-  assert.deepEqual(c.adapters,[],'L2L must not receive a guessed protocol adapter');
-  assert.equal(c.discoveryStrategy,'vendor-specific-discovery');
+  assert.equal(c.evidenceLevel,'spec-verified');
+  assert.deepEqual(c.adapters.map(x=>x.id),['rest-openapi'],'L2L must only receive the documented application REST adapter');
+  assert.equal(c.discoveryStrategy,'vendor-metadata-or-api-catalog-first');
+  assert.equal(c.security.customerEdgeRequired,false);
   assert.equal(c.security.writeEnabled,false);
   assert.equal(c.security.directPlantNetworkAccess,false);
   assert.equal(c.security.managementPlaneEnabled,false);
@@ -37,5 +38,5 @@ test('L2L remains deliberately adapter-less until an authoritative integration c
   assert.equal(c.security.unauthenticatedDataSurfaceEnabled,false);
   assert.ok(c.canonicalTargets.includes('production-event'));
   assert.ok(c.canonicalTargets.includes('maintenance-event'));
-  assert.equal(c.nextEvidenceGate,'spec-verification');
+  assert.equal(c.nextEvidenceGate,'sandbox-authentication');
 });
