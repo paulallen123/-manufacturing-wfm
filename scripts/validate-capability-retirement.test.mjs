@@ -47,7 +47,7 @@ function addReceipts(dir,copy,cap){
   });
 }
 
-test('retirement refuses nine proof labels with zero evidence receipts',()=>{
+test('retirement refuses required proof labels with zero evidence receipts',()=>{
   const {dir,copy}=fixture();
   try{
     assert.equal(run(dir).status,0);
