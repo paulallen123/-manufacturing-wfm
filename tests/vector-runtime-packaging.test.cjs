@@ -285,3 +285,31 @@ test('native company configuration GET preserves exact non-traversal ownership w
  assert.ok(observed.some(x=>x[0]==='actor'&&x[1]===actor));assert.ok(observed.some(x=>x[0]==='mode'&&x[1]==='alpha'));assert.equal(observed.some(x=>x[0]==='anchor'),false);
  for(const [method,url]of [['GET','/api/company-admin/near'],['POST','/api/company-admin'],['GET','/api/unknown']])assert.equal(context.nativeStateNeedsAnchor({method},new URL(url,'http://native.local'),actor,state),true);
 });
+
+function assertNativeWorkflowClosure(composer,docker,helper){
+ const copies=copyMappings(docker);
+ const expected=JSON.parse(helper.match(/const workflowModuleExpected=(\{[^\n]+\});/)?.[1]||'null');
+ assert.ok(expected,'Native workflow receipt must pin the reviewed source modules');
+ for(const file of ['workflow-action-evidence-bridge.cjs','workflow-action-evidence-sources.cjs']){
+  const source='operations/runtime/'+file;
+  assert.ok(composer.includes("'"+source+"'"),'Workflow composition source omitted: '+source);
+  for(const target of ['/workspace/operations/runtime/','/app/operations-runtime/','/tmp/wfm-tests/operations/runtime/'])
+   assert.ok(copies.has(source+' '+target+file),'Workflow copied source omitted: '+target+file);
+  assert.equal(expected[file],require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,source))).digest('hex'),'Workflow receipt source pin differs: '+file);
+ }
+ assert.ok(helper.includes("failure('WORKFLOW_MODULE_MISMATCH')"),'Changed workflow module bytes must fail closed');
+ assert.ok(helper.includes('sourceOwner:nativeWorkflowSourceOwner.sourceOwner')&&helper.includes('resolveSourceActor:nativeWorkflowSourceOwner.resolveSourceActor'),'Both workflow owners must be wired to the private native instance');
+}
+test('native workflow assembly pins both reader modules through composition and final app admission',()=>{
+ assertNativeWorkflowClosure(fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),fs.readFileSync(path.join(root,'scripts/patch-native-setup-containment.mjs'),'utf8'));
+});
+for(const target of ['/workspace/operations/runtime/','/app/operations-runtime/','/tmp/wfm-tests/operations/runtime/'])test('native workflow assembly rejects a missing '+target+' owner module',()=>{
+ const c=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),d=fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),h=fs.readFileSync(path.join(root,'scripts/patch-native-setup-containment.mjs'),'utf8');
+ const lines=d.split('\n'),index=lines.findIndex(line=>line.startsWith('COPY ')&&line.trimEnd().endsWith(target)&&line.includes('operations/runtime/workflow-action-evidence-sources.cjs'));
+ assert.ok(index>=0);lines[index]=lines[index].replace('operations/runtime/workflow-action-evidence-sources.cjs ','');
+ assert.throws(()=>assertNativeWorkflowClosure(c,lines.join('\n'),h),/Workflow copied source omitted/);
+});
+test('native workflow assembly rejects an unbound module receipt pin',()=>{
+ const c=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),d=fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),h=fs.readFileSync(path.join(root,'scripts/patch-native-setup-containment.mjs'),'utf8');
+ assert.throws(()=>assertNativeWorkflowClosure(c,d,h.replace(/const workflowModuleExpected=\{[^\n]+\};/,'')),/receipt must pin/);
+});

@@ -89,6 +89,9 @@ function fetchAuthoritativeTimeReview() {
 }
 
 function createWorkflowActionEvidenceBridge(options = {}) {
+  const sourceOwner=options.sourceOwner;
+  if(sourceOwner!==undefined&&(!sourceOwner||['capture','assertCurrent','release'].some(key=>typeof sourceOwner[key]!=='function')))
+    throw new TypeError('Trusted workflow source owner is incomplete.');
   const dbPath = options.dbPath || process.env.WFM_DB;
   if (!dbPath) throw new Error('Workflow action evidence bridge requires WFM_DB.');
   const db = new DatabaseSync(dbPath, {readOnly:true});
@@ -133,7 +136,7 @@ function createWorkflowActionEvidenceBridge(options = {}) {
 
   // Reuse the authoritative SQLite context query after EVERY awaited read. An
   // initial request object is not proof that the current session still has access.
-  function fence(req,res,initial,token,snapshot) {
+  function fence(req,res,initial,token,snapshot,ticket,sourceState) {
     const current=requireDecisionRole(req,res);
     if(!current)return false;
     if(cookieSessionToken(req)!==token||Object.keys(initial).some(key=>initial[key]!==current[key])){
@@ -143,6 +146,7 @@ function createWorkflowActionEvidenceBridge(options = {}) {
     if(!state||state.version!==snapshot.version||state.state!==snapshot.state){
       writeJson(res,409,{error:'Workflow source changed during the read. Refresh source evidence.'});return false;
     }
+    if(sourceOwner)sourceOwner.assertCurrent(ticket,req,sourceState);
     return true;
   }
   function allowedTeams(state,personId) {
@@ -162,18 +166,23 @@ function createWorkflowActionEvidenceBridge(options = {}) {
     const token=cookieSessionToken(req),snapshot=tenantState.get(ctx.tenant);
     let state;
     try{state=JSON.parse(snapshot.state);}catch{return writeJson(res,503,{error:'Reporting scope is unavailable.'});}
+    const sourceRequest=Object.freeze({url:String(req.url),method:'GET',headers:Object.freeze({...req.headers}),socket:req.socket});
+    const ticket=sourceOwner?sourceOwner.capture(req,sourceRequest):undefined;
+    try {
+    if(sourceOwner)sourceOwner.assertCurrent(ticket,req,state);
     const allowedTeamIds=allowedTeams(state,ctx.person_id);
     if(!allowedTeamIds.length)return writeJson(res,403,{error:'Current reporting scope is required.'});
     if(query.teamId&&!allowedTeamIds.includes(query.teamId))return writeJson(res,403,{error:'Requested team is outside the reporting scope.'});
-    const sourceRequest=Object.freeze({url:String(req.url),method:'GET',headers:Object.freeze({...req.headers}),socket:req.socket});
     let source,sourceFailure=null;
     try {
       const provider=providers[workflow];
       source = await (typeof provider==='function'?provider(sourceRequest,Object.freeze({
         tenant:String(ctx.tenant),role:String(ctx.role),email:String(ctx.email)
-      })):Promise.reject(sourceReaderRequired()));
+      }),ticket):Promise.reject(sourceReaderRequired()));
     } catch (error) { sourceFailure=error||true; }
-    if(!fence(req,res,ctx,token,snapshot))return true;
+    if(!fence(req,res,ctx,token,snapshot,ticket,state))return true;
+    if(sourceFailure?.code==='WFM_NATIVE_WORKFLOW_OWNER_REQUIRED'&&[401,403,503].includes(Number(sourceFailure.statusCode)))
+      return writeJson(res,Number(sourceFailure.statusCode),{error:'Current workflow source authority is required.',code:sourceFailure.code});
     if(sourceFailure)return sourceFailure.code==='WFM_ACTION_EVIDENCE_SOURCE_READER_REQUIRED'
       ? writeJson(res,503,{error:'Authoritative workflow evidence is unavailable until a source reader is configured.',code:sourceFailure.code})
       : writeJson(res,502,{error:'Authoritative workflow evidence is unavailable.'});
@@ -217,7 +226,7 @@ function createWorkflowActionEvidenceBridge(options = {}) {
     try { calendar=await calendarProvider(Object.freeze({
       tenant:String(ctx.tenant),role:String(ctx.role),email:String(ctx.email),person_id:String(ctx.person_id||'')
     })); } catch {calendarFailure=true;}
-    if(!fence(req,res,ctx,token,snapshot))return true;
+    if(!fence(req,res,ctx,token,snapshot,ticket,state))return true;
     if(calendarFailure||!calendar||calendar.schemaVersion!=='tenant-calendar-1'||!calendar.timeZone||!calendar.asOf
       ||(calendar.tenant!=null&&calendar.tenant!==ctx.tenant)||!Number.isFinite(Number(calendar.maxAgeMs))||Number(calendar.maxAgeMs)<=0)
       return writeJson(res,503,{error:'Tenant calendar authority is unavailable.'});
@@ -254,6 +263,13 @@ function createWorkflowActionEvidenceBridge(options = {}) {
       availability:unavailable.length?(items.length?'partial':'unavailable'):(query.sourceId&&!items.length?'unavailable':'available'),
       items,unavailable
     });
+    } catch(error) {
+      // The native owner fence runs outside provider/calendar failure handling.
+      // Its denial must retain its status without disclosing internal context.
+      if(sourceOwner&&[401,403,503].includes(Number(error?.statusCode)))
+        return writeJson(res,Number(error.statusCode),{error:'Current workflow source authority is required.'});
+      throw error;
+    } finally {if(sourceOwner)sourceOwner.release(ticket,req);}
   }
 
   async function handleRequest(req, res) {

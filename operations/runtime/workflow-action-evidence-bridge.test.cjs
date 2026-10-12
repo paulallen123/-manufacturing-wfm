@@ -65,6 +65,20 @@ function report(overrides={}){
   };
 }
 
+test('native bridge carries an opaque original-request owner through both await fences and release',async()=>{
+ const ticket=Object.freeze({}),events=[];let original,view;
+ const sourceOwner={capture(req,sourceRequest){original=req;view=sourceRequest;assert.notEqual(req,sourceRequest);events.push('capture');return ticket;},assertCurrent(cap,req,state){assert.equal(cap,ticket);assert.equal(req,original);assert.notEqual(req,view);assert.equal(state.version,1);events.push('current');},release(cap,req){assert.equal(cap,ticket);assert.equal(req,original);events.push('release');}};
+ const f=fixture(async(req,ctx,cap)=>{assert.equal(req,view);assert.equal(cap,ticket);events.push('provider');return {status:200,body:report()};},'manager',{sourceOwner});
+ try{const result=await call(f.engine,f.manager);assert.equal(result.status,200);assert.deepEqual(events,['capture','current','provider','current','current','release']);}finally{f.close();}
+});
+for(const boundary of ['provider','calendar'])for(const status of [403,503])test('native owner '+status+' after '+boundary+' await is not flattened to source502',async()=>{
+ const ticket=Object.freeze({});let changed=false,released=0;
+ const sourceOwner={capture(){return ticket;},assertCurrent(cap){assert.equal(cap,ticket);if(changed)throw Object.assign(Error('Native workflow authority changed'),{status,statusCode:status});},release(){released++;}};
+ const provider=async()=>{if(boundary==='provider')changed=true;return {status:200,body:report()};};
+ const calendarProvider=async()=>{if(boundary==='calendar')changed=true;return {schemaVersion:'tenant-calendar-1',tenant:'alpha',timeZone:'Europe/London',asOf:'2026-09-19T15:02:00.000Z',maxAgeMs:300000};};
+ const f=fixture(provider,'manager',{sourceOwner,calendarProvider});try{const result=await call(f.engine,f.manager);assert.equal(result.status,status);assert.equal(result.body.items,undefined);assert.equal(released,1);}finally{f.close();}
+});
+
 test('read-only bridge emits only contract-valid Time Review actions from the authenticated source response',async()=>{
   const seen=[];
   const f=fixture(async(_req,ctx)=>{seen.push(ctx);return{status:200,body:report()};});
