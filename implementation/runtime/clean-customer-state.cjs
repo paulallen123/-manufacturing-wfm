@@ -60,6 +60,33 @@ function createCleanCustomerState(input, { authorize } = {}) {
     throw new Error('Externally validated owner/organisation authority required');
   }
   const org = [structuredClone(validated.organisation.ownerAnchor)];
+  return emptyState(org);
+}
+
+/**
+ * Pure setup-only shape for an externally verified customer/tenant binding.
+ * Does not create an owner, personnel identity, organisation fact or readiness.
+ * Callers must persist setup-only containment under server-owned authority and
+ * gate operational readers/mutations before this state can enter a runtime.
+ */
+function createSetupCustomerState(input, { authorize } = {}) {
+  object(input, ['tenant', 'customerId', 'authority'], 'setup input');
+  object(input.authority, ['tenant', 'customerId', 'purpose', 'reference'], 'setup authority');
+  const tenant = text(input.tenant, 'tenant', 100);
+  const customerId = text(input.customerId, 'customer identity', 300);
+  text(input.authority.reference, 'external authority reference', 300);
+  if (input.authority.tenant !== tenant || input.authority.customerId !== customerId ||
+      input.authority.purpose !== 'construct-setup-customer-state') {
+    throw new Error('Tenant and customer authority must match');
+  }
+  const validated = freeze(structuredClone(input));
+  if (typeof authorize !== 'function' || authorize(validated) !== true) {
+    throw new Error('Externally validated customer/tenant authority required');
+  }
+  return emptyState([]);
+}
+
+function emptyState(org) {
   return {
     version: 1, org, staff: [], requests: [], audit: [], shifts: {},
     availability: [], offers: [], assignments: [], gaps: [], profiles: {}, history: [],
@@ -97,4 +124,4 @@ function createCleanCustomerState(input, { authorize } = {}) {
   };
 }
 
-module.exports = { createCleanCustomerState };
+module.exports = { createCleanCustomerState, createSetupCustomerState };
