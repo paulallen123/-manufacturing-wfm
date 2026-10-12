@@ -76,6 +76,15 @@ test('outcome learning preserves predicted vs realised water',()=>{
  assert.equal(r.status,'reconciled');
  assert.equal(r.calibration.waterErrorM3,1.5);
 });
+test('whitespace-padded accepted status cannot bypass tenant and recommendation evidence checks',()=>{
+ const input={recommendation:{id:'R1',tenantId:'A',siteId:'S1',predictedFreshWaterM3:10},decision:{status:' accepted ',recommendationId:'R1',tenantId:'A',siteId:'S1'},observed:{authoritative:true,recommendationId:'R2',tenantId:'B',siteId:'S2',actualFreshWaterM3:99},operations:{authoritative:true,recommendationId:'R2',tenantId:'B',siteId:'S2',productionCompleted:true}};
+ assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'outcome_attribution_invalid'});
+ input.observed.recommendationId='R1';input.observed.tenantId='A';input.observed.siteId='S1';
+ input.operations.recommendationId='R1';input.operations.tenantId='A';input.operations.siteId='S1';
+ assert.equal(reconcileWaterOutcome(input).status,'reconciled');
+ input.decision.status=' rejected ';
+ assert.deepEqual(reconcileWaterOutcome(input),{status:'recorded',outcomeClass:'rejected_by_human',recommendationId:'R1'});
+});
 
 test('foreign or unbound outcome evidence cannot calibrate a recommendation',()=>{
  const base={recommendation:{id:'R1',tenantId:'A',siteId:'S1',predictedFreshWaterM3:11},decision:{status:'accepted',recommendationId:'R1',tenantId:'A',siteId:'S1'},observed:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',actualFreshWaterM3:12.5},operations:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',productionCompleted:true},financial:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',realisedWaterCost:20}};
@@ -264,4 +273,5 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
+
 

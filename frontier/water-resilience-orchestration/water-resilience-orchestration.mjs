@@ -149,11 +149,12 @@ export function compareWaterResiliencePlans(input={}){
 }
 
 export function reconcileWaterOutcome({recommendation,decision,observed,operations,financial}={}){
-  if(!clean(recommendation?.id)||!['accepted','rejected'].includes(clean(decision?.status)))return {status:'incomplete',reason:'decision_missing'};
+  const decisionStatus=clean(decision?.status);
+  if(!clean(recommendation?.id)||!['accepted','rejected'].includes(decisionStatus))return {status:'incomplete',reason:'decision_missing'};
   const recommendationId=clean(recommendation.id),tenantId=clean(recommendation.tenantId),siteId=clean(recommendation.siteId);
   const bound=(evidence)=>clean(evidence?.recommendationId)===recommendationId&&clean(evidence?.tenantId)===tenantId&&clean(evidence?.siteId)===siteId;
-  if(!tenantId||!siteId||!bound(decision)||(decision.status==='accepted'&&(!bound(observed)||!bound(operations)||(financial!=null&&!bound(financial)))))return {status:'incomplete',reason:'outcome_attribution_invalid'};
-  if(decision.status==='rejected')return {status:'recorded',outcomeClass:'rejected_by_human',recommendationId:recommendation.id};
+  if(!tenantId||!siteId||!bound(decision)||(decisionStatus==='accepted'&&(!bound(observed)||!bound(operations)||(financial!=null&&!bound(financial)))))return {status:'incomplete',reason:'outcome_attribution_invalid'};
+  if(decisionStatus==='rejected')return {status:'recorded',outcomeClass:'rejected_by_human',recommendationId:recommendation.id};
   if(observed?.authoritative!==true||operations?.authoritative!==true)return {status:'incomplete',reason:'operational_evidence_missing'};
   const predicted=Number(recommendation.predictedFreshWaterM3),actual=Number(observed.actualFreshWaterM3);
   if(!finite(predicted)||!finite(actual))return {status:'incomplete',reason:'water_values_invalid'};
@@ -166,4 +167,5 @@ export function reconcileWaterOutcome({recommendation,decision,observed,operatio
     authorityBoundary:'Outcome learning may calibrate future advice but cannot automatically alter water policy, quality limits, permits, recipes or workforce rules.'
   };
 }
+
 
