@@ -1,31 +1,23 @@
 'use strict';
 
-const http = require('node:http');
 const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createTenantCalendar } = require('./tenant-calendar.cjs');
 const {
   CONTRACT_VERSION,
-  produceTimeReviewActionEvidence
+  produceTimeReviewActionEvidence, produceAbsenceActionEvidence,
+  produceWeeklySignoffActionEvidence, sourceReportMatches
 } = require('./workflow-action-evidence-contract.cjs');
 
 const PREFIX = '/api/workforce/lifecycle/action-evidence';
 const TIME_REVIEW_PATH = PREFIX + '/time-review';
 const SOURCE_TIME_REVIEW_PATH = '/api/weekly-review';
-const MAX_SOURCE_BYTES = 512 * 1024;
-const SOURCE_TIMEOUT_MS = 3000;
+const ABSENCE_PATH = PREFIX + '/absence';
+const WEEKLY_SIGNOFF_PATH = PREFIX + '/weekly-signoff';
+const SOURCE_ABSENCE_PATH = '/api/bootstrap';
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
-}
-
-function compact(value, max = 240) {
-  return String(value ?? '').trim().slice(0, max);
-}
-
-function forwardedProto(req) {
-  const raw = compact(req?.headers?.['x-forwarded-proto'], 64).split(',')[0].trim().toLowerCase();
-  return raw === 'http' || raw === 'https' ? raw : '';
 }
 
 function cookieSessionToken(req) {
@@ -41,19 +33,24 @@ function requestPath(req) {
   return String(req?.url || '/').split('?')[0] || '/';
 }
 
-function requestedReviewPeriod(req) {
-  let value = '';
-  try {
-    value = new URL(String(req?.url || TIME_REVIEW_PATH), 'http://wfm.invalid').searchParams.get('period') || '';
-  } catch {
-    throw sourceError('Requested review period is invalid.');
+function selectors(req, workflow) {
+  const url = new URL(String(req?.url || TIME_REVIEW_PATH), 'http://wfm.invalid');
+  for (const key of url.searchParams.keys()) {
+    if (!['period','team','sourceId'].includes(key) || url.searchParams.getAll(key).length !== 1)
+      throw Object.assign(new Error('Invalid evidence selectors.'), {statusCode:400});
   }
-  value = compact(value, 32);
-  if (!value) return '';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw sourceError('Requested review period is invalid.');
-  return value;
+  const result={period:url.searchParams.get('period')||'',teamId:url.searchParams.get('team')||'',sourceId:url.searchParams.get('sourceId')||''};
+  if ((workflow==='weekly-signoff'&&!result.period)||(workflow==='absence'&&url.searchParams.has('period')))
+    throw Object.assign(new Error('A source review period is required only for weekly workflows.'), {statusCode:400});
+  if (result.period && (!/^\d{4}-\d{2}-\d{2}$/.test(result.period)
+    || !Number.isFinite(Date.parse(result.period+'T00:00:00Z'))
+    || new Date(result.period+'T00:00:00Z').toISOString().slice(0,10)!==result.period))
+    throw Object.assign(new Error('Requested review period is invalid.'), {statusCode:400});
+  for (const value of [result.teamId,result.sourceId]) if(value.length>160||value!==value.trim()||/[\u0000-\u001f\u007f]/.test(value))
+    throw Object.assign(new Error('Invalid evidence selectors.'), {statusCode:400});
+  return Object.freeze(result);
 }
-
+function requestedReviewPeriod(req) { return selectors(req,'time-review').period; }
 function sourceTimeReviewPath(req) {
   const period = requestedReviewPeriod(req);
   return period ? SOURCE_TIME_REVIEW_PATH + '?period=' + encodeURIComponent(period) : SOURCE_TIME_REVIEW_PATH;
@@ -69,92 +66,37 @@ function writeJson(res, status, body) {
   return true;
 }
 
-function sourceError(message) {
-  const error = new Error(message);
-  error.statusCode = 502;
-  return error;
+function uniqueSourceIds(rows) {
+  if(!Array.isArray(rows))return false;
+  const ids=rows.map(row=>row?.id??row?.teamId);
+  return ids.every(id=>typeof id==='string'&&id.length>0&&id.length<=160&&id===id.trim()&&!/[\u0000-\u001f\u007f]/.test(id))&&new Set(ids).size===ids.length;
 }
 
-function parseSourceJson(statusCode, chunks) {
-  if (Number(statusCode) !== 200) return { status: Number(statusCode) || 502, body: null };
-  try {
-    const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('object required');
-    return { status: 200, body };
-  } catch {
-    throw sourceError('Authoritative Time Review returned invalid JSON.');
-  }
-}
-
-function fetchAuthoritativeTimeReview(req, options = {}) {
-  const timeoutMs = Number(options.timeoutMs || SOURCE_TIMEOUT_MS);
-  const maxBytes = Number(options.maxBytes || MAX_SOURCE_BYTES);
-  const port = Number(options.port || req?.socket?.localPort || process.env.PORT || 3000);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    return Promise.reject(sourceError('Authoritative Time Review source port is unavailable.'));
-  }
-
-  const sourceHeaders = {
-    accept: 'application/json',
-    cookie: String(req?.headers?.cookie || ''),
-    host: compact(req?.headers?.host, 255) || 'localhost',
-    'user-agent': 'wfm-workflow-action-evidence-bridge/1'
-  };
-  const proxyProto = forwardedProto(req);
-  if (proxyProto) sourceHeaders['x-forwarded-proto'] = proxyProto;
-
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const finish = (fn, value) => {
-      if (settled) return;
-      settled = true;
-      fn(value);
-    };
-    const sourceReq = http.request({
-      host: '127.0.0.1',
-      port,
-      path: sourceTimeReviewPath(req),
-      method: 'GET',
-      headers: sourceHeaders
-    }, sourceRes => {
-      let size = 0;
-      const chunks = [];
-      sourceRes.on('data', chunk => {
-        if (settled) return;
-        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-        size += buffer.length;
-        if (size > maxBytes) {
-          sourceReq.destroy(sourceError('Authoritative Time Review response exceeded the safe read limit.'));
-          return;
-        }
-        chunks.push(buffer);
-      });
-      sourceRes.on('end', () => {
-        if (settled) return;
-        try {
-          finish(resolve, parseSourceJson(sourceRes.statusCode, chunks));
-        } catch (error) {
-          finish(reject, error);
-        }
-      });
-    });
-    sourceReq.setTimeout(timeoutMs, () => {
-      sourceReq.destroy(sourceError('Authoritative Time Review source timed out.'));
-    });
-    sourceReq.on('error', error => {
-      finish(reject, error?.statusCode ? error : sourceError('Authoritative Time Review source is unavailable.'));
-    });
-    sourceReq.end();
+function sourceReaderRequired() {
+  return Object.assign(new Error('An authoritative in-process workflow source reader is required.'), {
+    statusCode:503, code:'WFM_ACTION_EVIDENCE_SOURCE_READER_REQUIRED'
   });
+}
+
+// Retain the public helper name, but never replay a browser session over loopback.
+// The sealed actor() always updates session context, and in direct mode this
+// transport/client change can revoke the session. There is no safe read-only
+// HTTP adapter in the current source. The owner must inject a source-owned reader
+// that preserves the existing auth and workflow permission checks. Request flags,
+// forwarded identities and environment modes cannot opt back into this transport.
+function fetchAuthoritativeTimeReview() {
+  return Promise.reject(sourceReaderRequired());
 }
 
 function createWorkflowActionEvidenceBridge(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   if (!dbPath) throw new Error('Workflow action evidence bridge requires WFM_DB.');
-  const db = new DatabaseSync(dbPath);
-  const sourceProvider = typeof options.timeReviewSourceProvider === 'function'
-    ? options.timeReviewSourceProvider
-    : (req) => fetchAuthoritativeTimeReview(req, options.source || {});
+  const db = new DatabaseSync(dbPath, {readOnly:true});
+  const providers = Object.freeze({
+    'time-review': options.timeReviewSourceProvider,
+    'absence': options.absenceSourceProvider,
+    'weekly-signoff': options.weeklySignoffSourceProvider
+  });
   const tenantCalendar = options.tenantCalendar || createTenantCalendar({
     env: options.env || process.env,
     now: typeof options.now === 'function' ? options.now : Date.now
@@ -166,8 +108,8 @@ function createWorkflowActionEvidenceBridge(options = {}) {
         const person=(Array.isArray(state?.staff)?state.staff:[]).find(item=>item?.id===ctx.person_id);
         return tenantCalendar.snapshot({tenant:ctx.tenant,site:person?.site||null});
       };
-  const tenantState = db.prepare('SELECT state FROM tenants WHERE id=?');
-  const auth = db.prepare(`SELECT u.email,u.tenant,u.role,u.person_id
+  const tenantState = db.prepare('SELECT version,state FROM tenants WHERE id=?');
+  const auth = db.prepare(`SELECT u.email,u.tenant,u.role,u.person_id,u.permissions,u.costs
     FROM sessions s JOIN users u ON u.email=s.email
     WHERE s.token_hash=? AND s.expires>?`);
 
@@ -189,65 +131,128 @@ function createWorkflowActionEvidenceBridge(options = {}) {
     return ctx;
   }
 
-  async function timeReview(req, res) {
+  // Reuse the authoritative SQLite context query after EVERY awaited read. An
+  // initial request object is not proof that the current session still has access.
+  function fence(req,res,initial,token,snapshot) {
+    const current=requireDecisionRole(req,res);
+    if(!current)return false;
+    if(cookieSessionToken(req)!==token||Object.keys(initial).some(key=>initial[key]!==current[key])){
+      writeJson(res,403,{error:'Workflow evidence access changed. Refresh the signed-in context.'});return false;
+    }
+    const state=tenantState.get(initial.tenant);
+    if(!state||state.version!==snapshot.version||state.state!==snapshot.state){
+      writeJson(res,409,{error:'Workflow source changed during the read. Refresh source evidence.'});return false;
+    }
+    return true;
+  }
+  function allowedTeams(state,personId) {
+    // Same reporting-branch relation as sealed engine.descendants / P.reviewer.
+    if(!state||!Array.isArray(state.org)||!state.org.some(row=>row?.id===personId))return [];
+    const ids=new Set([personId]);
+    for(let changed=true;changed;){changed=false;for(const row of state.org){
+      if(row&&ids.has(row.parent)&&typeof row.id==='string'&&!ids.has(row.id)){ids.add(row.id);changed=true;}
+    }}
+    return [...ids];
+  }
+  async function evidence(req, res, workflow) {
     const ctx = requireDecisionRole(req, res);
     if (!ctx) return true;
-
-    let source;
+    let query;
+    try{query=selectors(req,workflow);}catch{return writeJson(res,400,{error:'Requested evidence selectors are invalid.'});}
+    const token=cookieSessionToken(req),snapshot=tenantState.get(ctx.tenant);
+    let state;
+    try{state=JSON.parse(snapshot.state);}catch{return writeJson(res,503,{error:'Reporting scope is unavailable.'});}
+    const allowedTeamIds=allowedTeams(state,ctx.person_id);
+    if(!allowedTeamIds.length)return writeJson(res,403,{error:'Current reporting scope is required.'});
+    if(query.teamId&&!allowedTeamIds.includes(query.teamId))return writeJson(res,403,{error:'Requested team is outside the reporting scope.'});
+    const sourceRequest=Object.freeze({url:String(req.url),method:'GET',headers:Object.freeze({...req.headers}),socket:req.socket});
+    let source,sourceFailure=null;
     try {
-      source = await sourceProvider(req, Object.freeze({
-        tenant: String(ctx.tenant),
-        role: String(ctx.role),
-        email: String(ctx.email)
-      }));
-    } catch (error) {
-      return writeJson(res, Number(error?.statusCode || 502), {
-        error: 'Authoritative Time Review evidence is unavailable.'
-      });
-    }
-
+      const provider=providers[workflow];
+      source = await (typeof provider==='function'?provider(sourceRequest,Object.freeze({
+        tenant:String(ctx.tenant),role:String(ctx.role),email:String(ctx.email)
+      })):Promise.reject(sourceReaderRequired()));
+    } catch (error) { sourceFailure=error||true; }
+    if(!fence(req,res,ctx,token,snapshot))return true;
+    if(sourceFailure)return sourceFailure.code==='WFM_ACTION_EVIDENCE_SOURCE_READER_REQUIRED'
+      ? writeJson(res,503,{error:'Authoritative workflow evidence is unavailable until a source reader is configured.',code:sourceFailure.code})
+      : writeJson(res,502,{error:'Authoritative workflow evidence is unavailable.'});
     if (source && [401,403].includes(Number(source.status))) {
       return writeJson(res, Number(source.status), {error: Number(source.status) === 401
-        ? 'Sign in is required.' : 'Workflow action evidence requires authorised Time Review access.'});
+        ? 'Sign in is required.' : 'Workflow action evidence requires authorised source access.'});
     }
-    if (!source || Number(source.status) !== 200 || !source.body || typeof source.body !== 'object' || Array.isArray(source.body)) {
-      return writeJson(res, 502, { error: 'Authoritative Time Review evidence is unavailable.' });
-    }
+    const report=source?.body;
+    if (!source || Number(source.status)!==200 || !sourceReportMatches(report,workflow,{tenant:ctx.tenant,period:query.period||null}))
+      return writeJson(res,502,{error:'Authoritative workflow evidence scope did not match or is unavailable.'});
+    const period=workflow==='absence'?null:report.period;
+    if(workflow!=='absence'&&(!/^\d{4}-\d{2}-\d{2}$/.test(String(period||''))||!Array.isArray(report.teams)))
+      return writeJson(res,502,{error:'Authoritative review period or teams are unavailable.'});
+    if(report.version!=null&&report.version!==snapshot.version)
+      return writeJson(res,502,{error:'Authoritative source revision did not match.'});
+    if(workflow==='absence'){
+      const actor=report.actor,rows=report.state;
+      if(!actor||actor.tenant!==ctx.tenant||actor.email!==ctx.email||actor.role!==ctx.role||actor.personId!==ctx.person_id
+        ||!sourceReportMatches(rows,'absence',{tenant:ctx.tenant})||rows.version!==snapshot.version||!uniqueSourceIds(rows.staff)||!uniqueSourceIds(rows.requests)||!Array.isArray(rows.audit))
+        return writeJson(res,502,{error:'Authoritative absence scope is unavailable.'});
+      // Bootstrap is already sanitised by the source; also bind every request to
+      // the current database staff/manager relationship before emitting even diagnostics.
+      if(rows.staff.some(person=>!state.staff?.some(current=>current.id===person?.id&&current.manager===person.manager))
+        ||rows.requests.some(row=>!sourceReportMatches(row,'absence',{tenant:ctx.tenant})
+          ||(row.sourceId!=null&&row.sourceId!==row.id)
+          ||!rows.staff.some(person=>person.id===row?.employee&&allowedTeamIds.includes(person.manager)
+            &&(row.teamId==null||row.teamId===person.manager)&&(row.team==null||row.team===person.manager))))
+        return writeJson(res,502,{error:'Authoritative absence scope did not match.'});
+    }else if(!uniqueSourceIds(report.teams)||report.teams.some(team=>!team||
+      (workflow==='weekly-signoff'&&(team.period!==period||typeof team.id!=='string'))
+      ||(team.sourceId!=null&&team.sourceId!==(team.id??team.teamId))
+      ||(team.id!=null&&team.teamId!=null&&team.id!==team.teamId)||!allowedTeamIds.includes(team.id??team.teamId)
+      ||(team.period!=null&&team.period!==period)||!sourceReportMatches(team,workflow,{tenant:ctx.tenant})
+      ||(team.issues!=null&&!uniqueSourceIds(team.issues))
+      ||(Array.isArray(team.issues)&&team.issues.some(issue=>!sourceReportMatches(issue,workflow,{tenant:ctx.tenant})
+        ||(issue.sourceId!=null&&issue.id!=null&&issue.sourceId!==issue.id)
+        ||(issue.team!=null&&issue.team!==(team.id??team.teamId))||(issue.period!=null&&issue.period!==period)))))
+      return writeJson(res,502,{error:'Authoritative team or workflow scope did not match.'});
 
-    const report = source.body;
-    const sourceTenant = compact(report.tenant ?? report.tenantId, 120);
-    if (sourceTenant && sourceTenant !== String(ctx.tenant)) {
-      return writeJson(res, 502, { error: 'Authoritative Time Review scope did not match the signed-in customer.' });
+    let calendar,calendarFailure=false;
+    try { calendar=await calendarProvider(Object.freeze({
+      tenant:String(ctx.tenant),role:String(ctx.role),email:String(ctx.email),person_id:String(ctx.person_id||'')
+    })); } catch {calendarFailure=true;}
+    if(!fence(req,res,ctx,token,snapshot))return true;
+    if(calendarFailure||!calendar||calendar.schemaVersion!=='tenant-calendar-1'||!calendar.timeZone||!calendar.asOf
+      ||(calendar.tenant!=null&&calendar.tenant!==ctx.tenant)||!Number.isFinite(Number(calendar.maxAgeMs))||Number(calendar.maxAgeMs)<=0)
+      return writeJson(res,503,{error:'Tenant calendar authority is unavailable.'});
+    const scope={tenant:String(ctx.tenant),personId:String(ctx.person_id),role:String(ctx.role),period,
+      allowedTeamIds:query.teamId?[query.teamId]:allowedTeamIds,
+      freshnessEnvelope:{timeZone:calendar.timeZone,asOf:calendar.asOf,maxAgeMs:Number(calendar.maxAgeMs)}};
+    let produced;
+    if(workflow==='absence')produced=produceAbsenceActionEvidence(report,scope);
+    else if(workflow==='weekly-signoff')produced=produceWeeklySignoffActionEvidence(report,scope);
+    else {
+      const items=[],unavailable=[];
+      for(const team of report.teams){
+        if(!scope.allowedTeamIds.includes(team.id??team.teamId))continue;
+        for(const item of produceTimeReviewActionEvidence({...report,teams:[team]},scope))items.push(Object.freeze({...item,
+          binding:Object.freeze({workflow,tenant:scope.tenant,teamId:team.id??team.teamId,period,sourceId:item.sourceId})}));
+        for(const issue of (Array.isArray(team.issues)?team.issues:[])){
+          if(issue.status!=='open'||items.some(item=>item.binding.teamId===(team.id??team.teamId)&&item.sourceId===(issue.sourceId??issue.id)))continue;
+          unavailable.push({binding:{workflow,tenant:scope.tenant,teamId:team.id??team.teamId,period,sourceId:issue.sourceId??issue.id},
+            reasonCode:'SOURCE_EVIDENCE_UNAVAILABLE',freshness:{state:'unknown',policyRef:null,validUntil:null},
+            missingFields:issue.confirmation&&issue.confirmation.state!=='action_required'?['sourceDecisionProtocol','confirmationSla','sourceAudit']:['observedAtOrStructuredReasonOrAuthority']});
+        }
+      }
+      produced={items,unavailable};
     }
-
-    const allowedTeamIds = [...new Set((Array.isArray(report.teams) ? report.teams : [])
-      .map(team => compact(team?.id ?? team?.teamId, 160))
-      .filter(Boolean))];
-    let calendar;
-    try {
-      calendar = calendarProvider(Object.freeze({
-        tenant:String(ctx.tenant),role:String(ctx.role),email:String(ctx.email),person_id:String(ctx.person_id||'')
-      }));
-    } catch {
-      return writeJson(res, 503, { error: 'Tenant calendar authority is unavailable.' });
-    }
-    if (!calendar || calendar.schemaVersion!=='tenant-calendar-1' || !calendar.timeZone || !calendar.asOf ||
-        !Number.isFinite(Number(calendar.maxAgeMs)) || Number(calendar.maxAgeMs)<=0) {
-      return writeJson(res, 503, { error: 'Tenant calendar authority is unavailable.' });
-    }
-    const items = produceTimeReviewActionEvidence(report, {
-      allowedTeamIds,
-      freshnessEnvelope: {timeZone:calendar.timeZone,asOf:calendar.asOf,maxAgeMs:Number(calendar.maxAgeMs)}
-    });
-
-    return writeJson(res, 200, {
-      contractVersion: CONTRACT_VERSION,
-      workflow: 'time-review',
-      source: SOURCE_TIME_REVIEW_PATH,
-      timeZone: calendar.timeZone,
-      asOf: calendar.asOf,
-      maxAgeMs: Number(calendar.maxAgeMs),
-      items
+    const items=produced.items.filter(item=>!query.sourceId||item.sourceId===query.sourceId);
+    const unavailable=produced.unavailable.filter(item=>!query.sourceId||item.binding.sourceId===query.sourceId);
+    return writeJson(res,200,{
+      contractVersion:CONTRACT_VERSION,workflow,source:workflow==='absence'?SOURCE_ABSENCE_PATH:SOURCE_TIME_REVIEW_PATH,
+      scope:{tenant:scope.tenant,personId:scope.personId,period,teamId:query.teamId||null,sourceId:query.sourceId||null},
+      // Consumers must retain their own request epoch as well as comparing scope;
+      // no response can declare itself the latest response in a browser.
+      contextKey:sha256(JSON.stringify([sha256(token),ctx,snapshot.version,snapshot.state])),
+      timeZone:calendar.timeZone,asOf:calendar.asOf,maxAgeMs:Number(calendar.maxAgeMs),
+      availability:unavailable.length?(items.length?'partial':'unavailable'):(query.sourceId&&!items.length?'unavailable':'available'),
+      items,unavailable
     });
   }
 
@@ -257,7 +262,9 @@ function createWorkflowActionEvidenceBridge(options = {}) {
     if (String(req.method || 'GET').toUpperCase() !== 'GET') {
       return writeJson(res, 405, { error: 'Workflow action evidence is read-only.' });
     }
-    if (path === TIME_REVIEW_PATH) return await timeReview(req, res);
+    if (path === TIME_REVIEW_PATH) return await evidence(req, res, 'time-review');
+    if (path === ABSENCE_PATH) return await evidence(req, res, 'absence');
+    if (path === WEEKLY_SIGNOFF_PATH) return await evidence(req, res, 'weekly-signoff');
     return writeJson(res, 404, { error: 'Workflow action evidence endpoint not found.' });
   }
 
@@ -269,7 +276,7 @@ function createWorkflowActionEvidenceBridge(options = {}) {
 
 module.exports = Object.freeze({
   PREFIX,
-  TIME_REVIEW_PATH,
+  TIME_REVIEW_PATH, ABSENCE_PATH, WEEKLY_SIGNOFF_PATH, SOURCE_ABSENCE_PATH,
   SOURCE_TIME_REVIEW_PATH,
   cookieSessionToken,
   requestedReviewPeriod,

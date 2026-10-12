@@ -13,16 +13,27 @@ function requestPath(req) {
 function createWorkforceLifecycleGuard(options = {}) {
   const dbPath = options.dbPath || process.env.WFM_DB;
   const lifecycle = core.createWorkforceLifecycleGuard(options);
-  const actionEvidence = createWorkflowActionEvidenceBridge({
+  // Only the trusted bootstrap composition may hand this prefix to the
+  // server-owned bridge. Request fields never participate in route ownership.
+  const actionEvidenceHandledByServer = options.actionEvidenceHandledByServer === true;
+  const actionEvidence = actionEvidenceHandledByServer ? null : createWorkflowActionEvidenceBridge({
     dbPath,
     ...(typeof options.timeReviewSourceProvider === 'function'
       ? { timeReviewSourceProvider: options.timeReviewSourceProvider }
+      : {}),
+    ...(typeof options.absenceSourceProvider === 'function'
+      ? { absenceSourceProvider: options.absenceSourceProvider }
+      : {}),
+    ...(typeof options.weeklySignoffSourceProvider === 'function'
+      ? { weeklySignoffSourceProvider: options.weeklySignoffSourceProvider }
       : {})
   });
 
   return Object.freeze({
     async handleRequest(req, res) {
-      if (requestPath(req).startsWith(ACTION_EVIDENCE_PREFIX)) {
+      const path = requestPath(req);
+      if (path === ACTION_EVIDENCE_PREFIX || path.startsWith(ACTION_EVIDENCE_PREFIX + '/')) {
+        if (actionEvidenceHandledByServer) return false;
         return await actionEvidence.handleRequest(req, res);
       }
       return await lifecycle.handleRequest(req, res);
@@ -40,7 +51,7 @@ function createWorkforceLifecycleGuard(options = {}) {
       return lifecycle.getTrustedEvent(input);
     },
     close() {
-      try { actionEvidence.close(); } catch {}
+      try { actionEvidence?.close(); } catch {}
       try { lifecycle.close(); } catch {}
     }
   });

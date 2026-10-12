@@ -415,7 +415,7 @@ http.createServer = function guardedCreateServer(listener) {
 
   if (!lifecycleGuard && !lifecycleGuardInitError && process.env.WFM_DB) {
     try {
-      lifecycleGuard = createWorkforceLifecycleGuard({ dbPath: process.env.WFM_DB });
+      lifecycleGuard = createWorkforceLifecycleGuard({ dbPath: process.env.WFM_DB, actionEvidenceHandledByServer: true });
     } catch (error) {
       lifecycleGuardInitError = error;
     }

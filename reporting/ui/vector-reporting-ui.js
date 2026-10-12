@@ -8,6 +8,14 @@
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
 const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],calculations:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],loading:false,scheduleOpen:false};
+let authorityEpoch=0,returnFocus=null;
+function clearReporting(){
+  state.catalog=null;state.selectedTemplate=null;state.selectedSource=null;state.selectedReportId=null;
+  state.baseRows=[];state.rows=[];state.raw=null;state.columns=[];state.calculations=[];state.filters=[];state.sorts=[];
+  state.saved=[];state.dashboards=[];state.schedules=[];state.deliveries=[];state.loading=false;state.scheduleOpen=false;
+  for(const selector of ['[data-report-templates]','[data-report-saved]','[data-report-dashboard]','[data-report-schedules]','[data-report-deliveries]','[data-report-main]'])modal().querySelector(selector).innerHTML='';
+}
+function announce(message){const host=modal().querySelector('[data-report-status]');if(host)host.textContent=message;}
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').replace(/\s+/g,' ').trim();
@@ -56,6 +64,7 @@ function modal(){
         </div>
         <button type="button" class="vector-reporting-close" data-report-close aria-label="Close reporting">×</button>
       </header>
+      <div class="vector-reporting-status" data-report-status role="status" aria-live="polite" aria-atomic="true"></div>
       <div class="vector-reporting-body">
         <aside class="vector-reporting-sidebar">
           <label class="vector-reporting-search">
@@ -83,38 +92,57 @@ function modal(){
   m.addEventListener('change',handleChange);
   return m;
 }
-function close(){const m=modal();m.hidden=true;document.body.classList.remove('vector-reporting-open');}
+function close(){authorityEpoch++;clearReporting();const m=modal();m.hidden=true;document.body.classList.remove('vector-reporting-open');returnFocus?.focus();}
 async function open(){
+  if(modal().hidden)returnFocus=document.activeElement;
   const m=modal();m.hidden=false;document.body.classList.add('vector-reporting-open');
-  if(!state.catalog)await loadCatalog();
-  else{renderTemplates('');renderSaved();renderDashboard();renderDeliveries();renderSchedules();}
-  setTimeout(()=>m.querySelector('[data-report-search]')?.focus(),0);
+  await loadCatalog();
+  if(!m.hidden)setTimeout(()=>m.querySelector('[data-report-search]')?.focus(),0);
 }
 async function json(url,options){
+  const epoch=authorityEpoch;
+  try{
   const r=await fetch(url,{credentials:'same-origin',cache:'no-store',headers:{accept:'application/json','content-type':'application/json'},...options});
   let body=null;try{body=await r.json();}catch{}
-  if(!r.ok)throw new Error(body?.error||('Request failed: '+r.status));
+  if(epoch!==authorityEpoch)throw Object.assign(new Error('Reporting controls changed.'),{stale:true});
+  if(!r.ok)throw Object.assign(new Error(body?.error||('Request failed: '+r.status)),{status:r.status});
   return body;
+  }catch(error){
+    if(epoch!==authorityEpoch)throw Object.assign(new Error('Reporting controls changed.'),{stale:true});
+    throw error;
+  }
+}
+async function operationError(error,fallback){
+  if(error.stale)return;
+  if([401,403,404].includes(error.status)){await loadCatalog();return;}
+  toast(error.message||fallback);
 }
 async function loadCatalog(){
+  const epoch=++authorityEpoch;clearReporting();announce('Refreshing reporting controls.');
   const main=modal().querySelector('[data-report-main]');
   main.innerHTML='<div class="vector-reporting-empty"><strong>Loading reporting controls…</strong></div>';
   try{
-    state.catalog=await json('/api/reporting/catalog');
+    const catalog=await json('/api/reporting/catalog');
     const [saved,dashboards,schedules,deliveries]=await Promise.all([
       json('/api/reporting/reports').catch(()=>({reports:[]})),
       json('/api/reporting/dashboards').catch(()=>({dashboards:[]})),
       json('/api/reporting/schedules').catch(()=>({schedules:[]})),
       json('/api/reporting/deliveries').catch(()=>({deliveries:[]}))
     ]);
+    if(epoch!==authorityEpoch)return;
+    state.catalog=catalog;
     state.saved=Array.isArray(saved?.reports)?saved.reports:[];
     state.dashboards=Array.isArray(dashboards?.dashboards)?dashboards.dashboards:[];
     state.schedules=Array.isArray(schedules?.schedules)?schedules.schedules:[];
     state.deliveries=Array.isArray(deliveries?.deliveries)?deliveries.deliveries:[];
     renderTemplates('');renderSaved();renderDashboard();renderDeliveries();renderSchedules();
     main.innerHTML='<div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div>';
+    announce('Reporting controls updated. Only currently available reports are shown.');
   }catch(e){
-    main.innerHTML='<div class="vector-reporting-error"><strong>Reporting is unavailable</strong><span>'+esc(e.message)+'</span></div>';
+    if(epoch!==authorityEpoch)return;
+    clearReporting();
+    main.innerHTML='<div class="vector-reporting-empty"><strong>No reports available</strong><span>Reporting controls could not be refreshed. Reopen reporting to try again.</span></div>';
+    announce('No reports available.');
   }
 }
 function renderTemplates(query){
@@ -333,7 +361,7 @@ async function chooseTemplate(id){
   renderReport();
 }
 async function chooseSaved(id){
-  const body=await json('/api/reporting/reports/'+encodeURIComponent(id));
+  let body;try{body=await json('/api/reporting/reports/'+encodeURIComponent(id));}catch(e){if(!e.stale)await loadCatalog();return;}
   const d=body?.report?.definition;if(!d)return;
   state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.calculations=[...(d.calculations||[])];state.filters=[...(d.filters||[])];state.sorts=[...(d.sorts||[])];state.visualisation=d.visualisation||'table';state.scheduleOpen=false;
   renderReport();
@@ -379,6 +407,8 @@ async function run(){
     state.raw=body;state.baseRows=rowsFor(state.selectedSource.id,body);state.rows=applyControls(state.baseRows);
     if(!state.columns.length)state.columns=availableColumns(state.rows,[]);
   }catch(e){
+    if(e.stale)return;
+    if([401,403,404].includes(e.status)){await loadCatalog();return;}
     state.raw={error:e.message};state.rows=[];
     const main=modal().querySelector('[data-report-main]');
     main.innerHTML='<div class="vector-reporting-error"><strong>Source could not be read</strong><span>'+esc(e.message)+'</span><button type="button" data-report-run>Try again</button></div>';
@@ -403,7 +433,7 @@ async function save(){
       includeEvidence:true
     }})});
     if(body?.report){state.selectedReportId=body.report.id;state.saved.unshift(body.report);renderSaved();renderDashboard();renderDeliveries();renderReport();toast('Report saved as an immutable, audited definition.');}
-  }catch(e){toast(e.message||'Could not save report.');}
+  }catch(e){await operationError(e,'Could not save report.');}
 }
 async function ensureSaved(){
   if(state.selectedReportId)return state.selectedReportId;
@@ -416,7 +446,7 @@ async function pin(){
   try{
     const body=await json(url,{method:'POST',body:JSON.stringify({reportId:id})});
     if(body?.dashboard){state.dashboards.unshift(body.dashboard);renderDashboard();renderReport();toast(removing?'Removed from My dashboard.':'Pinned to My dashboard.');}
-  }catch(e){toast(e.message||'Could not update dashboard.');}
+  }catch(e){await operationError(e,'Could not update dashboard.');}
 }
 function schedulePanelMarkup(){
   const now=new Date(),time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
@@ -438,7 +468,7 @@ async function createSchedule(){
     const body=await json('/api/reporting/schedules',{method:'POST',body:JSON.stringify(payload)});
     if(body?.schedule)state.schedules.unshift(body.schedule);
     state.scheduleOpen=false;renderSchedules();renderReport();toast(body?.schedule?'Schedule created. VECTOR will deliver it in-product at the selected cadence.':'Schedule created.');
-  }catch(e){toast(e.message||'Could not schedule report.');}
+  }catch(e){await operationError(e,'Could not schedule report.');}
 }
 function csv(){
   if(!state.rows.length)return;
@@ -460,7 +490,7 @@ async function setScheduleState(id,enabled){
     const body=await json('/api/reporting/schedules/'+encodeURIComponent(id)+'/state',{method:'POST',body:JSON.stringify({enabled})});
     const i=state.schedules.findIndex(s=>s.id===id);if(i>=0&&body?.schedule)state.schedules[i]=body.schedule;
     renderSchedules();toast(enabled?'Schedule resumed.':'Schedule paused.');
-  }catch(e){toast(e.message||'Could not change schedule.');}
+  }catch(e){await operationError(e,'Could not change schedule.');}
 }
 function toast(message){try{if(typeof window.toast==='function')return window.toast(message);}catch{}alert(message);}
 function handleChange(e){
@@ -500,7 +530,22 @@ async function handleClick(e){
 const observer=new MutationObserver(()=>installLaunch());
 observer.observe(document.documentElement,{subtree:true,childList:true});
 window.addEventListener('hashchange',()=>setTimeout(installLaunch,0));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal().hidden)close();});
+document.addEventListener('keydown',e=>{
+  const m=modal();if(m.hidden)return;
+  if(e.key==='Escape'){close();return;}
+  if(e.key==='Tab'){
+    const focusable=[...m.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),summary,[tabindex="0"]')].filter(node=>{
+      if(!node.getClientRects().length)return false;
+      for(let parent=node.parentElement;parent&&parent!==m;parent=parent.parentElement){
+        if(parent.tagName==='DETAILS'&&!parent.open&&node!==parent.querySelector('summary'))return false;
+      }
+      return true;
+    });
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(first&&((e.shiftKey&&document.activeElement===first)||(!e.shiftKey&&document.activeElement===last))){e.preventDefault();(e.shiftKey?last:first).focus();}
+  }
+});
+window.addEventListener('focus',()=>{if(!modal().hidden)return loadCatalog();});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installLaunch,{once:true});else installLaunch();
 window.VectorReporting=Object.freeze({open,marker:MARKER});
 })();

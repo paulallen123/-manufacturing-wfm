@@ -1,0 +1,100 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {AdaptiveIntelligenceEngine} from './engine.mjs';
+
+const commonGuards=['safetyPass','tenantIsolationPass','rollbackReady'];
+const policyGuards=['shadowPass','canaryPass','independentPolicyAuthority'];
+const nonApprovals=[
+  ['string false','false'],['string true','true'],['number',1],
+  ['array',[]],['object',{}],['boxed true',new Boolean(true)],
+  ['boxed false',new Boolean(false)],['false',false],['zero',0],['empty string','']
+];
+const candidate=(overrides={})=>({
+  id:'typed-guard-candidate',level:1,
+  baselineScore:0.70,candidateScore:0.90,holdoutScore:0.85,
+  safetyPass:true,tenantIsolationPass:true,rollbackReady:true,
+  shadowPass:true,canaryPass:true,independentPolicyAuthority:true,
+  ...overrides
+});
+const evaluate=(input)=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  const result=engine.evaluateCandidate(input);
+  assert.equal(result.directProductionAuthorityGranted,false);
+  assert.deepEqual(engine.snapshot().decisions,[result]);
+  return result;
+};
+const expectDecision=(input,decision,reason)=>{
+  const result=evaluate(input);
+  assert.equal(result.decision,decision);
+  assert.equal(result.reason,reason);
+};
+
+test('string false in all common guards rejects an improving level-1 candidate',()=>{
+  expectDecision(candidate({safetyPass:'false',tenantIsolationPass:'false',rollbackReady:'false'}),
+    'reject','safety-isolation-or-rollback-failed');
+});
+
+for(const level of [0,1,2,3,4]){
+  for(const field of commonGuards){
+    for(const [label,value] of nonApprovals){
+      test(`level ${level}: ${field}=${label} rejects despite other guards passing`,()=>{
+        expectDecision(candidate({level,[field]:value}),
+          'reject','safety-isolation-or-rollback-failed');
+      });
+    }
+  }
+  test(`literal true guards preserve the level-${level} advisory decision`,()=>{
+    const decision=level<3?'promote':'route-to-release-gates';
+    const reason=level<2?'safe-non-mutating-improvement':level===2?
+      'bounded-reversible-policy-approved':'high-impact-change-requires-independent-release-authority';
+    expectDecision(candidate({level}),decision,reason);
+  });
+  test(`level ${level}: learning memory cannot grant authority`,()=>{
+    expectDecision(candidate({level,memoryGrantsAuthority:true}),
+      'reject','memory-authority-forbidden');
+  });
+}
+
+for(const field of commonGuards){
+  for(const [label,value] of [['absent',undefined],['undefined',undefined],['null',null]]){
+    test(`${field} ${label} retains the missing-input error without recording a decision`,()=>{
+      const input=candidate({[field]:value});
+      if(label==='absent') delete input[field];
+      const engine=new AdaptiveIntelligenceEngine();
+      assert.throws(()=>engine.evaluateCandidate(input),{message:'CANDIDATE_MISSING_'+field});
+      assert.deepEqual(engine.snapshot().candidates,[]);
+      assert.deepEqual(engine.snapshot().decisions,[]);
+    });
+  }
+}
+
+for(const field of policyGuards){
+  for(const [label,value] of [...nonApprovals,['undefined',undefined],['null',null]]){
+    test(`level 2: ${field}=${label} retains strict policy rejection`,()=>{
+      expectDecision(candidate({level:2,[field]:value}),
+        'reject','shadow-canary-or-authority-missing');
+    });
+  }
+  test(`level 2: absent ${field} retains strict policy rejection`,()=>{
+    const input=candidate({level:2});
+    delete input[field];
+    expectDecision(input,'reject','shadow-canary-or-authority-missing');
+  });
+}
+
+for(const field of ['candidateScore','holdoutScore']){
+  for(const score of [0.70,0.69]){
+    test(`${field}=${score} cannot pass the improvement gate`,()=>{
+      expectDecision(candidate({[field]:score}),'reject','no-holdout-improvement');
+    });
+  }
+}
+
+test('explicit false memory-authority flag preserves a valid advisory promotion',()=>{
+  expectDecision(candidate({memoryGrantsAuthority:false}),'promote','safe-non-mutating-improvement');
+});
+
+test('memory-authority rejection retains precedence over failed safety guards',()=>{
+  expectDecision(candidate({memoryGrantsAuthority:true,safetyPass:false}),
+    'reject','memory-authority-forbidden');
+});

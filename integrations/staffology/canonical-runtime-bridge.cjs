@@ -124,14 +124,83 @@ function assertPeopleApplicationRecord(record){
  return record;
 }
 
-function createRuntime({loadState,stagePeople=null,assertStagePeople=null,productionBoundaries=null}={}){
+const CONFIGURATION_BINDING_FIELDS=['tenant','runId','configurationDigest','scopeChangeEventId'];
+function configurationBinding(value){
+ if(!value||typeof value!=='object'||Array.isArray(value)||
+  ['tenant','runId','configurationDigest'].some(key=>typeof value[key]!=='string'||!value[key]||value[key]!==value[key].trim()||/[\u0000-\u001f\u007f]/.test(value[key]))||
+  !Number.isSafeInteger(value.scopeChangeEventId)||value.scopeChangeEventId<0)
+  fail('Current configured-site authority is unavailable.','STAFFOLOGY_CONFIGURED_SITE_AUTHORITY_REQUIRED',503);
+ return Object.freeze(Object.fromEntries(CONFIGURATION_BINDING_FIELDS.map(key=>[key,value[key]])));
+}
+function sameConfigurationBinding(expected,actual){
+ return expected&&typeof expected==='object'&&!Array.isArray(expected)&&CONFIGURATION_BINDING_FIELDS.every(key=>expected[key]===actual[key]);
+}
+// Copy data descriptors before callbacks; validation and the envelope share the
+// same frozen values without evaluating receipt or mapping accessors.
+function employeeDataSnapshot(value,ancestors=new Set(),depth=0){
+ if(value===null||['string','boolean','undefined'].includes(typeof value)||(typeof value==='number'&&Number.isFinite(value)))return value;
+ const array=Array.isArray(value);
+ if(!value||typeof value!=='object'||depth>64||ancestors.has(value)||Object.getPrototypeOf(value)!==(array?Array.prototype:Object.prototype))
+  fail('Employee mapping receipt must contain only plain data.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);
+ const descriptors=Object.getOwnPropertyDescriptors(value),keys=Reflect.ownKeys(descriptors).filter(key=>!array||key!=='length'),snapshot=array?[]:{};
+ if(array&&keys.length!==descriptors.length.value)
+  fail('Employee mapping arrays must be dense plain data.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);
+ ancestors.add(value);
+ for(const key of keys){
+  const descriptor=descriptors[key];
+  if(typeof key!=='string'||!descriptor.enumerable||!Object.hasOwn(descriptor,'value')||(array&&(!/^(0|[1-9][0-9]*)$/.test(key)||Number(key)>=descriptors.length.value)))
+   fail('Employee mapping receipt accessors or non-data fields are not allowed.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);
+  Object.defineProperty(snapshot,key,{value:employeeDataSnapshot(descriptor.value,ancestors,depth+1),enumerable:true,writable:true,configurable:true});
+ }
+ ancestors.delete(value);
+ return Object.freeze(snapshot);
+}
+
+function createRuntime(options={}){
+ // Inspect declarations before evaluating any constructor accessors. Inherited
+ // or accessor callbacks must not erase opt-in or silently select the legacy lane.
+ const callbackDescriptors=['configuredSitesForTenant','configurationContextForTenant'].map(key=>{
+  const descriptor=Object.getOwnPropertyDescriptor(options,key);
+  if((!descriptor&&key in options)||(descriptor&&!Object.hasOwn(descriptor,'value')))
+   fail('Configured-site callbacks must be own data properties.','STAFFOLOGY_CONFIGURED_SITE_AUTHORITY_REQUIRED',503);
+  return descriptor;
+ });
+ const [configuredSitesForTenant,configurationContextForTenant]=callbackDescriptors.map(descriptor=>descriptor?.value);
+ const {loadState,stagePeople=null,assertStagePeople=null,productionBoundaries=null}=options;
  if(typeof loadState!=='function')fail('Canonical payroll state loader is required.','STAFFOLOGY_CANONICAL_CONFIGURATION_INVALID',503);
+ // Opt-in server assembly only. A partially wired lane must never fall back to staff.
+ const configuredSiteLane=callbackDescriptors.some(Boolean);
+ function currentConfigurationBinding(tenant){
+  const context=configurationContextForTenant({tenant}),binding=configurationBinding(context);
+  if(context.applied!==true||binding.tenant!==tenant)
+   fail('Current tenant configuration is not applied.','STAFFOLOGY_CONFIGURED_SITE_AUTHORITY_REQUIRED',503);
+  return binding;
+ }
+ function configuredSiteSnapshot(tenant){
+  if(typeof configuredSitesForTenant!=='function'||typeof configurationContextForTenant!=='function')
+   fail('Both configured-site authority callbacks are required.','STAFFOLOGY_CONFIGURED_SITE_AUTHORITY_REQUIRED',503);
+  const binding=currentConfigurationBinding(tenant);
+  const snapshot=configuredSitesForTenant({tenant}),siteBinding=configurationBinding(snapshot);
+  if(!sameConfigurationBinding(siteBinding,binding))
+   fail('Configured sites differ from the current tenant configuration.','STAFFOLOGY_CONFIGURED_SITE_BINDING_MISMATCH');
+  if(!Array.isArray(snapshot.siteLabels)||!snapshot.siteLabels.length)
+   fail('Exact configured site labels are unavailable.','STAFFOLOGY_CONFIGURED_SITE_AUTHORITY_REQUIRED',503);
+  const sites=[...snapshot.siteLabels];
+  if(sites.some(label=>typeof label!=='string'||!label||label!==label.trim()||/[\u0000-\u001f\u007f]/.test(label))||new Set(sites).size!==sites.length)
+   fail('Configured site labels are invalid or ambiguous.','STAFFOLOGY_CONFIGURED_SITE_AUTHORITY_REQUIRED',503);
+  if(!sameConfigurationBinding(binding,currentConfigurationBinding(tenant)))
+   fail('Configured-site authority changed while reading its snapshot.','STAFFOLOGY_CONFIGURED_SITE_BINDING_MISMATCH');
+  return Object.freeze({configurationBinding:binding,sites:Object.freeze(sites)});
+ }
+ function assertMappings(runtime,actor,mappings,reviewedConfigurationBinding){const options=runtime.employeeMappingOptions(actor),allowed=(values,value)=>values.some(item=>String(item)===String(value));if(configuredSiteLane&&!sameConfigurationBinding(reviewedConfigurationBinding,options.configurationBinding))fail('Reviewed configured-site preview is missing or stale.','STAFFOLOGY_CONFIGURED_SITE_BINDING_MISMATCH');if(!Array.isArray(mappings)||mappings.some(row=>!row||!options.managers.some(item=>item.id===row.managerId)||!(configuredSiteLane?options.sites.includes(row.site):allowed(options.sites,row.site))||!allowed(options.jobs,row.job)||!allowed(options.contractTypes,row.contractType)||!allowed(options.weeklyHours,row.weeklyHours)))fail('Employee mapping is outside the current canonical manager, site, job, contract or weekly-hours options.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);for(const row of mappings)reviewedEmail(row.email);return true;}
  return Object.freeze({
   status(){const boundaryStatus=productionBoundaries?.status?.()||{productionDatabase:false,durableOneShotAuthority:false};return {...boundaryStatus,configured:Boolean(boundaryStatus.productionDatabase&&boundaryStatus.durableOneShotAuthority),activationAvailable:false,employeeImport:'reviewed-staging-only',payrollImport:'approval-required',claimBoundary:'Canonical store and authority are assembled but no provider route, client, credentials or worker is activated.'};},
   assertEmployeeStaging(actor,receipt){if(typeof assertStagePeople!=='function')return true;assertStagePeople(actor,receipt);return true;},
-  employeeMappingOptions(actor){if(!actor?.tenant||!(actor.permissions||[]).includes('company.configure'))fail('Current company configuration permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);const state=loadState(actor.tenant),unique=values=>[...new Set(values.filter(value=>value!==undefined&&value!==null&&String(value).trim()).map(value=>String(value).trim()))].sort(),contracts=Object.values(state?.workRules?.contracts||{}).flat();return {managers:(state?.org||[]).filter(row=>row?.id&&row?.name).map(row=>({id:row.id,name:row.name})),sites:unique((state?.staff||[]).map(row=>row.site)),jobs:unique([...(state?.workRules?.jobs||[]).map(row=>row.name),...(state?.staff||[]).map(row=>row.job)]),contractTypes:unique(contracts.map(row=>row.type)),weeklyHours:unique(contracts.map(row=>row.weeklyHours))};},
-  assertEmployeeMappings(actor,mappings){const options=this.employeeMappingOptions(actor),allowed=(values,value)=>values.some(item=>String(item)===String(value));if(!Array.isArray(mappings)||mappings.some(row=>!row||!options.managers.some(item=>item.id===row.managerId)||!allowed(options.sites,row.site)||!allowed(options.jobs,row.job)||!allowed(options.contractTypes,row.contractType)||!allowed(options.weeklyHours,row.weeklyHours)))fail('Employee mapping is outside the current canonical manager, site, job, contract or weekly-hours options.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);for(const row of mappings)reviewedEmail(row.email);return true;},
-  stageEmployeeAcquisition(actor,acquisition,receipt){if(typeof stagePeople!=='function')fail('Canonical employee staging boundary is unavailable.','STAFFOLOGY_EMPLOYEE_IMPORT_NOT_WIRED',503);const envelope=peopleEnvelope(acquisition,receipt),former=envelope.records.filter(row=>row.operation==='delete'),full=stagePeople(actor,envelope,receipt);if(!former.length)return full;const eligible=envelope.records.filter(row=>row.operation!=='delete'),lifecycleHold=Object.freeze({batchId:full.id,held:former.length,employeeIds:Object.freeze(former.map(row=>row.externalId))});if(!eligible.length)return {...full,lifecycleHold};const eligibleReceipt={...receipt,idempotencyKey:`staffology-current-${sha256(receipt.idempotencyKey).slice(0,24)}`},staged=stagePeople(actor,{...envelope,records:eligible},eligibleReceipt);return {...staged,lifecycleHold};},
+  employeeMappingOptions(actor){if(!actor?.tenant||!(actor.permissions||[]).includes('company.configure'))fail('Current company configuration permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);const state=loadState(actor.tenant),unique=values=>[...new Set(values.filter(value=>value!==undefined&&value!==null&&String(value).trim()).map(value=>String(value).trim()))].sort(),contracts=Object.values(state?.workRules?.contracts||{}).flat(),configured=configuredSiteLane?configuredSiteSnapshot(actor.tenant):null;return {managers:(state?.org||[]).filter(row=>row?.id&&row?.name).map(row=>({id:row.id,name:row.name})),sites:configured?configured.sites:unique((state?.staff||[]).map(row=>row.site)),...(configured?{configurationBinding:configured.configurationBinding}:{}),jobs:unique([...(state?.workRules?.jobs||[]).map(row=>row.name),...(state?.staff||[]).map(row=>row.job)]),contractTypes:unique(contracts.map(row=>row.type)),weeklyHours:unique(contracts.map(row=>row.weeklyHours))};},
+  // The reviewed binding is a comparison precondition, never an authority source.
+  // The owner must retrieve it from an authenticated stored preview receipt.
+  assertEmployeeMappings(actor,mappings,reviewedConfigurationBinding){return assertMappings(this,actor,configuredSiteLane?employeeDataSnapshot(mappings):mappings,reviewedConfigurationBinding);},
+  stageEmployeeAcquisition(actor,acquisition,receipt,reviewedConfigurationBinding){if(typeof stagePeople!=='function')fail('Canonical employee staging boundary is unavailable.','STAFFOLOGY_EMPLOYEE_IMPORT_NOT_WIRED',503);if(configuredSiteLane)receipt=employeeDataSnapshot(receipt);const stage=(envelope,stagingReceipt)=>{if(configuredSiteLane){this.assertEmployeeStaging(actor,stagingReceipt);assertMappings(this,actor,receipt.mappings,reviewedConfigurationBinding);}return stagePeople(actor,envelope,stagingReceipt);},envelope=peopleEnvelope(acquisition,receipt),former=envelope.records.filter(row=>row.operation==='delete'),full=stage(envelope,receipt);if(!former.length)return full;const eligible=envelope.records.filter(row=>row.operation!=='delete'),lifecycleHold=Object.freeze({batchId:full.id,held:former.length,employeeIds:Object.freeze(former.map(row=>row.externalId))});if(!eligible.length)return {...full,lifecycleHold};const eligibleReceipt={...receipt,idempotencyKey:`staffology-current-${sha256(receipt.idempotencyKey).slice(0,24)}`},staged=stage({...envelope,records:eligible},configuredSiteLane?Object.freeze(eligibleReceipt):eligibleReceipt);return {...staged,lifecycleHold};},
   preparePayroll(actor,approval){if(!actor?.tenant||actor.tenant!==approval?.tenant||!(actor.permissions||[]).includes('payroll.export'))fail('Current payroll release permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);return preparePayrollInput(loadState(actor.tenant),approval);},
   prepareBatchManifest(actor,manifest){if(!actor?.tenant||!(actor.permissions||[]).includes('payroll.export'))fail('Current payroll release permission is required.','STAFFOLOGY_WRITE_NOT_AUTHORIZED',403);return releasedBatchManifest(loadState(actor.tenant),manifest);},
   payrollLineIdentity(row){return payrollLineIdentity(row);},

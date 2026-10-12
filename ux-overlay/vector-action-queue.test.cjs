@@ -243,7 +243,7 @@ test('a previous personal fetch cannot overwrite the fresh record after authorit
  assert.match(content.html,/9 h/);assert.equal(api.state.employeeHome.value.leave.availableMinutes,540);
 });
 
-function timeEvidenceHarness({role='manager',allowed=true,calendarLoad}={}){
+function timeEvidenceHarness({role='manager',allowed=true,calendarLoad,evidence={}}={}){
   const source=fs.readFileSync(path.join(__dirname,'vector-shell.js'),'utf8');
   const start=source.indexOf('function actionEvidenceOwnerKey()'),end=source.indexOf('function invalidateTenantCalendar()',start);
   assert.ok(start>0&&end>start);
@@ -252,7 +252,7 @@ function timeEvidenceHarness({role='manager',allowed=true,calendarLoad}={}){
     sourceIdentity:()=>({tenant:'alpha',email:'user@alpha',id:'u1',role:sandbox.role}),employee:()=>sandbox.role==='employee',
     available:route=>route==='attendance'&&sandbox.allowed,refreshActionSurfaces:()=>{},loadTenantCalendar:calendarLoad||(()=>Promise.resolve(calendar)),
     TIME_REVIEW_EVIDENCE_PATH:'/api/workforce/lifecycle/action-evidence/time-review',ACTION_EVIDENCE_CONTRACT:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',acceptTimeReviewEvidenceItem:item=>item,
-    fetch:async url=>{sandbox.calls.push(url);return {ok:true,json:async()=>({contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',workflow:'time-review',items:[{sourceId:'issue-1'}],...calendar})};}
+    fetch:async url=>{sandbox.calls.push(url);return {ok:true,json:async()=>({contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',workflow:'time-review',items:[{sourceId:'issue-1'}],scope:{tenant:'alpha',personId:'u1',period:'2026-10-05',teamId:null,sourceId:null},contextKey:'a'.repeat(64),availability:'available',unavailable:[],...calendar,...evidence})};}
   };
   vm.runInNewContext(source.slice(start,end)+';api={loadTimeReviewEvidence};',sandbox);return {sandbox,calendar};
 }
@@ -273,4 +273,32 @@ test('denied UI roles make zero evidence requests even when navigation is presen
 });
 test('manager director and supervisor retain permitted UI evidence reads',async()=>{
  for(const role of ['manager','director','supervisor']){const {sandbox}=timeEvidenceHarness({role,allowed:true});assert.equal(await sandbox.api.loadTimeReviewEvidence(),true,role);assert.equal(sandbox.calls.length,1,role);}
+});
+
+test('source-unavailable evidence is retained as unavailable rather than a successful empty action list',async()=>{
+ const {sandbox}=timeEvidenceHarness({evidence:{availability:'unavailable',items:[],unavailable:[{reasonCode:'SOURCE_EVIDENCE_UNAVAILABLE'}]}});
+ assert.equal(await sandbox.api.loadTimeReviewEvidence(),false);assert.equal(sandbox.state.timeReviewEvidence.status,'unavailable');assert.equal(sandbox.state.timeReviewEvidence.unavailable.length,1);
+});
+test('partially available source evidence keeps admitted items and its incomplete status',async()=>{
+ const {sandbox}=timeEvidenceHarness({evidence:{availability:'partial',unavailable:[{reasonCode:'SOURCE_EVIDENCE_UNAVAILABLE'}]}});
+ assert.equal(await sandbox.api.loadTimeReviewEvidence(),true);assert.equal(sandbox.state.timeReviewEvidence.status,'partial');assert.equal(sandbox.state.timeReviewEvidence.items.length,1);
+});
+test('other-tenant or other-person response envelopes cannot enter a manager action queue',async()=>{
+ for(const scope of [{tenant:'bravo',personId:'u1',period:'2026-10-05'},{tenant:'alpha',personId:'other',period:'2026-10-05'}]){
+  const {sandbox}=timeEvidenceHarness({evidence:{scope}});assert.equal(await sandbox.api.loadTimeReviewEvidence(),false);assert.equal(sandbox.state.timeReviewEvidence.status,'unavailable');assert.equal(sandbox.state.timeReviewEvidence.items.length,0);
+ }
+});
+test('a later request epoch discards an old evidence body even when the account name is unchanged',async()=>{
+ const {sandbox,calendar}=timeEvidenceHarness();let release;
+ sandbox.fetch=async()=>({ok:true,json:()=>new Promise(resolve=>{release=resolve;})});
+ const pending=sandbox.api.loadTimeReviewEvidence();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(typeof release,'function');sandbox.state.evidenceEpoch++;
+ release({contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1',workflow:'time-review',items:[],unavailable:[],availability:'available',contextKey:'a'.repeat(64),scope:{tenant:'alpha',personId:'u1',period:'2026-10-05',teamId:null,sourceId:null},...calendar});
+ assert.equal(await pending,false);assert.equal(sandbox.state.timeReviewEvidence.status,'loading');
+});
+test('the action surface explains unavailable and partial evidence to the signed-in reviewer',()=>{
+ const vector=loadVectorHelpers({actor:{tenant:'alpha',id:'u1',role:'manager'}});
+ vector.state.timeReviewEvidence.status='unavailable';assert.match(vector.alertsMarkup([]),/Source evidence is unavailable/);
+ vector.state.timeReviewEvidence.status='partial';assert.match(vector.alertsMarkup([]),/Some source evidence is unavailable/);
 });

@@ -22,14 +22,32 @@ function n(v,f=0){ const x=Number(v); return Number.isFinite(x)?x:f; }
 function clamp(v,min,max,f){ const x=Number(v); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }
 function whole(v,min,max,f){ const x=Math.trunc(Number(v)); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }
 function iso(v,name){
-  const raw=text(v,80),msv=Date.parse(raw);
-  if(!raw||!Number.isFinite(msv)) throw new Error((name||'timestamp')+' must be a valid ISO timestamp.');
+  // Absolute instants only: no host timezone, calendar rollover or precision loss.
+  const match=typeof v==='string'&&/^(\d{4}-\d{2}-\d{2})T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)(?:\.(\d{1,3}))?(Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.exec(v);
+  const msv=match?Date.parse(v):NaN;
+  if(!match||!Number.isFinite(msv)||match[6]==='-00:00'||
+    new Date(Date.parse(match[1]+'T00:00:00Z')).toISOString().slice(0,10)!==match[1])
+    throw new Error((name||'timestamp')+' must be a valid ISO timestamp with an explicit offset.');
   return new Date(msv).toISOString();
 }
 function ms(v){ const x=Date.parse(v); return Number.isFinite(x)?x:null; }
 function hours(a,b){ return Math.max(0,(ms(b)-ms(a))/3600000); }
 function overlaps(a0,a1,b0,b1){ return ms(a0)<ms(b1)&&ms(b0)<ms(a1); }
 function contains(w,a,b){ return ms(w.start)<=ms(a)&&ms(w.end)>=ms(b); }
+function normaliseAssignments(input=[]){
+  if(!Array.isArray(input)) throw new Error('Assignments must be an array.');
+  const seen=new Set();
+  return input.map(a=>{
+    if(!a||typeof a.slotId!=='string'||!a.slotId.trim()||
+      !(typeof a.workerId==='string'&&a.workerId.trim()||a.workerId===null&&a.shortfall===true))
+      throw new Error('Assignment slotId and workerId are required (or explicit shortfall).');
+    if(seen.has(a.slotId)) throw new Error('Assignment slot ids must be unique.');
+    seen.add(a.slotId);
+    const start=iso(a.start,'assignment start'),end=iso(a.end,'assignment end');
+    if(ms(end)<=ms(start)) throw new Error('Assignment end must be after start.');
+    return {...a,start,end};
+  });
+}
 
 function normalisePolicy(input={}){
   const w=input.weights||{};
@@ -64,10 +82,11 @@ function normalisePolicy(input={}){
   };
 }
 function availability(v){
-  return Array.isArray(v)?v.slice(0,200).map((x,i)=>({
-    start:iso(x.start,'availability '+i+' start'),
-    end:iso(x.end,'availability '+i+' end')
-  })).filter(x=>ms(x.end)>ms(x.start)):[];
+  return Array.isArray(v)?v.slice(0,200).map((x,i)=>{
+    const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
+    if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
+    return {start,end};
+  }):[];
 }
 function certs(v){
   return Array.isArray(v)?v.slice(0,200).map(x=>({
@@ -155,7 +174,9 @@ function assignedHours(workerId,assignments){
   return assignments.filter(a=>a.workerId===workerId).reduce((s,a)=>s+hours(a.start,a.end),0);
 }
 function evaluateWorkerForSlot(worker,slot,ctx={}){
-  const policy=ctx.policy||normalisePolicy(),assignments=ctx.assignments||[];
+  const policy=ctx.policy||normalisePolicy(),assignments=normaliseAssignments(ctx.assignments);
+  const start=iso(slot.start,'slot start'),end=iso(slot.end,'slot end');
+  if(ms(end)<=ms(start)) throw new Error('Slot end must be after start.');
   const failures=[],warnings=[],duration=hours(slot.start,slot.end),already=assignedHours(worker.id,assignments);
   const projectedWeek=worker.hoursWorkedWeek+already+duration;
   const projectedOT=Math.max(0,projectedWeek-worker.contractedHours);
@@ -177,6 +198,11 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
   if(worker.consecutiveShifts+1>policy.maxConsecutiveShifts) failures.push('MAX_CONSECUTIVE_SHIFTS_BREACH');
   if(night&&worker.consecutiveNights+1>policy.maxConsecutiveNights) failures.push('MAX_CONSECUTIVE_NIGHTS_BREACH');
   if(assignments.some(a=>a.workerId===worker.id&&overlaps(a.start,a.end,slot.start,slot.end))) failures.push('OVERLAPPING_ASSIGNMENT');
+  // Search order is not chronological. Check rest on both sides of this slot.
+  if(assignments.some(a=>a.workerId===worker.id&&
+    !overlaps(a.start,a.end,start,end)&&
+    (ms(a.end)<=ms(start)?ms(start)-ms(a.end):ms(a.start)-ms(end))<policy.minRestHours*3600000))
+    failures.push('MINIMUM_REST_BREACH');
   for(const ref of policy.requiredRuleRefs) if(worker.ruleBlocks.has(ref)) failures.push('RULE_BLOCK:'+ref);
   if(slot.lockedWorkerIds.length&&!slot.lockedWorkerIds.includes(worker.id)) failures.push('LOCKED_REQUIREMENT_OTHER_WORKER');
 
@@ -270,10 +296,16 @@ function solveGreedy(workersById,allSlots,m,policy,preferred){
 }
 function validateSchedule(assignments,workersById,slotsById,policy,preferred){
   const accepted=[],violations=[];
+  try { assignments=normaliseAssignments(assignments); }
+  catch { return {valid:false,violations:[{reasons:['INVALID_ASSIGNMENT']}]}; }
   for(const a of assignments){
     if(!a.workerId) continue;
     const w=workersById.get(a.workerId),slot=slotsById.get(a.slotId);
     if(!w||!slot){ violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['UNKNOWN_WORKER_OR_SLOT']}); continue; }
+    if(ms(a.start)!==ms(slot.start)||ms(a.end)!==ms(slot.end)){
+      violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['ASSIGNMENT_SLOT_MISMATCH']});
+      continue;
+    }
     const c=evaluateWorkerForSlot(w,slot,{policy,assignments:accepted,preferredAssignments:preferred});
     if(!c.eligible) violations.push({slotId:a.slotId,workerId:a.workerId,reasons:c.failures});
     else accepted.push(a);
@@ -336,16 +368,29 @@ function createSchedulingPlan(input={}){
 }
 function evaluateOpenShift(input={}){
   const policy=normalisePolicy(input.policy||{}),slot=slots([normaliseRequirement({...input.requirement,headcount:1,planningHeadcount:1})])[0];
-  const assignments=input.currentAssignments||[];
+  const assignments=normaliseAssignments(input.currentAssignments);
   const ranked=(input.workers||[]).map(normaliseWorker).map(w=>evaluateWorkerForSlot(w,slot,{policy,assignments}))
     .sort((a,b)=>Number(b.eligible)-Number(a.eligible)||a.score-b.score||a.workerId.localeCompare(b.workerId));
   return {contractVersion:CONTRACT_VERSION,mode:'EVALUATE_ONLY',executionPermitted:false,slot,ranked};
 }
 function evaluateSwap(input={}){
   const policy=normalisePolicy(input.policy||{}),a=normaliseWorker(input.workerA||{}),b=normaliseWorker(input.workerB||{});
-  const sa=slots([normaliseRequirement({...input.requirementA,headcount:1,planningHeadcount:1})])[0];
-  const sb=slots([normaliseRequirement({...input.requirementB,headcount:1,planningHeadcount:1})])[0];
-  const base=(input.currentAssignments||[]).filter(x=>x.workerId!==a.id&&x.workerId!==b.id);
+  const ra=normaliseRequirement(input.requirementA),rb=normaliseRequirement(input.requirementB);
+  if(ra.headcount!==1||rb.headcount!==1) throw new Error('Swap requires single-slot requirements.');
+  const sa=slots([ra])[0],sb=slots([rb])[0];
+  if(a.id===b.id||sa.requirementId===sb.requirementId)
+    return {contractVersion:CONTRACT_VERSION,mode:'EVALUATE_ONLY',executionPermitted:false,eligible:false,reasons:['INVALID_SWAP'],legs:{}};
+  const current=normaliseAssignments(input.currentAssignments);
+  // Omitted assignments retain the existing hypothetical eligibility contract.
+  // A supplied schedule must identify both outgoing slots unambiguously.
+  if(input.currentAssignments!==undefined){
+    for(const [worker,slot] of [[a,sa],[b,sb]]){
+      const outgoing=current.find(x=>x.slotId===slot.slotId);
+      if(!outgoing||outgoing.workerId!==worker.id||outgoing.start!==slot.start||outgoing.end!==slot.end)
+        throw new Error('Swap requires matching outgoing assignment ids, owners and times.');
+    }
+  }
+  const base=current.filter(x=>x.slotId!==sa.slotId&&x.slotId!==sb.slotId);
   const bToA=evaluateWorkerForSlot(b,sa,{policy,assignments:base});
   const aToB=evaluateWorkerForSlot(a,sb,{policy,assignments:base.concat(bToA.eligible?[{workerId:b.id,slotId:sa.slotId,start:sa.start,end:sa.end}]:[])});
   const eligible=bToA.eligible&&aToB.eligible;

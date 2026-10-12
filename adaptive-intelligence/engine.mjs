@@ -132,7 +132,7 @@ export class AdaptiveIntelligenceEngine {
 
     if(c.memoryGrantsAuthority===true){
       reason='memory-authority-forbidden';
-    }else if(!c.safetyPass||!c.tenantIsolationPass||!c.rollbackReady){
+    }else if(c.safetyPass!==true||c.tenantIsolationPass!==true||c.rollbackReady!==true){
       reason='safety-isolation-or-rollback-failed';
     }else if(!(c.candidateScore>c.baselineScore&&c.holdoutScore>c.baselineScore)){
       reason='no-holdout-improvement';
