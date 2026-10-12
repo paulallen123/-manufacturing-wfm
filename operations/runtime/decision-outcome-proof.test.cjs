@@ -76,3 +76,26 @@ test('non-financial KPI cannot be labelled realised financial value',()=>{
     currency:'GBP',measurementWindow:{start:'2026-09-22T08:00:00Z',end:'2026-09-22T16:00:00Z'}
   }),/supported financial metric/);
 });
+
+test('changed nested settled result cannot be consumed under an issued proof digest',()=>{
+  const proof=createDecisionOutcomeProof({episode:completed('labourCost'),metric:'labourCost',direction:'MINIMIZE',classification:'VERIFIED_OPERATIONAL',baselineActual:520,baselineEvidenceRefs:['payroll:baseline']});
+  const original=toAdaptiveOutcomeInput(proof);
+  const changed=structuredClone(proof);
+  changed.observed.result=720;
+  assert.equal(original.result-original.baseline,200);
+  assert.equal(changed.proofDigest,proof.proofDigest);
+  assert.throws(()=>toAdaptiveOutcomeInput(changed),/integrity/);
+  changed.observed.result=320;
+  changed.direction='MAXIMIZE';
+  assert.throws(()=>toAdaptiveOutcomeInput(changed),/integrity/);
+  assert.deepEqual(toAdaptiveOutcomeInput(structuredClone(proof)),original);
+});
+
+test('missing and substituted digest cannot label a proof verified for learning',()=>{
+  const proof=createDecisionOutcomeProof({episode:completed(),metric:'planAttainmentPct',direction:'MAXIMIZE',classification:'VERIFIED_OPERATIONAL',baselineActual:82,baselineEvidenceRefs:['mes:baseline']});
+  for(const substituted of [undefined,null,'0'.repeat(64)]){
+    const changed=structuredClone(proof);changed.proofDigest=substituted;
+    assert.throws(()=>toAdaptiveOutcomeInput(changed),/integrity/);
+  }
+});
+
