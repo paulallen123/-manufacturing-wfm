@@ -213,7 +213,7 @@ const groups = {
     'agents-api-adapter.cjs', 'agents-api-bootstrap-route.cjs', 'implementation-work-controller.cjs',
     'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
     'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs',
-    'workspace-setup.cjs','organisation-access-setup.cjs','customer-workspace.cjs','organisation-access-lifecycle.cjs'
+    'workspace-setup.cjs','organisation-access-setup.cjs','customer-workspace.cjs','setup-only-policy.cjs','organisation-access-lifecycle.cjs'
   ],
   learning: [
     'adaptive-learning-engine.cjs', 'training-workflow-manifest.cjs',

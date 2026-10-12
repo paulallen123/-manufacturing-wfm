@@ -1,5 +1,6 @@
 'use strict';
 const {createHash,randomUUID}=require('node:crypto');
+const {createSetupOnlyPolicy}=require('./setup-only-policy.cjs');
 const hash=value=>createHash('sha256').update(String(value)).digest('hex');
 function fail(message,statusCode=409){throw Object.assign(Error(message),{statusCode});}
 function text(value,max,label){if(typeof value!=='string'||!value.trim()||value.length>max||/[\x00-\x1f\x7f]/.test(value))fail(label+' is required.',400);return value.trim();}
@@ -40,6 +41,7 @@ function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitation
     for(const action of ['UPDATE','DELETE'])db.exec(`CREATE TRIGGER IF NOT EXISTS ${table}_no_${action.toLowerCase()} BEFORE ${action} ON ${table}
       BEGIN SELECT RAISE(ABORT,'Customer workspace associations are permanent.'); END;`);
   }
+  const runtimePolicy=createSetupOnlyPolicy({db});
   const byCustomer=db.prepare('SELECT * FROM customer_workspaces WHERE customer_hash=?');
   const byTenant=db.prepare('SELECT * FROM customer_workspaces WHERE tenant=?');
   const resolvedBindings=new WeakMap();
@@ -187,6 +189,7 @@ function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitation
   }
   function view(row){
     if(!row)return null;
+    runtimePolicy.forTenant(row.tenant);
     const receipt=db.prepare('SELECT environment_id,namespace FROM customer_workspace_adoptions WHERE workspace_id=?').get(row.workspace_id);
     return {workspaceId:row.workspace_id,tenant:row.tenant,initialSetupRunId:row.initial_run_id,createdAt:row.created_at,
       ...(receipt?{adopted:true,environmentId:receipt.environment_id,namespace:receipt.namespace}:{})};
@@ -230,6 +233,7 @@ function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitation
       if(relationship!=='initial'&&(!row||input.existingWorkspaceId!==row.workspace_id))fail('Renewals and amendments require an explicit existing workspace association.');
       if(row&&!contract&&relationship==='initial')fail('A customer already has a workspace. Associate this contract as a renewal or amendment.');
       const created=!row;
+      if(row)runtimePolicy.forTenant(tenant);
       if(!row){
         if(input.existingWorkspaceId||relationship!=='initial')fail('An initial workspace cannot rebind an existing association.');
         const result=createInitialWorkspace({...input,tenant,contractRef,ownerEmail});
@@ -245,6 +249,8 @@ function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitation
       const ts=new Date().toISOString();
       if(!contract)db.prepare('INSERT INTO customer_workspace_contracts VALUES(?,?,?,?,?,?)').run(provider,contractHash,row.workspace_id,relationship,bindingDigest,ts);
       if(!event)db.prepare('INSERT INTO customer_workspace_events VALUES(?,?,?,?,?,?)').run(provider,eventHash,contractHash,row.workspace_id,bindingDigest,ts);
+      if(created)runtimePolicy.recordInitialWorkspace({workspaceId:row.workspace_id,provider,contractHash,eventHash,
+        ...(resolvedBindings.has(input)?{orderId:input.orderId,orderRevision:input.orderRevision}:{})});
       bindOrderInvitation(input,row);
       return {...view(row),created,replayed:Boolean(event)};
     });
@@ -284,6 +290,7 @@ function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitation
       db.prepare('INSERT INTO customer_workspace_events VALUES(?,?,?,?,?,?)').run(provider,eventHash,contractHash,workspaceId,bindingDigest,ts);
       db.prepare('INSERT INTO customer_workspace_adoptions VALUES(?,?,?,?,?,?,?,?,?,?,?)').run(workspaceId,tenant,runId,environmentId,namespace,hash(ownerEmail),provider,eventHash,contractHash,adoptionDigest,ts);
       row=byCustomer.get(customerHash);
+      runtimePolicy.recordVerifiedAdoption({workspaceId});
       bindOrderInvitation(input,row);
       return {...view(row),environmentId,namespace,created:false,adopted:true,replayed:false};
     });

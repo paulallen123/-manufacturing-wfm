@@ -2,7 +2,15 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {DatabaseSync}=require('node:sqlite');
 const {createHash}=require('node:crypto');
-const {createCustomerWorkspaceRegistry}=require('./customer-workspace.cjs');
+const fs=require('node:fs'),path=require('node:path');
+const requestedRuntime=process.env.VECTOR_SETUP_POLICY_RUNTIME_ROOT;
+if(requestedRuntime)assert.equal(path.isAbsolute(requestedRuntime),true,'Runtime test root must be absolute; no fallback.');
+const runtimeRoot=requestedRuntime?path.resolve(requestedRuntime):__dirname;
+for(const name of ['customer-workspace.cjs','setup-only-policy.cjs'])assert.equal(
+  createHash('sha256').update(fs.readFileSync(path.join(runtimeRoot,name))).digest('hex'),
+  createHash('sha256').update(fs.readFileSync(path.join(__dirname,name))).digest('hex'),'Actual runtime bytes must match the frozen test-tree source: '+name);
+const {createCustomerWorkspaceRegistry}=require(path.join(runtimeRoot,'customer-workspace.cjs'));
+const {createSetupOnlyPolicy}=require(path.join(runtimeRoot,'setup-only-policy.cjs'));
 const sha=value=>createHash('sha256').update(value).digest('hex');
 const initial=()=>({verified:true,ownerAuthorized:true,customerId:'customer-a',customerAuthorityRef:'crm/customer-a',tenant:'alpha',provider:'verified-provider',eventId:'event-a',contractRef:'contract-a',relationship:'initial',ownerEmail:'owner@alpha.test',ownerAuthorityRef:'contract-owner-a'});
 function fixture(t){
@@ -12,6 +20,41 @@ function fixture(t){
   const open=opts=>createCustomerWorkspaceRegistry({db,createInitialWorkspace,...opts});const registry=open();t.after(()=>db.close());
   return {db,registry,open,createInitialWorkspace,get calls(){return calls;}};
 }
+test('fresh registry acceptance owns one SETUP_ONLY receipt in the permanent five-column workspace relation',t=>{
+  const f=fixture(t),first=f.registry.accept(initial()),row=f.db.prepare('SELECT * FROM customer_workspace_runtime_state').get();
+  assert.equal(row.mode,'SETUP_ONLY');assert.equal(row.workspace_id,first.workspaceId);assert.equal(row.initial_run_id,first.initialSetupRunId);
+  assert.equal(row.creation_provider,initial().provider);assert.equal(row.creation_contract_hash,sha(initial().contractRef));assert.equal(row.creation_order_id,null);
+  assert.equal(f.db.prepare('SELECT action FROM customer_workspace_runtime_state_events').get().action,'CREATE');
+  assert.equal(f.db.prepare('PRAGMA table_info(customer_workspaces)').all().length,5);
+});
+test('stored DocuSign origin stays immutable across renewal, restart and nomination changes',t=>{
+  const f=fixture(t);f.registry.recordOrder(order());const first=f.registry.accept(f.registry.resolveCompletedOrder(completion()));
+  const before=f.db.prepare('SELECT * FROM customer_workspace_runtime_state').get();assert.equal(before.creation_order_id,'order-alpha');assert.equal(before.creation_order_revision,1);
+  f.registry.recordOrder(order({orderId:'mode-renewal',envelopeId:'mode-renewal-envelope',contractRef:'mode-renewal-contract',relationship:'renewal',existingWorkspaceId:first.workspaceId}));
+  f.registry.accept(f.registry.resolveCompletedOrder(completion({eventId:'mode-renewal-complete',envelopeId:'mode-renewal-envelope'})));
+  f.registry.recordOrder(order({orderId:'mode-renewal',expectedRevision:1,envelopeId:'mode-renewal-2',contractRef:'mode-renewal-contract-2',relationship:'renewal',existingWorkspaceId:first.workspaceId,nominatedSuperUserEmail:'different@alpha.test',nominationAuthorityRef:'new-authority'}));
+  assert.equal(f.open().forTenant('alpha').workspaceId,first.workspaceId);assert.deepEqual(f.db.prepare('SELECT * FROM customer_workspace_runtime_state').get(),before);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM customer_workspace_runtime_state_events').get().n,1);
+});
+for(const table of ['customer_workspace_runtime_state','customer_workspace_runtime_state_events'])test(table+' insertion fault rolls back adapter tenant/run/invitation/outbox and preserves parent transaction',t=>{
+  const f=fixture(t);f.db.exec("DELETE FROM tenants;CREATE TABLE implementation_invitations(id TEXT PRIMARY KEY,tenant TEXT,contract_ref_hash TEXT,recipient_hash TEXT,started_run_id TEXT);CREATE TABLE synthetic_outbox(id TEXT);CREATE TABLE caller_owned(value TEXT)");
+  const r=f.open({createInitialWorkspace:b=>{f.db.prepare('INSERT INTO tenants VALUES(?)').run(b.tenant);const run=f.createInitialWorkspace(b);f.db.prepare('INSERT INTO implementation_invitations VALUES(?,?,?,?,?)').run('invite',b.tenant,sha(b.contractRef),sha(b.ownerEmail),null);f.db.exec("INSERT INTO synthetic_outbox VALUES('send-after-commit')");return run;}});
+  createSetupOnlyPolicy({db:f.db});f.db.exec(`CREATE TRIGGER mode_fault BEFORE INSERT ON ${table} BEGIN SELECT RAISE(ABORT,'mode journal unavailable');END;BEGIN IMMEDIATE;INSERT INTO caller_owned VALUES('parent')`);
+  assert.throws(()=>r.accept(initial()),/mode journal unavailable/);assert.equal(f.db.isTransaction,true);assert.equal(f.db.prepare('SELECT value FROM caller_owned').get().value,'parent');
+  for(const name of ['tenants','implementation_runs','customer_workspaces','customer_workspace_contracts','customer_workspace_events','implementation_invitations','synthetic_outbox','customer_workspace_runtime_state','customer_workspace_runtime_state_events'])assert.equal(f.db.prepare('SELECT COUNT(*) n FROM '+name).get().n,0,name);
+  f.db.exec('ROLLBACK;DROP TRIGGER mode_fault');assert.equal(r.accept(initial()).created,true);
+});
+test('DocuSign invitation callback observes validated permanent mode before outer transaction commit',t=>{
+  const f=fixture(t);f.db.exec('CREATE TABLE implementation_invitations(id TEXT PRIMARY KEY,tenant TEXT,contract_ref_hash TEXT,recipient_hash TEXT,started_run_id TEXT)');let observed=0;
+  const r=f.open({createInitialWorkspace:b=>{const run=f.createInitialWorkspace(b);f.db.prepare('INSERT INTO implementation_invitations VALUES(?,?,?,?,?)').run('bound',b.tenant,sha(b.contractRef),sha(b.ownerEmail),null);return run;},onInvitationBound(){observed++;assert.equal(f.db.isTransaction,true);const mode=f.db.prepare('SELECT * FROM customer_workspace_runtime_state').get(),workspace=f.db.prepare('SELECT * FROM customer_workspaces').get();assert.equal(mode.workspace_id,workspace.workspace_id);assert.equal(mode.creation_order_id,'order-alpha');assert.equal(f.db.prepare('SELECT COUNT(*) n FROM customer_workspace_runtime_state_events').get().n,1);}});
+  r.recordOrder(order());assert.equal(r.accept(r.resolveCompletedOrder(completion())).created,true);assert.equal(observed,1);
+});
+for(const relationship of ['replay','renewal'])test('missing new-workspace mode refuses '+relationship+' without repair',t=>{
+  const f=fixture(t),first=f.registry.accept(initial());createSetupOnlyPolicy({db:f.db});f.db.exec('DROP TABLE customer_workspace_runtime_state_events;DROP TABLE customer_workspace_runtime_state');createSetupOnlyPolicy({db:f.db});
+  const input=relationship==='replay'?initial():{...initial(),relationship:'renewal',contractRef:'renewal',eventId:'renewal',existingWorkspaceId:first.workspaceId};
+  const before=f.db.prepare('SELECT * FROM customer_workspace_contracts').all();assert.throws(()=>f.registry.accept(input),e=>e.code==='SETUP_MODE_BINDING_UNAVAILABLE'&&e.statusCode===503);
+  assert.deepEqual(f.db.prepare('SELECT * FROM customer_workspace_contracts').all(),before);assert.equal(f.db.prepare('SELECT COUNT(*) n FROM customer_workspace_runtime_state').get().n,0);assert.equal(f.calls,1);
+});
 test('verified initial signing creates one permanent workspace and replay never re-invokes creation',t=>{
   const f=fixture(t),first=f.registry.accept(initial());assert.equal(first.created,true);assert.equal(first.initialSetupRunId,'run-1');
   const replay=f.registry.accept(initial());assert.equal(replay.workspaceId,first.workspaceId);assert.equal(replay.created,false);assert.equal(f.calls,1);
