@@ -35,8 +35,58 @@ test('hard workforce and actuation boundaries remain enforced',()=>{const i=base
 test('identical authoritative state remains reproducible while material changes alter hash',()=>{const i=baseInput(),a=evaluateEnergyFlexibility(i),b=evaluateEnergyFlexibility(structuredClone(i));assert.equal(a.reproducibilityHash,b.reproducibilityHash);const c=structuredClone(i);c.options[1].labour.premiumCost++;assert.notEqual(a.reproducibilityHash,evaluateEnergyFlexibility(c).reproducibilityHash);});
 
 function lcg(seed){let s=seed>>>0;return()=>((s=Math.imul(1664525,s)+1013904223>>>0)/2**32);}
+test('contradictory lower bound cannot turn a point loss into an approval handoff',()=>{
+  const input=baseInput(),option=input.options[1];
+  option.energy={grossSaving:100,lowerBoundEnergyValue:200};
+  option.labour={premiumCost:150};option.production={};
+  option.scheduleChurnCost=0;delete option.upperBoundScheduleChurnCost;
+  for(const valueBasis of ['conservative','point']){
+    input.valueBasis=valueBasis;
+    const result=evaluateEnergyFlexibility(input);
+    assert.equal(result.rankedOptions.length,0);
+    const rejected=result.rejectedOptions.find(x=>x.id===option.id);
+    assert.equal(rejected.executable,false);
+    assert.equal(rejected.actionContract,null);
+    assert.ok(rejected.hardConstraintFailures.includes('invalid_economics:lowerBoundEnergyValue'));
+  }
+});
+
+test('energy lower bounds admit zero and exact gross boundaries while preserving stacking rules',()=>{
+  for(const stacking of [false,true]) for(const bound of [0,700,stacking?900:700]){
+    const input=baseInput();input.options[1].energy.valueStackingAllowed=stacking;
+    input.options[1].energy.lowerBoundEnergyValue=bound;
+    const result=evaluateEnergyFlexibility(input);
+    const option=[...result.rankedOptions,...result.rejectedOptions].find(x=>x.id==='shift-later');
+    assert.equal(option.executable,true);
+    assert.equal(option.economics.energyValueLowerBound,bound);
+    assert.ok(option.economics.conservativeNetValue<=option.economics.netControllableValue);
+  }
+});
+
+test('overstated lower bounds are rejected against effective gross value after double-count protection',()=>{
+  for(const stacking of [false,true]){
+    const input=baseInput();input.options[1].energy.valueStackingAllowed=stacking;
+    input.options[1].energy.lowerBoundEnergyValue=stacking?901:701;
+    const result=evaluateEnergyFlexibility(input);
+    assert.equal(result.rankedOptions.length,0);
+    const option=result.rejectedOptions.find(x=>x.id==='shift-later');
+    assert.equal(option.actionContract,null);
+    assert.ok(option.hardConstraintFailures.includes('invalid_economics:lowerBoundEnergyValue'));
+  }
+});
+
+test('malformed lower bounds deny handoff and do not alter caller inputs',()=>{
+  for(const bound of [-1,NaN,Infinity,'invalid']){
+    const input=baseInput();input.options[1].energy.lowerBoundEnergyValue=bound;
+    const before=structuredClone(input),result=evaluateEnergyFlexibility(input);
+    const option=result.rejectedOptions.find(x=>x.id==='shift-later');
+    assert.equal(option.executable,false);assert.equal(option.actionContract,null);
+    assert.deepEqual(input,before);
+  }
+});
 function scenario(index,r){const fresh=r()>0.08,cancelled=r()<0.03,revisionOk=r()>0.04,shiftable=r()>0.15,staffingOk=r()>0.08,skillOk=r()>0.08,restOk=r()>0.04,qualificationOk=r()>0.04,supervisionOk=r()>0.03,serviceOk=r()>0.05,qualityOk=r()>0.03,gross=Math.round(150+r()*1350),reward=Math.round(r()*350),stacking=r()<0.15,uncertainty=0.05+r()*0.35,labour=Math.round(r()*900),labourUpper=labour+Math.round(r()*250),penalty=Math.round(r()*350),penaltyUpper=penalty+Math.round(r()*150),churn=Math.round(r()*140),churnUpper=churn+Math.round(r()*80),energyValue=(stacking?gross+reward:Math.max(gross,reward))*(1-uncertainty),conservative=energyValue-labourUpper-penaltyUpper-churnUpper;const input=baseInput();input.siteId=`site-${index%7}`;input.energySignal.siteId=input.siteId;input.process.siteId=input.siteId;input.options[1].siteId=input.siteId;input.energySignal.status=cancelled?'cancelled':'active';input.energySignal.revision=revisionOk?2:1;input.energySignal.freshUntil=fresh?'2026-09-18T07:00:00.000Z':'2026-09-18T05:50:00.000Z';input.process.flexibilityClass=shiftable?'shiftable':'continuous';Object.assign(input.options[1].workforce,{staffingCount:staffingOk?5:2,minimumStaffing:4,requiredSkills:{critical:1},skillCoverage:{critical:skillOk?1:0},restCompliant:restOk,qualificationsValid:qualificationOk,supervisorRequired:true,supervisorAvailable:supervisionOk});input.options[1].energy={grossSaving:gross,flexibilityReward:reward,valueStackingAllowed:stacking,uncertaintyPct:uncertainty};input.options[1].labour={premiumCost:labour,upperBoundCost:labourUpper};input.options[1].production={penaltyCost:penalty,upperBoundPenalty:penaltyUpper,hardServiceBreach:!serviceOk,qualityRisk:qualityOk?'acceptable':'unacceptable'};input.options[1].scheduleChurnCost=churn;input.options[1].upperBoundScheduleChurnCost=churnUpper;return {input,known:fresh&&!cancelled&&revisionOk&&shiftable&&staffingOk&&skillOk&&restOk&&qualificationOk&&supervisionOk&&serviceOk&&qualityOk&&conservative>0,flexible:fresh&&!cancelled&&revisionOk&&shiftable};}
 
 test('1,500-scenario conservative benchmark preserves safety and value thresholds',()=>{const r=lcg(0x5eed1234);let known=0,found=0,flex=0,better=0,stale=0,hard=0,badActuation=0;for(let i=0;i<1500;i++){const s=scenario(i,r),o=evaluateEnergyFlexibility(s.input);if(s.known){known++;if(o.rankedOptions.length)found++;}if(s.flexible){flex++;if(o.rankedOptions.some(x=>isParetoBetterThanBaseline(x,o.baseline)))better++;}if(!o.signalFresh&&o.rankedOptions.length)stale++;if(o.rankedOptions.some(x=>x.hardConstraintFailures.length))hard++;if(o.rankedOptions.some(x=>x.actionContract?.type!=='workflow_handoff_only'))badActuation++;}const summary={scenarios:1500,knownFeasible:known,discovery:found/known,flexible:flex,paretoBetter:better/flex,staleExecutable:stale,hardViolationRecommended:hard,directActuationOutput:badActuation};console.log('ENERGY_FLEX_BENCHMARK='+JSON.stringify(summary));assert.ok(known>100);assert.ok(found/known>=0.95);assert.equal(stale,0);assert.equal(hard,0);assert.equal(badActuation,0);assert.ok(better/flex>=0.15);});
 
 test('500 adversarial replay/permutation cases preserve effective decision state',()=>{const r=lcg(0x1d3a0707);for(let n=0;n<500;n++){const i=baseInput();const rev1={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'},rev2={...i.energySignal};const canonical=structuredClone(i);canonical.energyEvents=[rev1,rev2];delete canonical.energySignal;const expected=evaluateEnergyFlexibility(canonical);const events=[];for(let k=0;k<2+Math.floor(r()*8);k++) events.push(r()<0.65?structuredClone(rev2):structuredClone(rev1));events.push(structuredClone(rev1),structuredClone(rev2));events.sort(()=>r()-0.5);const replay=structuredClone(i);replay.energyEvents=events;delete replay.energySignal;const actual=evaluateEnergyFlexibility(replay);assert.equal(actual.effectiveSignalRevision,2);assert.equal(actual.reproducibilityHash,expected.reproducibilityHash);assert.deepEqual(actual.rankedOptions,expected.rankedOptions);}});
+

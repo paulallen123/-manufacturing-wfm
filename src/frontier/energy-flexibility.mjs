@@ -116,6 +116,7 @@ function economics(option={}){
   const labourCost=premium+agency+transport,disruptionCost=churn+penalty;
   const uncertainty=Math.max(0,Math.min(1,nonNegative(e.uncertaintyPct,'uncertaintyPct',failures,0)));
   const energyValueLowerBound=Math.max(0,nonNegative(e.lowerBoundEnergyValue,'lowerBoundEnergyValue',failures,grossEnergyValue*(1-uncertainty)));
+  if(energyValueLowerBound>grossEnergyValue) failures.push('invalid_economics:lowerBoundEnergyValue');
   const labourCostUpperBound=Math.max(labourCost,nonNegative(l.upperBoundCost,'upperBoundCost',failures,labourCost));
   const disruptionCostUpperBound=Math.max(disruptionCost,nonNegative(p.upperBoundPenalty,'upperBoundPenalty',failures,penalty)+nonNegative(option.upperBoundScheduleChurnCost,'upperBoundScheduleChurnCost',failures,churn));
   return {failures,avoidedEnergyCost:avoided,flexibilityReward:reward,stackingAllowed,doubleCountGuardApplied,grossEnergyValue,energyValueLowerBound,labourCost,labourCostUpperBound,disruptionCost,disruptionCostUpperBound,netControllableValue:grossEnergyValue-labourCost-disruptionCost,conservativeNetValue:energyValueLowerBound-labourCostUpperBound-disruptionCostUpperBound};
@@ -178,3 +179,4 @@ export function isParetoBetterThanBaseline(option,baseline){
   if(!baseline) return option.selectionValue>0;
   return option.selectionValue>baseline.selectionValue;
 }
+
