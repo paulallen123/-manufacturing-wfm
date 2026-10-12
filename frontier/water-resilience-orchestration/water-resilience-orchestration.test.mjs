@@ -72,9 +72,27 @@ test('stale policy blocks scoring',()=>{
 });
 
 test('outcome learning preserves predicted vs realised water',()=>{
- const r=reconcileWaterOutcome({recommendation:{id:'R1',predictedFreshWaterM3:11},decision:{status:'accepted'},observed:{authoritative:true,actualFreshWaterM3:12.5},operations:{authoritative:true,productionCompleted:true},financial:{authoritative:true,realisedWaterCost:20}});
+ const r=reconcileWaterOutcome({recommendation:{id:'R1',tenantId:'A',siteId:'S1',predictedFreshWaterM3:11},decision:{status:'accepted',recommendationId:'R1',tenantId:'A',siteId:'S1'},observed:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',actualFreshWaterM3:12.5},operations:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',productionCompleted:true},financial:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',realisedWaterCost:20}});
  assert.equal(r.status,'reconciled');
  assert.equal(r.calibration.waterErrorM3,1.5);
+});
+
+test('foreign or unbound outcome evidence cannot calibrate a recommendation',()=>{
+ const base={recommendation:{id:'R1',tenantId:'A',siteId:'S1',predictedFreshWaterM3:11},decision:{status:'accepted',recommendationId:'R1',tenantId:'A',siteId:'S1'},observed:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',actualFreshWaterM3:12.5},operations:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',productionCompleted:true},financial:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',realisedWaterCost:20}};
+ for(const field of ['decision','observed','operations','financial']){
+  for(const [key,value] of [['recommendationId','R2'],['tenantId','B'],['siteId','S2'],['recommendationId',undefined],['tenantId',undefined],['siteId',undefined]]){
+   const input=structuredClone(base);input[field][key]=value;
+   const result=reconcileWaterOutcome(input);
+   assert.equal(result.status,'incomplete',`${field}.${key}=${value}`);
+   assert.equal(result.reason,'outcome_attribution_invalid');
+  }
+ }
+ assert.deepEqual(reconcileWaterOutcome({...base,recommendation:{...base.recommendation,siteId:undefined}}),{status:'incomplete',reason:'outcome_attribution_invalid'});
+ assert.deepEqual(reconcileWaterOutcome({...base,recommendation:{...base.recommendation,tenantId:undefined}}),{status:'incomplete',reason:'outcome_attribution_invalid'});
+ const rejected=structuredClone(base);rejected.decision.status='rejected';
+ assert.equal(reconcileWaterOutcome(rejected).outcomeClass,'rejected_by_human');
+ rejected.decision.recommendationId='R2';
+ assert.deepEqual(reconcileWaterOutcome(rejected),{status:'incomplete',reason:'outcome_attribution_invalid'});
 });
 
 const candidate={id:'candidate',assignments:[{taskId:'T1',workerId:'W1',slot:2},{taskId:'T2',workerId:'W2',slot:1}]};
@@ -246,3 +264,4 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
+
