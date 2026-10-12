@@ -1,4 +1,4 @@
-export const WATER_RESILIENCE_VERSION='water-resilience-orchestration-v0.1.0';
+export const WATER_RESILIENCE_VERSION='water-resilience-orchestration-v0.1.1';
 
 const clean=v=>typeof v==='string'?v.trim():'';
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
@@ -152,7 +152,7 @@ export function reconcileWaterOutcome({recommendation,decision,observed,operatio
   const decisionStatus=clean(decision?.status);
   if(!clean(recommendation?.id)||!['accepted','rejected'].includes(decisionStatus))return {status:'incomplete',reason:'decision_missing'};
   if(!clean(recommendation?.siteId)||
-     [decision,...(decisionStatus==='accepted'?[observed,operations,...(financial==null?[]:[financial])]:[])].some(evidence=>
+     [decision,...(decisionStatus==='accepted'?[observed,operations,...(financial?.authoritative===true?[financial]:[])]:[])].some(evidence=>
        evidence?.recommendationId!==recommendation.id||evidence?.siteId!==recommendation.siteId)){
     return {status:'incomplete',reason:'outcome_scope_mismatch'};
   }
@@ -169,4 +169,3 @@ export function reconcileWaterOutcome({recommendation,decision,observed,operatio
     authorityBoundary:'Outcome learning may calibrate future advice but cannot automatically alter water policy, quality limits, permits, recipes or workforce rules.'
   };
 }
-
