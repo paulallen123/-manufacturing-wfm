@@ -70,6 +70,7 @@ export function evaluateWaterResiliencePlan({policy,workers=[],tasks=[],plan,now
     if(!clean(t?.id)||!clean(t?.skill)||!finite(Number(t?.freshWaterM3))||Number(t.freshWaterM3)<0||!finite(Number(t?.effluentM3))||Number(t.effluentM3)<0){
       return {status:'rejected',reason:'task_invalid',taskId:t?.id??null};
     }
+    if(t.latePenalty!==undefined&&(!finite(t.latePenalty)||t.latePenalty<0))return {status:'rejected',reason:'task_late_penalty_invalid',taskId:t.id};
     if(!Number.isInteger(t.earliestSlot)||!Number.isInteger(t.latestSlot)||t.latestSlot<t.earliestSlot)return {status:'rejected',reason:'task_window_invalid',taskId:t.id};
   }
 
@@ -163,3 +164,4 @@ export function reconcileWaterOutcome({recommendation,decision,observed,operatio
     authorityBoundary:'Outcome learning may calibrate future advice but cannot automatically alter water policy, quality limits, permits, recipes or workforce rules.'
   };
 }
+
