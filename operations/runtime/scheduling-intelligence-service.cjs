@@ -119,11 +119,20 @@ function createSchedulingIntelligenceService(options = {}) {
   function requireManager(req, res) {
     const c = requireAuth(req, res);
     if (!c) return null;
-    if (String(c.role).toLowerCase() === 'employee') {
+    if (!['manager', 'director', 'supervisor'].includes(String(c.role).toLowerCase())) {
       writeJson(res, 403, { error: 'Scheduling intelligence requires an authorised manager or administrator.' });
       return null;
     }
     return c;
+  }
+  function requireCurrentManager(req, res, initial) {
+    const current = requireManager(req, res);
+    if (!current) return null;
+    if (current.email !== initial.email || current.tenant !== initial.tenant || current.role !== initial.role) {
+      writeJson(res, 403, { error: 'Scheduling authority changed. Refresh the signed-in context.' });
+      return null;
+    }
+    return current;
   }
   function requireInternal(req, res) {
     if (!internalToken) { writeJson(res, 503, { error: 'Trusted scheduling worker is not configured.' }); return false; }
@@ -208,6 +217,8 @@ function createSchedulingIntelligenceService(options = {}) {
 
   async function managerWhatIf(req, res, c) {
     const body = await readJson(req);
+    c = requireCurrentManager(req, res, c);
+    if (!c) return true;
     const plan = createSchedulingPlan({ ...(body.input || {}), tenant: c.tenant });
     return writeJson(res, 200, {
       contractVersion: CONTRACT_VERSION,
@@ -220,12 +231,16 @@ function createSchedulingIntelligenceService(options = {}) {
 
   async function managerOpenShift(req, res, c) {
     const body = await readJson(req);
+    c = requireCurrentManager(req, res, c);
+    if (!c) return true;
     const result = evaluateOpenShift(body.input || {});
     return writeJson(res, 200, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result });
   }
 
   async function managerSwap(req, res, c) {
     const body = await readJson(req);
+    c = requireCurrentManager(req, res, c);
+    if (!c) return true;
     const result = evaluateSwap(body.input || {});
     return writeJson(res, 200, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result });
   }
@@ -268,9 +283,11 @@ function createSchedulingIntelligenceService(options = {}) {
       }
       if (req.method === 'POST' && path === PREFIX + '/forecast/what-if') {
         const b = await readJson(req);
+        const current = requireCurrentManager(req, res, c);
+        if (!current) return true;
         const forecast = forecastDemand(b.input || {});
         const labour = b.capacity ? toHeadcountForecast({ forecast, ...b.capacity }) : null;
-        return writeJson(res, 200, { tenant: c.tenant, forecast, labour, scenarioOnly: true, authority: 'NO_EXECUTION' });
+        return writeJson(res, 200, { tenant: current.tenant, forecast, labour, scenarioOnly: true, authority: 'NO_EXECUTION' });
       }
       if (req.method === 'POST' && path === PREFIX + '/what-if') return await managerWhatIf(req, res, c);
       if (req.method === 'POST' && path === PREFIX + '/open-shift/evaluate') return await managerOpenShift(req, res, c);
