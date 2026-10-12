@@ -668,3 +668,119 @@ test('current supersession chains withdraw each predecessor and never revive it 
   assert.equal(f.ledger.assess(['replacement-2'], { tenant: 'tenant-a' }).safe, false);
   assert.equal(f.ledger.verifyChain(), true);
 });
+
+
+function firstUseReleaseFixture(overrides = {}) {
+  const f = receiptFixture();
+  f.ledger.append({
+    id: 'release-evidence', tenant: 'tenant-a', subjectId: 'batch-1',
+    claimKey: 'manufacturing.release', value: { released: true },
+    epistemicType: 'OBSERVED_FACT', sourceSystem: 'qms',
+    observedAt: '2026-09-23T07:59:00.000Z',
+    effectiveAt: '2026-09-23T08:00:00.000Z', ...overrides,
+  });
+  f.kernel.issueGrant({ ...f.grantInput, actionTypes: ['manufacturing.release'],
+    evidencePrerequisites: ['release-evidence'] });
+  f.gateway.register({
+    actionType: 'manufacturing.release', domain: 'production', riskClass: 'LOW',
+    executorId: 'release-executor', verifierId: 'release-verifier',
+    executor: async ({ action }) => {
+      f.effects.executions += 1;
+      return { executorId: 'release-executor', executionDigest: digest(action) };
+    },
+    verifier: async ({ executionDigest }) => {
+      f.effects.verifications += 1;
+      return { verifierId: 'release-verifier', verified: true, executionDigest };
+    },
+  });
+  f.input = { ...f.input, actionType: 'manufacturing.release', evidenceRefs: ['release-evidence'] };
+  return f;
+}
+
+for (const [name, overrides] of [
+  ['future-effective', { effectiveAt: '2026-09-23T08:01:00.000Z' }],
+  ['future-observed', { observedAt: '2026-09-23T08:01:00.000Z' }],
+  ['both future', { observedAt: '2026-09-23T08:01:00.000Z', effectiveAt: '2026-09-23T08:02:00.000Z' }],
+]) {
+  test(name + ' evidence is complete but unsafe for first use', () => {
+    const f = firstUseReleaseFixture(overrides);
+    const assessment = f.ledger.assess(['release-evidence'], { tenant: 'tenant-a' });
+    assert.equal(assessment.complete, true);
+    assert.equal(assessment.safe, false);
+    assert.deepEqual(assessment.notEffective, ['release-evidence']);
+    assert.equal(f.ledger.verifyChain(), true);
+  });
+  test(name + ' manufacturing evidence cannot execute or verify a first action', async () => {
+    const f = firstUseReleaseFixture(overrides);
+    await assert.rejects(() => f.gateway.execute(f.input),
+      error => /^VECTOR_ACTION_(AUTHORITY|UNKNOWNS)$/.test(error.code));
+    assert.equal(f.effects.executions, 0);
+    assert.equal(f.effects.verifications, 0);
+    assert.equal(f.gateway.idempotency.size, 0);
+    assert.equal(f.ledger.verifyChain(), true);
+  });
+}
+
+for (const [name, time] of [
+  ['exact observed/effective boundary', '2026-09-23T08:02:00.000Z'],
+  ['after both timestamps', '2026-09-23T08:02:00.001Z'],
+]) {
+  test(name + ' permits otherwise valid first use and unchanged retry', async () => {
+    const f = firstUseReleaseFixture({
+      observedAt: '2026-09-23T08:01:00.000Z', effectiveAt: '2026-09-23T08:02:00.000Z',
+    });
+    f.setNow(time);
+    const assessment = f.ledger.assess(['release-evidence'], { tenant: 'tenant-a' });
+    assert.equal(assessment.safe, true);
+    assert.deepEqual(assessment.notEffective, []);
+    const first = await f.gateway.execute(f.input);
+    assert.equal(first.status, 'VERIFIED');
+    assert.deepEqual(await f.gateway.execute(f.input), first);
+    assert.equal(f.effects.executions, 1);
+    assert.equal(f.effects.verifications, 1);
+  });
+}
+
+test('observation boundary alone cannot admit later-effective release evidence', async () => {
+  const f = firstUseReleaseFixture({
+    observedAt: '2026-09-23T08:01:00.000Z', effectiveAt: '2026-09-23T08:02:00.000Z',
+  });
+  f.setNow('2026-09-23T08:01:00.000Z');
+  await assert.rejects(() => f.gateway.execute(f.input));
+  assert.equal(f.effects.executions, 0);
+  assert.equal(f.effects.verifications, 0);
+});
+
+test('clock rollback cannot reuse a receipt before evidence becomes applicable', async () => {
+  const f = firstUseReleaseFixture();
+  const receipt = await f.gateway.execute(f.input);
+  const historical = JSON.stringify(receipt);
+  f.setNow('2026-09-23T07:59:59.999Z');
+  await assert.rejects(() => f.gateway.execute(f.input));
+  assert.equal(f.effects.executions, 1);
+  assert.equal(f.effects.verifications, 1);
+  assert.equal(JSON.stringify([...f.gateway.idempotency.values()][0]), historical);
+  f.setNow('2026-09-23T08:00:00.000Z');
+  assert.deepEqual(await f.gateway.execute(f.input), receipt);
+});
+
+test('effectivity transition changes admission digest without rewriting immutable evidence', () => {
+  const f = firstUseReleaseFixture({ effectiveAt: '2026-09-23T08:01:00.000Z' });
+  const row = f.ledger.get('release-evidence'), head = f.ledger.headDigest;
+  const before = f.ledger.assess(['release-evidence'], { tenant: 'tenant-a' });
+  f.setNow('2026-09-23T08:01:00.000Z');
+  const after = f.ledger.assess(['release-evidence'], { tenant: 'tenant-a' });
+  assert.equal(before.safe, false);
+  assert.equal(after.safe, true);
+  assert.notEqual(before.assessmentDigest, after.assessmentDigest);
+  assert.deepEqual(f.ledger.get('release-evidence'), row);
+  assert.equal(f.ledger.headDigest, head);
+});
+
+for (const now of [NaN, Infinity, -Infinity]) {
+  test('invalid assessment clock ' + now + ' fails closed', () => {
+    const f = firstUseReleaseFixture();
+    assert.throws(() => f.ledger.assess(['release-evidence'], { tenant: 'tenant-a', now }),
+      { code: 'VECTOR_EVIDENCE_TIME' });
+  });
+}
