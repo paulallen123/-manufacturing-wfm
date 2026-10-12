@@ -453,4 +453,3 @@ module.exports=Object.freeze({
   evaluateWorkerForSlot,validateSchedule,createSchedulingPlan,evaluateOpenShift,evaluateSwap,repairSchedulingPlan,
   capabilityContract,stable,digest
 });
-

@@ -223,4 +223,3 @@ test('UTC and explicit offsets denote identical instants; reversed overnight dat
  assert.throws(()=>evaluateOpenShift({requirement:shift('bad','2026-09-24T22:00:00Z','2026-09-24T06:00:00Z'),workers:[]}));
  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[],currentAssignments:null}));
 });
-
