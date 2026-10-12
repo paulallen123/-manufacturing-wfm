@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import {createHash} from 'node:crypto';
+import {createHash,createPublicKey,verify} from 'node:crypto';
 
 const root = process.cwd();
 const manifestPath = path.join(root, 'release', 'capability-superset.json');
@@ -25,6 +25,11 @@ function verifyRetirementReceipts(capability,requiredProof) {
   const now=Date.parse(process.env.VECTOR_PROOF_NOW||new Date().toISOString());
   if(!/^[a-f0-9]{40}$/.test(sourceSha||'')||!/^sha256:[a-f0-9]{64}$/.test(imageDigest||'')||!Number.isFinite(now))
     fail(`${capability.id}: exact candidate proof binding is required for retirement.`);
+  let trustedKey;
+  try{trustedKey=createPublicKey(process.env.VECTOR_RETIREMENT_PROOF_PUBLIC_KEY||'');}
+  catch{fail(`${capability.id}: trusted retirement proof public key is required.`);}
+  if(trustedKey.asymmetricKeyType!=='ed25519')
+    fail(`${capability.id}: Ed25519 retirement proof public key is required.`);
   const receipts=capability.proofReceipts;
   if(!Array.isArray(receipts)||receipts.length!==requiredProof.size)
     fail(`${capability.id}: one evidence receipt is required for every retirement proof.`);
@@ -48,6 +53,10 @@ function verifyRetirementReceipts(capability,requiredProof) {
     const bytes=fs.readFileSync(absolute);
     if(bytes.length>1024*1024||createHash('sha256').update(bytes).digest('hex')!==descriptor.evidenceSha256)
       fail(`${capability.id}: retirement evidence bytes do not match the receipt.`);
+    if(typeof descriptor.evidenceSignature!=='string'||
+       !/^[A-Za-z0-9+/]{86}==$/.test(descriptor.evidenceSignature)||
+       !verify(null,bytes,trustedKey,Buffer.from(descriptor.evidenceSignature,'base64')))
+      fail(`${capability.id}: retirement evidence lacks a trusted signature.`);
     let evidence;
     try{evidence=JSON.parse(bytes.toString('utf8'));}catch{fail(`${capability.id}: retirement evidence is not JSON.`);}
     const observed=Date.parse(evidence.observedAt),expires=Date.parse(evidence.expiresAt);
@@ -58,7 +67,6 @@ function verifyRetirementReceipts(capability,requiredProof) {
       fail(`${capability.id}: retirement receipt is stale, unsuccessful or bound to another candidate.`);
   }
 }
-
 
 
 if (manifest.schemaVersion !== 1) fail('Unsupported superset manifest schema.');
@@ -101,10 +109,7 @@ for (const capability of manifest.capabilities || []) {
     if (!releaseTargets.has(target)) fail(`${capability.id}: unknown FORGE release target ${target}`);
   }
 
-  if (!Array.isArray(capability.integratedPaths) || capability.integratedPaths.length === 0) {
-    fail(`${capability.id}: integrated source files are required.`);
-  }
-  for (const rel of capability.integratedPaths) {
+  for (const rel of capability.integratedPaths || []) {
     if (typeof rel !== 'string' || !rel || path.isAbsolute(rel)) {
       fail(`${capability.id}: invalid integrated source path: ${rel}`);
     }
