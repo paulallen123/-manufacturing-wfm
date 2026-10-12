@@ -59,8 +59,17 @@ for (const capability of manifest.capabilities || []) {
   }
 
   for (const rel of capability.integratedPaths || []) {
-    const absolute = path.join(root, rel);
-    if (!fs.existsSync(absolute)) fail(`${capability.id}: integrated path missing from exact candidate: ${rel}`);
+    if (typeof rel !== 'string' || !rel || path.isAbsolute(rel)) {
+      fail(`${capability.id}: invalid integrated source path: ${rel}`);
+    }
+    const absolute = path.resolve(root, rel);
+    const withinRoot = path.relative(root, absolute);
+    if (!withinRoot || withinRoot === '..' || withinRoot.startsWith(`..${path.sep}`)) {
+      fail(`${capability.id}: integrated source path escapes exact candidate: ${rel}`);
+    }
+    if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile() || fs.realpathSync(absolute) !== absolute) {
+      fail(`${capability.id}: integrated source file missing from exact candidate: ${rel}`);
+    }
   }
 
   if (capability.mayRetireLegacySource === true && capability.status !== 'superset-proven') {
@@ -94,3 +103,4 @@ for (const id of requiredCapabilities) {
 }
 
 console.log(`VECTOR_CAPABILITY_SUPERSET_GATE=PASS capabilities=${seen.size} retirementProofs=${requiredProof.size}`);
+
