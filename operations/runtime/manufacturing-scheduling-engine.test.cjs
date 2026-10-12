@@ -58,6 +58,41 @@ test('capability contract is explicit about limits',()=>{
 
 // F2/#233: deterministic interval and swap projection regressions.
 const engine=require('./manufacturing-scheduling-engine.cjs');
+// A continuous union of availability windows covers the shift; gaps never do.
+function windows(...pairs){return pairs.map(([start,end])=>({start:'2026-09-24T'+start+'Z',end:'2026-09-24T'+end+'Z'}));}
+test('adjacent availability windows recover full coverage in both solvers',()=>{
+ for(const exactSlotLimit of [1,10]){
+  const w=worker('a',{availability:windows(['06:00:00','10:00:00'],['10:00:00','14:00:00'])});
+  const p=createSchedulingPlan(input({workers:[w],requirements:[baseReq,{...baseReq,id:'parallel'}],policy:{exactSlotLimit}}));
+  assert.equal(p.quality.filledSlots,1);assert.equal(p.quality.coveragePct,50);
+  assert.equal(p.quality.scheduledHours,8);assert.equal(p.validation.valid,true);assert.equal(p.executionPermitted,false);
+ }
+ const p=createSchedulingPlan(input({workers:[worker('a',{availability:windows(['06:00:00','10:00:00'],['10:00:00','14:00:00'])})]}));
+ assert.equal(p.quality.coveragePct,100);assert.equal(p.assignments[0].workerId,'a');
+});
+test('availability union accepts unsorted overlapping duplicate and nested windows without mutation',()=>{
+ const w=worker('a',{availability:windows(['10:00:00','14:00:00'],['08:00:00','12:00:00'],['06:00:00','10:00:00'],['07:00:00','09:00:00'],['06:00:00','10:00:00'])});
+ const before=JSON.stringify(w);freezeDeep(w);
+ assert.equal(evaluateOpenShift({requirement:baseReq,workers:[w]}).ranked[0].eligible,true);
+ assert.equal(JSON.stringify(w),before);
+});
+test('one millisecond availability gaps and incomplete boundaries remain unavailable',()=>{
+ for(const availability of [windows(['06:00:00','10:00:00'],['10:00:00.001','14:00:00']),windows(['06:00:00.001','10:00:00'],['10:00:00','14:00:00']),windows(['06:00:00','10:00:00'],['10:00:00','13:59:59.999']),[]]){
+  const r=evaluateOpenShift({requirement:baseReq,workers:[worker('a',{availability})]}).ranked[0];
+  assert.equal(r.eligible,false);assert.ok(r.failures.includes('NOT_AVAILABLE'));
+ }
+});
+test('availability union compares actual instants across explicit timezone offsets',()=>{
+ const availability=[{start:'2026-09-24T07:00:00+01:00',end:'2026-09-24T11:00:00+01:00'},{start:'2026-09-24T12:00:00+02:00',end:'2026-09-24T16:00:00+02:00'}];
+ assert.equal(evaluateOpenShift({requirement:baseReq,workers:[worker('a',{availability})]}).ranked[0].eligible,true);
+});
+test('availability union never bypasses missing skill certification or rest constraints',()=>{
+ for(const change of [{skills:[]},{certifications:[]},{previousShiftEnd:'2026-09-24T05:00:00Z'}]){
+  const w=worker('a',{availability:windows(['06:00:00','10:00:00'],['10:00:00','14:00:00']),...change});
+  const r=evaluateOpenShift({requirement:baseReq,workers:[w]}).ranked[0];
+  assert.equal(r.eligible,false);assert.equal(r.failures.includes('NOT_AVAILABLE'),false);
+ }
+});
 function wideWorker(id,o={}){return worker(id,{availability:[{start:'2026-09-20T00:00:00Z',end:'2026-10-01T00:00:00Z'}],previousShiftEnd:null,hoursWorkedWeek:0,...o});}
 function shift(id,start,end){return {...baseReq,id,start,end};}
 function assignment(r,workerId){return {slotId:r.id+'#1',requirementId:r.id,workerId,start:r.start,end:r.end};}
@@ -178,3 +213,4 @@ test('UTC and explicit offsets denote identical instants; reversed overnight dat
  assert.throws(()=>evaluateOpenShift({requirement:shift('bad','2026-09-24T22:00:00Z','2026-09-24T06:00:00Z'),workers:[]}));
  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[],currentAssignments:null}));
 });
+
