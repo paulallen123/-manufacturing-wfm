@@ -121,21 +121,36 @@ function inspectProofCarryingState(proof, current = {}) {
   if (digest(payload) !== expectedDigest) reasons.push('PROOF_DIGEST_MISMATCH');
 
   const expectedTenant = text(current.tenant, 120);
-  if (expectedTenant && proof.tenant !== expectedTenant) reasons.push('TENANT_CHANGED');
+  if (!expectedTenant) reasons.push('CURRENT_TENANT_MISSING');
+  else if (proof.tenant !== expectedTenant) reasons.push('TENANT_CHANGED');
 
   const expectedRevision = text(current.sourceRevision, 240);
-  if (expectedRevision && proof.sourceRevision !== expectedRevision) reasons.push('SOURCE_REVISION_CHANGED');
+  if (!expectedRevision) reasons.push('CURRENT_SOURCE_REVISION_MISSING');
+  else if (proof.sourceRevision !== expectedRevision) reasons.push('SOURCE_REVISION_CHANGED');
 
-  if (current.releaseSha != null && current.releaseSha !== '') {
+  if (current.releaseSha == null || current.releaseSha === '') reasons.push('RELEASE_IDENTITY_UNPROVEN');
+  else {
     let sha = null;
     try { sha = releaseSha(current.releaseSha); } catch { reasons.push('RELEASE_IDENTITY_UNPROVEN'); }
     if (sha && proof.releaseSha !== sha) reasons.push('RELEASE_SHA_CHANGED');
   }
 
-  if (current.scope) {
+  if (!current.scope) reasons.push('PROOF_SCOPE_MISSING');
+  else {
     let scopeDigest = null;
     try { scopeDigest = digest(normaliseScope(current.scope)); } catch { reasons.push('PROOF_SCOPE_MISSING'); }
     if (scopeDigest && proof.scopeDigest !== scopeDigest) reasons.push('DECISION_SCOPE_CHANGED');
+  }
+
+  for (const [field, code, max] of [
+    ['actorRef','ACTOR_CHANGED',180],
+    ['actorAuthority','ACTOR_AUTHORITY_CHANGED',100],
+    ['decisionRef','DECISION_CHANGED',200]
+  ]) {
+    if (current[field] != null && text(current[field],max)) {
+      const expected = field === 'actorAuthority' ? text(current[field],max).toUpperCase() : text(current[field],max);
+      if (proof[field] !== expected) reasons.push(code);
+    }
   }
 
   return { current: reasons.length === 0, reasons };
