@@ -239,3 +239,51 @@ test('maximum shift hours participates in plan identity only when configured',()
 test('existing capability discovery advertises configured maximum shift hours',()=>{
  assert.equal(capabilityContract().tableStakes.configuredMaximumShiftHours,true);
 });
+
+// Independent validation must account for the complete requested schedule.
+function shortfallAssignment(r){return {...assignment(r,null),shortfall:true};}
+test('independent validation rejects empty and partial schedules with missing slot identities',()=>{
+ for(const assignments of [[],[assignment(early,'a')]]){
+  const r=validate([early,late],assignments);
+  assert.equal(r.valid,false);
+  const missing=r.violations.filter(v=>v.reasons.includes('MISSING_SLOT_ASSIGNMENT')).map(v=>v.slotId).sort();
+  assert.deepEqual(missing,assignments.length?[late.id+'#1']:[early.id+'#1',late.id+'#1']);
+ }
+});
+test('independent validation rejects unknown shortfalls even when all real slots are covered',()=>{
+ const invented=shift('invented',early.start,early.end);
+ const r=validate([early],[assignment(early,'a'),shortfallAssignment(invented)]);
+ assert.equal(r.valid,false);
+ assert.ok(r.violations.some(v=>v.slotId==='invented#1'&&v.reasons.includes('UNKNOWN_WORKER_OR_SLOT')));
+});
+test('independent validation checks shortfall times against the requested slot',()=>{
+ for(const changes of [{start:'2026-09-24T05:00:00Z'},{end:'2026-09-24T15:00:00Z'}]){
+  const r=validate([early],[{...shortfallAssignment(early),...changes}]);
+  assert.equal(r.valid,false);assert.ok(r.violations[0].reasons.includes('ASSIGNMENT_SLOT_MISMATCH'));
+ }
+});
+test('independent validation rejects a filled assignment that also claims shortfall',()=>{
+ const r=validate([early],[{...assignment(early,'a'),shortfall:true}]);
+ assert.equal(r.valid,false);assert.ok(r.violations[0].reasons.includes('INVALID_ASSIGNMENT'));
+});
+test('complete schedules retain explicit shortfalls in either input order without mutation',()=>{
+ for(const assignments of [[assignment(early,'a'),shortfallAssignment(late)],[shortfallAssignment(late),assignment(early,'a')]]){
+  const before=JSON.stringify(assignments);freezeDeep(assignments);
+  assert.deepEqual(validate([early,late],assignments),{valid:true,violations:[]});
+  assert.equal(JSON.stringify(assignments),before);
+ }
+ assert.deepEqual(validate([early,late],[shortfallAssignment(early),shortfallAssignment(late)]),{valid:true,violations:[]});
+ assert.deepEqual(validate([],[]),{valid:true,violations:[]});
+});
+test('independent validation covers every headcount slot and rejects duplicate shortfalls',()=>{
+ const req={...early,headcount:2};
+ const workers=new Map([['a',engine.normaliseWorker(wideWorker('a'))]]);
+ const first={...evaluateOpenShift({requirement:req,workers:[]}).slot};
+ const second={...first,slotId:req.id+'#2'};
+ const slots=new Map([[first.slotId,first],[second.slotId,second]]);
+ const firstAssignment=assignment(req,'a'),secondAssignment={...shortfallAssignment(req),slotId:second.slotId};
+ const policy=engine.normalisePolicy();
+ assert.equal(engine.validateSchedule([firstAssignment],workers,slots,policy).valid,false);
+ assert.equal(engine.validateSchedule([firstAssignment,secondAssignment],workers,slots,policy).valid,true);
+ assert.equal(engine.validateSchedule([firstAssignment,secondAssignment,secondAssignment],workers,slots,policy).valid,false);
+});
