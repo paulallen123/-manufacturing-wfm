@@ -13,9 +13,10 @@ on:
       - 'scripts/validate-resilience-scenarios.mjs'
       - '.github/workflows/customer-proof-gate.yml'
   pull_request:
-    branches: [release/vector-ui-v2-20260921]
+    branches: [release/vector-ui-v2-20260921, release/vector-customer-ready-candidate-20260925]
     paths:
       - 'artifact/vector-proof-freeze.trigger'
+      - 'frontier/water-resilience-orchestration/**'
       - '.github/workflows/customer-proof-gate.yml'
   workflow_dispatch:
 
