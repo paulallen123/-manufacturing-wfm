@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-export const ENERGY_FLEX_ENGINE_VERSION = 'energy-flex-shadow-v0.4.0';
+export const ENERGY_FLEX_ENGINE_VERSION = 'energy-flex-shadow-v0.4.1';
 
 const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
 const ms=(v)=>{const x=typeof v==='number'?v:Date.parse(v);return Number.isFinite(x)?x:null;};
@@ -20,9 +20,12 @@ export function reduceEnergySignalEventsDetailed(events=[]){
   const atRevision=unique.filter(e=>Number(e.revision)===maxRevision);
   const maxPublished=Math.max(...atRevision.map(e=>ms(e.publishedAt)));
   const latest=atRevision.filter(e=>ms(e.publishedAt)===maxPublished);
-  const conflict=latest.length>1;
+  // Publication time orders observations; it cannot resolve contradictory
+  // payloads carrying the same authoritative revision.
+  const conflict=atRevision.length>1;
   const signal=[...latest].sort((a,b)=>statusPrecedence(a.status)-statusPrecedence(b.status)||hash(a).localeCompare(hash(b)))[latest.length-1];
-  return {signal,eventCount:inputEvents.length,usableCount:usable.length,uniqueEventCount:unique.length,duplicateCount:usable.length-unique.length,conflict};
+  const signalEvidenceHash=hash(atRevision.map(hash).sort());
+  return {signal,eventCount:inputEvents.length,usableCount:usable.length,uniqueEventCount:unique.length,duplicateCount:usable.length-unique.length,conflict,signalEvidenceHash};
 }
 
 export function reduceEnergySignalEvents(events=[]){
@@ -34,6 +37,7 @@ function signalState(signal,now,input,reduction){
   if(!signal) return {fresh:false,reasons:['missing_energy_signal']};
   if(reduction?.conflict) reasons.push('energy_signal_revision_conflict');
   if(['cancelled','superseded'].includes(signal.status)) reasons.push(`energy_signal_${signal.status}`);
+  else if(signal.status!=='active') reasons.push('energy_signal_status_unknown');
   const published=ms(signal.publishedAt),freshUntil=ms(signal.freshUntil),windowEnd=ms(signal.windowEnd),deadline=ms(signal.acceptanceDeadline);
   if(published===null) reasons.push('energy_signal_missing_publication_time');
   if(published!==null&&published>now) reasons.push('energy_signal_from_future');
@@ -169,7 +173,7 @@ export function evaluateEnergyFlexibility(input){
   let decisionState=rankedOptions.length?'clear_leader':'no_safe_or_valuable_flexibility';
   if(rankedOptions.length>1){const top=rankedOptions[0].selectionValue,second=rankedOptions[1].selectionValue;if(Math.abs(top-second)/Math.max(Math.abs(top),1)<=tieTolerance) decisionState='multiple_close_options';}
   const result={engineVersion:ENERGY_FLEX_ENGINE_VERSION,valueBasis,status:rankedOptions.length?'recommend_options':'no_safe_or_valuable_flexibility',decisionState,signalFresh:signal.fresh,signalFailures:signal.reasons,effectiveSignalRevision:energySignal?.revision??null,eventReduction:eventReduction?{eventCount:eventReduction.eventCount,usableCount:eventReduction.usableCount,uniqueEventCount:eventReduction.uniqueEventCount,duplicateCount:eventReduction.duplicateCount,conflict:eventReduction.conflict}:null,baseline,rankedOptions,dominatedOptions,rejectedOptions:evaluated.filter(x=>!x.valuable),authorityBoundary:'planning_and_workflow_handoff_only_no_direct_actuation'};
-  result.reproducibilityHash=hash({engineVersion:ENERGY_FLEX_ENGINE_VERSION,input:canonicalDecisionInput(input,energySignal),result:{valueBasis:result.valueBasis,status:result.status,decisionState:result.decisionState,signalFresh:result.signalFresh,rankedOptions:result.rankedOptions,dominatedOptions:result.dominatedOptions,rejectedOptions:result.rejectedOptions,authorityBoundary:result.authorityBoundary}});
+  result.reproducibilityHash=hash({engineVersion:ENERGY_FLEX_ENGINE_VERSION,input:canonicalDecisionInput(input,energySignal),signalEvidenceHash:eventReduction?.signalEvidenceHash??null,result:{valueBasis:result.valueBasis,status:result.status,decisionState:result.decisionState,signalFresh:result.signalFresh,signalFailures:result.signalFailures,rankedOptions:result.rankedOptions,dominatedOptions:result.dominatedOptions,rejectedOptions:result.rejectedOptions,authorityBoundary:result.authorityBoundary}});
   return result;
 }
 
@@ -178,3 +182,4 @@ export function isParetoBetterThanBaseline(option,baseline){
   if(!baseline) return option.selectionValue>0;
   return option.selectionValue>baseline.selectionValue;
 }
+
