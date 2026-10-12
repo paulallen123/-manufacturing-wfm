@@ -7,7 +7,9 @@
     {
       "id": "l2l-connected-manufacturing-operations",
       "patch": {
-        "protocols": ["REST"],
+        "protocols": [
+          "REST"
+        ],
         "auth": "vendor-assisted-authentication-not-publicly-specified",
         "researchStatus": "docs-verified",
         "docsUrl": "https://www.l2l.com/hubfs/Product%20Sheet%20PDFs/CloudDISPATCH%20Intro.pdf?hsLang=en",
@@ -88,95 +90,99 @@
           "nextDevelopmentAction": "Map the documented L2L REST application interface onto the existing REST/OpenAPI adapter without inventing SCADA/OPC routes. In an authorised L2L sandbox or customer tenant, identify the exact base URL/version/authentication and scopes, prove the technical identity is read-only and correctly site/entity-scoped, enumerate supported production/maintenance/training objects, test pagination/rate-limit/retry/schema behaviour, normalise representative records, and only then promote beyond spec verification. Treat Machine Data Sync/plant connectivity as a separate edge-gated evidence path."
         }
       }
-    }
-  ],
-  "systems": [
+    },
     {
       "id": "sepasoft-mes",
-      "name": "Sepasoft MES Module Suite",
-      "category": "mes-mom-quality-production",
-      "priority": "P1",
-      "protocols": ["REST", "SOAP"],
-      "auth": "ignition-user-source-or-provider-config",
-      "researchStatus": "docs-verified",
-      "docsUrl": "https://docs.sepasoft.com/articles/user-manual/web-services",
-      "testLevel": "spec-verified",
-      "writeEnabled": false,
-      "customerEdgeRequired": true,
-      "evidenceUrl": "https://docs.sepasoft.com/articles/knowledge-base/serving-up-analysis-data-as-a-web-service-rest-endpoint",
-      "evidenceNote": "Sepasoft's current documentation confirms that its Web Services module can make an Ignition Gateway a REST or SOAP service provider for external systems and can expose MES analysis/production data. Sepasoft also documents MES 3.0/4.0 scripting for production, work orders, OEE/downtime, batch, traceability and SPC, and states the suite is built on Inductive Automation Ignition. Provider endpoints can be secured with Ignition User Sources and SSL, while the same platform can also expose mutative operations such as schedule edits or alarm actions. WFM therefore reuses only the existing REST/SOAP read path behind the customer/site edge, requires a dedicated read identity and route allowlist, and keeps all scripting/action/control authority disabled. No Sepasoft customer tenant, gateway or credentials were used.",
-      "valueReview": {
-        "basis": "vendor-docs",
-        "evidenceUrl": "https://www.sepasoft.com/",
-        "requiredPermissions": [
-          "customer-created Sepasoft/Ignition integration identity limited to specifically exposed read-only REST/SOAP operations",
-          "TLS plus customer-approved Ignition User Source/provider authentication; no anonymous production-data route",
-          "customer/site edge termination for the Ignition/Sepasoft gateway; no direct cloud scanning of plant networks",
-          "no MES scripting, schedule modification, alarm clearing, batch execution, tag writing, PLC/OPC write or other control authority"
+      "patch": {
+        "name": "Sepasoft MES Module Suite",
+        "category": "mes-mom-quality-production",
+        "priority": "P1",
+        "protocols": [
+          "REST",
+          "SOAP"
         ],
-        "dataAvailableOrExpected": [
-          "production runs, production results and work-order/schedule context exposed through customer-defined web-service operations",
-          "OEE, downtime and production-performance analysis",
-          "equipment/work-centre hierarchy and resource status",
-          "batch execution and traceability/genealogy context",
-          "SPC/quality results and material/lot context where the relevant Sepasoft modules are installed",
-          "real-time or historical MES analysis output intentionally exposed by the customer's Sepasoft Web Services configuration"
-        ],
-        "wfmObjects": [
-          "production-demand",
-          "work-centre",
-          "production-event",
-          "machine-state",
-          "downtime-event",
-          "quality-event",
-          "shift-outcome",
-          "integration-event"
-        ],
-        "automationOpportunities": [
-          "refresh labour demand from current work orders, production runs and equipment state rather than static schedules alone",
-          "redeploy appropriately skilled labour when OEE/downtime indicates a constrained or stopped line",
-          "join quality/SPC and traceability outcomes to worker/skill mix for root-cause and rework analysis",
-          "reuse equipment/work-centre structure during implementation to reduce manual line and resource mapping",
-          "attribute paid labour and overtime to actual production, downtime and quality outcomes for finance and executive reporting",
-          "after separate write certification, evaluate narrowly scoped schedule/workflow hand-offs without granting generic MES scripting or control"
-        ],
-        "customerValue": [
-          "labour-cost reduction",
-          "overtime reduction",
-          "scheduling efficiency",
-          "production throughput",
-          "downtime reduction",
-          "quality/rework reduction",
-          "inventory/logistics improvements",
-          "faster implementation",
-          "reduced administration",
-          "forecasting",
-          "finance attribution",
-          "executive reporting"
-        ],
-        "savingsHypotheses": [
-          "reduce paid idle time by matching staffing to actual line/work-order state from Sepasoft",
-          "reduce overtime caused by late visibility of downtime or production slippage",
-          "reduce rework and quality losses by correlating SPC/traceability outcomes with labour and skills deployment",
-          "reduce implementation effort by reusing the customer's Sepasoft equipment and work-centre model",
-          "improve labour-cost-per-unit and shift profitability analysis by combining WFM paid time with MES production evidence"
-        ],
-        "dataGaps": [
-          "Sepasoft Web Services are customer-configured, so there is no single universal endpoint or object contract across deployments",
-          "provider authentication, operation names and payload schemas depend on the customer's Ignition/Sepasoft configuration",
-          "MES 3.x and 4.x plus Ignition 8.1/8.3 combinations create version-specific behaviour and deployment differences",
-          "authoritative worker employment, payroll, absence, agency labour and legal qualification records normally remain outside Sepasoft",
-          "quality, traceability, batch and OEE data availability depends on the Sepasoft modules actually licensed and configured"
-        ],
-        "constraintsRisks": [
-          "the same Web Services module can expose mutative operations; endpoint allowlisting and effective read-only permission proof are mandatory",
-          "the gateway commonly sits inside a protected plant network, so customer-edge routing remains mandatory even though transport is HTTPS/SOAP",
-          "customer-defined REST/SOAP payloads can drift as projects are edited; schema fingerprints and mapping versioning are required",
-          "intermittent plant connectivity requires bounded retries, freshness tracking and duplicate/idempotency handling",
-          "Sepasoft can sit directly alongside Ignition tags and OPC-connected equipment, so WFM must never inherit tag-write or control privileges from the gateway identity"
-        ],
-        "nextDevelopmentAction": "Reuse the existing REST and SOAP adapters behind the customer/site edge. In an authorised Sepasoft/Ignition test gateway, enumerate only the customer-exposed read operations, prove a dedicated integration identity cannot invoke mutative web-service or scripting actions, fingerprint MES/Ingition versions and payload schemas, test pagination or bounded query windows where applicable, stale/retry/duplicate behaviour and custom fields, reconcile site/line/work-centre identifiers, and normalise representative production/OEE/downtime/quality records before promotion beyond spec verification."
+        "auth": "ignition-user-source-or-provider-config",
+        "researchStatus": "docs-verified",
+        "docsUrl": "https://docs.sepasoft.com/articles/user-manual/web-services",
+        "testLevel": "spec-verified",
+        "writeEnabled": false,
+        "customerEdgeRequired": true,
+        "evidenceUrl": "https://docs.sepasoft.com/articles/knowledge-base/serving-up-analysis-data-as-a-web-service-rest-endpoint",
+        "evidenceNote": "Sepasoft's current documentation confirms that its Web Services module can make an Ignition Gateway a REST or SOAP service provider for external systems and can expose MES analysis/production data. Sepasoft also documents MES 3.0/4.0 scripting for production, work orders, OEE/downtime, batch, traceability and SPC, and states the suite is built on Inductive Automation Ignition. Provider endpoints can be secured with Ignition User Sources and SSL, while the same platform can also expose mutative operations such as schedule edits or alarm actions. WFM therefore reuses only the existing REST/SOAP read path behind the customer/site edge, requires a dedicated read identity and route allowlist, and keeps all scripting/action/control authority disabled. No Sepasoft customer tenant, gateway or credentials were used.",
+        "valueReview": {
+          "basis": "vendor-docs",
+          "evidenceUrl": "https://www.sepasoft.com/",
+          "requiredPermissions": [
+            "customer-created Sepasoft/Ignition integration identity limited to specifically exposed read-only REST/SOAP operations",
+            "TLS plus customer-approved Ignition User Source/provider authentication; no anonymous production-data route",
+            "customer/site edge termination for the Ignition/Sepasoft gateway; no direct cloud scanning of plant networks",
+            "no MES scripting, schedule modification, alarm clearing, batch execution, tag writing, PLC/OPC write or other control authority"
+          ],
+          "dataAvailableOrExpected": [
+            "production runs, production results and work-order/schedule context exposed through customer-defined web-service operations",
+            "OEE, downtime and production-performance analysis",
+            "equipment/work-centre hierarchy and resource status",
+            "batch execution and traceability/genealogy context",
+            "SPC/quality results and material/lot context where the relevant Sepasoft modules are installed",
+            "real-time or historical MES analysis output intentionally exposed by the customer's Sepasoft Web Services configuration"
+          ],
+          "wfmObjects": [
+            "production-demand",
+            "work-centre",
+            "production-event",
+            "machine-state",
+            "downtime-event",
+            "quality-event",
+            "shift-outcome",
+            "integration-event"
+          ],
+          "automationOpportunities": [
+            "refresh labour demand from current work orders, production runs and equipment state rather than static schedules alone",
+            "redeploy appropriately skilled labour when OEE/downtime indicates a constrained or stopped line",
+            "join quality/SPC and traceability outcomes to worker/skill mix for root-cause and rework analysis",
+            "reuse equipment/work-centre structure during implementation to reduce manual line and resource mapping",
+            "attribute paid labour and overtime to actual production, downtime and quality outcomes for finance and executive reporting",
+            "after separate write certification, evaluate narrowly scoped schedule/workflow hand-offs without granting generic MES scripting or control"
+          ],
+          "customerValue": [
+            "labour-cost reduction",
+            "overtime reduction",
+            "scheduling efficiency",
+            "production throughput",
+            "downtime reduction",
+            "quality/rework reduction",
+            "inventory/logistics improvements",
+            "faster implementation",
+            "reduced administration",
+            "forecasting",
+            "finance attribution",
+            "executive reporting"
+          ],
+          "savingsHypotheses": [
+            "reduce paid idle time by matching staffing to actual line/work-order state from Sepasoft",
+            "reduce overtime caused by late visibility of downtime or production slippage",
+            "reduce rework and quality losses by correlating SPC/traceability outcomes with labour and skills deployment",
+            "reduce implementation effort by reusing the customer's Sepasoft equipment and work-centre model",
+            "improve labour-cost-per-unit and shift profitability analysis by combining WFM paid time with MES production evidence"
+          ],
+          "dataGaps": [
+            "Sepasoft Web Services are customer-configured, so there is no single universal endpoint or object contract across deployments",
+            "provider authentication, operation names and payload schemas depend on the customer's Ignition/Sepasoft configuration",
+            "MES 3.x and 4.x plus Ignition 8.1/8.3 combinations create version-specific behaviour and deployment differences",
+            "authoritative worker employment, payroll, absence, agency labour and legal qualification records normally remain outside Sepasoft",
+            "quality, traceability, batch and OEE data availability depends on the Sepasoft modules actually licensed and configured"
+          ],
+          "constraintsRisks": [
+            "the same Web Services module can expose mutative operations; endpoint allowlisting and effective read-only permission proof are mandatory",
+            "the gateway commonly sits inside a protected plant network, so customer-edge routing remains mandatory even though transport is HTTPS/SOAP",
+            "customer-defined REST/SOAP payloads can drift as projects are edited; schema fingerprints and mapping versioning are required",
+            "intermittent plant connectivity requires bounded retries, freshness tracking and duplicate/idempotency handling",
+            "Sepasoft can sit directly alongside Ignition tags and OPC-connected equipment, so WFM must never inherit tag-write or control privileges from the gateway identity"
+          ],
+          "nextDevelopmentAction": "Reuse the existing REST and SOAP adapters behind the customer/site edge. In an authorised Sepasoft/Ignition test gateway, enumerate only the customer-exposed read operations, prove a dedicated integration identity cannot invoke mutative web-service or scripting actions, fingerprint MES/Ingition versions and payload schemas, test pagination or bounded query windows where applicable, stale/retry/duplicate behaviour and custom fields, reconcile site/line/work-centre identifiers, and normalise representative production/OEE/downtime/quality records before promotion beyond spec verification."
+        }
       }
     }
-  ]
+  ],
+  "systems": []
 }
