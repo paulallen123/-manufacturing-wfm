@@ -72,13 +72,13 @@ test('stale policy blocks scoring',()=>{
 });
 
 test('outcome learning preserves predicted vs realised water',()=>{
- const r=reconcileWaterOutcome({recommendation:{id:'R1',siteId:'S1',predictedFreshWaterM3:11},decision:{status:'accepted',recommendationId:'R1',siteId:'S1'},observed:{authoritative:true,recommendationId:'R1',siteId:'S1',actualFreshWaterM3:12.5},operations:{authoritative:true,recommendationId:'R1',siteId:'S1',productionCompleted:true},financial:{authoritative:true,recommendationId:'R1',siteId:'S1',realisedWaterCost:20}});
+ const r=reconcileWaterOutcome({recommendation:{id:'R1',tenantId:'A',siteId:'S1',predictedFreshWaterM3:11},decision:{status:'accepted',recommendationId:'R1',tenantId:'A',siteId:'S1'},observed:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',actualFreshWaterM3:12.5},operations:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',productionCompleted:true},financial:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',realisedWaterCost:20}});
  assert.equal(r.status,'reconciled');
  assert.equal(r.calibration.waterErrorM3,1.5);
 });
 
 test('foreign outcome receipts never calibrate another recommendation or site',()=>{
- const valid={recommendation:{id:'R-target',siteId:'S-target',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R-target',siteId:'S-target'},observed:{authoritative:true,recommendationId:'R-target',siteId:'S-target',actualFreshWaterM3:18},operations:{authoritative:true,recommendationId:'R-target',siteId:'S-target',productionCompleted:true},financial:{authoritative:true,recommendationId:'R-target',siteId:'S-target',realisedWaterCost:3}};
+ const valid={recommendation:{id:'R-target',tenantId:'A',siteId:'S-target',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R-target',tenantId:'A',siteId:'S-target'},observed:{authoritative:true,recommendationId:'R-target',tenantId:'A',siteId:'S-target',actualFreshWaterM3:18},operations:{authoritative:true,recommendationId:'R-target',tenantId:'A',siteId:'S-target',productionCompleted:true},financial:{authoritative:true,recommendationId:'R-target',tenantId:'A',siteId:'S-target',realisedWaterCost:3}};
  assert.equal(reconcileWaterOutcome(valid).status,'reconciled');
  for(const field of ['decision','observed','operations','financial'])for(const key of ['recommendationId','siteId']){
   const input=structuredClone(valid);input[field][key]=key==='siteId'?'S-other':'R-other';
@@ -90,7 +90,7 @@ test('foreign outcome receipts never calibrate another recommendation or site',(
 });
 
 test('accepted status with surrounding whitespace still checks every evidence binding',()=>{
- const input={recommendation:{id:'R1',siteId:'S1',predictedFreshWaterM3:10},decision:{status:' accepted ',recommendationId:'R1',siteId:'S1'},observed:{authoritative:true,recommendationId:'R2',siteId:'S2',actualFreshWaterM3:99},operations:{authoritative:true,recommendationId:'R2',siteId:'S2',productionCompleted:true}};
+ const input={recommendation:{id:'R1',tenantId:'A',siteId:'S1',predictedFreshWaterM3:10},decision:{status:' accepted ',recommendationId:'R1',tenantId:'A',siteId:'S1'},observed:{authoritative:true,recommendationId:'R2',tenantId:'A',siteId:'S2',actualFreshWaterM3:99},operations:{authoritative:true,recommendationId:'R2',tenantId:'A',siteId:'S2',productionCompleted:true}};
  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'outcome_scope_mismatch'});
  input.observed.recommendationId='R1';input.observed.siteId='S1';
  input.operations.recommendationId='R1';input.operations.siteId='S1';
@@ -100,7 +100,7 @@ test('accepted status with surrounding whitespace still checks every evidence bi
 });
 
 test('missing or malformed outcome scope cannot produce a calibration or rejection receipt',()=>{
- const valid={recommendation:{id:'R-target',siteId:'S-target',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R-target',siteId:'S-target'},observed:{authoritative:true,recommendationId:'R-target',siteId:'S-target',actualFreshWaterM3:18},operations:{authoritative:true,recommendationId:'R-target',siteId:'S-target',productionCompleted:true}};
+ const valid={recommendation:{id:'R-target',tenantId:'A',siteId:'S-target',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R-target',tenantId:'A',siteId:'S-target'},observed:{authoritative:true,recommendationId:'R-target',tenantId:'A',siteId:'S-target',actualFreshWaterM3:18},operations:{authoritative:true,recommendationId:'R-target',tenantId:'A',siteId:'S-target',productionCompleted:true}};
  for(const field of ['recommendation','decision','observed','operations'])for(const key of [field==='recommendation'?'id':'recommendationId','siteId']){
   const input=structuredClone(valid);delete input[field][key];
   const result=reconcileWaterOutcome(input);
@@ -113,6 +113,22 @@ test('missing or malformed outcome scope cannot produce a calibration or rejecti
  assert.deepEqual(reconcileWaterOutcome(rejected),{status:'recorded',outcomeClass:'rejected_by_human',recommendationId:'R-target'});
  const withoutFinance=structuredClone(valid);
  assert.equal(reconcileWaterOutcome(withoutFinance).realised.realisedWaterCost,null);
+});
+
+test('outcome receipts require the same explicit tenant as their recommendation',()=>{
+ const valid={recommendation:{id:'R1',tenantId:'A',siteId:'S1',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R1',tenantId:'A',siteId:'S1'},observed:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',actualFreshWaterM3:9},operations:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',productionCompleted:true},financial:{authoritative:true,recommendationId:'R1',tenantId:'A',siteId:'S1',realisedWaterCost:3}};
+ assert.equal(reconcileWaterOutcome(valid).status,'reconciled');
+ for(const field of ['decision','observed','operations','financial'])for(const value of ['B',undefined]){
+  const input=structuredClone(valid);input[field].tenantId=value;
+  const result=reconcileWaterOutcome(input);
+  assert.equal(result.status,'incomplete',field+' '+value);
+  assert.equal(result.reason,'outcome_scope_mismatch');
+ }
+ const missing=structuredClone(valid);delete missing.recommendation.tenantId;
+ assert.equal(reconcileWaterOutcome(missing).status,'incomplete');
+ const rejected=structuredClone(valid);rejected.decision.status='rejected';
+ rejected.decision.tenantId='B';
+ assert.equal(reconcileWaterOutcome(rejected).status,'incomplete');
 });
 
 const candidate={id:'candidate',assignments:[{taskId:'T1',workerId:'W1',slot:2},{taskId:'T2',workerId:'W2',slot:1}]};
@@ -284,4 +300,5 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
+
 
