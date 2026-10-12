@@ -111,6 +111,7 @@ function economics(option={}){
   const e=option.energy??{},l=option.labour??{},p=option.production??{},failures=[];
   const avoided=nonNegative(e.grossSaving,'grossSaving',failures),reward=nonNegative(e.flexibilityReward,'flexibilityReward',failures),stackingAllowed=e.valueStackingAllowed===true;
   const grossEnergyValue=stackingAllowed?avoided+reward:Math.max(avoided,reward);
+  if(!Number.isFinite(grossEnergyValue)) failures.push('invalid_economics:grossEnergyValue');
   const doubleCountGuardApplied=!stackingAllowed&&avoided>0&&reward>0;
   const premium=nonNegative(l.premiumCost,'premiumCost',failures),agency=nonNegative(l.agencyCost,'agencyCost',failures),transport=nonNegative(l.transportCost,'transportCost',failures);
   const penalty=nonNegative(p.penaltyCost,'penaltyCost',failures),churn=nonNegative(option.scheduleChurnCost,'scheduleChurnCost',failures);
@@ -180,4 +181,5 @@ export function isParetoBetterThanBaseline(option,baseline){
   if(!baseline) return option.selectionValue>0;
   return option.selectionValue>baseline.selectionValue;
 }
+
 
