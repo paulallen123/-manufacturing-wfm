@@ -2,7 +2,7 @@ name: Adaptive numeric evidence admission
 
 on:
   push:
-    branches: ['autonomy/adaptive-finite-scores-20261012']
+    branches: ['autonomy/adaptive-finite-scores-20261012', 'autonomy/adaptive-outcome-replay-20261012']
   workflow_dispatch:
 
 permissions:

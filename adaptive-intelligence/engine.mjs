@@ -23,6 +23,15 @@ export class AdaptiveIntelligenceEngine {
     if(input.containsSecret===true) throw new Error('SECRET_IN_LEARNING_MEMORY_FORBIDDEN');
     if(input.memoryGrantsAuthority===true) throw new Error('LEARNING_MEMORY_AUTHORITY_FORBIDDEN');
     if(typeof input.baseline!=='number'||typeof input.result!=='number') throw new Error('OUTCOME_NUMERIC_BASELINE_RESULT_REQUIRED');
+    if(input.verified===true&&(typeof input.evidenceRef!=='string'||!input.evidenceRef.trim())) throw new Error('VERIFIED_OUTCOME_EVIDENCE_REFERENCE_REQUIRED');
+    const existing=typeof input.evidenceRef==='string'&&input.evidenceRef.trim()?
+      this.#outcomes.find(x=>x.tenantScope===String(input.tenantScope)&&x.source===String(input.source)&&x.evidenceRef===input.evidenceRef):null;
+    if(existing){
+      if(existing.category!==String(input.category)||existing.fingerprint!==String(input.fingerprint)||
+        existing.baseline!==input.baseline||existing.result!==input.result||existing.verified!==(input.verified===true)||
+        (input.createdAt!=null&&input.createdAt!==existing.createdAt)) throw new Error('OUTCOME_EVIDENCE_REPLAY_CONFLICT');
+      return clone(existing);
+    }
 
     const receipt={
       id:'out_'+hash([input.tenantScope,input.fingerprint,input.source,input.baseline,input.result,this.#outcomes.length]).slice(0,16),
