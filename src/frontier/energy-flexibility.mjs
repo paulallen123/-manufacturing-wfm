@@ -110,15 +110,22 @@ function economics(option={}){
   const e=option.energy??{},l=option.labour??{},p=option.production??{},failures=[];
   const avoided=nonNegative(e.grossSaving,'grossSaving',failures),reward=nonNegative(e.flexibilityReward,'flexibilityReward',failures),stackingAllowed=e.valueStackingAllowed===true;
   const grossEnergyValue=stackingAllowed?avoided+reward:Math.max(avoided,reward);
+  if(!Number.isFinite(grossEnergyValue)) failures.push('invalid_economics:grossEnergyValue');
   const doubleCountGuardApplied=!stackingAllowed&&avoided>0&&reward>0;
   const premium=nonNegative(l.premiumCost,'premiumCost',failures),agency=nonNegative(l.agencyCost,'agencyCost',failures),transport=nonNegative(l.transportCost,'transportCost',failures);
   const penalty=nonNegative(p.penaltyCost,'penaltyCost',failures),churn=nonNegative(option.scheduleChurnCost,'scheduleChurnCost',failures);
   const labourCost=premium+agency+transport,disruptionCost=churn+penalty;
   const uncertainty=Math.max(0,Math.min(1,nonNegative(e.uncertaintyPct,'uncertaintyPct',failures,0)));
   const energyValueLowerBound=Math.max(0,nonNegative(e.lowerBoundEnergyValue,'lowerBoundEnergyValue',failures,grossEnergyValue*(1-uncertainty)));
+  // A lower bound cannot exceed the same approved, double-count-safe gross value.
+  // Reject contradictory evidence; clamping it would hide an invalid contract.
+  if(energyValueLowerBound>grossEnergyValue) failures.push('invalid_economics:lowerBoundEnergyValue');
   const labourCostUpperBound=Math.max(labourCost,nonNegative(l.upperBoundCost,'upperBoundCost',failures,labourCost));
   const disruptionCostUpperBound=Math.max(disruptionCost,nonNegative(p.upperBoundPenalty,'upperBoundPenalty',failures,penalty)+nonNegative(option.upperBoundScheduleChurnCost,'upperBoundScheduleChurnCost',failures,churn));
-  return {failures,avoidedEnergyCost:avoided,flexibilityReward:reward,stackingAllowed,doubleCountGuardApplied,grossEnergyValue,energyValueLowerBound,labourCost,labourCostUpperBound,disruptionCost,disruptionCostUpperBound,netControllableValue:grossEnergyValue-labourCost-disruptionCost,conservativeNetValue:energyValueLowerBound-labourCostUpperBound-disruptionCostUpperBound};
+  const netControllableValue=grossEnergyValue-labourCost-disruptionCost;
+  const conservativeNetValue=energyValueLowerBound-labourCostUpperBound-disruptionCostUpperBound;
+  if([labourCost,labourCostUpperBound,disruptionCost,disruptionCostUpperBound,netControllableValue,conservativeNetValue].some(value=>!Number.isFinite(value))) failures.push('invalid_economics:aggregate');
+  return {failures,avoidedEnergyCost:avoided,flexibilityReward:reward,stackingAllowed,doubleCountGuardApplied,grossEnergyValue,energyValueLowerBound,labourCost,labourCostUpperBound,disruptionCost,disruptionCostUpperBound,netControllableValue,conservativeNetValue};
 }
 
 function dominates(a,b){

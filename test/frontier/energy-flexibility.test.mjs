@@ -40,3 +40,48 @@ function scenario(index,r){const fresh=r()>0.08,cancelled=r()<0.03,revisionOk=r(
 test('1,500-scenario conservative benchmark preserves safety and value thresholds',()=>{const r=lcg(0x5eed1234);let known=0,found=0,flex=0,better=0,stale=0,hard=0,badActuation=0;for(let i=0;i<1500;i++){const s=scenario(i,r),o=evaluateEnergyFlexibility(s.input);if(s.known){known++;if(o.rankedOptions.length)found++;}if(s.flexible){flex++;if(o.rankedOptions.some(x=>isParetoBetterThanBaseline(x,o.baseline)))better++;}if(!o.signalFresh&&o.rankedOptions.length)stale++;if(o.rankedOptions.some(x=>x.hardConstraintFailures.length))hard++;if(o.rankedOptions.some(x=>x.actionContract?.type!=='workflow_handoff_only'))badActuation++;}const summary={scenarios:1500,knownFeasible:known,discovery:found/known,flexible:flex,paretoBetter:better/flex,staleExecutable:stale,hardViolationRecommended:hard,directActuationOutput:badActuation};console.log('ENERGY_FLEX_BENCHMARK='+JSON.stringify(summary));assert.ok(known>100);assert.ok(found/known>=0.95);assert.equal(stale,0);assert.equal(hard,0);assert.equal(badActuation,0);assert.ok(better/flex>=0.15);});
 
 test('500 adversarial replay/permutation cases preserve effective decision state',()=>{const r=lcg(0x1d3a0707);for(let n=0;n<500;n++){const i=baseInput();const rev1={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'},rev2={...i.energySignal};const canonical=structuredClone(i);canonical.energyEvents=[rev1,rev2];delete canonical.energySignal;const expected=evaluateEnergyFlexibility(canonical);const events=[];for(let k=0;k<2+Math.floor(r()*8);k++) events.push(r()<0.65?structuredClone(rev2):structuredClone(rev1));events.push(structuredClone(rev1),structuredClone(rev2));events.sort(()=>r()-0.5);const replay=structuredClone(i);replay.energyEvents=events;delete replay.energySignal;const actual=evaluateEnergyFlexibility(replay);assert.equal(actual.effectiveSignalRevision,2);assert.equal(actual.reproducibilityHash,expected.reproducibilityHash);assert.deepEqual(actual.rankedOptions,expected.rankedOptions);}});
+
+for (const valueBasis of ['conservative','point']) test('contradictory lower bound cannot create a '+valueBasis+' workflow handoff',()=>{
+  const input=baseInput();input.valueBasis=valueBasis;
+  Object.assign(input.options[1],{energy:{grossSaving:100,lowerBoundEnergyValue:200},labour:{premiumCost:150},production:{},scheduleChurnCost:0,upperBoundScheduleChurnCost:0});
+  const result=evaluateEnergyFlexibility(input),option=result.rejectedOptions.find(x=>x.id==='shift-later');
+  assert.equal(result.rankedOptions.length,0);assert.equal(option.executable,false);assert.equal(option.valuable,false);assert.equal(option.actionContract,null);
+  assert.ok(option.hardConstraintFailures.includes('invalid_economics:lowerBoundEnergyValue'));
+  assert.equal(option.economics.netControllableValue,-50);
+});
+
+test('zero, exact gross and coherent stacked lower bounds preserve valid handoffs',()=>{
+  for(const [energy,want] of [[{grossSaving:100,lowerBoundEnergyValue:0},0],[{grossSaving:100,lowerBoundEnergyValue:100},100],[{grossSaving:100,flexibilityReward:20,valueStackingAllowed:true,lowerBoundEnergyValue:120},120]]){
+    const input=baseInput();Object.assign(input.options[1],{energy,labour:{},production:{},scheduleChurnCost:0,upperBoundScheduleChurnCost:0});
+    const r=evaluateEnergyFlexibility(input),o=[...r.rankedOptions,...r.rejectedOptions].find(x=>x.id==='shift-later');
+    assert.equal(o.executable,true);assert.equal(o.economics.conservativeNetValue,want);assert.equal(o.economics.netControllableValue,energy.flexibilityReward?120:100);
+    assert.equal(o.valuable,want>0);assert.equal(o.actionContract.type,'workflow_handoff_only');
+  }
+});
+
+test('unapproved value stacking cannot legitimize an excessive lower bound',()=>{
+  const input=baseInput();input.options[1].energy={grossSaving:100,flexibilityReward:20,lowerBoundEnergyValue:120};
+  const r=evaluateEnergyFlexibility(input),o=r.rejectedOptions.find(x=>x.id==='shift-later');
+  assert.equal(o.executable,false);assert.equal(o.actionContract,null);assert.equal(o.economics.grossEnergyValue,100);
+});
+
+test('finite inputs whose stacked gross value overflows cannot create a handoff',()=>{
+  const input=baseInput();input.options[1].energy={grossSaving:Number.MAX_VALUE,flexibilityReward:Number.MAX_VALUE,valueStackingAllowed:true};
+  const r=evaluateEnergyFlexibility(input),o=r.rejectedOptions.find(x=>x.id==='shift-later');
+  assert.equal(r.rankedOptions.length,0);assert.equal(o.executable,false);assert.equal(o.actionContract,null);
+  assert.ok(o.hardConstraintFailures.includes('invalid_economics:grossEnergyValue'));
+});
+
+test('invalid envelope does not suppress a separate valid option',()=>{
+  const input=baseInput(),valid=structuredClone(input.options[1]);valid.id='valid';
+  input.options[1].energy.lowerBoundEnergyValue=701;input.options.push(valid);
+  const r=evaluateEnergyFlexibility(input);assert.deepEqual(r.rankedOptions.map(x=>x.id),['valid']);
+  assert.equal(r.rejectedOptions.find(x=>x.id==='shift-later').actionContract,null);
+});
+
+test('finite component costs that overflow aggregates cannot create an action contract',()=>{
+  const input=baseInput();Object.assign(input.options[1],{energy:{grossSaving:100},labour:{premiumCost:Number.MAX_VALUE,agencyCost:Number.MAX_VALUE},production:{penaltyCost:Number.MAX_VALUE},scheduleChurnCost:Number.MAX_VALUE});
+  const result=evaluateEnergyFlexibility(input),option=result.rejectedOptions.find(x=>x.id==='shift-later');
+  assert.equal(option.executable,false);assert.equal(option.actionContract,null);
+  assert.ok(option.hardConstraintFailures.includes('invalid_economics:aggregate'));
+});
