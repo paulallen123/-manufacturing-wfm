@@ -129,6 +129,9 @@ function createDecisionOutcomeProof(input={}){
 
 function toAdaptiveOutcomeInput(proof){
   if(!proof||proof.recordType!=='vector-decision-outcome-proof'||!proof.learningEligible||!proof.observed) throw new Error('Learning requires a verified decision outcome proof.');
+  const {proofDigest,...issuedCore}=proof;
+  if(typeof proofDigest!=='string'||proofDigest!==digest(issuedCore))
+    throw new Error('Decision outcome proof integrity mismatch.');
   const sign=proof.direction==='MAXIMIZE'?1:-1;
   return Object.freeze({
     tenantScope:proof.tenant,
@@ -146,3 +149,4 @@ function toAdaptiveOutcomeInput(proof){
 }
 
 module.exports=Object.freeze({CLASSIFICATIONS,DIRECTIONS,FINANCIAL_METRICS,createDecisionOutcomeProof,toAdaptiveOutcomeInput,digest});
+

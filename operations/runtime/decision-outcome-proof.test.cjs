@@ -76,3 +76,31 @@ test('non-financial KPI cannot be labelled realised financial value',()=>{
     currency:'GBP',measurementWindow:{start:'2026-09-22T08:00:00Z',end:'2026-09-22T16:00:00Z'}
   }),/supported financial metric/);
 });
+
+test('issued proof values cannot change after signing and still enter adaptive learning',()=>{
+  const proof=createDecisionOutcomeProof({
+    episode:completed('labourCost'),metric:'labourCost',direction:'MINIMIZE',classification:'VERIFIED_OPERATIONAL',
+    baselineActual:520,baselineEvidenceRefs:['payroll:baseline']
+  });
+  assert.equal(toAdaptiveOutcomeInput(proof).result-toAdaptiveOutcomeInput(proof).baseline,200);
+  proof.observed.result=720;
+  assert.throws(()=>toAdaptiveOutcomeInput(proof),/integrity|digest/i);
+});
+
+test('issued proof evidence and identity cannot be swapped while keeping a verified learning claim',()=>{
+  const create=()=>createDecisionOutcomeProof({
+    episode:completed('labourCost'),metric:'labourCost',direction:'MINIMIZE',classification:'VERIFIED_OPERATIONAL',
+    baselineActual:520,baselineEvidenceRefs:['payroll:baseline']
+  });
+  for(const mutate of [
+    p=>p.observed.baseline=100,
+    p=>p.evidence.result.push('foreign:evidence'),
+    p=>p.predicted.selected=0,
+    p=>p.proofDigest='0'.repeat(64)
+  ]){
+    const proof=structuredClone(create());
+    mutate(proof);
+    assert.throws(()=>toAdaptiveOutcomeInput(proof),/integrity|digest/i);
+  }
+});
+

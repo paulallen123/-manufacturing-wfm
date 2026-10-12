@@ -1,0 +1,29 @@
+name: Decision outcome proof integrity gate
+
+on:
+  pull_request:
+    branches: [release/vector-customer-ready-candidate-20260925]
+    paths:
+      - 'operations/runtime/decision-outcome-proof*.cjs'
+      - '.github/workflows/decision-outcome-integrity-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-outcome-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.19.0'
+          package-manager-cache: false
+      - name: Verify decision outcome proof contracts
+        run: node --test operations/runtime/decision-episode.test.cjs operations/runtime/decision-outcome-proof.test.cjs
+      - name: Build full customer candidate
+        run: docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA=${{ github.sha }} -t vector-outcome-integrity:gate .
