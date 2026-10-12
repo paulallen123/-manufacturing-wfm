@@ -89,4 +89,9 @@ test('1,500-scenario conservative benchmark preserves safety and value threshold
 
 test('500 adversarial replay/permutation cases preserve effective decision state',()=>{const r=lcg(0x1d3a0707);for(let n=0;n<500;n++){const i=baseInput();const rev1={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'},rev2={...i.energySignal};const canonical=structuredClone(i);canonical.energyEvents=[rev1,rev2];delete canonical.energySignal;const expected=evaluateEnergyFlexibility(canonical);const events=[];for(let k=0;k<2+Math.floor(r()*8);k++) events.push(r()<0.65?structuredClone(rev2):structuredClone(rev1));events.push(structuredClone(rev1),structuredClone(rev2));events.sort(()=>r()-0.5);const replay=structuredClone(i);replay.energyEvents=events;delete replay.energySignal;const actual=evaluateEnergyFlexibility(replay);assert.equal(actual.effectiveSignalRevision,2);assert.equal(actual.reproducibilityHash,expected.reproducibilityHash);assert.deepEqual(actual.rankedOptions,expected.rankedOptions);}});
 
-
+test('individually finite costs that overflow aggregates cannot create an action contract',()=>{
+ const input=baseInput();Object.assign(input.options[1],{energy:{grossSaving:100},labour:{premiumCost:Number.MAX_VALUE,agencyCost:Number.MAX_VALUE},production:{penaltyCost:Number.MAX_VALUE},scheduleChurnCost:Number.MAX_VALUE});
+ const result=evaluateEnergyFlexibility(input),option=result.rejectedOptions.find(x=>x.id==='shift-later');
+ assert.equal(option.executable,false);assert.equal(option.actionContract,null);
+ assert.ok(option.hardConstraintFailures.includes('invalid_economics:aggregate'));
+});
