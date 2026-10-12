@@ -89,6 +89,13 @@ test('foreign outcome receipts never calibrate another recommendation or site',(
  }
 });
 
+test('non-authoritative financial metadata cannot block water reconciliation',()=>{
+ const input={recommendation:{id:'R1',siteId:'S1',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R1',siteId:'S1'},observed:{authoritative:true,recommendationId:'R1',siteId:'S1',actualFreshWaterM3:12},operations:{authoritative:true,recommendationId:'R1',siteId:'S1',productionCompleted:true},financial:{authoritative:false,recommendationId:'R-other',siteId:'S-other',realisedWaterCost:999}};
+ const result=reconcileWaterOutcome(input);
+ assert.equal(result.status,'reconciled');
+ assert.equal(result.realised.realisedWaterCost,null);
+});
+
 test('accepted status with surrounding whitespace still checks every evidence binding',()=>{
  const input={recommendation:{id:'R1',siteId:'S1',predictedFreshWaterM3:10},decision:{status:' accepted ',recommendationId:'R1',siteId:'S1'},observed:{authoritative:true,recommendationId:'R2',siteId:'S2',actualFreshWaterM3:99},operations:{authoritative:true,recommendationId:'R2',siteId:'S2',productionCompleted:true}};
  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'outcome_scope_mismatch'});
@@ -284,4 +291,3 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
-
