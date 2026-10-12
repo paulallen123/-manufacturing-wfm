@@ -48,6 +48,17 @@ test('repair removes unavailable worker and remains shadow only',()=>{
   const r=repairSchedulingPlan({priorPlan:prior,workers,requirements:reqs,contextRevision:'twin:2',event:{type:'NO_SHOW',unavailableWorkerIds:[lost],evidenceRef:'clock:1'},sourceEvidence:['clock:1']});
   assert.equal(r.executionPermitted,false); assert.ok(r.changeCount>=1); assert.equal(r.repairedPlan.assignments.some(x=>x.workerId===lost),false);
 });
+test('absence repair refuses a scalar or missing unavailable-worker scope',()=>{
+  const workers=[worker('a'),worker('b',{hourlyCost:22})];
+  const prior=createSchedulingPlan(input({workers}));
+  const lost=prior.assignments[0].workerId;
+  const repair={priorPlan:prior,workers,requirements:[baseReq],contextRevision:'twin:2',sourceEvidence:['clock:1']};
+  for(const ids of [lost,null,undefined,{},['']]){
+    assert.throws(()=>repairSchedulingPlan({...repair,event:{type:'ABSENCE',unavailableWorkerIds:ids,evidenceRef:'clock:1'}}),/unavailableWorkerIds/);
+  }
+  const valid=repairSchedulingPlan({...repair,event:{type:'ABSENCE',unavailableWorkerIds:[lost],evidenceRef:'clock:1'}});
+  assert.equal(valid.repairedPlan.assignments.some(a=>a.workerId===lost),false);
+});
 test('uncertain forecast plans p90 without claiming forecasting model accuracy',()=>{
   const p=createSchedulingPlan(input({workers:[worker('a'),worker('b')],requirements:[{...baseReq,headcount:undefined,forecast:{p50Headcount:1,p90Headcount:2,confidence:0.5}}]}));
   assert.equal(p.assignments.length,2); assert.equal(p.quality.coveragePct,100);
@@ -178,3 +189,4 @@ test('UTC and explicit offsets denote identical instants; reversed overnight dat
  assert.throws(()=>evaluateOpenShift({requirement:shift('bad','2026-09-24T22:00:00Z','2026-09-24T06:00:00Z'),workers:[]}));
  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[],currentAssignments:null}));
 });
+
