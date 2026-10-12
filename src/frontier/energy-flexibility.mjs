@@ -121,7 +121,10 @@ function economics(option={}){
   if(energyValueLowerBound>grossEnergyValue) failures.push('invalid_economics:lowerBoundEnergyValue_exceeds_gross');
   const labourCostUpperBound=Math.max(labourCost,nonNegative(l.upperBoundCost,'upperBoundCost',failures,labourCost));
   const disruptionCostUpperBound=Math.max(disruptionCost,nonNegative(p.upperBoundPenalty,'upperBoundPenalty',failures,penalty)+nonNegative(option.upperBoundScheduleChurnCost,'upperBoundScheduleChurnCost',failures,churn));
-  return {failures,avoidedEnergyCost:avoided,flexibilityReward:reward,stackingAllowed,doubleCountGuardApplied,grossEnergyValue,energyValueLowerBound,labourCost,labourCostUpperBound,disruptionCost,disruptionCostUpperBound,netControllableValue:grossEnergyValue-labourCost-disruptionCost,conservativeNetValue:energyValueLowerBound-labourCostUpperBound-disruptionCostUpperBound};
+  const netControllableValue=grossEnergyValue-labourCost-disruptionCost;
+  const conservativeNetValue=energyValueLowerBound-labourCostUpperBound-disruptionCostUpperBound;
+  if([labourCost,labourCostUpperBound,disruptionCost,disruptionCostUpperBound,netControllableValue,conservativeNetValue].some(value=>!Number.isFinite(value))) failures.push('invalid_economics:aggregate');
+  return {failures,avoidedEnergyCost:avoided,flexibilityReward:reward,stackingAllowed,doubleCountGuardApplied,grossEnergyValue,energyValueLowerBound,labourCost,labourCostUpperBound,disruptionCost,disruptionCostUpperBound,netControllableValue,conservativeNetValue};
 }
 
 function dominates(a,b){
@@ -181,5 +184,3 @@ export function isParetoBetterThanBaseline(option,baseline){
   if(!baseline) return option.selectionValue>0;
   return option.selectionValue>baseline.selectionValue;
 }
-
-
