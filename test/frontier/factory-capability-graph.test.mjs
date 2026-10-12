@@ -35,6 +35,23 @@ test('builds a scoped graph while preserving unmapped semantics', () => {
   assert.equal(graph.unmappedCapabilities[0].label, 'Arc weld program');
   assert.ok(graph.graphHash.length > 20);
 });
+test('accepted provenance and workforce evidence cannot change through caller aliases', () => {
+ const raw={...assets[0],source:{...source,details:{revision:'A'}},capabilities:[{...assets[0].capabilities[0],evidence:{document:{uri:'plm://routing/A'}},properties:[{semanticId:'urn:power',value:{limit:100}}]}]};
+ const requirement={...requirements[0],requiredSkills:[...requirements[0].requiredSkills]};
+ const person={...people[0],qualifications:people[0].qualifications.map(q=>({...q}))};
+ const graph=buildCapabilityGraph({...scope,assets:[raw],capabilityRequirements:[requirement],people:[person],now});
+ const initialHash=graph.graphHash;
+ raw.source.details.revision='B';raw.capabilities[0].evidence.document.uri='manual://rewrite';raw.capabilities[0].properties[0].value.limit=999;
+ requirement.requiredSkills[0]='unqualified';person.qualifications[0].authoritative=false;
+ assert.equal(graph.assets[0].source.details.revision,'A');
+ assert.equal(graph.assets[0].capabilities[0].evidence.document.uri,'plm://routing/A');
+ assert.equal(graph.assets[0].capabilities[0].properties[0].value.limit,100);
+ assert.equal(graph.requirements[0].requiredSkills[0],'laser-l2');
+ assert.equal(graph.people[0].qualifications[0].authoritative,true);
+ assert.equal(graph.graphHash,initialHash);
+ assert.equal(assessCapabilityCoverage(graph)[0].qualifiedAvailable,1);
+ assert.throws(()=>{graph.assets[0].capabilities[0].evidence.document.uri='manual://tamper';},TypeError);
+});
 
 test('fails closed on cross-tenant assets', () => {
   const graph = buildCapabilityGraph({ ...scope, assets: [...assets, { ...assets[0], tenantId: 'other', assetId: 'bad' }], capabilityRequirements: requirements, people, now });
@@ -129,3 +146,4 @@ test('second-site semantic reuse clears the 60% repeated-configuration threshold
   assert.equal(result.repeatedConfigurationReductionPct, 0.8);
   assert.ok(result.repeatedConfigurationReductionPct >= 0.6);
 });
+

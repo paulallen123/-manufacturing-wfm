@@ -11,6 +11,13 @@ const stable = (value) => Array.isArray(value)
 const hash = (value) => crypto.createHash('sha256').update(JSON.stringify(stable(value))).digest('hex');
 const nowMs = (now) => new Date(now).getTime();
 const asSet = (items = []) => new Set(items);
+function deepFreeze(value) {
+  if (value && typeof value === 'object') {
+    for (const nested of Object.values(value)) deepFreeze(nested);
+    Object.freeze(value);
+  }
+  return value;
+}
 
 function sameScope(a, b) {
   return a?.tenantId && b?.tenantId && a.tenantId === b.tenantId && a.siteId && b?.siteId && a.siteId === b.siteId;
@@ -44,8 +51,9 @@ export function normalizeAsset(raw, { now = new Date().toISOString() } = {}) {
   if (!raw?.tenantId || !raw?.siteId || !raw?.assetId) return { status: 'rejected', reason: 'missing_scope_or_identity' };
   const sourceState = validateSource(raw.source, now);
   if (!sourceState.trusted) return { status: 'quarantined', reason: sourceState.reason, assetId: raw.assetId };
+  const snapshot = structuredClone(raw);
 
-  const capabilities = (raw.capabilities ?? []).map((capability) => ({
+  const capabilities = (snapshot.capabilities ?? []).map((capability) => ({
     capabilityId: capability.capabilityId ?? null,
     label: capability.label ?? capability.browseName ?? 'Unmapped capability',
     semanticId: capability.semanticId ?? null,
@@ -54,24 +62,24 @@ export function normalizeAsset(raw, { now = new Date().toISOString() } = {}) {
     role: capability.role ?? null,
     properties: copyProperties(capability.properties),
     technicalSkillRefs: Array.isArray(capability.technicalSkillRefs) ? [...new Set(capability.technicalSkillRefs.filter(Boolean))] : [],
-    evidence: capability.evidence ?? null,
-    source: capability.source ?? raw.source.provider,
+    evidence: capability.evidence == null ? null : structuredClone(capability.evidence),
+    source: capability.source ?? snapshot.source.provider,
   }));
 
   return {
     status: 'accepted',
-    asset: {
-      tenantId: raw.tenantId,
-      siteId: raw.siteId,
-      assetId: raw.assetId,
-      workCentreId: raw.workCentreId ?? null,
-      label: raw.label ?? raw.assetId,
-      assetClass: raw.assetClass ?? 'unknown',
-      semanticModel: raw.semanticModel ?? 'generic',
+    asset: deepFreeze({
+      tenantId: snapshot.tenantId,
+      siteId: snapshot.siteId,
+      assetId: snapshot.assetId,
+      workCentreId: snapshot.workCentreId ?? null,
+      label: snapshot.label ?? snapshot.assetId,
+      assetClass: snapshot.assetClass ?? 'unknown',
+      semanticModel: snapshot.semanticModel ?? 'generic',
       capabilities,
-      source: raw.source,
-      provenanceHash: hash(raw),
-    },
+      source: snapshot.source,
+      provenanceHash: hash(snapshot),
+    }),
   };
 }
 
@@ -134,8 +142,8 @@ export function buildCapabilityGraph({ tenantId, siteId, assets = [], capability
     else quarantined.push({ assetId: raw.assetId ?? null, reason: normalized.reason });
   }
 
-  const requirements = capabilityRequirements.filter((requirement) => sameScope(scope, requirement));
-  const scopedPeople = people.filter((person) => sameScope(scope, person));
+  const requirements = capabilityRequirements.filter((requirement) => sameScope(scope, requirement)).map((item) => deepFreeze(structuredClone(item)));
+  const scopedPeople = people.filter((person) => sameScope(scope, person)).map((item) => deepFreeze(structuredClone(item)));
   const capabilityIndex = new Map(requirements.map((requirement) => [requirement.capabilityId, requirement]));
   const capabilityNodes = new Map();
   const edges = [];
@@ -166,7 +174,7 @@ export function buildCapabilityGraph({ tenantId, siteId, assets = [], capability
     }
   }
 
-  return {
+  return deepFreeze({
     version: CAPABILITY_GRAPH_VERSION,
     scope,
     assets: acceptedAssets,
@@ -181,7 +189,7 @@ export function buildCapabilityGraph({ tenantId, siteId, assets = [], capability
         .map((capability) => ({ assetId: asset.assetId, label: capability.label, semanticId: capability.semanticId })),
     ),
     graphHash: hash({ scope, acceptedAssets, requirements, scopedPeople, edges }),
-  };
+  });
 }
 
 export function assessCapabilityCoverage(graph, { demand = [] } = {}) {
@@ -268,3 +276,4 @@ export function summarizeCapabilityHome(graph, coverage) {
     claimBoundary: 'Discovered machine meaning may suggest capability mappings. Workforce qualification is authoritative only when supplied by an approved workforce/credential source.',
   };
 }
+
