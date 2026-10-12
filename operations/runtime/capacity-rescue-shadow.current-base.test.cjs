@@ -202,6 +202,18 @@ test('rejects overflow in derived economic values',()=>{
   d.plans[2].economic.avoidedDowntime=Number.MAX_VALUE;
   assert.throws(()=>buildCapacityRescueShadow(d),/netRecoveredValue is invalid/);
 });
+test('negative economic components cannot turn intervention cost into a fictitious benefit',()=>{
+ for(const field of economicKeys){
+  const d=input();d.plans.forEach(completeEconomics);
+  d.plans[2].economic[field]=-1;
+  assert.throws(()=>buildCapacityRescueShadow(d),new RegExp('economic '+field+' is invalid'));
+ }
+ const adverse=input();adverse.plans.forEach(completeEconomics);
+ adverse.plans[2].economic.interventionCost=12000;
+ const result=buildCapacityRescueShadow(adverse);
+ assert.ok(cf(result,'recover-machine').netRecoveredValue<0);
+ assert.equal(result.executionPermitted,false);
+});
 test('client flags are neither causal proof nor execution authority',()=>{
   const d=input();Object.assign(d,{mode:'POLICY_BOUNDED',executionPermitted:true,productionApproved:true});
   Object.assign(d.plans[2].causalEvidence,{experimental:true,matchedControl:true,comparableInterventions:100,verified:true,status:'PROVEN_SUCCESS'});
@@ -310,3 +322,4 @@ test('returned complete snapshot and normalized graphs are deeply immutable',()=
   assert.equal(Object.isFrozen(d),false);
   assert.equal(Object.isFrozen(d.plans[2].actions),false);
 });
+
