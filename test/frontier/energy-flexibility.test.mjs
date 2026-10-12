@@ -9,6 +9,16 @@ test('safe option remains conservatively ranked with double-count protection',()
 
 test('out-of-order cancellation wins deterministically',()=>{const i=baseInput(),newer={...i.energySignal,revision:3,publishedAt:'2026-09-18T05:55:00.000Z',status:'cancelled'},older={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'};assert.equal(reduceEnergySignalEvents([newer,older,i.energySignal]).revision,3);i.energyEvents=[newer,older,i.energySignal];i.latestKnownSignalRevision=3;delete i.energySignal;const r=evaluateEnergyFlexibility(i);assert.equal(r.signalFresh,false);assert.ok(r.signalFailures.includes('energy_signal_cancelled'));});
 
+test('unknown signal lifecycle cannot recommend a flex option',()=>{
+ for(const status of ['pending_confirmation','',null,undefined,'ACTIVE']){
+  const i=baseInput();i.energySignal.status=status;
+  const r=evaluateEnergyFlexibility(i);
+  assert.equal(r.signalFresh,false,String(status));
+  assert.equal(r.status,'no_safe_or_valuable_flexibility',String(status));
+  assert.ok(r.signalFailures.includes('energy_signal_status_unrecognised'));
+ }
+});
+
 test('exact event replay is idempotent and delivery order does not change decision hash',()=>{const a=baseInput();const e1={...a.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'};const e2={...a.energySignal};a.energyEvents=[e1,e2];delete a.energySignal;const b=structuredClone(a);b.energyEvents=[e2,e1,e2,e1,e2];const ra=evaluateEnergyFlexibility(a),rb=evaluateEnergyFlexibility(b);assert.equal(ra.effectiveSignalRevision,2);assert.equal(rb.eventReduction.duplicateCount,3);assert.equal(ra.reproducibilityHash,rb.reproducibilityHash);assert.deepEqual(ra.rankedOptions,rb.rankedOptions);});
 
 test('conflicting same-revision authoritative events fail closed',()=>{const i=baseInput();const active={...i.energySignal};const conflict={...i.energySignal,type:'turn_up',confidence:0.99};i.energyEvents=[active,conflict];delete i.energySignal;const d=reduceEnergySignalEventsDetailed(i.energyEvents);assert.equal(d.conflict,true);const r=evaluateEnergyFlexibility(i);assert.equal(r.status,'no_safe_or_valuable_flexibility');assert.ok(r.signalFailures.includes('energy_signal_revision_conflict'));});
@@ -40,3 +50,4 @@ function scenario(index,r){const fresh=r()>0.08,cancelled=r()<0.03,revisionOk=r(
 test('1,500-scenario conservative benchmark preserves safety and value thresholds',()=>{const r=lcg(0x5eed1234);let known=0,found=0,flex=0,better=0,stale=0,hard=0,badActuation=0;for(let i=0;i<1500;i++){const s=scenario(i,r),o=evaluateEnergyFlexibility(s.input);if(s.known){known++;if(o.rankedOptions.length)found++;}if(s.flexible){flex++;if(o.rankedOptions.some(x=>isParetoBetterThanBaseline(x,o.baseline)))better++;}if(!o.signalFresh&&o.rankedOptions.length)stale++;if(o.rankedOptions.some(x=>x.hardConstraintFailures.length))hard++;if(o.rankedOptions.some(x=>x.actionContract?.type!=='workflow_handoff_only'))badActuation++;}const summary={scenarios:1500,knownFeasible:known,discovery:found/known,flexible:flex,paretoBetter:better/flex,staleExecutable:stale,hardViolationRecommended:hard,directActuationOutput:badActuation};console.log('ENERGY_FLEX_BENCHMARK='+JSON.stringify(summary));assert.ok(known>100);assert.ok(found/known>=0.95);assert.equal(stale,0);assert.equal(hard,0);assert.equal(badActuation,0);assert.ok(better/flex>=0.15);});
 
 test('500 adversarial replay/permutation cases preserve effective decision state',()=>{const r=lcg(0x1d3a0707);for(let n=0;n<500;n++){const i=baseInput();const rev1={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'},rev2={...i.energySignal};const canonical=structuredClone(i);canonical.energyEvents=[rev1,rev2];delete canonical.energySignal;const expected=evaluateEnergyFlexibility(canonical);const events=[];for(let k=0;k<2+Math.floor(r()*8);k++) events.push(r()<0.65?structuredClone(rev2):structuredClone(rev1));events.push(structuredClone(rev1),structuredClone(rev2));events.sort(()=>r()-0.5);const replay=structuredClone(i);replay.energyEvents=events;delete replay.energySignal;const actual=evaluateEnergyFlexibility(replay);assert.equal(actual.effectiveSignalRevision,2);assert.equal(actual.reproducibilityHash,expected.reproducibilityHash);assert.deepEqual(actual.rankedOptions,expected.rankedOptions);}});
+
