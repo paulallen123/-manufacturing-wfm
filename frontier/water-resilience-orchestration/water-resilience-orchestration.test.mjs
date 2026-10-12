@@ -274,4 +274,15 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
 
+test('raw opaque recommendation, tenant and site IDs never join padded receipt aliases',()=>{
+ const example=()=>({recommendation:{id:'R',tenantId:'T',siteId:'S',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R',tenantId:'T',siteId:'S'},observed:{authoritative:true,recommendationId:'R',tenantId:'T',siteId:'S',actualFreshWaterM3:11},operations:{authoritative:true,recommendationId:'R',tenantId:'T',siteId:'S',productionCompleted:true}});
+ for(const source of ['decision','observed','operations'])for(const field of ['recommendationId','tenantId','siteId']){
+  const input=example();input[source][field]=' '+input[source][field]+' ';
+  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'outcome_attribution_invalid'});
+ }
+});
 
+test('untrusted optional financial row cannot block valid operational outcome',()=>{
+ const r=reconcileWaterOutcome({recommendation:{id:'R',tenantId:'T',siteId:'S',predictedFreshWaterM3:10},decision:{status:'accepted',recommendationId:'R',tenantId:'T',siteId:'S'},observed:{authoritative:true,recommendationId:'R',tenantId:'T',siteId:'S',actualFreshWaterM3:11},operations:{authoritative:true,recommendationId:'R',tenantId:'T',siteId:'S',productionCompleted:true},financial:{authoritative:false,realisedWaterCost:99}});
+ assert.equal(r.status,'reconciled');assert.equal(r.realised.realisedWaterCost,null);assert.equal(r.calibration.waterErrorM3,1);
+});
