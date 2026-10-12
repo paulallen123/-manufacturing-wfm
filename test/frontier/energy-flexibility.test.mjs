@@ -19,6 +19,22 @@ test('unknown signal lifecycle cannot recommend a flex option',()=>{
  }
 });
 
+test('same-revision cancellation cannot be reactivated by a later publication',()=>{
+ const i=baseInput(),cancelled={...i.energySignal,status:'cancelled',publishedAt:'2026-09-18T05:51:00.000Z'},
+  activeAgain={...i.energySignal,publishedAt:'2026-09-18T05:52:00.000Z'};
+ i.energyEvents=[i.energySignal,cancelled,activeAgain];delete i.energySignal;
+ const reduced=reduceEnergySignalEventsDetailed(i.energyEvents);
+ assert.equal(reduced.conflict,true);
+ const r=evaluateEnergyFlexibility(i);
+ assert.equal(r.signalFresh,false);
+ assert.equal(r.status,'no_safe_or_valuable_flexibility');
+ assert.ok(r.signalFailures.includes('energy_signal_revision_conflict'));
+ const corrected=structuredClone(i);
+ corrected.energyEvents.push({...activeAgain,revision:3,publishedAt:'2026-09-18T05:53:00.000Z'});
+ corrected.latestKnownSignalRevision=3;
+ assert.equal(evaluateEnergyFlexibility(corrected).status,'recommend_options');
+});
+
 test('exact event replay is idempotent and delivery order does not change decision hash',()=>{const a=baseInput();const e1={...a.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'};const e2={...a.energySignal};a.energyEvents=[e1,e2];delete a.energySignal;const b=structuredClone(a);b.energyEvents=[e2,e1,e2,e1,e2];const ra=evaluateEnergyFlexibility(a),rb=evaluateEnergyFlexibility(b);assert.equal(ra.effectiveSignalRevision,2);assert.equal(rb.eventReduction.duplicateCount,3);assert.equal(ra.reproducibilityHash,rb.reproducibilityHash);assert.deepEqual(ra.rankedOptions,rb.rankedOptions);});
 
 test('conflicting same-revision authoritative events fail closed',()=>{const i=baseInput();const active={...i.energySignal};const conflict={...i.energySignal,type:'turn_up',confidence:0.99};i.energyEvents=[active,conflict];delete i.energySignal;const d=reduceEnergySignalEventsDetailed(i.energyEvents);assert.equal(d.conflict,true);const r=evaluateEnergyFlexibility(i);assert.equal(r.status,'no_safe_or_valuable_flexibility');assert.ok(r.signalFailures.includes('energy_signal_revision_conflict'));});

@@ -20,7 +20,9 @@ export function reduceEnergySignalEventsDetailed(events=[]){
   const atRevision=unique.filter(e=>Number(e.revision)===maxRevision);
   const maxPublished=Math.max(...atRevision.map(e=>ms(e.publishedAt)));
   const latest=atRevision.filter(e=>ms(e.publishedAt)===maxPublished);
-  const conflict=latest.length>1;
+  // Equal revisions must identify one authoritative state; a later timestamp
+  // cannot turn an earlier cancellation back into an active signal.
+  const conflict=atRevision.length>1;
   const signal=[...latest].sort((a,b)=>statusPrecedence(a.status)-statusPrecedence(b.status)||hash(a).localeCompare(hash(b)))[latest.length-1];
   return {signal,eventCount:inputEvents.length,usableCount:usable.length,uniqueEventCount:unique.length,duplicateCount:usable.length-unique.length,conflict};
 }
