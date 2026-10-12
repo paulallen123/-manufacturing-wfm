@@ -10,11 +10,11 @@ function event(kind,id,revision,payload,observedAt='2026-10-12T07:55:00.000Z'){
 }
 function input(){return {scope:{...scope},asOf:at,policy:{version:'p1',currency:'GBP',maxAgeMinutes:30,minConfidence:0.6},
   evidence:[
-    event('inventory','inv',1,{quantityOnHand:100,safetyStock:20}),
-    event('consumption','cons',1,{quantityPerHour:40,startsAt:at}),
-    event('requirement','req',1,{remainingQuantity:200,requiredAt:'2026-10-12T09:00:00.000Z'}),
+    event('inventory','inv',1,{quantityOnHand:100,safetyStock:20,unit:'kg'}),
+    event('consumption','cons',1,{quantityPerHour:40,startsAt:at,unit:'kg'}),
+    event('requirement','req',1,{remainingQuantity:200,requiredAt:'2026-10-12T09:00:00.000Z',unit:'kg'}),
     event('eta','eta',1,{arrivesAt:'2026-10-12T13:00:00.000Z'}),
-    event('economics','econ',1,{lostContributionPerHour:10000,idleLabourPerHour:1000,recoveryOvertimePerHour:500,customerPenalty:2000,componentsNonOverlapping:true})
+    event('economics','econ',1,{currency:'GBP',lostContributionPerHour:10000,idleLabourPerHour:1000,recoveryOvertimePerHour:500,customerPenalty:2000,componentsNonOverlapping:true})
   ],
   options:[
     {id:'transfer',kind:'INTER_SITE_TRANSFER',recoveredHours:2,costUpper:3000,avoidedCostLower:15000,feasibility:{safety:true,quality:true,qualifiedStaff:true,capacity:true,approvalRoute:true},sourceRef:'transfer:1'},
@@ -79,6 +79,12 @@ test('identical replay is deterministic and a material source change changes the
 test('missing currency or non-overlap attestation holds the economics estimate',()=>{
   const a=input();delete a.policy.currency;assert.equal(evaluateDeliveryDisruption(a).status,'INSUFFICIENT_EVIDENCE');
   const b=input();b.evidence[4].payload.componentsNonOverlapping=false;assert.equal(evaluateDeliveryDisruption(b).status,'INSUFFICIENT_EVIDENCE');
+});
+test('mismatched production units or economics currency fail closed',()=>{
+  const a=input();a.evidence[2].payload.unit='pieces';
+  assert.equal(evaluateDeliveryDisruption(a).status,'INSUFFICIENT_EVIDENCE');
+  const b=input();b.evidence[4].payload.currency='USD';
+  assert.equal(evaluateDeliveryDisruption(b).status,'INSUFFICIENT_EVIDENCE');
 });
 test('a stream that changes source record identity cannot silently supersede its earlier revision',()=>{
   const a=input();const replacement=structuredClone(a.evidence[3]);

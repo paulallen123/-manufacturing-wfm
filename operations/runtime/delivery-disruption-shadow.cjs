@@ -58,8 +58,10 @@ function evaluateDeliveryDisruption(raw){
   const inv=selected.get('inventory').payload,cons=selected.get('consumption').payload,
     req=selected.get('requirement').payload,eta=selected.get('eta').payload,econ=selected.get('economics').payload;
   if(!num(inv.quantityOnHand)||!num(inv.safetyStock)||inv.safetyStock>inv.quantityOnHand||
+    !str(inv.unit)||inv.unit!==cons.unit||inv.unit!==req.unit||
     !num(cons.quantityPerHour)||cons.quantityPerHour===0||!utc(cons.startsAt)||
     !num(req.remainingQuantity)||!utc(req.requiredAt)||!utc(eta.arrivesAt)||
+    econ.currency!==input.policy.currency||
     !['lostContributionPerHour','idleLabourPerHour','recoveryOvertimePerHour','customerPenalty'].every(k=>amount(econ[k]))||
     econ.componentsNonOverlapping!==true)return blocked(input,['INVALID_OR_OVERLAPPING_ECONOMICS_OR_PRODUCTION']);
   const start=Date.parse(cons.startsAt),need=Date.parse(req.requiredAt),arrival=Date.parse(eta.arrivesAt);
