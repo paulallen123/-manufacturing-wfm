@@ -177,12 +177,14 @@ class EvidenceLedger {
   }
 
   assess(refs = [], { tenant, now = this.now(), maxAgeMs = null } = {}) {
+    if (!Number.isFinite(now)) deny('VECTOR_EVIDENCE_TIME', 'Assessment requires a finite current timestamp.');
     const ids = [...new Set(refs.map((value) => clean(value, 120)).filter(Boolean))];
     const missing = [];
     const stale = [];
     const contradicted = [];
     const wrongTenant = [];
     const superseded = [];
+    const notEffective = [];
     const records = [];
 
     for (const id of ids) {
@@ -197,6 +199,9 @@ class EvidenceLedger {
       }
       records.push(row);
       const observedMs = Date.parse(row.observedAt);
+      // An ingested record is not action evidence until it is both known and
+      // applicable. Recheck on every assessment, including receipt replay.
+      if (observedMs > now || Date.parse(row.effectiveAt) > now) notEffective.push(id);
       const expiresMs = row.expiresAt ? Date.parse(row.expiresAt) : null;
       if ((expiresMs && now > expiresMs) || (Number.isFinite(maxAgeMs) && maxAgeMs >= 0 && now - observedMs > maxAgeMs)) stale.push(id);
       if (row.contradictionRefs.length) contradicted.push(id);
@@ -208,7 +213,7 @@ class EvidenceLedger {
     const trustFloor = records.length ? Math.min(...records.map((row) => row.sourceTrust)) : 0;
     const confidenceFloor = records.length ? Math.min(...records.map((row) => row.confidence)) : 0;
     const complete = ids.length > 0 && !missing.length && !wrongTenant.length;
-    const safe = complete && !stale.length && !contradicted.length && !superseded.length;
+    const safe = complete && !stale.length && !contradicted.length && !superseded.length && !notEffective.length;
 
     return Object.freeze({
       contractVersion: 'VECTOR_EVIDENCE_ASSESSMENT_V1',
@@ -221,9 +226,10 @@ class EvidenceLedger {
       contradicted,
       wrongTenant,
       superseded,
+      notEffective,
       trustFloor,
       confidenceFloor,
-      assessmentDigest: digest({ tenant: tenant || null, ids, missing, stale, contradicted, wrongTenant, superseded, trustFloor, confidenceFloor }),
+      assessmentDigest: digest({ tenant: tenant || null, ids, missing, stale, contradicted, wrongTenant, superseded, notEffective, trustFloor, confidenceFloor }),
     });
   }
 }
@@ -586,3 +592,4 @@ module.exports = Object.freeze({
   stable,
   digest,
 });
+
