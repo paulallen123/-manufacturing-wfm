@@ -476,9 +476,13 @@ function createOneDayEnterpriseEngine(options = {}) {
     const invitation={id:randomUUID(),tenant:binding.tenant,contract_ref_hash:sha256(binding.contractRef),recipient_hash:recipientDigest(binding.ownerEmail),expires_at_ms:started+7*24*60*60*1000};
     const token=deterministicInvitationToken(invitation);
     insertInvitation.run(invitation.id,invitation.tenant,invitation.contract_ref_hash,invitation.recipient_hash,sha256(token),'PENDING',targetHours,invitation.expires_at_ms,null,ts,ts);
-    scheduleNotificationRecovery(invitation,binding.ownerEmail,started-notificationRetryDelayMs);
+    if(!binding.orderId)scheduleNotificationRecovery(invitation,binding.ownerEmail,started-notificationRetryDelayMs);
     record(runId,binding.tenant,'VERIFIED_CUSTOMER_WORKSPACE_CREATED',{provider:binding.provider,contractRefDigest:sha256(binding.contractRef).slice(0,16),targetHours});
     return {initialSetupRunId:runId};
+  },onInvitationBound({invitation,binding}){
+    scheduleNotificationRecovery(invitation,binding.ownerEmail,Date.now()-notificationRetryDelayMs);
+  },onNominationRevoked({tenant,runId,reasonRef}){
+    if(db.prepare('SELECT 1 FROM organisation_access_setup WHERE tenant=? AND run_id=?').get(tenant,runId))organisationAccess.revokeInitialAccess({tenant,runId,reasonRef});
   }});
 
   const authStmt = db.prepare(
@@ -653,7 +657,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     const tableExists=name=>Boolean(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(name));
     const control=tableExists('identity_tenant_control')?db.prepare('SELECT * FROM identity_tenant_control WHERE tenant=?').get(ctx.tenant):null;
-    if(control?.privileged_freeze||db.prepare("SELECT 1 FROM organisation_access_initial_authority WHERE tenant=? AND lower(owner_email)=lower(?) AND state='REVOKED'").get(ctx.tenant,ctx.email)){
+    if(control?.privileged_freeze||customerWorkspaces.ownerAuthorityRevoked(ctx)||db.prepare("SELECT 1 FROM organisation_access_initial_authority WHERE tenant=? AND lower(owner_email)=lower(?) AND state='REVOKED'").get(ctx.tenant,ctx.email)){
       writeJson(res,403,{error:'Workspace access is frozen or requires authorised restoration.'});return null;
     }
     if(tableExists('identity_session_bindings')){
@@ -692,8 +696,9 @@ function createOneDayEnterpriseEngine(options = {}) {
   async function handleContractSigned(req, res) {
     if(typeof options.verifySignedContract!=='function')return writeJson(res,503,{error:'Verified signing-provider intake is not configured.'});
     const rawBody=await readRaw(req);
-    const binding=await options.verifySignedContract({rawBody,headers:{...req.headers}});
-    if(binding===null)return writeJson(res,202,{ignored:true,reason:'No verified completed signing event.'});
+    const verified=await options.verifySignedContract({rawBody,headers:{...req.headers}});
+    if(verified===null)return writeJson(res,202,{ignored:true,reason:'No verified completed signing event.'});
+    const binding=customerWorkspaces.resolveSigningBinding(verified);
     const workspace=binding?.operation==='adopt-existing'?customerWorkspaces.adoptExisting(binding):customerWorkspaces.accept(binding);
     if(!workspace.created){
       if(binding.relationship==='initial'&&!workspace.adopted)await retryDueNotifications({tenant:workspace.tenant,contractHash:sha256(binding.contractRef)});
@@ -1762,6 +1767,7 @@ function createOneDayEnterpriseEngine(options = {}) {
   function activeInvitation(invitation,nowMs=Date.now()) {
     const current=invitationById.get(invitation.id,invitation.tenant);
     if(!current||current.status!=='PENDING'||Number(current.expires_at_ms)<=Number(nowMs)||current.contract_ref_hash!==invitation.contract_ref_hash)return false;
+    if(!customerWorkspaces.invitationCurrent(current))return false;
     const outbox=outboxByContract.get(current.tenant,current.contract_ref_hash);
     if(outbox&&outbox.state!=='PENDING')return false;
     const setup=db.prepare('SELECT * FROM organisation_access_setup WHERE tenant=? AND contract_hash=?').get(current.tenant,current.contract_ref_hash);
@@ -2218,6 +2224,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     const digest = sha256(compact(token, 500));
     const invitation = invitationByToken.get(digest);
     if (!invitation) return null;
+    if(invitation.status==='REVOKED'||!customerWorkspaces.invitationCurrent(invitation))return null;
     if (invitation.tenant !== ctx.tenant) return null;
     if (!secureEqual(invitation.recipient_hash, recipientDigest(ctx.email))) return null;
     return invitation;
@@ -2233,6 +2240,10 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   async function handleStart(ctx, req, res) {
     const body = await readJson(req);
+    const current=requireManager(req,res);
+    if(!current)return true;
+    if(current.tenant!==ctx.tenant||current.email!==ctx.email||current.role!==ctx.role)return writeJson(res,409,{error:'Workspace authority changed.'});
+    ctx=current;
     const invitation = invitationForContext(ctx, body.token);
     if (!invitation) return writeJson(res, 404, { error: 'Implementation invitation not found.' });
     if (Date.now() > invitation.expires_at_ms) {
@@ -2948,6 +2959,10 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   return {
     handleRequest,
+    // Trusted VECTOR order/nomination adapters; never HTTP or webhook authority.
+    recordCustomerOrder:customerWorkspaces.recordOrder,
+    authorizeCustomerOrderEnvelope:customerWorkspaces.authorizeOrderEnvelope,
+    revokeCustomerNomination:customerWorkspaces.revokeOrderNomination,
     retryDueNotifications,
     statusForTenant(tenant) {
       const run = currentRun.get(tenant);

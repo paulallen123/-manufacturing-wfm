@@ -13,6 +13,18 @@ const binding = { verified: true, ownerAuthorized: true, provider: 'fixture-prov
 const profile = { organisationName: 'Alpha Factory', industry: 'Manufacturing', timeZone: 'Europe/London' };
 const key = { tenant: 'alpha', runId: 'run-alpha', expectedRevision: 1 };
 
+test('explicit initial-owner revocation durably cancels outstanding invitations and notification recovery',t=>{
+  const f=fixture(t);f.user();f.reserve();
+  f.db.exec('CREATE TABLE implementation_notification_outbox(tenant TEXT,contract_ref_hash TEXT,state TEXT)');
+  f.db.prepare('INSERT INTO implementation_invitations VALUES(?,?,?,?,?,?)').run('alpha',hash(binding.contractRef),hash(binding.ownerEmail),null,'PENDING',Date.now()+60000);
+  f.db.prepare('INSERT INTO implementation_notification_outbox VALUES(?,?,?)').run('alpha',hash(binding.contractRef),'PENDING');
+  const revoked=f.service.revokeInitialAccess({tenant:'alpha',runId:'run-alpha',reasonRef:'customer-authority-revoked'});
+  assert.equal(revoked.initialAccessState,'REVOKED');assert.equal(revoked.invitation,'REVOKED');
+  assert.equal(f.db.prepare('SELECT state FROM implementation_notification_outbox').get().state,'BLOCKED');
+  assert.equal(f.service.revokeInitialAccess({tenant:'alpha',runId:'run-alpha',reasonRef:'same-revocation'}).initialAccessState,'REVOKED');
+  assert.equal(f.count('users'),1,'Revocation does not create or recreate an owner');
+});
+
 function fixture(t, adapter) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-setup-fixture-'));
   const dbPath = path.join(root, 'fixture.sqlite'); let db = new DatabaseSync(dbPath);

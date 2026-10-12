@@ -213,6 +213,10 @@ function createOrganisationAccessSetup({ db, provisionInitialOwner } = {}) {
         db.prepare('UPDATE organisation_access_setup SET revision=revision+1,updated_at=? WHERE tenant=?').run(new Date().toISOString(),tenant);
         audit(get(tenant), 'INITIAL_OWNER_ACCESS_REVOKED', { reasonHash });
       }
+      if(hasTable('implementation_invitations')){
+        db.prepare("UPDATE implementation_invitations SET status='REVOKED' WHERE tenant=? AND contract_ref_hash=? AND status='PENDING'").run(tenant,row.contract_hash);
+        if(hasTable('implementation_notification_outbox'))db.prepare("UPDATE implementation_notification_outbox SET state='BLOCKED' WHERE tenant=? AND contract_ref_hash=?").run(tenant,row.contract_hash);
+      }
       return view(get(tenant));
     });
   }

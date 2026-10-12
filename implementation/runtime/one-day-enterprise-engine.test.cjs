@@ -696,6 +696,97 @@ function verifiedFixtureEvent({rawBody}) {
     tenant:'alpha',provider:'fixture-provider',eventId:input.contractId+'-signed',contractRef:input.contractId,
     relationship:'initial',ownerEmail:'manager@alpha',ownerAuthorityRef:'fixture-owner-authority',profile:{organisationName:'Alpha'}};
 }
+
+function registeredOrder(overrides={}) {return {orderId:'vector-order-alpha',expectedRevision:0,orderAuthorized:true,ownerAuthorized:true,
+  orderAuthorityRef:'vector-register/order-alpha',customerId:'registered-alpha',customerAuthorityRef:'vector-register/customer-alpha',tenant:'alpha',provider:'docusign',
+  envelopeId:'registered-envelope-1',contractRef:'registered-contract-1',relationship:'initial',nominatedSuperUserEmail:'manager@alpha',nominationAuthorityRef:'customer-nomination/alpha-1',profile:{organisationName:'Alpha Factory'},...overrides};}
+function verifiedOrderCompletion(overrides={}) {return {verified:true,provider:'DocuSign',status:'completed',eventId:'registered-completion-1',envelopeId:'registered-envelope-1',
+  signerEmail:'signer@different.company',tenant:'bravo',ownerEmail:'manager@bravo',...overrides};}
+test('stored order HTTP completion uses its nominee and permanent workspace through setup, duplicate and renewal',async t=>{
+  let event=verifiedOrderCompletion();const f=fixture({configurationCompiler:require('./test-support/sealed-compiler.cjs')(t),verifySignedContract:()=>event});
+  const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  assert.equal(typeof f.engine.recordCustomerOrder,'function','The existing engine must expose its trusted register adapter');
+  f.engine.recordCustomerOrder(registeredOrder());
+  const send=()=>call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{tenant:'bravo',ownerEmail:'attacker@bravo',signerEmail:'not-nominee'},f.contractWebhook);
+  const initial=await send();assert.equal(initial.status,201,JSON.stringify(initial.body));assert.equal(initial.body.notification.delivered,true);assert.equal(f.sentInvitations.length,1);assert.equal(f.sentInvitations[0].to,'manager@alpha');
+  const workspace=db.prepare('SELECT * FROM customer_workspaces').get();const invitation=db.prepare('SELECT * FROM implementation_invitations').get();
+  const receipt=db.prepare('SELECT * FROM customer_workspace_invitation_bindings WHERE invitation_id=?').get(invitation.id);
+  assert.equal(receipt.workspace_id,workspace.workspace_id);assert.equal(receipt.order_revision,1);assert.equal(receipt.nomination_revision,1);
+  const token=new URL(f.sentInvitations[0].startUrl).searchParams.get('implementation_invite');
+  assert.equal((await call(f.engine,f.tokens.bravo,'POST','/api/implementation/autonomous/start',{token})).status,404);
+  const started=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/start',{token});assert.equal(started.status,201);
+  const saved=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/setup',{expectedRevision:0,answers:setupAnswers()});
+  assert.equal((await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/setup/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  const tables=['users','implementation_runs','tenant_environments','workspace_setup_drafts','workspace_setup_events','implementation_scope','organisation_access_setup'];
+  const snapshot=()=>tables.map(table=>db.prepare('SELECT * FROM '+table).all());const before=snapshot();
+  event=verifiedOrderCompletion({eventId:'duplicate-completion'});const replay=await send();assert.equal(replay.status,200);assert.equal(replay.body.workspace.workspaceId,workspace.workspace_id);assert.equal(replay.body.questionnaireReset,false);
+  f.engine.recordCustomerOrder(registeredOrder({orderId:'vector-renewal',envelopeId:'registered-renewal',contractRef:'registered-renewal-contract',relationship:'renewal',existingWorkspaceId:workspace.workspace_id}));
+  event=verifiedOrderCompletion({eventId:'renewal-completion',envelopeId:'registered-renewal'});const renewal=await send();assert.equal(renewal.status,200,JSON.stringify(renewal.body));assert.equal(renewal.body.workspace.workspaceId,workspace.workspace_id);assert.equal(renewal.body.questionnaireReset,false);
+  assert.deepEqual(snapshot(),before);assert.equal(f.sentInvitations.length,1);assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,1);
+});
+for(const change of ['nomination','revocation'])test('stored order '+change+' while verifier awaits rejects old completion before owner or workspace effects',async t=>{
+  let release,entered;const gate=new Promise(resolve=>{release=resolve;}),started=new Promise(resolve=>{entered=resolve;});
+  const f=fixture({verifySignedContract:async()=>{entered();await gate;return verifiedOrderCompletion();}});const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  assert.equal(typeof f.engine.recordCustomerOrder,'function');f.engine.recordCustomerOrder(registeredOrder());
+  const pending=call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook);await started;
+  if(change==='nomination')f.engine.recordCustomerOrder(registeredOrder({expectedRevision:1,envelopeId:'registered-envelope-2',contractRef:'registered-contract-2',nominatedSuperUserEmail:'new-nominee@alpha',nominationAuthorityRef:'customer-nomination/alpha-2'}));
+  else f.engine.revokeCustomerNomination({orderId:'vector-order-alpha',expectedRevision:1,reasonRef:'customer-authority-revoked'});
+  release();const result=await pending;assert.equal(result.status,change==='nomination'?409:403,JSON.stringify(result.body));
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM customer_workspaces').get().n,0);assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,0);assert.equal(f.sentInvitations.length,0);
+});
+test('stored order nomination change during invitation claim cancels old link and cannot restart questionnaire',async t=>{
+  const f=fixture({configurationCompiler:require('./test-support/sealed-compiler.cjs')(t),verifySignedContract:()=>verifiedOrderCompletion()});const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  assert.equal(typeof f.engine.recordCustomerOrder,'function');f.engine.recordCustomerOrder(registeredOrder());
+  const first=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook);assert.equal(first.status,201);
+  const token=new URL(f.sentInvitations[0].startUrl).searchParams.get('implementation_invite');
+  const request=Readable.from((async function*(){f.engine.recordCustomerOrder(registeredOrder({expectedRevision:1,envelopeId:'changed-envelope',contractRef:'changed-contract',nominatedSuperUserEmail:'new-nominee@alpha',nominationAuthorityRef:'customer-nomination/2'}));yield JSON.stringify({token});})());
+  request.method='POST';request.url='/api/implementation/autonomous/start';request.headers={cookie:'wfm_session='+f.tokens.manager};const responseValue=response();await f.engine.handleRequest(request,responseValue);
+  assert.equal(responseValue.statusCode,404);assert.equal(db.prepare('SELECT status FROM implementation_invitations').get().status,'REVOKED');assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,1);assert.equal(db.prepare('SELECT COUNT(*) n FROM workspace_setup_drafts').get().n,0);
+});
+test('stored order invitation stays bound through a same-nominee revision and fails atomically if its receipt cannot persist',async t=>{
+  let event=verifiedOrderCompletion();const f=fixture({verifySignedContract:()=>event});const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  f.engine.recordCustomerOrder(registeredOrder());
+  db.exec("CREATE TRIGGER fail_order_receipt BEFORE INSERT ON customer_workspace_invitation_bindings BEGIN SELECT RAISE(ABORT,'receipt unavailable'); END");
+  const send=()=>call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook);
+  assert.equal((await send()).status,500);assert.equal(f.sentInvitations.length,0);
+  for(const table of ['customer_workspaces','implementation_runs','organisation_access_setup','implementation_invitations','implementation_notification_outbox'])assert.equal(db.prepare('SELECT COUNT(*) n FROM '+table).get().n,0,table);
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM customer_workspace_orders').get().n,1,'Trusted register revision remains stored');
+  db.exec('DROP TRIGGER fail_order_receipt');assert.equal((await send()).status,201);
+  const token=new URL(f.sentInvitations[0].startUrl).searchParams.get('implementation_invite'),workspace=db.prepare('SELECT * FROM customer_workspaces').get();
+  f.engine.recordCustomerOrder(registeredOrder({expectedRevision:1,envelopeId:'same-nominee-renewal',contractRef:'renewal',relationship:'renewal',existingWorkspaceId:workspace.workspace_id}));
+  event=verifiedOrderCompletion({envelopeId:'same-nominee-renewal',eventId:'same-nominee-renewal'});assert.equal((await send()).status,200);
+  assert.equal((await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/start',{token})).status,201);
+  assert.equal(f.sentInvitations.length,1);assert.equal(db.prepare('SELECT COUNT(*) n FROM customer_workspace_invitation_bindings').get().n,1);
+});
+test('stored order explicitly adopts a verified legacy tuple without mail authority and revocation cannot reuse its existing owner',async t=>{
+  const f=fixture({configurationCompiler:require('./test-support/sealed-compiler.cjs')(t),failInvitationAttempts:2,notificationRetryDelayMs:0,verifySignedContract:()=>verifiedOrderCompletion()});
+  const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  const first=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'legacy-contract',recipientEmail:'manager@alpha',scope:scopeFixture()},f.internal);assert.equal(first.status,201);
+  const environment=db.prepare('SELECT * FROM tenant_environments WHERE tenant=?').get('alpha');
+  f.engine.recordCustomerOrder(registeredOrder({operation:'adopt-existing',profile:undefined,contractRef:'legacy-contract',existingRunId:environment.run_id,existingEnvironmentId:environment.environment_id,existingNamespace:environment.namespace}));
+  const tables=['users','implementation_runs','implementation_scope','tenant_environments','implementation_invitations','implementation_notification_outbox','implementation_events'];const snapshot=()=>tables.map(table=>db.prepare('SELECT * FROM '+table).all()),before=snapshot();
+  const adopted=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{existingNamespace:'forged'},f.contractWebhook);assert.equal(adopted.status,200,JSON.stringify(adopted.body));assert.equal(adopted.body.workspace.adopted,true);assert.deepEqual(snapshot(),before);assert.equal(f.invitationAttempts,2);
+  assert.equal((await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).status,200);
+  f.engine.revokeCustomerNomination({orderId:'vector-order-alpha',expectedRevision:1,reasonRef:'legacy-owner-authority-withdrawn'});
+  assert.equal((await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).status,403,'A historical owner session cannot outlive its stored nomination authority');
+  assert.equal((await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook)).status,403);assert.equal(db.prepare('SELECT status FROM implementation_invitations').get().status,'REVOKED');
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,1);assert.equal(f.invitationAttempts,2);
+});
+for(const change of ['role','permission','session','revocation'])test('stored order invitation rechecks '+change+' after the awaited claim body',async t=>{
+  const f=fixture({verifySignedContract:()=>verifiedOrderCompletion()});const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});
+  f.engine.recordCustomerOrder(registeredOrder());assert.equal((await call(f.engine,null,'POST','/api/implementation/autonomous/contract-signed',{},f.contractWebhook)).status,201);
+  const token=new URL(f.sentInvitations[0].startUrl).searchParams.get('implementation_invite');
+  const req=Readable.from((async function*(){
+    if(change==='role')db.prepare('UPDATE users SET role=? WHERE email=?').run('employee','manager@alpha');
+    else if(change==='permission')db.prepare('UPDATE users SET permissions=? WHERE email=?').run('[]','manager@alpha');
+    else if(change==='session')db.prepare('DELETE FROM sessions WHERE token_hash=?').run(sha256(f.tokens.manager));
+    else f.engine.revokeCustomerNomination({orderId:'vector-order-alpha',expectedRevision:1,reasonRef:'revoked-during-body'});
+    yield JSON.stringify({token});
+  })());req.method='POST';req.url='/api/implementation/autonomous/start';req.headers={cookie:'wfm_session='+f.tokens.manager};const res=response();await f.engine.handleRequest(req,res);
+  assert.equal(res.statusCode,change==='session'?401:403,res.body);assert.equal(db.prepare('SELECT status FROM implementation_invitations').get().status,change==='session'?'PENDING':'REVOKED');
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,1);assert.equal(db.prepare('SELECT started_run_id FROM implementation_invitations').get().started_run_id,null);
+});
+
 test('verified signed contract starts implementation immediately and sends one invitation', async () => {
   const f = fixture({verifySignedContract:verifiedFixtureEvent});
   try {
