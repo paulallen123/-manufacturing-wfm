@@ -12,6 +12,7 @@ const {
 } = require('./manufacturing-scheduling-engine.cjs');
 const { forecastDemand, toHeadcountForecast } = require('./manufacturing-demand-forecast.cjs');
 const { reconcileScheduleToAttendance } = require('./schedule-attendance-reconciliation.cjs');
+const { createSchedulingAuthority, branchFor, workerReferences } = require('./scheduling-authority.cjs');
 
 const PREFIX = '/api/operations/scheduling';
 const INTERNAL_HEADER = 'x-wfm-scheduling-internal';
@@ -98,6 +99,7 @@ function createSchedulingIntelligenceService(options = {}) {
   );
 
   const auth = db.prepare('SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?');
+  const authority = createSchedulingAuthority({ db, nativeHelpers: options.nativeHelpers });
   const planById = db.prepare('SELECT plan_json FROM vector_schedule_plans WHERE tenant=? AND plan_id=?');
   const insertPlan = db.prepare('INSERT INTO vector_schedule_plans(tenant,plan_id,context_revision,plan_json,created_at) VALUES(?,?,?,?,?)');
   const listPlans = db.prepare('SELECT plan_json FROM vector_schedule_plans WHERE tenant=? ORDER BY created_at DESC,plan_id DESC LIMIT ?');
@@ -123,12 +125,12 @@ function createSchedulingIntelligenceService(options = {}) {
       writeJson(res, 403, { error: 'Scheduling intelligence requires an authorised manager or administrator.' });
       return null;
     }
-    return c;
+    return { ...c, source: authority.readContext(c, branchFor(req)) };
   }
   function requireCurrentManager(req, res, initial) {
     const current = requireManager(req, res);
     if (!current) return null;
-    if (current.email !== initial.email || current.tenant !== initial.tenant || current.role !== initial.role) {
+    if (current.email !== initial.email || current.tenant !== initial.tenant || current.role !== initial.role || current.source.fence !== initial.source.fence) {
       writeJson(res, 403, { error: 'Scheduling authority changed. Refresh the signed-in context.' });
       return null;
     }
@@ -188,7 +190,7 @@ function createSchedulingIntelligenceService(options = {}) {
     const body = await readJson(req);
     const tenant = compact(body.tenant, 120);
     if (!tenant) return writeJson(res, 400, { error: 'tenant is required.' });
-    const plan = createSchedulingPlan({ ...(body.input || {}), tenant });
+    const plan = authority.bindPlan(createSchedulingPlan({ ...(body.input || {}), tenant }), body.input || {});
     const persisted = persistPlan(plan);
     return writeJson(res, persisted.idempotent ? 200 : 201, {
       contractVersion: CONTRACT_VERSION,
@@ -206,7 +208,9 @@ function createSchedulingIntelligenceService(options = {}) {
     const row = planById.get(tenant, priorPlanId);
     if (!row) return writeJson(res, 404, { error: 'Prior schedule plan was not found.' });
     const priorPlan = JSON.parse(row.plan_json);
-    const repair = repairSchedulingPlan({ ...(body.input || {}), priorPlan });
+    const calculated = repairSchedulingPlan({ ...(body.input || {}), priorPlan });
+    const repairedPlan = authority.bindPlan(calculated.repairedPlan, body.input || {}, priorPlan.authorityScope);
+    const repair = { ...calculated, repairedPlan, repairId: sha256(JSON.stringify([calculated.repairId, repairedPlan.planId])) };
     const persisted = persistRepair(tenant, repair);
     return writeJson(res, persisted.idempotent ? 200 : 201, {
       contractVersion: CONTRACT_VERSION,
@@ -219,30 +223,69 @@ function createSchedulingIntelligenceService(options = {}) {
     const body = await readJson(req);
     c = requireCurrentManager(req, res, c);
     if (!c) return true;
-    const plan = createSchedulingPlan({ ...(body.input || {}), tenant: c.tenant });
-    return writeJson(res, 200, {
+    const source = authority.readContext(c, branchFor(req, body));
+    const scope = authority.assertInput(source, body.input || {}, 'plan');
+    const plan = authority.bindPlan(createSchedulingPlan({ ...scope.input, tenant: c.tenant }), scope.input);
+    authority.assertPlan(source, plan);
+    return writeJson(res, 200, authority.output(source, {
       contractVersion: CONTRACT_VERSION,
       scenarioOnly: true,
       persisted: false,
       plan,
       authority: 'NO_EXECUTION'
-    });
+    }));
   }
 
   async function managerOpenShift(req, res, c) {
     const body = await readJson(req);
     c = requireCurrentManager(req, res, c);
     if (!c) return true;
-    const result = evaluateOpenShift(body.input || {});
-    return writeJson(res, 200, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result });
+    const source = authority.readContext(c, branchFor(req, body));
+    const input = authority.assertInput(source, body.input || {}, 'open').input;
+    const result = evaluateOpenShift(input);
+    return writeJson(res, 200, authority.output(source, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result }));
   }
 
   async function managerSwap(req, res, c) {
     const body = await readJson(req);
     c = requireCurrentManager(req, res, c);
     if (!c) return true;
-    const result = evaluateSwap(body.input || {});
-    return writeJson(res, 200, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result });
+    const source = authority.readContext(c, branchFor(req, body));
+    const input = authority.assertInput(source, body.input || {}, 'swap').input;
+    const result = evaluateSwap(input);
+    return writeJson(res, 200, authority.output(source, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result }));
+  }
+
+  function canReadReconciliation(source, reconciliation) {
+    try {
+      if(reconciliation.tenant!==source.actor.tenant)return false;
+      const row=planById.get(source.actor.tenant,reconciliation.planId);
+      if(!row||!authority.assertPlan(source,JSON.parse(row.plan_json)))return false;
+      for(const id of workerReferences(reconciliation))authority.worker(source,id);
+      return true;
+    } catch { return false; }
+  }
+  function canReadEvent(context,event) {
+    try {
+      const source=authority.readContext(context),payload=event?.payload;
+      let expected;
+      if(event.topic==='scheduling.shadow.updated'){
+        const row=planById.get(source.actor.tenant,payload?.planId);if(!row)return false;
+        const plan=JSON.parse(row.plan_json);authority.assertPlan(source,plan);
+        expected={planId:plan.planId,coveragePct:plan.quality?.coveragePct??null,executionPermitted:false};
+      }else if(event.topic==='scheduling.repair.shadow.updated'){
+        const row=repairById.get(source.actor.tenant,payload?.repairId);if(!row)return false;
+        const repair=JSON.parse(row.repair_json),prior=planById.get(source.actor.tenant,repair.priorPlanId);if(!prior)return false;
+        authority.assertPlan(source,JSON.parse(prior.plan_json));authority.assertPlan(source,repair.repairedPlan);
+        for(const id of workerReferences(repair))authority.worker(source,id);
+        expected={repairId:repair.repairId,priorPlanId:repair.priorPlanId,changeCount:repair.changeCount,executionPermitted:false};
+      }else if(event.topic==='scheduling.reconciliation.updated'){
+        const row=reconciliationById.get(source.actor.tenant,payload?.reconciliationId);if(!row)return false;
+        const reconciliation=JSON.parse(row.reconciliation_json);if(!canReadReconciliation(source,reconciliation))return false;
+        expected={reconciliationId:reconciliation.reconciliationId,planId:reconciliation.planId,ready:reconciliation.ready,payrollAuthority:false};
+      }else return false;
+      const keys=Object.keys(expected);return payload&&Object.keys(payload).length===keys.length&&keys.every(key=>payload[key]===expected[key]);
+    } catch { return false; }
   }
 
   async function handleRequest(req, res) {
@@ -276,10 +319,12 @@ function createSchedulingIntelligenceService(options = {}) {
         return writeJson(res, 200, { tenant: c.tenant, ...capabilityContract() });
       }
       if (req.method === 'GET' && path === PREFIX + '/plans') {
-        return writeJson(res, 200, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, plans: recentPlans(c.tenant) });
+        const plans = recentPlans(c.tenant).filter(plan=>{try{return authority.assertPlan(c.source,plan);}catch{return false;}});
+        return writeJson(res, 200, authority.output(c.source, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, plans }));
       }
       if (req.method === 'GET' && path === PREFIX + '/reconciliations') {
-        return writeJson(res, 200, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, reconciliations: listReconciliations.all(c.tenant, 20).map(r => JSON.parse(r.reconciliation_json)) });
+        const reconciliations = listReconciliations.all(c.tenant, 20).map(r => JSON.parse(r.reconciliation_json)).filter(r=>canReadReconciliation(c.source,r));
+        return writeJson(res, 200, authority.output(c.source, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, reconciliations }));
       }
       if (req.method === 'POST' && path === PREFIX + '/forecast/what-if') {
         const b = await readJson(req);
@@ -287,7 +332,9 @@ function createSchedulingIntelligenceService(options = {}) {
         if (!current) return true;
         const forecast = forecastDemand(b.input || {});
         const labour = b.capacity ? toHeadcountForecast({ forecast, ...b.capacity }) : null;
-        return writeJson(res, 200, { tenant: current.tenant, forecast, labour, scenarioOnly: true, authority: 'NO_EXECUTION' });
+        const source=authority.readContext(current,branchFor(req,b));
+        for(const id of workerReferences(b))authority.worker(source,id);
+        return writeJson(res, 200, authority.output(source, { tenant: current.tenant, forecast, labour, scenarioOnly: true, authority: 'NO_EXECUTION' }));
       }
       if (req.method === 'POST' && path === PREFIX + '/what-if') return await managerWhatIf(req, res, c);
       if (req.method === 'POST' && path === PREFIX + '/open-shift/evaluate') return await managerOpenShift(req, res, c);
@@ -305,6 +352,7 @@ function createSchedulingIntelligenceService(options = {}) {
     handleRequest,
     recentPlans,
     capabilityContract,
+    canReadEvent,
     close() { try { db.close(); } catch {} }
   };
 }

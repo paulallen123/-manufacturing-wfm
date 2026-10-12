@@ -423,7 +423,7 @@ http.createServer = function guardedCreateServer(listener) {
 
   if (!realtimeEventService && !realtimeEventServiceInitError && process.env.WFM_DB) {
     try {
-      realtimeEventService = createRealtimeEventService({ dbPath: process.env.WFM_DB });
+      realtimeEventService = createRealtimeEventService({ dbPath: process.env.WFM_DB, schedulingEventVisible: (context, event) => !!schedulingIntelligenceService && !schedulingIntelligenceServiceInitError && schedulingIntelligenceService.canReadEvent(context, event) });
     } catch (error) {
       realtimeEventServiceInitError = error;
     }
@@ -437,6 +437,7 @@ http.createServer = function guardedCreateServer(listener) {
     try {
       schedulingIntelligenceService = createSchedulingIntelligenceService({
         dbPath: process.env.WFM_DB,
+        nativeHelpers: { allowedPeople: require('/app/public/engine.js').allowedPeople, descendants: require('/app/public/engine.js').descendants, approvedSite: require('/app/public/operations-engine.js').approvedSite },
         publishEvent: realtimeEventService && !realtimeEventServiceInitError ? event => realtimeEventService.publish(event) : null
       });
     } catch (error) {

@@ -5,10 +5,51 @@ const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const { once } = require('node:events');
+const { createHash } = require('node:crypto');
+const { execFileSync } = require('node:child_process');
+const os = require('node:os');
 const root = path.resolve(__dirname, '..');
 const bootstrap = fs.readFileSync(path.join(root, 'security/runtime/bootstrap.cjs'), 'utf8');
 const relativeRequires = Array.from(bootstrap.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
 function copyMappings(docker) {const mappings=new Set();for(const line of docker.split('\n')){if(!line.startsWith('COPY '))continue;const words=line.trim().split(/\s+/).slice(1);while(words[0]?.startsWith('--'))words.shift();const destination=words.pop();for(const source of words){const target=destination.endsWith('/')&&!source.endsWith('/')?destination+path.posix.basename(source):destination;mappings.add(`${source} ${target}`);}}return mappings;}
+const sealedArchiveSha256='3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
+const sealedPublicHelpers=Object.freeze({'public/engine.js':Object.freeze(['allowedPeople','descendants']),'public/operations-engine.js':Object.freeze(['approvedSite'])});
+const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
+let sealedPublicProof;
+function readSealedPublicProof(t){
+ if(sealedPublicProof)return sealedPublicProof;
+ const archive=path.join(root,'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz');
+ assert.equal(sha256(fs.readFileSync(archive)),sealedArchiveSha256,'native public helpers require the exact reviewed archive');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bootstrap-native-helpers-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+ const names=execFileSync('tar',['-tzf',archive],{encoding:'utf8'}).trim().split(/\r?\n/);
+ assert.ok(names.every(name=>!path.posix.isAbsolute(name)&&!name.split('/').includes('..')&&!name.includes('\\')),'sealed archive member paths must remain safe');
+ execFileSync('tar',['--no-same-owner','-xzf',archive,'-C',dir],{stdio:'pipe'});
+ const manifestBytes=fs.readFileSync(path.join(dir,'RUNTIME_MANIFEST.json')),packageManifest=JSON.parse(fs.readFileSync(path.join(dir,'PACKAGE_MANIFEST_SHA256.json')));
+ assert.equal(sha256(manifestBytes),packageManifest.files['RUNTIME_MANIFEST.json'],'native manifest must match the archive package manifest');
+ const manifest=JSON.parse(manifestBytes),members={},exports={};
+ assert.equal(Object.keys(manifest).length,133,'sealed runtime member coverage must remain exact');
+ for(const [member,expected] of Object.entries(manifest)){assert.ok(!path.posix.isAbsolute(member)&&!member.split('/').includes('..')&&!member.includes('\\'),'unsafe runtime manifest member');assert.equal(sha256(fs.readFileSync(path.join(dir,member))),expected,'sealed runtime dependency bytes differ: '+member);}
+ for(const required of Object.keys(sealedPublicHelpers)){members[required]=fs.readFileSync(path.join(dir,required));exports[required]=require(path.join(dir,required));}
+ return sealedPublicProof={archiveSha256:sealedArchiveSha256,manifest,members,exports};
+}
+function assertSealedPublicPackaging(required,composer,docker,proof){
+ assert.ok(Object.hasOwn(sealedPublicHelpers,required),'unreviewed sealed public bootstrap dependency: '+required);
+ assert.equal(proof.archiveSha256,sealedArchiveSha256,'native archive pin must remain exact');
+ assert.match(String(proof.manifest[required]||''),/^[0-9a-f]{64}$/,'native helper missing from authenticated runtime manifest: '+required);
+ assert.ok(Buffer.isBuffer(proof.members[required]),'native helper member missing: '+required);
+ assert.equal(sha256(proof.members[required]),proof.manifest[required],'native helper member digest changed: '+required);
+ for(const name of sealedPublicHelpers[required])assert.equal(typeof proof.exports[required]?.[name],'function','native helper export missing: '+required+'#'+name);
+ const extract="execFileSync('tar', ['--no-same-owner', '-xzf', archive, '-C', output]);";
+ const mismatch="throw Error('RUNTIME_ARTIFACT_HASH_MISMATCH')";
+ assert.match(composer,/const archive = path\.join\(root, 'artifact\/wfm-0\.6\.76-hosted-staging-rc1\.tar\.gz'\);/,'composer must select the exact sealed artifact');
+ assert.ok(composer.includes("const expected = '"+sealedArchiveSha256+"';"),'composer must pin the exact sealed archive');
+ assert.ok(composer.indexOf(mismatch)>=0&&composer.indexOf(extract)>composer.indexOf(mismatch),'composer must verify archive bytes before extracting members into the actual runtime root');
+ const finalStage=docker.slice(docker.lastIndexOf('\nFROM '));
+ const source='COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz';
+ const check='RUN echo "'+sealedArchiveSha256+'  /tmp/runtime.tgz" | sha256sum -c -';
+ const unpack='&& tar -xzf /tmp/runtime.tgz -C /app';
+ assert.ok(finalStage.indexOf(source)>=0&&finalStage.indexOf(check)>finalStage.indexOf(source)&&finalStage.indexOf(unpack)>finalStage.indexOf(check),'final image must copy/check the pinned archive before extracting public helpers into /app');
+}
 test('the final Docker stage includes every relative bootstrap dependency', () => {
   const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
   const finalStage = docker.slice(docker.lastIndexOf('\nFROM '));
@@ -26,6 +67,7 @@ test('local proof assembly includes the same required bootstrap dependencies', (
 test('local proof assembly includes absolute bootstrap runtime dependencies and training closure', t => {
   const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
   const absoluteRequires = Array.from(bootstrap.matchAll(/require\(['"]\/app\/([^'"]+)['"]\)/g), m => m[1]);
+  const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
   const runtimeGroups = {
     'integration-runtime': 'integration',
     'integrations': 'integrations',
@@ -36,6 +78,12 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
     'trust-runtime': 'trust'
   };
   for (const required of absoluteRequires) {
+    if(Object.hasOwn(sealedPublicHelpers,required)){
+      // These exact native helpers and their complete dependency bytes come from
+      // the pinned archive, not a source-copy group or an arbitrary public path.
+      assertSealedPublicPackaging(required,composer,docker,readSealedPublicProof(t));
+      continue;
+    }
     if (required === 'lib/configuration-compiler.cjs') {
       // This dependency comes from the hash-verified sealed archive, not a source-copy group.
       const compiler = require('../implementation/runtime/test-support/sealed-compiler.cjs')(t);
@@ -67,6 +115,30 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
   for (const file of trainingRelatives) {
     assert.ok(learningGroup.includes(`'${file}'`), `local proof omitted training dependency: ${file}`);
   }
+});
+for(const required of Object.keys(sealedPublicHelpers))for(const [name,mutate] of [
+ ['missing manifest entry',proof=>({...proof,manifest:{...proof.manifest,[required]:undefined}})],
+ ['missing archive member',proof=>({...proof,members:{...proof.members,[required]:undefined}})],
+ ['changed archive member bytes',proof=>({...proof,members:{...proof.members,[required]:Buffer.from('unreviewed native helper')}})]
+])test('native helper packaging refuses '+name+': '+required,t=>{
+ const composer=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),docker=fs.readFileSync(path.join(root,'Dockerfile'),'utf8');
+ assert.throws(()=>assertSealedPublicPackaging(required,composer,docker,mutate(readSealedPublicProof(t))),/missing|changed/);
+});
+for(const [required,names] of Object.entries(sealedPublicHelpers))for(const name of names)test('native helper packaging refuses missing export: '+required+'#'+name,t=>{
+ const proof=readSealedPublicProof(t),changed={...proof,exports:{...proof.exports,[required]:{...proof.exports[required],[name]:undefined}}};
+ assert.throws(()=>assertSealedPublicPackaging(required,fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),changed),/export missing/);
+});
+for(const [name,mutate] of [
+ ['composer archive pin',([composer,docker])=>[composer.replace("const expected = '"+sealedArchiveSha256+"';","const expected = '"+'0'.repeat(64)+"';"),docker]],
+ ['composer extraction destination',([composer,docker])=>[composer.replace("'-C', output]);","'-C', '/unreviewed']);"),docker]],
+ ['Docker archive source',([composer,docker])=>[composer,docker.replace('COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz','COPY artifact/unreviewed.tar.gz /tmp/runtime.tgz')]],
+ ['Docker extraction destination',([composer,docker])=>[composer,docker.replace('&& tar -xzf /tmp/runtime.tgz -C /app','&& tar -xzf /tmp/runtime.tgz -C /elsewhere')]]
+])test('native helper packaging refuses incorrect '+name,t=>{
+ const [composer,docker]=mutate([fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),fs.readFileSync(path.join(root,'Dockerfile'),'utf8')]);
+ assert.throws(()=>assertSealedPublicPackaging('public/engine.js',composer,docker,readSealedPublicProof(t)),/must pin|verify archive|final image/);
+});
+test('native helper packaging refuses an unknown public dependency',t=>{
+ assert.throws(()=>assertSealedPublicPackaging('public/unreviewed.js',fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),readSealedPublicProof(t)),/unreviewed sealed public bootstrap dependency/);
 });
 test('local proof assembly includes scheduling runtime dependency closure', () => {
   const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
