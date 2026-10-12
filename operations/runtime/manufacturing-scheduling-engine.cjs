@@ -214,6 +214,23 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
     !overlaps(a.start,a.end,start,end)&&
     (ms(a.end)<=ms(start)?ms(start)-ms(a.end):ms(a.start)-ms(end))<policy.minRestHours*3600000))
     failures.push('MINIMUM_REST_BREACH');
+  for(const a of assignments){
+    if(a.workerId!==worker.id||overlaps(a.start,a.end,start,end)) continue;
+    if(!a.site){
+      if(Object.keys(worker.travelMinutesBySite||{}).length) failures.push('CROSS_SITE_TRANSFER_TIME_UNKNOWN');
+      continue;
+    }
+    if(a.site===slot.site) continue;
+    const earlier=ms(a.end)<=ms(start);
+    const destination=earlier?slot.site:a.site;
+    const gap=earlier?ms(start)-ms(a.end):ms(a.start)-ms(end);
+    const travel=worker.travelMinutesBySite?.[destination];
+    if(typeof travel!=='number'||!Number.isFinite(travel)||travel<0){
+      failures.push('CROSS_SITE_TRANSFER_TIME_UNKNOWN');
+    }else if(gap<travel*60000){
+      failures.push('CROSS_SITE_TRANSFER_TIME_BREACH');
+    }
+  }
   for(const ref of policy.requiredRuleRefs) if(worker.ruleBlocks.has(ref)) failures.push('RULE_BLOCK:'+ref);
   if(slot.lockedWorkerIds.length&&!slot.lockedWorkerIds.includes(worker.id)) failures.push('LOCKED_REQUIREMENT_OTHER_WORKER');
 

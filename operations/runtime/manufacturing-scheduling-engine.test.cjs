@@ -78,6 +78,32 @@ test('cross-site internal labour competes economically with agency',()=>{
   const p=createSchedulingPlan(input({workers:[internal,agency]}));
   assert.equal(p.assignments[0].workerId,'internal'); assert.equal(p.quality.agencyHours,0);
 });
+test('cross-site assignments require the configured transfer interval in either planning order',()=>{
+  const first={...baseReq,id:'site-a',site:'tamworth',start:'2026-09-24T06:00:00Z',end:'2026-09-24T10:00:00Z'};
+  const second={...baseReq,id:'site-b',site:'birmingham',start:'2026-09-24T10:00:00Z',end:'2026-09-24T14:00:00Z'};
+  const person=worker('a',{eligibleSites:['tamworth','birmingham'],previousShiftEnd:null,
+    travelMinutesBySite:{birmingham:60},availability:[{start:'2026-09-24T05:00:00Z',end:'2026-09-24T16:00:00Z'}]});
+  const existing={slotId:first.id+'#1',workerId:'a',site:first.site,start:first.start,end:first.end};
+  const r=evaluateOpenShift({requirement:second,workers:[person],policy:{minRestHours:0},currentAssignments:[existing]});
+  assert.equal(r.ranked[0].eligible,false);
+  assert.ok(r.ranked[0].failures.includes('CROSS_SITE_TRANSFER_TIME_BREACH'));
+  for(const exactSlotLimit of [1,10]){
+    const p=createSchedulingPlan(input({workers:[person],requirements:[first,second],policy:{minRestHours:0,exactSlotLimit}}));
+    assert.equal(p.quality.filledSlots,1);
+    assert.equal(p.validation.valid,true);
+    assert.equal(p.executionPermitted,false);
+  }
+  const later={...second,start:'2026-09-24T11:00:00Z',end:'2026-09-24T15:00:00Z'};
+  const allowed=evaluateOpenShift({requirement:later,workers:[person],policy:{minRestHours:0},currentAssignments:[existing]});
+  assert.equal(allowed.ranked[0].eligible,true);
+  const sameSite=evaluateOpenShift({requirement:{...second,site:first.site},workers:[person],policy:{minRestHours:0},currentAssignments:[existing]});
+  assert.equal(sameSite.ranked[0].eligible,true);
+  const unknown=evaluateOpenShift({requirement:second,workers:[{...person,travelMinutesBySite:{}}],policy:{minRestHours:0},currentAssignments:[existing]});
+  assert.equal(unknown.ranked[0].eligible,false);
+  assert.ok(unknown.ranked[0].failures.includes('CROSS_SITE_TRANSFER_TIME_UNKNOWN'));
+  const unscoped=evaluateOpenShift({requirement:second,workers:[person],policy:{minRestHours:0},currentAssignments:[{...existing,site:undefined}]});
+  assert.ok(unscoped.ranked[0].failures.includes('CROSS_SITE_TRANSFER_TIME_UNKNOWN'));
+});
 test('open shift evaluation includes rejection reasons',()=>{
   const r=evaluateOpenShift({requirement:baseReq,workers:[worker('ok'),worker('no',{skills:[]})],policy:{}});
   assert.equal(r.ranked[0].workerId,'ok'); assert.ok(r.ranked.find(x=>x.workerId==='no').failures.includes('MISSING_SKILL:welding-l3'));
