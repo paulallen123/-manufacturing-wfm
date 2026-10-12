@@ -20,18 +20,33 @@ function load(extra = {}) {
     ui: { page: 'overview' }, history: { replaceState() {}, pushState() {} }, location: { hash: '' },
     isEmployee: () => Boolean(extra.employee), URL, Intl, Date,
     data: { requests: [] }, people: () => [], me: () => ({ id: 'manager' }),
-    F: { ready: true, actor: { personId: 'manager', email: 'fixture@example.test', tenant: null, role: extra.employee ? 'employee' : 'manager' } },
+    F: { ready: true, actor: { personId: 'manager', email: 'fixture@example.test', tenant: 'alpha', role: extra.employee ? 'employee' : 'manager' } },
     ...extra
   };
   const hook = 'window.VectorWorkforceOperations={marker:MARKER';
   assert.ok(source.includes(hook), 'existing Vector test hook is present');
   const augmented = source.replace(hook,
     'window.VectorWorkforceOperations={NAV,labourCost,metrics,secondaryKpis,conceptKpiMarkup,loadTimeReviewEvidence,setTestCalendar(value){state.calendar={status:"ready",value};},sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
-    'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTenantCalendar=async()=>({tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000});state.calendar={status:"ready",value:{tenant:null,timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000}};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");renderEmployeeHome=()=>events.push("employee-current-personal");generalPage=()=>events.push("employee-source");if(employee())renderEmployeeHome({});else apply();},marker:MARKER');
+    'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTenantCalendar=async()=>({tenant:"alpha",timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000});state.calendar={status:"ready",value:{tenant:"alpha",timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000}};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");renderEmployeeHome=()=>events.push("employee-current-personal");generalPage=()=>events.push("employee-source");if(employee())renderEmployeeHome({});else apply();},marker:MARKER');
   context.events = events;
   vm.runInNewContext(augmented, context);
   return { api: context.window.VectorWorkforceOperations, context, events,
     flush() { let count = 0; while (microtasks.length) { assert.ok(++count < 100, 'no render loop'); microtasks.shift()(); } } };
+}
+
+// Literal HTTP fixture contract emitted by workflow-action-evidence-bridge.cjs.
+// The request is an unfiltered manager read for alpha; the context digest is a
+// fixture identity only, while request ordering remains owned by the real UI.
+function timeReviewResponse(items) {
+  const body = {
+    contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review',
+    source: '/api/weekly-review',
+    scope: { tenant: 'alpha', personId: 'manager', period: '2026-10-05', teamId: null, sourceId: null },
+    contextKey: 'a'.repeat(64), timeZone: 'Europe/London', asOf: '2026-10-05T12:00:00Z', maxAgeMs: 900000,
+    availability: 'available', unavailable: [],
+    items: items.map(item => ({ ...item, binding: { workflow: 'time-review', tenant: 'alpha', teamId: 'team-a', period: '2026-10-05', sourceId: item.sourceId } }))
+  };
+  return { ok: true, json: async () => body };
 }
 
 test('retains exactly the approved five primary sections', () => {
@@ -50,7 +65,7 @@ test('consolidation retains the engine repair: absent or invalid cost is not zer
 });
 test('zero attendance is preserved when the authoritative tenant calendar is current and overtime is not borrowed from other DOM figures', () => {
   const { api } = load({ WFM: { scopedStaff: () => [], stats: () => ({ onsite: 0, sick: 0 }) } });
-  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-06T05:30:00Z',localDate:'2026-10-06',localTime:'06:30:00',maxAgeMs:900000});
+  api.setTestCalendar({tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-06T05:30:00Z',localDate:'2026-10-06',localTime:'06:30:00',maxAgeMs:900000});
   const result = api.metrics({ querySelectorAll() { throw Error('unrelated presentation must not supply figures'); } });
   assert.equal(result[0].value, 0); assert.equal(result[1].value, 0); assert.equal(result[2].value, '—');
 });
@@ -63,7 +78,7 @@ test('attendance renders em dash only when current authority is genuinely unavai
 
 test('zero workforce values remain explicit zeroes in rendered Today KPI summaries', () => {
   const { api } = load({ WFM: { scopedStaff: () => [], stats: () => ({ onsite: 0, sick: 0 }) } });
-  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-06T05:30:00Z',localDate:'2026-10-06',localTime:'06:30:00',maxAgeMs:900000});
+  api.setTestCalendar({tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-06T05:30:00Z',localDate:'2026-10-06',localTime:'06:30:00',maxAgeMs:900000});
   const metrics=api.metrics({querySelectorAll(){return [];}});
   assert.match(api.secondaryKpis(metrics),/0 \/ 0/);
   assert.match(api.conceptKpiMarkup(metrics,[],{querySelectorAll(){return [];}}),/>0 \/ 0</);
@@ -90,9 +105,9 @@ test('late action evidence updates the queue and notification and preserves acce
   const badge = { textContent: '0', hidden: true }, queue = { outerHTML: '' };
   const item = { contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: 'time-1', reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', timeZone: 'Europe/London', maxAgeMs: 900000, freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title: 'Missing clock out' };
   const { api } = load({ selectors: { '.vector-alerts': queue, '.vector-notification-count': badge },
-    fetch: async () => ({ ok: true, json: async () => ({ contractVersion: item.contractVersion, workflow: item.workflow, timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [item] }) }) });
-  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
-  await api.loadTimeReviewEvidence();
+    fetch: async () => timeReviewResponse([item]) });
+  api.setTestCalendar({tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
+  assert.equal(await api.loadTimeReviewEvidence(), true, 'the complete source response is admitted');
   assert.equal(badge.textContent, '1'); assert.equal(badge.hidden, false);
   assert.match(queue.outerHTML, /Missing clock out/); assert.match(queue.outerHTML, /Authority: manager/);
   assert.match(queue.outerHTML, /<details class="vector-action-detail">/);
@@ -102,18 +117,18 @@ test('stale Time Review evidence cannot become a current Today priority', async 
   const badge = { textContent: '9', hidden: false }, queue = { outerHTML: '' };
   const stale = { contractVersion:'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow:'time-review', sourceId:'stale-time-1', reasonCode:'MISSING_CLOCK_OUT', authorityRequired:'manager', observedAt:'2026-10-05T11:30:00Z', confirmation:{state:'action_required'}, title:'Stale missing clock out' };
   const { api } = load({ selectors:{'.vector-alerts':queue,'.vector-notification-count':badge},
-    fetch: async () => ({ok:true,json:async()=>({contractVersion:stale.contractVersion,workflow:stale.workflow,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',maxAgeMs:900000,items:[stale]})}) });
-  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
-  await api.loadTimeReviewEvidence();
+    fetch: async () => timeReviewResponse([stale]) });
+  api.setTestCalendar({tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
+  assert.equal(await api.loadTimeReviewEvidence(), true, 'the envelope is valid so item freshness is exercised');
   assert.equal(badge.textContent,'0');assert.equal(badge.hidden,true);
   assert.doesNotMatch(queue.outerHTML,/Stale missing clock out/);
 });
 
 test('a completed older request cannot overwrite refreshed action evidence after a screen render', async () => {
   const queue = { outerHTML: '' }, pending = [];
-  const response = title => ({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [{ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: title, reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title }] }) });
+  const response = title => timeReviewResponse([{ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: title, reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', freshness: { state: 'unknown' }, confirmation: { state: 'action_required' }, title }]);
   const { api, context } = load({ selectors: { '.vector-alerts': queue }, fetch: () => new Promise(resolve => pending.push(resolve)) });
-  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
+  api.setTestCalendar({tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   const oldRequest = api.loadTimeReviewEvidence();
   await Promise.resolve();
   await context.window.render();
@@ -128,12 +143,35 @@ test('a completed older request cannot overwrite refreshed action evidence after
 test('an in-flight manager response is discarded after the role becomes employee', async () => {
   const queue = { outerHTML: 'employee-self-service' }; let resolve, employee = false;
   const { api, context } = load({ isEmployee: () => employee, selectors: { '.vector-alerts': queue }, fetch: () => new Promise(r => { resolve = r; }) });
-  api.setTestCalendar({tenant:null,timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
+  api.setTestCalendar({tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
   const request = api.loadTimeReviewEvidence();
   await Promise.resolve();
   assert.equal(typeof resolve,'function');
   employee = true;
   context.F.actor = { ...context.F.actor, role: 'employee' };
-  resolve({ ok: true, json: async () => ({ contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', timeZone:'Europe/London', asOf:'2026-10-05T12:00:00Z', maxAgeMs:900000, items: [] }) });
+  resolve(timeReviewResponse([]));
   await request; assert.equal(queue.outerHTML, 'employee-self-service');
+});
+
+for (const [name, invalidate] of [
+  ['missing owner scope', body => { delete body.scope; }],
+  ['cross-tenant scope', body => { body.scope.tenant = 'bravo'; }],
+  ['different owner', body => { body.scope.personId = 'another-manager'; }],
+  ['invalid period', body => { body.scope.period = 'not-a-period'; }],
+  ['filtered team scope', body => { body.scope.teamId = 'team-b'; }],
+  ['filtered source scope', body => { body.scope.sourceId = 'other-record'; }],
+  ['missing context identity', body => { delete body.contextKey; }],
+  ['invalid context identity', body => { body.contextKey = 'not-a-digest'; }],
+  ['missing unavailable rows', body => { delete body.unavailable; }],
+  ['missing availability', body => { delete body.availability; }]
+]) test(name + ' cannot create a Today action or notification', async () => {
+  const badge = { textContent: '9', hidden: false }, queue = { outerHTML: '' };
+  const item = { contractVersion: 'WFM_WORKFLOW_ACTION_EVIDENCE_V1', workflow: 'time-review', sourceId: 'inadmissible-record', reasonCode: 'MISSING_CLOCK_OUT', authorityRequired: 'manager', observedAt: '2026-10-05T11:55:00Z', confirmation: { state: 'action_required' }, title: 'Inadmissible action' };
+  const body = await timeReviewResponse([item]).json(); invalidate(body);
+  const { api } = load({ selectors: { '.vector-alerts': queue, '.vector-notification-count': badge }, fetch: async () => ({ ok: true, json: async () => body }) });
+  api.setTestCalendar({tenant:'alpha',timeZone:'Europe/London',asOf:'2026-10-05T12:00:00Z',localDate:'2026-10-05',localTime:'13:00:00',maxAgeMs:900000});
+  assert.equal(await api.loadTimeReviewEvidence(), false);
+  assert.equal(badge.textContent, '0'); assert.equal(badge.hidden, true);
+  assert.match(queue.outerHTML, /Source evidence is unavailable/);
+  assert.doesNotMatch(queue.outerHTML, /Inadmissible action|inadmissible-record/);
 });
