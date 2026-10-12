@@ -9,6 +9,7 @@ RUN node --test verification/provider-recovery-correction/autonomy-correction/te
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
 RUN node --test implementation/ui/implementation-observer.test.cjs
 RUN node --test implementation/ui/workspace-setup.test.cjs implementation/runtime/workspace-setup.test.cjs implementation/runtime/customer-workspace.test.cjs implementation/runtime/organisation-access-setup.test.cjs
+RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs verification/first-use-regressions-20261012/deferred-connections.test.cjs
 RUN node --test scripts/patch-payroll-money.test.mjs
 RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
@@ -36,7 +37,7 @@ RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime
       integrations/staffology/independent/full-http-employee-journey.test.cjs \
       > /proof/staffology-private-artifacts/staffology-full.tap 2>&1; status=$?; \
     cat /proof/staffology-private-artifacts/staffology-full.tap; exit $status) \
- && node --test scripts/compose-vector-local-runtime.contract.test.cjs
+ && node --test scripts/compose-vector-local-runtime.contract.test.cjs scripts/workspace-compiler-composition.test.cjs verification/first-use-regressions-20261012/existing-output-compiler.test.cjs
 RUN WFM_SUPPORT_HTTP_RUNTIME=/proof/staffology-full-runtime \
     WFM_SUPPORT_HTTP_HARNESS=/proof/verification/vector-repair-20260921/attendance-runtime-harness.mjs \
     node --test verification/provider-recovery-correction/tests/support-recovery-http.test.cjs
@@ -96,7 +97,7 @@ COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/cano
 COPY verification/provider-recovery-correction/operations/runtime/ /workspace/verification/provider-recovery-correction/operations/runtime/
 COPY verification/provider-recovery-correction/ui/ /workspace/verification/provider-recovery-correction/ui/
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
-COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs /workspace/scripts/
+COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
 COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs scripts/patch-customer-runtime-assets.mjs /tmp/

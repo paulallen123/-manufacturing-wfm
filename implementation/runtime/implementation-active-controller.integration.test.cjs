@@ -310,8 +310,10 @@ test('automated tenant environment effect remains unproven until independent evi
       request,
       f.internal
     );
-    assert.equal(replay.status, 200);
-    assert.equal(replay.body.implementation.tenantEnvironment.environmentId, environmentId);
+    assert.equal(replay.status, 409);
+    assert.equal(replay.body.code, 'LEGACY_WORKSPACE_ASSOCIATION_REQUIRED');
+    const status=await call(f.engine,null,'POST','/api/implementation/autonomous/work/status',{runId,tenant:'alpha'},f.internal);
+    assert.equal(status.body.tenantEnvironment.environmentId, environmentId);
 
     const db = new DatabaseSync(f.dbPath);
     assert.equal(db.prepare('SELECT COUNT(*) AS count FROM tenant_environments WHERE tenant=?').get('alpha').count, 1);
