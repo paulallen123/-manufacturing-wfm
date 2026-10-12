@@ -10,6 +10,11 @@ on:
       - 'ux-overlay/**'
       - 'Dockerfile'
       - 'scripts/validate-vector-only-ui.mjs'
+      - 'scripts/validate-built-ui-provenance.mjs'
+      - 'scripts/validate-built-ui-provenance.test.mjs'
+      - 'scripts/retire-legacy-presentation.mjs'
+      - 'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'
+      - 'DEPLOYMENT_MANIFEST.json'
       - '.github/workflows/vector-only-ui-guard.yml'
   workflow_dispatch:
 
@@ -27,9 +32,11 @@ jobs:
           persist-credentials: false
       - name: Refuse retired UI source
         run: node scripts/validate-vector-only-ui.mjs
+      - name: Reject marker-spoofed built assets
+        run: node --test scripts/validate-built-ui-provenance.test.mjs
       - name: Build exact runtime
         run: docker build --pull=false -t wfm-vector-only .
-      - name: Prove retired renderer is absent from built public assets
+      - name: Bind built public assets to validated source
         shell: bash
         run: |
           set -euo pipefail
@@ -41,6 +48,15 @@ jobs:
             echo 'Retired UI content found in built public assets.' >&2
             exit 1
           fi
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/vector-shell.js"
-          grep -F 'VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1' "$RUNNER_TEMP/public/factory-control-ui.css"
-          echo 'VECTOR_ONLY_BUILT_ASSET_GUARD=PASS'
+          node scripts/validate-built-ui-provenance.mjs \
+            --public "$RUNNER_TEMP/public" \
+            --receipt "$RUNNER_TEMP/vector-ui-provenance.json" \
+            --source-sha "$GITHUB_SHA" \
+            --image-id "$(docker image inspect --format '{{.Id}}' wfm-vector-only)"
+          cp "$RUNNER_TEMP/vector-ui-provenance.json" vector-ui-provenance.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: vector-ui-provenance
+          path: vector-ui-provenance.json
+          if-no-files-found: ignore
