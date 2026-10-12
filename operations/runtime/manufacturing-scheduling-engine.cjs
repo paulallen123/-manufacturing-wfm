@@ -82,15 +82,25 @@ function normalisePolicy(input={}){
   };
 }
 function availability(v){
-  return Array.isArray(v)?v.slice(0,200).map((x,i)=>{
+  const windows=Array.isArray(v)?v.slice(0,200).map((x,i)=>{
     const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
     if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
     return {start,end};
   }):[];
+  windows.sort((a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end));
+  const merged=[];
+  for(const window of windows){
+    const prior=merged[merged.length-1];
+    if(prior&&ms(window.start)<=ms(prior.end)){
+      if(ms(window.end)>ms(prior.end)) prior.end=window.end;
+    }else merged.push({...window});
+  }
+  return merged;
 }
 function certs(v){
   return Array.isArray(v)?v.slice(0,200).map(x=>({
     name:text(x.name,120),
+    ...(Object.hasOwn(x,'effectiveAt')?{effectiveAt:iso(x.effectiveAt,'certification effective time')}:{}),
     expiresAt:x.expiresAt?iso(x.expiresAt,'certification expiry'):null
   })).filter(x=>x.name):[];
 }
@@ -166,9 +176,10 @@ function slots(reqs){
   });
   return out;
 }
-function certValid(worker,name,end){
-  const c=worker.certifications.find(x=>x.name===name);
-  return !!c&&(!c.expiresAt||ms(c.expiresAt)>=ms(end));
+function certValid(worker,name,start,end){
+  return worker.certifications.some(c=>c.name===name&&
+    (!c.effectiveAt||ms(c.effectiveAt)<=ms(start))&&
+    (!c.expiresAt||ms(c.expiresAt)>=ms(end)));
 }
 function assignedHours(workerId,assignments){
   return assignments.filter(a=>a.workerId===workerId).reduce((s,a)=>s+hours(a.start,a.end),0);
@@ -191,7 +202,7 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
   if(!(sameSite||(policy.crossSiteAllowed&&worker.eligibleSites.includes(slot.site)))) failures.push('SITE_NOT_ELIGIBLE');
   if(!worker.availability.length||!worker.availability.some(w=>contains(w,slot.start,slot.end))) failures.push('NOT_AVAILABLE');
   for(const s of slot.requiredSkills) if(!worker.skills.includes(s)) failures.push('MISSING_SKILL:'+s);
-  for(const c of slot.requiredCertifications) if(!certValid(worker,c,slot.end)) failures.push('CERTIFICATION_INVALID:'+c);
+  for(const c of slot.requiredCertifications) if(!certValid(worker,c,slot.start,slot.end)) failures.push('CERTIFICATION_INVALID:'+c);
   if(worker.previousShiftEnd&&((ms(slot.start)-ms(worker.previousShiftEnd))/3600000)<policy.minRestHours) failures.push('MINIMUM_REST_BREACH');
   if(projectedWeek>policy.maxWeeklyHours) failures.push('MAX_WEEKLY_HOURS_BREACH');
   if(projectedOT>policy.maxOvertimeHours) failures.push('MAX_OVERTIME_BREACH');
@@ -442,3 +453,4 @@ module.exports=Object.freeze({
   evaluateWorkerForSlot,validateSchedule,createSchedulingPlan,evaluateOpenShift,evaluateSwap,repairSchedulingPlan,
   capabilityContract,stable,digest
 });
+
