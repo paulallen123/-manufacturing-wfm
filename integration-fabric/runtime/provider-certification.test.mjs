@@ -82,7 +82,7 @@ test('Gusto demo proof uses only the dedicated demo host and redacts company ide
     },
     fetchImpl: async (url, options) => {
       observed = { url, options };
-      return response({ name: 'Synthetic Demo Manufacturer' });
+      return response({ uuid: 'company-123', name: 'Synthetic Demo Manufacturer' });
     },
     nowMs: Date.parse('2026-09-28T12:00:00Z')
   });
@@ -106,4 +106,22 @@ test('candidate identity is mandatory and exact', async () => {
     }),
     /Exact 40-character VECTOR candidate SHA/
   );
+});
+
+test('Gusto JSON error response fails closed even with HTTP 200', async () => {
+  await assert.rejects(certifyProviderSandbox({
+    providerKey: 'gusto-embedded-payroll', candidateSha: SHA,
+    resolveSecretBundle: async () => ({ accessToken: 'secret', companyId: 'company-123' }),
+    fetchImpl: async () => response({ error: 'unauthorized' }),
+    nowMs: Date.parse('2026-09-28T12:00:00Z')
+  }), /does not identify the requested company/);
+});
+
+test('Gusto response for another company fails closed', async () => {
+  await assert.rejects(certifyProviderSandbox({
+    providerKey: 'gusto-embedded-payroll', candidateSha: SHA,
+    resolveSecretBundle: async () => ({ accessToken: 'secret', companyId: 'company-123' }),
+    fetchImpl: async () => response({ uuid: 'other-company', name: 'Wrong Demo' }),
+    nowMs: Date.parse('2026-09-28T12:00:00Z')
+  }), /does not identify the requested company/);
 });
