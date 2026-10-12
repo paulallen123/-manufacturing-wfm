@@ -62,3 +62,19 @@ test('tampered proof fails closed', () => {
     /PROOF_DIGEST_MISMATCH|stale or invalid/i
   );
 });
+
+test('missing current authority context cannot make an old proof current', () => {
+  const p = proof();
+  for (const current of [{}, {tenant:'tenant-a'}, {tenant:'tenant-a',sourceRevision:'source-r1',releaseSha}]) {
+    assert.equal(inspectProofCarryingState(p,current).current,false);
+    assert.throws(() => assertProofCarryingState(p,current), /stale or invalid/);
+  }
+});
+
+test('a supplied current actor or decision mismatch invalidates proof', () => {
+  const p=proof();
+  const current={tenant:'tenant-a',sourceRevision:'source-r1',releaseSha,scope:p.scope};
+  assert.equal(inspectProofCarryingState(p,{...current,actorRef:'manager-2'}).current,false);
+  assert.equal(inspectProofCarryingState(p,{...current,actorAuthority:'ADMIN'}).current,false);
+  assert.equal(inspectProofCarryingState(p,{...current,decisionRef:'decision-2'}).current,false);
+});
