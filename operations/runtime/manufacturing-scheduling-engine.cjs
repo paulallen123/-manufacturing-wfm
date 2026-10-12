@@ -82,11 +82,22 @@ function normalisePolicy(input={}){
   };
 }
 function availability(v){
-  return Array.isArray(v)?v.slice(0,200).map((x,i)=>{
+  const windows=Array.isArray(v)?v.slice(0,200).map((x,i)=>{
     const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
     if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
     return {start,end};
   }):[];
+  windows.sort((a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end));
+  const merged=[];
+  for(const window of windows){
+    const previous=merged[merged.length-1];
+    if(previous&&ms(window.start)<=ms(previous.end)){
+      if(ms(window.end)>ms(previous.end)) previous.end=window.end;
+    }else merged.push(window);
+  }
+  // Freeze owned copies, not caller data. A normalized window cannot later
+  // be widened in place to turn a genuine availability gap into coverage.
+  return Object.freeze(merged.map(Object.freeze));
 }
 function certs(v){
   return Array.isArray(v)?v.slice(0,200).map(x=>({
@@ -101,7 +112,7 @@ function normaliseWorker(input={}){
   if(!WORKER_TYPES.includes(type)) throw new Error('Unsupported worker type for '+id+'.');
   const homeSite=text(input.homeSite||input.site,160);
   const p=input.preferences||{},f=input.fairness||{};
-  return {
+  const worker={
     id,type,status:text(input.status||'ACTIVE',30).toUpperCase(),homeSite,
     eligibleSites:list(input.eligibleSites?.length?input.eligibleSites:[homeSite],100,160),
     skills:list(input.skills,200,120),certifications:certs(input.certifications),
@@ -117,6 +128,7 @@ function normaliseWorker(input={}){
     contingentPremiumPerHour:Math.max(0,n(input.contingentPremiumPerHour,0)),
     travelCostBySite:clone(input.travelCostBySite||{}),
     travelMinutesBySite:clone(input.travelMinutesBySite||{}),
+    travelMinutesByRoute:clone(input.travelMinutesByRoute||{}),
     preferences:{
       preferredSites:list(p.preferredSites,100,160),preferredLines:list(p.preferredLines,100,160),
       avoidedTags:list(p.avoidedTags,100,80).map(x=>x.toUpperCase()),
@@ -129,6 +141,8 @@ function normaliseWorker(input={}){
     ruleBlocks:new Set(list(input.ruleBlocks,100,180)),
     evidenceRefs:list(input.evidenceRefs,100,220)
   };
+  // The accepted availability snapshot cannot be swapped after validation.
+  return Object.defineProperty(worker,'availability',{writable:false,configurable:false});
 }
 function normaliseRequirement(input={}){
   const id=text(input.id,140),site=text(input.site,160),role=text(input.role,120);
@@ -173,6 +187,50 @@ function certValid(worker,name,end){
 function assignedHours(workerId,assignments){
   return assignments.filter(a=>a.workerId===workerId).reduce((s,a)=>s+hours(a.start,a.end),0);
 }
+// Supplied planning data, not independently authenticated route authority.
+// Legacy destination durations are home-site outbound only. Other journeys
+// require an explicit directed travelMinutesByRoute[fromSite][toSite] entry.
+function transferMinutes(worker,fromSite,toSite){
+  if(fromSite===toSite) return 0;
+  const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  const routes=worker.travelMinutesByRoute,legacy=worker.travelMinutesBySite;
+  let value;
+  if(record(routes)&&Object.hasOwn(routes,fromSite)){
+    const destinations=routes[fromSite];
+    if(!record(destinations)) return null;
+    if(Object.hasOwn(destinations,toSite)){
+      value=destinations[toSite];
+      return typeof value==='number'&&Number.isFinite(value)&&value>=0&&
+        value<=Number.MAX_SAFE_INTEGER/60000?value:null;
+    }
+  }
+  if(fromSite===worker.homeSite&&record(legacy)&&Object.hasOwn(legacy,toSite)) value=legacy[toSite];
+  return typeof value==='number'&&Number.isFinite(value)&&value>=0&&
+    value<=Number.MAX_SAFE_INTEGER/60000?value:null;
+}
+function transferFailures(worker,slot,assignments){
+  const current=assignments.filter(a=>a.workerId===worker.id);
+  const siteKnown=v=>typeof v==='string'&&v.length>0&&v.length<=160&&v===v.trim();
+  if(current.some(a=>!siteKnown(a.site))) return ['ASSIGNMENT_SITE_UNPROVEN'];
+  const start=ms(slot.start),end=ms(slot.end),failures=[];
+  // The optimiser inserts in constraint order, not time order. Check both
+  // adjacent journeys; a distant assignment is not the transfer origin.
+  const previous=current.filter(a=>ms(a.end)<=start).sort((a,b)=>ms(b.end)-ms(a.end));
+  const following=current.filter(a=>ms(a.start)>=end).sort((a,b)=>ms(a.start)-ms(b.start));
+  const before=previous[0],after=following[0];
+  if((before&&previous.some(a=>ms(a.end)===ms(before.end)&&a.site!==before.site))||
+    (after&&following.some(a=>ms(a.start)===ms(after.start)&&a.site!==after.site)))
+    return ['ASSIGNMENT_SITE_UNPROVEN'];
+  for(const [fromSite,toSite,gap] of [
+    ...(before?[[before.site,slot.site,start-ms(before.end)]]:[]),
+    ...(after?[[slot.site,after.site,ms(after.start)-end]]:[])
+  ]){
+    const minutes=transferMinutes(worker,fromSite,toSite);
+    if(minutes===null) failures.push('CROSS_SITE_TRAVEL_UNPROVEN');
+    else if(gap<minutes*60000) failures.push('INSUFFICIENT_TRANSFER_TIME');
+  }
+  return failures;
+}
 function evaluateWorkerForSlot(worker,slot,ctx={}){
   const policy=ctx.policy||normalisePolicy(),assignments=normaliseAssignments(ctx.assignments);
   const start=iso(slot.start,'slot start'),end=iso(slot.end,'slot end');
@@ -203,6 +261,7 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
     !overlaps(a.start,a.end,start,end)&&
     (ms(a.end)<=ms(start)?ms(start)-ms(a.end):ms(a.start)-ms(end))<policy.minRestHours*3600000))
     failures.push('MINIMUM_REST_BREACH');
+  failures.push(...transferFailures(worker,slot,assignments));
   for(const ref of policy.requiredRuleRefs) if(worker.ruleBlocks.has(ref)) failures.push('RULE_BLOCK:'+ref);
   if(slot.lockedWorkerIds.length&&!slot.lockedWorkerIds.includes(worker.id)) failures.push('LOCKED_REQUIREMENT_OTHER_WORKER');
 
@@ -302,13 +361,15 @@ function validateSchedule(assignments,workersById,slotsById,policy,preferred){
     if(!a.workerId) continue;
     const w=workersById.get(a.workerId),slot=slotsById.get(a.slotId);
     if(!w||!slot){ violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['UNKNOWN_WORKER_OR_SLOT']}); continue; }
-    if(ms(a.start)!==ms(slot.start)||ms(a.end)!==ms(slot.end)){
+    if(ms(a.start)!==ms(slot.start)||ms(a.end)!==ms(slot.end)||
+      (Object.hasOwn(a,'site')&&a.site!==slot.site)){
       violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['ASSIGNMENT_SLOT_MISMATCH']});
       continue;
     }
     const c=evaluateWorkerForSlot(w,slot,{policy,assignments:accepted,preferredAssignments:preferred});
     if(!c.eligible) violations.push({slotId:a.slotId,workerId:a.workerId,reasons:c.failures});
-    else accepted.push(a);
+    // A legacy row may omit site, but its resolved slot supplies that fact.
+    else accepted.push({...a,site:slot.site});
   }
   return {valid:violations.length===0,violations};
 }
@@ -346,7 +407,9 @@ function createSchedulingPlan(input={}){
   const validation=validateSchedule(solved.assignments,workersById,slotsById,policy,preferred);
   if(!validation.valid) throw new Error('Independent schedule validation failed; plan refused.');
   const unfilled=solved.assignments.filter(a=>!a.workerId).map(a=>{
-    const checks=built.all.get(a.slotId)||[],counts=new Map();
+    const slot=slotsById.get(a.slotId),counts=new Map();
+    const checks=workers.map(w=>evaluateWorkerForSlot(w,slot,{policy,
+      assignments:solved.assignments.filter(x=>x.slotId!==a.slotId),preferredAssignments:preferred}));
     for(const c of checks) for(const r of c.failures) counts.set(r,(counts.get(r)||0)+1);
     return {slotId:a.slotId,requirementId:a.requirementId,eligibleCandidateCount:checks.filter(c=>c.eligible).length,
       topReasons:[...counts.entries()].sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).slice(0,8).map(x=>({reason:x[0],workersBlocked:x[1]}))};
@@ -392,7 +455,7 @@ function evaluateSwap(input={}){
   }
   const base=current.filter(x=>x.slotId!==sa.slotId&&x.slotId!==sb.slotId);
   const bToA=evaluateWorkerForSlot(b,sa,{policy,assignments:base});
-  const aToB=evaluateWorkerForSlot(a,sb,{policy,assignments:base.concat(bToA.eligible?[{workerId:b.id,slotId:sa.slotId,start:sa.start,end:sa.end}]:[])});
+  const aToB=evaluateWorkerForSlot(a,sb,{policy,assignments:base.concat(bToA.eligible?[{workerId:b.id,slotId:sa.slotId,site:sa.site,start:sa.start,end:sa.end}]:[])});
   const eligible=bToA.eligible&&aToB.eligible;
   return {contractVersion:CONTRACT_VERSION,mode:'EVALUATE_ONLY',executionPermitted:false,eligible,
     reasons:eligible?[]:[...new Set([...bToA.failures,...aToB.failures])],legs:{workerBToRequirementA:bToA,workerAToRequirementB:aToB}};

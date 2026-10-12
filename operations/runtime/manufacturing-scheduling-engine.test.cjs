@@ -60,7 +60,7 @@ test('capability contract is explicit about limits',()=>{
 const engine=require('./manufacturing-scheduling-engine.cjs');
 function wideWorker(id,o={}){return worker(id,{availability:[{start:'2026-09-20T00:00:00Z',end:'2026-10-01T00:00:00Z'}],previousShiftEnd:null,hoursWorkedWeek:0,...o});}
 function shift(id,start,end){return {...baseReq,id,start,end};}
-function assignment(r,workerId){return {slotId:r.id+'#1',requirementId:r.id,workerId,start:r.start,end:r.end};}
+function assignment(r,workerId){return {slotId:r.id+'#1',requirementId:r.id,workerId,site:r.site,start:r.start,end:r.end};}
 const early=shift('early','2026-09-24T06:00:00Z','2026-09-24T14:00:00Z');
 const late=shift('late','2026-09-24T15:00:00Z','2026-09-24T23:00:00Z');
 function validate(reqs,as,policy={}){
@@ -178,3 +178,218 @@ test('UTC and explicit offsets denote identical instants; reversed overnight dat
  assert.throws(()=>evaluateOpenShift({requirement:shift('bad','2026-09-24T22:00:00Z','2026-09-24T06:00:00Z'),workers:[]}));
  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[],currentAssignments:null}));
 });
+
+// L11 cross-site transfers and canonical availability regressions.
+{
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const e = require('./manufacturing-scheduling-engine.cjs');
+const at = t => '2026-10-12T' + t + 'Z';
+const policy = { minRestHours: 0, maxWeeklyHours: 168, maxOvertimeHours: 100 };
+function worker(overrides = {}) {
+  return { id: 'w1', homeSite: 'A', eligibleSites: ['A', 'B', 'C'], hourlyCost: 20,
+    availability: [{ start: at('00:00:00'), end: at('23:59:59') }],
+    travelMinutesBySite: { B: 60 }, ...overrides };
+}
+function req(id, site, start, end, overrides = {}) {
+  return { id, site, role: 'operator', start: at(start), end: at(end), headcount: 1, ...overrides };
+}
+const first = req('first', 'A', '08:00:00', '10:00:00');
+const second = req('second', 'B', '10:00:00', '12:00:00');
+function assignment(r, workerId = 'w1', overrides = {}) {
+  return { slotId: r.id + '#1', workerId, site: r.site, start: r.start, end: r.end, ...overrides };
+}
+function check(requirement = second, current = [assignment(first)], w = worker(), p = policy) {
+  return e.evaluateOpenShift({ requirement, currentAssignments: current, workers: [w], policy: p });
+}
+function plan(requirements, w = worker(), p = {}) {
+  return e.createSchedulingPlan({ tenant: 'fixture-alpha', contextRevision: 'fixture-r1',
+    sourceEvidence: ['fixture:staff', 'fixture:routes'], createdAt: at('00:00:00'),
+    workers: [w], requirements, policy: { ...policy, ...p } });
+}
+function denied(result, code) {
+  assert.equal(result.executionPermitted, false);
+  assert.equal(result.ranked[0].eligible, false);
+  assert.ok(result.ranked[0].failures.includes(code), JSON.stringify(result.ranked[0].failures));
+}
+test('L11 transfer: configured 60 minutes rejects adjacent sites', () => {
+  denied(check(), 'INSUFFICIENT_TRANSFER_TIME');
+});
+test('L11 transfer: exact required gap is eligible; one millisecond short is not', () => {
+  const exact = req('second', 'B', '11:00:00', '13:00:00');
+  assert.equal(check(exact).ranked[0].eligible, true);
+  denied(check({ ...exact, start: at('10:59:59.999') }), 'INSUFFICIENT_TRANSFER_TIME');
+});
+test('L11 transfer: same-site adjacency needs no route', () => {
+  const result = check({ ...second, site: 'A' }, [assignment(first)], worker({ travelMinutesBySite: {} }));
+  assert.equal(result.ranked[0].eligible, true); assert.equal(result.executionPermitted, false);
+});
+test('L11 transfer: a later assignment constrains an earlier inserted slot', () => {
+  denied(check(first, [assignment(second)]), 'INSUFFICIENT_TRANSFER_TIME');
+});
+test('L11 transfer: return journey cannot borrow a home-to-destination duration', () => {
+  const previous = { ...first, site: 'B' }, next = { ...second, site: 'A' };
+  denied(check(next, [assignment(previous)]), 'CROSS_SITE_TRAVEL_UNPROVEN');
+});
+test('L11 transfer: explicit directed route supports non-home transfers', () => {
+  const from = { ...first, site: 'B' }, to = req('second', 'C', '10:30:00', '12:30:00');
+  const w = worker({ travelMinutesByRoute: { B: { C: 30 } } });
+  assert.equal(check(to, [assignment(from)], w).ranked[0].eligible, true);
+  denied(check({ ...to, start: at('10:29:59.999') }, [assignment(from)], w), 'INSUFFICIENT_TRANSFER_TIME');
+});
+test('L11 transfer: direction is not silently reversed', () => {
+  denied(check({ ...second, site: 'A' }, [assignment({ ...first, site: 'B' })],
+    worker({ travelMinutesByRoute: { A: { B: 0 } } })), 'CROSS_SITE_TRAVEL_UNPROVEN');
+});
+for (const [name, value] of [['missing', undefined], ['negative', -1], ['string', '60'],
+  ['null', null], ['boolean', false], ['nonfinite', Infinity]]) {
+  test('L11 transfer: ' + name + ' travel duration is not zero-time evidence', () => {
+    denied(check(second, [assignment(first)], worker({ travelMinutesBySite: { B: value } })), 'CROSS_SITE_TRAVEL_UNPROVEN');
+  });
+}
+test('L11 transfer: invalid explicit route cannot fall back to valid legacy duration', () => {
+  denied(check(req('second', 'B', '11:00:00', '13:00:00'), [assignment(first)],
+    worker({ travelMinutesByRoute: { A: { B: -1 } } })), 'CROSS_SITE_TRAVEL_UNPROVEN');
+});
+test('L11 transfer: explicit zero is valid, without inventing a minimum', () => {
+  assert.equal(check(second, [assignment(first)], worker({ travelMinutesByRoute: { A: { B: 0 } } })).ranked[0].eligible, true);
+});
+test('L11 transfer: closest neighbours define the actual route, not distant sites', () => {
+  const a = req('a', 'A', '04:00:00', '06:00:00'), b = req('b', 'B', '07:00:00', '09:00:00');
+  const c = req('c', 'C', '09:30:00', '11:00:00');
+  const w = worker({ travelMinutesByRoute: { B: { C: 30 } } });
+  assert.equal(check(c, [assignment(a), assignment(b)], w).ranked[0].eligible, true);
+});
+test('L11 transfer: another worker does not impose a travel constraint', () => {
+  assert.equal(check(second, [assignment(first, 'other')]).ranked[0].eligible, true);
+});
+for (const site of [undefined, null, '', '   ', 7, false]) {
+  test('L11 transfer: unknown assignment site ' + String(site) + ' is not assumed to be home', () => {
+    denied(check(second, [assignment(first, 'w1', { site })]), 'ASSIGNMENT_SITE_UNPROVEN');
+  });
+}
+for (const exactSlotLimit of [1, 10]) {
+  for (const reversed of [false, true]) {
+    test('L11 transfer: solver ' + exactSlotLimit + ' reversed=' + reversed + ' cannot claim impossible coverage', () => {
+      const requirements = reversed ? [second, first] : [first, second];
+      const result = plan(requirements, worker(), { exactSlotLimit });
+      assert.equal(result.quality.filledSlots, 1);
+      assert.equal(result.validation.valid, true); assert.equal(result.executionPermitted, false);
+      assert.ok(result.unfilled[0].topReasons.some(x => x.reason === 'INSUFFICIENT_TRANSFER_TIME'));
+    });
+  }
+}
+test('L11 transfer: independent validator derives sites from trusted slots for legacy assignments', () => {
+  const requirements = [first, second];
+  const slots = new Map(requirements.map(r => { const s = e.evaluateOpenShift({ requirement: r, workers: [] }).slot; return [s.slotId, s]; }));
+  const workers = new Map([['w1', e.normaliseWorker(worker())]]);
+  const current = requirements.map(r => { const a = assignment(r); delete a.site; return a; });
+  const result = e.validateSchedule(current, workers, slots, e.normalisePolicy(policy));
+  assert.equal(result.valid, false);
+  assert.ok(result.violations.some(v => v.reasons.includes('INSUFFICIENT_TRANSFER_TIME')));
+});
+test('L11 transfer: independent validator rejects a forged site even on the first assignment', () => {
+  const slot = e.evaluateOpenShift({ requirement: first, workers: [] }).slot;
+  const result = e.validateSchedule([assignment(first, 'w1', { site: 'B' })],
+    new Map([['w1', e.normaliseWorker(worker())]]), new Map([[slot.slotId, slot]]), e.normalisePolicy(policy));
+  assert.equal(result.valid, false);
+  assert.ok(result.violations[0].reasons.includes('ASSIGNMENT_SLOT_MISMATCH'));
+});
+test('L11 transfer: real shift-swap evaluation checks unrelated incoming travel', () => {
+  const other = req('other', 'B', '14:00:00', '16:00:00');
+  const result = e.evaluateSwap({ workerA: worker(), workerB: worker({ id: 'w2' }),
+    requirementA: second, requirementB: other, policy,
+    currentAssignments: [assignment(second), assignment(other, 'w2'), assignment(first, 'w2')] });
+  assert.equal(result.eligible, false); assert.equal(result.executionPermitted, false);
+  assert.ok(result.reasons.includes('INSUFFICIENT_TRANSFER_TIME'));
+});
+test('L11 transfer: absence repair does not fill two impossible sites with the survivor', () => {
+  const prior = e.createSchedulingPlan({ tenant: 'fixture-alpha', contextRevision: 'fixture-r1', sourceEvidence: ['fixture:staff'],
+    createdAt: at('00:00:00'), workers: [worker(), worker({ id: 'w2', hourlyCost: 30 })], requirements: [first, second], policy });
+  const repaired = e.repairSchedulingPlan({ priorPlan: prior, workers: [worker(), worker({ id: 'w2' })],
+    requirements: [first, second], policy, createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w2'], evidenceRef: 'fixture:absence' } });
+  assert.equal(repaired.repairedPlan.quality.filledSlots, 1); assert.equal(repaired.executionPermitted, false);
+});
+test('L11 transfer: configured minimum rest and overlap are still independent hard constraints', () => {
+  denied(check(req('second', 'B', '11:00:00', '13:00:00'), [assignment(first)], worker(),
+    { ...policy, minRestHours: 2 }), 'MINIMUM_REST_BREACH');
+  denied(check({ ...second, start: at('09:30:00') }), 'OVERLAPPING_ASSIGNMENT');
+});
+
+// Next accepted L11 slice: accurate and immutable availability coverage.
+function windows(...pairs) { return pairs.map(([start, end]) => ({ start: at(start), end: at(end) })); }
+function available(raw) {
+  return check(req('covered', 'A', '08:00:00', '12:00:00'), [], worker({ availability: raw })).ranked[0].eligible;
+}
+test('L11 availability: touching windows cover one whole shift', () => {
+  assert.equal(available(windows(['08:00:00', '10:00:00'], ['10:00:00', '12:00:00'])), true);
+});
+test('L11 availability: unsorted overlapping windows cover one whole shift', () => {
+  assert.equal(available(windows(['10:00:00', '12:00:00'], ['08:00:00', '11:00:00'])), true);
+});
+test('L11 availability: nested and duplicate intervals cannot shorten the union', () => {
+  const raw = windows(['08:00:00', '10:00:00'], ['08:30:00', '09:00:00'], ['10:00:00', '12:00:00'], ['08:00:00', '10:00:00']);
+  assert.equal(available(raw), true);
+});
+test('L11 availability: a one-millisecond real gap still prevents coverage', () => {
+  assert.equal(available(windows(['08:00:00', '10:00:00'], ['10:00:00.001', '12:00:00'])), false);
+});
+test('L11 availability: empty or partial coverage remains unavailable', () => {
+  assert.equal(available([]), false);
+  assert.equal(available(windows(['08:00:00', '11:59:59.999'])), false);
+});
+test('L11 availability: union compares instants rather than printed offsets', () => {
+  const raw = [{ start: '2026-10-12T09:00:00+01:00', end: '2026-10-12T11:00:00+01:00' },
+    { start: at('10:00:00'), end: at('12:00:00') }];
+  assert.equal(available(raw), true);
+});
+test('L11 availability: reversed or impossible-date intervals still throw', () => {
+  assert.throws(() => available(windows(['10:00:00', '09:00:00'])));
+  assert.throws(() => available([{ start: '2026-02-30T08:00:00Z', end: at('12:00:00') }]));
+});
+test('L11 availability: canonical normalized windows are immutable', () => {
+  const w = e.normaliseWorker(worker({ availability: windows(['08:00:00', '10:00:00'], ['11:00:00', '12:00:00']) }));
+  assert.equal(Object.isFrozen(w.availability), true);
+  assert.equal(Object.isFrozen(w.availability[0]), true);
+  assert.throws(() => { w.availability[0].end = at('12:00:00'); }, TypeError);
+  assert.throws(() => { w.availability.push({ start: at('08:00:00'), end: at('12:00:00') }); }, TypeError);
+  const slot = e.evaluateOpenShift({ requirement: req('covered', 'A', '08:00:00', '12:00:00'), workers: [] }).slot;
+  assert.equal(e.evaluateWorkerForSlot(w, slot, { policy: e.normalisePolicy(policy) }).eligible, false);
+});
+test('L11 availability: normalization never freezes or rewrites caller-owned windows', () => {
+  const raw = windows(['10:00:00', '12:00:00'], ['08:00:00', '10:00:00']);
+  const before = JSON.stringify(raw), w = e.normaliseWorker(worker({ availability: raw }));
+  assert.equal(JSON.stringify(raw), before); assert.equal(Object.isFrozen(raw), false);
+  raw[0].end = at('20:00:00');
+  assert.equal(w.availability.at(-1).end, at('12:00:00.000'));
+});
+test('L11 availability: frozen source inputs remain usable and unchanged', () => {
+  const raw = Object.freeze(windows(['10:00:00', '12:00:00'], ['08:00:00', '10:00:00']).map(Object.freeze));
+  const before = JSON.stringify(raw); assert.equal(available(raw), true); assert.equal(JSON.stringify(raw), before);
+});
+test('L11 availability: normalized union is idempotent', () => {
+  const w = e.normaliseWorker(worker({ availability: windows(['10:00:00', '12:00:00'], ['08:00:00', '10:00:00']) }));
+  assert.deepEqual(e.normaliseWorker(worker({ availability: w.availability })).availability, w.availability);
+  assert.equal(w.availability.length, 1);
+});
+test('L11 availability: full plan consumes the union without claiming execution authority', () => {
+  const result = plan([req('covered', 'A', '08:00:00', '12:00:00')],
+    worker({ availability: windows(['10:00:00', '12:00:00'], ['08:00:00', '10:00:00']) }));
+  assert.equal(result.quality.filledSlots, 1); assert.equal(result.validation.valid, true);
+  assert.equal(result.executionPermitted, false);
+});
+test('L11 availability: validated availability cannot be replaced after normalization', () => {
+  const w = e.normaliseWorker(worker({ availability: windows(['08:00:00', '10:00:00'], ['11:00:00', '12:00:00']) }));
+  assert.throws(() => { w.availability = windows(['08:00:00', '12:00:00']); }, TypeError);
+  assert.throws(() => { delete w.availability; }, TypeError);
+});
+test('L11 transfer: equally near conflicting locations cannot be resolved by input order', () => {
+  const unknown = assignment({ ...first, id: 'other-location', site: 'C' });
+  const next = req('next', 'B', '11:00:00', '13:00:00');
+  for (const current of [[assignment(first), unknown], [unknown, assignment(first)]]) {
+    denied(check(next, current), 'ASSIGNMENT_SITE_UNPROVEN');
+  }
+});
+}
