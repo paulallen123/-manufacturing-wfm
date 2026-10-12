@@ -125,6 +125,9 @@ export class AdaptiveIntelligenceEngine {
   evaluateCandidate(input){
     const required=['id','level','baselineScore','candidateScore','holdoutScore','safetyPass','tenantIsolationPass','rollbackReady'];
     for(const key of required) if(input?.[key]===undefined||input?.[key]===null) throw new Error('CANDIDATE_MISSING_'+key);
+    for(const key of ['baselineScore','candidateScore','holdoutScore']){
+      if(typeof input[key]!=='number'||!Number.isFinite(input[key])) throw new Error('CANDIDATE_FINITE_NUMERIC_SCORES_REQUIRED');
+    }
     const c={...clone(input),evaluatedAt:nowIso()};
     this.#candidates.push(c);
     let decision='reject';
@@ -175,3 +178,4 @@ export class AdaptiveIntelligenceEngine {
     });
   }
 }
+

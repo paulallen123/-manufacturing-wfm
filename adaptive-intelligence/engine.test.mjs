@@ -98,3 +98,27 @@ test('memory-authority rejection retains precedence over failed safety guards',(
   expectDecision(candidate({memoryGrantsAuthority:true,safetyPass:false}),
     'reject','memory-authority-forbidden');
 });
+
+for(const field of ['baselineScore','candidateScore','holdoutScore']){
+  for(const [label,value] of [
+    ['NaN',NaN],['positive infinity',Infinity],['negative infinity',-Infinity],
+    ['numeric string','0.8'],['boolean',true],['array',[0.8]],
+    ['object',{value:0.8}],['boxed number',new Number(0.8)]
+  ]){
+    test(`${field} ${label} is rejected before recording candidate or decision`,()=>{
+      const engine=new AdaptiveIntelligenceEngine();
+      assert.throws(()=>engine.evaluateCandidate(candidate({[field]:value})),
+        {message:'CANDIDATE_FINITE_NUMERIC_SCORES_REQUIRED'});
+      assert.deepEqual(engine.snapshot().candidates,[]);
+      assert.deepEqual(engine.snapshot().decisions,[]);
+    });
+  }
+}
+
+test('finite numeric scores preserve improvement semantics without a ratio-only range',()=>{
+  expectDecision(candidate({baselineScore:-5,candidateScore:-3,holdoutScore:-4}),
+    'promote','safe-non-mutating-improvement');
+  expectDecision(candidate({baselineScore:0,candidateScore:2,holdoutScore:1}),
+    'promote','safe-non-mutating-improvement');
+});
+
