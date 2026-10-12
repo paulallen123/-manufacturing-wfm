@@ -66,6 +66,12 @@ function createRealtimeEventService(options={}){
   const insert=db.prepare('INSERT INTO vector_realtime_events(tenant,topic,audience,payload_json,created_at) VALUES(?,?,?,?,?)');
   const list=db.prepare('SELECT seq,topic,audience,payload_json,created_at FROM vector_realtime_events WHERE tenant=? AND seq>? ORDER BY seq ASC LIMIT ?');
   const subscribers=new Set();
+  const schedulingEventVisible=typeof options.schedulingEventVisible==='function'?options.schedulingEventVisible:null;
+  function visible(c,event){
+    if(!roleAllowed(c?.role,event.audience))return false;
+    if(!event.topic.startsWith('scheduling.'))return true;
+    try{return !!c?.email&&schedulingEventVisible?.(c,event)===true;}catch{return false;}
+  }
 
   function context(req){
     const token=cookieToken(req);
@@ -74,10 +80,11 @@ function createRealtimeEventService(options={}){
   function rowToEvent(row){
     return {seq:Number(row.seq),topic:row.topic,audience:row.audience,payload:JSON.parse(row.payload_json),createdAt:row.created_at};
   }
-  function eventsForTenant(tenant,role,after=0,limit=100){
+  function eventsForTenant(tenant,role,after=0,limit=100,principal=null){
     const safeAfter=Number.isSafeInteger(Number(after))&&Number(after)>=0?Number(after):0;
     const safeLimit=Math.max(1,Math.min(250,Number(limit)||100));
-    return list.all(compact(tenant,120),safeAfter,safeLimit).map(rowToEvent).filter(e=>roleAllowed(role,e.audience));
+    const current=principal?.tenant===tenant&&principal.role===role?principal:{role};
+    return list.all(compact(tenant,120),safeAfter,safeLimit).map(rowToEvent).filter(e=>visible(current,e));
   }
   function writeEvent(res,event){
     if(res.writableEnded) return false;
@@ -101,8 +108,9 @@ function createRealtimeEventService(options={}){
     const result=insert.run(tenant,topic,audience,payloadJson,createdAt);
     const event={seq:Number(result.lastInsertRowid),topic,audience,payload:JSON.parse(payloadJson),createdAt};
     for(const sub of [...subscribers]){
-      if(sub.expires<=Date.now()||sub.res.writableEnded){try{sub.res.end();}catch{} subscribers.delete(sub);continue;}
-      if(sub.tenant===tenant&&roleAllowed(sub.role,audience)&&!writeEvent(sub.res,event)) subscribers.delete(sub);
+      const current=context(sub.req);
+      if(!current||current.email!==sub.email||current.tenant!==sub.tenant||sub.res.writableEnded){try{sub.res.end();}catch{} subscribers.delete(sub);continue;}
+      if(current.tenant===tenant&&visible(current,event)&&!writeEvent(sub.res,event)) subscribers.delete(sub);
     }
     return event;
   }
@@ -115,9 +123,9 @@ function createRealtimeEventService(options={}){
     res.setHeader('X-Content-Type-Options','nosniff');
     if(typeof res.flushHeaders==='function') res.flushHeaders();
     const after=parseAfter(req);
-    for(const event of eventsForTenant(c.tenant,c.role,after,250)) writeEvent(res,event);
+    for(const event of eventsForTenant(c.tenant,c.role,after,250,c)) writeEvent(res,event);
     try{res.write(': connected\n\n');}catch{}
-    const sub={tenant:c.tenant,role:c.role,expires:Number(c.expires),res};
+    const sub={tenant:c.tenant,email:c.email,req,res};
     subscribers.add(sub);
     const close=()=>subscribers.delete(sub);
     if(typeof req.on==='function') req.on('close',close);
@@ -136,14 +144,15 @@ function createRealtimeEventService(options={}){
     if(path===PREFIX+'/stream') return stream(req,res,c);
     if(path===PREFIX+'/events'){
       const after=parseAfter(req);
-      const events=eventsForTenant(c.tenant,c.role,after,100);
+      const events=eventsForTenant(c.tenant,c.role,after,100,c);
       return writeJson(res,200,{contractVersion:'VECTOR_REALTIME_EVENTS_V1',tenant:c.tenant,after,events});
     }
     return writeJson(res,404,{error:'Realtime endpoint not found.'});
   }
   const heartbeat=setInterval(()=>{
     for(const sub of [...subscribers]){
-      if(sub.expires<=Date.now()||sub.res.writableEnded){try{sub.res.end();}catch{} subscribers.delete(sub);continue;}
+      const current=context(sub.req);
+      if(!current||current.email!==sub.email||current.tenant!==sub.tenant||sub.res.writableEnded){try{sub.res.end();}catch{} subscribers.delete(sub);continue;}
       try{sub.res.write(': heartbeat\n\n');}catch{subscribers.delete(sub);}
     }
   },20000);

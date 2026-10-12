@@ -6,12 +6,17 @@ const {createHash}=require('node:crypto');
 const {DatabaseSync}=require('node:sqlite');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {execFileSync,spawn}=require('node:child_process');const {once}=require('node:events');const http=require('node:http');
-const {createSchedulingIntelligenceService}=require('./scheduling-intelligence-service.cjs');
+const {createSchedulingIntelligenceService:createService}=require('./scheduling-intelligence-service.cjs');
+let sealedNative;
+function nativeHelpers(){if(sealedNative)return sealedNative;const packaged='/app/public';if(fs.existsSync(path.join(packaged,'engine.js')))return sealedNative={allowedPeople:require(packaged+'/engine.js').allowedPeople,descendants:require(packaged+'/engine.js').descendants,approvedSite:require(packaged+'/operations-engine.js').approvedSite};const directory=fs.mkdtempSync(path.join(os.tmpdir(),'schedule-native-'));execFileSync('tar',['--no-same-owner','-xzf',path.resolve(__dirname,'../../artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz'),'-C',directory],{stdio:'pipe'});const E=require(path.join(directory,'public/engine.js')),O=require(path.join(directory,'public/operations-engine.js'));sealedNative={allowedPeople:E.allowedPeople,descendants:E.descendants,approvedSite:O.approvedSite};fs.rmSync(directory,{recursive:true,force:true});return sealedNative;}
+function createSchedulingIntelligenceService(options){return createService({...options,nativeHelpers:nativeHelpers()});}
+function authorityState(){return {version:1,org:[{id:'manager-root',parent:null,role:'Director'},{id:'dept',parent:'manager-root',role:'Team leader'},{id:'foreign-root',parent:null,role:'Director'},{id:'foreign-dept',parent:'foreign-root',role:'Team leader'}],staff:[{id:'w1',manager:'dept',site:'a'},{id:'w2',manager:'dept',site:'a'},{id:'w3',manager:'foreign-dept',site:'b'}],operations:{siteAccess:{}}};}
 function hash(v){return createHash('sha256').update(String(v)).digest('hex');}
 function res(){return {statusCode:200,headers:{},headersSent:false,writableEnded:false,body:'',setHeader(k,v){this.headers[k]=v;},end(v=''){this.body=String(v);this.writableEnded=true;this.headersSent=true;}};}
 function req(method,url,{body,cookie,headers={}}={}){const r=Readable.from(body===undefined?[]:[Buffer.from(JSON.stringify(body))]);r.method=method;r.url=url;r.headers={...headers};if(cookie)r.headers.cookie=cookie;return r;}
 function fixture(){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-schedule-')),dbPath=path.join(dir,'db.sqlite'),db=new DatabaseSync(dbPath);
- db.exec("CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,role TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT '[]');CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,expires INTEGER NOT NULL);");
+ db.exec("CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,role TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT '[]',person_id TEXT DEFAULT 'manager-root',costs INTEGER DEFAULT 1);CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,expires INTEGER NOT NULL);CREATE TABLE tenants(id TEXT PRIMARY KEY,version INTEGER,state TEXT);");
+ for(const tenant of ['alpha','bravo'])db.prepare('INSERT INTO tenants VALUES(?,?,?)').run(tenant,1,JSON.stringify(authorityState()));
  db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run('m@test','alpha','manager');db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run('e@test','alpha','employee');
  db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash('mgr'),'m@test',Date.now()+60000);db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash('emp'),'e@test',Date.now()+60000);
  for(const role of ['director','supervisor','payroll_admin','hr','unknown','']){const email='fixture-'+(role||'empty')+'@test';db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run(email,'alpha',role);db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash(role||'empty'),email,Date.now()+60000);}
@@ -20,7 +25,7 @@ function fixture(){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-schedu
  db.close();return {dir,dbPath};}
 async function call(s,r){const x=res();await s.handleRequest(r,x);return {res:x,json:x.body?JSON.parse(x.body):null};}
 function awaitSchedulingEndpoint(child,nonce,diagnostics=()=> ''){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>finish(Error('Actual child listener did not report readiness: '+diagnostics())),30000);const finish=(error,value)=>{clearTimeout(timer);child.off('message',message);child.off('exit',exited);child.off('error',failed);error?reject(error):resolve(value);};const failed=error=>finish(error);const exited=(code,signal)=>finish(Error('Actual child exited before listening: '+JSON.stringify({code,signal})+' '+diagnostics()));const message=value=>{if(value?.type!=='scheduling-http-proof'||value.nonce!==nonce||value.pid!==child.pid||value.address?.address!=='127.0.0.1'||value.address.family!=='IPv4'||!Number.isInteger(value.address.port)||value.address.port<1||value.address.port>65535)return finish(Error('Unowned or malformed child listener message: '+JSON.stringify(value)));finish(null,value.address);};child.on('message',message);child.once('exit',exited);child.once('error',failed);});}
-function input(){return {contextRevision:'twin:1',sourceEvidence:['mes:1','hr:1'],workers:[{id:'w1',type:'EMPLOYEE',status:'ACTIVE',homeSite:'a',eligibleSites:['a'],skills:['s1'],certifications:[{name:'c1',expiresAt:'2027-01-01T00:00:00Z'}],availability:[{start:'2026-09-24T05:00:00Z',end:'2026-09-24T15:00:00Z'}],previousShiftEnd:'2026-09-23T18:00:00Z',hoursWorkedWeek:8,contractedHours:40,hourlyCost:20}],requirements:[{id:'r1',site:'a',line:'l1',role:'op',start:'2026-09-24T06:00:00Z',end:'2026-09-24T14:00:00Z',headcount:1,requiredSkills:['s1'],requiredCertifications:['c1'],evidenceRefs:['mes:1']} ]};}
+function input(){return {contextRevision:'twin:1',sourceEvidence:['mes:1','hr:1'],workers:[{id:'w1',type:'EMPLOYEE',status:'ACTIVE',homeSite:'a',eligibleSites:['a'],skills:['s1'],certifications:[{name:'c1',expiresAt:'2027-01-01T00:00:00Z'}],availability:[{start:'2026-09-24T05:00:00Z',end:'2026-09-24T15:00:00Z'}],previousShiftEnd:'2026-09-23T18:00:00Z',hoursWorkedWeek:8,contractedHours:40,hourlyCost:20}],requirements:[{id:'r1',department:'dept',site:'a',line:'l1',role:'op',start:'2026-09-24T06:00:00Z',end:'2026-09-24T14:00:00Z',headcount:1,requiredSkills:['s1'],requiredCertifications:['c1'],evidenceRefs:['mes:1']} ]};}
 test('internal shadow plan is authenticated and idempotent',async()=>{const f=fixture(),events=[],s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret',publishEvent:e=>events.push(e)});try{
  let x=await call(s,req('POST','/api/operations/scheduling/plan/shadow',{body:{tenant:'alpha',input:input()},headers:{'x-wfm-scheduling-internal':'bad'}}));assert.equal(x.res.statusCode,403);
  x=await call(s,req('POST','/api/operations/scheduling/plan/shadow',{body:{tenant:'alpha',input:input()},headers:{'x-wfm-scheduling-internal':'secret'}}));assert.equal(x.res.statusCode,201);assert.equal(x.json.plan.executionPermitted,false);
@@ -60,10 +65,10 @@ test('the existing composed bootstrap enforces operational roles on real schedul
  assert.notEqual(endpoint.port,nominalPort,'An occupied foreign listener cannot be the actual child endpoint');
  const health=await fetch(origin+'/api/health');assert.equal(health.status,200,'Actual child health: '+await health.text()+' '+diagnostics);
  assert.equal(child.exitCode,null,'Actual child remains alive: '+diagnostics);
- db=new DatabaseSync(dbPath);
- for(const tenant of ['schedule-alpha','schedule-bravo'])db.prepare('INSERT INTO tenants(id,version,state) VALUES(?,?,?)').run(tenant,1,'{}');
+ db=new DatabaseSync(dbPath);db.exec('PRAGMA busy_timeout=1500;');
+ for(const tenant of ['schedule-alpha','schedule-bravo'])db.prepare('INSERT INTO tenants(id,version,state) VALUES(?,?,?)').run(tenant,1,JSON.stringify(authorityState()));
  for(const [token,role,tenant] of [['manager','manager','schedule-alpha'],['director','director','schedule-alpha'],['supervisor','supervisor','schedule-alpha'],['payroll_admin','payroll_admin','schedule-alpha'],['hr','hr','schedule-alpha'],['unknown','unknown','schedule-alpha'],['employee','employee','schedule-alpha'],['bravo','manager','schedule-bravo']]){
-  const email=token+'@scheduling.fixture';db.prepare('INSERT INTO users(email,tenant,person_id,role,costs,salt,password_hash,permissions) VALUES(?,?,?,?,?,?,?,?)').run(email,tenant,'fixture-'+token,role,0,'fixture-disabled','00','[]');
+  const email=token+'@scheduling.fixture';db.prepare('INSERT INTO users(email,tenant,person_id,role,costs,salt,password_hash,permissions) VALUES(?,?,?,?,?,?,?,?)').run(email,tenant,'manager-root',role,0,'fixture-disabled','00','[]');
   db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash('composed-'+token),email,Date.now()+120000);
  }
  const httpCall=async(route,token,body,extraHeaders={})=>{const response=await fetch(origin+'/api/operations/scheduling'+route,{method:body===undefined?'GET':'POST',headers:{...(token?{cookie:'wfm_session=composed-'+token}:{}),...(body===undefined?{}:{'content-type':'application/json'}),...extraHeaders},...(body===undefined?{}:{body:JSON.stringify(body)})});return {status:response.status,body:await response.json()};};
@@ -75,7 +80,9 @@ test('the existing composed bootstrap enforces operational roles on real schedul
  });
  for(const role of ['manager','director','supervisor'])await t.test(role+' retains same-tenant plan and unpersisted scenario access',async()=>{
   const read=await httpCall('/plans?tenant=schedule-bravo',role);assert.equal(read.status,200);assert.equal(read.body.tenant,'schedule-alpha');assert.equal(read.body.plans.length,1);assert.equal(read.body.plans[0].planId,plans['schedule-alpha']);
+  assert.equal(read.body.plans[0].authorityScope,undefined,'Private worker authority metadata is not a public plan field');
   const scenario=await httpCall('/what-if',role,{tenant:'schedule-bravo',input:input()});assert.equal(scenario.status,200);assert.equal(scenario.body.plan.tenant,'schedule-alpha');assert.equal(scenario.body.persisted,false);assert.equal(scenario.body.authority,'NO_EXECUTION');
+  assert.equal(scenario.body.plan.authorityScope,undefined,'Scenario projection omits private scope for every operational role');
  });
  await t.test('cross-tenant, unauthenticated and internal worker controls remain intact',async()=>{
   const bravo=await httpCall('/plans?tenant=schedule-alpha','bravo');assert.equal(bravo.status,200);assert.equal(bravo.body.plans.length,1);assert.equal(bravo.body.plans[0].planId,plans['schedule-bravo']);
@@ -83,6 +90,17 @@ test('the existing composed bootstrap enforces operational roles on real schedul
   const injection=await httpCall('/plans','manager',undefined,{'x-wfm-role':'director'});assert.equal(injection.status,400,'Existing identity guard remains enabled');
   assert.equal(db.prepare('SELECT COUNT(*) n FROM vector_schedule_plans').get().n,2);
   assert.throws(()=>db.exec("UPDATE vector_schedule_plans SET context_revision='forged'"),/append only/);
+ });
+ await t.test('native personnel root and cost flag protect the actual mounted service and realtime poll',async()=>{
+  const outside=input();outside.workers[0]={...outside.workers[0],id:'w3',homeSite:'b',eligibleSites:['b']};outside.requirements[0]={...outside.requirements[0],department:'foreign-dept',site:'b'};
+  const created=await httpCall('/plan/shadow',null,{tenant:'schedule-alpha',input:outside},{'x-wfm-scheduling-internal':'scheduling-test-only'});assert.equal(created.status,201);
+  const scoped=await httpCall('/plans','manager');assert.equal(scoped.status,200);assert.equal(scoped.body.plans.length,1);assert.equal(scoped.body.plans[0].planId,plans['schedule-alpha']);assert.equal(scoped.body.plans[0].assignments[0].cost,undefined);assert.equal(scoped.body.plans[0].solve.objectiveScore,undefined);
+  const poll=await fetch(origin+'/api/realtime/events',{headers:{cookie:'wfm_session=composed-manager'}});assert.equal(poll.status,200);const visible=(await poll.json()).events.filter(e=>e.topic.startsWith('scheduling.'));assert.equal(visible.length,1);assert.equal(visible[0].payload.planId,plans['schedule-alpha']);
+  for(const bad of [outside,{...input(),requirements:input().requirements.map(r=>({...r,department:'foreign-dept'}))},{...input(),requirements:input().requirements.map(r=>({...r,site:'b'}))}]){const denied=await httpCall('/what-if','manager',{input:bad});assert.equal(denied.status,403);assert.equal(denied.body.plan,undefined);}
+  db.exec("UPDATE users SET costs=1 WHERE email='manager@scheduling.fixture'");const financial=await httpCall('/plans','manager');assert.equal(financial.body.plans[0].assignments[0].cost.baseCost,160);assert.equal(financial.body.plans[0].authorityScope,undefined,'Cost permission does not authorize private candidate claims');db.exec("UPDATE users SET costs=0 WHERE email='manager@scheduling.fixture'");
+  db.exec("UPDATE users SET person_id='foreign-root' WHERE email='director@scheduling.fixture'");const director=await httpCall('/plans','director');assert.equal(director.status,200);assert.equal(director.body.plans.length,1);assert.equal(director.body.plans[0].planId,created.body.plan.planId,'Director remains limited to its current subtree');
+  const before=authorityState();before.org[1].parent='absent';db.prepare('UPDATE tenants SET state=? WHERE id=?').run(JSON.stringify(before),'schedule-alpha');assert.equal((await httpCall('/plans','manager')).status,403);const deniedPoll=await fetch(origin+'/api/realtime/events',{headers:{cookie:'wfm_session=composed-manager'}});assert.equal((await deniedPoll.json()).events.filter(e=>e.topic.startsWith('scheduling.')).length,0);
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM vector_schedule_plans').get().n,3,'Scenarios never persist new plans');
  });
 });
 
