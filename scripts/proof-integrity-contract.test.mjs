@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import {
   proofHealthCode,
   validateProofRegistry,
-  assertRuntimeIdentity
+  assertRuntimeIdentity,
+  assertRegisteredRunner
 } from './proof-integrity-contract.mjs';
 
 const SHA = '486606c4269bc8f1a2f24056fec22a6d6ffc7aad';
@@ -170,3 +171,17 @@ test('mutating proof must name an isolated target service and fresh deployment c
     /fresh target deployment/
   );
 });
+
+test('an active helper or target cannot register as canonical proof', () => {
+  for (const role of ['helper', 'target', 'supplemental']) {
+    const r = runner({role, lifecycle:'active', promotionEligible:false});
+    assert.throws(() => assertRegisteredRunner(registry([r]),r.id), /canonical proof/);
+  }
+});
+
+test('a promotion runner must have a canonical role', () => {
+  assert.throws(() => validateProofRegistry(registry([
+    runner({role:'supplemental',promotionEligible:true})
+  ])), /canonical role/);
+});
+
