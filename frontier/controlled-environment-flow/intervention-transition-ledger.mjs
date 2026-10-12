@@ -256,8 +256,13 @@ export function buildInterventionTransitionLedger({policy,tasks=[],presenceEvent
 }
 
 export function reconcileSensitiveZoneOutcome({recommendation,decision,observed,operations,quality,financial}={}){
-  if(!clean(recommendation?.id)||!['accepted','rejected'].includes(clean(decision?.status)))return {status:'incomplete',reason:'decision_missing'};
+  if(!canonicalId(recommendation?.id)||!canonicalId(recommendation?.siteId)||
+     !['accepted','rejected'].includes(decision?.status))return {status:'incomplete',reason:'decision_missing'};
+  const bound=e=>e?.recommendationId===recommendation.id&&e?.siteId===recommendation.siteId;
+  if(!bound(decision))return {status:'incomplete',reason:'decision_scope_mismatch'};
   if(decision.status==='rejected')return {status:'recorded',outcomeClass:'rejected_by_human',recommendationId:recommendation.id};
+  if(!bound(observed)||!bound(operations)||!bound(quality)||
+     (financial?.authoritative===true&&!bound(financial)))return {status:'incomplete',reason:'outcome_scope_mismatch'};
   if(observed?.authoritative!==true||operations?.authoritative!==true)return {status:'incomplete',reason:'operational_evidence_missing'};
   if(quality?.authoritative!==true)return {status:'incomplete',reason:'quality_evidence_missing'};
   const predictedEntries=Number(recommendation.predictedEntries),actualEntries=Number(observed.actualEntries);

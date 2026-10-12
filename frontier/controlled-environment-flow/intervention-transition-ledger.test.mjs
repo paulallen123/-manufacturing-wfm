@@ -80,17 +80,37 @@ test('cross-site or non-authoritative evidence fails closed',()=>{
 
 test('outcome reconciliation keeps predicted and realised movement distinct',()=>{
  const r=reconcileSensitiveZoneOutcome({
-  recommendation:{id:'R1',predictedEntries:2},
-  decision:{status:'accepted'},
-  observed:{authoritative:true,actualEntries:3},
-  operations:{authoritative:true,productionCompleted:true},
-  quality:{authoritative:true,eventCount:0},
-  financial:{authoritative:true,realisedControlCost:42}
+  recommendation:{id:'R1',siteId:'S1',predictedEntries:2},
+  decision:{status:'accepted',recommendationId:'R1',siteId:'S1'},
+  observed:{authoritative:true,recommendationId:'R1',siteId:'S1',actualEntries:3},
+  operations:{authoritative:true,recommendationId:'R1',siteId:'S1',productionCompleted:true},
+  quality:{authoritative:true,recommendationId:'R1',siteId:'S1',eventCount:0},
+  financial:{authoritative:true,recommendationId:'R1',siteId:'S1',realisedControlCost:42}
  });
  assert.equal(r.status,'reconciled');
  assert.equal(r.predicted.entries,2);
  assert.equal(r.realised.entries,3);
  assert.equal(r.calibration.entryError,1);
+});
+
+test('accepted outcome refuses missing or foreign recommendation and site evidence',()=>{
+ const base={
+  recommendation:{id:'R1',siteId:'S1',predictedEntries:2},
+  decision:{status:'accepted',recommendationId:'R1',siteId:'S1'},
+  observed:{authoritative:true,recommendationId:'R1',siteId:'S1',actualEntries:3},
+  operations:{authoritative:true,recommendationId:'R1',siteId:'S1',productionCompleted:true},
+  quality:{authoritative:true,recommendationId:'R1',siteId:'S1',eventCount:0},
+  financial:{authoritative:true,recommendationId:'R1',siteId:'S1',realisedControlCost:42}
+ };
+ for(const part of ['decision','observed','operations','quality','financial'])for(const field of ['recommendationId','siteId']){
+  for(const value of [undefined,field==='siteId'?'S2':'R2']){
+   const input=structuredClone(base);input[part][field]=value;
+   const result=reconcileSensitiveZoneOutcome(input);
+   assert.notEqual(result.status,'reconciled',`${part}.${field}=${value} was reconciled`);
+  }
+ }
+ const rejected=structuredClone(base);rejected.decision.status='rejected';rejected.decision.recommendationId='R2';
+ assert.notEqual(reconcileSensitiveZoneOutcome(rejected).status,'recorded');
 });
 
 // Source-bound ambiguity regressions. These are structural checks, not safety approval.
