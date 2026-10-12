@@ -10,6 +10,7 @@ const sourceDirectory=process.env.CANONICAL_SOURCE_DIR;
 if(!sourceDirectory)throw Error('CANONICAL_SOURCE_DIR_REQUIRED: point this test at the verified canonical source snapshot.');
 const source=resolve(sourceDirectory),runtime=process.env.WFM_RUNTIME&&resolve(process.env.WFM_RUNTIME);
 const Bridge=require(join(source,'integrations/staffology/canonical-runtime-bridge.cjs'));
+const {installAppliedSourceFixture}=require(join(source,'integrations/staffology/test-support/applied-source-fixture.cjs'));
 if(!runtime)throw Error('WFM_RUNTIME_REQUIRED: full mode requires the verified composed runtime.');
 for(const required of ['local-paths.cjs','security-runtime/bootstrap.cjs','LOCAL_PROOF_PROVENANCE.json','STAFFOLOGY_ASSEMBLY.json'])assert.equal(existsSync(join(runtime,required)),true,`FULL_CANONICAL_RUNTIME_MISSING: ${join(runtime,required)}`);
 const candidateSha=String(process.env.WFM_BUILD_SOURCE_SHA||'').trim().toLowerCase(),privateEvidenceDirectory=String(process.env.STAFFOLOGY_PRIVATE_EVIDENCE_DIR||'');
@@ -41,7 +42,12 @@ test('strict full HTTP journey uses actual attendance, canonical release and one
  let permissionResult=await admin('/api/company-admin/command',{method:'POST',body:{version,command:'account-permissions',payload:{email:'superuser@northstar.example',permissions}}});version=permissionResult.version;
  let result;
  const mappings=[{externalId:'employee-001',payrollId:'PAY901',managerId:'m1',site:'Leeds',job:'Machine operator',contractType:'full_time',weeklyHours:37.5,language:'en-GB'},{externalId:'employee-002',payrollId:'PAY902',managerId:'m1',site:'Leeds',job:'Machine operator',contractType:'full_time',weeklyHours:37.5,language:'en-GB'}];
- const staged=await admin('/api/integrations/staffology/employees/acquire-stage',{method:'POST',body:{reviewed:true,employeeIds:cohort,mappings,connectorId:'staffology-people',idempotencyKey:'staffology-http-journey-001'}});assert.deepEqual([staged.status,staged.valid],['staged',2]);
+ installAppliedSourceFixture(database,{tenant:binding.tenant,runId:binding.implementationRunId});
+ const employeeReview={reviewed:true,employeeIds:cohort,mappings,connectorId:'staffology-people',idempotencyKey:'staffology-http-journey-001'};
+ await admin('/api/integrations/staffology/employees/acquire-stage',{method:'POST',expectedStatus:403,body:employeeReview});
+ const employeePreview=await admin('/api/integrations/staffology/employees/preview',{method:'POST',body:employeeReview});
+ await admin('/api/integrations/staffology/employees/acquire-stage',{method:'POST',expectedStatus:403,body:{reviewed:true,previewId:employeePreview.previewId,configurationBinding:employeePreview.configurationBinding}});
+ const staged=await admin('/api/integrations/staffology/employees/acquire-stage',{method:'POST',body:{reviewed:true,previewId:employeePreview.previewId}});assert.deepEqual([staged.status,staged.valid],['staged',2]);
  const dormant=await admin('/api/integrations/staffology/payroll/approve-deliver',{method:'POST',expectedStatus:503,body:{reviewed:true,approval:{}}});assert.match(JSON.stringify(dormant),/dormant/i);
  version=(await admin('/api/bootstrap')).state.version;let applied=await admin('/api/integrations/apply',{method:'POST',body:{version,id:staged.id,reviewed:true}}),onboarding=await admin('/api/onboarding'),batch=onboarding.batches.find(x=>x.id===applied.outcome.id);result=await command(admin,applied.version,'onboarding-review',{id:batch.id,revision:batch.revision,reviewed:true});version=result.version;
  for(const sourceId of cohort){const invite=await admin('/api/onboarding/invite',{method:'POST',body:{version,sourceId,hours:24}}),accept=client(port,`identity-${sourceId}`);await accept('/api/onboarding/accept',{method:'POST',body:{token:invite.token,password:`Synthetic-${sourceId}-Pass!`}});version=(await admin('/api/bootstrap')).state.version;result=await command(admin,version,'onboarding-configure',{sourceId,reviewed:true,age:30,standardAdult:true,nightWorker:false,noticeMinutes:30,restHistoryComplete:true,approvedSkills:[{name:'CNC',level:1,validUntil:'2027-12-31',evidence:'synthetic-reviewed-training-record'}],reference:{complete:true}});version=result.version;}

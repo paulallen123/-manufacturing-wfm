@@ -5,6 +5,23 @@ const {readFileSync}=require('node:fs');
 const {resolve}=require('node:path');
 const {createRuntimeIdentity}=require('../../../security/runtime/runtime-identity.cjs');
 
+const staffologyRuntimeModules=[
+ 'staffology-adapter.cjs','canonical-runtime-bridge.cjs','canonical-production-boundaries.cjs',
+ 'canonical-operations.cjs','configured-site-authority.cjs','employee-import-previews.cjs'
+];
+const staffologyWorkspaceCopy='COPY '+staffologyRuntimeModules.map(file=>'integrations/staffology/'+file).join(' ')+' /workspace/integrations/staffology/';
+const composerWorkspaceCopy='COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/';
+const composeRuntime='RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app '+String.fromCharCode(92);
+function assertRuntimePackaging(dockerfile){
+ const start=dockerfile.indexOf('# Customer-proof staging build');assert.ok(start>=0,'supported runtime stage must exist');
+ const lines=dockerfile.slice(start).split(/\r?\n/),copies=lines.filter(line=>/^COPY\s+/.test(line));
+ const workspaceCopies=copies.filter(line=>line.trim().split(/\s+/).at(-1)==='/workspace/integrations/staffology/');
+ assert.deepEqual(workspaceCopies,[staffologyWorkspaceCopy],'exact six reviewed Staffology modules must share the sole workspace COPY');
+ for(const file of staffologyRuntimeModules)assert.equal(copies.filter(line=>line.split(/\s+/).includes('integrations/staffology/'+file)).length,1,'runtime module must have exactly one source COPY: '+file);
+ const modulesAt=lines.indexOf(staffologyWorkspaceCopy),scriptsAt=lines.indexOf(composerWorkspaceCopy),composeAt=lines.indexOf(composeRuntime),cleanupAt=lines.findIndex(line=>line.trim()==='&& rm -rf /workspace');
+ assert.ok(modulesAt>=0&&scriptsAt>modulesAt&&composeAt>scriptsAt&&cleanupAt>composeAt,'exact modules and patchers must precede runtime composition; workspace removal must follow it');
+}
+
 test('supported Docker admission composes and binds the strict full canonical runtime',()=>{
  const dockerfile=readFileSync(resolve(__dirname,'../../../Dockerfile'),'utf8');
  const proof=dockerfile.slice(dockerfile.indexOf('AS autonomy-proof'),dockerfile.indexOf('# Customer-proof staging build'));
@@ -44,7 +61,7 @@ test('supported Docker admission composes and binds the strict full canonical ru
  const runtime=dockerfile.slice(dockerfile.indexOf('# Customer-proof staging build'));
  const copyInstructions=runtime.split('\n').filter(line=>/^COPY\s+/.test(line)).length;
  assert.ok(copyInstructions<100,`same-destination consolidation regressed to ${copyInstructions} COPY layers`);
- assert.match(runtime,/COPY integrations\/staffology\/staffology-adapter\.cjs integrations\/staffology\/canonical-runtime-bridge\.cjs integrations\/staffology\/canonical-production-boundaries\.cjs integrations\/staffology\/canonical-operations\.cjs \/workspace\/integrations\/staffology\//);
+ assertRuntimePackaging(dockerfile);
  const circle=readFileSync(resolve(__dirname,'../../../.circleci/config.yml'),'utf8');
  // Admit the two application builds and the separately scoped proof-client image.
  // Exact commands retain each target, source binding and artifact destination.
@@ -99,6 +116,22 @@ test('supported Docker admission composes and binds the strict full canonical ru
  for(const check of ['health-ready','runtime-identity-build-file-matched','root-page','bootstrap-unauthenticated-401','demand-unauthenticated-401'])assert.match(circle,new RegExp(`passed ${check}`));
  assert.match(circle,/hosted-http-diagnostics\.log/);
  assert.match(dockerfile,/tests\/runtime-process-uid\.test\.cjs/);
+});
+
+for(const file of staffologyRuntimeModules)test('runtime packaging refuses an omitted reviewed module: '+file,()=>{
+ const actual=readFileSync(resolve(__dirname,'../../../Dockerfile'),'utf8');
+ assert.throws(()=>assertRuntimePackaging(actual.replace(staffologyWorkspaceCopy,staffologyWorkspaceCopy.replace('integrations/staffology/'+file+' ',''))),/exact six reviewed Staffology modules/);
+});
+for(const [name,mutate]of[
+ ['unreviewed additional module',source=>source.replace(staffologyWorkspaceCopy,staffologyWorkspaceCopy.replace(' /workspace/',' integrations/staffology/unreviewed.cjs /workspace/'))],
+ ['wrong destination',source=>source.replace(staffologyWorkspaceCopy,staffologyWorkspaceCopy.replace('/workspace/integrations/staffology/','/app/integrations/staffology/'))],
+ ['duplicate workspace COPY',source=>source.replace(staffologyWorkspaceCopy,staffologyWorkspaceCopy+'\n'+staffologyWorkspaceCopy)],
+ ['module copy after composition',source=>source.replace(staffologyWorkspaceCopy,'').replace(' && rm -rf /workspace',' && rm -rf /workspace\n'+staffologyWorkspaceCopy)],
+ ['missing composition',source=>source.replace(composeRuntime,'RUN true '+String.fromCharCode(92))],
+ ['missing workspace compiler patcher',source=>source.replace(composerWorkspaceCopy,composerWorkspaceCopy.replace(' scripts/patch-workspace-compiler.mjs',''))],
+ ['workspace removed before composition',source=>source.replace(' && rm -rf /workspace','').replace(composeRuntime,' && rm -rf /workspace\n'+composeRuntime)]
+])test('runtime packaging refuses '+name,()=>{
+ const actual=readFileSync(resolve(__dirname,'../../../Dockerfile'),'utf8');assert.throws(()=>assertRuntimePackaging(mutate(actual)),/exact six|must precede|exactly one/);
 });
 
 test('hosted caller binds configured candidate to the independently read sealed build file',()=>{
