@@ -54,6 +54,9 @@ export function validateProofRegistry(registry){
     }
 
     if(runner.promotionEligible===true){
+      if(runner.role!=='canonical'||runner.lifecycle!=='active'){
+        throw new Error('Promotion runner requires an active canonical role: '+runner.id);
+      }
       if(runner.identityBinding!=='runtime-identity-endpoint'){
         throw new Error('Promotion runner must use runtime-identity-endpoint: '+runner.id);
       }
@@ -90,5 +93,6 @@ export function assertRegisteredRunner(registry, runnerId){
   const runner=(registry.runners||[]).find(item=>item.id===runnerId);
   if(!runner) throw new Error('Unregistered proof runner: '+runnerId);
   if(runner.lifecycle!=='active') throw new Error('Inactive proof runner cannot execute as canonical proof: '+runnerId);
+  if(runner.role!=='canonical') throw new Error('Only a canonical proof runner may execute as canonical proof: '+runnerId);
   return runner;
 }
