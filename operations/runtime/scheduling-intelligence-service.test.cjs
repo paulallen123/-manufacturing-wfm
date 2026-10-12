@@ -5,7 +5,7 @@ const {Readable}=require('node:stream');
 const {createHash}=require('node:crypto');
 const {DatabaseSync}=require('node:sqlite');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {execFileSync,spawn}=require('node:child_process');const {once}=require('node:events');const net=require('node:net');
+const {execFileSync,spawn}=require('node:child_process');const {once}=require('node:events');const http=require('node:http');
 const {createSchedulingIntelligenceService}=require('./scheduling-intelligence-service.cjs');
 function hash(v){return createHash('sha256').update(String(v)).digest('hex');}
 function res(){return {statusCode:200,headers:{},headersSent:false,writableEnded:false,body:'',setHeader(k,v){this.headers[k]=v;},end(v=''){this.body=String(v);this.writableEnded=true;this.headersSent=true;}};}
@@ -19,6 +19,7 @@ function fixture(){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-schedu
  db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run('other-manager@test','alpha','manager');
  db.close();return {dir,dbPath};}
 async function call(s,r){const x=res();await s.handleRequest(r,x);return {res:x,json:x.body?JSON.parse(x.body):null};}
+function awaitSchedulingEndpoint(child,nonce,diagnostics=()=> ''){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>finish(Error('Actual child listener did not report readiness: '+diagnostics())),30000);const finish=(error,value)=>{clearTimeout(timer);child.off('message',message);child.off('exit',exited);child.off('error',failed);error?reject(error):resolve(value);};const failed=error=>finish(error);const exited=(code,signal)=>finish(Error('Actual child exited before listening: '+JSON.stringify({code,signal})+' '+diagnostics()));const message=value=>{if(value?.type!=='scheduling-http-proof'||value.nonce!==nonce||value.pid!==child.pid||value.address?.address!=='127.0.0.1'||value.address.family!=='IPv4'||!Number.isInteger(value.address.port)||value.address.port<1||value.address.port>65535)return finish(Error('Unowned or malformed child listener message: '+JSON.stringify(value)));finish(null,value.address);};child.on('message',message);child.once('exit',exited);child.once('error',failed);});}
 function input(){return {contextRevision:'twin:1',sourceEvidence:['mes:1','hr:1'],workers:[{id:'w1',type:'EMPLOYEE',status:'ACTIVE',homeSite:'a',eligibleSites:['a'],skills:['s1'],certifications:[{name:'c1',expiresAt:'2027-01-01T00:00:00Z'}],availability:[{start:'2026-09-24T05:00:00Z',end:'2026-09-24T15:00:00Z'}],previousShiftEnd:'2026-09-23T18:00:00Z',hoursWorkedWeek:8,contractedHours:40,hourlyCost:20}],requirements:[{id:'r1',site:'a',line:'l1',role:'op',start:'2026-09-24T06:00:00Z',end:'2026-09-24T14:00:00Z',headcount:1,requiredSkills:['s1'],requiredCertifications:['c1'],evidenceRefs:['mes:1']} ]};}
 test('internal shadow plan is authenticated and idempotent',async()=>{const f=fixture(),events=[],s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret',publishEvent:e=>events.push(e)});try{
  let x=await call(s,req('POST','/api/operations/scheduling/plan/shadow',{body:{tenant:'alpha',input:input()},headers:{'x-wfm-scheduling-internal':'bad'}}));assert.equal(x.res.statusCode,403);
@@ -26,22 +27,39 @@ test('internal shadow plan is authenticated and idempotent',async()=>{const f=fi
  const y=await call(s,req('POST','/api/operations/scheduling/plan/shadow',{body:{tenant:'alpha',input:input()},headers:{'x-wfm-scheduling-internal':'secret'}}));assert.equal(y.res.statusCode,200);assert.equal(y.json.idempotent,true);assert.equal(events.length,1);
 }finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}});
 
+test('readiness refuses foreign or malformed IPC endpoint claims from a real child',async t=>{
+ for(const [name,change]of [['wrong nonce',{nonce:'foreign'}],['wrong PID',{pid:0}],['foreign address',{address:{address:'127.0.0.2',family:'IPv4',port:12345}}],['wrong address family',{address:{address:'127.0.0.1',family:'IPv6',port:12345}}],['unbound port',{address:{address:'127.0.0.1',family:'IPv4',port:0}}]])await t.test(name,async()=>{
+  const child=spawn(process.execPath,['-e',`setImmediate(()=>process.send({...{type:'scheduling-http-proof',nonce:'owned',pid:process.pid,address:{address:'127.0.0.1',family:'IPv4',port:12345}},...${JSON.stringify(change)}}));setInterval(()=>{},1000);`],{stdio:['ignore','ignore','ignore','ipc']});
+  try{await assert.rejects(awaitSchedulingEndpoint(child,'owned'),/Unowned or malformed child listener message/);}finally{if(child.pid&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit');child.kill('SIGTERM');await exited;}}
+ });
+});
+
 test('the existing composed bootstrap enforces operational roles on real scheduling HTTP routes',async t=>{
  const root=path.resolve(__dirname,'../..'),directory=fs.mkdtempSync(path.join(os.tmpdir(),'scheduling-route-permission-')),dbPath=path.join(directory,'state.sqlite');
  const composer=path.join(root,'scripts/compose-vector-local-runtime.mjs'),sourceMode=fs.existsSync(composer),runtime=sourceMode?path.join(directory,'runtime'):'/app';
  let child,db;
- t.after(async()=>{db?.close();if(child&&child.exitCode===null){child.kill('SIGTERM');await once(child,'exit');}fs.rmSync(directory,{recursive:true,force:true});});
+ t.after(async()=>{db?.close();if(child?.pid&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit');child.kill('SIGTERM');await exited;}fs.rmSync(directory,{recursive:true,force:true});});
  if(sourceMode)execFileSync(process.execPath,[composer,runtime],{stdio:'pipe'});
  else assert.ok(fs.existsSync(path.join(runtime,'security-runtime/bootstrap.cjs')),'Scheduling HTTP proof requires the source composer or the actual /app bootstrap; missing proof prerequisites cannot be skipped');
  assert.equal(fs.readFileSync(path.join(runtime,'operations-runtime/scheduling-intelligence-service.cjs'),'utf8'),fs.readFileSync(path.join(__dirname,'scheduling-intelligence-service.cjs'),'utf8'),'The composed bootstrap must use these exact service bytes');
- const portServer=net.createServer();portServer.listen(0,'127.0.0.1');await once(portServer,'listening');const port=portServer.address().port;await new Promise(resolve=>portServer.close(resolve));
- const origin='http://127.0.0.1:'+port;
- child=spawn(process.execPath,[...(sourceMode?['--require',path.join(runtime,'local-paths.cjs')]:[]),path.join(runtime,'security-runtime/bootstrap.cjs')],{
-  env:{PATH:process.env.PATH,SystemRoot:process.env.SystemRoot,TEMP:process.env.TEMP,TMP:process.env.TMP,WFM_DB:dbPath,PORT:String(port),WFM_HOSTED_STAGING:'false',NODE_ENV:'test',WFM_IDENTITY_SURVIVAL_GUARD:'enforce',WFM_SCHEDULING_INTERNAL_TOKEN:'scheduling-test-only',WFM_TENANT_CLOCK_ISO:'2026-09-24T12:00:00Z',WFM_TENANT_TIMEZONE:'Europe/London',WFM_AGENTS_API_ENABLED:'false'},stdio:['ignore','pipe','pipe']});
+ // Keep a healthy foreign listener on the nominal port. The real child must
+ // bind its own OS-assigned endpoint; a released reservation is not ownership.
+ let foreignRequests=0;
+ const foreign=http.createServer((req,res)=>{foreignRequests++;res.writeHead(req.url==='/api/health'?200:503,{'content-type':'application/json'});res.end(JSON.stringify({foreignRuntime:true,error:'Foreign scheduling worker is not configured.'}));});
+ foreign.listen(0,'127.0.0.1');await once(foreign,'listening');const nominalPort=foreign.address().port;
+ t.after(async()=>{foreign.closeAllConnections();await new Promise(resolve=>foreign.close(resolve));});
+ const nonce=hash(directory),listenProbe=path.join(directory,'owned-listener.cjs');
+ // This test-only preload changes only the listen endpoint. The real bootstrap,
+ // identity guard and route handlers still execute in both source and image mode.
+ fs.writeFileSync(listenProbe,`const http=require('node:http'),original=http.Server.prototype.listen;http.Server.prototype.listen=function(...args){const callback=args.find(value=>typeof value==='function');this.once('listening',()=>{const address=this.address();process.send({type:'scheduling-http-proof',nonce:${JSON.stringify(nonce)},pid:process.pid,address});});return original.call(this,{port:0,host:'127.0.0.1'},...(callback?[callback]:[]));};`);
+ child=spawn(process.execPath,[...(sourceMode?['--require',path.join(runtime,'local-paths.cjs')]:[]),'--require',listenProbe,path.join(runtime,'security-runtime/bootstrap.cjs')],{
+  env:{PATH:process.env.PATH,SystemRoot:process.env.SystemRoot,TEMP:process.env.TEMP,TMP:process.env.TMP,WFM_DB:dbPath,PORT:String(nominalPort),WFM_HOSTED_STAGING:'false',NODE_ENV:'test',WFM_IDENTITY_SURVIVAL_GUARD:'enforce',WFM_SCHEDULING_INTERNAL_TOKEN:'scheduling-test-only',WFM_TENANT_CLOCK_ISO:'2026-09-24T12:00:00Z',WFM_TENANT_TIMEZONE:'Europe/London',WFM_AGENTS_API_ENABLED:'false'},stdio:['ignore','pipe','pipe','ipc']});
  let diagnostics='';for(const stream of [child.stdout,child.stderr])stream.on('data',data=>{diagnostics=(diagnostics+data).slice(-8000);});
- const deadline=Date.now()+30000;let ready=false;
- while(Date.now()<deadline){if(child.exitCode!==null)throw Error('Composed runtime exited: '+diagnostics);try{if((await fetch(origin+'/api/health')).ok){ready=true;break;}}catch{}await new Promise(resolve=>setTimeout(resolve,100));}
- assert.equal(ready,true,'Composed runtime startup: '+diagnostics);
+ const endpoint=await awaitSchedulingEndpoint(child,nonce,()=>diagnostics);
+ const origin='http://127.0.0.1:'+endpoint.port;
+ assert.notEqual(endpoint.port,nominalPort,'An occupied foreign listener cannot be the actual child endpoint');
+ const health=await fetch(origin+'/api/health');assert.equal(health.status,200,'Actual child health: '+await health.text()+' '+diagnostics);
+ assert.equal(child.exitCode,null,'Actual child remains alive: '+diagnostics);
  db=new DatabaseSync(dbPath);
  for(const tenant of ['schedule-alpha','schedule-bravo'])db.prepare('INSERT INTO tenants(id,version,state) VALUES(?,?,?)').run(tenant,1,'{}');
  for(const [token,role,tenant] of [['manager','manager','schedule-alpha'],['director','director','schedule-alpha'],['supervisor','supervisor','schedule-alpha'],['payroll_admin','payroll_admin','schedule-alpha'],['hr','hr','schedule-alpha'],['unknown','unknown','schedule-alpha'],['employee','employee','schedule-alpha'],['bravo','manager','schedule-bravo']]){
@@ -50,7 +68,8 @@ test('the existing composed bootstrap enforces operational roles on real schedul
  }
  const httpCall=async(route,token,body,extraHeaders={})=>{const response=await fetch(origin+'/api/operations/scheduling'+route,{method:body===undefined?'GET':'POST',headers:{...(token?{cookie:'wfm_session=composed-'+token}:{}),...(body===undefined?{}:{'content-type':'application/json'}),...extraHeaders},...(body===undefined?{}:{body:JSON.stringify(body)})});return {status:response.status,body:await response.json()};};
  const plans={};
- for(const tenant of ['schedule-alpha','schedule-bravo']){const created=await httpCall('/plan/shadow',null,{tenant,input:input()},{'x-wfm-scheduling-internal':'scheduling-test-only'});assert.equal(created.status,201);assert.equal(created.body.authority,'NO_EXECUTION');assert.equal(created.body.plan.executionPermitted,false);plans[tenant]=created.body.plan.planId;}
+ for(const tenant of ['schedule-alpha','schedule-bravo']){const created=await httpCall('/plan/shadow',null,{tenant,input:input()},{'x-wfm-scheduling-internal':'scheduling-test-only'});assert.equal(created.status,201,JSON.stringify({created,endpoint,childPid:child.pid,childExit:child.exitCode,diagnostics}));assert.equal(created.body.authority,'NO_EXECUTION');assert.equal(created.body.plan.executionPermitted,false);plans[tenant]=created.body.plan.planId;}
+ await t.test('a foreign healthy runtime is never used as the scheduling fixture endpoint',()=>{assert.equal(foreignRequests,0);assert.equal(child.exitCode,null,'Actual bootstrap still owns the endpoint');});
  for(const role of ['payroll_admin','hr','unknown','employee'])await t.test(role+' cannot read the existing mounted plan route',async()=>{
   const result=await httpCall('/plans',role);assert.equal(result.status,403);assert.equal(result.body.plans,undefined);
  });
