@@ -303,14 +303,20 @@ function validateSchedule(assignments,workersById,slotsById,policy,preferred){
   const accepted=[],violations=[];
   try { assignments=normaliseAssignments(assignments); }
   catch { return {valid:false,violations:[{reasons:['INVALID_ASSIGNMENT']}]}; }
+  const represented=new Set(assignments.map(a=>a.slotId));
+  for(const slotId of slotsById.keys())
+    if(!represented.has(slotId)) violations.push({slotId,reasons:['MISSING_SLOT_ASSIGNMENT']});
   for(const a of assignments){
-    if(!a.workerId) continue;
-    const w=workersById.get(a.workerId),slot=slotsById.get(a.slotId);
-    if(!w||!slot){ violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['UNKNOWN_WORKER_OR_SLOT']}); continue; }
+    const slot=slotsById.get(a.slotId);
+    if(!slot){ violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['UNKNOWN_WORKER_OR_SLOT']}); continue; }
     if(ms(a.start)!==ms(slot.start)||ms(a.end)!==ms(slot.end)){
       violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['ASSIGNMENT_SLOT_MISMATCH']});
       continue;
     }
+    if(a.workerId===null) continue; // Explicit shortfall still represents a real slot.
+    if(a.shortfall===true){ violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['INVALID_ASSIGNMENT']}); continue; }
+    const w=workersById.get(a.workerId);
+    if(!w){ violations.push({slotId:a.slotId,workerId:a.workerId,reasons:['UNKNOWN_WORKER_OR_SLOT']}); continue; }
     const c=evaluateWorkerForSlot(w,slot,{policy,assignments:accepted,preferredAssignments:preferred});
     if(!c.eligible) violations.push({slotId:a.slotId,workerId:a.workerId,reasons:c.failures});
     else accepted.push(a);
