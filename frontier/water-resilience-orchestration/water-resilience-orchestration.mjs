@@ -1,4 +1,4 @@
-export const WATER_RESILIENCE_VERSION='water-resilience-orchestration-v0.1.0';
+export const WATER_RESILIENCE_VERSION='water-resilience-orchestration-v0.1.1';
 
 const clean=v=>typeof v==='string'?v.trim():'';
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
@@ -150,6 +150,11 @@ export function compareWaterResiliencePlans(input={}){
 
 export function reconcileWaterOutcome({recommendation,decision,observed,operations,financial}={}){
   if(!clean(recommendation?.id)||!['accepted','rejected'].includes(clean(decision?.status)))return {status:'incomplete',reason:'decision_missing'};
+  const recommendationId=clean(recommendation.id),siteId=clean(recommendation.siteId);
+  if(!siteId)return {status:'incomplete',reason:'outcome_identity_missing'};
+  const evidence=decision.status==='rejected'?[decision]:[decision,observed,operations,...(financial==null?[]:[financial])];
+  if(evidence.some(row=>!clean(row?.recommendationId)||!clean(row?.siteId)))return {status:'incomplete',reason:'outcome_identity_missing'};
+  if(evidence.some(row=>clean(row.recommendationId)!==recommendationId||clean(row.siteId)!==siteId))return {status:'incomplete',reason:'outcome_identity_mismatch'};
   if(decision.status==='rejected')return {status:'recorded',outcomeClass:'rejected_by_human',recommendationId:recommendation.id};
   if(observed?.authoritative!==true||operations?.authoritative!==true)return {status:'incomplete',reason:'operational_evidence_missing'};
   const predicted=Number(recommendation.predictedFreshWaterM3),actual=Number(observed.actualFreshWaterM3);
@@ -163,3 +168,4 @@ export function reconcileWaterOutcome({recommendation,decision,observed,operatio
     authorityBoundary:'Outcome learning may calibrate future advice but cannot automatically alter water policy, quality limits, permits, recipes or workforce rules.'
   };
 }
+

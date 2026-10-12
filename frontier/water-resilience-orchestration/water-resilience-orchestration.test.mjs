@@ -72,9 +72,54 @@ test('stale policy blocks scoring',()=>{
 });
 
 test('outcome learning preserves predicted vs realised water',()=>{
- const r=reconcileWaterOutcome({recommendation:{id:'R1',predictedFreshWaterM3:11},decision:{status:'accepted'},observed:{authoritative:true,actualFreshWaterM3:12.5},operations:{authoritative:true,productionCompleted:true},financial:{authoritative:true,realisedWaterCost:20}});
+ const scope={recommendationId:'R1',siteId:'S1'};
+ const r=reconcileWaterOutcome({recommendation:{id:'R1',siteId:'S1',predictedFreshWaterM3:11},decision:{status:'accepted',...scope},observed:{authoritative:true,actualFreshWaterM3:12.5,...scope},operations:{authoritative:true,productionCompleted:true,...scope},financial:{authoritative:true,realisedWaterCost:20,...scope}});
  assert.equal(r.status,'reconciled');
  assert.equal(r.calibration.waterErrorM3,1.5);
+});
+
+test('foreign outcome evidence cannot calibrate the target recommendation',()=>{
+ const scope={recommendationId:'R-target',siteId:'S-target'};
+ const common={recommendation:{id:'R-target',siteId:'S-target',predictedFreshWaterM3:11},decision:{status:'accepted',...scope},observed:{authoritative:true,actualFreshWaterM3:12.5,...scope},operations:{authoritative:true,productionCompleted:true,...scope},financial:{authoritative:true,realisedWaterCost:20,...scope}};
+ for(const record of ['decision','observed','operations','financial']){
+  for(const field of ['recommendationId','siteId']){
+   const input=structuredClone(common);
+   input[record][field]='foreign';
+   const result=reconcileWaterOutcome(input);
+   assert.notEqual(result.status,'reconciled',`${record}.${field} must match`);
+   assert.equal(result.calibration,undefined);
+  }
+ }
+});
+
+test('missing outcome join identities cannot silently inherit target identity',()=>{
+ const scope={recommendationId:'R-target',siteId:'S-target'};
+ const common={recommendation:{id:'R-target',siteId:'S-target',predictedFreshWaterM3:11},decision:{status:'accepted',...scope},observed:{authoritative:true,actualFreshWaterM3:12.5,...scope},operations:{authoritative:true,productionCompleted:true,...scope},financial:{authoritative:true,realisedWaterCost:20,...scope}};
+ for(const record of ['recommendation','decision','observed','operations','financial']){
+  for(const field of record==='recommendation'?['siteId']:['recommendationId','siteId']){
+   const input=structuredClone(common);
+   delete input[record][field];
+   assert.notEqual(reconcileWaterOutcome(input).status,'reconciled');
+  }
+ }
+ const withoutFinancial=structuredClone(common);delete withoutFinancial.financial;
+ const result=reconcileWaterOutcome(withoutFinancial);
+ assert.equal(result.status,'reconciled');
+ assert.equal(result.realised.realisedWaterCost,null);
+});
+
+test('rejected decisions require the same recommendation and site identity',()=>{
+ const recommendation={id:'R-target',siteId:'S-target',predictedFreshWaterM3:11};
+ assert.deepEqual(reconcileWaterOutcome({recommendation,decision:{status:'rejected',recommendationId:'R-target',siteId:'S-target'}}),{status:'recorded',outcomeClass:'rejected_by_human',recommendationId:'R-target'});
+ for(const decision of [
+  {status:'rejected',recommendationId:'R-other',siteId:'S-target'},
+  {status:'rejected',recommendationId:'R-target',siteId:'S-other'},
+  {status:'rejected',recommendationId:'R-target'}
+ ]){
+  const result=reconcileWaterOutcome({recommendation,decision});
+  assert.equal(result.status,'incomplete');
+  assert.equal(result.outcomeClass,undefined);
+ }
 });
 
 const candidate={id:'candidate',assignments:[{taskId:'T1',workerId:'W1',slot:2},{taskId:'T2',workerId:'W2',slot:1}]};
@@ -246,3 +291,4 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
+
