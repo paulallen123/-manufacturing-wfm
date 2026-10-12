@@ -285,4 +285,3 @@ fs.writeFileSync(path.join(output, 'LOCAL_PROOF_PROVENANCE.json'), JSON.stringif
 }, null, 2) + '\n');
 console.log('VECTOR_LOCAL_RUNTIME=' + output);
 console.log('Start with: WFM_DB=<isolated sqlite path> PORT=4100 node --require ' + path.join(output, 'local-paths.cjs') + ' ' + path.join(output, 'security-runtime/bootstrap.cjs'));
-
