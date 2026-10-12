@@ -143,6 +143,8 @@ function selectDecisionOption(episode,input={}){
   if(!option) throw new Error('Selected option is not part of the episode.');
   if(!option.feasible||!option.policyAllowed||!option.hardConstraintsPassed) throw new Error('Selected option is not eligible.');
   const selectedAt=iso(input.selectedAt);
+  const triggeredAt=iso(episode.triggeredAt);
+  if(Date.parse(selectedAt)<Date.parse(triggeredAt)) throw new Error('Selection cannot precede the decision trigger.');
   const authorityDecision=text(input.authorityDecision,80).toUpperCase();
   if(episode.mode==='SHADOW' && authorityDecision!=='SHADOW_OBSERVED') throw new Error('Shadow mode cannot grant execution authority.');
   if(episode.mode==='HUMAN_APPROVAL' && authorityDecision!=='HUMAN_APPROVED') throw new Error('Human approval is required.');
@@ -177,3 +179,4 @@ module.exports=Object.freeze({
   CONTRACT_VERSION,MODES,AUTHORITY,BENEFIT_METRICS,COST_METRICS,
   stable,digest,createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,rankOptions
 });
+

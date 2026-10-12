@@ -15,6 +15,42 @@ const base={
   ]
 };
 
+for(const [mode,authorityDecision] of [
+  ['SHADOW','SHADOW_OBSERVED'],
+  ['HUMAN_APPROVAL','HUMAN_APPROVED'],
+  ['POLICY_BOUNDED','POLICY_GATE_PASSED']
+]){
+  test(`${mode}: a selection before the trigger cannot acquire a selection receipt`,()=>{
+    const episode=createDecisionEpisode({...base,decisionType:'material-delay-rescue',mode});
+    const before=JSON.stringify(episode);
+    assert.throws(()=>selectDecisionOption(episode,{
+      optionId:'redeploy',selectedAt:'2026-09-22T07:59:59.999Z',authorityDecision
+    }),/Selection cannot precede the decision trigger/);
+    assert.equal(JSON.stringify(episode),before);
+    assert.equal(episode.selection,undefined);
+    assert.equal(episode.recommendation.executionPermitted,false);
+  });
+  for(const selectedAt of ['2026-09-22T09:00:00+01:00','2026-09-22T08:00:00.001Z']){
+    test(`${mode}: selection at or after trigger accepts ${selectedAt}`,()=>{
+      const episode=createDecisionEpisode({...base,mode});
+      const selected=selectDecisionOption(episode,{optionId:'redeploy',selectedAt,authorityDecision});
+      assert.equal(selected.selection.executionPermitted,mode!=='SHADOW');
+      assert.equal(selected.selection.selectedAt,new Date(selectedAt).toISOString());
+      assert.equal(episode.selection,undefined);
+      assert.equal(episode.recommendation.executionPermitted,false);
+    });
+  }
+}
+
+test('selection fails closed when the episode trigger is missing or invalid',()=>{
+  const episode=createDecisionEpisode({...base,mode:'HUMAN_APPROVAL'});
+  for(const triggeredAt of [undefined,'invalid']){
+    assert.throws(()=>selectDecisionOption({...episode,triggeredAt},{
+      optionId:'redeploy',selectedAt:'2026-09-22T08:01:00Z',authorityDecision:'HUMAN_APPROVED'
+    }),/Valid ISO timestamp required/);
+  }
+});
+
 test('episode is deterministic regardless of option order',()=>{
   const a=createDecisionEpisode(base);
   const b=createDecisionEpisode({...base,options:[...base.options].reverse()});
@@ -44,3 +80,4 @@ test('outcome records predicted versus actual delta with evidence',()=>{
   assert.equal(final.outcome.predictionError.planAttainmentPct,-0.5);
   assert.ok(final.outcomeDigest);
 });
+
