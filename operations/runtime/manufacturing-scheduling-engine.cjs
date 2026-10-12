@@ -82,11 +82,22 @@ function normalisePolicy(input={}){
   };
 }
 function availability(v){
-  return Array.isArray(v)?v.slice(0,200).map((x,i)=>{
+  const windows=Array.isArray(v)?v.slice(0,200).map((x,i)=>{
     const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
     if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
     return {start,end};
   }):[];
+  // Availability is a union of half-open intervals. Touching boundaries leave
+  // no unavailable instant; any positive gap must remain a scheduling denial.
+  windows.sort((a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end));
+  const merged=[];
+  for(const window of windows){
+    const prior=merged[merged.length-1];
+    if(prior&&ms(window.start)<=ms(prior.end)){
+      if(ms(window.end)>ms(prior.end)) prior.end=window.end;
+    }else merged.push({...window});
+  }
+  return merged;
 }
 function certs(v){
   return Array.isArray(v)?v.slice(0,200).map(x=>({
@@ -442,3 +453,4 @@ module.exports=Object.freeze({
   evaluateWorkerForSlot,validateSchedule,createSchedulingPlan,evaluateOpenShift,evaluateSwap,repairSchedulingPlan,
   capabilityContract,stable,digest
 });
+

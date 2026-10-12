@@ -17,6 +17,43 @@ function input(o={}){
     policy:{minRestHours:11,maxWeeklyHours:48,maxOvertimeHours:8,ruleVersion:'uk-site-v3'},
     workers:[worker('a'),worker('b',{hourlyCost:24})],requirements:[baseReq],...o};
 }
+test('touching availability windows cover a full shift in exact and greedy plans',()=>{
+ const availability=[{start:baseReq.start,end:'2026-09-24T10:00:00Z'},{start:'2026-09-24T10:00:00Z',end:baseReq.end}];
+ for(const exactSlotLimit of [1,10]){
+  const second={...baseReq,id:'second',start:'2026-09-25T06:00:00Z',end:'2026-09-25T14:00:00Z'};
+  const p=createSchedulingPlan(input({workers:[worker('a',{availability})],requirements:[baseReq,second],policy:{exactSlotLimit}}));
+  assert.equal(p.assignments.find(a=>a.requirementId===baseReq.id).workerId,'a');
+  assert.equal(p.quality.scheduledHours,8);assert.equal(p.validation.valid,true);assert.equal(p.executionPermitted,false);
+ }
+});
+test('availability union is order independent and preserves frozen inputs',()=>{
+ const spans=[{start:'2026-09-24T09:00:00Z',end:baseReq.end},{start:baseReq.start,end:'2026-09-24T11:00:00Z'},{start:'2026-09-24T07:00:00Z',end:'2026-09-24T08:00:00Z'}];
+ for(const availability of [spans,[...spans].reverse(),[spans[1],spans[2],spans[0]]]){
+  const x={requirement:baseReq,workers:[worker('a',{availability})]};const before=JSON.stringify(x);freezeDeep(x);
+  const r=evaluateOpenShift(x);assert.equal(r.ranked[0].eligible,true);assert.equal(JSON.stringify(x),before);assert.equal(r.executionPermitted,false);
+ }
+});
+test('availability union never bridges even a one millisecond gap',()=>{
+ for(const start of ['2026-09-24T10:00:00.001Z','2026-09-24T10:01:00Z']){
+  const r=evaluateOpenShift({requirement:baseReq,workers:[worker('a',{availability:[{start:baseReq.start,end:'2026-09-24T10:00:00Z'},{start,end:baseReq.end}]})]});
+  assert.equal(r.ranked[0].eligible,false);assert.ok(r.ranked[0].failures.includes('NOT_AVAILABLE'));
+ }
+});
+test('availability touching uses absolute instants across offset boundaries',()=>{
+ const r=evaluateOpenShift({requirement:baseReq,workers:[worker('a',{availability:[{start:'2026-09-24T07:00:00+01:00',end:'2026-09-24T11:00:00+01:00'},{start:'2026-09-24T12:00:00+02:00',end:'2026-09-24T16:00:00+02:00'}]})]});
+ assert.equal(r.ranked[0].eligible,true);
+});
+test('coalesced availability retains qualification and rest denials',()=>{
+ const availability=[{start:baseReq.start,end:'2026-09-24T10:00:00Z'},{start:'2026-09-24T10:00:00Z',end:baseReq.end}];
+ for(const [override,reason] of [[{skills:[]},'MISSING_SKILL:welding-l3'],[{previousShiftEnd:'2026-09-24T05:00:00Z'},'MINIMUM_REST_BREACH'],[{certifications:[]},'CERTIFICATION_INVALID:weld-cert']]){
+  const r=evaluateOpenShift({requirement:baseReq,workers:[worker('a',{availability,...override})]});
+  assert.equal(r.ranked[0].eligible,false);assert.ok(r.ranked[0].failures.includes(reason));assert.ok(!r.ranked[0].failures.includes('NOT_AVAILABLE'));
+ }
+});
+test('availability union never borrows another worker window',()=>{
+ const r=createSchedulingPlan(input({workers:[worker('a',{availability:[{start:baseReq.start,end:'2026-09-24T10:00:00Z'}]}),worker('b',{availability:[{start:'2026-09-24T10:00:00Z',end:baseReq.end}]})]}));
+ assert.equal(r.quality.coveragePct,0);assert.equal(r.executionPermitted,false);
+});
 test('lower controllable cost wins without execution authority',()=>{
   const p=createSchedulingPlan(input());
   assert.equal(p.assignments[0].workerId,'a'); assert.equal(p.quality.coveragePct,100); assert.equal(p.executionPermitted,false); assert.equal(p.validation.valid,true);
@@ -178,3 +215,4 @@ test('UTC and explicit offsets denote identical instants; reversed overnight dat
  assert.throws(()=>evaluateOpenShift({requirement:shift('bad','2026-09-24T22:00:00Z','2026-09-24T06:00:00Z'),workers:[]}));
  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[],currentAssignments:null}));
 });
+
