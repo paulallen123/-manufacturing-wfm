@@ -40,3 +40,56 @@ function scenario(index,r){const fresh=r()>0.08,cancelled=r()<0.03,revisionOk=r(
 test('1,500-scenario conservative benchmark preserves safety and value thresholds',()=>{const r=lcg(0x5eed1234);let known=0,found=0,flex=0,better=0,stale=0,hard=0,badActuation=0;for(let i=0;i<1500;i++){const s=scenario(i,r),o=evaluateEnergyFlexibility(s.input);if(s.known){known++;if(o.rankedOptions.length)found++;}if(s.flexible){flex++;if(o.rankedOptions.some(x=>isParetoBetterThanBaseline(x,o.baseline)))better++;}if(!o.signalFresh&&o.rankedOptions.length)stale++;if(o.rankedOptions.some(x=>x.hardConstraintFailures.length))hard++;if(o.rankedOptions.some(x=>x.actionContract?.type!=='workflow_handoff_only'))badActuation++;}const summary={scenarios:1500,knownFeasible:known,discovery:found/known,flexible:flex,paretoBetter:better/flex,staleExecutable:stale,hardViolationRecommended:hard,directActuationOutput:badActuation};console.log('ENERGY_FLEX_BENCHMARK='+JSON.stringify(summary));assert.ok(known>100);assert.ok(found/known>=0.95);assert.equal(stale,0);assert.equal(hard,0);assert.equal(badActuation,0);assert.ok(better/flex>=0.15);});
 
 test('500 adversarial replay/permutation cases preserve effective decision state',()=>{const r=lcg(0x1d3a0707);for(let n=0;n<500;n++){const i=baseInput();const rev1={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'},rev2={...i.energySignal};const canonical=structuredClone(i);canonical.energyEvents=[rev1,rev2];delete canonical.energySignal;const expected=evaluateEnergyFlexibility(canonical);const events=[];for(let k=0;k<2+Math.floor(r()*8);k++) events.push(r()<0.65?structuredClone(rev2):structuredClone(rev1));events.push(structuredClone(rev1),structuredClone(rev2));events.sort(()=>r()-0.5);const replay=structuredClone(i);replay.energyEvents=events;delete replay.energySignal;const actual=evaluateEnergyFlexibility(replay);assert.equal(actual.effectiveSignalRevision,2);assert.equal(actual.reproducibilityHash,expected.reproducibilityHash);assert.deepEqual(actual.rankedOptions,expected.rankedOptions);}});
+
+test('contradictory lower energy bounds cannot create workflow handoffs in either value basis',()=>{
+  for(const valueBasis of ['conservative','point']){
+    const input=baseInput();input.valueBasis=valueBasis;
+    input.options[1].energy={grossSaving:100,lowerBoundEnergyValue:200};
+    input.options[1].labour={premiumCost:150};
+    input.options[1].production={};input.options[1].scheduleChurnCost=0;delete input.options[1].upperBoundScheduleChurnCost;
+    const result=evaluateEnergyFlexibility(input);
+    assert.equal(result.status,'no_safe_or_valuable_flexibility');
+    const rejected=result.rejectedOptions.find(x=>x.id==='shift-later');
+    assert.equal(rejected.executable,false);
+    assert.equal(rejected.actionContract,null);
+    assert.ok(rejected.hardConstraintFailures.includes('energy_lower_bound_exceeds_gross'));
+  }
+});
+
+test('coherent explicit lower bound boundaries preserve safe advisory choices',()=>{
+  for(const bound of [0,100]){
+    const input=baseInput();input.options[1].energy={grossSaving:100,lowerBoundEnergyValue:bound};
+    input.options[1].labour={};input.options[1].production={};input.options[1].scheduleChurnCost=0;delete input.options[1].upperBoundScheduleChurnCost;
+    const result=evaluateEnergyFlexibility(input);
+    const option=[...result.rankedOptions,...result.rejectedOptions].find(x=>x.id==='shift-later');
+    assert.equal(option.executable,true);
+    assert.equal(option.economics.energyValueLowerBound,bound);
+    assert.equal(result.rankedOptions.length,bound>0?1:0);
+  }
+});
+
+test('a later publication cannot resolve conflicting payloads at the same signal revision',()=>{
+  const input=baseInput(),active={...input.energySignal,publishedAt:'2026-09-18T05:55:00.000Z'},
+    cancelled={...input.energySignal,status:'cancelled',publishedAt:'2026-09-18T05:51:00.000Z'};
+  delete input.energySignal;
+  for(const events of [[cancelled,active],[active,cancelled],[active,cancelled,active]]){
+    input.energyEvents=events;
+    assert.equal(reduceEnergySignalEventsDetailed(events).conflict,true);
+    const result=evaluateEnergyFlexibility(input);
+    assert.equal(result.status,'no_safe_or_valuable_flexibility');
+    assert.ok(result.signalFailures.includes('energy_signal_revision_conflict'));
+    assert.equal(result.rejectedOptions.find(x=>x.id==='shift-later').actionContract,null);
+  }
+});
+
+test('genuinely higher revisions resolve historical conflicts while exact replays stay idempotent',()=>{
+  const input=baseInput(),active={...input.energySignal},
+    cancelled={...input.energySignal,status:'cancelled',publishedAt:'2026-09-18T05:51:00.000Z'},
+    newer={...input.energySignal,revision:3,publishedAt:'2026-09-18T05:55:00.000Z'};
+  input.energyEvents=[cancelled,active,newer,newer];input.latestKnownSignalRevision=3;delete input.energySignal;
+  const result=evaluateEnergyFlexibility(input);
+  assert.equal(result.eventReduction.conflict,false);
+  assert.equal(result.eventReduction.duplicateCount,1);
+  assert.equal(result.effectiveSignalRevision,3);
+  assert.equal(result.status,'recommend_options');
+});
