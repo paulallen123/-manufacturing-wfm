@@ -113,9 +113,9 @@ for (const path of [
 const categories = {
   'company/onboarding': ['/api/onboarding', '/api/company'],
   'workforce/resources': ['/api/resources', '/api/availability'],
-  'demand/labour planning': ['/api/demand', '/api/operations'],
+  'demand/labour planning': ['/api/scheduling-summary'],
   'time/attendance review': ['/api/time-review', '/api/attendance-corrections', '/api/payroll-run'],
-  'cost/value': ['/api/cost', '/api/recommendations', '/api/value-cockpit', '/api/readiness/finance-attribution'],
+  'cost/value': ['/api/cost/realization'],
 };
 
 for (const [name, candidates] of Object.entries(categories)) {
@@ -128,6 +128,9 @@ for (const [name, candidates] of Object.entries(categories)) {
     }
   }
   console.log(`${name}: ${passed ? `PROVEN via ${passed}` : 'NO HTTP-200 candidate found'}`);
+  if (name === 'demand/labour planning' || name === 'cost/value') {
+    assert.ok(passed, `${name} has no working canonical route.`);
+  }
 }
 
 for (const path of [
