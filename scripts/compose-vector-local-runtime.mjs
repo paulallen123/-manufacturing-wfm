@@ -223,7 +223,7 @@ const groups = {
   ],
   operations: [
     'tenant-calendar.cjs','workflow-action-evidence-contract.cjs', 'workflow-action-evidence-bridge.cjs', 'workflow-action-evidence-sources.cjs',
-    'decision-episode.cjs', 'customer-demand-intelligence.cjs',
+    'decision-episode.cjs', 'delivery-disruption-shadow.cjs', 'customer-demand-intelligence.cjs',
     'absence-recovery-shadow.cjs', 'demand-decision-service.cjs',
     'decision-outcome-proof.cjs', 'realtime-event-service.cjs',
     'autopilot-execution-engine.cjs', 't9-customer-guardian.cjs',
@@ -285,3 +285,4 @@ fs.writeFileSync(path.join(output, 'LOCAL_PROOF_PROVENANCE.json'), JSON.stringif
 }, null, 2) + '\n');
 console.log('VECTOR_LOCAL_RUNTIME=' + output);
 console.log('Start with: WFM_DB=<isolated sqlite path> PORT=4100 node --require ' + path.join(output, 'local-paths.cjs') + ' ' + path.join(output, 'security-runtime/bootstrap.cjs'));
+

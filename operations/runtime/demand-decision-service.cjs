@@ -4,6 +4,7 @@ const { createHash, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { normaliseDemandSignal, rankDemandProblems } = require('./customer-demand-intelligence.cjs');
 const { buildAbsenceRecoveryShadow } = require('./absence-recovery-shadow.cjs');
+const { evaluateDeliveryDisruption } = require('./delivery-disruption-shadow.cjs');
 
 const PREFIX = '/api/operations/intelligence';
 const INTERNAL_HEADER = 'x-wfm-demand-internal';
@@ -95,6 +96,7 @@ function createDemandDecisionService(options={}){
   const dbPath=options.dbPath||process.env.WFM_DB;
   const internalToken=options.internalToken||process.env.WFM_DEMAND_INTERNAL_TOKEN||process.env.WFM_INTEGRATION_INTERNAL_TOKEN||'';
   const publishEvent=typeof options.publishEvent==='function'?options.publishEvent:null;
+  const verifyDeliveryEvidence=typeof options.verifyDeliveryEvidence==='function'?options.verifyDeliveryEvidence:null;
   if(!dbPath) throw new Error('Demand decision service requires WFM_DB.');
   const db=new DatabaseSync(dbPath);
   db.exec(
@@ -112,7 +114,14 @@ function createDemandDecisionService(options={}){
     'CREATE TRIGGER IF NOT EXISTS no_vector_decision_episode_update BEFORE UPDATE ON vector_decision_episodes '+
       "BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"+
     'CREATE TRIGGER IF NOT EXISTS no_vector_decision_episode_delete BEFORE DELETE ON vector_decision_episodes '+
-      "BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"
+      "BEGIN SELECT RAISE(ABORT,'Vector decision episodes are append only.'); END;"+
+    'CREATE TABLE IF NOT EXISTS vector_delivery_disruption_shadows('+
+      'tenant TEXT NOT NULL,digest TEXT NOT NULL,result_json TEXT NOT NULL,created_at TEXT NOT NULL,'+
+      'PRIMARY KEY(tenant,digest));'+
+    'CREATE TRIGGER IF NOT EXISTS no_vector_delivery_shadow_update BEFORE UPDATE ON vector_delivery_disruption_shadows '+
+      "BEGIN SELECT RAISE(ABORT,'Vector delivery shadows are append only.'); END;"+
+    'CREATE TRIGGER IF NOT EXISTS no_vector_delivery_shadow_delete BEFORE DELETE ON vector_delivery_disruption_shadows '+
+      "BEGIN SELECT RAISE(ABORT,'Vector delivery shadows are append only.'); END;"
   );
 
   const auth=db.prepare('SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?');
@@ -122,6 +131,9 @@ function createDemandDecisionService(options={}){
   const episodeById=db.prepare('SELECT episode_json FROM vector_decision_episodes WHERE tenant=? AND episode_id=?');
   const insertEpisode=db.prepare('INSERT INTO vector_decision_episodes(tenant,episode_id,decision_type,episode_json,created_at) VALUES(?,?,?,?,?)');
   const tenantEpisodes=db.prepare('SELECT episode_json FROM vector_decision_episodes WHERE tenant=? ORDER BY created_at DESC,episode_id DESC LIMIT ?');
+  const deliveryById=db.prepare('SELECT result_json FROM vector_delivery_disruption_shadows WHERE tenant=? AND digest=?');
+  const insertDelivery=db.prepare('INSERT INTO vector_delivery_disruption_shadows(tenant,digest,result_json,created_at) VALUES(?,?,?,?)');
+  const tenantDeliveries=db.prepare('SELECT result_json FROM vector_delivery_disruption_shadows WHERE tenant=? ORDER BY created_at DESC,digest DESC LIMIT 20');
 
   function ctx(req){
     const token=cookieToken(req);
@@ -190,6 +202,34 @@ function createDemandDecisionService(options={}){
     try{publishEvent?.({tenant,topic:'autopilot.shadow.updated',audience:'manager',payload:{episodeId:episode.episodeId}});}catch{}
     return writeJson(res,201,{shadow,idempotent:false});
   }
+  async function ingestDeliveryShadow(req,res){
+    if(!requireInternal(req,res))return true;
+    if(!verifyDeliveryEvidence)return writeJson(res,503,{error:'Trusted delivery evidence verifier is not configured.'});
+    const body=await readJson(req);
+    const tenant=compact(body.tenant,120);
+    if(!tenant||body.input?.scope?.tenant!==tenant)return writeJson(res,400,{error:'Delivery tenant scope is required and must match.'});
+    // A verifier must authenticate every source record and option evidence against
+    // the tenant-scoped snapshot. A true result is the only accepted attestation.
+    if(await verifyDeliveryEvidence(body.input,tenant)!==true)return writeJson(res,422,{error:'Delivery evidence could not be authenticated.'});
+    const shadow=evaluateDeliveryDisruption(body.input);
+    if(shadow.status==='INSUFFICIENT_EVIDENCE')return writeJson(res,422,{shadow});
+    const existing=deliveryById.get(tenant,shadow.digest);
+    if(existing)return writeJson(res,200,{shadow:JSON.parse(existing.result_json),idempotent:true});
+    db.exec('BEGIN IMMEDIATE');
+    try{
+      insertDelivery.run(tenant,shadow.digest,JSON.stringify(shadow),nowIso());
+      if(shadow.episode&&!episodeById.get(tenant,shadow.episode.episodeId))
+        insertEpisode.run(tenant,shadow.episode.episodeId,shadow.episode.decisionType,JSON.stringify(shadow.episode),nowIso());
+      db.exec('COMMIT');
+    }catch(error){db.exec('ROLLBACK');throw error;}
+    try{publishEvent?.({tenant,topic:'autopilot.shadow.updated',audience:'manager',payload:{episodeId:shadow.episode?.episodeId||null}});}catch{}
+    return writeJson(res,201,{shadow,idempotent:false});
+  }
+  function deliveries(req,res){
+    const c=requireManager(req,res);if(!c)return true;
+    return writeJson(res,200,{contractVersion:'VECTOR_DELIVERY_DISRUPTION_LIST_V1',tenant:c.tenant,
+      shadows:tenantDeliveries.all(c.tenant).map(r=>JSON.parse(r.result_json))});
+  }
   function summary(req,res){
     const c=requireManager(req,res); if(!c) return true;
     const demand=demandForTenant(c.tenant);
@@ -233,8 +273,10 @@ function createDemandDecisionService(options={}){
       if(req.method==='GET'&&path===PREFIX+'/summary') return summary(req,res);
       if(req.method==='GET'&&path===PREFIX+'/demand') return demand(req,res);
       if(req.method==='GET'&&path===PREFIX+'/decisions') return decisions(req,res);
+      if(req.method==='GET'&&path===PREFIX+'/delivery-disruptions') return deliveries(req,res);
       if(req.method==='POST'&&path===PREFIX+'/demand/signal') return await ingestSignal(req,res);
       if(req.method==='POST'&&path===PREFIX+'/absence-recovery/shadow') return await ingestAbsenceShadow(req,res);
+      if(req.method==='POST'&&path===PREFIX+'/delivery-disruption/shadow') return await ingestDeliveryShadow(req,res);
       return writeJson(res,404,{error:'Decision intelligence endpoint not found.'});
     }catch(error){
       return writeJson(res,Number(error?.statusCode||500),{error:error?.statusCode?error.message:'Decision intelligence failed safely.'});
@@ -244,3 +286,4 @@ function createDemandDecisionService(options={}){
 }
 
 module.exports={createDemandDecisionService,lifecycleDemandSignal};
+
