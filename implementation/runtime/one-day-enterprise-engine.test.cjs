@@ -45,6 +45,7 @@ function fixture(engineOverrides = {}) {
     internalToken: 'implementation-worker-test-token',
     contractWebhookSecret: 'contract-webhook-test-token',
     publicOrigin: 'https://implementation.test',
+    releaseSha: '1234567890abcdef1234567890abcdef12345678',
     sendInvitation: async invitation => {
       sentInvitations.push(invitation);
       return { provider: 'test-mailer', messageId: 'mail-' + sentInvitations.length };
@@ -417,6 +418,32 @@ test('high-risk inference exception blocks go-live until customer resolves it', 
     assert.equal(evidenceReady.operationalReady, false);
     assert.equal(evidenceReady.blockingDecisions.length, 1);
 
+    const staleResolution = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/decision',
+      {
+        runId: run.runId,
+        key: 'night-overtime-threshold',
+        action: 'CHANGED',
+        value: { thresholdHours: 37.5, multiplier: 1.5 }
+      }
+    );
+    assert.equal(staleResolution.status, 409);
+    assert.equal(staleResolution.body.reasonCode, 'SOURCE_REVISION_CHANGED');
+
+    const refreshedProposal = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/proposal',
+      {
+        runId: run.runId,
+        key: 'night-overtime-threshold',
+        question: 'Night overtime appears to change after 40 hours. Accept?',
+        proposal: { thresholdHours: 40, multiplier: 1.5 },
+        confidence: 0.91,
+        risk: 'HIGH'
+      },
+      f.internal
+    );
+    assert.equal(refreshedProposal.status, 200);
+
     const resolved = await call(
       f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/decision',
       {
@@ -429,6 +456,59 @@ test('high-risk inference exception blocks go-live until customer resolves it', 
     assert.equal(resolved.status, 200);
     assert.equal(resolved.body.operationalReady, true);
     assert.equal(resolved.body.blockingDecisions.length, 0);
+    const proofBound = resolved.body.decisions.find(item => item.key === 'night-overtime-threshold');
+    assert.equal(proofBound.proofCurrent, true);
+    assert.equal(proofBound.proofCarryingState.releaseSha, '1234567890abcdef1234567890abcdef12345678');
+    assert.equal(proofBound.proofCarryingState.actorAuthority, 'MANAGER');
+
+    const evidenceChanged = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/evidence',
+      {
+        runId: run.runId,
+        kind: 'source-systems',
+        status: 'PASS',
+        confidence: 1,
+        source: 'deterministic-test-refresh',
+        detail: { checked: true, sourceRevision: 'r2' }
+      },
+      f.internal
+    );
+    assert.equal(evidenceChanged.status, 200);
+    assert.equal(evidenceChanged.body.operationalReady, false);
+    const staleDecision = evidenceChanged.body.decisions.find(item => item.key === 'night-overtime-threshold');
+    assert.equal(staleDecision.proofCurrent, false);
+    assert.ok(staleDecision.proofStaleReasons.includes('SOURCE_REVISION_CHANGED'));
+    assert.equal(evidenceChanged.body.blockingDecisions.length, 1);
+  } finally {
+    f.close();
+  }
+});
+
+test('low-risk decisions preserve the existing path without release proof', async () => {
+  const f = fixture({ releaseSha: '' });
+  try {
+    const run = await startRun(f, 'alpha', 'low-risk-compatible');
+    const proposal = await call(
+      f.engine, null, 'POST', '/api/implementation/autonomous/proposal',
+      {
+        runId: run.runId,
+        key: 'display-preference',
+        question: 'Use the inferred display preference?',
+        proposal: { compact: true },
+        confidence: 0.8,
+        risk: 'LOW'
+      },
+      f.internal
+    );
+    assert.equal(proposal.status, 201);
+    const resolved = await call(
+      f.engine, f.tokens.manager, 'POST', '/api/implementation/autonomous/decision',
+      { runId: run.runId, key: 'display-preference', action: 'ACCEPTED', detail: { accepted: true } }
+    );
+    assert.equal(resolved.status, 200);
+    const decision = resolved.body.decisions.find(item => item.key === 'display-preference');
+    assert.equal(decision.proofCarryingState, null);
+    assert.equal(decision.proofCurrent, null);
   } finally {
     f.close();
   }
