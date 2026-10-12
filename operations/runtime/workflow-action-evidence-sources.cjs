@@ -3,12 +3,13 @@
 // These callbacks are server-owned reads. They do not accept request-supplied
 // source bodies, call actor(req), replay sessions, decorate missing operational
 // state, infer observations, or create permission/confirmation authority.
-function createWorkflowActionEvidenceSourceReaders({db,reviewDashboard,sanitise,tenantCalendar}={}){
+function createWorkflowActionEvidenceSourceReaders({db,reviewDashboard,sanitise,tenantCalendar,resolveSourceActor}={}){
  if(!db||typeof db.prepare!=='function'||typeof reviewDashboard!=='function'||typeof sanitise!=='function'||typeof tenantCalendar?.periodForState!=='function')throw new TypeError('Trusted workflow source dependencies are required.');
+ if(resolveSourceActor!==undefined&&typeof resolveSourceActor!=='function')throw new TypeError('Trusted workflow source owner must be a function.');
  const principal=db.prepare('SELECT email,tenant,role,person_id,costs,permissions FROM users WHERE email=? AND tenant=?');
  const stored=db.prepare('SELECT version,state FROM tenants WHERE id=?');
  const fail=message=>{throw new Error(message);};
- function readContext(ctx){
+ function readContext(ctx,sourceRequest,ticket){
   const user=ctx&&principal.get(ctx.email,ctx.tenant);
   if(!user||user.tenant!==ctx.tenant||user.email!==ctx.email||user.role!==ctx.role||!['manager','director','supervisor'].includes(user.role)||typeof user.person_id!=='string'||!user.person_id)fail('Current workflow principal authority is unavailable.');
   let permissions;try{permissions=JSON.parse(user.permissions);}catch{fail('Current principal permissions are unavailable.');}
@@ -17,7 +18,9 @@ function createWorkflowActionEvidenceSourceReaders({db,reviewDashboard,sanitise,
   try{state=JSON.parse(snapshot.state);}catch{fail('Current workflow source state is unavailable.');}
   if(!state||!Number.isSafeInteger(snapshot.version)||state.version!==snapshot.version)fail('Current workflow source revision is unavailable.');
   if(!Array.isArray(state.org)||!state.org.some(row=>row?.id===user.person_id))fail('Current principal reporting access is unavailable.');
-  const actor=Object.freeze({email:user.email,tenant:user.tenant,role:user.role,personId:user.person_id,costs:!!user.costs,permissions:Object.freeze(permissions.slice())});
+  const current=Object.freeze({email:user.email,tenant:user.tenant,role:user.role,personId:user.person_id,costs:!!user.costs,permissions:Object.freeze(permissions.slice())});
+  const actor=resolveSourceActor?resolveSourceActor({ticket,sourceRequest,state,principal:current,db}):current;
+  if(!actor||['email','tenant','role','personId','costs'].some(key=>actor[key]!==current[key])||!Array.isArray(actor.permissions)||JSON.stringify(actor.permissions)!==JSON.stringify(current.permissions))fail('Current workflow source owner does not match the principal.');
   return {state,actor,version:snapshot.version};
  }
  function period(req,state,actor){
@@ -27,11 +30,11 @@ function createWorkflowActionEvidenceSourceReaders({db,reviewDashboard,sanitise,
   if(typeof id!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(id)||!Number.isFinite(Date.parse(id+'T00:00:00Z'))||new Date(id+'T00:00:00Z').toISOString().slice(0,10)!==id||!Array.isArray(state.payrollControl?.periods)||!state.payrollControl.periods.some(p=>p?.id===id))fail('Current canonical workflow period is unavailable.');
   return id;
  }
- function weekly(req,ctx,workflow){const {state,actor,version}=readContext(ctx);const id=period(req,state,actor);const report=reviewDashboard(state,actor,id);return {status:200,body:{...report,workflow,tenant:actor.tenant,version}};}
+ function weekly(req,ctx,workflow,ticket){const {state,actor,version}=readContext(ctx,req,ticket);const id=period(req,state,actor);const report=reviewDashboard(state,actor,id);return {status:200,body:{...report,workflow,tenant:actor.tenant,version}};}
  return Object.freeze({
-  timeReviewSourceProvider:(req,ctx)=>weekly(req,ctx,'time-review'),
-  weeklySignoffSourceProvider:(req,ctx)=>weekly(req,ctx,'weekly-signoff'),
-  absenceSourceProvider:(_req,ctx)=>{const {state,actor,version}=readContext(ctx);return {status:200,body:{workflow:'absence',tenant:actor.tenant,version,actor,state:sanitise(state,actor)}};}
+  timeReviewSourceProvider:(req,ctx,ticket)=>weekly(req,ctx,'time-review',ticket),
+  weeklySignoffSourceProvider:(req,ctx,ticket)=>weekly(req,ctx,'weekly-signoff',ticket),
+  absenceSourceProvider:(req,ctx,ticket)=>{const {state,actor,version}=readContext(ctx,req,ticket);return {status:200,body:{workflow:'absence',tenant:actor.tenant,version,actor,state:sanitise(state,actor)}};}
  });
 }
 module.exports=Object.freeze({createWorkflowActionEvidenceSourceReaders});

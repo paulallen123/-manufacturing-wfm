@@ -8,6 +8,8 @@ const { once } = require('node:events');
 const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 const os = require('node:os');
+const vm=require('node:vm');
+const {pathToFileURL}=require('node:url');
 const root = path.resolve(__dirname, '..');
 const bootstrap = fs.readFileSync(path.join(root, 'security/runtime/bootstrap.cjs'), 'utf8');
 const relativeRequires = Array.from(bootstrap.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
@@ -202,4 +204,112 @@ test('packaged lifecycle router preserves the trusted Autopilot execution adapte
   assert.match(router, /getTrustedEvent\(input\s*=\s*\{\}\)/, 'packaged lifecycle router must expose trusted lifecycle readback');
   assert.match(router, /return lifecycle\.getTrustedEvent\(input\)/, 'trusted lifecycle readback must delegate to the authoritative guard');
   assert.match(bootstrap, /createAutopilotExecutionEngine\(\{[^}]*lifecycleAdapter\s*:\s*lifecycleGuard/s, 'hosted bootstrap must inject the same authoritative lifecycle guard into Autopilot');
+});
+
+function assertNativeContainmentAssembly(composer,docker){
+ const call="run('scripts/patch-native-setup-containment.mjs', [output]);";
+ assert.equal(composer.split(call).length-1,2,'native helper must run once in each composer branch');
+ const branch=composer.slice(composer.indexOf('if (fs.existsSync(output)) {'),composer.indexOf("const archive = path.join(root"));
+ assert.ok(branch.indexOf(call)>branch.indexOf('patchPayrollMoney(output);')&&branch.indexOf(call)<branch.indexOf('process.exit(0);'),'existing-output native patch must follow prior overlays');
+ const fresh=composer.slice(composer.indexOf("const archive = path.join(root"));
+ assert.ok(fresh.indexOf(call)>fresh.indexOf('patchPayrollMoney(output);')&&fresh.indexOf(call)<fresh.indexOf('inventory(output);'),'fresh native patch must precede final inventory');
+ const final=docker.slice(docker.lastIndexOf('\nFROM '));
+ const helperCopy=final.split('\n').find(line=>line.startsWith('COPY ')&&line.includes('scripts/patch-native-setup-containment.mjs')&&line.trimEnd().endsWith('/workspace/scripts/'));
+ assert.ok(helperCopy&&final.indexOf(helperCopy)<final.indexOf('RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app'),'Docker must copy shared native helper before existing composer entry');
+ assert.equal(final.split('node /workspace/scripts/compose-vector-local-runtime.mjs /app').length-1,1,'Docker must preserve one composer owner');
+ const mappings=copyMappings(final);
+ for(const module of ['implementation-run-schema.cjs','native-setup-containment.cjs']){
+  assert.ok(composer.match(/implementation:\s*\[([\s\S]*?)\n\s*\]/)?.[1].includes("'"+module+"'"),'composer native dependency omitted: '+module);
+  for(const destination of ['/app/implementation-runtime/','/tmp/wfm-tests/implementation/runtime/'])assert.ok(mappings.has('implementation/runtime/'+module+' '+destination+module),'Docker native dependency omitted: '+destination+module);
+ }
+ assert.ok(docker.includes('node --test implementation/runtime/native-setup-containment.test.cjs'),'source guard suite must execute');
+ assert.ok(docker.includes('VECTOR_NATIVE_SETUP_RUNTIME_ROOT=/proof/staffology-full-runtime/implementation-runtime node --test implementation/runtime/native-setup-containment.test.cjs'),'source composed guard suite must select actual composed modules');
+ assert.ok(docker.includes('VECTOR_NATIVE_CONTAINMENT_MODE=build-controls VECTOR_NATIVE_CONTAINMENT_LOCAL_PATHS=1 VECTOR_NATIVE_CONTAINMENT_RUNTIME=/proof/staffology-full-runtime'),'source build controls must select explicit source resolver');
+ assert.ok(final.includes('VECTOR_NATIVE_SETUP_RUNTIME_ROOT=/app/implementation-runtime node --test /tmp/wfm-tests/implementation/runtime/native-setup-containment.test.cjs'),'final guard suite must select actual app modules');
+ assert.ok(docker.includes('VECTOR_NATIVE_CONTAINMENT_RUNTIME=/proof/staffology-full-runtime'),'source composed proof must execute');
+ assert.ok(final.includes('COPY verification/setup-only-native-containment.test.cjs /tmp/wfm-tests/verification/setup-only-native-containment.test.cjs'),'final native proof must be copied');
+ assert.ok(final.includes('COPY scripts/patch-native-setup-containment.mjs /tmp/wfm-tests/scripts/patch-native-setup-containment.mjs'),'final native proof must pin exact admitted helper bytes');
+ assert.ok(final.includes('VECTOR_NATIVE_CONTAINMENT_RUNTIME=/app')&&final.includes('/tmp/wfm-tests/verification/setup-only-native-containment.test.cjs'),'actual final app proof must execute');
+}
+test('native containment assembly preserves the single shared patch owner and source/final-app closure',()=>{
+ assertNativeContainmentAssembly(fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),fs.readFileSync(path.join(root,'Dockerfile'),'utf8'));
+});
+for(const [name,mutate]of [
+ ['missing existing-output invocation',c=>c.replace("run('scripts/patch-native-setup-containment.mjs', [output]);",'')],
+ ['missing fresh invocation',c=>{const at=c.lastIndexOf("run('scripts/patch-native-setup-containment.mjs', [output]);");return c.slice(0,at)+c.slice(at).replace("run('scripts/patch-native-setup-containment.mjs', [output]);",'');}],
+ ['duplicate invocation',c=>c.replace("run('scripts/patch-native-setup-containment.mjs', [output]);","run('scripts/patch-native-setup-containment.mjs', [output]);run('scripts/patch-native-setup-containment.mjs', [output]);")],
+ ['missing guard copy',c=>c.replace("'native-setup-containment.cjs'",'')]
+])test('native containment assembly rejects '+name,()=>{
+ const c=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),d=fs.readFileSync(path.join(root,'Dockerfile'),'utf8');assertNativeContainmentAssembly(c,d);assert.throws(()=>assertNativeContainmentAssembly(mutate(c),d),/native helper|native dependency/);
+});
+for(const [name,selector]of [
+ ['missing source-composed guard selector','VECTOR_NATIVE_SETUP_RUNTIME_ROOT=/proof/staffology-full-runtime/implementation-runtime '],
+ ['missing final-app guard selector','VECTOR_NATIVE_SETUP_RUNTIME_ROOT=/app/implementation-runtime ']
+])test('native containment assembly rejects '+name,()=>{
+ const c=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),d=fs.readFileSync(path.join(root,'Dockerfile'),'utf8');
+ assert.ok(d.includes(selector),'positive assembly must contain actual runtime selector');
+ assert.throws(()=>assertNativeContainmentAssembly(c,d.replace(selector,'')),/guard suite must select actual/);
+});
+test('native containment assembly rejects missing final identity helper copy',()=>{
+ const c=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),d=fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),copy='COPY scripts/patch-native-setup-containment.mjs /tmp/wfm-tests/scripts/patch-native-setup-containment.mjs';
+ assertNativeContainmentAssembly(c,d);assert.throws(()=>assertNativeContainmentAssembly(c,d.replace(copy,'')),/exact admitted helper bytes/);
+});
+
+async function nativeCachedStateOwner(){
+ const helper=await import(pathToFileURL(path.join(root,'scripts/patch-native-setup-containment.mjs')).href),source=helper.nativeSetupContainmentRecipe.find(h=>h.id==='bind-before-seed').after;
+ const observed=[],context={URL,E:{assert(ok,message,status){if(!ok)throw Object.assign(Error(message),{status});}},nativeSetupContainment:{assertActorCurrent(actor){observed.push(['actor',actor]);},assertOperationalTenant(tenant){observed.push(['mode',tenant]);},assertPrincipalAnchor(actor,state){observed.push(['anchor',actor,state]);}}};
+ const map=source.split('\n').find(line=>line.startsWith('const nativeRequestStates='));assert.ok(map,'Actual shared patch must own a lexical WeakMap');vm.runInNewContext(map,context);
+ for(const name of ['nativeMutationNeedsAnchor','nativeStateNeedsAnchor','nativeCaptureRequestState','nativeAssertCachedRequestState','nativeAssertCurrentRequestState']){
+  const line=source.split('\n').find(line=>line.startsWith('function '+name+'('));assert.ok(line,'Actual native owner omitted: '+name);vm.runInNewContext(line+';this.'+name+'='+name,context);
+ }
+ return {helper,context,observed};
+}
+test('native cached state is captured once with original actor and source-owned traversal decision',async()=>{
+ const {context,observed}=await nativeCachedStateOwner(),a={tenant:'alpha',personId:'root'},s={org:[],staff:[]},req={method:'POST',url:'/api/payroll/preview?needsAnchor=false',needsAnchor:false};
+ assert.equal(context.nativeCaptureRequestState(req,a,s),true);assert.throws(()=>context.nativeCaptureRequestState(req,a,s),/already captured/);
+ context.nativeAssertCurrentRequestState(req,a);assert.ok(observed.some(x=>x[0]==='anchor'&&x[1]===a&&x[2]===s));
+});
+test('native cached state rejects actor substitution and never refreshes the captured source',async()=>{
+ const {context,observed}=await nativeCachedStateOwner(),a={tenant:'alpha',personId:'root'},s={org:[],staff:[]},req={method:'POST',url:'/api/pattern-preview'};
+ context.nativeCaptureRequestState(req,a,s);assert.throws(()=>context.nativeAssertCachedRequestState(req,{...a}),/actor|authority|binding/i);
+ context.nativeAssertCachedRequestState(req,a);assert.equal(observed.at(-1)[2],s);const before=observed.length;context.nativeAssertCachedRequestState({},a);assert.equal(observed.length,before,'Uncaptured state has no synthetic binding');
+});
+test('native AI completion uses the same private current-state fence before cache and response',async()=>{
+ const {helper}=await nativeCachedStateOwner(),hook=helper.nativeSetupContainmentRecipe.find(h=>h.id==='ai-current-after-await');assert.ok(hook,'Actual AI async owner must be pinned');
+ const wait=hook.after.indexOf('await AI.explain(analysis)'),fence=hook.after.indexOf('nativeAssertCurrentRequestState(req,a)',wait),cache=hook.after.indexOf('aiCache.set(key,answer)',wait),reply=hook.after.indexOf('return json(res,200,answer)',wait);
+ assert.ok(wait>=0&&fence>wait&&cache>fence&&reply>cache,'Current actor/mode/source must precede both post-await effects');
+});
+test('native company configuration GET preserves exact non-traversal ownership without path or method bypass',async()=>{
+ const {context,observed}=await nativeCachedStateOwner(),actor={tenant:'alpha',personId:'admin1',role:'admin',permissions:['company.configure']},state={org:[],staff:[]};
+ const req={method:'GET',url:'/api/company-admin'};assert.equal(context.nativeCaptureRequestState(req,actor,state),false);context.nativeAssertCurrentRequestState(req,actor);
+ assert.ok(observed.some(x=>x[0]==='actor'&&x[1]===actor));assert.ok(observed.some(x=>x[0]==='mode'&&x[1]==='alpha'));assert.equal(observed.some(x=>x[0]==='anchor'),false);
+ for(const [method,url]of [['GET','/api/company-admin/near'],['POST','/api/company-admin'],['GET','/api/unknown']])assert.equal(context.nativeStateNeedsAnchor({method},new URL(url,'http://native.local'),actor,state),true);
+});
+
+function assertNativeWorkflowClosure(composer,docker,helper){
+ const copies=copyMappings(docker);
+ const expected=JSON.parse(helper.match(/const workflowModuleExpected=(\{[^\n]+\});/)?.[1]||'null');
+ assert.ok(expected,'Native workflow receipt must pin the reviewed source modules');
+ for(const file of ['workflow-action-evidence-bridge.cjs','workflow-action-evidence-sources.cjs']){
+  const source='operations/runtime/'+file;
+  assert.ok(composer.includes("'"+source+"'"),'Workflow composition source omitted: '+source);
+  for(const target of ['/workspace/operations/runtime/','/app/operations-runtime/','/tmp/wfm-tests/operations/runtime/'])
+   assert.ok(copies.has(source+' '+target+file),'Workflow copied source omitted: '+target+file);
+  assert.equal(expected[file],require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,source))).digest('hex'),'Workflow receipt source pin differs: '+file);
+ }
+ assert.ok(helper.includes("failure('WORKFLOW_MODULE_MISMATCH')"),'Changed workflow module bytes must fail closed');
+ assert.ok(helper.includes('sourceOwner:nativeWorkflowSourceOwner.sourceOwner')&&helper.includes('resolveSourceActor:nativeWorkflowSourceOwner.resolveSourceActor'),'Both workflow owners must be wired to the private native instance');
+}
+test('native workflow assembly pins both reader modules through composition and final app admission',()=>{
+ assertNativeWorkflowClosure(fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),fs.readFileSync(path.join(root,'scripts/patch-native-setup-containment.mjs'),'utf8'));
+});
+for(const target of ['/workspace/operations/runtime/','/app/operations-runtime/','/tmp/wfm-tests/operations/runtime/'])test('native workflow assembly rejects a missing '+target+' owner module',()=>{
+ const c=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),d=fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),h=fs.readFileSync(path.join(root,'scripts/patch-native-setup-containment.mjs'),'utf8');
+ const lines=d.split('\n'),index=lines.findIndex(line=>line.startsWith('COPY ')&&line.trimEnd().endsWith(target)&&line.includes('operations/runtime/workflow-action-evidence-sources.cjs'));
+ assert.ok(index>=0);lines[index]=lines[index].replace('operations/runtime/workflow-action-evidence-sources.cjs ','');
+ assert.throws(()=>assertNativeWorkflowClosure(c,lines.join('\n'),h),/Workflow copied source omitted/);
+});
+test('native workflow assembly rejects an unbound module receipt pin',()=>{
+ const c=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8'),d=fs.readFileSync(path.join(root,'Dockerfile'),'utf8'),h=fs.readFileSync(path.join(root,'scripts/patch-native-setup-containment.mjs'),'utf8');
+ assert.throws(()=>assertNativeWorkflowClosure(c,d,h.replace(/const workflowModuleExpected=\{[^\n]+\};/,'')),/receipt must pin/);
 });

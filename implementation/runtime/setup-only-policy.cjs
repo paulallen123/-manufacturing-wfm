@@ -14,12 +14,7 @@ function text(value,max=300){if(typeof value!=='string'||!value||value!==value.t
  * resolve current authority independently and reread this policy at effects.
  * Fixed writer methods use canonical stored provenance; no caller-selected mode.
  */
-function createSetupOnlyPolicy({db}={}){
-  const hasTable=name=>Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name));
-  if(!db)unavailable();
-  for(const table of ['customer_workspaces','customer_workspace_contracts','customer_workspace_events','customer_workspace_adoptions','customer_workspace_orders','tenants','implementation_runs'])if(!hasTable(table))unavailable();
-  if(Number(db.prepare('PRAGMA foreign_keys').get().foreign_keys)!==1)unavailable();
-  db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS customer_workspace_mode_parent ON customer_workspaces(workspace_id,tenant,customer_hash,initial_run_id);
+const modeSchemaSQL=`CREATE UNIQUE INDEX IF NOT EXISTS customer_workspace_mode_parent ON customer_workspaces(workspace_id,tenant,customer_hash,initial_run_id);
     CREATE TABLE IF NOT EXISTS customer_workspace_runtime_state(
     workspace_id TEXT PRIMARY KEY,tenant TEXT NOT NULL UNIQUE,customer_hash TEXT NOT NULL UNIQUE,initial_run_id TEXT NOT NULL UNIQUE,
     schema_version INTEGER NOT NULL CHECK(schema_version=1),mode TEXT NOT NULL CHECK(mode IN ('SETUP_ONLY','LEGACY_EXISTING')),
@@ -30,8 +25,59 @@ function createSetupOnlyPolicy({db}={}){
     FOREIGN KEY(creation_provider,creation_contract_hash) REFERENCES customer_workspace_contracts(provider,contract_hash));
     CREATE TABLE IF NOT EXISTS customer_workspace_runtime_state_events(
     workspace_id TEXT PRIMARY KEY REFERENCES customer_workspace_runtime_state(workspace_id),action TEXT NOT NULL CHECK(action IN ('CREATE','MIGRATE')),
-    schema_version INTEGER NOT NULL,mode TEXT NOT NULL,origin_event_hash TEXT NOT NULL,detail_json TEXT NOT NULL,created_at TEXT NOT NULL);`);
+    schema_version INTEGER NOT NULL,mode TEXT NOT NULL,origin_event_hash TEXT NOT NULL,detail_json TEXT NOT NULL,created_at TEXT NOT NULL);`;
+function initializeSetupOnlySchema({db}={}){
+  const hasTable=name=>Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name));
+  if(!db)unavailable();
+  for(const table of ['customer_workspaces','customer_workspace_contracts','customer_workspace_events','customer_workspace_adoptions','customer_workspace_orders','tenants','implementation_runs'])if(!hasTable(table))unavailable();
+  if(Number(db.prepare('PRAGMA foreign_keys').get().foreign_keys)!==1)unavailable();
+  db.exec(modeSchemaSQL);
   for(const table of ['customer_workspace_runtime_state','customer_workspace_runtime_state_events'])for(const verb of ['UPDATE','DELETE'])db.exec(`CREATE TRIGGER IF NOT EXISTS ${table}_no_${verb.toLowerCase()} BEFORE ${verb} ON ${table} BEGIN SELECT RAISE(ABORT,'Setup mode bindings and receipts are immutable and append only.'); END;`);
+}
+function validateReadSchema(db,checkData=true){
+  try{
+    if(!db||Number(db.prepare('PRAGMA foreign_keys').get().foreign_keys)!==1)unavailable();
+    const required={
+      customer_workspaces:['customer_hash','workspace_id','tenant','initial_run_id','created_at'],
+      customer_workspace_contracts:['provider','contract_hash','workspace_id','relationship','binding_digest','created_at'],
+      customer_workspace_events:['provider','event_hash','contract_hash','workspace_id','binding_digest','created_at'],
+      customer_workspace_adoptions:['workspace_id','tenant','initial_run_id','environment_id','namespace','owner_hash','provider','event_hash','contract_hash','binding_digest','created_at'],
+      customer_workspace_orders:['id','order_id','revision','customer_hash','tenant','provider','envelope_id','nomination_revision','nomination_digest','binding_json','binding_digest','created_at'],
+      customer_workspace_order_revocations:['customer_hash','tenant','nomination_revision','reason_hash','created_at'],
+      tenants:['id'],implementation_runs:['id','tenant','contract_ref_hash'],
+      customer_workspace_runtime_state:['workspace_id','tenant','customer_hash','initial_run_id','schema_version','mode','creation_provider','creation_contract_hash','creation_order_id','creation_order_revision','created_at'],
+      customer_workspace_runtime_state_events:['workspace_id','action','schema_version','mode','origin_event_hash','detail_json','created_at']
+    };
+    for(const [table,columns]of Object.entries(required)){
+      const present=db.prepare(`PRAGMA table_info(${table})`).all().map(row=>row.name);
+      if(columns.some(column=>!present.includes(column)))unavailable();
+      if(table.startsWith('customer_workspace_runtime_')&&present.length!==columns.length)unavailable();
+    }
+    // Compare the two exact owner DDL statements, including every constraint.
+    // An empty journal with a removed FK/PK cannot become a valid schema.
+    const canonicalSQL=sql=>String(sql||'').replace(/IF NOT EXISTS /g,'').replace(/\s+/g,'').replace(/;$/,'');
+    for(const match of modeSchemaSQL.matchAll(/CREATE TABLE IF NOT EXISTS (customer_workspace_runtime_state(?:_events)?)\([\s\S]*?;/g)){
+      const actual=db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name=?").get(match[1])?.sql;
+      if(canonicalSQL(actual)!==canonicalSQL(match[0]))unavailable();
+    }
+    const normal=sql=>String(sql||'').replace(/\s+/g,' ').trim().replace(/;$/,'');
+    for(const table of ['customer_workspace_runtime_state','customer_workspace_runtime_state_events'])for(const verb of ['UPDATE','DELETE']){
+      const name=table+'_no_'+verb.toLowerCase(),actual=db.prepare("SELECT sql FROM sqlite_master WHERE type='trigger' AND name=? AND tbl_name=?").get(name,table)?.sql;
+      if(normal(actual)!==normal(`CREATE TRIGGER ${name} BEFORE ${verb} ON ${table} BEGIN SELECT RAISE(ABORT,'Setup mode bindings and receipts are immutable and append only.'); END`))unavailable();
+    }
+    const stateSQL=db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='customer_workspace_runtime_state'").get()?.sql?.replace(/\s+/g,'');
+    if(!stateSQL?.includes("CHECK(modeIN('SETUP_ONLY','LEGACY_EXISTING'))")||!stateSQL.includes('CHECK(schema_version=1)'))unavailable();
+    const unique=db.prepare('PRAGMA index_list(customer_workspace_runtime_state)').all().filter(row=>row.unique).map(row=>db.prepare('PRAGMA index_info('+JSON.stringify(row.name)+')').all().map(c=>c.name).join(','));
+    for(const column of ['workspace_id','tenant','customer_hash','initial_run_id'])if(!unique.includes(column))unavailable();
+    const foreign=db.prepare('PRAGMA foreign_key_list(customer_workspace_runtime_state)').all();
+    for(const [from,to,table]of [['workspace_id','workspace_id','customer_workspaces'],['tenant','tenant','customer_workspaces'],['customer_hash','customer_hash','customer_workspaces'],['initial_run_id','initial_run_id','customer_workspaces'],['creation_provider','provider','customer_workspace_contracts'],['creation_contract_hash','contract_hash','customer_workspace_contracts']])if(!foreign.some(row=>row.from===from&&row.to===to&&row.table===table))unavailable();
+    if(checkData&&(db.prepare('PRAGMA foreign_key_check(customer_workspace_runtime_state)').all().length||db.prepare('PRAGMA foreign_key_check(customer_workspace_runtime_state_events)').all().length))unavailable();
+  }catch(error){if(error.code==='SETUP_MODE_BINDING_UNAVAILABLE')throw error;unavailable();}
+}
+function createPolicy({db}={},writable){
+  if(writable)initializeSetupOnlySchema({db});
+  validateReadSchema(db);
+  const hasTable=name=>Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name));
   function atomic(action){
     const savepoint=db.isTransaction?'setup_mode_'+randomUUID().replaceAll('-',''):null;db.exec(savepoint?'SAVEPOINT '+savepoint:'BEGIN IMMEDIATE');
     try{const value=action();if(value?.then)unavailable();db.exec(savepoint?'RELEASE '+savepoint:'COMMIT');return value;}
@@ -90,6 +136,7 @@ function createSetupOnlyPolicy({db}={}){
   function forTenant(tenant){
     text(tenant,120);
     try{
+      validateReadSchema(db);
       const row=db.prepare('SELECT * FROM customer_workspaces WHERE tenant=?').get(tenant),state=db.prepare('SELECT * FROM customer_workspace_runtime_state WHERE tenant=?').get(tenant);
       if(row)return readManaged(row,state);if(state||db.prepare('SELECT 1 FROM customer_workspace_runtime_state_events e JOIN customer_workspace_runtime_state m ON m.workspace_id=e.workspace_id WHERE m.tenant=?').get(tenant))unavailable();
       for(const journal of db.prepare('SELECT e.detail_json FROM customer_workspace_runtime_state_events e LEFT JOIN customer_workspace_runtime_state m ON m.workspace_id=e.workspace_id WHERE m.workspace_id IS NULL').all()){
@@ -128,7 +175,15 @@ function createSetupOnlyPolicy({db}={}){
     if((current.mode==='SETUP_ONLY'&&!setupPurposes.has(purpose))||(current.classification==='REGISTERED_PENDING'&&!['REGISTER_COMPLETION','SECURITY_OBSERVATION'].includes(purpose)))fail('SETUP_ONLY_REQUIRED',403);
     return current;
   }
-  atomic(()=>{for(const candidate of db.prepare('SELECT a.workspace_id FROM customer_workspace_adoptions a LEFT JOIN customer_workspace_runtime_state m ON m.workspace_id=a.workspace_id WHERE m.workspace_id IS NULL').all())writeAdoption(candidate.workspace_id,'MIGRATE');});
-  return Object.freeze({forTenant,assertAllowed,recordInitialWorkspace,recordVerifiedAdoption});
+  if(writable){
+    atomic(()=>{for(const candidate of db.prepare('SELECT a.workspace_id FROM customer_workspace_adoptions a LEFT JOIN customer_workspace_runtime_state m ON m.workspace_id=a.workspace_id WHERE m.workspace_id IS NULL').all())writeAdoption(candidate.workspace_id,'MIGRATE');});
+    return Object.freeze({forTenant,assertAllowed,recordInitialWorkspace,recordVerifiedAdoption});
+  }
+  return Object.freeze({forTenant,assertAllowed});
 }
-module.exports={createSetupOnlyPolicy};
+function createSetupOnlyPolicy(options){return createPolicy(options,true);}
+function createSetupOnlyReader(options){return createPolicy(options,false);}
+// Structure only: native process readiness can latch schema corruption without
+// turning a tenant's missing/dynamic binding into a process-wide latch.
+function assertSetupOnlySchema({db}={}){validateReadSchema(db,false);}
+module.exports={createSetupOnlyPolicy,createSetupOnlyReader,initializeSetupOnlySchema,assertSetupOnlySchema};

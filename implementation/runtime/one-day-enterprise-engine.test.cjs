@@ -9,6 +9,15 @@ const { Readable } = require('node:stream');
 const { createHash,createHmac } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createOneDayEnterpriseEngine, REQUIREMENTS } = require('./one-day-enterprise-engine.cjs');
+test('native containment run schema initializer creates only original run relation with zero rows',()=>{
+  const db=new DatabaseSync(':memory:');try{
+    const {initializeImplementationRunSchema}=require('./implementation-run-schema.cjs');
+    initializeImplementationRunSchema({db});initializeImplementationRunSchema({db});
+    assert.deepEqual(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().map(x=>x.name),['implementation_runs']);
+    assert.deepEqual(db.prepare('PRAGMA table_info(implementation_runs)').all().map(x=>x.name),['id','tenant','contract_ref_hash','state','started_at_ms','deadline_at_ms','target_hours','created_at','updated_at']);
+    assert.equal(db.prepare('SELECT count(*) AS n FROM implementation_runs').get().n,0);
+  }finally{db.close();}
+});
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');

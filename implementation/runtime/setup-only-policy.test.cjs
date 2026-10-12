@@ -13,6 +13,42 @@ for(const name of ['customer-workspace.cjs','setup-only-policy.cjs'])assert.equa
 const {createCustomerWorkspaceRegistry}=require(path.join(runtimeRoot,'customer-workspace.cjs'));
 const {createSetupOnlyPolicy}=require(path.join(runtimeRoot,'setup-only-policy.cjs'));
 const hash=x=>createHash('sha256').update(String(x)).digest('hex');
+test('native containment schema initializer and read-only reader expose distinct interfaces',()=>{
+  const module=require(path.join(runtimeRoot,'setup-only-policy.cjs'));
+  assert.equal(typeof module.initializeSetupOnlySchema,'function');
+  assert.equal(typeof module.createSetupOnlyReader,'function');
+});
+test('native containment early reader never migrates verified adoption or writes customer mode',t=>{
+  const f=fixture(t,{legacy:true}),module=require(path.join(runtimeRoot,'setup-only-policy.cjs'));
+  module.initializeSetupOnlySchema({db:f.db});
+  const before=f.db.prepare('SELECT total_changes() AS n').get().n;
+  const reader=module.createSetupOnlyReader({db:f.db});
+  assert.deepEqual(Object.keys(reader).sort(),['assertAllowed','forTenant']);
+  assert.throws(()=>reader.forTenant('alpha'),unavailable);
+  assert.deepEqual(reader.forTenant('unmanaged'),{classification:'UNMANAGED_LEGACY',mode:null});
+  assert.equal(f.db.prepare('SELECT total_changes() AS n').get().n,before);
+  assert.equal(f.db.prepare('SELECT count(*) AS n FROM customer_workspace_runtime_state').get().n,0);
+  assert.equal(f.open().forTenant('alpha').mode,'LEGACY_EXISTING','Only original policy constructor retains verified adoption migration');
+});
+test('native containment read-only reader rejects missing or corrupted mode schema without repairs',t=>{
+  const f=fixture(t),module=require(path.join(runtimeRoot,'setup-only-policy.cjs'));
+  assert.throws(()=>module.createSetupOnlyReader({db:f.db}),unavailable);
+  module.initializeSetupOnlySchema({db:f.db});
+  f.db.exec('DROP TRIGGER customer_workspace_runtime_state_no_update');
+  const changes=f.db.prepare('SELECT total_changes() AS n').get().n;
+  assert.throws(()=>module.createSetupOnlyReader({db:f.db}),unavailable);
+  assert.equal(f.db.prepare('SELECT total_changes() AS n').get().n,changes);
+  assert.equal(f.db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE name='customer_workspace_runtime_state_no_update'").get().n,0);
+});
+test('native containment read-only reader rejects erased journal foreign key and constraints even with no rows',t=>{
+  const f=fixture(t),module=require(path.join(runtimeRoot,'setup-only-policy.cjs'));
+  module.initializeSetupOnlySchema({db:f.db});
+  f.db.exec(`DROP TRIGGER customer_workspace_runtime_state_events_no_update;DROP TRIGGER customer_workspace_runtime_state_events_no_delete;
+    DROP TABLE customer_workspace_runtime_state_events;
+    CREATE TABLE customer_workspace_runtime_state_events(workspace_id TEXT,action TEXT,schema_version INTEGER,mode TEXT,origin_event_hash TEXT,detail_json TEXT,created_at TEXT);`);
+  for(const verb of ['UPDATE','DELETE'])f.db.exec(`CREATE TRIGGER customer_workspace_runtime_state_events_no_${verb.toLowerCase()} BEFORE ${verb} ON customer_workspace_runtime_state_events BEGIN SELECT RAISE(ABORT,'Setup mode bindings and receipts are immutable and append only.'); END`);
+  assert.throws(()=>module.createSetupOnlyReader({db:f.db}),unavailable);
+});
 const binding=()=>({verified:true,ownerAuthorized:true,customerId:'synthetic-customer',customerAuthorityRef:'synthetic/customer',tenant:'alpha',provider:'verified-provider',eventId:'initial-event',contractRef:'initial-contract',relationship:'initial',ownerEmail:'owner@alpha.test',ownerAuthorityRef:'synthetic-owner-authority'});
 function fixture(t,{legacy=false,empty=false}={}){
   const db=new DatabaseSync(':memory:');t.after(()=>db.close());

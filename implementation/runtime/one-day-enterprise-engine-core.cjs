@@ -15,6 +15,7 @@ const { createTenantEnvironmentProvisioner } = require('./tenant-environment-pro
 const { createWorkspaceSetup, normalizeAnswers } = require('./workspace-setup.cjs');
 const { createOrganisationAccessSetup } = require('./organisation-access-setup.cjs');
 const { createCustomerWorkspaceRegistry } = require('./customer-workspace.cjs');
+const { initializeImplementationRunSchema } = require('./implementation-run-schema.cjs');
 const { installOrganisationAccessLifecycle } = require('./organisation-access-lifecycle.cjs');
 const { validateStrictReadinessEvidence, validEffectiveDate } = require('./readiness-evidence-contract.cjs');
 
@@ -394,16 +395,13 @@ function createOneDayEnterpriseEngine(options = {}) {
   if (!dbPath) throw new Error('One-day implementation engine requires WFM_DB.');
 
   const db = new DatabaseSync(dbPath);
+  initializeImplementationRunSchema({db});
   db.exec(
     'PRAGMA foreign_keys=ON; PRAGMA busy_timeout=1500;' +
     'CREATE TABLE IF NOT EXISTS implementation_invitations(' +
       'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, recipient_hash TEXT NOT NULL,' +
       'token_hash TEXT NOT NULL UNIQUE, status TEXT NOT NULL, target_hours INTEGER NOT NULL, expires_at_ms INTEGER NOT NULL,' +
       'started_run_id TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(tenant,contract_ref_hash));' +
-    'CREATE TABLE IF NOT EXISTS implementation_runs(' +
-      'id TEXT PRIMARY KEY, tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, state TEXT NOT NULL,' +
-      'started_at_ms INTEGER NOT NULL, deadline_at_ms INTEGER NOT NULL, target_hours INTEGER NOT NULL,' +
-      'created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(tenant,contract_ref_hash));' +
     'CREATE TABLE IF NOT EXISTS implementation_notification_attempts(' +
       'tenant TEXT NOT NULL, contract_ref_hash TEXT NOT NULL, attempts INTEGER NOT NULL,' +
       'in_flight_until_ms INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL, PRIMARY KEY(tenant,contract_ref_hash));' +

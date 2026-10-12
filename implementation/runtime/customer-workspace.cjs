@@ -7,11 +7,7 @@ function text(value,max,label){if(typeof value!=='string'||!value.trim()||value.
 function isDocuSignProvider(value){return typeof value==='string'&&value.toLowerCase().replace(/[^a-z0-9]/g,'').includes('docusign');}
 function freeze(value){if(value&&typeof value==='object'){for(const child of Object.values(value))freeze(child);Object.freeze(value);}return value;}
 
-// Trusted orchestration only. The HTTP boundary must verify the actual event and
-// resolve customer, tenant and owner authority independently of submitted fields.
-function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitationBound,onNominationRevoked}){
-  if(!db||typeof createInitialWorkspace!=='function'||createInitialWorkspace.constructor?.name==='AsyncFunction')throw Error('A database and synchronous workspace adapter are required.');
-  db.exec(`CREATE TABLE IF NOT EXISTS customer_workspaces(
+const customerWorkspaceSchemaSQL=`CREATE TABLE IF NOT EXISTS customer_workspaces(
     customer_hash TEXT PRIMARY KEY,workspace_id TEXT NOT NULL UNIQUE,tenant TEXT NOT NULL UNIQUE,
     initial_run_id TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS customer_workspace_contracts(
@@ -35,12 +31,39 @@ function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitation
     customer_hash TEXT PRIMARY KEY,tenant TEXT NOT NULL,nomination_revision INTEGER NOT NULL,reason_hash TEXT NOT NULL,created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS customer_workspace_invitation_bindings(
     invitation_id TEXT PRIMARY KEY,workspace_id TEXT NOT NULL,order_id TEXT NOT NULL,order_revision INTEGER NOT NULL,
-    nomination_revision INTEGER NOT NULL,nomination_digest TEXT NOT NULL,envelope_digest TEXT NOT NULL,created_at TEXT NOT NULL);`);
+    nomination_revision INTEGER NOT NULL,nomination_digest TEXT NOT NULL,envelope_digest TEXT NOT NULL,created_at TEXT NOT NULL);`;
+// DDL only: no creation adapter, policy constructor, migration or customer facts.
+function initializeCustomerWorkspaceSchema({db}={}){
+  if(!db||typeof db.exec!=='function')throw Object.assign(Error('Setup mode binding unavailable.'),{code:'SETUP_MODE_BINDING_UNAVAILABLE',statusCode:503});
+  db.exec(customerWorkspaceSchemaSQL);
   for(const table of ['customer_workspaces','customer_workspace_contracts','customer_workspace_events','customer_workspace_adoptions',
     'customer_workspace_orders','customer_workspace_order_revocations','customer_workspace_invitation_bindings']){
     for(const action of ['UPDATE','DELETE'])db.exec(`CREATE TRIGGER IF NOT EXISTS ${table}_no_${action.toLowerCase()} BEFORE ${action} ON ${table}
       BEGIN SELECT RAISE(ABORT,'Customer workspace associations are permanent.'); END;`);
   }
+}
+// Read-only canonical dependency validation. No repair or inference from facts.
+function assertCustomerWorkspaceSchema({db}={}){
+  const unavailable=()=>{throw Object.assign(Error('Setup mode binding unavailable.'),{code:'SETUP_MODE_BINDING_UNAVAILABLE',statusCode:503});};
+  const normal=sql=>String(sql||'').replace(/IF NOT EXISTS /g,'').replace(/\s+/g,'').replace(/;$/,'');
+  try{
+    for(const statement of customerWorkspaceSchemaSQL.split(';').map(x=>x.trim()).filter(Boolean)){
+      const match=statement.match(/^CREATE (TABLE|INDEX) IF NOT EXISTS (\w+)/);if(!match)unavailable();
+      const actual=db.prepare('SELECT sql FROM sqlite_master WHERE type=? AND name=?').get(match[1].toLowerCase(),match[2])?.sql;
+      if(normal(actual)!==normal(statement))unavailable();
+      if(match[1]==='TABLE')for(const verb of ['UPDATE','DELETE']){
+        const name=match[2]+'_no_'+verb.toLowerCase(),trigger=db.prepare("SELECT sql FROM sqlite_master WHERE type='trigger' AND name=? AND tbl_name=?").get(name,match[2])?.sql;
+        const expected="CREATE TRIGGER "+name+" BEFORE "+verb+" ON "+match[2]+" BEGIN SELECT RAISE(ABORT,'Customer workspace associations are permanent.'); END";
+        if(normal(trigger)!==normal(expected))unavailable();
+      }
+    }
+  }catch(error){if(error.code==='SETUP_MODE_BINDING_UNAVAILABLE')throw error;unavailable();}
+}
+// Trusted orchestration only. The HTTP boundary verifies the actual event and
+// resolves customer, tenant and owner authority independently of submitted fields.
+function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitationBound,onNominationRevoked}){
+  if(!db||typeof createInitialWorkspace!=='function'||createInitialWorkspace.constructor?.name==='AsyncFunction')throw Error('A database and synchronous workspace adapter are required.');
+  initializeCustomerWorkspaceSchema({db});
   const runtimePolicy=createSetupOnlyPolicy({db});
   const byCustomer=db.prepare('SELECT * FROM customer_workspaces WHERE customer_hash=?');
   const byTenant=db.prepare('SELECT * FROM customer_workspaces WHERE tenant=?');
@@ -297,4 +320,4 @@ function createCustomerWorkspaceRegistry({db,createInitialWorkspace,onInvitation
   }
   return {accept,adoptExisting,recordOrder,authorizeOrderEnvelope,resolveCompletedOrder,resolveSigningBinding,revokeOrderNomination,invitationCurrent,ownerAuthorityRevoked,forTenant:tenant=>view(byTenant.get(tenant))};
 }
-module.exports={createCustomerWorkspaceRegistry};
+module.exports={createCustomerWorkspaceRegistry,initializeCustomerWorkspaceSchema,assertCustomerWorkspaceSchema};
