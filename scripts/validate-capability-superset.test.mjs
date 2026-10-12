@@ -60,4 +60,11 @@ test('integrated source must be a regular file within the candidate tree', t => 
     assert.notEqual(result.status, 0, `${badPath} was accepted: ${result.stdout}`);
     fs.rmSync(path.join(root, 'source-link.cjs'));
   }
+  for (const missing of [[], undefined]) {
+    const altered = structuredClone(original);
+    altered.capabilities[0].integratedPaths = missing;
+    fs.writeFileSync(manifest, JSON.stringify(altered));
+    const result = validate(root);
+    assert.notEqual(result.status, 0, `missing integrated source accepted: ${result.stdout}`);
+  }
 });

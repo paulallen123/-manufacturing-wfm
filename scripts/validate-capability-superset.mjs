@@ -58,7 +58,10 @@ for (const capability of manifest.capabilities || []) {
     if (!releaseTargets.has(target)) fail(`${capability.id}: unknown FORGE release target ${target}`);
   }
 
-  for (const rel of capability.integratedPaths || []) {
+  if (!Array.isArray(capability.integratedPaths) || capability.integratedPaths.length === 0) {
+    fail(`${capability.id}: integrated source files are required.`);
+  }
+  for (const rel of capability.integratedPaths) {
     if (typeof rel !== 'string' || !rel || path.isAbsolute(rel)) {
       fail(`${capability.id}: invalid integrated source path: ${rel}`);
     }
