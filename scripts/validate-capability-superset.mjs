@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 
 const root = process.cwd();
 const manifestPath = path.join(root, 'release', 'capability-superset.json');
@@ -17,6 +18,48 @@ if (!fs.existsSync(releasePath)) fail('Missing release/vector-eow-convergence.js
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const release = JSON.parse(fs.readFileSync(releasePath, 'utf8'));
+
+function verifyRetirementReceipts(capability,requiredProof) {
+  const sourceSha=process.env.VECTOR_CANDIDATE_SOURCE_SHA;
+  const imageDigest=process.env.VECTOR_CANDIDATE_IMAGE_DIGEST;
+  const now=Date.parse(process.env.VECTOR_PROOF_NOW||new Date().toISOString());
+  if(!/^[a-f0-9]{40}$/.test(sourceSha||'')||!/^sha256:[a-f0-9]{64}$/.test(imageDigest||'')||!Number.isFinite(now))
+    fail(`${capability.id}: exact candidate proof binding is required for retirement.`);
+  const receipts=capability.proofReceipts;
+  if(!Array.isArray(receipts)||receipts.length!==requiredProof.size)
+    fail(`${capability.id}: one evidence receipt is required for every retirement proof.`);
+  const evidenceRoot=path.join(root,'release','retirement-evidence');
+  if(!fs.existsSync(evidenceRoot)||fs.realpathSync(evidenceRoot)!==evidenceRoot)
+    fail(`${capability.id}: retirement evidence directory is missing or redirected.`);
+  const seen=new Set();
+  for(const descriptor of receipts){
+    const proofType=descriptor?.proofType;
+    if(!requiredProof.has(proofType)||seen.has(proofType))
+      fail(`${capability.id}: invalid or duplicate retirement receipt.`);
+    seen.add(proofType);
+    const relative=descriptor?.evidencePath;
+    if(typeof relative!=='string'||!/^release\/retirement-evidence\/[a-zA-Z0-9._/-]+\.json$/.test(relative)||
+       relative.split('/').includes('..'))
+      fail(`${capability.id}: retirement evidence path is invalid.`);
+    const absolute=path.resolve(root,relative);
+    if(!absolute.startsWith(evidenceRoot+path.sep)||!fs.existsSync(absolute)||!fs.lstatSync(absolute).isFile()||
+       !fs.realpathSync(absolute).startsWith(fs.realpathSync(evidenceRoot)+path.sep))
+      fail(`${capability.id}: retirement evidence file is missing or invalid.`);
+    const bytes=fs.readFileSync(absolute);
+    if(bytes.length>1024*1024||createHash('sha256').update(bytes).digest('hex')!==descriptor.evidenceSha256)
+      fail(`${capability.id}: retirement evidence bytes do not match the receipt.`);
+    let evidence;
+    try{evidence=JSON.parse(bytes.toString('utf8'));}catch{fail(`${capability.id}: retirement evidence is not JSON.`);}
+    const observed=Date.parse(evidence.observedAt),expires=Date.parse(evidence.expiresAt);
+    if(evidence.capabilityId!==capability.id||evidence.proofType!==proofType||evidence.status!=='PASS'||
+       evidence.sourceSha!==sourceSha||evidence.imageDigest!==imageDigest||
+       !Number.isFinite(observed)||!Number.isFinite(expires)||observed>now||expires<=now||expires<=observed||
+       typeof evidence.evidenceRef!=='string'||!evidence.evidenceRef.trim())
+      fail(`${capability.id}: retirement receipt is stale, unsuccessful or bound to another candidate.`);
+  }
+}
+
+
 
 if (manifest.schemaVersion !== 1) fail('Unsupported superset manifest schema.');
 if (!manifest.policy?.retireLegacyOnlyAfterSupersetProof) fail('Legacy retirement must require superset proof.');
@@ -86,6 +129,7 @@ for (const capability of manifest.capabilities || []) {
     for (const item of requiredProof) {
       if (!proof.has(item)) fail(`${capability.id}: missing superset proof ${item}`);
     }
+    verifyRetirementReceipts(capability,requiredProof);
   }
 }
 
@@ -106,4 +150,5 @@ for (const id of requiredCapabilities) {
 }
 
 console.log(`VECTOR_CAPABILITY_SUPERSET_GATE=PASS capabilities=${seen.size} retirementProofs=${requiredProof.size}`);
+
 
