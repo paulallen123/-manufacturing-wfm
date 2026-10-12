@@ -1,5 +1,7 @@
 /* VECTOR_REPORTING_UI_V1 — approved blue/white VECTOR reporting */
 body.vector-reporting-open{overflow:hidden}
+.vector-reporting-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.vector-reporting-modal :is(button,input,select,summary):focus-visible{outline:2px solid #176ff3;outline-offset:3px}
 .vector-reporting-launch-wrap{margin-left:auto;display:flex;align-items:center}
 .vector-reporting-launch{appearance:none;border:1px solid #cfd9e8;background:#fff;color:#175fae;border-radius:9px;min-height:36px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;font:600 11px/1 inherit;cursor:pointer;box-shadow:0 1px 4px rgba(20,42,69,.05)}
 .vector-reporting-launch:hover{border-color:#9fbee8;background:#f7fbff}

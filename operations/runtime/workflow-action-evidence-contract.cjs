@@ -141,7 +141,9 @@ function acceptSourceActionEvidence(input){
  * freshness SLA: when the source supplies no freshness contract the producer emits
  * `unknown`. The only inferred confirmation state is `action_required`, and only
  * from the source workflow's structured `status: open` state. Later lifecycle
- * states must be supplied explicitly by the source in `issue.confirmation`.
+ * states are unavailable: the sealed source has no bound decision/SLA/audit
+ * confirmation protocol. The generic validator retains its formal lifecycle
+ * for future independently reviewed source adapters.
  */
 function trustedEnvelopeFreshness(observedAt,envelope){
   if(!isObject(envelope))return null;
@@ -188,7 +190,11 @@ function produceTimeReviewActionEvidence(report,{allowedTeamIds=[],freshnessEnve
       // Freshness is owned by the server envelope, never by issue/team/report input.
       const envelopeFreshness=trustedEnvelopeFreshness(observedAt,freshnessEnvelope);
       if(!envelopeFreshness) continue;
-      const explicitConfirmation=isObject(issue.confirmation)?issue.confirmation:null;
+      // The current sealed source does not emit later confirmation states.
+      // A request/click carrying formal contract fields is not source audit.
+      if(issue.confirmation!=null&&(!isObject(issue.confirmation)||issue.confirmation.state!=='action_required'))continue;
+      if((issue.workflow!=null&&issue.workflow!=='time-review')
+        ||(issue.sourceId!=null&&issue.id!=null&&issue.sourceId!==issue.id))continue;
       const accepted=acceptSourceActionEvidence({
         workflow:'time-review',
         sourceId,
@@ -202,7 +208,7 @@ function produceTimeReviewActionEvidence(report,{allowedTeamIds=[],freshnessEnve
         consequence:issue.consequence,
         alternatives:issue.alternatives,
         freshness:envelopeFreshness,
-        confirmation:explicitConfirmation||{state:'action_required'}
+        confirmation:{state:'action_required'}
       });
       if(accepted) rows.push(accepted);
     }
@@ -210,7 +216,131 @@ function produceTimeReviewActionEvidence(report,{allowedTeamIds=[],freshnessEnve
   return Object.freeze(rows);
 }
 
+// These adapters consume the sealed source shapes, not a presentation-owned
+// confirmation extension. Absence currently cannot supply a request-bound audit
+// or observation for pending requests. An unavailable record is NOT an action.
+function sourceId(value){
+  return typeof value==='string'&&value.length>0&&value.length<=160&&value===value.trim()
+    && !/[\u0000-\u001f\u007f]/.test(value)?value:'';
+}
+function sourceIso(value){
+  return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value)?iso(value):null;
+}
+function sourceReportMatches(report,workflow,{tenant,period}={}){
+  return isObject(report)&&report.partial!==true&&report.complete!==false
+    && (report.workflow==null||report.workflow===workflow)
+    && (report.tenant==null||report.tenant===tenant)
+    && (report.tenantId==null||report.tenantId===tenant)
+    && (period==null||report.period===period);
+}
+function bindingFor(workflow,scope,teamId,id,period=null){
+  return Object.freeze({workflow,tenant:scope.tenant,teamId,period,sourceId:id});
+}
+function unavailable(binding,missingFields){
+  return Object.freeze({binding,reasonCode:'SOURCE_EVIDENCE_UNAVAILABLE',
+    freshness:Object.freeze({state:'unknown',policyRef:null,validUntil:null}),
+    missingFields:Object.freeze(missingFields)});
+}
+function production(items=[],missing=[]){
+  return Object.freeze({items:Object.freeze(items),unavailable:Object.freeze(missing)});
+}
+function scopedTeams(scope){
+  return sourceId(scope.tenant)&&sourceId(scope.personId)&&['manager','director','supervisor'].includes(scope.role)
+    ? new Set((Array.isArray(scope.allowedTeamIds)?scope.allowedTeamIds:[]).filter(sourceId)):new Set();
+}
+function uniqueIds(rows){
+  const ids=rows.map(row=>sourceId(row?.id));
+  return ids.every(Boolean)&&new Set(ids).size===ids.length;
+}
+function produceAbsenceActionEvidence(report,scope={}){
+  const allowed=scopedTeams(scope),state=report?.state;
+  if(!allowed.size||!sourceReportMatches(report,'absence',{tenant:scope.tenant})||!isObject(state)
+    ||!Array.isArray(state.requests)||!Array.isArray(state.staff)||!uniqueIds(state.requests)||!uniqueIds(state.staff))return production();
+  const missing=[];
+  for(const request of state.requests){
+    const person=state.staff.find(row=>row.id===request.employee),teamId=sourceId(person?.manager);
+    if(!allowed.has(teamId)||request.employee===scope.personId
+      ||!sourceReportMatches(request,'absence',{tenant:scope.tenant})
+      ||(request.teamId!=null&&request.teamId!==teamId))continue;
+    const fields=['decisionId','confirmationSla','requestBoundAudit'];
+    // date/start/end describe leave, never the time the source observed a request.
+    if(request.status==='pending')fields.unshift('observedAt');
+    else if(!sourceIso(request.reviewedAt))fields.unshift('observedAt');
+    if(!['pending','approved','declined'].includes(request.status))fields.push('supportedStatus');
+    missing.push(unavailable(bindingFor('absence',scope,teamId,request.id),fields));
+  }
+  // A sick flag and a clock-only reportedAt are not an absence episode identifier.
+  for(const person of state.staff){
+    if(person.sick===true&&allowed.has(person.manager))missing.push(unavailable(
+      bindingFor('absence',scope,person.manager,null),['sourceId','observedAt','decisionId','confirmationSla','requestBoundAudit']));
+  }
+  return production([],missing);
+}
+function produceWeeklySignoffActionEvidence(report,scope={}){
+  const allowed=scopedTeams(scope);
+  if(!allowed.size||!sourceId(scope.period)||!sourceReportMatches(report,'weekly-signoff',scope)
+    ||!Array.isArray(report.teams)||!uniqueIds(report.teams))return production();
+  const items=[],missing=[],audit=Array.isArray(report.audit)?report.audit:[];
+  for(const team of report.teams){
+    if(!allowed.has(team.id)||team.period!==scope.period
+      ||(team.sourceId!=null&&team.sourceId!==team.id)||(team.teamId!=null&&team.teamId!==team.id)
+      ||!sourceReportMatches(team,'weekly-signoff',scope))continue;
+    const binding=bindingFor('weekly-signoff',scope,team.id,team.id,scope.period);
+    if(!Number.isSafeInteger(team.revision)||team.revision<0){missing.push(unavailable(binding,['sourceRevision']));continue;}
+    const events=audit.filter(event=>sourceReportMatches(event,'weekly-signoff',scope)
+      &&(event.sourceId==null||event.sourceId===team.id)&&sourceId(event.id)&&event.period===scope.period
+      &&(event.teamId==null||event.teamId===team.id)
+      &&event.team===team.id&&event.revision===team.revision&&sourceId(event.actor)&&sourceIso(event.at));
+    let observedAt,confirmation,reasonCode;
+    if(team.status==='signed'){
+      const signature=team.signature;
+      const matching=events.filter(event=>event.type==='team-signed'&&event.actor===signature?.by
+        &&sourceIso(signature?.at)&&Date.parse(event.at)>=Date.parse(signature.at));
+      const event=matching.length===1?matching[0]:null;
+      if(!event||!sourceReportMatches(signature,'weekly-signoff',{tenant:scope.tenant})
+        ||(signature.period!=null&&signature.period!==scope.period)||(signature.team!=null&&signature.team!==team.id)
+        ||(signature.teamId!=null&&signature.teamId!==team.id)
+        ||(signature.sourceId!=null&&signature.sourceId!==team.id)||signature.revision!==team.revision||team.canSign===true
+        ||audit.filter(row=>row?.id===event.id).length!==1){
+        missing.push(unavailable(binding,['matchingSignatureAndAudit']));continue;
+      }
+      const signatureFreshness=trustedEnvelopeFreshness(sourceIso(signature.at),scope.freshnessEnvelope);
+      const auditFreshness=trustedEnvelopeFreshness(sourceIso(event.at),scope.freshnessEnvelope);
+      if(!signatureFreshness||!auditFreshness||signatureFreshness.state!==auditFreshness.state){
+        missing.push(unavailable(binding,['coherentSignatureObservation']));continue;
+      }
+      // Use the signing observation, never a newer unrelated audit timestamp to
+      // refresh it. Matching durable historical evidence remains signed + stale;
+      // no new transaction duration or business confirmation SLA is invented.
+      observedAt=sourceIso(signature.at);
+      // pa-* is the persisted identifier of this exact team-signing decision,
+      // not a generated request ID or a signature inferred from a click.
+      confirmation={state:'resolved',decisionId:event.id,confirmedAt:sourceIso(signature.at),auditRef:event.id};
+      reasonCode='WEEKLY_SIGNOFF_CONFIRMED';
+    }else if(['draft','returned'].includes(team.status)&&!team.signature){
+      if(!Array.isArray(team.employees)||!uniqueIds(team.employees)||team.employees.some(person=>person?.id===scope.personId)){
+        missing.push(unavailable(binding,['independentReviewer']));continue;
+      }
+      const observations=events.filter(event=>['review-data-changed','category-checked','employee-total-checked'].includes(event.type));
+      observedAt=observations.map(event=>sourceIso(event.at)).sort().at(-1);
+      if(!observedAt){missing.push(unavailable(binding,['observedAt']));continue;}
+      confirmation={state:'action_required'};reasonCode='WEEKLY_SIGNOFF_REQUIRED';
+    }else{missing.push(unavailable(binding,['currentRevisionObservation','sourceConfirmation']));continue;}
+    const freshness=trustedEnvelopeFreshness(observedAt,scope.freshnessEnvelope);
+    if(!freshness){
+      missing.push(unavailable(binding,['currentObservation']));continue;
+    }
+    const accepted=acceptSourceActionEvidence({workflow:'weekly-signoff',sourceId:team.id,reasonCode,observedAt,
+      route:'weekly-signoff',authorityRequired:'Operational manager in the reporting branch (payroll-control.reviewer)',
+      title:'Weekly sign-off',whyNow:'Review the source team and period evidence.',freshness,confirmation});
+    if(accepted)items.push(Object.freeze({...accepted,binding,sourceRevision:team.revision,
+      authority:Object.freeze({rule:'payroll-control.reviewer',role:scope.role,personId:scope.personId})}));
+  }
+  return production(items,missing);
+}
+
 module.exports=Object.freeze({
   CONTRACT_VERSION,WORKFLOWS,FRESHNESS_STATES,CONFIRMATION_STATES,
-  validateSourceActionEvidence,acceptSourceActionEvidence,produceTimeReviewActionEvidence
+  validateSourceActionEvidence,acceptSourceActionEvidence,produceTimeReviewActionEvidence,
+  produceAbsenceActionEvidence,produceWeeklySignoffActionEvidence,sourceReportMatches
 });

@@ -357,20 +357,61 @@ function createVectorReportingService(options={}){
   const auth=db.prepare('SELECT u.email,u.tenant,u.role,s.expires FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?');
   const insert=db.prepare('INSERT INTO vector_report_definitions(id,tenant,created_by,role_at_creation,title,source_id,definition_json,definition_digest,version_of,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)');
   const audit=db.prepare('INSERT INTO vector_report_audit(tenant,report_id,actor,event,detail_json,created_at) VALUES(?,?,?,?,?,?)');
-  const list=db.prepare('SELECT id,title,source_id,definition_json,definition_digest,version_of,created_by,created_at FROM vector_report_definitions WHERE tenant=? ORDER BY created_at DESC LIMIT 200');
-  const one=db.prepare('SELECT id,title,source_id,definition_json,definition_digest,version_of,created_by,created_at FROM vector_report_definitions WHERE tenant=? AND id=?');
+  const list=db.prepare('SELECT * FROM vector_report_definitions WHERE tenant=? AND created_by=? ORDER BY created_at DESC LIMIT 200');
+  const one=db.prepare('SELECT * FROM vector_report_definitions WHERE tenant=? AND id=?');
   const auditRows=db.prepare('SELECT id,report_id,actor,event,detail_json,created_at FROM vector_report_audit WHERE tenant=? ORDER BY id DESC LIMIT 250');
   const dashboardInsert=db.prepare('INSERT INTO vector_report_dashboards(id,tenant,created_by,dashboard_json,dashboard_digest,version_of,created_at) VALUES(?,?,?,?,?,?,?)');
-  const dashboardList=db.prepare('SELECT id,created_by,dashboard_json,dashboard_digest,version_of,created_at FROM vector_report_dashboards WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
-  const dashboardOne=db.prepare('SELECT id,created_by,dashboard_json,dashboard_digest,version_of,created_at FROM vector_report_dashboards WHERE tenant=? AND id=?');
+  const dashboardList=db.prepare('SELECT * FROM vector_report_dashboards WHERE tenant=? AND created_by=? ORDER BY created_at DESC LIMIT 100');
+  const dashboardOne=db.prepare('SELECT * FROM vector_report_dashboards WHERE tenant=? AND id=?');
   const scheduleInsert=db.prepare('INSERT INTO vector_report_schedules(id,tenant,created_by,schedule_json,schedule_digest,created_at) VALUES(?,?,?,?,?,?)');
-  const scheduleList=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
+  const scheduleList=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? AND created_by=? ORDER BY created_at DESC LIMIT 100');
   const scheduleOne=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules WHERE tenant=? AND id=?');
   const scheduleEvent=db.prepare('INSERT INTO vector_report_schedule_events(tenant,schedule_id,enabled,actor,created_at) VALUES(?,?,?,?,?)');
   const scheduleState=db.prepare('SELECT enabled,actor,created_at FROM vector_report_schedule_events WHERE tenant=? AND schedule_id=? ORDER BY id DESC LIMIT 1');
   const allSchedules=db.prepare('SELECT id,tenant,created_by,schedule_json,schedule_digest,created_at FROM vector_report_schedules ORDER BY created_at ASC');
   const deliveryInsert=db.prepare('INSERT OR IGNORE INTO vector_report_deliveries(delivery_key,tenant,schedule_id,report_id,mode,status,receipt_json,created_at) VALUES(?,?,?,?,?,?,?,?)');
-  const deliveryList=db.prepare('SELECT delivery_key,schedule_id,report_id,mode,status,receipt_json,created_at FROM vector_report_deliveries WHERE tenant=? ORDER BY created_at DESC LIMIT 100');
+  const deliveryList=db.prepare('SELECT d.* FROM vector_report_deliveries d JOIN vector_report_schedules s ON s.id=d.schedule_id AND s.tenant=d.tenant WHERE d.tenant=? AND s.created_by=? ORDER BY d.created_at DESC LIMIT 100');
+  const deliveryOne=db.prepare('SELECT delivery_key FROM vector_report_deliveries WHERE delivery_key=?');
+  const currentUser=db.prepare('SELECT email,tenant,role FROM users WHERE tenant=? AND email=?');
+  const hasTable=name=>Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name));
+  async function currentIdentity(c){
+    try{
+      const actor=options.currentUserReader?await options.currentUserReader({tenant:c.tenant,email:c.email}):currentUser.get(c.tenant,c.email);
+      if(!actor||actor.email!==c.email||actor.tenant!==c.tenant)return null;
+      if(hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(c.tenant)?.privileged_freeze)===1)return null;
+      return actor;
+    }catch{return null;}
+  }
+  // One deny-only predicate for personal artifacts and every immutable reference.
+  // Current authority comes from the user store, never role_at_creation.
+  async function access(c,row,kind='report',seen=new Set()){
+    const actor=await currentIdentity(c);
+    if(!actor||!row||row.tenant!==actor.tenant||row.created_by!==actor.email||roleLevel(actor.role)<1)return false;
+    const key=kind+':'+row.id;if(seen.has(key)||seen.size>=200)return false;seen.add(key);
+    try{
+      if(kind==='report'){
+        const source=sourceById(row.source_id);
+        if(!source||!permitted(actor.role,source.minRole))return false;
+        return !row.version_of||access(actor,one.get(actor.tenant,row.version_of),'report',seen);
+      }
+      if(kind==='dashboard'){
+        const dashboard=JSON.parse(row.dashboard_json);
+        for(const id of dashboard.reportIds)if(!await access(actor,one.get(actor.tenant,id),'report',new Set(seen)))return false;
+        return !row.version_of||access(actor,dashboardOne.get(actor.tenant,row.version_of),'dashboard',seen);
+      }
+      const schedule=JSON.parse(row.schedule_json);
+      if(!await access(actor,one.get(actor.tenant,schedule.reportId),'report',seen))return false;
+      if(schedule.delivery==='in_app')return true;
+      if(typeof deliveryAdapter?.deliver!=='function'||typeof deliveryAdapter?.authorize!=='function')return false;
+      const allowed=await deliveryAdapter.authorize({tenant:actor.tenant,actor:actor.email,role:actor.role,reportId:schedule.reportId,scheduleId:row.id||null,delivery:schedule.delivery,destination:schedule.destination});
+      if(allowed!==true||!await access(c,one.get(actor.tenant,schedule.reportId),'report'))return false;
+      const current=await currentIdentity(c);
+      return Boolean(current&&current.email===actor.email&&current.tenant===actor.tenant&&current.role===actor.role);
+    }catch{return false;}
+  }
+  async function authorised(c,rows,kind){
+    const result=[];for(const row of rows)if(await access(c,row,kind))result.push(row);return result;
+  }
 
   function context(req){
     const token=cookieToken(req);
@@ -421,12 +462,17 @@ function createVectorReportingService(options={}){
       const slot=dueKey(schedule,now);if(!slot)continue;
       const report=one.get(row.tenant,schedule.reportId);if(!report)continue;
       const key=row.id+':'+slot;
+      if(deliveryOne.get(key)||inFlight.has(key))continue;
+      inFlight.add(key);
+      try{
       let status='READY',externalReceipt=null;
-      if(schedule.delivery!=='in_app'){
+      const c={tenant:row.tenant,email:row.created_by};
+      if(!await access(c,row,'schedule'))status='BLOCKED_AUTHORITY_DRIFT';
+      else if(schedule.delivery!=='in_app'){
         if(!deliveryAdapter||typeof deliveryAdapter.deliver!=='function')status='BLOCKED_NO_ADAPTER';
         else{
           try{
-            externalReceipt=await deliveryAdapter.deliver({tenant:row.tenant,scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,delivery:schedule.delivery,destination:schedule.destination,slot});
+            externalReceipt=await deliveryAdapter.deliver({tenant:row.tenant,actor:row.created_by,scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,delivery:schedule.delivery,destination:schedule.destination,slot,idempotencyKey:key});
             status='SENT';
           }catch(error){status='FAILED';externalReceipt={errorDigest:digest(compact(error?.message||'delivery failure',240))};}
         }
@@ -434,17 +480,22 @@ function createVectorReportingService(options={}){
       const receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
       const createdAt=new Date().toISOString();
       const inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
-      if(inserted)results.push({...receipt,deliveryKey:key,createdAt});
+      if(inserted){
+        if(status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
+        results.push({...receipt,deliveryKey:key,createdAt});
+      }
+      }finally{inFlight.delete(key);}
     }
     return results;
   }
+  const inFlight=new Set();
   const schedulerTimer=setInterval(()=>{runDueSchedules().catch(()=>{});},Math.max(10000,Number(options.schedulerTickMs)||30000));
   if(schedulerTimer.unref)schedulerTimer.unref();
 
   async function handleRequest(req,res){
     const path=requestPath(req);
     if(!path.startsWith(PREFIX)) return false;
-    const c=context(req);
+    const session=context(req),c=session?await currentIdentity(session):null;
     if(!c) return writeJson(res,401,{error:'Sign in is required.'});
     if(roleLevel(c.role)<1) return writeJson(res,403,{error:'Reporting is available to governed operational roles.'});
 
@@ -458,7 +509,7 @@ function createVectorReportingService(options={}){
     if(path===PREFIX+'/validate'&&method==='POST'){
       try{
         const body=await readJson(req);
-        const definition=normaliseDefinition(body.definition||body,c.role);
+        const definition=normaliseDefinition(body.definition||body,(await currentIdentity(c))?.role||'');
         return writeJson(res,200,{valid:true,definition,definitionDigest:digest(definition)});
       }catch(error){
         return writeJson(res,400,{valid:false,error:compact(error?.message||'Invalid report definition.',300)});
@@ -466,18 +517,19 @@ function createVectorReportingService(options={}){
     }
 
     if(path===PREFIX+'/reports'&&method==='GET'){
-      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_LIST_V1',reports:list.all(c.tenant).map(safeRow)});
+      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_LIST_V1',reports:(await authorised(c,list.all(c.tenant,c.email),'report')).map(safeRow)});
     }
 
     if(path===PREFIX+'/reports'&&method==='POST'){
       try{
         const body=await readJson(req);
-        const definition=normaliseDefinition(body.definition||body,c.role);
+        const definition=normaliseDefinition(body.definition||body,(await currentIdentity(c))?.role||'');
         const versionOf=compact(body.versionOf,80)||null;
-        if(versionOf&&!one.get(c.tenant,versionOf)) return writeJson(res,404,{error:'Previous report version was not found for this tenant.'});
+        if(versionOf&&!await access(c,one.get(c.tenant,versionOf))) return writeJson(res,404,{error:'Previous report version was not found.'});
         const id='vr-'+randomUUID();
         const createdAt=new Date().toISOString();
         const definitionDigest=digest(definition);
+        if(!await access(c,{id,tenant:c.tenant,created_by:c.email,source_id:definition.sourceId,version_of:versionOf}))return writeJson(res,404,{error:'Report authority is unavailable.'});
         insert.run(id,c.tenant,c.email,c.role,definition.title,definition.sourceId,JSON.stringify(definition),definitionDigest,versionOf,createdAt);
         record(c,id,versionOf?'REPORT_VERSION_CREATED':'REPORT_CREATED',{sourceId:definition.sourceId,definitionDigest,versionOf});
         return writeJson(res,201,{report:{id,title:definition.title,sourceId:definition.sourceId,definition,definitionDigest,versionOf,createdBy:c.email,createdAt}});
@@ -487,18 +539,19 @@ function createVectorReportingService(options={}){
     }
 
     if(path===PREFIX+'/dashboards'&&method==='GET'){
-      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_DASHBOARD_LIST_V1',dashboards:dashboardList.all(c.tenant).map(dashboardRow)});
+      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_DASHBOARD_LIST_V1',dashboards:(await authorised(c,dashboardList.all(c.tenant,c.email),'dashboard')).map(dashboardRow)});
     }
 
     if(path===PREFIX+'/dashboards/pin'&&method==='POST'){
       try{
         const body=await readJson(req),reportId=compact(body.reportId,100);
-        if(!reportId||!one.get(c.tenant,reportId)) return writeJson(res,404,{error:'Report not found for this tenant.'});
-        const latest=dashboardList.all(c.tenant)[0]||null;
+        if(!reportId||!await access(c,one.get(c.tenant,reportId))) return writeJson(res,404,{error:'Report not found.'});
+        const latest=(await authorised(c,dashboardList.all(c.tenant,c.email),'dashboard'))[0]||null;
         const previous=latest?dashboardRow(latest):null;
         const ids=[...(previous?.dashboard?.reportIds||[]),reportId];
         const dashboard=normaliseDashboard({title:body.title||previous?.dashboard?.title||'My reporting dashboard',reportIds:ids});
         const id='vd-'+randomUUID(),createdAt=new Date().toISOString(),dashboardDigest=digest(dashboard);
+        if(!await access(c,one.get(c.tenant,reportId)))return writeJson(res,404,{error:'Report not found.'});
         dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous?.id||null,createdAt);
         record(c,reportId,'REPORT_PINNED',{dashboardId:id,dashboardDigest,versionOf:previous?.id||null});
         return writeJson(res,201,{dashboard:{id,dashboard,dashboardDigest,versionOf:previous?.id||null,createdBy:c.email,createdAt}});
@@ -507,10 +560,13 @@ function createVectorReportingService(options={}){
 
     if(path===PREFIX+'/dashboards/unpin'&&method==='POST'){
       try{
-        const body=await readJson(req),reportId=compact(body.reportId,100),latest=dashboardList.all(c.tenant)[0]||null;
+        const body=await readJson(req),reportId=compact(body.reportId,100);
+        if(!await access(c,one.get(c.tenant,reportId)))return writeJson(res,404,{error:'Report not found.'});
+        const latest=(await authorised(c,dashboardList.all(c.tenant,c.email),'dashboard'))[0]||null;
         if(!latest)return writeJson(res,404,{error:'Dashboard not found.'});
         const previous=dashboardRow(latest),dashboard=normaliseDashboard({title:previous.dashboard.title,reportIds:(previous.dashboard.reportIds||[]).filter(id=>id!==reportId)});
         const id='vd-'+randomUUID(),createdAt=new Date().toISOString(),dashboardDigest=digest(dashboard);
+        if(!await access(c,one.get(c.tenant,reportId)))return writeJson(res,404,{error:'Report not found.'});
         dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous.id,createdAt);
         record(c,reportId,'REPORT_UNPINNED',{dashboardId:id,dashboardDigest,versionOf:previous.id});
         return writeJson(res,201,{dashboard:{id,dashboard,dashboardDigest,versionOf:previous.id,createdBy:c.email,createdAt}});
@@ -518,16 +574,15 @@ function createVectorReportingService(options={}){
     }
 
     if(path===PREFIX+'/schedules'&&method==='GET'){
-      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_SCHEDULE_LIST_V1',schedules:scheduleList.all(c.tenant).map(scheduleRow)});
+      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_SCHEDULE_LIST_V1',schedules:(await authorised(c,scheduleList.all(c.tenant,c.email),'schedule')).map(scheduleRow)});
     }
 
     if(path===PREFIX+'/schedules'&&method==='POST'){
       try{
         const body=await readJson(req),schedule=normaliseSchedule(body.schedule||body,deliveryAdapter);
         const report=one.get(c.tenant,schedule.reportId);
-        if(!report)return writeJson(res,404,{error:'Report not found for this tenant.'});
-        const definition=JSON.parse(report.definition_json),source=sourceById(definition.sourceId);
-        if(!source||!permitted(c.role,source.minRole))return writeJson(res,403,{error:'Current role is not permitted to schedule this report.'});
+        if(!await access(c,report))return writeJson(res,404,{error:'Report not found.'});
+        if(!await access(c,{tenant:c.tenant,created_by:c.email,schedule_json:JSON.stringify(schedule)},'schedule'))return writeJson(res,403,{error:'Current delivery authority is unavailable.'});
         const id='vs-'+randomUUID(),createdAt=new Date().toISOString(),scheduleDigest=digest(schedule);
         scheduleInsert.run(id,c.tenant,c.email,JSON.stringify(schedule),scheduleDigest,createdAt);
         scheduleEvent.run(c.tenant,id,1,c.email,createdAt);
@@ -540,8 +595,8 @@ function createVectorReportingService(options={}){
     if(scheduleStateMatch&&method==='POST'){
       try{
         const id=decodeURIComponent(scheduleStateMatch[1]),row=scheduleOne.get(c.tenant,id);
-        if(!row)return writeJson(res,404,{error:'Schedule not found.'});
         const body=await readJson(req);if(typeof body.enabled!=='boolean')return writeJson(res,400,{error:'enabled must be true or false.'});
+        if(!await access(c,row,'schedule'))return writeJson(res,404,{error:'Schedule not found.'});
         const createdAt=new Date().toISOString();scheduleEvent.run(c.tenant,id,body.enabled?1:0,c.email,createdAt);
         const schedule=JSON.parse(row.schedule_json);
         record(c,schedule.reportId,body.enabled?'REPORT_SCHEDULE_RESUMED':'REPORT_SCHEDULE_PAUSED',{scheduleId:id});
@@ -550,7 +605,8 @@ function createVectorReportingService(options={}){
     }
 
     if(path===PREFIX+'/deliveries'&&method==='GET'){
-      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_DELIVERY_LIST_V1',deliveries:deliveryList.all(c.tenant).map(r=>({
+      const rows=[];for(const r of deliveryList.all(c.tenant,c.email))if(await access(c,scheduleOne.get(c.tenant,r.schedule_id),'schedule')&&await access(c,one.get(c.tenant,r.report_id)))rows.push(r);
+      return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_DELIVERY_LIST_V1',deliveries:rows.map(r=>({
         deliveryKey:r.delivery_key,scheduleId:r.schedule_id,reportId:r.report_id,mode:r.mode,status:r.status,receipt:JSON.parse(r.receipt_json),createdAt:r.created_at
       }))});
     }
@@ -558,7 +614,7 @@ function createVectorReportingService(options={}){
     const match=path.match(/^\/api\/reporting\/reports\/([^/]+)$/);
     if(match&&method==='GET'){
       const row=one.get(c.tenant,decodeURIComponent(match[1]));
-      if(!row) return writeJson(res,404,{error:'Report not found.'});
+      if(!await access(c,row)) return writeJson(res,404,{error:'Report not found.'});
       record(c,row.id,'REPORT_VIEWED',{definitionDigest:row.definition_digest});
       return writeJson(res,200,{report:safeRow(row)});
     }

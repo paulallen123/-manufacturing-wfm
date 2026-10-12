@@ -381,14 +381,14 @@ function actionQueueGroups(rows){const needs=[],awaiting=[];for(const row of Arr
 function actionAffordance(row){return actionDisposition(row)==='awaiting-source'?'View status':String(row?.action||'Review');}
 function actionFreshness(value){return value==='current'?'Source reports current evidence':value==='stale'?'Source reports stale evidence':'Freshness not asserted by source';}
 function timeReviewEvidenceRows(){
-  if(state.timeReviewEvidence.status!=='ready')return [];
+  if(!['ready','partial'].includes(state.timeReviewEvidence.status))return [];
   return state.timeReviewEvidence.items.filter(item=>String(item?.confirmation?.state||'').toLowerCase()!=='resolved').map(item=>({
     title:String(item.title||item.reasonCode||'Time Review item'),
     detail:`${String(item.whyNow||'Review source workflow evidence.')} ${actionFreshness(String(item.freshness?.state||'unknown').toLowerCase())}. Authority: ${String(item.authorityRequired)}.`,
     sourceId:String(item.sourceId),workflow:'time-review',route:'attendance',tone:'blue',action:'Review',status:actionStatus(item.confirmation?.state),confirmationState:String(item.confirmation?.state||'').toLowerCase()
   }));
 }
-function activeTimeReviewSourceIds(){return new Set(state.timeReviewEvidence.status==='ready'?state.timeReviewEvidence.items.filter(item=>String(item?.confirmation?.state||'').toLowerCase()!=='resolved').map(item=>String(item?.sourceId||'').trim()).filter(Boolean):[]);}
+function activeTimeReviewSourceIds(){return new Set(['ready','partial'].includes(state.timeReviewEvidence.status)?state.timeReviewEvidence.items.filter(item=>String(item?.confirmation?.state||'').toLowerCase()!=='resolved').map(item=>String(item?.sourceId||'').trim()).filter(Boolean):[]);}
 function structuredReviewRows(){
   if(employee())return [];
   const contractRows=timeReviewEvidenceRows(),rows=[...contractRows],report=payrollReport(),coveredSourceIds=activeTimeReviewSourceIds();
@@ -426,7 +426,7 @@ async function loadTimeReviewEvidence(){
   syncTimeReviewEvidenceOwner();
   const owner=actionEvidenceOwnerKey();
   if(!timeReviewEvidenceAllowed()){invalidateTimeReviewEvidence(owner);refreshActionSurfaces();return false;}
-  if(state.timeReviewEvidence.status!=='idle')return state.timeReviewEvidence.status==='ready';
+  if(state.timeReviewEvidence.status!=='idle')return ['ready','partial'].includes(state.timeReviewEvidence.status);
   const epoch=state.evidenceEpoch;
   state.timeReviewEvidence={status:'loading',items:[],owner};
   try{
@@ -435,16 +435,18 @@ async function loadTimeReviewEvidence(){
     const response=await fetch(TIME_REVIEW_EVIDENCE_PATH,{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
     if(!response.ok)throw new Error('time-review evidence unavailable');
     const body=await response.json();
-    if(!body||body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items))throw new Error('time-review evidence contract mismatch');
+    if(!body||body.contractVersion!==ACTION_EVIDENCE_CONTRACT||body.workflow!=='time-review'||!Array.isArray(body.items)||!Array.isArray(body.unavailable)||!['available','partial','unavailable'].includes(body.availability))throw new Error('time-review evidence contract mismatch');
+    const identity=sourceIdentity(),scope=body.scope;
+    if(!scope||scope.tenant!==identity.tenant||scope.personId!==identity.id||!/^\d{4}-\d{2}-\d{2}$/.test(String(scope.period||''))||scope.teamId!==null||scope.sourceId!==null||!/^[a-f0-9]{64}$/.test(String(body.contextKey||'')))throw new Error('time-review evidence scope mismatch');
     const envelopeAsOf=Date.parse(String(body.asOf||'')),calendarAsOf=Date.parse(String(calendar.asOf||'')),maxAgeMs=Number(body.maxAgeMs);
     if(String(body.timeZone||'')!==String(calendar.timeZone||'')||maxAgeMs!==Number(calendar.maxAgeMs)||!Number.isFinite(envelopeAsOf)||!Number.isFinite(calendarAsOf)||Math.abs(envelopeAsOf-calendarAsOf)>Math.max(30000,maxAgeMs))throw new Error('time-review evidence calendar mismatch');
     if(!timeReviewEvidenceCurrent(epoch,owner))return false;
-    state.timeReviewEvidence={status:'ready',items:body.items.map(item=>acceptTimeReviewEvidenceItem(item,body)).filter(Boolean),owner};
+    state.timeReviewEvidence={status:body.availability==='available'?'ready':body.availability,items:body.availability==='unavailable'?[]:body.items.map(item=>acceptTimeReviewEvidenceItem(item,body)).filter(Boolean),unavailable:body.unavailable,contextKey:body.contextKey,scope,owner};
   }catch{
     if(!timeReviewEvidenceCurrent(epoch,owner))return false;
     state.timeReviewEvidence={status:'unavailable',items:[],owner};
   }
-  refreshActionSurfaces();return state.timeReviewEvidence.status==='ready';
+  refreshActionSurfaces();return ['ready','partial'].includes(state.timeReviewEvidence.status);
 }
 function invalidateTenantCalendar(){state.calendarEpoch++;state.calendar={status:'idle',value:null};}
 async function loadTenantCalendar(){
@@ -555,7 +557,7 @@ function priorityMarkup(rows){
   const groups=actionQueueGroups(rows),visibleNeeds=groups.needs.slice(0,5),visibleAwaiting=groups.awaiting.slice(0,3);
   const body=visibleNeeds.length?visibleNeeds.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>';
   const awaiting=groups.awaiting.length?`<details data-vector-awaiting-confirmation><summary class="vector-empty">Awaiting source confirmation · ${groups.awaiting.length}</summary><div class="vector-alert-list">${visibleAwaiting.map(alertRowMarkup).join('')}</div></details>`:'';
-  return `<section class="vector-card vector-alerts vector-priorities" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><div><span class="vector-card-kicker">Priority</span><h2 id="vector-review-title">Top priorities <em>${groups.needs.length}</em></h2></div><button type="button" data-vector-route="time-review">View all ${icon('arrow')}</button></div><div class="vector-alert-list">${body}</div>${awaiting}</section>`;
+  return `<section class="vector-card vector-alerts vector-priorities" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><div><span class="vector-card-kicker">Priority</span><h2 id="vector-review-title">Top priorities <em>${groups.needs.length}</em></h2></div><button type="button" data-vector-route="time-review">View all ${icon('arrow')}</button></div>${actionEvidenceAvailabilityMarkup()}<div class="vector-alert-list">${body}</div>${awaiting}</section>`;
 }
 function productionForecastRows(source){
   if(state.readinessEvidence.status==='ready'&&state.readinessEvidence.departments.length){
@@ -584,7 +586,8 @@ function productionPreviewMarkup(source){
   const fresh=state.readinessEvidence.status==='ready',fixture=state.readinessEvidence.status==='fixture';
   return `<section class="vector-card vector-production-preview" data-vector-planning="${PLANNING_MARKER}"><div class="vector-card-head"><div><span class="vector-card-kicker">Production</span><h2>${fresh?'Today’s production forecast':'Production forecast'}</h2><p>Required vs planned labour capacity</p></div><button type="button" data-vector-route="readiness">Open Factory ${icon('arrow')}</button></div><div class="vector-forecast-chart">${body}</div><div class="vector-production-foot"><span></span>${fresh?'Readiness source · '+esc(asOfText):fixture?'Demonstration readiness only; not current operational truth.':'Readiness source is stale or unavailable; it is not labelled as Today.'} No production-output units are invented.</div></section>`;
 }
-function alertsMarkup(rows){const groups=actionQueueGroups(rows),visibleNeeds=groups.needs.slice(0,4),visibleAwaiting=groups.awaiting.slice(0,3),needsBody=visibleNeeds.length?visibleNeeds.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>',awaitingBody=groups.awaiting.length?`<details data-vector-awaiting-confirmation><summary class="vector-empty">Awaiting source confirmation · ${groups.awaiting.length}</summary><div class="vector-alert-list">${visibleAwaiting.map(alertRowMarkup).join('')}</div></details>`:'';return `<section class="vector-card vector-alerts" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><h2 id="vector-review-title"><span class="vector-alert-bell">${icon('bell')}</span>Needs my action <em>${groups.needs.length}</em></h2><button type="button" data-vector-route="time-review">Open Time Review ${icon('arrow')}</button></div><div class="vector-alert-list">${needsBody}</div>${awaitingBody}</section>`;}
+function actionEvidenceAvailabilityMarkup(){const status=state.timeReviewEvidence.status;return status==='unavailable'?'<p class="vector-empty">Source evidence is unavailable. Open Time Review to inspect the current source work.</p>':status==='partial'?'<p class="vector-empty">Some source evidence is unavailable. Verify the remaining work in Time Review.</p>':'';}
+function alertsMarkup(rows){const groups=actionQueueGroups(rows),visibleNeeds=groups.needs.slice(0,4),visibleAwaiting=groups.awaiting.slice(0,3),needsBody=visibleNeeds.length?visibleNeeds.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>',awaitingBody=groups.awaiting.length?`<details data-vector-awaiting-confirmation><summary class="vector-empty">Awaiting source confirmation · ${groups.awaiting.length}</summary><div class="vector-alert-list">${visibleAwaiting.map(alertRowMarkup).join('')}</div></details>`:'';return `<section class="vector-card vector-alerts" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><h2 id="vector-review-title"><span class="vector-alert-bell">${icon('bell')}</span>Needs my action <em>${groups.needs.length}</em></h2><button type="button" data-vector-route="time-review">Open Time Review ${icon('arrow')}</button></div>${actionEvidenceAvailabilityMarkup()}<div class="vector-alert-list">${needsBody}</div>${awaitingBody}</section>`;}
 function leaveMarkup(rows){const body=rows.length?rows.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join(''):`<button type="button" class="vector-leave-row" data-vector-route="leave" aria-label="Open Absence & Leave to review upcoming leave evidence"><span class="vector-person-badge" aria-hidden="true">i</span><span><b>Open Absence & Leave</b><small>No approved leave is available to this summary.</small></span><em>Source check</em><strong>Review</strong>${icon('chevron')}</button>`;return `<section class="vector-card vector-leave" data-vector-leave-evidence="${LEAVE_MARKER}" aria-label="Upcoming leave. Only approved source requests dated within the next seven days are shown."><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${body}</div></section>`;}
 function promoMarkup(){return '<aside class="vector-promo"><div><h2>A more productive<br>tomorrow starts today.</h2><p>Empowered people.<br>Stronger manufacturers.</p></div><div class="vector-promo-brand"><span class="vector-mark small"><i></i><i></i><i></i></span><b>Vector.</b></div></aside>';}
 function employeeHomeMarkup(v){

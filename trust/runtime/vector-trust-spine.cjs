@@ -61,6 +61,15 @@ function deny(code, message, detail = null) {
   throw error;
 }
 
+function currentlySupersedes(candidate, prior, now) {
+  return candidate.supersedes === prior.id &&
+    candidate.tenant === prior.tenant &&
+    candidate.subjectId === prior.subjectId &&
+    candidate.claimKey === prior.claimKey &&
+    Date.parse(candidate.observedAt) <= now &&
+    Date.parse(candidate.effectiveAt) <= now;
+}
+
 class EvidenceLedger {
   constructor({ now = Date.now } = {}) {
     this.now = now;
@@ -97,6 +106,13 @@ class EvidenceLedger {
 
     const id = clean(input.id || randomUUID(), 120);
     if (this.byId.has(id)) deny('VECTOR_EVIDENCE_DUPLICATE', 'Evidence id already exists.');
+    const supersedes = input.supersedes ? clean(input.supersedes, 120) : null;
+    if (supersedes) {
+      const prior = this.byId.get(supersedes);
+      if (!prior || prior.tenant !== tenant || prior.subjectId !== subjectId || prior.claimKey !== claimKey) {
+        deny('VECTOR_EVIDENCE_SUPERSEDE', 'Superseded evidence must already exist for the same tenant, subject and claim.');
+      }
+    }
 
     const value = clone(input.value);
     const valueDigest = digest(value);
@@ -104,7 +120,7 @@ class EvidenceLedger {
       row.tenant === tenant &&
       row.subjectId === subjectId &&
       row.claimKey === claimKey &&
-      !this.records.some((candidate) => candidate.supersedes === row.id)
+      !this.records.some((candidate) => currentlySupersedes(candidate, row, this.now()))
     );
 
     const contradictionRefs = sameClaim
@@ -132,18 +148,13 @@ class EvidenceLedger {
       contradictionRefs,
       transformationRef: input.transformationRef ? clean(input.transformationRef, 180) : null,
       authorityRef: input.authorityRef ? clean(input.authorityRef, 180) : null,
-      supersedes: input.supersedes ? clean(input.supersedes, 120) : null,
+      supersedes,
       previousDigest: this.headDigest,
     };
     const record = { ...core, recordDigest: digest(core) };
     this.records.push(record);
     this.byId.set(id, record);
     this.headDigest = record.recordDigest;
-
-    if (record.supersedes) {
-      const prior = this.byId.get(record.supersedes);
-      if (!prior || prior.tenant !== tenant) deny('VECTOR_EVIDENCE_SUPERSEDE', 'Superseded evidence must exist in the same tenant.');
-    }
 
     return clone(record);
   }
@@ -171,6 +182,7 @@ class EvidenceLedger {
     const stale = [];
     const contradicted = [];
     const wrongTenant = [];
+    const superseded = [];
     const records = [];
 
     for (const id of ids) {
@@ -188,12 +200,15 @@ class EvidenceLedger {
       const expiresMs = row.expiresAt ? Date.parse(row.expiresAt) : null;
       if ((expiresMs && now > expiresMs) || (Number.isFinite(maxAgeMs) && maxAgeMs >= 0 && now - observedMs > maxAgeMs)) stale.push(id);
       if (row.contradictionRefs.length) contradicted.push(id);
+      // Withdrawal begins when the successor is both known and effective. It
+      // never substitutes new evidence or revives history after successor expiry.
+      if (this.records.some((candidate) => currentlySupersedes(candidate, row, now))) superseded.push(id);
     }
 
     const trustFloor = records.length ? Math.min(...records.map((row) => row.sourceTrust)) : 0;
     const confidenceFloor = records.length ? Math.min(...records.map((row) => row.confidence)) : 0;
     const complete = ids.length > 0 && !missing.length && !wrongTenant.length;
-    const safe = complete && !stale.length && !contradicted.length;
+    const safe = complete && !stale.length && !contradicted.length && !superseded.length;
 
     return Object.freeze({
       contractVersion: 'VECTOR_EVIDENCE_ASSESSMENT_V1',
@@ -205,9 +220,10 @@ class EvidenceLedger {
       stale,
       contradicted,
       wrongTenant,
+      superseded,
       trustFloor,
       confidenceFloor,
-      assessmentDigest: digest({ tenant: tenant || null, ids, missing, stale, contradicted, wrongTenant, trustFloor, confidenceFloor }),
+      assessmentDigest: digest({ tenant: tenant || null, ids, missing, stale, contradicted, wrongTenant, superseded, trustFloor, confidenceFloor }),
     });
   }
 }
@@ -401,9 +417,12 @@ class TypedActionGateway {
       deny('VECTOR_ACTION_BLAST', 'Action blast radius exceeds registered action limits.');
     }
 
-    if (this.idempotency.has(action.idempotencyKey)) return clone(this.idempotency.get(action.idempotencyKey));
-
-    const evidenceAssessment = this.evidenceLedger.assess(action.evidenceRefs, {
+    const cacheKey = digest([action.tenant, action.idempotencyKey]);
+    const cached = this.idempotency.get(cacheKey);
+    // Reuse only the generated identity here, never the historical admission.
+    if (cached && !input.actionId) action.actionId = cached.action.actionId;
+    const context = clone(input.context || {});
+    const evidenceAssessment = this.evidenceLedger.assess([...action.evidenceRefs].sort(), {
       tenant: action.tenant,
       maxAgeMs: spec.maxEvidenceAgeMs,
     });
@@ -423,7 +442,7 @@ class TypedActionGateway {
       deny('VECTOR_ACTION_UNKNOWNS', 'Unknowns Engine permits only shadow or low-risk action for this uncertainty level.', unknowns);
     }
 
-    const guardian = this.guardian.evaluate(action, input.context || {});
+    const guardian = this.guardian.evaluate(action, context);
     if (!guardian.allowed) deny('VECTOR_ACTION_GUARDIAN', 'Customer Guardian rejected the action.', guardian);
 
     const authority = this.authorityKernel.evaluate({
@@ -433,6 +452,38 @@ class TypedActionGateway {
       evidenceAssessment,
     });
     if (!authority.allowed) deny('VECTOR_ACTION_AUTHORITY', 'Authority Kernel rejected the action.', authority);
+
+    // History is tenant-scoped and describes one exact request. Recheck current
+    // admission above before returning it; a past verification is not a grant.
+    const requestBindingDigest = digest({
+      action: {
+        ...action,
+        // Generated ids belong to the first execution, not each retry.
+        actionId: input.actionId ? clean(input.actionId, 120) : null,
+        evidenceRefs: [...action.evidenceRefs].sort(),
+      },
+      actor: clean(input.actor, 160),
+      grantId: clean(input.grantId, 120),
+      grantDigest: authority.grant?.grantDigest || null,
+      context,
+      certifiedPlaybookMatch: input.certifiedPlaybookMatch === true,
+      telemetryBlind: input.telemetryBlind === true,
+      modelDisagreement: input.modelDisagreement === true,
+      evidenceAssessmentDigest: evidenceAssessment.assessmentDigest,
+      policy: {
+        maxBlastRadius: spec.maxBlastRadius,
+        maxEvidenceAgeMs: spec.maxEvidenceAgeMs,
+        reversible: spec.reversible,
+        executorId: spec.executorId,
+        verifierId: spec.verifierId,
+      },
+    });
+    if (cached) {
+      if (cached.requestBindingDigest !== requestBindingDigest) {
+        deny('VECTOR_ACTION_IDEMPOTENCY_CONFLICT', 'Idempotency key is already bound to a different request or authority.');
+      }
+      return clone(cached);
+    }
 
     const executionRequest = {
       action,
@@ -471,6 +522,7 @@ class TypedActionGateway {
     const receiptCore = {
       contractVersion: 'VECTOR_TYPED_ACTION_RECEIPT_V1',
       action,
+      requestBindingDigest,
       beforeDigest,
       executionDigest,
       verificationDigest: validDigest(verification.verificationDigest) ? verification.verificationDigest : digest(verification),
@@ -483,7 +535,7 @@ class TypedActionGateway {
       status: 'VERIFIED',
     };
     const receipt = { ...receiptCore, receiptDigest: digest(receiptCore) };
-    this.idempotency.set(action.idempotencyKey, receipt);
+    this.idempotency.set(cacheKey, receipt);
     return clone(receipt);
   }
 }
