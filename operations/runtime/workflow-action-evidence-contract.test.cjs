@@ -29,6 +29,14 @@ function base(overrides={}){
   };
 }
 
+test('current evidence cannot expire at or before its observation',()=>{
+  for(const validUntil of ['2026-09-19T09:59:59.999Z','2026-09-19T10:00:00.000Z']){
+    const result=validateSourceActionEvidence(base({freshness:{state:'current',policyRef:'source-sla',validUntil}}));
+    assert.equal(result.ok,false,`contradictory current evidence admitted at ${validUntil}`);
+  }
+  assert.equal(validateSourceActionEvidence(base()).ok,true);
+});
+
 const freshnessEnvelope={timeZone:'Europe/London',asOf:'2026-09-19T10:02:00.000Z',maxAgeMs:300000};
 
 function timeReviewReport(overrides={}){
