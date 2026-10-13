@@ -5,6 +5,27 @@ const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.c
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
 const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
+for(const invalid of ['2026-02-30T08:00:00Z','2025-02-29T08:00:00Z','1900-02-29T08:00:00Z','2026-04-31T08:00:00+01:00','2026-06-31']){
+  test('impossible calendar timestamp '+invalid+' cannot enter source evidence',()=>{
+    const r=registry();
+    assert.throws(()=>r.recordSnapshot({sourceId:'gb-law',observedAt:invalid,contentDigest:sha('invalid'),verifiedRetrieval:true}),/observedAt.*valid ISO/);
+    assert.equal(r.latest('gb-law'),null);
+  });
+  test('impossible assessment timestamp '+invalid+' cannot manufacture freshness',()=>{
+    const r=registry(),snapshot=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-03-02T08:00:00Z',contentDigest:sha('valid'),verifiedRetrieval:true});
+    assert.throws(()=>r.assess('gb-law',{at:invalid}),/at.*valid ISO/);
+    assert.equal(r.latest('gb-law'),snapshot);
+  });
+}
+test('valid leap days and timezone offsets retain exact instants and receipt binding',()=>{
+  for(const observedAt of ['2024-02-29T23:30:00-02:00','2000-02-29T08:00:00Z','2026-04-30T23:30:00-02:00','2026-03-01T00:30:00+02:00']){
+    const r=registry(),snapshot=r.recordSnapshot({sourceId:'gb-law',observedAt,contentDigest:sha(observedAt),verifiedRetrieval:true});
+    assert.equal(snapshot.observedAt,new Date(observedAt).toISOString());
+    const a=r.assess('gb-law',{at:observedAt});
+    assert.equal(a.state,'CURRENT');assert.equal(a.ageHours,0);assert.equal(a.snapshotDigest,snapshot.snapshotDigest);
+    assert.equal(snapshot.executionAuthority,false);
+  }
+});
 test('registered source language evidence cannot change under its admitted digest',()=>{
   const r=registry(),source=r.all()[0],before=JSON.stringify(source);
   assert.throws(()=>source.nativeLanguages.push('altered'),TypeError);

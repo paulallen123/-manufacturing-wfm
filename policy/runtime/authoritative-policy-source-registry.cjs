@@ -5,7 +5,18 @@ const CHANNELS=new Set(['API','FEED','MACHINE_DOWNLOAD','OFFICIAL_WEB','SUBSCRIP
 function stable(v){if(Array.isArray(v)) return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object') return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v);}
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function text(v,max=240){return String(v??'').trim().slice(0,max);}
-function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error((name||'timestamp')+' must be valid ISO.');return new Date(ms).toISOString();}
+function iso(v,name){
+  const raw=text(v,80),ms=Date.parse(raw),date=/^(\d{4})-(\d{2})-(\d{2})(?:T|$)/.exec(raw);
+  let calendarValid=true;
+  if(date){
+    const year=Number(date[1]),month=Number(date[2]),day=Number(date[3]);
+    const leap=year%4===0&&(year%100!==0||year%400===0);
+    const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+    calendarValid=month>=1&&month<=12&&day>=1&&day<=days[month-1];
+  }
+  if(!raw||!Number.isFinite(ms)||!calendarValid) throw new Error((name||'timestamp')+' must be valid ISO.');
+  return new Date(ms).toISOString();
+}
 function list(v,max=50,maxLen=240){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 function normaliseSource(input={}){
   const id=text(input.id,160),authorityTier=text(input.authorityTier,60).toUpperCase(),channel=text(input.channel,40).toUpperCase();
