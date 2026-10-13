@@ -376,7 +376,7 @@
       ],
       "origin": "research alignment",
       "prototypeBuilt": true,
-      "status": "QUEUED_FOR_CONVERGENCE",
+      "status": "BLOCKED_WITH_ROUTE",
       "canonicalTarget": "training + digital-twin + scheduling",
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Predict which skills will constrain future production and target training before shortages become operational failures.",
@@ -391,9 +391,13 @@
       ],
       "designStatus": "COMPLETE",
       "deliveryStage": "THEORY_TEST",
-      "theoryStatus": "PENDING_RETEST",
-      "implementationStatus": "QUEUED",
-      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
+      "theoryStatus": "FAIL_SOURCE_ADMISSION",
+      "implementationStatus": "QUEUED_BLOCKED",
+      "blockers": [
+        "Current Training Twin emits VECTOR workflow learning keys, not authoritative manufacturing qualifications; profiles lack subject/tenant/site binding and PR#230 demand verification is caller asserted."
+      ],
+      "evidence": "docs/evidence/2026-10-13-skills-demand-source-admission.md",
+      "nextLifecycleAction": "Canonical Learning and Integration owners must approve provenance-bound manufacturing qualification and production-demand adapters; rerun normal, edge and adversarial theory tests before implementation."
     },
     {
       "id": "asset-intelligence-projection",
