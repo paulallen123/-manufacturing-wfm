@@ -11,6 +11,33 @@ const INTERNAL_HEADER = 'x-wfm-demand-internal';
 
 function nowIso(){ return new Date().toISOString(); }
 function sha256(v){ return createHash('sha256').update(String(v)).digest('hex'); }
+function snapshotJson(value,seen=new WeakSet()){
+  if(value===null||typeof value==='string'||typeof value==='boolean')return value;
+  if(typeof value==='number'&&Number.isFinite(value))return value;
+  if(!value||typeof value!=='object'||seen.has(value))throw Object.assign(new Error('Invalid delivery input.'),{statusCode:400});
+  const array=Array.isArray(value),prototype=Object.getPrototypeOf(value);
+  if(!array&&prototype!==Object.prototype&&prototype!==null)throw Object.assign(new Error('Invalid delivery input.'),{statusCode:400});
+  const descriptors=Object.getOwnPropertyDescriptors(value);
+  if(array&&(!Number.isSafeInteger(value.length)||Object.keys(descriptors).some(k=>k!=='length'&&!/^(0|[1-9]\d*)$/.test(k))))
+    throw Object.assign(new Error('Invalid delivery input.'),{statusCode:400});
+  seen.add(value);
+  const copy=array?[]:{};
+  if(array)copy.length=value.length;
+  for(const key of Reflect.ownKeys(value)){
+    if(array&&key==='length')continue;
+    const d=descriptors[key];
+    if(typeof key!=='string'||!d?.enumerable||!Object.hasOwn(d,'value')||array&&Number(key)>=value.length)
+      throw Object.assign(new Error('Invalid delivery input.'),{statusCode:400});
+    Object.defineProperty(copy,key,{value:snapshotJson(d.value,seen),enumerable:true,writable:true,configurable:true});
+  }
+  if(array&&Object.keys(copy).length!==value.length)throw Object.assign(new Error('Invalid delivery input.'),{statusCode:400});
+  seen.delete(value);
+  return copy;
+}
+function deepFreezeJson(value){
+  if(value&&typeof value==='object'){for(const v of Object.values(value))deepFreezeJson(v);Object.freeze(value);}
+  return value;
+}
 function compact(v,max=240){ return String(v??'').trim().slice(0,max); }
 function secureEqual(a,b){
   const x=Buffer.from(String(a||'')), y=Buffer.from(String(b||''));
@@ -208,10 +235,16 @@ function createDemandDecisionService(options={}){
     const body=await readJson(req);
     const tenant=compact(body.tenant,120);
     if(!tenant||body.input?.scope?.tenant!==tenant)return writeJson(res,400,{error:'Delivery tenant scope is required and must match.'});
+    const owned=deepFreezeJson(snapshotJson(body.input));
+    const verifierInput=snapshotJson(owned);
+    const inputIdentity=sha256(JSON.stringify({tenant,input:owned}));
     // A verifier must authenticate every source record and option evidence against
     // the tenant-scoped snapshot. A true result is the only accepted attestation.
-    if(await verifyDeliveryEvidence(body.input,tenant)!==true)return writeJson(res,422,{error:'Delivery evidence could not be authenticated.'});
-    const shadow=evaluateDeliveryDisruption(body.input);
+    let verified=false;
+    try{verified=await verifyDeliveryEvidence(verifierInput,tenant)===true;}catch{}
+    if(!verified||sha256(JSON.stringify({tenant,input:verifierInput}))!==inputIdentity||owned.scope?.tenant!==tenant)
+      return writeJson(res,422,{error:'Delivery evidence could not be authenticated.'});
+    const shadow=evaluateDeliveryDisruption(owned);
     if(shadow.status==='INSUFFICIENT_EVIDENCE')return writeJson(res,422,{shadow});
     // The lookup must share the writer lock with insertion. A pre-lock read can
     // race another process and turn a valid exact replay into a unique-key 500.
