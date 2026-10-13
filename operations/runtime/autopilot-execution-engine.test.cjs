@@ -6,16 +6,20 @@ function setup(adapter){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ap-')),d
 function plan(){return{adapter:'workforce-lifecycle',reversible:true,action:{eventKey:'ot',kind:'OVERTIME_OVERRIDE',employeeId:'E1',effectiveAt:'2026-09-22T12:00:00Z',payload:{minutes:60}},rollback:{eventKey:'rb',reason:'restore'}};}
 test('rejects nonstring operational identifiers and rollback reason before issuing a permit',()=>{
  const changes=[
+  p=>{p.adapter=['workforce-lifecycle'];},
+  p=>{p.action.kind=['OVERTIME_OVERRIDE'];},
   p=>{p.action.employeeId={id:'E1'};},
+  p=>{p.action.effectiveAt=new Date('2026-09-22T12:00:00Z');},
   p=>{p.action.eventKey=['ot'];},
+  p=>{p.action.eventKey=null;},
   p=>{p.rollback.eventKey=['rb'];},
   p=>{p.rollback.reason={text:'restore'};}
  ];
  const s=setup({});try{
   for(const change of changes){
    const p=plan();change(p);
-   assert.throws(()=>safePlan(p),/string/i);
-   assert.throws(()=>s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:p}),/string/i);
+   assert.throws(()=>safePlan(p),/string|unsupported/i);
+   assert.throws(()=>s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:p}),/string|unsupported/i);
   }
   const db=new DatabaseSync(path.join(s.dir,'x.db'));
   assert.equal(db.prepare('SELECT count(*) AS n FROM vector_autopilot_permits').get().n,0);

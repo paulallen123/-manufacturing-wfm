@@ -14,13 +14,13 @@ function pathOf(req){return String(req?.url||'/').split('?')[0]||'/';}
 function writeJson(res,status,body){if(res.headersSent||res.writableEnded)return true;res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.end(JSON.stringify(body));return true;}
 async function readJson(req,max=131072){let size=0,chunks=[];for await(const chunk of req){const b=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);size+=b.length;if(size>max){const e=new Error('Request body too large.');e.statusCode=413;throw e;}chunks.push(b);}if(!chunks.length)return{};try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{const e=new Error('Invalid JSON body.');e.statusCode=400;throw e;}}
 function safePlan(input={}){
- if(compact(input.adapter,80)!=='workforce-lifecycle')throw new Error('Unsupported Autopilot execution adapter.');
+ if(typeof input.adapter!=='string'||compact(input.adapter,80)!=='workforce-lifecycle')throw new Error('Unsupported Autopilot execution adapter.');
  if(input.reversible!==true)throw new Error('Autopilot execution requires a reversible action.');
  const a=input.action&&typeof input.action==='object'&&!Array.isArray(input.action)?input.action:null;if(!a)throw new Error('Autopilot action is required.');
  const kind=planString(a.kind,'Action kind',40).toUpperCase();if(!['OVERTIME_OVERRIDE','AGENCY_ASSIGNMENT'].includes(kind))throw new Error('Autopilot workforce execution is limited to approved overtime or agency assignment actions.');
  const employeeId=planString(a.employeeId,'Employee ID',120),effectiveAt=planString(a.effectiveAt,'Effective time');
  if(!employeeId||!iso(effectiveAt))throw new Error('Autopilot workforce action requires employeeId and effectiveAt.');
- const eventKey=a.eventKey==null?'':planString(a.eventKey,'Action event key',160);
+ const eventKey=Object.hasOwn(a,'eventKey')?planString(a.eventKey,'Action event key',160):'';
  const rb=input.rollback&&typeof input.rollback==='object'&&!Array.isArray(input.rollback)?input.rollback:null;
  if(!rb)throw new Error('Autopilot execution requires an explicit rollback plan.');
  const rollbackKey=planString(rb.eventKey,'Rollback event key',160),rollbackReason=planString(rb.reason,'Rollback reason',300);
