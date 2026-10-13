@@ -6,7 +6,7 @@ Accepted backlog row F1.6 and PR #303 review discussion `discussion_r4243119830`
 
 ## Ownership and conflict check
 
-Visible agents: root only. GitHub reported zero queued and zero in-progress Actions runs. PR #461 has no workflow runs, no workflow file, and no admission branch or package; its completed exact-head review is implementation review, not supported-runtime/image proof. Searches of current open PRs, branches, issue evidence, and the authoritative backlog/intake found no claimant for this proof lane. Reservation: issue #265 comment `6155514091`. The canonical integration/release/deployment owner remains unchanged.
+Visible agents: root only. GitHub reported zero queued and zero in-progress Actions runs at reservation time. PR #461 had no workflow runs, no workflow file, and no admission branch or package; its completed exact-head review is implementation review, not supported-runtime/image proof. Searches of current open PRs, branches, issue evidence, and the authoritative backlog/intake found no claimant for this proof lane. Reservation: issue #265 comment `6155514091`. The canonical integration/release/deployment owner remains unchanged.
 
 ## Exact base and files
 
@@ -23,16 +23,19 @@ The owner-triggered workflow checks out the immutable PR #461 head rather than t
 
 ## Tests and results
 
-- Local workflow structure and YAML parsing: PASS.
-- Local diff whitespace checks for both added files: PASS.
-- Exact supported Node source run: pending GitHub Actions.
-- Exact full Docker admission: pending GitHub Actions.
-- Final installed-byte verification: pending GitHub Actions.
-- Tooling note: Ruby was unavailable for YAML parsing; Python PyYAML parsed the workflow successfully.
+- Local workflow structure and Python PyYAML parsing: PASS.
+- Local diff whitespace checks for both added files: PASS. Ruby was unavailable and is recorded as a tooling failure, not a product failure.
+- Independent review of original proof head `931d9f2a6b5bfb1d2fcca26de4e37f6926b67a73`: FAILED with one major finding. The image marker strings were over-escaped and would search for literal `\\n` rather than a newline.
+- Focused marker-boundary regression on the reviewed defect: RED, 0/1 with `opening marker must match an actual newline`.
+- Minimal two-literal repair: corrected head `4e176788a9f667ec756cccacbeaee5d35c5196b8`.
+- Focused marker-boundary regression after repair: GREEN, 1/1. YAML parsing and whitespace checks remain PASS.
+- Independent exact-head re-review of `4e176788a9f667ec756cccacbeaee5d35c5196b8`: APPROVED. Byte evaluation confirmed the opening marker ends with LF and the closing marker begins with LF; no new issue found.
+- Superseded-head run `38470438686`: must not be admitted regardless of outcome.
+- Corrected exact-head run `38470712974`: pending GitHub Actions.
 
 ## Review, integration, deployment, and proof status
 
-Package state: **BUILT**, pending independent review and exact workflow execution. PR #461 remains draft/unmerged. Nothing is integrated into the canonical branch, deployed, enabled, hosted-proven, customer-proven, or CUSTOMER-READY by this package.
+Package state: **BUILT**, with an initial independent-review failure repaired and exact-head re-review plus workflow execution pending. PR #461 remains draft/unmerged. Nothing is integrated into the canonical branch, deployed, enabled, hosted-proven, customer-proven, or CUSTOMER-READY by this package.
 
 ## Risks, blockers, and next action
 
