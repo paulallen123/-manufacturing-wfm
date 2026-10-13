@@ -10,7 +10,7 @@ const SILENT_SOURCES=new Set(['workaround','manual-override','workflow-abandonme
 
 function text(value,max=240){ return String(value??'').trim().slice(0,max); }
 function iso(value){ const raw=text(value,80),ms=Date.parse(raw); if(!raw||!Number.isFinite(ms)) throw new Error('Valid observedAt is required.'); return new Date(ms).toISOString(); }
-function score(value,name,max=5){ const n=Number(value); if(!Number.isFinite(n)||n<0||n>max) throw new Error(`${name} must be between 0 and ${max}.`); return n; }
+function score(value,name,max=5){ if(typeof value!=='number'||!Number.isFinite(value)) throw new Error(`${name} must be a finite number.`); if(value<0||value>max) throw new Error(`${name} must be between 0 and ${max}.`); return value; }
 function ratio(value,name){ return score(value,name,1); }
 function list(value,max=20,maxLen=160){ return Array.isArray(value)?[...new Set(value.map(v=>text(v,maxLen)).filter(Boolean))].slice(0,max):[]; }
 
