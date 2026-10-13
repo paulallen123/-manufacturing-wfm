@@ -30,6 +30,33 @@ test('process profile, warm-up, cooldown, shift-window and continuity constraint
 
 test('stale, superseded, malformed economics and low confidence still fail closed',()=>{for(const mutate of [i=>i.energySignal.freshUntil='2026-09-18T05:59:59.000Z',i=>i.energySignal.revision=1,i=>i.energySignal.confidence=0.3,i=>i.options[1].labour.premiumCost=-999,i=>i.options[1].workforce.confidence=0.4]){const i=baseInput();mutate(i);const r=evaluateEnergyFlexibility(i);assert.equal(r.status,'no_safe_or_valuable_flexibility');}});
 
+test('present malformed confidence cannot fall back to full certainty',()=>{
+ for(const [target,reason] of [
+  [i=>i.energySignal,'energy_signal_confidence_invalid'],
+  [i=>i.process,'process_confidence_invalid'],
+  [i=>i.options[1].workforce,'workforce_confidence_invalid']
+ ]){
+  for(const value of [null,'',false,[],{},'unknown',1.1]){
+   const input=baseInput();target(input).confidence=value;
+   const result=evaluateEnergyFlexibility(input);
+   assert.equal(result.status,'no_safe_or_valuable_flexibility');
+   assert.ok(result.rejectedOptions.find(o=>o.id==='shift-later').hardConstraintFailures.includes(reason));
+  }
+ }
+ const valid=baseInput();valid.energySignal.confidence='0.98';
+ assert.equal(evaluateEnergyFlexibility(valid).status,'recommend_options');
+ const replay=baseInput();
+ replay.energyEvents=[{...replay.energySignal,confidence:'unknown'}];
+ delete replay.energySignal;
+ const replayResult=evaluateEnergyFlexibility(replay);
+ assert.equal(replayResult.status,'no_safe_or_valuable_flexibility');
+ assert.ok(replayResult.signalFailures.includes('energy_signal_confidence_invalid'));
+ for(const value of [null,'',false,[],{},'unknown',1.1]){
+  const input=baseInput();input.minimumDecisionConfidence=value;
+  assert.throws(()=>evaluateEnergyFlexibility(input),/minimumDecisionConfidence/);
+ }
+});
+
 test('hard workforce and actuation boundaries remain enforced',()=>{const i=baseInput();Object.assign(i.options[1].workforce,{staffingCount:2,minimumStaffing:4,restCompliant:false,qualificationsValid:false,requiredSkills:{furnace:2},skillCoverage:{furnace:1}});i.options[1].controls={directGridBid:true,directMachineCommand:true,directBatteryDispatch:true,directRobotCommand:true};const x=evaluateEnergyFlexibility(i).rejectedOptions.find(o=>o.id==='shift-later');for(const reason of ['minimum_staffing_not_met','working_time_or_rest_violation','qualification_invalid','skill_gap:furnace','direct_grid_bid_forbidden','direct_machine_control_forbidden','direct_bess_control_forbidden','direct_robot_control_forbidden']) assert.ok(x.hardConstraintFailures.includes(reason));});
 
 test('identical authoritative state remains reproducible while material changes alter hash',()=>{const i=baseInput(),a=evaluateEnergyFlexibility(i),b=evaluateEnergyFlexibility(structuredClone(i));assert.equal(a.reproducibilityHash,b.reproducibilityHash);const c=structuredClone(i);c.options[1].labour.premiumCost++;assert.notEqual(a.reproducibilityHash,evaluateEnergyFlexibility(c).reproducibilityHash);});
