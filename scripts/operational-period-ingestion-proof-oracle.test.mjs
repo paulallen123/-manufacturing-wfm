@@ -326,3 +326,16 @@ test('malformed or hostile JSON is bounded and does not run accessors', () => {
   let nested = {}; for (let i = 0; i < 40; i++) nested = { nested }; reject(nested, /json/);
   for (const fn of [p => p.ingestion.input.records[0] = null, p => p.readbacks.post.weeklyReview.body.teams = [null], p => p.readbacks.post.timeReview.pages[0].rows = [null], p => p.replays[0].input = null]) reject(mutate(fn));
 });
+test('a proxy cannot substitute active reads for inert period proof JSON', () => {
+  const p = fixture();
+  p.expected = new Proxy(p.expected, {});
+  reject(p, /json/);
+
+  const hostile = fixture();
+  let trapInvoked = false;
+  hostile.ingestion.input = new Proxy(hostile.ingestion.input, {
+    ownKeys() { trapInvoked = true; throw Error('active receipt trap'); },
+  });
+  reject(hostile, /json/);
+  assert.equal(trapInvoked, false);
+});
