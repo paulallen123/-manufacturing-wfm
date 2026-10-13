@@ -5,6 +5,8 @@ const canonicalId=v=>typeof v==='string'&&v.length>0&&v===v.trim();
 const pairKey=(a,b)=>JSON.stringify([a,b]);
 const knownZone=(policy,zone)=>Object.hasOwn(policy.zones??{},zone)&&policy.zones[zone]!=null&&typeof policy.zones[zone]==='object'&&!Array.isArray(policy.zones[zone]);
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
+const nonNegativeSetting=v=>(finite(v)||(typeof v==='string'&&v.trim()!==''&&finite(Number(v))))&&Number(v)>=0;
+const optionalControl=v=>v==null?null:Number(v);
 const ts=v=>{const n=Date.parse(String(v??''));return Number.isFinite(n)?n:null;};
 
 function policyGate(policy,now){
@@ -87,6 +89,8 @@ function transitionIndex(policy){
   if(knownZone(policy,outside))return {ok:false,reason:'outside_zone_invalid'};
   for(const row of policy.transitions){
     if(!canonicalId(row?.from)||!canonicalId(row?.to)||typeof row.allowed!=='boolean')return {ok:false,reason:'transition_rule_invalid'};
+    if(row.gowningCycle!==undefined&&typeof row.gowningCycle!=='boolean')return {ok:false,reason:'transition_rule_invalid'};
+    if([row.controlMinutes,row.controlCost].some(value=>value!=null&&!nonNegativeSetting(value)))return {ok:false,reason:'transition_rule_invalid'};
     const key=pairKey(row.from,row.to);
     // Even identical duplicates need source reconciliation; order is not authority.
     if(map.has(key))return {ok:false,reason:'duplicate_transition_rule'};
@@ -112,16 +116,16 @@ function buildMovement(sessions,policy,transitions){
         workerId,from,to:row.zone,at:row.enterAt,
         approved:rule?.allowed===true,
         gowningCycle:rule?.gowningCycle===true,
-        controlMinutes:finite(Number(rule?.controlMinutes))?Number(rule.controlMinutes):null,
-        controlCost:finite(Number(rule?.controlCost))?Number(rule.controlCost):null
+        controlMinutes:optionalControl(rule?.controlMinutes),
+        controlCost:optionalControl(rule?.controlCost)
       });
       from=row.zone;
       const exitRule=transitions.get(pairKey(from,clean(policy.defaultOutsideZone)||'OUT'));
       movement.push({
         workerId,from,to:clean(policy.defaultOutsideZone)||'OUT',at:row.exitAt,
         approved:exitRule?.allowed===true,gowningCycle:exitRule?.gowningCycle===true,
-        controlMinutes:finite(Number(exitRule?.controlMinutes))?Number(exitRule.controlMinutes):null,
-        controlCost:finite(Number(exitRule?.controlCost))?Number(exitRule.controlCost):null
+        controlMinutes:optionalControl(exitRule?.controlMinutes),
+        controlCost:optionalControl(exitRule?.controlCost)
       });
       from=clean(policy.defaultOutsideZone)||'OUT';
     }
@@ -166,8 +170,8 @@ function candidateBundles(tasks,sessions,policy,transitions){
         observedSeparateEntries:true,
         potentialEntryReduction:1,
         potentialGowningReduction:entryRule?.gowningCycle===true?1:0,
-        potentialControlMinutesAvoided:finite(Number(entryRule?.controlMinutes))?Number(entryRule.controlMinutes):null,
-        potentialControlCostAvoided:finite(Number(entryRule?.controlCost))?Number(entryRule.controlCost):null,
+        potentialControlMinutesAvoided:optionalControl(entryRule?.controlMinutes),
+        potentialControlCostAvoided:optionalControl(entryRule?.controlCost),
         status:'candidate_only',
         claimBoundary:'This is a deterministic consolidation candidate, not proof that an observed entry was unnecessary or that contamination risk would fall.'
       });
@@ -225,9 +229,11 @@ export function buildInterventionTransitionLedger({policy,tasks=[],presenceEvent
 
   const opportunities=paired.issues.length||unapprovedMovement.length?[]:candidateBundles(normalizedTasks,sessions,policy,transitions.map);
   const gowningCycles=movement.filter(x=>x.gowningCycle===true&&x.to!==(clean(policy.defaultOutsideZone)||'OUT')).length;
-  const controlMinutes=movement.filter(x=>x.to!==(clean(policy.defaultOutsideZone)||'OUT')).reduce((sum,x)=>x.controlMinutes==null?sum:sum+x.controlMinutes,0);
+  const controlMinutesKnown=movement.filter(x=>x.to!==(clean(policy.defaultOutsideZone)||'OUT')).every(x=>x.controlMinutes!=null);
+  const controlMinutes=controlMinutesKnown?movement.filter(x=>x.to!==(clean(policy.defaultOutsideZone)||'OUT')).reduce((sum,x)=>sum+x.controlMinutes,0):null;
   const controlCostKnown=movement.filter(x=>x.to!==(clean(policy.defaultOutsideZone)||'OUT')).every(x=>x.controlCost!=null);
   const controlCost=controlCostKnown?movement.filter(x=>x.to!==(clean(policy.defaultOutsideZone)||'OUT')).reduce((sum,x)=>sum+x.controlCost,0):null;
+  if((controlMinutes!==null&&!finite(controlMinutes))||(controlCost!==null&&!finite(controlCost)))return {status:'blocked',reason:'transition_metrics_invalid'};
 
   return {
     status:paired.issues.length||unapprovedMovement.length?'needs_review':'ledger_ready',
