@@ -9,10 +9,36 @@ const { Readable } = require('node:stream');
 const { createHash,createHmac } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { createOneDayEnterpriseEngine, REQUIREMENTS } = require('./one-day-enterprise-engine.cjs');
+const { verifiedCanonicalPeople } = require('./one-day-enterprise-engine-core.cjs');
+const { PERSON_FIELDS } = require('../../integration/runtime/canonical-person-fields.cjs');
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
 }
+
+test('readiness rejects modified canonical imports while retaining intact source batches', () => {
+  const people = [
+    { employeeId: 'E-100', location: 'Plant 1', department: 'Assembly' },
+    { employeeId: 'E-101', location: 'Plant 1', department: 'Assembly' }
+  ];
+  const rows = people.map(person => ({
+    connection_id: 'connection-1',
+    employee_key: sha256(person.employeeId),
+    record_checksum: sha256(JSON.stringify(PERSON_FIELDS.map(field => [field, person[field] ?? null]))),
+    canonical_json: JSON.stringify(person)
+  }));
+  const batch = {
+    connection_id: 'connection-1', mapping_version: 1, source_count: 2, record_count: 2,
+    site_count: 1, department_count: 1,
+    batch_checksum: sha256(['connection-1', '1', ...rows.map(row => row.record_checksum).sort()].join('|'))
+  };
+  assert.deepEqual(verifiedCanonicalPeople(batch, rows).sites, ['Plant 1']);
+  assert.equal(verifiedCanonicalPeople(batch, [{ ...rows[0], canonical_json: JSON.stringify({ ...people[0], location: 'Plant 2' }) }, rows[1]]), null);
+  assert.equal(verifiedCanonicalPeople(batch, [{ ...rows[0], connection_id: 'connection-2' }, rows[1]]), null);
+  assert.equal(verifiedCanonicalPeople({ ...batch, batch_checksum: sha256('forged') }, rows), null);
+  assert.equal(verifiedCanonicalPeople({ ...batch, site_count: 2 }, rows), null);
+  assert.equal(verifiedCanonicalPeople(batch, [{ ...rows[0], employee_key: sha256('different') }, rows[1]]), null);
+});
 
 function fixture(options = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wfm-one-day-'));

@@ -2,6 +2,7 @@
 
 const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { PERSON_FIELDS } = require('./canonical-person-fields.cjs');
 const { createGustoCompanyConnector } = require('./gusto-company-connector.cjs');
 const { serveGustoOAuthLanding } = require('./gusto-oauth-landing.cjs');
 
@@ -39,13 +40,7 @@ const CATALOG = Object.freeze([
 ]);
 
 const CATALOG_BY_KEY = new Map(CATALOG.map(x => [x.key, x]));
-const CANONICAL_FIELDS = Object.freeze({
-  Person: [
-    'employeeId', 'firstName', 'lastName', 'email', 'status', 'department',
-    'location', 'managerId', 'jobTitle', 'startDate', 'endDate', 'payRate',
-    'payCurrency', 'employmentType'
-  ]
-});
+const CANONICAL_FIELDS = Object.freeze({ Person: PERSON_FIELDS });
 
 const FIELD_SYNONYMS = Object.freeze({
   employeeId: ['employeeid', 'employee_id', 'employeenumber', 'employee_number', 'workerid', 'worker_id', 'personid', 'person_id', 'staffid', 'staff_id', 'personnelnumber'],
