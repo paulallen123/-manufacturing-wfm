@@ -206,7 +206,7 @@
       ],
       "origin": "global automation/infrastructure resilience research",
       "prototypeBuilt": true,
-      "status": "QUEUED_FOR_CONVERGENCE",
+      "status": "BLOCKED_WITH_ROUTE",
       "canonicalTarget": "resilience + factory-autopilot + implementation",
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Keep manufacturing safely operable when automation, integrations or infrastructure degrade.",
@@ -222,9 +222,15 @@
       ],
       "designStatus": "COMPLETE",
       "deliveryStage": "THEORY_TEST",
-      "theoryStatus": "PENDING_RETEST",
-      "implementationStatus": "QUEUED",
-      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
+      "theoryStatus": "FAIL_SOURCE_ADMISSION",
+      "implementationStatus": "QUEUED_BLOCKED",
+      "evidence": "docs/evidence/2026-10-13-degraded-mode-source-admission.md",
+      "blockers": [
+        "No independently verified OT asset/mode approval and risk-value source is bound to the evaluated site and time.",
+        "No current, unique person/shift qualification evidence is bound to the evaluated asset and competency; prototype counts duplicate people and instantly credits proposed training.",
+        "Asset identity/admission must reconcile with active PR #377 and existing resilience authority before an advisory adapter can be considered."
+      ],
+      "nextLifecycleAction": "Bind unique people and assets, current shift competence, OT manual-mode approval and risk values to independently verified tenant/site/source receipts; keep training recommendations separate from present coverage; then repeat theory tests before canonical integration."
     },
     {
       "id": "loss-prevention-workforce",
