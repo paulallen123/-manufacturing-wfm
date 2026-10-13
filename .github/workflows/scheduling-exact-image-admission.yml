@@ -17,8 +17,16 @@ env:
   TARGET_SHA: 71bd4dab2acd5557a965ef238d6bde402384f04d
 
 jobs:
+  ownership-guard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Refuse unowned proof execution
+        shell: bash
+        run: test "$GITHUB_ACTOR" = "$GITHUB_REPOSITORY_OWNER"
+
   exact-source-regression:
-    if: github.actor == github.repository_owner
+    needs: ownership-guard
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -37,9 +45,10 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$TARGET_SHA"
           test "$(node --version)" = "v22.23.2"
-          git hash-object \
-            operations/runtime/manufacturing-scheduling-engine.cjs \
-            operations/runtime/manufacturing-scheduling-engine.test.cjs
+          test "$(git hash-object operations/runtime/manufacturing-scheduling-engine.cjs)" = \
+            "e23a02a5e098990ad75fd1154632021b4ee94d43"
+          test "$(git hash-object operations/runtime/manufacturing-scheduling-engine.test.cjs)" = \
+            "a214f6da4d236b996465ab58e2157e7a83068392"
       - name: Install composed-runtime proof dependencies
         shell: bash
         run: npm ci --prefix security/runtime --ignore-scripts
@@ -54,8 +63,7 @@ jobs:
             operations/runtime/scheduling-forecast-reconciliation-service.test.cjs
 
   exact-installed-image:
-    if: github.actor == github.repository_owner
-    needs: exact-source-regression
+    needs: [ownership-guard, exact-source-regression]
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -76,14 +84,47 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          engine_sha="$(sha256sum operations/runtime/manufacturing-scheduling-engine.cjs | cut -d ' ' -f 1)"
           docker run --rm --user node --entrypoint /bin/sh \
+            --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
             --mount "type=bind,source=$GITHUB_WORKSPACE/operations/runtime,target=/proof/source,readonly" \
             -e "EXPECTED_SOURCE_SHA=$TARGET_SHA" \
+            -e "EXPECTED_ENGINE_SHA=$engine_sha" \
             "vector-scheduling-proof:$TARGET_SHA" -c '
               set -eu
               test "$(cat /app/.wfm-build-source-sha)" = "$EXPECTED_SOURCE_SHA"
               test "$(node --version)" = "v22.23.2"
               test -f /app/operations-runtime/manufacturing-scheduling-engine.cjs
+              test ! -L /app/operations-runtime/manufacturing-scheduling-engine.cjs
+              test "$(sha256sum /app/operations-runtime/manufacturing-scheduling-engine.cjs | cut -d " " -f 1)" = "$EXPECTED_ENGINE_SHA"
               cmp /proof/source/manufacturing-scheduling-engine.cjs \
                 /app/operations-runtime/manufacturing-scheduling-engine.cjs
             '
+          docker run --rm --user node --entrypoint node \
+            --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            "vector-scheduling-proof:$TARGET_SHA" -e '
+              const engine = require("/app/operations-runtime/manufacturing-scheduling-engine.cjs");
+              const plan = engine.createSchedulingPlan({
+                tenant: "proof", contextRevision: "proof:1", sourceEvidence: ["synthetic:1"],
+                workers: [{id:"w1",type:"EMPLOYEE",status:"ACTIVE",homeSite:"a",eligibleSites:["a"],skills:["s"],certifications:[],availability:[{start:"2026-10-13T06:00:00Z",end:"2026-10-13T18:00:00Z"}],hoursWorkedWeek:0,contractedHours:40,hourlyCost:1}],
+                requirements: [{id:"r1",site:"a",role:"operator",start:"2026-10-13T08:00:00Z",end:"2026-10-13T16:00:00Z",headcount:1,requiredSkills:["s"]}]
+              });
+              if (plan.assignments[0].workerId !== "w1" || plan.executionPermitted !== false) process.exit(1);
+            '
+
+  admission-verdict:
+    if: always()
+    needs: [ownership-guard, exact-source-regression, exact-installed-image]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every named admission job to succeed
+        shell: bash
+        env:
+          GUARD_RESULT: ${{ needs.ownership-guard.result }}
+          SOURCE_RESULT: ${{ needs.exact-source-regression.result }}
+          IMAGE_RESULT: ${{ needs.exact-installed-image.result }}
+        run: |
+          test "$GUARD_RESULT" = success
+          test "$SOURCE_RESULT" = success
+          test "$IMAGE_RESULT" = success
