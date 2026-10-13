@@ -1,0 +1,70 @@
+name: Customer demand numeric admission
+on:
+  push:
+    branches: ['backlog/customer-demand-numeric-20261013']
+permissions:
+  contents: read
+concurrency:
+  group: customer-demand-numeric-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  source-service-regression:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Bind exact source and supported runtime
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test "$(node --version)" = "v22.23.2"
+          git hash-object operations/runtime/customer-demand-intelligence.cjs operations/runtime/customer-demand-numeric-admission.test.cjs operations/runtime/customer-demand-numeric-service.test.cjs
+      - name: Exercise demand score, persistence and existing service
+        run: node --test operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/customer-demand-numeric-admission.test.cjs operations/runtime/customer-demand-numeric-service.test.cjs operations/runtime/demand-decision-service.test.cjs
+  installed-image-regression:
+    if: github.actor == github.repository_owner
+    needs: source-service-regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          ref: ${{ github.sha }}
+      - name: Execute existing complete Docker admission on exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          docker build --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="$GITHUB_SHA" -t "vector-demand-proof:$GITHUB_SHA" .
+      - name: Verify installed source and run installed demand engine and service
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --user node --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/operations/runtime,target=/proof/source,readonly" \
+            -e "EXPECTED_SOURCE_SHA=$GITHUB_SHA" "vector-demand-proof:$GITHUB_SHA" -c '
+              set -eu
+              test "$(cat /app/.wfm-build-source-sha)" = "$EXPECTED_SOURCE_SHA"
+              test "$(node --version)" = "v22.23.2"
+              mkdir /tmp/demand-installed-tests
+              for name in customer-demand-intelligence.cjs demand-decision-service.cjs absence-recovery-shadow.cjs decision-episode.cjs; do
+                cmp "/proof/source/$name" "/app/operations-runtime/$name"
+                ln -s "/app/operations-runtime/$name" "/tmp/demand-installed-tests/$name"
+              done
+              for name in customer-demand-intelligence.test.cjs customer-demand-numeric-admission.test.cjs customer-demand-numeric-service.test.cjs demand-decision-service.test.cjs; do
+                cp "/proof/source/$name" "/tmp/demand-installed-tests/$name"
+              done
+              node --test /tmp/demand-installed-tests/*.test.cjs
+            '
