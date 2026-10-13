@@ -38,3 +38,14 @@ test('non-authoritative or provenance-free source cannot feed a decision',()=>{
  const noRev=structuredClone(sources);noRev.productionPlan.revision='';
  assert.equal(buildCashToCapacityEvidenceBundle({context,sources:noRev,now}).reason,'missing_source_provenance');
 });
+
+test('impossible or ambiguous source instants and invalid owner clock cannot appear fresh',()=>{
+ for(const value of ['2026-02-30T15:55:00Z','2026-09-20T15:55:00','2026-09-20','2026-09-20T15:55:00+00:00']){
+  const invalid=structuredClone(sources);invalid.productionPlan.observedAt=value;
+  assert.deepEqual(buildCashToCapacityEvidenceBundle({context,sources:invalid,now}),
+   {status:'rejected',reason:'invalid_source_time',type:'productionPlan'});
+ }
+ assert.equal(buildCashToCapacityEvidenceBundle({context,sources,now:'2026-02-30T16:00:00Z'}).reason,'invalid_source_time');
+ const millis=structuredClone(sources);millis.productionPlan.observedAt='2026-09-20T15:55:00.000Z';
+ assert.equal(buildCashToCapacityEvidenceBundle({context,sources:millis,now}).status,'accepted');
+});

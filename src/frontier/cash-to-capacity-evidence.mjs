@@ -3,8 +3,14 @@ export const CASH_TO_CAPACITY_EVIDENCE_VERSION='cash-to-capacity-evidence-v0.1.0
 const TYPES=['productionPlan','workforceEligibility','customerCommitment','financialMilestone'];
 
 function clean(v){return typeof v==='string'?v.trim():'';}
+// Match the outcome reconciler's explicit UTC, round-trip-validated instants.
+function utcTime(value){
+  if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(value))return NaN;
+  const instant=Date.parse(value);
+  return Number.isFinite(instant)&&new Date(instant).toISOString()===(value.length===20?value.slice(0,-1)+'.000Z':value)?instant:NaN;
+}
 function observedAgeMinutes(observedAt,now){
-  const a=Date.parse(String(observedAt??'')),b=Date.parse(String(now??''));
+  const a=utcTime(observedAt),b=utcTime(now);
   if(!Number.isFinite(a)||!Number.isFinite(b)||a>b)return Infinity;
   return (b-a)/60000;
 }
