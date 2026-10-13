@@ -231,13 +231,26 @@
       "sourceRefs": [
         "PR#214"
       ],
-      "origin": "cross-domain loss/yield research",
+      "origin": "cross-domain fire/property-protection impairment research",
       "prototypeBuilt": true,
       "status": "QUEUED_FOR_CONVERGENCE",
       "canonicalTarget": "factory-autopilot + realised-value",
       "mustConvergeOrBeSuperseded": true,
-      "customerValue": "Adjust workforce decisions using evidence of scrap, loss, quality and yield risk rather than labour cost alone.",
-      "convergenceRoute": "Converge its constraints and value evidence into Decision Episode and realised-value; retain safety/quality gates before any execution.",
+      "customerValue": "Use authoritative fire/property-protection impairment, temporary-control staffing, restoration and production evidence to identify advisory earlier-restoration options without bypassing site safety authority.",
+      "convergenceRoute": "Reconcile the PR#214 impairment and temporary-control semantics into the existing Decision Episode and realised-value models; retain PTW, EHS, engineering, quality and site-policy gates before any execution.",
+      "isolatedHardeningEvidence": {
+        "date": "2026-10-13",
+        "sourcePr": 214,
+        "draftPr": 427,
+        "exactBase": "9a63c4ac1547ee96db5b0a2f1dd643bc885916eb",
+        "status": "TESTED",
+        "focusedTests": "10/10 pass on Node 24 after red-first regressions",
+        "independentReview": "no remaining blockers",
+        "canonicalIntegration": "not adopted",
+        "deployment": "not deployed",
+        "hostedCustomerProof": "not proven",
+        "evidence": "docs/evidence/2026-10-13-loss-prevention-source-admission.md"
+      },
       "preserveGoldenJourneyPriority": true,
       "assignedEngines": [
         "orchestrator",
