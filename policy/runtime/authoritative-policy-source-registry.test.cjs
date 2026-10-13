@@ -5,6 +5,14 @@ const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.c
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
 const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
+test('regulatory intake binds its next snapshot to the actual current registry assessment',()=>{
+  const r=registry(),old=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T11:00:00Z',contentDigest:sha('old'),verifiedRetrieval:true});
+  const current=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T12:00:00Z',contentDigest:sha('current'),verifiedRetrieval:true});
+  const assessment=r.assess('gb-law',{at:'2026-10-13T13:00:00Z'}),changes=[{domain:'working-time',jurisdiction:'GB',confidence:1,ambiguity:'LOW',sourceRefs:['synthetic:policy']}];
+  assert.throws(()=>createRegulatoryChangeCandidate({sourceAssessment:assessment,previousSnapshotDigest:old.snapshotDigest,nextSnapshotDigest:old.snapshotDigest,changes}),/snapshot.*match/i);
+  const result=createRegulatoryChangeCandidate({sourceAssessment:assessment,previousSnapshotDigest:old.snapshotDigest,nextSnapshotDigest:current.snapshotDigest,changes});
+  assert.equal(result.sourceId,'gb-law');assert.equal(result.nextSnapshotDigest,current.snapshotDigest);assert.equal(result.reviewRequired,true);assert.equal(result.executionAuthority,false);
+});
 test('late older snapshot cannot hide a newer future observation from policy admission',()=>{
   const r=registry(),future=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-14T12:00:00Z',contentDigest:sha('future'),verifiedRetrieval:true});
   const older=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T12:00:00Z',contentDigest:sha('older'),verifiedRetrieval:true});
@@ -125,7 +133,7 @@ test('same snapshot becomes current exactly at observation then expires without 
 });
 test('future source evidence cannot enter the existing regulatory candidate path',()=>{
   const r=registry();r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-09-25T10:00:00Z',contentDigest:sha('future'),verifiedRetrieval:true});
-  const candidate=at=>createRegulatoryChangeCandidate({sourceAssessment:r.assess('gb-law',{at}),previousSnapshotDigest:sha('v1'),nextSnapshotDigest:sha('v1')});
+  const candidate=at=>{const assessment=r.assess('gb-law',{at});return createRegulatoryChangeCandidate({sourceAssessment:assessment,previousSnapshotDigest:assessment.snapshotDigest,nextSnapshotDigest:assessment.snapshotDigest});};
   assert.throws(()=>candidate('2026-09-25T09:00:00Z'),/Current authoritative source evidence/);
   const current=candidate('2026-09-25T10:00:00Z');assert.equal(current.state,'NO_CHANGE');assert.equal(current.promotionAuthority,false);
 });
