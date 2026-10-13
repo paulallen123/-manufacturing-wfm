@@ -19,8 +19,12 @@ function list(v,max=100,maxLen=160){
   return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];
 }
 function strictRefs(v,max=100,maxLen=220){
-  if(!Array.isArray(v)||v.some(x=>typeof x!=='string'||!x.trim()||x.trim().length>maxLen)) return [];
-  return [...new Set(v.map(x=>x.trim()))].slice(0,max);
+  if(!Array.isArray(v)||v.length>max) return [];
+  for(let i=0;i<v.length;i++){
+    const x=v[i];
+    if(!Object.prototype.hasOwnProperty.call(v,i)||typeof x!=='string'||!x.trim()||x.trim().length>maxLen) return [];
+  }
+  return [...new Set(v.map(x=>x.trim()))];
 }
 function n(v,f=0){ const x=Number(v); return Number.isFinite(x)?x:f; }
 function clamp(v,min,max,f){ const x=Number(v); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }

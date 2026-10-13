@@ -487,6 +487,64 @@ test('L11 overtime authority: overlength references cannot collide after a share
     event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' } }),
   /sourceEvidence/);
 });
+test('L11 overtime authority: over-count declarations cannot hide an unbound final reference', () => {
+  const bound = Array.from({ length: 100 }, (_, i) => 'policy:overtime:bound:' + i);
+  const invented = 'policy:overtime:invented:not-authoritative';
+  const overCount = { ...policy,
+    overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: [...bound, invented] } };
+  const requirement = req('overtime-over-count', 'A', '08:00:00', '10:00:00');
+
+  denied(check(requirement, [], overtimeWorker(), overCount, bound),
+    'OVERTIME_AUTHORITY_UNPROVEN');
+  assert.equal(plan([requirement], overtimeWorker(), overCount,
+    ['fixture:staff', ...bound]).quality.filledSlots, 0);
+
+  const other = req('overtime-over-count-other', 'A', '12:00:00', '14:00:00');
+  const swap = e.evaluateSwap({ workerA: overtimeWorker('w1'), workerB: overtimeWorker('w2'),
+    requirementA: requirement, requirementB: other, policy: overCount, sourceEvidence: bound,
+    currentAssignments: [assignment(requirement, 'w1'), assignment(other, 'w2')] });
+  assert.equal(swap.eligible, false);
+  assert.ok(swap.reasons.includes('OVERTIME_AUTHORITY_UNPROVEN'));
+
+  const validPrior = plan([requirement], overtimeWorker('w1'), overtimeAuthority,
+    ['fixture:staff', 'policy:overtime:approved']);
+  const repaired = e.repairSchedulingPlan({ priorPlan: validPrior,
+    workers: [overtimeWorker('w1'), overtimeWorker('w2')], requirements: [requirement], policy: overCount,
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2', sourceEvidence: bound,
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' } });
+  assert.equal(repaired.repairedPlan.quality.filledSlots, 0);
+  assert.ok(repaired.repairedPlan.unfilled[0].topReasons.some(
+    x => x.reason === 'OVERTIME_AUTHORITY_UNPROVEN'));
+});
+test('L11 evidence authority: sparse arrays cannot become provenance or policy authority', () => {
+  const sparse = Array(1);
+  const requirement = req('sparse-evidence', 'A', '08:00:00', '10:00:00');
+  assert.throws(() => plan([requirement], worker(), policy, sparse), /sourceEvidence/);
+  const normalised = e.normalisePolicy({ overtimeAuthorisation:
+    { authorised: true, maxHours: 1, evidenceRefs: sparse } }, sparse);
+  assert.equal(normalised.overtimeAuthorisation.authorised, false);
+  assert.deepEqual(normalised.overtimeAuthorisation.evidenceRefs, []);
+});
+test('L11 evidence authority: count limits accept their boundary and reject the next declaration', () => {
+  const refs100 = Array.from({ length: 100 }, (_, i) => 'policy:overtime:limit:' + i);
+  const requirement = req('overtime-count-boundary', 'A', '08:00:00', '10:00:00');
+  const exact = { ...policy,
+    overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: refs100 } };
+  assert.equal(check(requirement, [], overtimeWorker(), exact, refs100).ranked[0].eligible, true);
+  const duplicate100 = { ...policy,
+    overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: Array(100).fill('policy:one') } };
+  assert.equal(check(requirement, [], overtimeWorker(), duplicate100, ['policy:one']).ranked[0].eligible, true);
+  const duplicate101 = { ...policy,
+    overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: Array(101).fill('policy:one') } };
+  denied(check(requirement, [], overtimeWorker(), duplicate101, ['policy:one']),
+    'OVERTIME_AUTHORITY_UNPROVEN');
+
+  const source300 = Array.from({ length: 300 }, (_, i) => 'source:' + i);
+  assert.equal(plan([req('source-limit', 'A', '08:00:00', '10:00:00')], worker(), policy,
+    source300).sourceEvidence.length, 300);
+  assert.throws(() => plan([req('source-over-limit', 'A', '08:00:00', '10:00:00')], worker(), policy,
+    [...source300, 'source:300']), /sourceEvidence/);
+});
 test('L11 overtime authority: non-string evidence references never become authority by coercion', () => {
   for (const ref of [{}, true, 7]) {
     const malformed = { ...policy,
