@@ -38,3 +38,20 @@ test('verifier exceptions refuse without an unverified write',async()=>{
   try{assert.equal((await post(service,input())).status,422);assert.equal(rows(f).length,0);}
   finally{service.close();f.close();}
 });
+
+test('verifier cannot hide mutation through toJSON or non-JSON properties',async()=>{
+  for(const mutate of [
+    candidate=>{const p=candidate.evidence.find(e=>e.kind==='economics').payload;p.customerPenalty=800000;p.toJSON=()=>({customerPenalty:4000});},
+    candidate=>{Object.defineProperty(candidate.policy,'hidden',{value:'changed',enumerable:false});},
+    candidate=>{candidate.self=candidate;},
+  ]){
+    const f=fixture(),snapshot=input(),verify=verifierFor(snapshot);
+    const service=serviceFor(f,(candidate,tenant)=>{
+      const accepted=verify(candidate,tenant);
+      mutate(candidate);
+      return accepted;
+    });
+    try{assert.equal((await post(service,snapshot)).status,422);assert.equal(rows(f).length,0);}
+    finally{service.close();f.close();}
+  }
+});
