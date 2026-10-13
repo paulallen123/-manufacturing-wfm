@@ -26,6 +26,10 @@ test('due source-owned plan yields advisory without a work order', () => {
   assert.equal(result.evidence.plan.id, 'plan-1');
   assert.equal(result.evidence.plan.revision, 'r1');
   assert.equal(result.evidence.plan.nextDueAt, '2026-10-13T13:00:00.000Z');
+  assert.deepEqual(result.scope, scope);
+  assert.equal(result.evaluatedAt, now);
+  assert.equal(result.evidence.asset.effectiveFrom, '2026-01-01T00:00:00.000Z');
+  assert.ok(Object.isFrozen(result.scope));
 });
 
 test('future due date yields not-due advisory', () => {

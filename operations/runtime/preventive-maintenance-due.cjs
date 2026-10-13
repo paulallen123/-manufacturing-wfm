@@ -61,7 +61,8 @@ function assessPreventiveMaintenanceDue(input) {
   const supported = blockers.length === 0;
   const evidence = supported ? Object.freeze({
     asset: Object.freeze({ id: asset.id, revision: asset.revision, source: asset.provenance.source,
-      recordHash: asset.provenance.recordHash, observedAt: asset.observedAt }),
+      recordHash: asset.provenance.recordHash, observedAt: asset.observedAt,
+      effectiveFrom: asset.effectiveFrom, effectiveUntil: asset.effectiveUntil }),
     plan: Object.freeze({ id: plan.id, revision: plan.revision, source: plan.provenance.source,
       recordHash: plan.provenance.recordHash, observedAt: plan.observedAt,
       effectiveFrom: plan.effectiveFrom, effectiveUntil: plan.effectiveUntil,
@@ -69,6 +70,8 @@ function assessPreventiveMaintenanceDue(input) {
   }) : null;
   return Object.freeze({
     contractVersion: 'VECTOR_PREVENTIVE_MAINTENANCE_DUE_V1',
+    scope: Object.freeze({ tenant: scope.tenant, site: scope.site }),
+    evaluatedAt: input.now,
     status: supported ? (now >= due ? 'DUE_ADVISORY' : 'NOT_DUE_ADVISORY') : 'BLOCKED',
     blockers: Object.freeze(blockers),
     evidence,
