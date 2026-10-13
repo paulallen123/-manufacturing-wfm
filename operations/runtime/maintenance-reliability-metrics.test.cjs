@@ -27,7 +27,7 @@ test('aggregates complete CMMS window with scoped evidence and no inferred rate 
   const result = assessMaintenanceReliability(fixture());
   assert.equal(result.status, 'METRICS_ADVISORY');
   assert.deepEqual(result.scope, { ...scope, assetId: 'asset-1' });
-  assert.deepEqual(result.metrics, { unplannedFailureCount: 2, unplannedDowntimeMinutes: 45 });
+  assert.deepEqual(result.metrics, { unplannedFailuresStarted: 2, unplannedDowntimeMinutes: 45 });
   assert.equal(result.evidence.events[0].rootCauseEvidenceRef, 'inspection-1');
   assert.equal(result.evidence.events[1].rootCauseCode, null);
   assert.equal(result.executionAuthority, false);
@@ -37,7 +37,17 @@ test('aggregates complete CMMS window with scoped evidence and no inferred rate 
 test('complete empty window yields zero, rather than unknown', () => {
   const value = fixture(); value.snapshot.events = [];
   assert.deepEqual(assessMaintenanceReliability(value).metrics,
-    { unplannedFailureCount: 0, unplannedDowntimeMinutes: 0 });
+    { unplannedFailuresStarted: 0, unplannedDowntimeMinutes: 0 });
+});
+
+test('clips boundary-spanning downtime and counts only failures starting in the window', () => {
+  const value = fixture();
+  value.snapshot.events[0].startedAt = '2026-10-11T23:55:00.000Z';
+  value.snapshot.events[0].endedAt = '2026-10-12T00:05:00.000Z';
+  value.snapshot.events[1].startedAt = '2026-10-12T23:55:00.000Z';
+  value.snapshot.events[1].endedAt = '2026-10-13T00:02:00.000Z';
+  assert.deepEqual(assessMaintenanceReliability(value).metrics,
+    { unplannedFailuresStarted: 1, unplannedDowntimeMinutes: 10 });
 });
 
 for (const [name, mutate, blocker] of [
@@ -49,7 +59,10 @@ for (const [name, mutate, blocker] of [
   ['missing event list', v => { delete v.snapshot.events; }, 'CMMS_WINDOW_UNPROVEN'],
   ['foreign event site', v => { v.snapshot.events[0].site = 'other'; }, 'FAILURE_EVENT_UNPROVEN'],
   ['planned work mislabeled as failure', v => { v.snapshot.events[0].kind = 'PLANNED_MAINTENANCE'; }, 'FAILURE_EVENT_UNPROVEN'],
-  ['event outside window', v => { v.snapshot.events[0].endedAt = '2026-10-13T01:00:00.000Z'; }, 'FAILURE_EVENT_UNPROVEN'],
+  ['event outside window', v => { v.snapshot.events[0].startedAt = '2026-10-13T00:01:00.000Z'; v.snapshot.events[0].endedAt = '2026-10-13T00:02:00.000Z'; }, 'FAILURE_EVENT_UNPROVEN'],
+  ['event ends after snapshot', v => { v.snapshot.events[0].endedAt = '2026-10-13T00:06:00.000Z'; }, 'FAILURE_EVENT_UNPROVEN'],
+  ['nonstring event hash', v => { v.snapshot.events[0].recordHash = ['b'.repeat(64)]; }, 'FAILURE_EVENT_UNPROVEN'],
+  ['nonstring snapshot hash', v => { v.snapshot.provenance.recordHash = ['a'.repeat(64)]; }, 'CMMS_WINDOW_UNPROVEN'],
   ['duplicate event', v => { v.snapshot.events[1].id = 'failure-1'; }, 'FAILURE_EVENT_UNPROVEN'],
   ['overlapping events', v => { v.snapshot.events[1].startedAt = '2026-10-12T10:20:00.000Z'; }, 'OVERLAPPING_FAILURE_EVENTS']
 ]) {
