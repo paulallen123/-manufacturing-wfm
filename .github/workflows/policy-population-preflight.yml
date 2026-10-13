@@ -1,7 +1,7 @@
 name: Policy population source regression
 on:
   push:
-    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013', 'backlog/policy-confidence-admission-20261013', 'proof/policy-image-admission-20261013', 'backlog/policy-finite-freshness-20261013', 'backlog/policy-candidate-immutability-20261013', 'backlog/policy-source-metadata-20261013', 'proof/installed-archive-workflow-evidence-20261013', 'backlog/policy-calendar-admission-20261013']
+    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013', 'backlog/policy-confidence-admission-20261013', 'proof/policy-image-admission-20261013', 'backlog/policy-finite-freshness-20261013', 'backlog/policy-candidate-immutability-20261013', 'backlog/policy-source-metadata-20261013', 'proof/installed-archive-workflow-evidence-20261013', 'backlog/policy-calendar-admission-20261013', 'backlog/policy-source-authority-20261013']
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,7 +35,7 @@ jobs:
           node --test policy/runtime/*.test.cjs
 
   full-image-policy-regression:
-    if: github.actor == github.repository_owner && (github.ref == 'refs/heads/proof/policy-image-admission-20261013' || github.ref == 'refs/heads/backlog/policy-finite-freshness-20261013' || github.ref == 'refs/heads/backlog/policy-candidate-immutability-20261013' || github.ref == 'refs/heads/backlog/policy-source-metadata-20261013' || github.ref == 'refs/heads/proof/installed-archive-workflow-evidence-20261013' || github.ref == 'refs/heads/backlog/policy-calendar-admission-20261013')
+    if: github.actor == github.repository_owner && (github.ref == 'refs/heads/proof/policy-image-admission-20261013' || github.ref == 'refs/heads/backlog/policy-finite-freshness-20261013' || github.ref == 'refs/heads/backlog/policy-candidate-immutability-20261013' || github.ref == 'refs/heads/backlog/policy-source-metadata-20261013' || github.ref == 'refs/heads/proof/installed-archive-workflow-evidence-20261013' || github.ref == 'refs/heads/backlog/policy-calendar-admission-20261013' || github.ref == 'refs/heads/backlog/policy-source-authority-20261013')
     needs: source-regression
     runs-on: ubuntu-24.04
     timeout-minutes: 40

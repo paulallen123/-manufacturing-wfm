@@ -52,5 +52,5 @@ function createAuthoritativePolicySourceRegistry(initial=[]){
   function all(){return [...sources.values()].sort((a,b)=>a.id.localeCompare(b.id));}
   return Object.freeze({registerSource,recordSnapshot,latest,assess,all});
 }
-module.exports=Object.freeze({AUTHORITY_TIERS,CHANNELS,normaliseSource,createAuthoritativePolicySourceRegistry,digest,stable});
+module.exports=Object.freeze({AUTHORITY_TIERS:new Set(AUTHORITY_TIERS),CHANNELS:new Set(CHANNELS),normaliseSource,createAuthoritativePolicySourceRegistry,digest,stable});
 

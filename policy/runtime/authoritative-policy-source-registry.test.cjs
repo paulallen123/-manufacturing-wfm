@@ -5,6 +5,24 @@ const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.c
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
 const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
+test('exported authority tier metadata cannot widen private source admission',()=>{
+  const {AUTHORITY_TIERS}=require('./authoritative-policy-source-registry.cjs');
+  AUTHORITY_TIERS.add('INVENTED');
+  try{assert.throws(()=>createAuthoritativePolicySourceRegistry([{...sourceWithFreshness(24),authorityTier:'INVENTED'}]),/supported authorityTier and channel/);}
+  finally{AUTHORITY_TIERS.delete('INVENTED');}
+});
+test('exported channel metadata cannot widen private source admission',()=>{
+  const {CHANNELS}=require('./authoritative-policy-source-registry.cjs');
+  Set.prototype.add.call(CHANNELS,'UNVERIFIED');
+  try{assert.throws(()=>createAuthoritativePolicySourceRegistry([{...sourceWithFreshness(24),channel:'UNVERIFIED'}]),/supported authorityTier and channel/);}
+  finally{CHANNELS.delete('UNVERIFIED');}
+});
+test('editing exported metadata cannot remove supported source tiers or channels',()=>{
+  const {AUTHORITY_TIERS,CHANNELS}=require('./authoritative-policy-source-registry.cjs');
+  AUTHORITY_TIERS.delete('PRIMARY_GOVERNMENT');CHANNELS.delete('API');
+  try{const r=createAuthoritativePolicySourceRegistry([sourceWithFreshness(24)]);assert.equal(r.all()[0].authorityTier,'PRIMARY_GOVERNMENT');assert.equal(r.all()[0].channel,'API');}
+  finally{AUTHORITY_TIERS.add('PRIMARY_GOVERNMENT');CHANNELS.add('API');}
+});
 for(const invalid of ['2026-02-30T08:00:00Z','2025-02-29T08:00:00Z','1900-02-29T08:00:00Z','2026-04-31T08:00:00+01:00','2026-06-31','+002026-02-30T08:00:00Z','2026-02-30t08:00:00z','2026-02-30 08:00:00Z','2026-2-30 08:00:00Z']){
   test('impossible calendar timestamp '+invalid+' cannot enter source evidence',()=>{
     const r=registry();
