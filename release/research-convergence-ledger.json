@@ -443,7 +443,7 @@
       "designStatus": "COMPLETE",
       "deliveryStage": "IMPLEMENTATION",
       "theoryStatus": "PASS_ISOLATED",
-      "implementationStatus": "TESTED_ISOLATED_PENDING_REVIEW",
+      "implementationStatus": "TESTED_ISOLATED_PENDING_INTEGRATION",
       "evidence": "docs/evidence/2026-10-13-factory-playback-isolated-package.md",
       "nextLifecycleAction": "Obtain independent review, then have the canonical integration owner adopt the exact package and run exact-candidate and hosted customer proof."
     },
