@@ -9,9 +9,10 @@ function time(v){const t=Date.parse(String(v??''));return Number.isFinite(t)?t:n
 function daysBetween(later,earlier){return (later-earlier)/DAY_MS;}
 
 function evidenceState(evidence={},maxAgeMinutes=15){
+  if(!finite(maxAgeMinutes)||maxAgeMinutes<0)return {ok:false,reason:'invalid_evidence_age_limit'};
   const missing=REQUIRED_EVIDENCE.filter(k=>evidence[k]?.authoritative!==true);
   if(missing.length)return {ok:false,reason:'missing_authoritative_evidence',missing};
-  const stale=REQUIRED_EVIDENCE.filter(k=>!finite(Number(evidence[k]?.ageMinutes))||Number(evidence[k].ageMinutes)>maxAgeMinutes);
+  const stale=REQUIRED_EVIDENCE.filter(k=>!finite(evidence[k]?.ageMinutes)||evidence[k].ageMinutes<0||evidence[k].ageMinutes>maxAgeMinutes);
   if(stale.length)return {ok:false,reason:'stale_evidence',missing:stale};
   const revisions=REQUIRED_EVIDENCE.map(k=>clean(evidence[k]?.revision));
   if(revisions.some(v=>!v))return {ok:false,reason:'missing_source_revision',missing:REQUIRED_EVIDENCE.filter((k,i)=>!revisions[i])};
@@ -26,7 +27,7 @@ function validateOrder(order){
 }
 
 export function evaluateCashToCapacityCandidate(input={}){
-  const evidence=evidenceState(input.evidence,input.maxEvidenceAgeMinutes??15);
+  const evidence=evidenceState(input.evidence,input.maxEvidenceAgeMinutes===undefined?15:input.maxEvidenceAgeMinutes);
   if(!evidence.ok)return {status:'blocked',reason:evidence.reason,missing:evidence.missing??[]};
 
   const guard=input.guardrails??{};
@@ -114,3 +115,4 @@ export function rankCashToCapacityCandidates(candidates=[]){
     .slice()
     .sort((a,b)=>b.economics.estimatedEconomicValue-a.economics.estimatedEconomicValue||b.cashTiming.weightedCashDaysAdvanced-a.cashTiming.weightedCashDaysAdvanced);
 }
+

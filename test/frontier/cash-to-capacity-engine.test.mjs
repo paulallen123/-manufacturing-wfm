@@ -43,6 +43,19 @@ test('fails closed when evidence is stale or source revision is missing',()=>{
   assert.equal(evaluateCashToCapacityCandidate(missing).reason,'missing_source_revision');
 });
 
+test('rejects invalid source ages and age limits before qualifying cash advice',()=>{
+  for(const age of [-1,null,'0','2',NaN,Infinity,undefined]){
+    const input=structuredClone(base);input.evidence.productionPlan.ageMinutes=age;
+    assert.equal(evaluateCashToCapacityCandidate(input).reason,'stale_evidence',String(age));
+  }
+  for(const limit of [-1,null,'15',NaN,Infinity,{},false]){
+    const input=structuredClone(base);input.maxEvidenceAgeMinutes=limit;
+    assert.equal(evaluateCashToCapacityCandidate(input).reason,'invalid_evidence_age_limit',String(limit));
+  }
+  const fresh=structuredClone(base);fresh.evidence.productionPlan.ageMinutes=0;
+  assert.equal(evaluateCashToCapacityCandidate(fresh).status,'qualified');
+});
+
 test('rejects a cash-timing action whose true economic case is negative',()=>{
   const input=structuredClone(base);
   input.finance.liquidityProtectionValue=0;
@@ -56,3 +69,4 @@ test('ranking uses estimated economic value after hard gates',()=>{
   const b=evaluateCashToCapacityCandidate({...structuredClone(base),action:{actionId:'a2',summary:'Alternative'},finance:{...base.finance,liquidityProtectionValue:8000}});
   assert.equal(rankCashToCapacityCandidates([a,b])[0].actionId,'a2');
 });
+
