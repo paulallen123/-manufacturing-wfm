@@ -402,7 +402,7 @@
       ],
       "origin": "research alignment",
       "prototypeBuilt": true,
-      "status": "QUEUED_FOR_CONVERGENCE",
+      "status": "BLOCKED_WITH_ROUTE",
       "canonicalTarget": "digital-twin + factory-depth",
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Expose manufacturing asset intelligence to workforce decisions without creating a second source of truth.",
@@ -417,9 +417,11 @@
       ],
       "designStatus": "COMPLETE",
       "deliveryStage": "THEORY_TEST",
-      "theoryStatus": "PENDING_RETEST",
-      "implementationStatus": "QUEUED",
-      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
+      "theoryStatus": "FAIL_DIRECT_TWIN_PORT",
+      "implementationStatus": "QUEUED_BLOCKED",
+      "blockers": ["PR#230 projection expects 14 node types rejected by the current authoritative Implementation Digital Twin schema; direct port cannot accept genuine machine/material/order source records."],
+      "evidence": "docs/evidence/2026-10-13-asset-projection-schema-admission.md",
+      "nextLifecycleAction": "Canonical Digital Twin and integration-fabric owners must design a provenance-bound asset source adapter and approve its node mapping or a schema extension; re-run normal, edge and adversarial theory tests before implementation."
     },
     {
       "id": "factory-playback",
