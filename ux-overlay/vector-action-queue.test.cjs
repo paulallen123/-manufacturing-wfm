@@ -243,11 +243,11 @@ test('a previous personal fetch cannot overwrite the fresh record after authorit
  assert.match(content.html,/9 h/);assert.equal(api.state.employeeHome.value.leave.availableMinutes,540);
 });
 
-function timeEvidenceHarness({role='manager',allowed=true,calendarLoad,evidence={}}={}){
+function timeEvidenceHarness({role='manager',allowed=true,calendarLoad,calendarOverrides={},evidence={}}={}){
   const source=fs.readFileSync(path.join(__dirname,'vector-shell.js'),'utf8');
   const start=source.indexOf('function actionEvidenceOwnerKey()'),end=source.indexOf('function invalidateTenantCalendar()',start);
   assert.ok(start>0&&end>start);
-  const calendar={asOf:'2026-10-11T09:00:00Z',timeZone:'Europe/London',maxAgeMs:300000};
+  const calendar={asOf:'2026-10-11T09:00:00Z',timeZone:'Europe/London',maxAgeMs:300000,...calendarOverrides};
   const sandbox={state:{evidenceEpoch:0,timeReviewEvidence:{status:'idle',items:[],owner:''}},role,allowed,calls:[],
     sourceIdentity:()=>({tenant:'alpha',email:'user@alpha',id:'u1',role:sandbox.role}),employee:()=>sandbox.role==='employee',
     available:route=>route==='attendance'&&sandbox.allowed,refreshActionSurfaces:()=>{},loadTenantCalendar:calendarLoad||(()=>Promise.resolve(calendar)),
@@ -302,3 +302,30 @@ test('the action surface explains unavailable and partial evidence to the signed
  vector.state.timeReviewEvidence.status='unavailable';assert.match(vector.alertsMarkup([]),/Source evidence is unavailable/);
  vector.state.timeReviewEvidence.status='partial';assert.match(vector.alertsMarkup([]),/Some source evidence is unavailable/);
 });
+
+test('future Time Review envelopes cannot borrow the source stale-age allowance',async()=>{
+ const {sandbox}=timeEvidenceHarness({evidence:{asOf:'2026-10-11T09:01:00Z'}});
+ assert.equal(await sandbox.api.loadTimeReviewEvidence(),false);
+ assert.equal(sandbox.state.timeReviewEvidence.status,'unavailable');
+ assert.equal(sandbox.state.timeReviewEvidence.items.length,0);
+});
+test('Time Review envelopes older than a short source cap remain unavailable',async()=>{
+ const {sandbox}=timeEvidenceHarness({calendarOverrides:{maxAgeMs:15000},evidence:{asOf:'2026-10-11T08:59:40Z'}});
+ assert.equal(await sandbox.api.loadTimeReviewEvidence(),false);
+ assert.equal(sandbox.state.timeReviewEvidence.status,'unavailable');
+});
+test('nonpositive or nonfinite Time Review caps cannot mark an empty queue ready',async()=>{
+ for(const maxAgeMs of [0,-1,Infinity,-Infinity,NaN]){
+  const {sandbox}=timeEvidenceHarness({calendarOverrides:{maxAgeMs},evidence:{items:[]}});
+  assert.equal(await sandbox.api.loadTimeReviewEvidence(),false,String(maxAgeMs));
+  assert.equal(sandbox.state.timeReviewEvidence.status,'unavailable');
+ }
+});
+test('Time Review retains inclusive future-skew and stale-age boundaries',async()=>{
+ for(const asOf of ['2026-10-11T09:00:30Z','2026-10-11T08:55:00Z']){
+  const {sandbox}=timeEvidenceHarness({evidence:{asOf}});
+  assert.equal(await sandbox.api.loadTimeReviewEvidence(),true,asOf);
+  assert.equal(sandbox.state.timeReviewEvidence.status,'ready');
+ }
+});
+
