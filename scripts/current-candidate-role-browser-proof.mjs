@@ -1234,6 +1234,34 @@ try {
   assert.equal(freshBatch?.checksum, computedChecksum);
   await freshPayrollContext.close();
 
+  const exportDenials = [];
+  for (const role of ['employee', 'manager']) {
+    const actor = specs.find(spec => spec.slug === role);
+    assert.ok(actor, `Missing ${role} proof actor.`);
+    const deniedContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    try {
+      const deniedPage = await deniedContext.newPage();
+      await loginRole(deniedPage, actor.email);
+      const denial = await deniedPage.evaluate(async id => {
+        const response = await fetch('/api/payroll-export/' + encodeURIComponent(id), { cache: 'no-store' });
+        return {
+          status: response.status,
+          checksumHeader: response.headers.get('x-export-sha256'),
+          contentDisposition: response.headers.get('content-disposition'),
+          contentType: response.headers.get('content-type')
+        };
+      }, batchId);
+      assert.ok([403, 404].includes(denial.status), `${role} could access a released payroll export.`);
+      assert.equal(denial.checksumHeader, null, `${role} received a payroll export checksum.`);
+      assert.equal(denial.contentDisposition, null, `${role} received a payroll download header.`);
+      assert.ok(!/text\/csv/i.test(denial.contentType || ''), `${role} received CSV content.`);
+      exportDenials.push({ role, batchId, status: denial.status,
+        checksumHeader: denial.checksumHeader, contentDisposition: denial.contentDisposition });
+    } finally {
+      await deniedContext.close();
+    }
+  }
+
   payrollJourney.release = {
     responseStatus: releaseResponse.status(),
     batchId,
@@ -1244,6 +1272,7 @@ try {
     rowCount,
     checksumHeader: releasedReadBack.checksum,
     computedChecksum,
+    exportDenials,
     reconciliationOk: readyPayroll.json.reconciliation.ok
   };
   assert.deepEqual(payrollPageErrors, [], `Payroll readback uncaught page errors: ${payrollPageErrors.join(' | ')}`);
