@@ -200,12 +200,12 @@ const second = req('second', 'B', '10:00:00', '12:00:00');
 function assignment(r, workerId = 'w1', overrides = {}) {
   return { slotId: r.id + '#1', workerId, site: r.site, start: r.start, end: r.end, ...overrides };
 }
-function check(requirement = second, current = [assignment(first)], w = worker(), p = policy) {
-  return e.evaluateOpenShift({ requirement, currentAssignments: current, workers: [w], policy: p });
+function check(requirement = second, current = [assignment(first)], w = worker(), p = policy, sourceEvidence = []) {
+  return e.evaluateOpenShift({ requirement, currentAssignments: current, workers: [w], policy: p, sourceEvidence });
 }
-function plan(requirements, w = worker(), p = {}) {
+function plan(requirements, w = worker(), p = {}, sourceEvidence = ['fixture:staff', 'fixture:routes']) {
   return e.createSchedulingPlan({ tenant: 'fixture-alpha', contextRevision: 'fixture-r1',
-    sourceEvidence: ['fixture:staff', 'fixture:routes'], createdAt: at('00:00:00'),
+    sourceEvidence, createdAt: at('00:00:00'),
     workers: [w], requirements, policy: { ...policy, ...p } });
 }
 function denied(result, code) {
@@ -390,6 +390,108 @@ test('L11 transfer: equally near conflicting locations cannot be resolved by inp
   const next = req('next', 'B', '11:00:00', '13:00:00');
   for (const current of [[assignment(first), unknown], [unknown, assignment(first)]]) {
     denied(check(next, current), 'ASSIGNMENT_SITE_UNPROVEN');
+  }
+});
+function overtimeWorker(id = 'w1') {
+  return worker({ id, hoursWorkedWeek: 40, contractedHours: 40 });
+}
+const overtimeAuthority = {
+  ...policy,
+  overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: ['policy:overtime:approved'] }
+};
+test('L11 overtime authority: open-shift evaluation fails closed without source-backed authority', () => {
+  denied(check(req('overtime-open', 'A', '08:00:00', '10:00:00'), [], overtimeWorker()),
+    'OVERTIME_AUTHORITY_UNPROVEN');
+  assert.equal(check(req('overtime-open', 'A', '08:00:00', '10:00:00'), [], overtimeWorker(),
+    overtimeAuthority, ['policy:overtime:approved']).ranked[0].eligible, true);
+});
+test('L11 overtime authority: full planning fails closed without source-backed authority', () => {
+  const requirement = req('overtime-plan', 'A', '08:00:00', '10:00:00');
+  const deniedPlan = plan([requirement], overtimeWorker());
+  assert.equal(deniedPlan.quality.filledSlots, 0);
+  assert.ok(deniedPlan.unfilled[0].topReasons.some(x => x.reason === 'OVERTIME_AUTHORITY_UNPROVEN'));
+  assert.equal(plan([requirement], overtimeWorker(), overtimeAuthority,
+    ['fixture:staff', 'policy:overtime:approved']).quality.filledSlots, 1);
+});
+test('L11 overtime authority: swap evaluation fails closed without source-backed authority', () => {
+  const a = req('overtime-a', 'A', '08:00:00', '10:00:00');
+  const b = req('overtime-b', 'A', '12:00:00', '14:00:00');
+  const input = { workerA: overtimeWorker('w1'), workerB: overtimeWorker('w2'),
+    requirementA: a, requirementB: b, policy,
+    currentAssignments: [assignment(a, 'w1'), assignment(b, 'w2')] };
+  const deniedSwap = e.evaluateSwap(input);
+  assert.equal(deniedSwap.eligible, false);
+  assert.ok(deniedSwap.reasons.includes('OVERTIME_AUTHORITY_UNPROVEN'));
+  assert.equal(e.evaluateSwap({ ...input, policy: overtimeAuthority,
+    sourceEvidence: ['policy:overtime:approved'] }).eligible, true);
+});
+test('L11 overtime authority: absence repair cannot create unauthorised overtime', () => {
+  const requirement = req('overtime-repair', 'A', '08:00:00', '10:00:00');
+  const workers = [overtimeWorker('w1'), overtimeWorker('w2')];
+  const prior = e.createSchedulingPlan({ tenant: 'fixture-alpha', contextRevision: 'fixture-r1',
+    sourceEvidence: ['fixture:staff', 'policy:overtime:approved'], createdAt: at('00:00:00'),
+    workers, requirements: [requirement], policy: overtimeAuthority });
+  const lost = prior.assignments[0].workerId;
+  const repaired = e.repairSchedulingPlan({ priorPlan: prior, workers, requirements: [requirement], policy,
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2', sourceEvidence: ['fixture:absence'],
+    event: { type: 'ABSENCE', unavailableWorkerIds: [lost], evidenceRef: 'fixture:absence' } });
+  assert.equal(repaired.repairedPlan.quality.filledSlots, 0);
+  assert.ok(repaired.repairedPlan.unfilled[0].topReasons.some(x => x.reason === 'OVERTIME_AUTHORITY_UNPROVEN'));
+});
+test('L11 overtime authority: declared references must bind to exact authoritative source evidence', () => {
+  const requirement = req('overtime-bound', 'A', '08:00:00', '10:00:00');
+  const invented = { ...policy,
+    overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: ['invented:not-authoritative'] } };
+  denied(check(requirement, [], overtimeWorker(), invented, ['policy:actual']),
+    'OVERTIME_AUTHORITY_UNPROVEN');
+  assert.equal(plan([requirement], overtimeWorker(), invented, ['policy:actual']).quality.filledSlots, 0);
+  const other = req('overtime-bound-other', 'A', '12:00:00', '14:00:00');
+  const swap = e.evaluateSwap({ workerA: overtimeWorker('w1'), workerB: overtimeWorker('w2'),
+    requirementA: requirement, requirementB: other, policy: invented, sourceEvidence: ['policy:actual'],
+    currentAssignments: [assignment(requirement, 'w1'), assignment(other, 'w2')] });
+  assert.equal(swap.eligible, false);
+  assert.ok(swap.reasons.includes('OVERTIME_AUTHORITY_UNPROVEN'));
+  const validPrior = plan([requirement], overtimeWorker('w1'), overtimeAuthority,
+    ['fixture:staff', 'policy:overtime:approved']);
+  const repaired = e.repairSchedulingPlan({ priorPlan: validPrior,
+    workers: [overtimeWorker('w1'), overtimeWorker('w2')], requirements: [requirement], policy: invented,
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2', sourceEvidence: ['policy:actual'],
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' } });
+  assert.equal(repaired.repairedPlan.quality.filledSlots, 0);
+});
+test('L11 overtime authority: non-string evidence references never become authority by coercion', () => {
+  for (const ref of [{}, true, 7]) {
+    const malformed = { ...policy,
+      overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: [ref] } };
+    denied(check(req('overtime-malformed', 'A', '08:00:00', '10:00:00'), [], overtimeWorker(),
+      malformed, [String(ref)]), 'OVERTIME_AUTHORITY_UNPROVEN');
+  }
+});
+test('L11 overtime authority: malformed source evidence cannot manufacture a matching reference', () => {
+  const requirement = req('overtime-malformed-source', 'A', '08:00:00', '10:00:00');
+  const numeric = { ...policy,
+    overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: ['7'] } };
+  denied(check(requirement, [], overtimeWorker(), numeric, [7]), 'OVERTIME_AUTHORITY_UNPROVEN');
+  assert.throws(() => plan([requirement], overtimeWorker(), numeric, [7]), /sourceEvidence/);
+  const other = req('overtime-malformed-source-other', 'A', '12:00:00', '14:00:00');
+  const swap = e.evaluateSwap({ workerA: overtimeWorker('w1'), workerB: overtimeWorker('w2'),
+    requirementA: requirement, requirementB: other, policy: numeric, sourceEvidence: [7],
+    currentAssignments: [assignment(requirement, 'w1'), assignment(other, 'w2')] });
+  assert.equal(swap.eligible, false);
+  assert.ok(swap.reasons.includes('OVERTIME_AUTHORITY_UNPROVEN'));
+  const validPrior = plan([requirement], overtimeWorker('w1'), overtimeAuthority,
+    ['fixture:staff', 'policy:overtime:approved']);
+  assert.throws(() => e.repairSchedulingPlan({ priorPlan: validPrior,
+    workers: [overtimeWorker('w1'), overtimeWorker('w2')], requirements: [requirement], policy: numeric,
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2', sourceEvidence: [7],
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' } }),
+  /sourceEvidence/);
+});
+test('L11 availability: over-limit windows are rejected independent of input order', () => {
+  const noise = Array.from({ length: 200 }, () => ({ start: at('00:00:00'), end: at('00:01:00') }));
+  const covering = { start: at('08:00:00'), end: at('12:00:00') };
+  for (const raw of [[covering, ...noise], [...noise, covering]]) {
+    assert.throws(() => e.normaliseWorker(worker({ availability: raw })), /at most 200/);
   }
 });
 }

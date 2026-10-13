@@ -18,6 +18,10 @@ function text(v,max=200){ return String(v??'').trim().slice(0,max); }
 function list(v,max=100,maxLen=160){
   return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];
 }
+function strictRefs(v,max=100,maxLen=220){
+  if(!Array.isArray(v)||v.some(x=>typeof x!=='string'||!x.trim())) return [];
+  return [...new Set(v.map(x=>x.trim().slice(0,maxLen)))].slice(0,max);
+}
 function n(v,f=0){ const x=Number(v); return Number.isFinite(x)?x:f; }
 function clamp(v,min,max,f){ const x=Number(v); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }
 function whole(v,min,max,f){ const x=Math.trunc(Number(v)); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }
@@ -49,12 +53,26 @@ function normaliseAssignments(input=[]){
   });
 }
 
-function normalisePolicy(input={}){
+function normalisePolicy(input={},sourceEvidence=[]){
   const w=input.weights||{};
+  const rawOvertime=input.overtimeAuthorisation;
+  const overtimeEvidence=rawOvertime&&typeof rawOvertime==='object'&&!Array.isArray(rawOvertime)
+    ?strictRefs(rawOvertime.evidenceRefs,100,220):[];
+  const authoritativeSources=new Set(strictRefs(sourceEvidence,300,220));
+  const overtimeAuthorised=rawOvertime&&typeof rawOvertime==='object'&&!Array.isArray(rawOvertime)&&
+    rawOvertime.authorised===true&&typeof rawOvertime.maxHours==='number'&&
+    Number.isFinite(rawOvertime.maxHours)&&rawOvertime.maxHours>=0&&rawOvertime.maxHours<=100&&
+    overtimeEvidence.length>0&&overtimeEvidence.every(ref=>authoritativeSources.has(ref));
+  const overtimeAuthorisation=Object.freeze({
+    authorised:overtimeAuthorised,
+    maxHours:overtimeAuthorised?rawOvertime.maxHours:0,
+    evidenceRefs:Object.freeze(overtimeAuthorised?overtimeEvidence:[])
+  });
   return {
     minRestHours:clamp(input.minRestHours,0,72,11),
     maxWeeklyHours:clamp(input.maxWeeklyHours,1,168,48),
-    maxOvertimeHours:clamp(input.maxOvertimeHours,0,100,12),
+    maxOvertimeHours:overtimeAuthorisation.maxHours,
+    overtimeAuthorisation,
     maxConsecutiveShifts:whole(input.maxConsecutiveShifts,1,30,6),
     maxConsecutiveNights:whole(input.maxConsecutiveNights,1,30,4),
     crossSiteAllowed:input.crossSiteAllowed!==false,
@@ -82,7 +100,8 @@ function normalisePolicy(input={}){
   };
 }
 function availability(v){
-  const windows=Array.isArray(v)?v.slice(0,200).map((x,i)=>{
+  if(Array.isArray(v)&&v.length>200) throw new Error('Availability supports at most 200 windows.');
+  const windows=Array.isArray(v)?v.map((x,i)=>{
     const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
     if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
     return {start,end};
@@ -252,6 +271,7 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
   for(const c of slot.requiredCertifications) if(!certValid(worker,c,slot.end)) failures.push('CERTIFICATION_INVALID:'+c);
   if(worker.previousShiftEnd&&((ms(slot.start)-ms(worker.previousShiftEnd))/3600000)<policy.minRestHours) failures.push('MINIMUM_REST_BREACH');
   if(projectedWeek>policy.maxWeeklyHours) failures.push('MAX_WEEKLY_HOURS_BREACH');
+  if(projectedOT>0&&!policy.overtimeAuthorisation.authorised) failures.push('OVERTIME_AUTHORITY_UNPROVEN');
   if(projectedOT>policy.maxOvertimeHours) failures.push('MAX_OVERTIME_BREACH');
   if(worker.consecutiveShifts+1>policy.maxConsecutiveShifts) failures.push('MAX_CONSECUTIVE_SHIFTS_BREACH');
   if(night&&worker.consecutiveNights+1>policy.maxConsecutiveNights) failures.push('MAX_CONSECUTIVE_NIGHTS_BREACH');
@@ -393,9 +413,9 @@ function quality(assignments,allSlots){
   };
 }
 function createSchedulingPlan(input={}){
-  const tenant=text(input.tenant,120),contextRevision=text(input.contextRevision,180),sourceEvidence=list(input.sourceEvidence,300,220);
+  const tenant=text(input.tenant,120),contextRevision=text(input.contextRevision,180),sourceEvidence=strictRefs(input.sourceEvidence,300,220);
   if(!tenant||!contextRevision||!sourceEvidence.length) throw new Error('tenant, contextRevision and sourceEvidence are required.');
-  const policy=normalisePolicy(input.policy||{}),workers=(input.workers||[]).map(normaliseWorker),reqs=(input.requirements||[]).map(normaliseRequirement);
+  const policy=normalisePolicy(input.policy||{},sourceEvidence),workers=(input.workers||[]).map(normaliseWorker),reqs=(input.requirements||[]).map(normaliseRequirement);
   if(!workers.length||!reqs.length) throw new Error('Workers and requirements are required.');
   if(new Set(workers.map(x=>x.id)).size!==workers.length) throw new Error('Worker ids must be unique.');
   if(new Set(reqs.map(x=>x.id)).size!==reqs.length) throw new Error('Requirement ids must be unique.');
@@ -418,6 +438,7 @@ function createSchedulingPlan(input={}){
     contractVersion:CONTRACT_VERSION,solverVersion:SOLVER_VERSION,tenant,contextRevision,
     createdAt:iso(input.createdAt||new Date().toISOString(),'createdAt'),mode:'SHADOW',executionPermitted:false,
     sourceEvidence,policy:{minRestHours:policy.minRestHours,maxWeeklyHours:policy.maxWeeklyHours,maxOvertimeHours:policy.maxOvertimeHours,
+      overtimeAuthorisation:policy.overtimeAuthorisation,
       maxConsecutiveShifts:policy.maxConsecutiveShifts,maxConsecutiveNights:policy.maxConsecutiveNights,crossSiteAllowed:policy.crossSiteAllowed,
       agencyAllowed:policy.agencyAllowed,contingentAllowed:policy.contingentAllowed,ruleVersion:policy.ruleVersion,
       requiredRuleRefs:policy.requiredRuleRefs,weights:policy.weights},
@@ -430,14 +451,16 @@ function createSchedulingPlan(input={}){
   return Object.freeze({...clone(payload),planId:digest(identity)});
 }
 function evaluateOpenShift(input={}){
-  const policy=normalisePolicy(input.policy||{}),slot=slots([normaliseRequirement({...input.requirement,headcount:1,planningHeadcount:1})])[0];
+  const sourceEvidence=strictRefs(input.sourceEvidence,300,220);
+  const policy=normalisePolicy(input.policy||{},sourceEvidence),slot=slots([normaliseRequirement({...input.requirement,headcount:1,planningHeadcount:1})])[0];
   const assignments=normaliseAssignments(input.currentAssignments);
   const ranked=(input.workers||[]).map(normaliseWorker).map(w=>evaluateWorkerForSlot(w,slot,{policy,assignments}))
     .sort((a,b)=>Number(b.eligible)-Number(a.eligible)||a.score-b.score||a.workerId.localeCompare(b.workerId));
   return {contractVersion:CONTRACT_VERSION,mode:'EVALUATE_ONLY',executionPermitted:false,slot,ranked};
 }
 function evaluateSwap(input={}){
-  const policy=normalisePolicy(input.policy||{}),a=normaliseWorker(input.workerA||{}),b=normaliseWorker(input.workerB||{});
+  const sourceEvidence=strictRefs(input.sourceEvidence,300,220);
+  const policy=normalisePolicy(input.policy||{},sourceEvidence),a=normaliseWorker(input.workerA||{}),b=normaliseWorker(input.workerB||{});
   const ra=normaliseRequirement(input.requirementA),rb=normaliseRequirement(input.requirementB);
   if(ra.headcount!==1||rb.headcount!==1) throw new Error('Swap requires single-slot requirements.');
   const sa=slots([ra])[0],sb=slots([rb])[0];
@@ -467,10 +490,15 @@ function repairSchedulingPlan(input={}){
   const unavailable=new Set(list(input.event?.unavailableWorkerIds,1000,120));
   const workers=(input.workers||[]).map(w=>unavailable.has(text(w.id,120))?{...w,status:'UNAVAILABLE'}:w);
   const preferred={}; for(const a of prior.assignments||[]) if(a.workerId) preferred[a.slotId]=a.workerId;
+  const repairSources=[
+    ...(Array.isArray(input.sourceEvidence)?input.sourceEvidence:[]),
+    ...(Array.isArray(prior.sourceEvidence)?prior.sourceEvidence:[])
+  ];
+  if(input.event?.evidenceRef!==undefined&&input.event?.evidenceRef!==null) repairSources.push(input.event.evidenceRef);
   const repaired=createSchedulingPlan({
     tenant:prior.tenant,contextRevision:text(input.contextRevision||prior.contextRevision,180),
     createdAt:input.createdAt||new Date().toISOString(),
-    sourceEvidence:list([...(input.sourceEvidence||[]),...(prior.sourceEvidence||[]),text(input.event?.evidenceRef,220)],400,220),
+    sourceEvidence:repairSources,
     workers,requirements:(input.requirements&&input.requirements.length)?input.requirements:prior.requirements,
     policy:input.policy||prior.policy,preferredAssignments:preferred
   });
