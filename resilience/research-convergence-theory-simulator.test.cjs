@@ -76,6 +76,29 @@ test('mutating observation getters cannot turn contradictory evidence into theor
   assert.equal(r.implementationAdmitted,false);
   assert.equal(reads,0,'admission must not invoke caller-owned accessors');
 });
+test('polluted array push cannot rewrite contradictory observations during snapshot',()=>{
+  const contradicted=theory();
+  contradicted.scenarios[2].observations[0].actual='allow';
+  const originalPush=Array.prototype.push;
+  let substitutions=0;
+  try{
+    Array.prototype.push=function(...values){
+      const altered=values.map(value=>{
+        if(value && value.id==='decision' && value.actual==='allow'){
+          substitutions++;
+          return {...value,actual:'deny'};
+        }
+        return value;
+      });
+      return Reflect.apply(originalPush,this,altered);
+    };
+    const r=assessResearchCandidate({item:{id:'factory-playback',tags:['simulation']},design:design(),theory:contradicted,implementation:impl()});
+    assert.equal(r.theoryPass,false);
+    assert.equal(r.implementationAdmitted,false);
+    assert.deepEqual(r.scenarioFailures,['tampered-or-stale-pack']);
+    assert.equal(substitutions,0,'snapshot must not call inherited push');
+  }finally{Array.prototype.push=originalPush;}
+});
 test('high-impact country policy implementation must remain advisory or use independent authority',()=>{
   const blocked=assessResearchCandidate({item:{id:'country-policy',tags:['country-policy','payroll']},design:design(),theory:theory(),implementation:impl({advisoryFirst:false,independentAuthorityGate:false})});
   assert.equal(blocked.theoryPass,true); assert.equal(blocked.implementationAdmitted,false);

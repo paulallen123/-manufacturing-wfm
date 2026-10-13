@@ -28,16 +28,23 @@ function inertSnapshot(value, seen=new Set(), depth=0){
   if(Array.isArray(value)){
     const length=descriptors.length.value;
     if(length>1000) throw new TypeError('Research evidence array too large.');
-    result=[];
+    result=new Array(length);
     for(let i=0;i<length;i++){
       const field=descriptors[i];
       if(!field || !Object.hasOwn(field,'value')) throw new TypeError('Research evidence arrays must be dense data.');
-      result.push(inertSnapshot(field.value,seen,depth+1));
+      result[i]=inertSnapshot(field.value,seen,depth+1);
     }
-    if(Object.keys(descriptors).some(key=>key!=='length' && !/^(0|[1-9]\d*)$/.test(key))) throw new TypeError('Research evidence arrays cannot carry extra fields.');
+    const keys=Reflect.ownKeys(descriptors);
+    for(let i=0;i<keys.length;i++){
+      const key=keys[i];
+      if(typeof key!=='string' || key!=='length' && !/^(0|[1-9]\d*)$/.test(key)) throw new TypeError('Research evidence arrays cannot carry extra fields.');
+    }
   }else{
     result=Object.create(null);
-    for(const [key,field] of Object.entries(descriptors)){
+    const keys=Reflect.ownKeys(descriptors);
+    for(let i=0;i<keys.length;i++){
+      const key=keys[i], field=descriptors[key];
+      if(typeof key!=='string') throw new TypeError('Research evidence cannot use symbol fields.');
       if(!field.enumerable) continue;
       if(!Object.hasOwn(field,'value')) throw new TypeError('Research evidence cannot use accessors.');
       result[key]=inertSnapshot(field.value,seen,depth+1);
