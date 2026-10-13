@@ -88,10 +88,16 @@ export function buildEngineeringMemory({ records = [], weights = {} } = {}) {
     assert(typeof input.id === 'string' && input.id.length > 0, 'engineering record.id is required');
     assert(typeof input.partId === 'string' && input.partId.length > 0, `record:${input.id}.partId is required`);
     assert(typeof input.revision === 'string' && input.revision.length > 0, `record:${input.id}.revision is required`);
+    if (input.tenant !== undefined || input.site !== undefined) {
+      assert(typeof input.tenant === 'string' && input.tenant.length > 0 &&
+        typeof input.site === 'string' && input.site.length > 0,
+      `record:${input.id} needs both tenant and site`);
+    }
     assert(!recordsById.has(input.id), `duplicate engineering record id: ${input.id}`);
     validateEvidence(input.evidence, `record:${input.id}`);
     const record = Object.freeze({
       ...input,
+      evidence: Object.freeze({ ...input.evidence }),
       searchTokens: Object.freeze(normalizeTokens(input.searchTokens ?? [])),
       engineeringVector: Object.freeze(normalizeVector(input.engineeringVector, `record:${input.id}.engineeringVector`) ?? []),
       geometryVector: Object.freeze(normalizeVector(input.geometryVector, `record:${input.id}.geometryVector`) ?? [])
@@ -105,6 +111,8 @@ export function buildEngineeringMemory({ records = [], weights = {} } = {}) {
     assert(previous, `record:${record.id}.previousRevisionId does not exist`);
     assert(previous.id !== record.id, `record:${record.id} cannot revise itself`);
     assert(previous.partId === record.partId, `record:${record.id} revision lineage must stay on the same part`);
+    assert(previous.tenant === record.tenant && previous.site === record.site,
+      `record:${record.id} revision lineage must stay in the same tenant and site`);
   }
 
   function compare(left, right) {
@@ -149,6 +157,26 @@ export function buildEngineeringMemory({ records = [], weights = {} } = {}) {
       assert(Number.isFinite(minimumScore) && minimumScore >= 0 && minimumScore <= 1, 'minimumScore must be between 0 and 1');
       return Object.freeze([...recordsById.values()]
         .filter((candidate) => candidate.id !== id)
+        .filter((candidate) => !excludeSamePart || candidate.partId !== query.partId)
+        .map((candidate) => compare(query, candidate))
+        .filter((candidate) => candidate.score >= minimumScore)
+        .sort((a, b) => b.score - a.score || a.recordId.localeCompare(b.recordId))
+        .slice(0, limit));
+    },
+    scopedSimilarTo(id, { tenant, site, allowedRecordIds, limit = 10, minimumScore = 0,
+      excludeSamePart = true } = {}) {
+      assert(typeof tenant === 'string' && tenant.length > 0 &&
+        typeof site === 'string' && site.length > 0 && allowedRecordIds instanceof Set,
+      'trusted tenant, site and allowedRecordIds are required');
+      const query = recordsById.get(id);
+      assert(query && query.tenant === tenant && query.site === site && allowedRecordIds.has(id),
+        'engineering record not accessible');
+      assert(Number.isInteger(limit) && limit > 0, 'limit must be a positive integer');
+      assert(Number.isFinite(minimumScore) && minimumScore >= 0 && minimumScore <= 1,
+        'minimumScore must be between 0 and 1');
+      return Object.freeze([...recordsById.values()]
+        .filter((candidate) => candidate.id !== id && candidate.tenant === tenant &&
+          candidate.site === site && allowedRecordIds.has(candidate.id))
         .filter((candidate) => !excludeSamePart || candidate.partId !== query.partId)
         .map((candidate) => compare(query, candidate))
         .filter((candidate) => candidate.score >= minimumScore)
