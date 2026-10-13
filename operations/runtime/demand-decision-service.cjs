@@ -213,15 +213,27 @@ function createDemandDecisionService(options={}){
     if(await verifyDeliveryEvidence(body.input,tenant)!==true)return writeJson(res,422,{error:'Delivery evidence could not be authenticated.'});
     const shadow=evaluateDeliveryDisruption(body.input);
     if(shadow.status==='INSUFFICIENT_EVIDENCE')return writeJson(res,422,{shadow});
-    const existing=deliveryById.get(tenant,shadow.digest);
-    if(existing)return writeJson(res,200,{shadow:JSON.parse(existing.result_json),idempotent:true});
-    db.exec('BEGIN IMMEDIATE');
+    // The lookup must share the writer lock with insertion. A pre-lock read can
+    // race another process and turn a valid exact replay into a unique-key 500.
+    try{db.exec('BEGIN IMMEDIATE');}
+    catch(error){
+      if(error?.code==='ERR_SQLITE_ERROR'&&/database is locked|database is busy/i.test(error.message))
+        return writeJson(res,503,{error:'Delivery replay is temporarily busy.'});
+      throw error;
+    }
+    let replay=null;
     try{
-      insertDelivery.run(tenant,shadow.digest,JSON.stringify(shadow),nowIso());
-      if(shadow.episode&&!episodeById.get(tenant,shadow.episode.episodeId))
-        insertEpisode.run(tenant,shadow.episode.episodeId,shadow.episode.decisionType,JSON.stringify(shadow.episode),nowIso());
+      const existing=deliveryById.get(tenant,shadow.digest);
+      if(existing){
+        replay=JSON.parse(existing.result_json);
+      }else{
+        insertDelivery.run(tenant,shadow.digest,JSON.stringify(shadow),nowIso());
+        if(shadow.episode&&!episodeById.get(tenant,shadow.episode.episodeId))
+          insertEpisode.run(tenant,shadow.episode.episodeId,shadow.episode.decisionType,JSON.stringify(shadow.episode),nowIso());
+      }
       db.exec('COMMIT');
     }catch(error){db.exec('ROLLBACK');throw error;}
+    if(replay)return writeJson(res,200,{shadow:replay,idempotent:true});
     try{publishEvent?.({tenant,topic:'autopilot.shadow.updated',audience:'manager',payload:{episodeId:shadow.episode?.episodeId||null}});}catch{}
     return writeJson(res,201,{shadow,idempotent:false});
   }
