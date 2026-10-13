@@ -49,11 +49,61 @@ test('evidence ledger is append-only, tenant-bound and contradiction-aware', () 
   const assessment = ledger.assess(['ev-1', 'ev-2'], { tenant: 'tenant-a' });
   assert.equal(assessment.complete, true);
   assert.equal(assessment.safe, false);
-  assert.deepEqual(assessment.contradicted, ['ev-2']);
+  assert.deepEqual(assessment.contradicted, ['ev-1', 'ev-2']);
+  assert.deepEqual(ledger.assess(['ev-1'], { tenant: 'tenant-a' }).contradicted, ['ev-1']);
+  assert.equal(ledger.assess(['ev-1'], { tenant: 'tenant-a' }).safe, false);
+  assert.equal(ledger.verifyChain(), true);
 
   const wrongTenant = ledger.assess(['ev-1'], { tenant: 'tenant-b' });
   assert.equal(wrongTenant.safe, false);
   assert.deepEqual(wrongTenant.wrongTenant, ['ev-1']);
+});
+
+test('gateway refuses action citing only the older side of a current contradiction', async () => {
+  const now = Date.parse('2026-09-23T08:00:00.000Z');
+  const ledger = new EvidenceLedger({ now: () => now });
+  for (const [id, value, observedAt] of [
+    ['older', '17:00', '2026-09-23T07:55:00.000Z'],
+    ['newer', '17:04', '2026-09-23T07:56:00.000Z'],
+  ]) ledger.append({ id, tenant: 'tenant-a', subjectId: 'employee-1', claimKey: 'attendance.finish',
+    value, epistemicType: 'OBSERVED_FACT', sourceSystem: 'clocking', observedAt, sourceTrust: .95 });
+  const kernel = new AuthorityKernel({ now: () => now });
+  const grant = kernel.issueGrant({ grantId: 'grant-contradiction', issuer: 'customer-policy-authority',
+    actor: 'autopilot-worker', tenant: 'tenant-a', resource: 'shift-1', actionTypes: ['workforce.redeploy'],
+    riskCeiling: 'MEDIUM', maxBlastRadius: 1, expiresAt: '2026-09-23T09:00:00.000Z',
+    issuerAuthorityVerified: true, evidencePrerequisites: ['older'] });
+  let executions = 0;
+  const gateway = new TypedActionGateway({ evidenceLedger: ledger, guardian: new CustomerGuardian(), authorityKernel: kernel });
+  gateway.register({ actionType: 'workforce.redeploy', domain: 'workforce', riskClass: 'MEDIUM',
+    maxBlastRadius: 1, reversible: true, executorId: 'executor-a', verifierId: 'verifier-b',
+    maxEvidenceAgeMs: 10 * 60 * 1000,
+    executor: async () => { executions += 1; return { executorId: 'executor-a', executionDigest: digest('execution'), state: 'APPLIED' }; },
+    verifier: async () => ({ verifierId: 'verifier-b', verified: true, executionDigest: digest('execution'), verificationDigest: digest('verification') }),
+    rollback: async () => ({ verified: true, rollbackDigest: digest('rollback') }) });
+  await assert.rejects(gateway.execute({ actionId: 'action-contradiction', actionType: 'workforce.redeploy',
+    tenant: 'tenant-a', targetTenant: 'tenant-a', resource: 'shift-1', blastRadius: 1,
+    evidenceRefs: ['older'], requestedChange: { employeeId: 'employee-1', line: '3' },
+    idempotencyKey: 'incident-contradiction', certifiedPlaybookMatch: true,
+    actor: 'autopilot-worker', grantId: grant.grantId, context: { requiredCompetenceValid: true } }),
+  { code: 'VECTOR_ACTION_UNKNOWNS' });
+  assert.equal(executions, 0);
+  assert.equal(gateway.idempotency.size, 0);
+});
+
+test('later conflict affects the older reference only while the conflicting evidence is current', () => {
+  let now = Date.parse('2026-09-23T08:00:00.000Z');
+  const ledger = new EvidenceLedger({ now: () => now });
+  const common = { tenant: 'tenant-a', subjectId: 'employee-1', claimKey: 'attendance.finish',
+    epistemicType: 'OBSERVED_FACT', sourceSystem: 'clocking', sourceTrust: .95 };
+  ledger.append({ ...common, id: 'older', value: '17:00', observedAt: '2026-09-23T07:55:00.000Z' });
+  ledger.append({ ...common, id: 'future', value: '17:04', observedAt: '2026-09-23T07:56:00.000Z',
+    effectiveAt: '2026-09-23T08:05:00.000Z', expiresAt: '2026-09-23T08:10:00.000Z' });
+  assert.equal(ledger.assess(['older'], { tenant: 'tenant-a' }).safe, true);
+  now = Date.parse('2026-09-23T08:05:00.000Z');
+  assert.deepEqual(ledger.assess(['older'], { tenant: 'tenant-a' }).contradicted, ['older']);
+  now = Date.parse('2026-09-23T08:11:00.000Z');
+  assert.equal(ledger.assess(['older'], { tenant: 'tenant-a' }).safe, true);
+  assert.equal(ledger.verifyChain(), true);
 });
 
 test('authority kernel is deny-by-default and refuses self-grant', () => {
