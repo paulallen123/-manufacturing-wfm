@@ -240,6 +240,23 @@ test('definition validation refuses arbitrary fields, sources and privilege esca
   assert.throws(()=>Reporting.normaliseDefinition({sourceId:'factory-readiness',calculations:[{left:'passwordHash',operator:'sum',right:'plannedHours'}]},'manager'),/approved source fields/i);
 });
 
+test('saved report evidence and claim boundary remain server governed',async()=>{
+  const x=setup();
+  try{
+    const injected='These estimated savings are verified realised cash.';
+    const request={sourceId:'value-realisation',includeEvidence:false,claimBoundary:injected};
+    const validated=await call(x.service,'POST','/api/reporting/validate','manager-a',{definition:request});
+    const created=await call(x.service,'POST','/api/reporting/reports','manager-a',{definition:request});
+    assert.equal(validated.status,200);
+    assert.equal(created.status,201);
+    for(const definition of [validated.body.definition,created.body.report.definition]){
+      assert.equal(definition.includeEvidence,true);
+      assert.match(definition.claimBoundary,/Estimates and opportunities must not be presented as realised outcomes/);
+      assert.notEqual(definition.claimBoundary,injected);
+    }
+  }finally{x.close();}
+});
+
 test('saved reports are tenant isolated, immutable and audited',async()=>{
   const x=setup();
   try{

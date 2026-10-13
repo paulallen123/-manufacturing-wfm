@@ -226,12 +226,12 @@ function normaliseDefinition(input,role){
   if(!COMPARISONS.has(comparison)) throw new Error('Unsupported comparison.');
   const limit=Math.max(1,Math.min(MAX_LIMIT,Number(input.limit)||500));
   const narrative=input.narrative!==false;
-  const claimBoundary=compact(input.claimBoundary,500)||'Source-bound report. Estimates and opportunities must not be presented as realised outcomes without authoritative evidence.';
+  const claimBoundary='Source-bound report. Estimates and opportunities must not be presented as realised outcomes without authoritative evidence.';
   return Object.freeze({
     schemaVersion:'VECTOR_REPORT_DEFINITION_V1',
     title,sourceId,endpoint:source.endpoint,evidenceClass:source.evidenceClass,
     columns,calculations,filters,sorts,visualisation,comparison,limit,narrative,
-    includeEvidence:input.includeEvidence!==false,
+    includeEvidence:true,
     claimBoundary
   });
 }
