@@ -8,8 +8,8 @@
   ],
   "ownerConflictCheck": {
     "observedAt": "2026-10-13",
-    "result": "Provisional unowned isolated package; historical source branch exists, current candidate lacks the validator, and no newer hosted-cookie-oracle branch was visible in remote heads. Active CI runner work changes resilience/ci-provider-failover.cjs and its validator, not these files.",
-    "limits": "GitHub issue/PR state, private task leases and other chats could not be verified because GH_TOKEN is invalid. Canonical security/proof admission owner retains integration and release authority."
+    "result": "Owned by draft PR #77. A later GitHub connector read confirmed that PR #77 remains open and targets integration/canonical. This package is an isolated proposed fix for that existing owner, not an unowned backlog claim. Active CI runner work changes resilience/ci-provider-failover.cjs and its validator, not these files.",
+    "limits": "Private task leases and other chats were not visible. Canonical security/proof admission owner retains integration and release authority."
   },
   "exactBase": "f3e1afc97ffba869e10c697cc6f66efac628ea8a",
   "changedFiles": [
@@ -52,7 +52,7 @@
   "remainingRisks": [
     "Static source inspection cannot establish that a real response emitted a Secure cookie or that every shell form is parsed; exact hosted proof is required.",
     "This isolated branch is not the canonical integration or release candidate.",
-    "Issue/PR and lease ownership remain incompletely observable while repository API authentication is invalid."
+    "Draft PR #77 has an existing owner; adoption must occur through that owner. Private leases and other chats remain incompletely observable."
   ],
   "nextAction": "Publish the isolated package for independent review, then let the canonical owner adopt it, run exact-candidate CI and approved staging deployment, and verify the hosted login and protected-resource journey with synthetic actors."
 }
