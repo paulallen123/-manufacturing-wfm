@@ -180,6 +180,18 @@ test('payload, reach, tool class, cycle range and resource type evidence must be
   denied(x => { x.resources[0].resourceType = 'EMPLOYEE'; }, 'RESOURCE_CONTRACT_INVALID');
   denied(x => { x.resources[0].cycleTimeSeconds.min = 1000000; x.resources[0].cycleTimeSeconds.max = 1000000; }, 'CYCLE_EXCEEDS_TASK_WINDOW');
 });
+test('declared physical resource metadata is valid even when task requirements are omitted', () => {
+  for (const change of [
+    resource => { resource.payloadKg = -1; },
+    resource => { resource.reachMm = -1; },
+    resource => { resource.toolClass = '*'; }
+  ]) {
+    const input = fixture(); delete input.task.requirements; change(input.resources[0]);
+    const result = evaluate(input);
+    assert.equal(result.shadowUsableResourceCount, 0);
+    assert.ok(result.resources[0].reasonCodes.includes('RESOURCE_CONTRACT_INVALID'));
+  }
+});
 test('task requirements accept only an optional object with supported physical and energy keys', () => {
   for (const requirements of [[], 'minimumPayloadKg:10', null, 10, true,
     { minimumPayloadKgs: 10 }, { minimumPayloadKg: 10, staffCount: 2 }]) {
@@ -506,3 +518,4 @@ test('1,100 synthetic scenarios report discovery and held-out Pareto outcomes wi
   assert.ok(report.feasibleDiscoveryPct >= 95);
   // Pareto threshold is deliberately reported, not made true by an assertion or changing constraints.
 });
+
