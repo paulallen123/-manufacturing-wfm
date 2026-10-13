@@ -13,6 +13,8 @@ function dbFixture(){
 }
 test('training twin recommends exposure first and never infers mastery',()=>{
   const f=dbFixture(),t=createTrainingTwin({dbPath:f.dbPath}),p=t.profileForUser({tenant:'T',email:'m@t',role:'manager'});
+  assert.equal(p.purpose,'VECTOR_WORKFLOW_LEARNING');
+  assert.equal(p.productionQualificationAuthority,false);
   assert.equal(p.due[0].recommendedMode,'SHOW_ME');
   assert.equal(p.due[0].score,0);
   t.close();fs.rmSync(f.dir,{recursive:true,force:true});
