@@ -53,7 +53,8 @@ for (const [name, mutate, blocker] of [
   ['future-effective asset', v => { v.asset.effectiveFrom = '2026-10-14T00:00:00.000Z'; }, 'PLAN_TIMELINE_UNPROVEN'],
   ['wrong configured plan source', v => { v.plan.provenance = { ...provenance, source: 'synthetic-erp' }; }, 'PREVENTIVE_PLAN_UNPROVEN'],
   ['missing source binding', v => { delete v.sourceBinding; }, 'PREVENTIVE_PLAN_UNPROVEN'],
-  ['mismatched source revision', v => { v.plan.provenance = { ...provenance, revision: 'r0' }; }, 'PREVENTIVE_PLAN_UNPROVEN']
+  ['mismatched source revision', v => { v.plan.provenance = { ...provenance, revision: 'r0' }; }, 'PREVENTIVE_PLAN_UNPROVEN'],
+  ['nonstring provenance hash', v => { v.plan.provenance = { ...provenance, recordHash: ['a'.repeat(64)] }; }, 'PREVENTIVE_PLAN_UNPROVEN']
 ]) {
   test(`blocks ${name}`, () => {
     const value = fixture(); mutate(value);

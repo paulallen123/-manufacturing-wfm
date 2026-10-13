@@ -4,6 +4,7 @@
 // a new due date, create a work order, or change asset/production authority.
 const ID = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,119}$/;
 const HASH = /^[a-f0-9]{64}$/i;
+const hash = value => typeof value === 'string' && HASH.test(value);
 function instant(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value)) return null;
   const ms = Date.parse(value);
@@ -15,7 +16,7 @@ function currentEvidence(value, scope, now, age, expectedSource) {
   return value && id(value.id) && value.tenant === scope.tenant && value.site === scope.site
     && id(expectedSource) && value.provenance?.source === expectedSource
     && id(value.revision) && value.provenance?.revision === value.revision
-    && HASH.test(value.provenance?.recordHash || '')
+    && hash(value.provenance?.recordHash)
     && observed !== null && observed <= now && now - observed <= age;
 }
 
