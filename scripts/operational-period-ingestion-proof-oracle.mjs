@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { types } from 'node:util';
 
 /**
  * Validation only. No I/O, clocks, period writes, payroll calculation or admission.
@@ -88,13 +89,14 @@ function snapshotShapeErrors(value, shape = STATE_PROFILE, path = '') {
   return errors;
 }
 
-// Reject getters/non-JSON/cycles before reading values. Proxy objects are outside
-// the trusted-caller boundary; callers must pass parsed, bounded JSON data.
+// Reject active objects before reading values. Callers must pass parsed,
+// bounded JSON data; a proxy can otherwise vary reads after descriptor checks.
 function boundedJSON(value) {
   let nodes = 0, characters = 0;
   const active = new Set();
   function visit(x, depth) {
     if (++nodes > PROOF_LIMITS.nodes || depth > PROOF_LIMITS.depth) throw Error('BOUND');
+    if (types.isProxy(x)) throw Error('JSON');
     if (typeof x === 'string') { characters += x.length; if (x.length > PROOF_LIMITS.string || characters > PROOF_LIMITS.characters) throw Error('BOUND'); return; }
     if (x === null || typeof x === 'boolean' || typeof x === 'number' && Number.isFinite(x)) return;
     if (!object(x) && !Array.isArray(x)) throw Error('JSON');
