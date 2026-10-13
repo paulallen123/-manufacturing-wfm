@@ -47,7 +47,11 @@ export function assessLeaveJourneyEvidence(raw) {
   const binding = packet?.binding || {};
   const { before, pending, overlap, manager, fresh } = packet?.captures || {};
   check(sha(binding.candidateSha) && id(binding.deploymentId) && id(binding.tenant)
-    && id(binding.employeeId) && id(binding.requestId) && positive(binding.requestMinutes), 'BINDING_UNPROVEN');
+    && id(binding.employeeId) && id(binding.requestId) && positive(binding.requestMinutes)
+    && typeof binding.requestDate === 'string' && /^\d{4}-\d\d-\d\d$/.test(binding.requestDate)
+    && !Number.isNaN(Date.parse(`${binding.requestDate}T00:00:00.000Z`))
+    && new Date(`${binding.requestDate}T00:00:00.000Z`).toISOString().startsWith(binding.requestDate),
+  'BINDING_UNPROVEN');
   if (![before, pending, overlap, manager, fresh].every(row => row && typeof row === 'object')) {
     blockers.push('CAPTURES_MISSING');
     return Object.freeze({ status: 'BLOCKED', blockers: Object.freeze(blockers) });
@@ -76,21 +80,32 @@ export function assessLeaveJourneyEvidence(raw) {
   const request = pending.request || {};
   check(request.id === binding.requestId && request.employee === binding.employeeId
     && request.status === 'pending' && positive(request.revision)
-    && request.minutes === binding.requestMinutes, 'PENDING_REQUEST_UNPROVEN');
+    && request.minutes === binding.requestMinutes && request.date === binding.requestDate,
+  'PENDING_REQUEST_UNPROVEN');
   check(Number.isSafeInteger(before.requestCount) && before.requestCount >= 0
     && Number.isSafeInteger(pending.requestCount) && pending.requestCount >= 0
     && Number.isSafeInteger(overlap.requestCount) && overlap.requestCount >= 0
     && overlap.httpStatus === 409 && overlap.requestId === binding.requestId
+    && overlap.command === 'leave-request' && overlap.reasonCode === 'OVERLAP'
+    && overlap.attemptDate === binding.requestDate && overlap.attemptMinutes === binding.requestMinutes
     && overlap.requestCount === pending.requestCount && overlap.requestCount === before.requestCount + 1
-    && overlap.request?.id === binding.requestId && overlap.request?.status === 'pending', 'OVERLAP_REFUSAL_UNPROVEN');
+    && overlap.request?.id === binding.requestId && overlap.request?.employee === binding.employeeId
+    && overlap.request?.date === binding.requestDate && overlap.request?.minutes === binding.requestMinutes
+    && overlap.request?.revision === request.revision && overlap.request?.status === 'pending',
+  'OVERLAP_REFUSAL_UNPROVEN');
   check(manager.request?.id === binding.requestId && manager.request?.employee === binding.employeeId
+    && manager.request?.date === binding.requestDate && manager.request?.minutes === binding.requestMinutes
     && manager.request?.status === 'approved' && manager.request?.revision === request.revision + 1
-    && fresh.request?.id === binding.requestId && fresh.request?.status === 'approved'
+    && fresh.request?.id === binding.requestId && fresh.request?.employee === binding.employeeId
+    && fresh.request?.date === binding.requestDate && fresh.request?.minutes === binding.requestMinutes
+    && fresh.request?.status === 'approved'
     && fresh.request?.revision === manager.request?.revision, 'DECISION_REVISION_UNPROVEN');
   const audit = manager.audit || {};
   check(id(audit.id) && audit.type === 'leave-decision' && audit.requestId === binding.requestId
     && audit.employee === binding.employeeId && audit.by === manager.actorId
-    && audit.revision === manager.request?.revision && utc(audit.at), 'REQUEST_BOUND_AUDIT_UNPROVEN');
+    && audit.revision === manager.request?.revision && utc(audit.at)
+    && Date.parse(audit.at) >= Date.parse(pending.capturedAt)
+    && Date.parse(audit.at) <= Date.parse(manager.capturedAt), 'REQUEST_BOUND_AUDIT_UNPROVEN');
   const a = before.leave || {}, b = pending.leave || {}, c = fresh.leave || {}, n = binding.requestMinutes;
   check([a, b, c].every(row => ['pendingMinutes', 'bookedMinutes', 'remainingMinutes', 'availableMinutes'].every(key => minutes(row[key])))
     && b.pendingMinutes === a.pendingMinutes + n && b.bookedMinutes === a.bookedMinutes
