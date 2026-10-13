@@ -36,6 +36,15 @@ test('shadow mode cannot create execution authority',()=>{
   const selected=selectDecisionOption(e,{optionId:'redeploy',selectedAt:'2026-09-22T08:01:00Z',authorityDecision:'SHADOW_OBSERVED'});
   assert.equal(selected.selection.executionPermitted,false);
 });
+test('a selection before its trigger cannot grant execution authority',()=>{
+  for(const mode of ['HUMAN_APPROVAL','POLICY_BOUNDED']){
+    const episode=createDecisionEpisode({...base,mode});
+    const authorityDecision=mode==='HUMAN_APPROVAL'?'HUMAN_APPROVED':'POLICY_GATE_PASSED';
+    assert.throws(()=>selectDecisionOption(episode,{optionId:'redeploy',selectedAt:'2026-09-22T07:59:59Z',authorityDecision}),/selection.*trigger/i);
+    const valid=selectDecisionOption(episode,{optionId:'redeploy',selectedAt:episode.triggeredAt,authorityDecision});
+    assert.equal(valid.selection.executionPermitted,true);
+  }
+});
 test('outcome records predicted versus actual delta with evidence',()=>{
   const e=createDecisionEpisode({...base,mode:'HUMAN_APPROVAL'});
   const selected=selectDecisionOption(e,{optionId:'redeploy',selectedAt:'2026-09-22T08:02:00Z',authorityDecision:'HUMAN_APPROVED',actorRef:'manager:hash'});
@@ -44,3 +53,4 @@ test('outcome records predicted versus actual delta with evidence',()=>{
   assert.equal(final.outcome.predictionError.planAttainmentPct,-0.5);
   assert.ok(final.outcomeDigest);
 });
+
