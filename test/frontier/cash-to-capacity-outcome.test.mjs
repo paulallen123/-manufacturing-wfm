@@ -198,3 +198,74 @@ test('learning mean stays finite for large finite errors and key order does not 
   const reordered=Object.fromEntries(Object.entries(first).reverse());
   assert.equal(learningSummary([first,reordered]).count,1);
 });
+
+test('learning refuses a calibration accessor without executing it',()=>{
+  const record=structuredClone(reconcile(base));
+  let reads=0;
+  Object.defineProperty(record.calibration,'absoluteValueError',{
+    enumerable:true,
+    get(){reads++;return reads===1?500:0;}
+  });
+  const summary=learningSummary([record]);
+  assert.equal(summary.status,'rejected',JSON.stringify(summary));
+  assert.equal(summary.reason,'invalid_reconciled_record');
+  assert.equal(reads,0);
+});
+
+test('learning rejects accessors on status and array entries without invoking them',()=>{
+  let calls=0;
+  const record=structuredClone(reconcile(base));
+  Object.defineProperty(record,'status',{enumerable:true,get(){calls++;return 'reconciled';}});
+  assert.equal(learningSummary([record]).status,'rejected');
+  const records=[reconcile(base)];
+  Object.defineProperty(records,'0',{enumerable:true,get(){calls++;return reconcile(base);}});
+  assert.equal(learningSummary(records).status,'rejected');
+  assert.equal(calls,0);
+});
+
+test('custom serializer and iterator cannot hide tampered learning evidence',()=>{
+  let calls=0;
+  const good=reconcile(base),bad=structuredClone(good);
+  bad.calibration.absoluteValueError=0;
+  bad.calibration.toJSON=()=>{calls++;return good.calibration;};
+  assert.equal(learningSummary([bad]).status,'rejected');
+  const records=[good,structuredClone(good)];
+  records[Symbol.iterator]=function*(){calls++;yield good;};
+  assert.equal(learningSummary(records).status,'rejected');
+  assert.equal(calls,0);
+});
+
+test('learning rejects proxies including revoked proxies before invoking traps',()=>{
+  let calls=0;
+  const traps={get(){calls++;throw Error('get');},ownKeys(){calls++;throw Error('ownKeys');},
+    getPrototypeOf(){calls++;throw Error('prototype');},getOwnPropertyDescriptor(){calls++;throw Error('descriptor');}};
+  assert.equal(learningSummary([new Proxy(reconcile(base),traps)]).status,'rejected');
+  assert.equal(learningSummary(new Proxy([reconcile(base)],traps)).status,'rejected');
+  const revoked=Proxy.revocable([reconcile(base)],traps);revoked.revoke();
+  assert.equal(learningSummary(revoked.proxy).status,'rejected');
+  assert.equal(calls,0);
+});
+
+test('learning rejects non-JSON cycles, prototypes and hidden metadata',()=>{
+  const good=reconcile(base);
+  for(const change of [r=>{r.extra=r;},r=>Object.setPrototypeOf(r,{status:'reconciled'}),
+    r=>Object.defineProperty(r,'hidden',{value:1}),r=>{r[Symbol('hidden')]=1;},
+    r=>{r.extra=()=>0;},r=>{r.extra=NaN;},r=>{r.extra=undefined;}]){
+    const bad=structuredClone(good);change(bad);
+    assert.equal(learningSummary([bad]).status,'rejected');
+  }
+  const records=[good];records.length=2;
+  assert.equal(learningSummary(records).status,'rejected');
+});
+
+test('learning preserves frozen, persisted and null-prototype plain records',()=>{
+  const good=reconcile(base),persisted=JSON.parse(JSON.stringify(good));
+  const detached=Object.assign(Object.create(null),persisted);
+  const before=JSON.stringify(persisted),expected=learningSummary([good]);
+  assert.deepEqual(learningSummary([persisted]),expected);
+  assert.deepEqual(learningSummary([detached]),expected);
+  assert.deepEqual(learningSummary([good,persisted,detached]),expected);
+  assert.equal(JSON.stringify(persisted),before);
+  assert.equal(expected.meanAbsoluteValueError,500);
+  assert.equal(expected.count,1);
+});
