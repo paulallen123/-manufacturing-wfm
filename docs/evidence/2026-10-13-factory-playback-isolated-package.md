@@ -8,7 +8,7 @@ Evidence time: 2026-10-13 07:49 UTC. Status: **TESTED** in an isolated worktree.
 
 ## Owner and conflict check
 
-The ledger assigns the existing orchestrator, product evolution, frontier, and trust proof release engines. Canonical integration remains owned by `integration/canonical`; this package does not move that ref or any release ref. Read only `git ls-remote --heads origin` on 2026-10-13 found no factory playback named branch. The latest inspected October source branch `feature/vector-report-claim-boundary-20261013` at `f34464f3a713bab8c381260c27320c7042dcd192` did not contain `operations/runtime/factory-playback.cjs`. A historical PR #230 source branch contains the prototype at `07bc5218c183049a8d7ab884b15cca6ef38375ec`. GitHub issue, PR, actor, and live lease checks could not be completed because the configured `GH_TOKEN` failed authentication and direct GitHub API access returned HTTP tunnel 403. Ownership is therefore clear only to the inspected Git refs, not all possible active chats or jobs. This work remains an isolated package pending owner reconciliation.
+The ledger assigns the existing orchestrator, product evolution, frontier, and trust proof release engines. Canonical integration remains owned by `integration/canonical`; this package does not move that ref or any release ref. Read only `git ls-remote --heads origin` on 2026-10-13 found no factory playback named branch. The latest inspected October source branch `feature/vector-report-claim-boundary-20261013` at `f34464f3a713bab8c381260c27320c7042dcd192` did not contain `operations/runtime/factory-playback.cjs`. A historical PR #230 source branch contains the prototype at `07bc5218c183049a8d7ab884b15cca6ef38375ec`. The GitHub connector confirmed issue #265 is open and assigned to the repository owner, but its full discussion fetch failed with a closed transport. The configured CLI token failed authentication, so the current issue/PR/actor and live lease picture is incomplete. Ownership is therefore clear only to the inspected Git refs and issue assignment, not all possible active chats or jobs. This work remains an isolated package pending owner reconciliation.
 
 ## Exact base and changes
 
@@ -25,7 +25,7 @@ The projection accepts already tenant scoped realtime records from the existing 
 
 Initial port: `node --test operations/runtime/factory-playback.test.cjs` — 2 passed, 0 failed.
 
-After hardening: `node --test operations/runtime/factory-playback.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/decision-outcome-proof.test.cjs` — 14 passed, 0 failed. `node scripts/validate-research-convergence-ledger.mjs` — PASS, 16 items registered, 13 pending. `git diff --check` — PASS. No product test failure was observed. GitHub metadata access failed as described above.
+After hardening: `node --test operations/runtime/factory-playback.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/decision-outcome-proof.test.cjs` — 14 passed, 0 failed. `node scripts/validate-research-convergence-ledger.mjs` — PASS, 16 items registered, 13 pending. `git diff --check` — PASS. No product test failure was observed. GitHub CLI and full discussion retrieval failed as described above.
 
 Independent review: **PENDING**. Canonical integration: **PENDING**. Exact candidate deployment: **NOT RUN**. Hosted/customer proof: **NOT RUN**. No customer readiness or realised customer value is claimed.
 
