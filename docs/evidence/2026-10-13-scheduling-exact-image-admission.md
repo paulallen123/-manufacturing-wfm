@@ -30,12 +30,15 @@ canonical integrator remains `Continue customer proof`.
 ## Admission design
 
 The workflow checks out the immutable PR352 target rather than the proof branch,
-binds `HEAD` and Node `v22.23.2`, runs the scheduler plus its five affected
-consumer suites, then invokes the repository's unchanged full Docker admission
-with the same target SHA. The final-image check requires the image build-source
-identity and byte-for-byte installation of the reviewed scheduling engine. A
-successful build without the selected engine in the final serving image is a
-failure, not a pass.
+first fails unless the actor is the repository owner, binds `HEAD` and Node
+`v22.23.2`, runs the scheduler plus its five affected consumer suites, then
+invokes the repository's unchanged full Docker admission with the same target
+SHA. The final-image check runs without network, write access or Linux
+capabilities; it requires the image build-source identity, a non-symlinked
+byte-for-byte installation of the reviewed scheduling engine, and a synthetic
+no-mutation plan through the installed `/app` engine. A successful build
+without those exact named jobs succeeding is a failure, not a pass; an
+`always()` verdict job explicitly rejects every skipped or failed prerequisite.
 
 ## Execution evidence
 
@@ -50,6 +53,11 @@ failure, not a pass.
   to start because `security/runtime` dependencies were not installed. The
   workflow now runs the repository-prescribed `npm ci --prefix
   security/runtime --ignore-scripts` before the suite.
+- Independent review found a critical false-pass path in the first workflow:
+  job-level owner conditions could mark both skipped jobs successful. Those
+  conditions are replaced by a mandatory failing `ownership-guard` dependency.
+  The image verifier is also read-only and networkless and now exercises the
+  installed engine rather than proving bytes alone.
 - Three failures are a deterministic product-integration blocker. Stored plans
   are bound with `authorityScope` after `planId` is calculated, while PR352's
   new `verifiedPriorPlan` recalculates identity across that appended field.
