@@ -15,6 +15,7 @@ const checks = [
   ['node', ['scripts/validate-provider-recovery-authority-proof.mjs']],
   ['node', ['scripts/validate-provider-recovery-handoff-prototype.mjs']],
   ['node', ['scripts/validate-vector-only-ui.mjs']],
+  ['node', ['--test', 'security/runtime/crawler-boundary.test.cjs', 'tests/vector-runtime-packaging.test.cjs']],
   ['node', ['scripts/validate-onedrive-sync-guardian.mjs']],
   ['node', ['--experimental-sqlite', '--test', '--test-concurrency=1',
     'implementation/runtime/one-day-enterprise-engine.test.cjs',
