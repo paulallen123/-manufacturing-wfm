@@ -2,11 +2,9 @@ import assert from 'node:assert/strict';
 
 const SHA = /^[0-9a-f]{40}$/;
 const DIGEST = /^[0-9a-f]{64}$/;
-const HARD_AUTHORITY_KEYS = new Set([
-  'identity-access', 'time-policies', 'absence-policies', 'payroll-mapping',
-  'security-controls', 'resilience', 'scenario-validation', 'live-data-import',
-  'privileged-competency', 'frontline-readiness'
-]);
+// A fixture declaration can only flag a missing structural data sample for
+// review. It cannot relabel a policy, provider, security, execution or training gate.
+const FIXTURE_DATA_CANDIDATE_KEYS = new Set(['organisation-model']);
 
 // Inspect an authenticated, already captured implementation status. This never
 // supplies evidence to the implementation engine or changes its readiness state.
@@ -64,7 +62,7 @@ export function triageImplementationReadiness({ capture, expected, fixtureManife
     assert.equal(requirement.satisfied, requirement.status === 'PASS' &&
       Number(requirement.confidence) >= Number(requirement.minConfidence), 'Requirement satisfaction mismatch');
     if (requirement.satisfied) { satisfied++; continue; }
-    const fixtureCandidate = declaredFixtureKeys.has(key) && !HARD_AUTHORITY_KEYS.has(key) &&
+    const fixtureCandidate = declaredFixtureKeys.has(key) && FIXTURE_DATA_CANDIDATE_KEYS.has(key) &&
       requirement.status === 'MISSING';
     unresolved.push({ key, status: requirement.status,
       classification: fixtureCandidate ? 'DECLARED_FIXTURE_DATA_CANDIDATE' : 'REAL_OR_UNRESOLVED_BLOCKER',

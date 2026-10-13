@@ -53,11 +53,14 @@ test('a fully satisfied capture remains a scoped readout, never customer proof',
   assert.equal(result.customerReady, false);
 });
 test('manifest cannot relabel a security or policy requirement as fixture data', () => {
-  const value = input();
-  value.capture.body.requirements[2].status = 'MISSING';
-  value.fixtureManifest = { ...expected, requirementKeys: ['security-controls'] };
-  assert.equal(triageImplementationReadiness(value).unresolved[1].classification,
-    'REAL_OR_UNRESOLVED_BLOCKER');
+  for (const key of ['security-controls', 'approvals', 'tenant-environment']) {
+    const value = input();
+    value.capture.body.requirements[2].key = key;
+    value.capture.body.requirements[2].status = 'MISSING';
+    value.fixtureManifest = { ...expected, requirementKeys: [key] };
+    assert.equal(triageImplementationReadiness(value).unresolved[1].classification,
+      'REAL_OR_UNRESOLVED_BLOCKER');
+  }
 });
 test('rejects source, deployment, tenant and fixture manifest drift', () => {
   for (const mutate of [
