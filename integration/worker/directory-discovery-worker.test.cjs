@@ -143,3 +143,20 @@ test('provider errors redact credentials and fail clearly', async () => {
     }
   );
 });
+
+
+test('URL safety rejects bracketed private IPv6 and IPv4-mapped loopback literals', () => {
+  for (const url of [
+    'https://[::1]/api',
+    'https://[fe80::1]/api',
+    'https://[fc00::1]/api',
+    'https://[fd00::1]/api',
+    'https://[::ffff:127.0.0.1]/api'
+  ]) {
+    assert.throws(() => assertSafeHttpsUrl(url), /private|local/i);
+  }
+  assert.equal(
+    assertSafeHttpsUrl('https://[2606:4700:4700::1111]/api').protocol,
+    'https:'
+  );
+});
