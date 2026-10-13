@@ -13,8 +13,8 @@ REPOSITORY = "paulallen123/-manufacturing-wfm"
 SOURCES = (
     ("src/frontier/agency-identity-continuity.mjs", "8534ffd507d1e1cf3027aa7853ae53115e46deef", "1d29f27d3d47babf6e97ba3b3dac1593ea68bb79"),
     ("test/frontier/agency-identity-continuity.test.mjs", "8534ffd507d1e1cf3027aa7853ae53115e46deef", "7a899f99564af45fd9dda237d4f1b5fba2e35556"),
-    ("src/frontier/agency-work-start-readiness.mjs", "1396eb5123cbfd7a5b5dc82c95b3cd86e8531072", "397d676319d56393d2b62a8ce8fdc2d73ef0aa87"),
-    ("test/frontier/agency-work-start-readiness.test.mjs", "1396eb5123cbfd7a5b5dc82c95b3cd86e8531072", "ca9e82abba0be31e6010340096fa5aa713ed6155"),
+    ("src/frontier/agency-work-start-readiness.mjs", "e3db198ef59d3d27e2213ee46e854b56843b0a4b", "87d9f2d15d1491036c434ed8dbddbef689e428f3"),
+    ("test/frontier/agency-work-start-readiness.test.mjs", "e3db198ef59d3d27e2213ee46e854b56843b0a4b", "5a5be6c0a92356c076abb070108b623a820c345e"),
 )
 CONSUMER = "test/frontier/agency-work-start-combined-consumer.test.mjs"
 
