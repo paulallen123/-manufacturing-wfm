@@ -164,7 +164,7 @@ function createProofRunnerAuth(options = {}) {
       BEFORE DELETE ON proof_runner_auth_events BEGIN SELECT RAISE(ABORT,'Proof runner auth events are append only.'); END;
   `);
 
-  const userStmt = db.prepare('SELECT email,tenant,role FROM users WHERE lower(email)=lower(?)');
+  const userStmt = db.prepare('SELECT email,tenant,role FROM users WHERE lower(email)=lower(?) ORDER BY email');
   const sessionStmt = db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)');
   const proofSessionStmt = db.prepare(`INSERT INTO proof_runner_sessions
     (token_hash,email,tenant,role,issued_at,expires) VALUES(?,?,?,?,?,?)`);
@@ -267,10 +267,14 @@ function createProofRunnerAuth(options = {}) {
       return reject(res, 401, 'signature-verification-failed', {}, email);
     }
 
-    const user = userStmt.get(email);
-    if (!user) {
+    const users = userStmt.all(email);
+    if (users.length === 0) {
       return reject(res, 403, 'allowlisted-user-missing', {}, email);
     }
+    if (users.length > 1) {
+      return reject(res, 409, 'ambiguous-normalized-email', { matches: users.length }, email);
+    }
+    const user = users[0];
 
     const nonceHash = sha256(nonce);
     const sessionExpires = now + sessionTtlMs;
