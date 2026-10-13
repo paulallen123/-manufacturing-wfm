@@ -162,6 +162,7 @@ function selectDecisionOption(episode,input={}){
 function recordDecisionOutcome(selectedEpisode,input={}){
   if(!selectedEpisode?.selection) throw new Error('A selected decision episode is required before recording outcome.');
   const observedAt=iso(input.observedAt);
+  if(Date.parse(observedAt)<Date.parse(selectedEpisode.selection.selectedAt)) throw new Error('Outcome observation cannot precede its selection.');
   const evidenceRefs=list(input.evidenceRefs,50,220);
   if(!evidenceRefs.length) throw new Error('Outcome evidence reference is required.');
   const actual=normalisePrediction(input.actual||{});

@@ -53,4 +53,14 @@ test('outcome records predicted versus actual delta with evidence',()=>{
   assert.equal(final.outcome.predictionError.planAttainmentPct,-0.5);
   assert.ok(final.outcomeDigest);
 });
+test('outcome observation must not precede decision selection',()=>{
+  for(const [mode,authorityDecision] of [['SHADOW','SHADOW_OBSERVED'],['HUMAN_APPROVAL','HUMAN_APPROVED'],['POLICY_BOUNDED','POLICY_GATE_PASSED']]){
+    const e=createDecisionEpisode({...base,mode});
+    const selected=selectDecisionOption(e,{optionId:'redeploy',selectedAt:'2026-09-22T08:02:00Z',authorityDecision});
+    const outcome={evidenceRefs:['mes:shift-a'],actual:{labourCost:125,planAttainmentPct:97.5,riskScore:1}};
+    assert.throws(()=>recordDecisionOutcome(selected,{...outcome,observedAt:'2026-09-22T08:01:59.999Z'}),/outcome observation cannot precede.*selection/i);
+    const exact=recordDecisionOutcome(selected,{...outcome,observedAt:'2026-09-22T09:02:00+01:00'});
+    assert.equal(exact.outcome.observedAt,selected.selection.selectedAt);
+  }
+});
 
