@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const {fork}=require('node:child_process');const path=require('node:path');
-const {input,fixture,verifierFor,serviceFor,rows}=require('./delivery-replay-fixture.cjs');
+const {input,fixture,verifierFor,serviceFor,rows,post}=require('./delivery-replay-fixture.cjs');
 function observe(child,type){return new Promise((resolve,reject)=>{
  const timer=setTimeout(()=>reject(new Error('Child did not report '+type)),5000);
  const listener=message=>{if(message.type===type){clearTimeout(timer);child.off('message',listener);resolve(message);}};
@@ -22,7 +22,23 @@ test('REGRESSION: concurrent exact replay commits once and returns one creation 
   const responses=await Promise.all(completed),statuses=responses.map(r=>r.response?.status).sort();
   assert.equal(rows(f).length,1);
   assert.deepEqual(statuses,[200,201],`Concurrent responses: ${JSON.stringify(responses.map(r=>r.response||r.error))}`);
+  const episodes=f.db.prepare('SELECT episode_id,episode_json FROM vector_decision_episodes').all();
+  assert.equal(episodes.length,1);
+  assert.equal(responses[0].response.body.shadow.episode.episodeId,episodes[0].episode_id);
+  assert.equal(responses[1].response.body.shadow.episode.episodeId,episodes[0].episode_id);
  }finally{children.forEach(c=>{if(!c.killed)c.kill();});f.close();}
+});
+test('a verifier refusal after creation cannot use the cached success',async()=>{
+ const f=fixture(),snapshot=input(),accepted=serviceFor(f,verifierFor(snapshot));
+ try{
+  assert.equal((await post(accepted,snapshot)).status,201);
+  accepted.close();
+  const refused=serviceFor(f,()=>false);
+  try{
+   assert.equal((await post(refused,snapshot)).status,422);
+   assert.equal(rows(f).length,1);
+  }finally{refused.close();}
+ }finally{try{accepted.close();}catch{}f.close();}
 });
 test('locked writer returns retryable 503 without a partial wrapper or episode',async()=>{
  const f=fixture(),snapshot=input(),service=serviceFor(f,verifierFor(snapshot));
