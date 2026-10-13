@@ -1,0 +1,58 @@
+name: Adaptive numeric evidence admission
+
+on:
+  push:
+    branches: ['autonomy/adaptive-finite-scores-20261012']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: adaptive-numeric-evidence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-candidate:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact owner candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up exact runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Verify source candidate and numeric evidence regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node --test adaptive-intelligence/engine.test.mjs
+          node scripts/prove-adaptive-intelligence-engine.mjs
+      - name: Build complete exact candidate with existing admission suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false --progress=plain --build-arg WFM_CANDIDATE_SHA="$GITHUB_SHA" --build-arg RAILWAY_GIT_COMMIT_SHA="$GITHUB_SHA" -t vector-adaptive:"$GITHUB_SHA" .
+      - name: Verify and exercise actual engine installed in final image
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$(sha256sum adaptive-intelligence/engine.mjs | cut -d' ' -f1)"
+          docker run --rm --network none -e EXPECTED_ENGINE_SHA="$expected" \
+            -v "$PWD/adaptive-intelligence/engine.test.mjs:/proof/engine.test.mjs:ro" \
+            --entrypoint sh vector-adaptive:"$GITHUB_SHA" -ec '
+              actual="$(sha256sum /app/learning-runtime/evolution/engine.mjs | cut -d" " -f1)"
+              test "$actual" = "$EXPECTED_ENGINE_SHA"
+              mkdir -p /tmp/adaptive-final-proof
+              cp /proof/engine.test.mjs /tmp/adaptive-final-proof/engine.test.mjs
+              ln -s /app/learning-runtime/evolution/engine.mjs /tmp/adaptive-final-proof/engine.mjs
+              node --test /tmp/adaptive-final-proof/engine.test.mjs
+            '
