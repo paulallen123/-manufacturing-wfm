@@ -1,0 +1,37 @@
+{
+  "itemId": "issue-265-source-identity-response-headers",
+  "stage": "TESTED_ISOLATED",
+  "requirementSource": "GitHub issue #265, security/tenant-isolation lane: Source-identity headers immutable on every consequential response.",
+  "ownerConflictCheck": {
+    "observedAt": "2026-10-13",
+    "result": "No matching source-identity response-capture branch or narrow open PR found. PR #292 changes Staffology and assembly files; PR #378 changes payroll browser proof; PR #383 changes payroll restart proof. The existing security/runtime/runtime-identity.cjs and tests own runtime header enforcement and are unchanged. Canonical proof/release owner retains integration and execution authority.",
+    "limits": "Private chats and leases are not visible; owner should recheck before adoption. Search cannot prove absence of unpublished local work."
+  },
+  "exactBase": "f3e1afc97ffba869e10c697cc6f66efac628ea8a",
+  "changedFiles": [
+    "scripts/source-identity-response-oracle.mjs",
+    "tests/source-identity-response-oracle.test.mjs",
+    "docs/evidence/2026-10-13-source-identity-response-proof.json"
+  ],
+  "implementation": "Added a read-only oracle for raw HTTP response captures. It requires a declared exact method/path/status matrix, one unique capture per expected request, and exactly one build-file-matched source SHA, source binding, and fixture boundary header on each success or denial response. Unknown, missing, duplicate and mismatched captures fail closed. It reuses the current runtime-identity header contract and creates no server route, runner, authority, deployment, or customer mutation.",
+  "tests": [
+    {
+      "command": "node --test tests/source-identity-response-oracle.test.mjs security/runtime/runtime-identity.test.cjs",
+      "result": "17 passed, 0 failed, 0 skipped, using synthetic response captures"
+    },
+    {
+      "command": "node --check scripts/source-identity-response-oracle.mjs; git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "review": "Independent review pending; no reviewer approval claimed.",
+  "canonicalIntegration": "Pending canonical proof owner adoption and runner wiring for the complete consequential response matrix.",
+  "deployment": "NOT_DEPLOYED",
+  "hostedCustomerProof": "NOT_PROVEN",
+  "remainingRisks": [
+    "A caller can omit a consequential route from its declared matrix; the canonical owner must define and independently review the full route/actor/action list.",
+    "The oracle checks captured bytes, not that they came from an independently verified exact hosted candidate.",
+    "No authenticated hosted response was captured or evaluated in this package."
+  ],
+  "nextAction": "Canonical owner reviews this isolated package, defines the complete consequential route matrix, captures rawHeaders during the existing synthetic Golden Journey on the same serving SHA, and applies the oracle before any release claim."
+}
