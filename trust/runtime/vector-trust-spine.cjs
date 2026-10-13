@@ -204,7 +204,17 @@ class EvidenceLedger {
       if (observedMs > now || Date.parse(row.effectiveAt) > now) notEffective.push(id);
       const expiresMs = row.expiresAt ? Date.parse(row.expiresAt) : null;
       if ((expiresMs && now > expiresMs) || (Number.isFinite(maxAgeMs) && maxAgeMs >= 0 && now - observedMs > maxAgeMs)) stale.push(id);
-      if (row.contradictionRefs.length) contradicted.push(id);
+      // The immutable append record only lists conflicts known to the newer
+      // entry. Assess the older side against current conflicting successors as
+      // well, so selecting only that reference cannot conceal a contradiction.
+      const contradictedByCurrentRecord = this.records.some((candidate) =>
+        candidate.contradictionRefs.includes(id) &&
+        Date.parse(candidate.observedAt) <= now &&
+        Date.parse(candidate.effectiveAt) <= now &&
+        (!candidate.expiresAt || now <= Date.parse(candidate.expiresAt)) &&
+        !this.records.some((successor) => currentlySupersedes(successor, candidate, now))
+      );
+      if (row.contradictionRefs.length || contradictedByCurrentRecord) contradicted.push(id);
       // Withdrawal begins when the successor is both known and effective. It
       // never substitutes new evidence or revives history after successor expiry.
       if (this.records.some((candidate) => currentlySupersedes(candidate, row, now))) superseded.push(id);
