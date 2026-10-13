@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {createFactoryPlayback,digest}=require('./factory-playback.cjs');
+const {createFactoryPlayback,scopeRealtimeEvents,digest}=require('./factory-playback.cjs');
 const {createDecisionOutcomeProof}=require('./decision-outcome-proof.cjs');
 
 const episode={
@@ -12,8 +12,8 @@ const episode={
 
 test('playback composes decision and realtime evidence chronologically',()=>{
   const playback=createFactoryPlayback({episode,realtimeEvents:[
-    {topic:'schedule.updated',createdAt:'2026-09-23T04:48:00Z',payload:{tenant:'alpha',site:'tamworth',summary:'Schedule updated',sourceRef:'schedule:88'}},
-    {topic:'integration.verified',createdAt:'2026-09-23T04:49:00Z',payload:{tenant:'alpha',site:'tamworth',summary:'Downstream confirmation',sourceRef:'erp:ack:4'}}
+    {tenant:'alpha',site:'tamworth',topic:'schedule.updated',createdAt:'2026-09-23T04:48:00Z',payload:{tenant:'alpha',site:'tamworth',summary:'Schedule updated',sourceRef:'schedule:88'}},
+    {tenant:'alpha',site:'tamworth',topic:'integration.verified',createdAt:'2026-09-23T04:49:00Z',payload:{tenant:'alpha',site:'tamworth',summary:'Downstream confirmation',sourceRef:'erp:ack:4'}}
   ]});
   assert.equal(playback.readOnly,true);
   assert.equal(playback.executionPermitted,false);
@@ -24,8 +24,28 @@ test('playback composes decision and realtime evidence chronologically',()=>{
 });
 
 test('cross-tenant realtime event is excluded',()=>{
-  const playback=createFactoryPlayback({episode,realtimeEvents:[{topic:'x',createdAt:'2026-09-23T04:50:00Z',payload:{tenant:'beta',summary:'Wrong tenant'}}]});
+  const playback=createFactoryPlayback({episode,realtimeEvents:[{tenant:'beta',site:'tamworth',topic:'x',createdAt:'2026-09-23T04:50:00Z',payload:{tenant:'beta',summary:'Wrong tenant'}}]});
   assert.equal(playback.timeline.some(x=>x.title==='Wrong tenant'),false);
+});
+
+test('unscoped and wrong-site realtime records are excluded',()=>{
+  const realtimeEvents=[
+    {topic:'x',createdAt:'2026-09-23T04:50:00Z',payload:{summary:'Unscoped'}},
+    {tenant:'alpha',site:'other',topic:'x',createdAt:'2026-09-23T04:51:00Z',payload:{summary:'Wrong site'}}
+  ];
+  assert.equal(createFactoryPlayback({episode,realtimeEvents}).timeline.some(x=>x.kind==='REALTIME_EVENT'),false);
+});
+
+test('existing realtime service rows require trusted tenant binding and site tags',()=>{
+  const rows=[
+    {seq:1,topic:'schedule.updated',audience:'manager',createdAt:'2026-09-23T04:48:00Z',payload:{site:'tamworth',summary:'Same site'}},
+    {seq:2,topic:'schedule.updated',audience:'manager',createdAt:'2026-09-23T04:49:00Z',payload:{site:'other',summary:'Other site'}},
+    {seq:3,topic:'schedule.updated',audience:'manager',createdAt:'2026-09-23T04:50:00Z',payload:{summary:'Missing site'}}
+  ];
+  const scoped=scopeRealtimeEvents(rows,{tenant:'alpha',site:'tamworth'});
+  assert.equal(scoped.length,1);
+  assert.equal(createFactoryPlayback({episode,realtimeEvents:scoped}).timeline.filter(x=>x.kind==='REALTIME_EVENT').length,1);
+  assert.throws(()=>scopeRealtimeEvents(rows,{site:'tamworth'}));
 });
 
 function sealedProof(overrides={}){
@@ -37,16 +57,18 @@ function sealedProof(overrides={}){
   return {...core,proofDigest:digest(core)};
 }
 
+const completed={...episode,options:[
+  {id:'do-nothing',prediction:{labourCost:500}},
+  {id:'redeploy',prediction:{labourCost:300}}],
+  outcome:{...episode.outcome,actual:{labourCost:250}}};
+
 test('sealed same-site outcome proof appears once as verified value',()=>{
-  const completed={...episode,options:[
-    {id:'do-nothing',prediction:{labourCost:500}},
-    {id:'redeploy',prediction:{labourCost:300}}],
-    outcome:{...episode.outcome,actual:{labourCost:250}}};
   const proof=createDecisionOutcomeProof({episode:completed,metric:'labourCost',direction:'MINIMIZE',
     classification:'REALISED_FINANCIAL',baselineActual:500,baselineEvidenceRefs:['payroll:before'],
     financeEvidenceRefs:['finance:1'],currency:'GBP',measurementWindow:{start:'2026-09-23T04:42:00Z',end:'2026-09-23T08:30:00Z'}});
   const playback=createFactoryPlayback({episode:completed,outcomeProofs:[proof]});
-  assert.equal(playback.timeline.filter(x=>x.kind==='FINANCIAL_VALUE_VERIFIED').length,1);
+  assert.equal(playback.undatedProofs.filter(x=>x.kind==='FINANCIAL_VALUE_EVIDENCE').length,1);
+  assert.equal(playback.timeline.some(x=>x.kind==='FINANCIAL_VALUE_EVIDENCE'),false);
   assert.equal(playback.executionPermitted,false);
 });
 
@@ -56,7 +78,18 @@ test('forged, altered, wrong-site and wrong-option proofs cannot claim verified 
     {...proof,metric:'energyCost'},sealedProof({site:'another-site'}),sealedProof({selectedOptionId:'do-nothing'}),
     {recordType:'vector-decision-outcome-proof',tenant:'alpha',site:'tamworth',episodeId:'ep-1',realisedFinancialOutcome:true}];
   for(const candidate of cases){
-    const playback=createFactoryPlayback({episode,outcomeProofs:[candidate]});
-    assert.equal(playback.timeline.some(x=>x.kind==='FINANCIAL_VALUE_VERIFIED'),false);
+    const playback=createFactoryPlayback({episode:completed,outcomeProofs:[candidate]});
+    assert.equal(playback.undatedProofs.some(x=>x.kind==='FINANCIAL_VALUE_EVIDENCE'),false);
   }
+});
+
+test('recomputed hash cannot promote nonfinancial metric to realised value',()=>{
+  const fake=sealedProof({metric:'riskScore',evidence:{baseline:[],result:[],finance:[]},currency:null,measurementWindow:null});
+  assert.deepEqual(createFactoryPlayback({episode:completed,outcomeProofs:[fake]}).undatedProofs,[]);
+});
+
+test('shadow input cannot label a selection as authorised execution',()=>{
+  const shadow={...episode,mode:'SHADOW',selection:{...episode.selection,executionPermitted:true}};
+  const playback=createFactoryPlayback({episode:shadow});
+  assert.equal(playback.timeline.find(x=>x.topic==='decision.selected').kind,'OPTION_SELECTED');
 });
