@@ -88,8 +88,10 @@ function evaluateDeliveryDisruption(raw){
     if(!failures.length&&o.avoidedCostLower>supported)failures.push('UNSUPPORTED_AVOIDANCE');
     const benefit=failures.length?0:o.avoidedCostLower-o.costUpper;
     if(!failures.length&&benefit<=0)failures.push('NO_CONSERVATIVE_BENEFIT');
+    // Keep rejected input identity in the wrapper without exposing raw source refs.
     const item={id:o?.id||null,kind:o?.kind||null,recoveredHours:o?.recoveredHours??null,
       conservativeNetBenefitMinor:benefit,failures,action:'WORKFLOW_REVIEW_ONLY'};
+    if(failures.length)item.inputDigest=digest({version:VERSION,option:o});
     (failures.length?rejectedOptions:rankedOptions).push(item);
   }
   rankedOptions.sort((a,b)=>b.conservativeNetBenefitMinor-a.conservativeNetBenefitMinor||a.id.localeCompare(b.id));
