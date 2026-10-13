@@ -38,7 +38,7 @@ test('evidence must cover the full exact assignment and be observed inside its v
 });
 
 test('unresolved restrictions, missing controls or self approval block the evidence gate',()=>{
-  for(const changed of [{restrictionsResolved:false},{taskControlsConfirmed:false},{approverRef:assignment.workerId},{sourceRef:''}]){
+  for(const changed of [{restrictionsResolved:false},{taskControlsConfirmed:false},{approverRef:assignment.workerId},{approverRef:' '+assignment.workerId},{approverRef:assignment.workerId+' '},{sourceRef:''}]){
     assert.equal(assess(assignment,{...evidence,...changed}).evidenceGate,'BLOCKED');
   }
 });

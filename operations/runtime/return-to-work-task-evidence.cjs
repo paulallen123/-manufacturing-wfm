@@ -27,7 +27,10 @@ function assessReturnToWorkTaskEvidence({ assignment, evidence, observedAt } = {
       if (evidence[key] !== assignment?.[key]) reasons.push('EVIDENCE_SCOPE_MISMATCH_' + key.toUpperCase());
     }
     if (typeof evidence.sourceRef !== 'string' || !evidence.sourceRef.trim()) reasons.push('MISSING_SOURCE_REFERENCE');
-    if (typeof evidence.approverRef !== 'string' || !evidence.approverRef.trim() || evidence.approverRef === assignment?.workerId) reasons.push('MISSING_INDEPENDENT_APPROVER');
+    if (typeof evidence.approverRef !== 'string' || !evidence.approverRef.trim() ||
+        evidence.approverRef !== evidence.approverRef.trim() ||
+        evidence.approverRef.trim() === String(assignment?.workerId ?? '').trim())
+      reasons.push('MISSING_INDEPENDENT_APPROVER');
     if (evidence.taskControlsConfirmed !== true) reasons.push('TASK_CONTROLS_UNCONFIRMED');
     if (evidence.restrictionsResolved !== true) reasons.push('TASK_RESTRICTIONS_UNRESOLVED');
     const effectiveFrom = instant(evidence.effectiveFrom), effectiveTo = instant(evidence.effectiveTo);
