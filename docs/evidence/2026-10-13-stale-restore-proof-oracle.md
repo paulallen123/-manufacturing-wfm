@@ -1,0 +1,10 @@
+# Stale restore proof oracle — bounded handoff
+
+- Requirement/source: issue #265 persistence/recovery gate, “Backup/restore or stale-restore detection evidence.”
+- Owner/conflict check: canonical release/integration owner retained. 2026-10-13 open-PR and exact-path search found broad recovery PRs but no focused stale-restore detector in the current candidate. This package adds new files only. It has no runner, database, writer, controller or deployment.
+- Exact base: `48dce8f697825c8cd5f99b3e5aeea3953647f8c2` (`release/vector-customer-ready-candidate-20260925`). Changed files: `scripts/restore-freshness-proof-oracle.mjs`, `tests/restore-freshness-proof-oracle.test.mjs`, this record.
+- Result: a pure comparison of a restored readback with an independently retained external tenant/store/epoch/sequence/state-digest watermark. It rejects an older restore, an unwitnessed later state, a same-sequence mismatch, scope or candidate drift, and a restore receipt detached from the external witness. It neither restores data nor grants recovery authority.
+- Tests: local `node --test tests/restore-freshness-proof-oracle.test.mjs` passed 9/9 on Node 24.19.0; `git diff --check` passed. No actual backup, restore, hosted, Docker or destructive test ran. No final local test failures.
+- Review/integration: author self-check only; independent review and canonical integration pending. The canonical owner must bind the witness to an external trust domain that a stale restore cannot roll back, and independently verify the restore receipt and exact candidate.
+- Deployment/proof: not deployed, enabled, hosted-proven or customer-ready. This oracle's synthetic success is not a backup/restore proof. No customer data or live store was touched.
+- Next action: canonical owner reviews this isolated package and the external witness contract; then, within approved recovery controls, captures a safe synthetic backup/restore or stale-restore assault on the exact serving candidate with independent state and receipt readbacks before marking the #265 recovery gate proven.
