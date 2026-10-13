@@ -6,7 +6,7 @@ permissions:
   contents: read
 concurrency:
   group: customer-demand-numeric-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   source-service-regression:
     if: github.actor == github.repository_owner
