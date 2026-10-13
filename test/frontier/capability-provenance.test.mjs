@@ -43,6 +43,28 @@ test('direct PII is rejected before an attestation can be emitted',()=>{
   assert.equal(buildCapabilityAttestation(input).reason,'direct_pii_present');
 });
 
+test('numeric and differently cased direct identity fields are rejected',()=>{
+  for(const [key,value] of [['employeeId',123],['Email','worker@example.test'],['employee_id','E123'],['PHONE',15551234567]]){
+    const input=structuredClone(base);input.event.metadata={[key]:value};
+    assert.equal(buildCapabilityAttestation(input).reason,'direct_pii_present',key);
+  }
+  for(const attestation of [{employeeId:123},{Email:'worker@example.test'},{employee_id:'E123'}]){
+    assert.equal(verifyAttestationPrivacy(attestation).status,'rejected');
+  }
+});
+
+test('an email embedded in an emitted reference cannot pass privacy verification',()=>{
+  const input=structuredClone(base);input.event.productRef='worker@example.test';
+  assert.equal(buildCapabilityAttestation(input).reason,'direct_pii_present');
+  assert.equal(verifyAttestationPrivacy({productRef:'worker@example.test'}).status,'rejected');
+});
+
+test('a telephone URI embedded in an emitted reference cannot pass privacy verification',()=>{
+  const input=structuredClone(base);input.event.productRef='tel:+15551234567';
+  assert.equal(buildCapabilityAttestation(input).reason,'direct_pii_present');
+  assert.equal(verifyAttestationPrivacy({productRef:'tel:+15551234567'}).status,'rejected');
+});
+
 test('the attestation never claims physical execution or product conformity',()=>{
   const r=buildCapabilityAttestation(base);
   assert.match(r.attestation.claimBoundary,/does not independently prove physical task execution/i);
