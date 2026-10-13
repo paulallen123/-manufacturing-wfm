@@ -300,6 +300,31 @@ test('policy values are bound to the evidence digest even at the same policy ver
   noWorkforceOption(second);
 });
 
+test('context provenance source is bound into the evidence and episode identity', () => {
+  const first = screenQualityWorkforceShadow(fixture());
+  const changed = fixture();
+  changed.context.provenance.source = 'synthetic-context-mirror';
+  const second = screenQualityWorkforceShadow(changed);
+  assert.notEqual(first.evidenceDigest, second.evidenceDigest);
+  assert.notEqual(first.episode.episodeId, second.episode.episodeId);
+});
+
+test('context observation time is bound into the evidence and episode identity', () => {
+  const firstInput = fixture();
+  firstInput.policy.maxEvidenceAgeMs = 10 * 60 * 1000;
+  firstInput.context.observedAt = '2026-10-12T08:31:00.000Z';
+  const secondInput = fixture();
+  secondInput.policy.maxEvidenceAgeMs = 10 * 60 * 1000;
+  secondInput.context.observedAt = '2026-10-12T08:32:00.000Z';
+
+  const first = screenQualityWorkforceShadow(firstInput);
+  const second = screenQualityWorkforceShadow(secondInput);
+
+  assert.notEqual(first.evidenceValidUntil, second.evidenceValidUntil);
+  assert.notEqual(first.evidenceDigest, second.evidenceDigest);
+  assert.notEqual(first.episode.episodeId, second.episode.episodeId);
+});
+
 test('out-of-range and reversed rate limits cannot manufacture a quality alert', () => {
   for (const invalid of [{ max: -1 }, { max: 2 }, { min: 0.001 }]) {
     const input = fixture();
@@ -471,3 +496,4 @@ test('1,350 synthetic scenarios exercise confounder and adverse-prediction gates
     hardBlocked, hardBlockedRate: hardBlocked / hard, workforceFeasible,
     adversePredictionBlocked }));
 });
+
