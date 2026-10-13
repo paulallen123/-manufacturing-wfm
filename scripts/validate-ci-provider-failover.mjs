@@ -16,6 +16,20 @@ const outage=[
 ];
 assert.equal(classifyGitHubJobs(outage).health,'SYSTEMIC_PREEXECUTION_FAILURE');
 
+// A successful historical canary cannot clear a newer runner-acquisition outage.
+const oldSuccess={...healthy[0],created_at:'2026-10-12T10:00:00Z'};
+const latestOutage=outage.map(job=>({...job,created_at:'2026-10-13T10:00:00Z'}));
+for (const jobs of [[oldSuccess,...latestOutage],[...latestOutage,oldSuccess]]) {
+  const current=classifyGitHubJobs(jobs);
+  assert.equal(current.health,'SYSTEMIC_PREEXECUTION_FAILURE');
+  assert.equal(current.productEvidenceAvailable,false);
+  assert.equal(selectProofLane({githubJobs:jobs}).releaseGate,'FAIL_CLOSED_CI_EVIDENCE_UNAVAILABLE');
+}
+assert.equal(classifyGitHubJobs([
+  ...outage.map(job=>({...job,created_at:'2026-10-12T10:00:00Z'})),
+  {...healthy[0],created_at:'2026-10-13T10:00:00Z'}
+]).health,'EXECUTING');
+
 const localLogic={
   id:'local-agent-node22',
   priority:10,

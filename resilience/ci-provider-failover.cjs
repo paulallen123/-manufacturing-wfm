@@ -5,7 +5,13 @@ function runnerAssigned(job) {
 }
 
 function classifyGitHubJobs(jobs = []) {
-  const classified = jobs.map((job) => {
+  // Only the newest attempt can establish current runner availability. If
+  // attempts cannot be ordered, a pre-execution failure takes precedence.
+  const times = jobs.map((job) => Date.parse(job?.created_at || ''));
+  const ordered = jobs.length > 0 && times.every(Number.isFinite);
+  const latest = ordered ? Math.max(...times) : null;
+  const currentJobs = ordered ? jobs.filter((_, index) => times[index] === latest) : jobs;
+  const classified = currentJobs.map((job) => {
     const steps = Array.isArray(job.steps) ? job.steps : [];
     if (job.status === 'completed' && job.conclusion === 'failure' && steps.length === 0 && !runnerAssigned(job)) {
       return { ...job, class: 'PREEXECUTION_FAILURE' };
@@ -23,7 +29,7 @@ function classifyGitHubJobs(jobs = []) {
   const executed = classified.filter((j) => j.class === 'EXECUTED_SUCCESS' || j.class === 'EXECUTED_FAILURE');
   const workflows = new Set(pre.map((j) => j.workflow || j.workflow_name || j.name || '<unknown>'));
 
-  if (executed.length > 0) {
+  if (executed.length > 0 && (ordered || pre.length === 0)) {
     return {
       health: 'EXECUTING',
       provider: 'github-hosted',
