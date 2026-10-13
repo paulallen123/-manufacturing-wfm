@@ -1,19 +1,33 @@
 'use strict';
 
 const { createHmac, timingSafeEqual } = require('node:crypto');
+const { types: { isProxy } } = require('node:util');
 
 const CONTRACT_VERSION = 'VECTOR_CAPABILITY_ADMISSION_V1';
 const READINESS_VERSION = 'VECTOR_CAPABILITY_READINESS_V1';
-const SNAPSHOT_FIELDS = new Set(['contractVersion', 'tenant', 'revision', 'capabilities']);
-const CAPABILITY_FIELDS = new Set(['id', 'status', 'reasonCodes']);
-const REQUEST_FIELDS = new Set(['tenant', 'actorId', 'capabilityId', 'locale']);
-const ADMISSION_FIELDS = new Set([
+function fieldIndex(names) {
+  const result = Object.create(null);
+  for (let index = 0; index < names.length; index += 1) {
+    Object.defineProperty(result, names[index], { value: true, enumerable: true });
+  }
+  return Object.freeze(result);
+}
+
+const SNAPSHOT_FIELD_NAMES = Object.freeze(['contractVersion', 'tenant', 'revision', 'capabilities']);
+const ADMISSION_FIELD_NAMES = Object.freeze([
   'contractVersion', 'admitted', 'status', 'reasonCodes', 'binding', 'authorityFingerprint'
 ]);
-const BINDING_FIELDS = new Set(['tenant', 'actorId', 'capabilityId', 'readinessRevision']);
+const BINDING_FIELD_NAMES = Object.freeze(['tenant', 'actorId', 'capabilityId', 'readinessRevision']);
+const SNAPSHOT_FIELDS = fieldIndex(SNAPSHOT_FIELD_NAMES);
+const CAPABILITY_FIELDS = fieldIndex(['id', 'status', 'reasonCodes']);
+const REQUEST_FIELDS = fieldIndex(['tenant', 'actorId', 'capabilityId', 'locale']);
+const ADMISSION_FIELDS = fieldIndex(ADMISSION_FIELD_NAMES);
+const BINDING_FIELDS = fieldIndex(BINDING_FIELD_NAMES);
+const CREATE_INPUT_FIELDS = fieldIndex(['readiness', 'request', 'authorityKey']);
+const VERIFY_INPUT_FIELDS = fieldIndex(['admission', 'readiness', 'request', 'authorityKey']);
 
 function plainRecord(value, label, allowedFields) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+  if (!value || typeof value !== 'object' || isProxy(value) || Array.isArray(value)) {
     throw new TypeError(label + ' must be plain data.');
   }
   const prototype = Object.getPrototypeOf(value);
@@ -22,7 +36,7 @@ function plainRecord(value, label, allowedFields) {
   }
   const descriptors = Object.getOwnPropertyDescriptors(value);
   for (const key of Reflect.ownKeys(descriptors)) {
-    if (typeof key !== 'string' || !allowedFields.has(key)) {
+    if (typeof key !== 'string' || !Object.hasOwn(allowedFields, key)) {
       throw new TypeError(label + ' contains an undeclared field.');
     }
     const descriptor = descriptors[key];
@@ -42,7 +56,8 @@ function exactText(value, label, max, pattern) {
 }
 
 function denseArray(value, label, max) {
-  if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype ||
+  if (!value || typeof value !== 'object' || isProxy(value) || !Array.isArray(value) ||
+      Object.getPrototypeOf(value) !== Array.prototype ||
       !Number.isSafeInteger(value.length) || value.length > max) {
     throw new TypeError(label + ' must be a bounded plain-data array.');
   }
@@ -106,7 +121,7 @@ function parseCapability(value, index) {
 
 function parseReadiness(value) {
   const descriptors = plainRecord(value, 'Readiness snapshot', SNAPSHOT_FIELDS);
-  for (const field of SNAPSHOT_FIELDS) {
+  for (const field of SNAPSHOT_FIELD_NAMES) {
     if (!descriptors[field]) throw new TypeError('Readiness snapshot requires ' + field + '.');
   }
   if (descriptors.contractVersion.value !== READINESS_VERSION) {
@@ -121,13 +136,15 @@ function parseReadiness(value) {
   );
   const rows = descriptors.capabilities.value;
   const rowDescriptors = denseArray(rows, 'Readiness capabilities', 256);
-  const capabilities = new Map();
+  const capabilities = Object.create(null);
   for (let index = 0; index < rows.length; index += 1) {
     const row = parseCapability(rowDescriptors[String(index)].value, index);
-    if (capabilities.has(row.id)) throw new TypeError('Readiness snapshot contains a duplicate capability id.');
-    capabilities.set(row.id, row);
+    if (Object.hasOwn(capabilities, row.id)) {
+      throw new TypeError('Readiness snapshot contains a duplicate capability id.');
+    }
+    Object.defineProperty(capabilities, row.id, { value: row, enumerable: true });
   }
-  return Object.freeze({ tenant, revision, capabilities });
+  return Object.freeze({ tenant, revision, capabilities: Object.freeze(capabilities) });
 }
 
 function parseRequest(value) {
@@ -151,7 +168,8 @@ function parseRequest(value) {
 }
 
 function authorityKey(value) {
-  if (!Buffer.isBuffer(value) && !(value instanceof Uint8Array)) {
+  if (!value || typeof value !== 'object' || isProxy(value) ||
+      (!Buffer.isBuffer(value) && !(value instanceof Uint8Array))) {
     throw new TypeError('Capability admission requires a server-held authority key.');
   }
   const key = Buffer.from(value);
@@ -186,7 +204,7 @@ function createCapabilityAdmission(input = {}) {
   const container = plainRecord(
     input,
     'Capability admission input',
-    new Set(['readiness', 'request', 'authorityKey'])
+    CREATE_INPUT_FIELDS
   );
   if (!container.readiness || !container.request || !container.authorityKey) {
     throw new TypeError('Capability admission requires readiness, request, and a server-held authority key.');
@@ -195,7 +213,7 @@ function createCapabilityAdmission(input = {}) {
   const readiness = parseReadiness(container.readiness.value);
   const request = parseRequest(container.request.value);
   if (readiness.tenant !== request.tenant) return blocked(['READINESS_SCOPE_MISMATCH']);
-  const capability = readiness.capabilities.get(request.capabilityId);
+  const capability = readiness.capabilities[request.capabilityId];
   if (!capability) return blocked(['CAPABILITY_NOT_DECLARED']);
   if (capability.status !== 'ALLOW') return blocked(capability.reasonCodes);
   const binding = Object.freeze({
@@ -216,7 +234,7 @@ function createCapabilityAdmission(input = {}) {
 
 function parseAdmission(value) {
   const descriptors = plainRecord(value, 'Capability admission', ADMISSION_FIELDS);
-  for (const field of ADMISSION_FIELDS) {
+  for (const field of ADMISSION_FIELD_NAMES) {
     if (!descriptors[field]) throw new TypeError('Capability admission requires ' + field + '.');
   }
   if (descriptors.contractVersion.value !== CONTRACT_VERSION || descriptors.admitted.value !== true ||
@@ -224,7 +242,7 @@ function parseAdmission(value) {
     throw new TypeError('Capability admission was not granted.');
   }
   const bindingDescriptors = plainRecord(descriptors.binding.value, 'Capability admission binding', BINDING_FIELDS);
-  for (const field of BINDING_FIELDS) {
+  for (const field of BINDING_FIELD_NAMES) {
     if (!bindingDescriptors[field]) throw new TypeError('Capability admission binding requires ' + field + '.');
   }
   const binding = Object.freeze({
@@ -257,7 +275,7 @@ function verifyCapabilityAdmission(input = {}) {
   const container = plainRecord(
     input,
     'Capability verification input',
-    new Set(['admission', 'readiness', 'request', 'authorityKey'])
+    VERIFY_INPUT_FIELDS
   );
   if (!container.admission || !container.readiness || !container.request || !container.authorityKey) {
     throw new TypeError('Capability verification requires admission, readiness, request, and a server-held authority key.');
@@ -289,7 +307,7 @@ function verifyCapabilityAdmission(input = {}) {
   if (readiness.tenant !== admission.binding.tenant) {
     return verificationBlocked(['READINESS_SCOPE_MISMATCH']);
   }
-  const capability = readiness.capabilities.get(admission.binding.capabilityId);
+  const capability = readiness.capabilities[admission.binding.capabilityId];
   if (!capability) return verificationBlocked(['CAPABILITY_NOT_DECLARED']);
   if (capability.status !== 'ALLOW') return verificationBlocked(capability.reasonCodes);
   return Object.freeze({

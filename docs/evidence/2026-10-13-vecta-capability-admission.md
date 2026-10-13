@@ -23,10 +23,10 @@ Status: **TESTED locally on Node 24; draft handoff only**. This record does not 
 - `.github/workflows/vecta-capability-admission-gate.yml`
 - `docs/evidence/2026-10-13-vecta-capability-admission.md`
 
-Pre-commit SHA-256 identities for the executable package:
+Current pre-commit SHA-256 identities for the executable package:
 
-- source: `e8c2b1f69254a56c6fa3e9aeeb78c9eb06e91dbecb4a6968a90539b9fd882f91`
-- test: `3ed20503ff2bd0d625ae77f20dac1a94fbb2958ac9b9c5f83de7dc52ed5dd365`
+- source: `1506a6eeed715f5ad149b8808f8deb70ffd299a826fd21f3b67677510be3aebb`
+- test: `6c1c955133e5ae6dee0bfa3bfeadc9b26ca7e661f6f678bd9c46631480469f3f`
 - scoped workflow: `2f07fbdf9e3516d2254ea94f72d3c71f9785b6fafe2d0e6e594cff14b98983a1`
 
 No bot, router, bootstrap, controller, database, Dockerfile, shared release workflow, or canonical branch file is changed.
@@ -37,7 +37,8 @@ The new pure helper:
 
 - accepts only an explicit `VECTOR_CAPABILITY_READINESS_V1` projection;
 - rejects undeclared fields, including raw questionnaire material;
-- rejects active/accessor-backed and inherited record inputs;
+- rejects active Proxy, accessor-backed, and inherited record/array inputs before reflective traps execute;
+- uses frozen null-prototype indexes for admitted capability and allowed-field lookup, avoiding ambient Map/Set prototype authority;
 - requires exact tenant, actor, capability, and revision identities without truncation;
 - creates no plan binding for BLOCK or undeclared capabilities;
 - HMAC-binds admitted plans using a caller-supplied server-held key;
@@ -52,15 +53,20 @@ The new pure helper:
 3. HMAC review RED: the added authority-key regression failed; the pre-review implementation accepted no key and the new wrapper field was undeclared (12 failed, 1 passed, exit 1).
 4. HMAC GREEN: 13/13 passed on Node 24.19.0.
 5. Prototype-pollution RED: polluted inherited `Array.prototype.includes` suppressed duplicate blocking-reason detection (0/1, exit 1).
-6. Final local GREEN: 14/14 passed, zero failures/skips/cancellations/todos on Node 24.19.0. Both source and test syntax checks exited 0.
+6. First exact-head GREEN: 14/14 passed, zero failures/skips/cancellations/todos on Node 24.19.0. Both source and test syntax checks exited 0.
+7. Independent review reproduced two Important failures on exact head `ae8de223b906d89464a4bda059b6257e6da8dd56`: polluted `Map.prototype.get` changed a real BLOCK into ADMITTED, and a readiness Proxy executed its `getPrototypeOf` trap and was admitted.
+8. Held-out review RED: after adding both regressions, 14 passed / 2 failed. The Map case returned `admitted:true`; the Proxy record produced no rejection.
+9. Authority-key Proxy RED: the added no-trap key case failed with a TypedArray incompatible-receiver error before explicit rejection (0/1 focused).
+10. Revised local GREEN: 16/16 passed, zero failures/skips/cancellations/todos on Node 24.19.0. Both source and test syntax checks exited 0.
+11. Revised coverage: 92.07% lines, 79.63% branches, and 100% functions.
 
-The full repository suite was not run because this execution environment did not contain an authenticated repository checkout. The scoped workflow pins Node 22.23.2; its result must be read from the exact PR head before advancing beyond local TESTED.
+The original exact-head scoped workflow run `38440996355` / job `115447223411` passed Node 22.23.2 with 14/14 plus syntax/diff checks. That receipt is superseded for source acceptance by the review repair; the revised head must pass its own supported workflow before advancing beyond local TESTED. The full repository suite was not run because this execution environment did not contain an authenticated repository checkout.
 
 ## Review and integration state
 
 - Self-review found and repaired the unkeyed-digest weakness with a server-held HMAC contract.
 - Adversarial review found and repaired inherited `Array.prototype.includes` dependence in duplicate reason detection.
-- Fresh independent review is still required on the exact committed head.
+- Independent review of `ae8de223b906d89464a4bda059b6257e6da8dd56` required changes for Map-prototype authority and active Proxy inputs. Both reported cases are repaired locally with permanent regressions; independent re-review is required on the revised committed head.
 - Canonical owner adoption/wiring is not performed or implied.
 
 ## Deployment and proof state

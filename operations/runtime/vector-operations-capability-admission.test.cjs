@@ -230,6 +230,71 @@ test('duplicate blocking reasons stay rejected when inherited array methods are 
   assert.match(String(error && error.message), /reason codes must be unique/i);
 });
 
+test('ambient Map prototype pollution cannot convert a BLOCK capability to ALLOW', () => {
+  const original = Object.getOwnPropertyDescriptor(Map.prototype, 'get');
+  Object.defineProperty(Map.prototype, 'get', {
+    configurable: true,
+    writable: true,
+    value: () => Object.freeze({ id: 'payroll.release', status: 'ALLOW', reasonCodes: Object.freeze([]) })
+  });
+  let result;
+  try {
+    result = createCapabilityAdmission({
+      readiness: readiness(),
+      request: request({ capabilityId: 'payroll.release' })
+    });
+  } finally {
+    Object.defineProperty(Map.prototype, 'get', original);
+  }
+  assert.equal(result.admitted, false);
+  assert.equal(result.status, 'BLOCKED');
+  assert.deepEqual(result.reasonCodes, ['PAYROLL_NOT_READY']);
+});
+
+test('Proxy records and arrays are rejected before reflective traps execute', () => {
+  let recordTraps = 0;
+  const record = new Proxy(readiness(), {
+    getPrototypeOf() {
+      recordTraps += 1;
+      return Object.prototype;
+    }
+  });
+  assert.throws(
+    () => createCapabilityAdmission({ readiness: record, request: request() }),
+    /plain[- ]data|proxy/i
+  );
+  assert.equal(recordTraps, 0);
+
+  let arrayTraps = 0;
+  const capabilities = new Proxy(readiness().capabilities, {
+    getPrototypeOf() {
+      arrayTraps += 1;
+      return Array.prototype;
+    }
+  });
+  assert.throws(
+    () => createCapabilityAdmission({
+      readiness: readiness({ capabilities }),
+      request: request()
+    }),
+    /plain[- ]data|proxy/i
+  );
+  assert.equal(arrayTraps, 0);
+
+  let keyTraps = 0;
+  const authorityKey = new Proxy(new Uint8Array(32), {
+    getPrototypeOf() {
+      keyTraps += 1;
+      return Uint8Array.prototype;
+    }
+  });
+  assert.throws(
+    () => createAdmission({ readiness: readiness(), request: request(), authorityKey }),
+    /authority key|plain[- ]data|proxy/i
+  );
+  assert.equal(keyTraps, 0);
+});
+
 test('admission output is immutable and detached from caller mutation', () => {
   const source = readiness();
   const admission = createCapabilityAdmission({ readiness: source, request: request() });
