@@ -1,12 +1,12 @@
 name: Customer demand numeric admission
 on:
   push:
-    branches: ['backlog/customer-demand-numeric-20261013']
+    branches: ['backlog/customer-demand-numeric-20261013', 'backlog/customer-demand-calendar-20261013']
 permissions:
   contents: read
 concurrency:
   group: customer-demand-numeric-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   source-service-regression:
     if: github.actor == github.repository_owner
@@ -30,7 +30,7 @@ jobs:
           test "$(node --version)" = "v22.23.2"
           git hash-object operations/runtime/customer-demand-intelligence.cjs operations/runtime/customer-demand-numeric-admission.test.cjs operations/runtime/customer-demand-numeric-service.test.cjs
       - name: Exercise demand score, persistence and existing service
-        run: node --test operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/customer-demand-numeric-admission.test.cjs operations/runtime/customer-demand-numeric-service.test.cjs operations/runtime/demand-decision-service.test.cjs
+        run: node --test operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/customer-demand-numeric-admission.test.cjs operations/runtime/customer-demand-numeric-service.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/customer-demand-calendar-admission.test.cjs operations/runtime/customer-demand-calendar-service.test.cjs
   installed-image-regression:
     if: github.actor == github.repository_owner
     needs: source-service-regression
@@ -63,7 +63,7 @@ jobs:
                 cmp "/proof/source/$name" "/app/operations-runtime/$name"
                 ln -s "/app/operations-runtime/$name" "/tmp/demand-installed-tests/$name"
               done
-              for name in customer-demand-intelligence.test.cjs customer-demand-numeric-admission.test.cjs customer-demand-numeric-service.test.cjs demand-decision-service.test.cjs; do
+              for name in customer-demand-intelligence.test.cjs customer-demand-numeric-admission.test.cjs customer-demand-numeric-service.test.cjs demand-decision-service.test.cjs customer-demand-calendar-admission.test.cjs customer-demand-calendar-service.test.cjs; do
                 cp "/proof/source/$name" "/tmp/demand-installed-tests/$name"
               done
               node --test /tmp/demand-installed-tests/*.test.cjs

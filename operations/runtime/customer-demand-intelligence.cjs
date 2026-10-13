@@ -9,7 +9,20 @@ const SOURCE_TYPES=Object.freeze([
 const SILENT_SOURCES=new Set(['workaround','manual-override','workflow-abandonment','integration-failure','training-search']);
 
 function text(value,max=240){ return String(value??'').trim().slice(0,max); }
-function iso(value){ const raw=text(value,80),ms=Date.parse(raw); if(!raw||!Number.isFinite(ms)) throw new Error('Valid observedAt is required.'); return new Date(ms).toISOString(); }
+function iso(value){
+  const raw=text(value,80),ms=Date.parse(raw);
+  if(!raw||!Number.isFinite(ms)) throw new Error('Valid observedAt is required.');
+  // Date.parse rolls impossible ISO-style days into the next month. Validate
+  // the written calendar before applying any timezone offset normalization.
+  const calendar=/^([+-]\d{6}|\d{4})-(\d+)-(\d+)/.exec(raw);
+  if(calendar){
+    const year=Number(calendar[1]),month=Number(calendar[2]),day=Number(calendar[3]);
+    const leap=year%4===0&&(year%100!==0||year%400===0);
+    const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+    if(calendar[1]==='-000000'||month<1||month>12||day<1||day>days[month-1]) throw new Error('Valid observedAt is required.');
+  }
+  return new Date(ms).toISOString();
+}
 function score(value,name,max=5){ if(typeof value!=='number'||!Number.isFinite(value)) throw new Error(`${name} must be a finite number.`); if(value<0||value>max) throw new Error(`${name} must be between 0 and ${max}.`); return value; }
 function ratio(value,name){ return score(value,name,1); }
 function list(value,max=20,maxLen=160){ return Array.isArray(value)?[...new Set(value.map(v=>text(v,maxLen)).filter(Boolean))].slice(0,max):[]; }
