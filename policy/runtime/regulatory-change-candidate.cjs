@@ -1,5 +1,6 @@
 'use strict';
 const { createHash } = require('node:crypto');
+const { isProxy } = require('node:util').types;
 function stable(v){if(Array.isArray(v)) return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object') return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v);}
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function text(v,max=240){return String(v??'').trim().slice(0,max);}
@@ -22,10 +23,18 @@ function createRegulatoryChangeCandidate(input={}){
   const previous=previousValue.trim(),next=nextValue.trim();
   if(next!==assessedSnapshotDigest.trim()) throw new Error('Next snapshot digest must match the current source assessment.');
   if(previous===next) return Object.freeze({contractVersion:'VECTOR_REGULATORY_CHANGE_CANDIDATE_V1',state:'NO_CHANGE',promotionAuthority:false,customerMutation:false});
-  const changes=Array.isArray(input.changes)?input.changes:[];
+  const changes=input.changes;
+  if(isProxy(changes)||!Array.isArray(changes)) throw new Error('Changed snapshots require a plain array of structured candidate changes.');
   if(!changes.length) throw new Error('Changed snapshots require structured candidate changes.');
   const sites=Array.isArray(input.sites)?input.sites:[];
-  const normalised=changes.map((c,i)=>({id:text(c.id,160)||'change-'+(i+1),domain:text(c.domain,80),summary:text(c.summary,500),effectiveFrom:text(c.effectiveFrom,80)||null,jurisdiction:text(c.jurisdiction,120),confidence:normaliseConfidence(c.confidence),sourceRefs:list(c.sourceRefs,20,300),ambiguity:text(c.ambiguity,40).toUpperCase()||'UNKNOWN'}));
+  const normalised=[];
+  const changeCount=changes.length;
+  for(let i=0;i<changeCount;i++){
+    const entry=Object.getOwnPropertyDescriptor(changes,String(i));
+    if(!entry||!Object.hasOwn(entry,'value')) throw new Error('Candidate changes require dense own data entries.');
+    const c=entry.value;
+    normalised.push({id:text(c.id,160)||'change-'+(i+1),domain:text(c.domain,80),summary:text(c.summary,500),effectiveFrom:text(c.effectiveFrom,80)||null,jurisdiction:text(c.jurisdiction,120),confidence:normaliseConfidence(c.confidence),sourceRefs:list(c.sourceRefs,20,300),ambiguity:text(c.ambiguity,40).toUpperCase()||'UNKNOWN'});
+  }
   if(normalised.some(c=>!c.domain||!c.jurisdiction||!c.sourceRefs.length)) throw new Error('Every candidate change needs domain, jurisdiction and sourceRefs.');
   const material=normalised.some(c=>MATERIAL_DOMAINS.has(c.domain.toLowerCase())),ambiguous=normalised.some(c=>c.ambiguity!=='LOW'||c.confidence<0.95);
   const affectedSites=[]; for(const site of sites){const jurisdiction=text(site.jurisdiction||site.country,120);if(normalised.some(c=>c.jurisdiction===jurisdiction)) affectedSites.push(text(site.id,160));}

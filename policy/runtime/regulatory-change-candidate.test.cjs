@@ -3,6 +3,45 @@ const test=require('node:test'); const assert=require('node:assert/strict');
 const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.cjs');
 const PREVIOUS='a'.repeat(64),NEXT='b'.repeat(64);
 const sourceAssessment={sourceId:'gb-law',state:'CURRENT',usable:true,snapshotDigest:NEXT};
+function indexedInput(changes){return {sourceAssessment,previousSnapshotDigest:PREVIOUS,nextSnapshotDigest:NEXT,changes};}
+function payrollChange(){return {id:'law',domain:'payroll',jurisdiction:'GB',confidence:1,ambiguity:'LOW',sourceRefs:['synthetic:policy']};}
+test('caller array map cannot discard a declared material change',()=>{
+  const changes=[payrollChange()];let calls=0;changes.map=()=>{calls++;return [];};
+  const result=createRegulatoryChangeCandidate(indexedInput(changes));
+  assert.equal(result.reviewRequired,true);assert.equal(result.changes.length,1);assert.equal(result.changes[0].domain,'payroll');assert.equal(calls,0);
+});
+test('caller array map cannot replace a material change with informational evidence',()=>{
+  const changes=[payrollChange()];let calls=0;changes.map=fn=>{calls++;return [{...payrollChange(),domain:'informational'}].map(fn);};
+  const result=createRegulatoryChangeCandidate(indexedInput(changes));
+  assert.equal(result.reviewRequired,true);assert.equal(result.changes[0].domain,'payroll');assert.equal(calls,0);
+});
+test('caller array species cannot own normalized candidate review methods',()=>{
+  const changes=[payrollChange()];let calls=0;
+  class Suppressed extends Array {some(){return false;}}
+  Object.defineProperty(changes,'constructor',{get(){calls++;return {[Symbol.species]:Suppressed};}});
+  const result=createRegulatoryChangeCandidate(indexedInput(changes));
+  assert.equal(result.reviewRequired,true);assert.equal(calls,0);assert.equal(Object.getPrototypeOf(result.changes),Array.prototype);
+});
+test('accessor change entries reject before executing their getter',()=>{
+  const changes=[];let calls=0;Object.defineProperty(changes,'0',{get(){calls++;return payrollChange();},enumerable:true});
+  assert.throws(()=>createRegulatoryChangeCandidate(indexedInput(changes)),/own data entries/i);assert.equal(calls,0);
+});
+test('proxy changes reject before executing array reflection traps',()=>{
+  let calls=0;const changes=new Proxy([payrollChange()],{get(target,key,receiver){calls++;return Reflect.get(target,key,receiver);},getOwnPropertyDescriptor(target,key){calls++;return Reflect.getOwnPropertyDescriptor(target,key);}});
+  assert.throws(()=>createRegulatoryChangeCandidate(indexedInput(changes)),/plain array/i);assert.equal(calls,0);
+});
+test('inherited change entries cannot supply missing declared evidence',()=>{
+  const changes=new Array(1);Object.setPrototypeOf(changes,Object.assign(Object.create(Array.prototype),{'0':payrollChange()}));
+  assert.throws(()=>createRegulatoryChangeCandidate(indexedInput(changes)),/own data entries/i);
+});
+test('sparse changes reject with the structured input error',()=>{
+  for(const changes of [new Array(1),[payrollChange(),,],Object.assign(new Array(2),{'1':payrollChange()})])
+    assert.throws(()=>createRegulatoryChangeCandidate(indexedInput(changes)),/own data entries/i);
+});
+test('caller iterator is never consulted for indexed change evidence',()=>{
+  const changes=[payrollChange()];let calls=0;changes[Symbol.iterator]=function*(){calls++;yield {...payrollChange(),domain:'informational'};};
+  const result=createRegulatoryChangeCandidate(indexedInput(changes));assert.equal(result.reviewRequired,true);assert.equal(calls,0);
+});
 test('case variants of every known material domain retain mandatory qualified review',()=>{
   const domains=['working-time','overtime','rest','absence','holiday','payroll','privacy','worker-category','certification','safety','ai-governance'];
   for(const domain of domains){
