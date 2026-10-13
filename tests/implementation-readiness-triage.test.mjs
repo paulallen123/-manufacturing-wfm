@@ -20,7 +20,7 @@ function input() {
         { key: 'organisation-model', status: 'MISSING', satisfied: false, confidence: 0,
           minConfidence: 0.98 },
         { key: 'security-controls', status: 'REVALIDATION_REQUIRED', satisfied: false,
-          confidence: 1, minConfidence: 1, evidenceValidation: { reason: 'policy changed' } }
+          confidence: 1, minConfidence: 1, evidenceValidation: { reason: 'POLICY_CHANGED' } }
       ], blockingDecisions: [], launchBoundary: { ready: false, blockers: ['WHOLE_GOLDEN_JOURNEY_UNPROVEN'] }
     } } };
 }
@@ -31,10 +31,17 @@ test('reports a bound blocker and only a declared low-risk fixture data candidat
   assert.equal(result.status, 'BLOCKED');
   assert.deepEqual(result.unresolved.map(r => r.classification),
     ['DECLARED_FIXTURE_DATA_CANDIDATE', 'REAL_OR_UNRESOLVED_BLOCKER']);
-  assert.equal(result.unresolved[1].reason, 'policy changed');
+  assert.equal(result.unresolved[1].reason, 'POLICY_CHANGED');
   assert.equal(result.fixtureClassificationIsUnverified, true);
   assert.equal(result.customerReady, false);
-  assert.equal(JSON.stringify(result).includes('policy changed'), true);
+  assert.equal(JSON.stringify(result).includes('POLICY_CHANGED'), true);
+});
+test('does not copy free-form error details into a proof receipt', () => {
+  const value = input();
+  value.capture.body.requirements[2].evidenceValidation.reason = 'person@example.invalid: bad record';
+  const result = triageImplementationReadiness(value);
+  assert.equal(result.unresolved[1].reason, null);
+  assert.equal(JSON.stringify(result).includes('person@example.invalid'), false);
 });
 test('unmanifested missing data stays a blocker', () => {
   const result = triageImplementationReadiness(input());

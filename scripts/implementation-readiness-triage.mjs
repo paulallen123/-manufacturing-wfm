@@ -5,6 +5,7 @@ const DIGEST = /^[0-9a-f]{64}$/;
 // A fixture declaration can only flag a missing structural data sample for
 // review. It cannot relabel a policy, provider, security, execution or training gate.
 const FIXTURE_DATA_CANDIDATE_KEYS = new Set(['organisation-model']);
+const safeCode = value => typeof value === 'string' && /^[A-Z][A-Z0-9_]{1,95}$/.test(value) ? value : null;
 
 // Inspect an authenticated, already captured implementation status. This never
 // supplies evidence to the implementation engine or changes its readiness state.
@@ -55,7 +56,8 @@ export function triageImplementationReadiness({ capture, expected, fixtureManife
   let satisfied = 0;
   for (const requirement of body.requirements) {
     const key = requirement?.key;
-    assert.ok(typeof key === 'string' && key.length > 0 && !seen.has(key), 'Invalid or duplicate requirement');
+    assert.ok(typeof key === 'string' && /^[a-z][a-z0-9-]{1,79}$/.test(key) && !seen.has(key),
+      'Invalid or duplicate requirement');
     seen.add(key);
     assert.ok(['PASS', 'MISSING', 'FAIL', 'REVALIDATION_REQUIRED'].includes(requirement.status),
       'Unknown requirement status');
@@ -66,7 +68,7 @@ export function triageImplementationReadiness({ capture, expected, fixtureManife
       requirement.status === 'MISSING';
     unresolved.push({ key, status: requirement.status,
       classification: fixtureCandidate ? 'DECLARED_FIXTURE_DATA_CANDIDATE' : 'REAL_OR_UNRESOLVED_BLOCKER',
-      reason: requirement.evidenceValidation?.reason || requirement.evidenceBinding?.reason || null });
+      reason: safeCode(requirement.evidenceValidation?.reason || requirement.evidenceBinding?.reason) });
   }
   for (const key of declaredFixtureKeys) assert.ok(seen.has(key), 'Manifest names unknown requirement');
   assert.equal(body.completedRequirements, satisfied, 'Completed requirement count mismatch');
@@ -79,7 +81,10 @@ export function triageImplementationReadiness({ capture, expected, fixtureManife
     status: blocked ? 'BLOCKED' : 'REQUIREMENTS_SATISFIED_IN_CAPTURE',
     sourceSha: expected.sourceSha, tenant: expected.tenant, runId: expected.runId,
     unresolved, blockingDecisionCount: body.blockingDecisions.length,
-    launchBlockers: [...body.launchBoundary.blockers],
+    launchBlockers: body.launchBoundary.blockers.map(code => {
+      assert.ok(safeCode(code), 'Invalid launch blocker code');
+      return code;
+    }),
     fixtureClassificationIsUnverified: declaredFixtureKeys.size > 0,
     hostedProof: false, customerReady: false
   };
