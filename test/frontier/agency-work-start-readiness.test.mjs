@@ -34,6 +34,101 @@ test('missing, conflicting, expired, and unaccepted authority fail before contin
   for(const [rows,reason] of cases){let calls=0;const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([rows,rows]),evaluateContinuity:async()=>{calls+=1;return continuity();}}));assert.equal(result.workStartReady,false,reason);assert.equal(result.reason,reason);assert.equal(calls,0);assert.equal(result.scheduleWriteAuthorized,false);}
 });
 
+test('unknown assurance conflict evidence withholds readiness before continuity evaluation',async()=>{
+  for(const value of [undefined,null,'unknown','',0,1,{},[], 'False','f ']){
+    for(const postgres of [false,true]){
+      let calls=0;
+      const row=authority({conflicted:value});
+      const reader=postgres?createPostgresAgencyWorkStartAuthorityStore({query:async()=>({rows:[row]})}):authorityStore([[row],[row]]);
+      const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:reader,evaluateContinuity:async()=>{calls++;return continuity();}}));
+      assert.equal(result.workStartReady,false,`${String(value)} postgres=${postgres}`);
+      assert.equal(result.reason,'work_start_current_assurance_conflict_unknown');
+      assert.equal(calls,0);
+      assert.equal(result.workStartWriteAuthorized,false);
+    }
+  }
+});
+
+test('explicit supported conflict booleans retain their meaning',async()=>{
+  for(const value of [false,'f','false']){
+    const row=authority({conflicted:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,true);
+  }
+  for(const value of [true,'t','true']){
+    const row=authority({conflicted:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.reason,'work_start_current_assurance_conflicted');
+  }
+});
+
+test('conflict evidence becoming unknown on the second authority read invalidates readiness',async()=>{
+  const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[authority()],[authority({conflicted:null})]])}));
+  assert.equal(result.workStartReady,false);
+  assert.equal(result.reason,'work_start_current_assurance_conflict_unknown');
+});
+
+test('malformed coverage expiry cannot become open-ended assurance through either reader',async()=>{
+  for(const value of ['', 'not-a-date', false, true, NaN, Infinity, {}, []]){
+    for(const postgres of [false,true]){
+      let calls=0;
+      const row=authority({coverageUntil:value});
+      const reader=postgres?createPostgresAgencyWorkStartAuthorityStore({query:async()=>({rows:[row]})}):authorityStore([[row],[row]]);
+      const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:reader,evaluateContinuity:async()=>{calls++;return continuity();}}));
+      assert.equal(result.workStartReady,false,`${String(value)} postgres=${postgres}`);
+      assert.equal(result.reason,'work_start_current_assurance_does_not_cover_assignment');
+      assert.equal(calls,0);
+    }
+  }
+});
+
+test('explicit open-ended coverage and parseable future expiry retain compatibility',async()=>{
+  for(const value of [null,'2027-12-31T23:59:59.000Z',new Date('2027-12-31T23:59:59.000Z'),Date.parse('2027-12-31T23:59:59.000Z'),'2028-02-29T12:00:00.000Z','2400-02-29T12:00:00.000Z','2027-12-31T23:59:59+01:00']){
+    const row=authority({coverageUntil:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,true);
+  }
+});
+
+test('impossible ISO calendar expiry is rejected instead of rolled forward',async()=>{
+  for(const value of ['2027-02-30T12:00:00.000Z','2027-02-30Z','2027-02-29T12:00:00.000Z','2100-02-29T12:00:00.000Z','2027-04-31T12:00:00.000Z','2027-00-10T12:00:00.000Z','2027-13-10T12:00:00.000Z','2027-12-00T12:00:00.000Z']){
+    const row=authority({coverageUntil:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,false,value);
+    assert.equal(result.reason,'work_start_current_assurance_does_not_cover_assignment');
+  }
+});
+
+test('coverage expiry becoming malformed during continuity evaluation invalidates readiness',async()=>{
+  const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[authority({coverageUntil:null})],[authority({coverageUntil:'not-a-date'})]])}));
+  assert.equal(result.workStartReady,false);
+  assert.equal(result.reason,'work_start_current_assurance_does_not_cover_assignment');
+});
+
+test('overlength authority identifiers cannot match a permitted prefix or mint work-start readiness',async()=>{
+  const workerId='W'.repeat(100);
+  const valid=authority({workerId});
+  const accepted=await evaluateAgencyWorkStartReadiness(input({workerId,authorityStore:authorityStore([[valid],[valid]]),evaluateContinuity:async()=>continuity({workerId})}));
+  assert.equal(accepted.workStartReady,true);
+  for(const field of ['workerId','siteId','requestId','agencyId']){
+    const scoped=field==='workerId'?{workerId}:{[field]:field==='siteId'?'S'.repeat(100):field==='requestId'?'R'.repeat(100):'A'.repeat(100)};
+    const request={...REQUEST,requestId:scoped.requestId??REQUEST.requestId};
+    const row=authority({...scoped,[field]:(scoped[field]??valid[field]).concat('-forged')});
+    const args=input({...scoped,request,authorityStore:authorityStore([[row],[row]]),evaluateContinuity:async()=>continuity({...scoped})});
+    const result=await evaluateAgencyWorkStartReadiness(args);
+    assert.equal(result.workStartReady,false,field);
+    assert.equal(result.reason,'work_start_authority_scope_mismatch',field);
+    const padded=authority({...scoped,[field]:(scoped[field]??valid[field])+' '.repeat(20)});
+    const paddedResult=await evaluateAgencyWorkStartReadiness(input({...scoped,request,authorityStore:authorityStore([[padded],[padded]]),evaluateContinuity:async()=>continuity({...scoped})}));
+    assert.equal(paddedResult.workStartReady,false,`${field} padded`);
+  }
+  for(const field of ['assuranceVersionId','assignmentFingerprint','acceptedResponseFingerprint']){
+    const row=authority({[field]:valid[field]+'forged'});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,false,field);
+  }
+});
+
 test('identity continuity must match exact worker, assignment and authoritative assurance and must itself carry no write/ranking authority',async()=>{
   const cases=[
     [continuity({workerId:'OTHER'}),'work_start_identity_continuity_scope_mismatch'],

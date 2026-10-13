@@ -43,9 +43,33 @@ LIMIT 3;
 `;
 
 const text=(value,max=200)=>typeof value==='string'?value.trim().slice(0,max):'';
+// Stored authority is untrusted evidence. Never turn an overlength identifier
+// into a different, valid identifier by truncating it before scope comparison.
+const authorityText=(value,max)=>{
+  if(typeof value!=='string'||value.length>max)return '';
+  const clean=value.trim();
+  return clean;
+};
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
 const iso=value=>{const parsed=ms(value);return parsed===null?null:new Date(parsed).toISOString();};
-const bool=value=>value===true||value==='t'||value==='true';
+function coverageIso(value){
+  // Date.parse rolls impossible numeric ISO calendar days into another month.
+  // Validate that calendar portion while preserving valid adapter formats.
+  if(typeof value==='string'){
+    const match=/^(\d{4})-(\d{2})-(\d{2})/.exec(value.trim());
+    if(match){
+      const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+      const leap=year%4===0&&(year%100!==0||year%400===0);
+      const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31][month-1];
+      if(!days||day<1||day>days)return null;
+    }
+  }
+  return iso(value);
+}
+// PostgreSQL booleans may arrive as primitives or explicit textual aliases.
+// Any other value is unknown evidence, never proof that assurance is clear.
+const bool=value=>value===true||value==='t'||value==='true'?true:
+  value===false||value==='f'||value==='false'?false:null;
 const stable=value=>Array.isArray(value)?value.map(stable):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])])):value;
 const digest=(value,length=32)=>crypto.createHash('sha256').update(String(value??'')).digest('hex').slice(0,length);
 function required(value,name,max=200){const clean=text(value,max+1);if(!clean||clean.length>max)throw new TypeError(`${name} invalid`);return clean;}
@@ -59,19 +83,21 @@ function assignmentFingerprint(request={}){
 
 function safeAuthorityRow(row={}){
   return {
-    tenantId:text(row.tenant_id??row.tenantId,100),
-    siteId:text(row.site_id??row.siteId,100),
-    requestId:text(row.request_id??row.requestId,100),
-    agencyId:text(row.agency_id??row.agencyId,100),
-    workerId:text(row.worker_id??row.workerId,100),
-    assuranceVersionId:text(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
-    assignmentFingerprint:text(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
+    tenantId:authorityText(row.tenant_id??row.tenantId,100),
+    siteId:authorityText(row.site_id??row.siteId,100),
+    requestId:authorityText(row.request_id??row.requestId,100),
+    agencyId:authorityText(row.agency_id??row.agencyId,100),
+    workerId:authorityText(row.worker_id??row.workerId,100),
+    assuranceVersionId:authorityText(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
+    assignmentFingerprint:authorityText(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
     checkedAt:iso(row.checked_at??row.checkedAt),
-    coverageUntil:(row.coverage_until??row.coverageUntil)==null?null:iso(row.coverage_until??row.coverageUntil),
+    // Keep malformed supplied expiry distinct from intentional open-ended null,
+    // including when an adapter-normalized row is validated a second time.
+    coverageUntil:(row.coverage_until??row.coverageUntil)==null?null:(coverageIso(row.coverage_until??row.coverageUntil)??''),
     promotedAt:iso(row.promoted_at??row.promotedAt),
     conflicted:bool(row.conflicted),
-    acceptedResponseFingerprint:text(row.token_fingerprint??row.acceptedResponseFingerprint,16).toLowerCase(),
-    acceptedAction:text(row.action??row.acceptedAction,50),
+    acceptedResponseFingerprint:authorityText(row.token_fingerprint??row.acceptedResponseFingerprint,16).toLowerCase(),
+    acceptedAction:authorityText(row.action??row.acceptedAction,50),
     acceptedAt:iso(row.consumed_at??row.acceptedAt),
   };
 }
@@ -99,6 +125,7 @@ function validateAuthority(rows,scope,nowMs,assignmentEndMs){
   if(!hex(row.assuranceVersionId,32))return {ok:false,reason:'work_start_current_assurance_missing'};
   if(row.assignmentFingerprint!==scope.assignmentFingerprint)return {ok:false,reason:'work_start_assignment_mismatch'};
   if(row.conflicted)return {ok:false,reason:'work_start_current_assurance_conflicted'};
+  if(row.conflicted!==false)return {ok:false,reason:'work_start_current_assurance_conflict_unknown'};
   if(!['confirm_preferred_worker','partial_fill'].includes(row.acceptedAction)||!hex(row.acceptedResponseFingerprint,16)||!row.acceptedAt)return {ok:false,reason:'work_start_accepted_response_missing'};
   const checkedAtMs=ms(row.checkedAt),promotedAtMs=ms(row.promotedAt),acceptedAtMs=ms(row.acceptedAt);
   if(checkedAtMs===null||promotedAtMs===null||acceptedAtMs===null||checkedAtMs>nowMs||promotedAtMs>nowMs||acceptedAtMs>nowMs)return {ok:false,reason:'work_start_authority_time_invalid'};
