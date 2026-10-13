@@ -34,6 +34,30 @@ test('missing, conflicting, expired, and unaccepted authority fail before contin
   for(const [rows,reason] of cases){let calls=0;const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([rows,rows]),evaluateContinuity:async()=>{calls+=1;return continuity();}}));assert.equal(result.workStartReady,false,reason);assert.equal(result.reason,reason);assert.equal(calls,0);assert.equal(result.scheduleWriteAuthorized,false);}
 });
 
+test('overlength authority identifiers cannot match a permitted prefix or mint work-start readiness',async()=>{
+  const workerId='W'.repeat(100);
+  const valid=authority({workerId});
+  const accepted=await evaluateAgencyWorkStartReadiness(input({workerId,authorityStore:authorityStore([[valid],[valid]]),evaluateContinuity:async()=>continuity({workerId})}));
+  assert.equal(accepted.workStartReady,true);
+  for(const field of ['workerId','siteId','requestId','agencyId']){
+    const scoped=field==='workerId'?{workerId}:{[field]:field==='siteId'?'S'.repeat(100):field==='requestId'?'R'.repeat(100):'A'.repeat(100)};
+    const request={...REQUEST,requestId:scoped.requestId??REQUEST.requestId};
+    const row=authority({...scoped,[field]:(scoped[field]??valid[field]).concat('-forged')});
+    const args=input({...scoped,request,authorityStore:authorityStore([[row],[row]]),evaluateContinuity:async()=>continuity({...scoped})});
+    const result=await evaluateAgencyWorkStartReadiness(args);
+    assert.equal(result.workStartReady,false,field);
+    assert.equal(result.reason,'work_start_authority_scope_mismatch',field);
+    const padded=authority({...scoped,[field]:(scoped[field]??valid[field])+' '.repeat(20)});
+    const paddedResult=await evaluateAgencyWorkStartReadiness(input({...scoped,request,authorityStore:authorityStore([[padded],[padded]]),evaluateContinuity:async()=>continuity({...scoped})}));
+    assert.equal(paddedResult.workStartReady,false,`${field} padded`);
+  }
+  for(const field of ['assuranceVersionId','assignmentFingerprint','acceptedResponseFingerprint']){
+    const row=authority({[field]:valid[field]+'forged'});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,false,field);
+  }
+});
+
 test('identity continuity must match exact worker, assignment and authoritative assurance and must itself carry no write/ranking authority',async()=>{
   const cases=[
     [continuity({workerId:'OTHER'}),'work_start_identity_continuity_scope_mismatch'],

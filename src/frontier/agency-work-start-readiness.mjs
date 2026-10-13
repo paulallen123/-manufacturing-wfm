@@ -43,6 +43,13 @@ LIMIT 3;
 `;
 
 const text=(value,max=200)=>typeof value==='string'?value.trim().slice(0,max):'';
+// Stored authority is untrusted evidence. Never turn an overlength identifier
+// into a different, valid identifier by truncating it before scope comparison.
+const authorityText=(value,max)=>{
+  if(typeof value!=='string'||value.length>max)return '';
+  const clean=value.trim();
+  return clean;
+};
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
 const iso=value=>{const parsed=ms(value);return parsed===null?null:new Date(parsed).toISOString();};
 const bool=value=>value===true||value==='t'||value==='true';
@@ -59,19 +66,19 @@ function assignmentFingerprint(request={}){
 
 function safeAuthorityRow(row={}){
   return {
-    tenantId:text(row.tenant_id??row.tenantId,100),
-    siteId:text(row.site_id??row.siteId,100),
-    requestId:text(row.request_id??row.requestId,100),
-    agencyId:text(row.agency_id??row.agencyId,100),
-    workerId:text(row.worker_id??row.workerId,100),
-    assuranceVersionId:text(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
-    assignmentFingerprint:text(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
+    tenantId:authorityText(row.tenant_id??row.tenantId,100),
+    siteId:authorityText(row.site_id??row.siteId,100),
+    requestId:authorityText(row.request_id??row.requestId,100),
+    agencyId:authorityText(row.agency_id??row.agencyId,100),
+    workerId:authorityText(row.worker_id??row.workerId,100),
+    assuranceVersionId:authorityText(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
+    assignmentFingerprint:authorityText(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
     checkedAt:iso(row.checked_at??row.checkedAt),
     coverageUntil:(row.coverage_until??row.coverageUntil)==null?null:iso(row.coverage_until??row.coverageUntil),
     promotedAt:iso(row.promoted_at??row.promotedAt),
     conflicted:bool(row.conflicted),
-    acceptedResponseFingerprint:text(row.token_fingerprint??row.acceptedResponseFingerprint,16).toLowerCase(),
-    acceptedAction:text(row.action??row.acceptedAction,50),
+    acceptedResponseFingerprint:authorityText(row.token_fingerprint??row.acceptedResponseFingerprint,16).toLowerCase(),
+    acceptedAction:authorityText(row.action??row.acceptedAction,50),
     acceptedAt:iso(row.consumed_at??row.acceptedAt),
   };
 }
