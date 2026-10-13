@@ -166,6 +166,9 @@ function evaluateAutomatedResources(raw) {
     const deny = reason => reasons.add(reason);
     const contractValid = r.kind === 'AutomatedResource' && id(r.id) && RESOURCE_TYPES.has(r.resourceType) &&
       id(r.provider) && id(r.sourceAssetId) && id(r.sourceRevision) && id(r.controllerRef) && capabilities(r.capabilities) &&
+      (r.payloadKg === undefined || (finite(r.payloadKg) && r.payloadKg >= 0)) &&
+      (r.reachMm === undefined || (finite(r.reachMm) && r.reachMm >= 0)) &&
+      (r.toolClass === undefined || id(r.toolClass)) &&
       r.cycleTimeSeconds && finite(r.cycleTimeSeconds.min) && r.cycleTimeSeconds.min > 0 &&
       finite(r.cycleTimeSeconds.max) && r.cycleTimeSeconds.max >= r.cycleTimeSeconds.min;
     if (!contractValid) deny('RESOURCE_CONTRACT_INVALID');
@@ -356,3 +359,4 @@ function buildHybridResourceShadow(raw) {
 }
 
 module.exports = Object.freeze({ evaluateAutomatedResources, buildHybridResourceShadow });
+
