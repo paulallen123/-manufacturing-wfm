@@ -459,6 +459,34 @@ test('L11 overtime authority: declared references must bind to exact authoritati
     event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' } });
   assert.equal(repaired.repairedPlan.quality.filledSlots, 0);
 });
+test('L11 overtime authority: overlength references cannot collide after a shared prefix', () => {
+  const shared = 'x'.repeat(220);
+  const forged = shared + '-forged';
+  const authoritative = shared + '-authoritative';
+  const requirement = req('overtime-overlength', 'A', '08:00:00', '10:00:00');
+  const colliding = { ...policy,
+    overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: [forged] } };
+
+  denied(check(requirement, [], overtimeWorker(), colliding, [authoritative]),
+    'OVERTIME_AUTHORITY_UNPROVEN');
+  assert.throws(() => plan([requirement], overtimeWorker(), colliding,
+    ['fixture:staff', authoritative]), /sourceEvidence/);
+
+  const other = req('overtime-overlength-other', 'A', '12:00:00', '14:00:00');
+  const swap = e.evaluateSwap({ workerA: overtimeWorker('w1'), workerB: overtimeWorker('w2'),
+    requirementA: requirement, requirementB: other, policy: colliding, sourceEvidence: [authoritative],
+    currentAssignments: [assignment(requirement, 'w1'), assignment(other, 'w2')] });
+  assert.equal(swap.eligible, false);
+  assert.ok(swap.reasons.includes('OVERTIME_AUTHORITY_UNPROVEN'));
+
+  const validPrior = plan([requirement], overtimeWorker('w1'), overtimeAuthority,
+    ['fixture:staff', 'policy:overtime:approved']);
+  assert.throws(() => e.repairSchedulingPlan({ priorPlan: validPrior,
+    workers: [overtimeWorker('w1'), overtimeWorker('w2')], requirements: [requirement], policy: colliding,
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2', sourceEvidence: [authoritative],
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' } }),
+  /sourceEvidence/);
+});
 test('L11 overtime authority: non-string evidence references never become authority by coercion', () => {
   for (const ref of [{}, true, 7]) {
     const malformed = { ...policy,
