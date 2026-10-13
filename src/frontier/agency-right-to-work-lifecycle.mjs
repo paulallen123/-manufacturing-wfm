@@ -5,6 +5,16 @@ export const DEFAULT_RIGHT_TO_WORK_REFRESH_LEAD_DAYS = 14;
 
 const DAY_MS = 86_400_000;
 const ms = value => {
+  // Date.parse rolls impossible ISO calendar dates (e.g. February 30) into
+  // another day. Reject that rollover before publishing coverage evidence;
+  // keep the existing accepted timestamp representations and offset handling.
+  if (typeof value === 'string') {
+    const date = /^(\d{4}-\d{2}-\d{2})(?:T|\s|$)/.exec(value.trim())?.[1];
+    if (date) {
+      const calendar = Date.parse(date + 'T00:00:00.000Z');
+      if (!Number.isFinite(calendar) || new Date(calendar).toISOString().slice(0, 10) !== date) return null;
+    }
+  }
   const parsed = typeof value === 'number' ? value : Date.parse(value);
   return Number.isFinite(parsed) ? parsed : null;
 };

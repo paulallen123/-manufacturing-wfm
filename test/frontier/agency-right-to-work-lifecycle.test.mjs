@@ -8,6 +8,29 @@ import {
 const REQUEST = { startAt:'2026-10-20T06:00:00.000Z', endAt:'2026-10-20T14:00:00.000Z' };
 const NOW = '2026-10-10T12:00:00.000Z';
 
+test('impossible ISO expiry calendars withhold lifecycle eligibility',()=>{
+  for(const validUntil of ['2027-02-30T12:00:00Z','2027-02-29','2027-04-31T12:00:00+01:00',' 2027-02-30 ','2027-02-30 12:00:00']){
+    const result=evaluateAgencyRightToWorkLifecycle(timed({validUntil}),REQUEST,{now:NOW});
+    assert.equal(result.eligible,false);assert.equal(result.evidence.status,'invalid');
+    assert.equal(result.evidence.effectiveCoverageUntil,null);
+  }
+});
+
+test('valid expiry representations and leap calendars preserve coverage',()=>{
+  for(const validUntil of ['2028-02-29T12:00:00Z','2027-02-28','2027-02-28T12:00:00+01:00',Date.parse('2027-02-28T12:00:00Z'),new Date('2027-02-28T12:00:00Z')]){
+    const result=evaluateAgencyRightToWorkLifecycle(timed({validUntil}),REQUEST,{now:NOW});
+    assert.equal(result.eligible,true);assert.equal(result.evidence.status,'current');
+    assert.notEqual(result.evidence.effectiveCoverageUntil,null);
+  }
+});
+
+test('positive verification notice rejects impossible issue or expiry dates',()=>{
+  for(const notice of [pvn({issuedAt:'2026-09-31T09:00:00Z'}),pvn({validUntil:'2027-02-30T09:00:00Z'})]){
+    const result=evaluateAgencyRightToWorkLifecycle(timed({checkMethod:'employer_checking_service',positiveVerificationNotice:notice}),REQUEST,{now:NOW});
+    assert.equal(result.eligible,false);assert.equal(result.evidence.status,'invalid');
+  }
+});
+
 function timed(overrides = {}) {
   return {
     status:'verified',
