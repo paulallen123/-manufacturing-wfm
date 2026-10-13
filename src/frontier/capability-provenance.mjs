@@ -1,14 +1,18 @@
 export const CAPABILITY_PROVENANCE_VERSION='capability-provenance-v0.1.0';
 
-const DIRECT_PII_KEYS=new Set(['name','firstName','lastName','email','phone','address','employeeId','payrollId','nationalId']);
+const DIRECT_PII_KEYS=new Set(['name','firstname','lastname','email','phone','address','employeeid','payrollid','nationalid']);
 function clean(v){return typeof v==='string'?v.trim():'';}
 function when(v){const t=Date.parse(String(v??''));return Number.isFinite(t)?t:null;}
+function piiKey(v){return v.replace(/[^a-z0-9]/gi,'').toLowerCase();}
+function present(v){return v!=null&&(typeof v!=='string'||Boolean(v.trim()));}
 
 function containsDirectPii(value){
+  if(typeof value==='string')return /[^\s@]+@[^\s@]+\.[^\s@]+/.test(value)||/\btel:\+?[0-9][0-9(). -]{5,}/i.test(value);
   if(!value||typeof value!=='object')return false;
+  if(Array.isArray(value))return value.some(containsDirectPii);
   for(const [k,v] of Object.entries(value)){
-    if(DIRECT_PII_KEYS.has(k)&&clean(v))return true;
-    if(v&&typeof v==='object'&&containsDirectPii(v))return true;
+    if(DIRECT_PII_KEYS.has(piiKey(k))&&present(v))return true;
+    if(containsDirectPii(v))return true;
   }
   return false;
 }
