@@ -11,6 +11,7 @@ const MAX_SORTS = 4;
 const MAX_LIMIT = 5000;
 const MAX_CALCULATIONS = 8;
 const MAX_DASHBOARD_PINS = 12;
+const REPORT_CLAIM_BOUNDARY = 'Source-bound report. Estimates and opportunities must not be presented as realised outcomes without authoritative evidence.';
 const CADENCES = new Set(['daily','weekly','monthly']);
 const DELIVERY_MODES = new Set(['in_app','email_link','sftp']);
 
@@ -226,7 +227,7 @@ function normaliseDefinition(input,role){
   if(!COMPARISONS.has(comparison)) throw new Error('Unsupported comparison.');
   const limit=Math.max(1,Math.min(MAX_LIMIT,Number(input.limit)||500));
   const narrative=input.narrative!==false;
-  const claimBoundary='Source-bound report. Estimates and opportunities must not be presented as realised outcomes without authoritative evidence.';
+  const claimBoundary=REPORT_CLAIM_BOUNDARY;
   return Object.freeze({
     schemaVersion:'VECTOR_REPORT_DEFINITION_V1',
     title,sourceId,endpoint:source.endpoint,evidenceClass:source.evidenceClass,
@@ -392,6 +393,8 @@ function createVectorReportingService(options={}){
       if(kind==='report'){
         const source=sourceById(row.source_id);
         if(!source||!permitted(actor.role,source.minRole))return false;
+        const definition=JSON.parse(row.definition_json);
+        if(definition.includeEvidence!==true||definition.claimBoundary!==REPORT_CLAIM_BOUNDARY)return false;
         return !row.version_of||access(actor,one.get(actor.tenant,row.version_of),'report',seen);
       }
       if(kind==='dashboard'){
@@ -529,7 +532,7 @@ function createVectorReportingService(options={}){
         const id='vr-'+randomUUID();
         const createdAt=new Date().toISOString();
         const definitionDigest=digest(definition);
-        if(!await access(c,{id,tenant:c.tenant,created_by:c.email,source_id:definition.sourceId,version_of:versionOf}))return writeJson(res,404,{error:'Report authority is unavailable.'});
+        if(!await access(c,{id,tenant:c.tenant,created_by:c.email,source_id:definition.sourceId,definition_json:JSON.stringify(definition),version_of:versionOf}))return writeJson(res,404,{error:'Report authority is unavailable.'});
         insert.run(id,c.tenant,c.email,c.role,definition.title,definition.sourceId,JSON.stringify(definition),definitionDigest,versionOf,createdAt);
         record(c,id,versionOf?'REPORT_VERSION_CREATED':'REPORT_CREATED',{sourceId:definition.sourceId,definitionDigest,versionOf});
         return writeJson(res,201,{report:{id,title:definition.title,sourceId:definition.sourceId,definition,definitionDigest,versionOf,createdBy:c.email,createdAt}});

@@ -257,6 +257,22 @@ test('saved report evidence and claim boundary remain server governed',async()=>
   }finally{x.close();}
 });
 
+test('legacy reports with client-controlled evidence claims are withheld',async()=>{
+  const x=setup();
+  try{
+    const valid=await makeReport(x,'manager-a','value-realisation');
+    const forged={...valid.definition,includeEvidence:false,claimBoundary:'Estimated savings are verified cash.'};
+    const db=new DatabaseSync(x.dbPath);
+    try{
+      db.prepare('INSERT INTO vector_report_definitions(id,tenant,created_by,role_at_creation,title,source_id,definition_json,definition_digest,version_of,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
+        .run('vr-legacy','tenant-a','manager@a.example','manager','Legacy value claim','value-realisation',JSON.stringify(forged),Reporting.digest(forged),null,new Date().toISOString());
+    }finally{db.close();}
+    const listed=await call(x.service,'GET','/api/reporting/reports','manager-a');
+    assert.deepEqual(listed.body.reports.map(r=>r.id),[valid.id]);
+    assert.equal((await call(x.service,'GET','/api/reporting/reports/vr-legacy','manager-a')).status,404);
+  }finally{x.close();}
+});
+
 test('saved reports are tenant isolated, immutable and audited',async()=>{
   const x=setup();
   try{
