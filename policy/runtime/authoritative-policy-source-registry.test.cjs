@@ -5,6 +5,33 @@ const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.c
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
 const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
+test('late older snapshot cannot hide a newer future observation from policy admission',()=>{
+  const r=registry(),future=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-14T12:00:00Z',contentDigest:sha('future'),verifiedRetrieval:true});
+  const older=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T12:00:00Z',contentDigest:sha('older'),verifiedRetrieval:true});
+  assert.equal(older.observedAt,'2026-10-13T12:00:00.000Z');
+  assert.equal(r.latest('gb-law'),future);
+  const assessment=r.assess('gb-law',{at:'2026-10-13T13:00:00Z'});
+  assert.equal(assessment.state,'NOT_YET_OBSERVED');assert.equal(assessment.usable,false);assert.equal(assessment.snapshotDigest,future.snapshotDigest);
+  assert.throws(()=>createRegulatoryChangeCandidate({sourceAssessment:assessment,previousSnapshotDigest:sha('v1'),nextSnapshotDigest:sha('v1')}),/Current authoritative source evidence/);
+});
+test('source snapshot chronology is independent of delayed delivery order',()=>{
+  const times=['2026-10-12T12:00:00Z','2026-10-13T12:00:00Z','2026-10-14T12:00:00Z'];
+  for(const order of [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]]){
+    const r=registry(),receipts=order.map(i=>r.recordSnapshot({sourceId:'gb-law',observedAt:times[i],contentDigest:sha('v'+i),verifiedRetrieval:true}));
+    const latest=receipts.find(x=>x.observedAt==='2026-10-14T12:00:00.000Z');
+    assert.equal(r.latest('gb-law'),latest);
+    assert.equal(r.assess('gb-law',{at:'2026-10-14T12:00:00Z'}).state,'CURRENT');
+    assert.equal(r.assess('gb-law',{at:'2026-10-15T12:00:00.001Z'}).state,'STALE');
+  }
+});
+test('equal observation instants retain last-recorded tie behavior and source isolation',()=>{
+  const r=registry();r.registerSource({...sourceWithFreshness(24),id:'other'});
+  r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T13:00:00+01:00',contentDigest:sha('first'),verifiedRetrieval:true});
+  const second=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T12:00:00Z',contentDigest:sha('second'),verifiedRetrieval:true});
+  const other=r.recordSnapshot({sourceId:'other',observedAt:'2027-10-13T12:00:00Z',contentDigest:sha('other'),verifiedRetrieval:true});
+  assert.equal(r.latest('gb-law'),second);assert.equal(r.latest('other'),other);assert.equal(r.latest('unknown'),null);
+  assert.equal(second.executionAuthority,false);
+});
 test('exported authority tier metadata cannot widen private source admission',()=>{
   const {AUTHORITY_TIERS}=require('./authoritative-policy-source-registry.cjs');
   AUTHORITY_TIERS.add('INVENTED');

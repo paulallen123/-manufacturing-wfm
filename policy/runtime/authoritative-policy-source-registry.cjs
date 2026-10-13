@@ -40,7 +40,14 @@ function createAuthoritativePolicySourceRegistry(initial=[]){
     if(!core.verifiedRetrieval) throw new Error('Snapshot must be verified retrieval evidence.');
     const receipt=Object.freeze({...core,snapshotDigest:digest(core)}); snapshots.get(source.id).push(receipt); return receipt;
   }
-  function latest(sourceId){const arr=snapshots.get(text(sourceId,160))||[];return arr.length?arr[arr.length-1]:null;}
+  function latest(sourceId){
+    const arr=snapshots.get(text(sourceId,160))||[];
+    let selected=null;
+    for(const receipt of arr){
+      if(!selected||Date.parse(receipt.observedAt)>=Date.parse(selected.observedAt)) selected=receipt;
+    }
+    return selected;
+  }
   function assess(sourceId,{at=new Date().toISOString()}={}){
     const source=sources.get(text(sourceId,160)); if(!source) throw new Error('Unknown source.');
     const snap=latest(source.id),atIso=iso(at,'at');
