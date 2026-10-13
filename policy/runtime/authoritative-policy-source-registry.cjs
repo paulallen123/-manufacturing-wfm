@@ -53,6 +53,10 @@ function createAuthoritativePolicySourceRegistry(initial=[]){
     const snap=latest(source.id),atIso=iso(at,'at');
     if(!source.active) return Object.freeze({sourceId:source.id,state:'DISABLED',usable:false,requiresAttention:true});
     if(!snap) return Object.freeze({sourceId:source.id,state:'NO_EVIDENCE',usable:false,requiresAttention:true});
+    const latestReceipts=snapshots.get(source.id).filter(receipt=>receipt.observedAt===snap.observedAt);
+    if(latestReceipts.some(receipt=>receipt.contentDigest!==snap.contentDigest)){
+      return Object.freeze({sourceId:source.id,state:'CONFLICTING',usable:false,requiresAttention:true,observedAt:snap.observedAt,conflictingSnapshotDigests:Object.freeze([...new Set(latestReceipts.map(receipt=>receipt.snapshotDigest))].sort())});
+    }
     const ageHours=(Date.parse(atIso)-Date.parse(snap.observedAt))/3600000,stale=ageHours>source.freshnessHours,notYetObserved=ageHours<0;
     return Object.freeze({sourceId:source.id,state:notYetObserved?'NOT_YET_OBSERVED':stale?'STALE':'CURRENT',usable:!stale&&!notYetObserved,requiresAttention:stale||notYetObserved,ageHours:Number(ageHours.toFixed(3)),freshnessHours:source.freshnessHours,snapshotDigest:snap.snapshotDigest});
   }

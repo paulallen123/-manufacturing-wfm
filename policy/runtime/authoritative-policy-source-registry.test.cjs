@@ -5,6 +5,51 @@ const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.c
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
 const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
+function snapshotAt(r,content,observedAt='2026-10-13T12:00:00Z',sourceId='gb-law'){
+  return r.recordSnapshot({sourceId,observedAt,contentDigest:sha(content),verifiedRetrieval:true});
+}
+test('contradictory latest content denies current assessment in either arrival order',()=>{
+  for(const order of [['first','second'],['second','first']]){
+    const r=registry(),receipts=order.map(content=>snapshotAt(r,content));
+    const result=r.assess('gb-law',{at:'2026-10-13T13:00:00Z'});
+    assert.equal(result.state,'CONFLICTING');assert.equal(result.usable,false);assert.equal(result.requiresAttention,true);
+    assert.equal(result.observedAt,'2026-10-13T12:00:00.000Z');
+    assert.deepEqual(result.conflictingSnapshotDigests,receipts.map(x=>x.snapshotDigest).sort());
+    assert.equal(Object.isFrozen(result),true);assert.equal(Object.isFrozen(result.conflictingSnapshotDigests),true);
+    assert.equal(r.latest('gb-law'),receipts[1]);
+  }
+});
+test('equivalent timezone observations cannot disguise contradictory content',()=>{
+  const r=registry();snapshotAt(r,'first','2026-10-13T13:00:00+01:00');snapshotAt(r,'second');
+  assert.equal(r.assess('gb-law',{at:'2026-10-13T13:00:00Z'}).state,'CONFLICTING');
+});
+test('conflicting current source cannot qualify changed or NO_CHANGE regulatory intake',()=>{
+  const r=registry(),first=snapshotAt(r,'first'),second=snapshotAt(r,'second');
+  const assessment=r.assess('gb-law',{at:'2026-10-13T13:00:00Z'});
+  for(const previousSnapshotDigest of [first.snapshotDigest,second.snapshotDigest])
+    assert.throws(()=>createRegulatoryChangeCandidate({sourceAssessment:assessment,previousSnapshotDigest,nextSnapshotDigest:second.snapshotDigest,changes:[{domain:'informational',jurisdiction:'GB',confidence:1,ambiguity:'LOW',sourceRefs:['synthetic:policy']}]}),/Current authoritative source evidence/);
+});
+test('same-content repeats retain current last-receipt behavior and immutable receipts',()=>{
+  const r=registry(),first=snapshotAt(r,'same'),before=JSON.stringify(first);
+  const repeat=r.recordSnapshot({sourceId:'gb-law',observedAt:first.observedAt,contentDigest:first.contentDigest,verifiedRetrieval:true,retrievalMethod:'OFFICIAL_WEB',revision:'same-content-receipt'});
+  const a=r.assess('gb-law',{at:'2026-10-13T13:00:00Z'});assert.equal(a.state,'CURRENT');assert.equal(a.snapshotDigest,repeat.snapshotDigest);
+  assert.equal(r.latest('gb-law'),repeat);assert.equal(JSON.stringify(first),before);
+});
+test('a strictly newer uncontested observation resolves only the assessment conflict',()=>{
+  const r=registry(),first=snapshotAt(r,'first'),second=snapshotAt(r,'second'),before=[JSON.stringify(first),JSON.stringify(second)];
+  assert.equal(r.assess('gb-law',{at:'2026-10-13T13:00:00Z'}).usable,false);
+  const current=snapshotAt(r,'new','2026-10-13T13:00:00Z');
+  const a=r.assess('gb-law',{at:current.observedAt});assert.equal(a.state,'CURRENT');assert.equal(a.snapshotDigest,current.snapshotDigest);
+  assert.deepEqual([JSON.stringify(first),JSON.stringify(second)],before);
+  snapshotAt(r,'third-delayed');assert.equal(r.assess('gb-law',{at:current.observedAt}).state,'CURRENT');
+});
+test('conflicts are source-scoped and do not override disabled source denial',()=>{
+  const r=registry();r.registerSource({...sourceWithFreshness(24),id:'other'});r.registerSource({...sourceWithFreshness(24),id:'disabled',active:false});
+  snapshotAt(r,'first');snapshotAt(r,'second');const other=snapshotAt(r,'other',undefined,'other');
+  snapshotAt(r,'first',undefined,'disabled');snapshotAt(r,'second',undefined,'disabled');
+  assert.equal(r.assess('gb-law',{at:other.observedAt}).state,'CONFLICTING');
+  assert.equal(r.assess('other',{at:other.observedAt}).state,'CURRENT');assert.equal(r.assess('disabled',{at:other.observedAt}).state,'DISABLED');
+});
 test('regulatory intake binds its next snapshot to the actual current registry assessment',()=>{
   const r=registry(),old=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T11:00:00Z',contentDigest:sha('old'),verifiedRetrieval:true});
   const current=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-10-13T12:00:00Z',contentDigest:sha('current'),verifiedRetrieval:true});
