@@ -1,4 +1,5 @@
 'use strict';
+const {isDeepStrictEqual}=require('node:util');
 
 const ENGINE_IDS = Object.freeze([
   'orchestrator',
@@ -35,9 +36,19 @@ function designComplete(design={}){
 function theoryComplete(theory={}){
   const scenarios=list(theory.scenarios);
   const kinds=new Set(scenarios.map(x=>String(x.kind||'').toLowerCase()));
+  const ids=scenarios.map(x=>x.id);
   return hasText(theory.baseline) && hasText(theory.falsificationCriteria) &&
     hasText(theory.counterfactual) && scenarios.length>=3 &&
-    kinds.has('normal') && kinds.has('edge') && kinds.has('adversarial');
+    kinds.has('normal') && kinds.has('edge') && kinds.has('adversarial') &&
+    ids.every(hasText) && new Set(ids).size===ids.length &&
+    scenarios.every(x=>hasText(x.evidenceRef) && list(x.observations).length>0 &&
+      x.observations.every(o=>hasText(o?.id) &&
+        Object.hasOwn(o,'expected') && Object.hasOwn(o,'actual')));
+}
+
+function scenarioPassed(scenario){
+  return String(scenario.result||'').toUpperCase()==='PASS' &&
+    scenario.observations.every(o=>isDeepStrictEqual(o.expected,o.actual));
 }
 
 function assessResearchCandidate(input={}){
@@ -48,7 +59,7 @@ function assessResearchCandidate(input={}){
   const engines=routeResearchToEngines(item);
   const designPass=designComplete(design);
   const theoryReady=designPass && theoryComplete(theory);
-  const scenarioFailures=list(theory.scenarios).filter(x=>String(x.result||'').toUpperCase()!=='PASS');
+  const scenarioFailures=theoryReady?list(theory.scenarios).filter(x=>!scenarioPassed(x)):[];
   const theoryPass=theoryReady && scenarioFailures.length===0 && theory.noCustomerMutation===true;
   const tags=new Set(strings(item.tags).map(x=>x.toLowerCase()));
   const highImpact=[...tags].some(x=>HIGH_IMPACT_DOMAINS.has(x));
