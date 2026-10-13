@@ -27,6 +27,8 @@ function createRegulatoryChangeCandidate(input={}){
   const affectedSites=[]; for(const site of sites){const jurisdiction=text(site.jurisdiction||site.country,120);if(normalised.some(c=>c.jurisdiction===jurisdiction)) affectedSites.push(text(site.id,160));}
   const reviewRequired=material||ambiguous;
   const payload={contractVersion:'VECTOR_REGULATORY_CHANGE_CANDIDATE_V1',state:reviewRequired?'QUALIFIED_REVIEW_REQUIRED':'STRUCTURED_LOW_AMBIGUITY_CANDIDATE',sourceId:text(sourceAssessment.sourceId,160),previousSnapshotDigest:previous,nextSnapshotDigest:next,changes:normalised,affectedSites:[...new Set(affectedSites)],reviewRequired,promotionAuthority:false,customerMutation:false,executionAuthority:false,generatedTestsRequired:true,historicalReplayRequired:true,shadowRequired:true,claimBoundary:'Candidate only. No legal interpretation, customer policy or production behaviour changes until independent verification and normal VECTOR release gates pass.'};
+  for(const change of normalised){Object.freeze(change.sourceRefs);Object.freeze(change);}
+  Object.freeze(normalised);Object.freeze(payload.affectedSites);
   return Object.freeze({...payload,candidateDigest:digest(payload)});
 }
 module.exports=Object.freeze({createRegulatoryChangeCandidate,MATERIAL_DOMAINS,digest,stable});

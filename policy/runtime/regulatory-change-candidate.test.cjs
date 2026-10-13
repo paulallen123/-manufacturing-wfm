@@ -2,6 +2,30 @@
 const test=require('node:test'); const assert=require('node:assert/strict');
 const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.cjs');
 const sourceAssessment={sourceId:'gb-law',state:'CURRENT',usable:true};
+test('published candidate cannot change policy domain under its original review decision',()=>{
+  const result=candidate(1),before=JSON.stringify(result);
+  assert.throws(()=>{result.changes[0].domain='working-time';},TypeError);
+  assert.throws(()=>result.changes.push({domain:'working-time'}),TypeError);
+  assert.equal(JSON.stringify(result),before);assert.equal(result.reviewRequired,false);
+});
+test('published candidate source references cannot change under its original digest',()=>{
+  const result=candidate(1),before=JSON.stringify(result);
+  assert.throws(()=>result.changes[0].sourceRefs.push('unapproved:replacement'),TypeError);
+  assert.throws(()=>{result.changes[0].sourceRefs[0]='unapproved:replacement';},TypeError);
+  assert.equal(JSON.stringify(result),before);
+});
+test('published affected-site evidence cannot change after candidate admission',()=>{
+  const result=candidate(1),before=JSON.stringify(result);
+  assert.throws(()=>result.affectedSites.push('unapproved-site'),TypeError);
+  assert.equal(JSON.stringify(result),before);
+});
+test('freezing published candidate keeps supplied change and site evidence detached and editable',()=>{
+  const changes=[{id:'synthetic',domain:'informational',jurisdiction:'GB',confidence:1,ambiguity:'LOW',sourceRefs:['synthetic:policy']}],sites=[{id:'site1',country:'GB'}];
+  const result=createRegulatoryChangeCandidate({sourceAssessment,previousSnapshotDigest:'a',nextSnapshotDigest:'b',changes,sites}),before=JSON.stringify(result);
+  changes[0].domain='working-time';changes[0].sourceRefs.push('caller:edit');sites[0].id='site2';sites.push({id:'site3',country:'GB'});
+  assert.equal(JSON.stringify(result),before);assert.deepEqual(result.affectedSites,['site1']);
+  assert.equal(result.promotionAuthority,false);assert.equal(result.executionAuthority,false);
+});
 function candidate(confidence,domain='informational'){
   return createRegulatoryChangeCandidate({sourceAssessment,previousSnapshotDigest:'a',nextSnapshotDigest:'b',changes:[{id:'synthetic',domain,jurisdiction:'GB',confidence,ambiguity:'LOW',sourceRefs:['synthetic:policy']} ]});
 }
