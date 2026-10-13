@@ -83,10 +83,19 @@ test('malformed coverage expiry cannot become open-ended assurance through eithe
 });
 
 test('explicit open-ended coverage and parseable future expiry retain compatibility',async()=>{
-  for(const value of [null,'2027-12-31T23:59:59.000Z',new Date('2027-12-31T23:59:59.000Z')]){
+  for(const value of [null,'2027-12-31T23:59:59.000Z',new Date('2027-12-31T23:59:59.000Z'),Date.parse('2027-12-31T23:59:59.000Z'),'2028-02-29T12:00:00.000Z','2400-02-29T12:00:00.000Z','2027-12-31T23:59:59+01:00']){
     const row=authority({coverageUntil:value});
     const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
     assert.equal(result.workStartReady,true);
+  }
+});
+
+test('impossible ISO calendar expiry is rejected instead of rolled forward',async()=>{
+  for(const value of ['2027-02-30T12:00:00.000Z','2027-02-30Z','2027-02-29T12:00:00.000Z','2100-02-29T12:00:00.000Z','2027-04-31T12:00:00.000Z','2027-00-10T12:00:00.000Z','2027-13-10T12:00:00.000Z','2027-12-00T12:00:00.000Z']){
+    const row=authority({coverageUntil:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,false,value);
+    assert.equal(result.reason,'work_start_current_assurance_does_not_cover_assignment');
   }
 });
 

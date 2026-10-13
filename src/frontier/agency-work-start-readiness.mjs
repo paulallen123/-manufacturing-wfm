@@ -52,6 +52,20 @@ const authorityText=(value,max)=>{
 };
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
 const iso=value=>{const parsed=ms(value);return parsed===null?null:new Date(parsed).toISOString();};
+function coverageIso(value){
+  // Date.parse rolls impossible numeric ISO calendar days into another month.
+  // Validate that calendar portion while preserving valid adapter formats.
+  if(typeof value==='string'){
+    const match=/^(\d{4})-(\d{2})-(\d{2})/.exec(value.trim());
+    if(match){
+      const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+      const leap=year%4===0&&(year%100!==0||year%400===0);
+      const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31][month-1];
+      if(!days||day<1||day>days)return null;
+    }
+  }
+  return iso(value);
+}
 // PostgreSQL booleans may arrive as primitives or explicit textual aliases.
 // Any other value is unknown evidence, never proof that assurance is clear.
 const bool=value=>value===true||value==='t'||value==='true'?true:
@@ -79,7 +93,7 @@ function safeAuthorityRow(row={}){
     checkedAt:iso(row.checked_at??row.checkedAt),
     // Keep malformed supplied expiry distinct from intentional open-ended null,
     // including when an adapter-normalized row is validated a second time.
-    coverageUntil:(row.coverage_until??row.coverageUntil)==null?null:(iso(row.coverage_until??row.coverageUntil)??''),
+    coverageUntil:(row.coverage_until??row.coverageUntil)==null?null:(coverageIso(row.coverage_until??row.coverageUntil)??''),
     promotedAt:iso(row.promoted_at??row.promotedAt),
     conflicted:bool(row.conflicted),
     acceptedResponseFingerprint:authorityText(row.token_fingerprint??row.acceptedResponseFingerprint,16).toLowerCase(),
