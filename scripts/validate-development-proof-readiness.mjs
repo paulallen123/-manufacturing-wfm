@@ -10,6 +10,7 @@ const knowledge=JSON.parse(fs.readFileSync(path.join(ROOT,'release/proof-blocker
 
 assert.equal(control.schemaVersion,1);
 assert.equal(control.name,'VECTOR_DEVELOPMENT_TO_PROOF_CONTROL_V1');
+assert.ok(control.blockerClasses.includes('PROVIDER_BUILD_PATH_MISMATCH'));
 for(const key of [
   'everyChangeHasProofRoute','preflightBeforeExpensiveProof','classifyBeforeRetry',
   'rootCauseRepairBeforeRetry','neverWeakenGateToGetGreen','exactSourceShaAcrossFallbackLanes',
@@ -35,6 +36,10 @@ const learnedGuardChecks={
   'runner-or-builder-no-execution':[
     ['resilience/pre-freeze-simulator.cjs','PROVIDER_DEGRADED_PREEXECUTION'],
     ['release/proof-lane-policy.json','failureDomain']
+  ],
+  'configured-dockerfile-ran-railpack':[
+    ['scripts/classify-proof-blocker.mjs','PROVIDER_BUILD_PATH_MISMATCH'],
+    ['scripts/validate-proof-blocker-classifier.mjs','PROVIDER_BUILD_PATH_MISMATCH']
   ],
   'hosted-proof-lane-runtime-contract-missing':[
     ['resilience/pre-freeze-simulator.cjs','RUNTIME_VARIABLE_CONTRACT_MISSING'],
