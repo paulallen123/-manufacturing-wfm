@@ -39,6 +39,7 @@ export function assessBadDeploymentRollback(proof) {
     seq(before.stateEpoch), 'LAST_GOOD_NOT_PROVEN');
   check(id(bad.deploymentId) && bad.deploymentCommitSha === c.badSha &&
     bad.observedSourceSha === c.badSha && bad.becameServing === true &&
+    bad.platformStatus === 'SUCCESS' && bad.healthStatus === 200 &&
     bad.semanticHealth === 'FAIL' && bad.businessMutation === false,
   'BAD_BUILD_NOT_OBSERVED');
   check(decision.rejectedDeploymentId === bad.deploymentId &&
@@ -46,16 +47,19 @@ export function assessBadDeploymentRollback(proof) {
     decision.reason === 'SEMANTIC_HEALTH_REGRESSION' &&
     id(decision.approvalRef), 'ROLLBACK_NOT_AUTHORISED');
   check(providerRollback.fromDeploymentId === bad.deploymentId &&
-    providerRollback.toDeploymentId === before.deploymentId &&
+    providerRollback.restoredFromDeploymentId === before.deploymentId &&
+    id(providerRollback.newDeploymentId) &&
+    providerRollback.newDeploymentId !== before.deploymentId &&
+    providerRollback.newDeploymentId !== bad.deploymentId &&
     providerRollback.status === 'SUCCESS' &&
     providerRollback.restoredCommitSha === c.goodSha,
   'PROVIDER_ROLLBACK_NOT_BOUND');
-  check(after.deploymentId === before.deploymentId &&
+  check(after.deploymentId === providerRollback.newDeploymentId &&
     after.deploymentCommitSha === c.goodSha && after.observedSourceSha === c.goodSha &&
     after.healthStatus === 200 && after.semanticHealth === 'PASS' &&
     after.freshSessionProtectedRead === 200,
   'RESTORED_SERVICE_NOT_PROVEN');
-  check(readback.deploymentId === before.deploymentId &&
+  check(readback.deploymentId === providerRollback.newDeploymentId &&
     readback.stateDigest === before.stateDigest &&
     readback.stateEpoch === before.stateEpoch &&
     readback.freshSession === true && readback.auditRollbackRef === decision.approvalRef &&

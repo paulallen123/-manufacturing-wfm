@@ -16,17 +16,19 @@ function fixture() {
       observedSourceSha: context.goodSha, platformStatus: 'SUCCESS', healthStatus: 200,
       semanticHealth: 'PASS', stateDigest: 'c'.repeat(64), stateEpoch: 8 }),
     bad: r('bad', 2, { deploymentId: 'bad-2', deploymentCommitSha: context.badSha,
-      observedSourceSha: context.badSha, becameServing: true, semanticHealth: 'FAIL',
+      observedSourceSha: context.badSha, becameServing: true,
+      platformStatus: 'SUCCESS', healthStatus: 200, semanticHealth: 'FAIL',
       businessMutation: false }),
     decision: r('decision', 3, { rejectedDeploymentId: 'bad-2',
       restoreDeploymentId: 'good-1', reason: 'SEMANTIC_HEALTH_REGRESSION',
       approvalRef: 'approved-rollback-1' }),
     providerRollback: r('provider', 4, { fromDeploymentId: 'bad-2',
-      toDeploymentId: 'good-1', status: 'SUCCESS', restoredCommitSha: context.goodSha }),
-    after: r('post', 5, { deploymentId: 'good-1', deploymentCommitSha: context.goodSha,
+      restoredFromDeploymentId: 'good-1', newDeploymentId: 'restored-3',
+      status: 'SUCCESS', restoredCommitSha: context.goodSha }),
+    after: r('post', 5, { deploymentId: 'restored-3', deploymentCommitSha: context.goodSha,
       observedSourceSha: context.goodSha, healthStatus: 200, semanticHealth: 'PASS',
       freshSessionProtectedRead: 200 }),
-    readback: r('read', 6, { deploymentId: 'good-1', stateDigest: 'c'.repeat(64),
+    readback: r('read', 6, { deploymentId: 'restored-3', stateDigest: 'c'.repeat(64),
       stateEpoch: 8, freshSession: true, auditRollbackRef: 'approved-rollback-1',
       businessMutation: false }) };
 }
@@ -44,6 +46,8 @@ for (const [label, mutate, expected] of [
   ['wrong bad SHA', p => { p.bad.observedSourceSha = 'd'.repeat(40); }, 'BAD_BUILD_NOT_OBSERVED'],
   ['unauthorised rollback', p => { p.decision.approvalRef = ''; }, 'ROLLBACK_NOT_AUTHORISED'],
   ['provider-only success', p => { p.after.healthStatus = 503; }, 'RESTORED_SERVICE_NOT_PROVEN'],
+  ['old deployment ID reused', p => { p.providerRollback.newDeploymentId = 'good-1'; }, 'PROVIDER_ROLLBACK_NOT_BOUND'],
+  ['bad healthcheck could not serve', p => { p.bad.healthStatus = 503; }, 'BAD_BUILD_NOT_OBSERVED'],
   ['wrong restored SHA', p => { p.providerRollback.restoredCommitSha = p.context.badSha; }, 'PROVIDER_ROLLBACK_NOT_BOUND'],
   ['lost durable state', p => { p.readback.stateDigest = 'e'.repeat(64); }, 'DURABLE_READBACK_NOT_PROVEN']
 ]) {
