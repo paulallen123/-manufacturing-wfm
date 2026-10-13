@@ -60,7 +60,13 @@ export function evaluateProjectedDecision({ baseline, alternatives, decisionCont
 export function recordRealisedOutcome(projectedDecision, { actualSelectedCost, evidenceRefs, attributionKey, observedAt }) {
   assert(projectedDecision?.status === 'projected', 'a projected decision is required');
   assert(Number.isFinite(actualSelectedCost) && actualSelectedCost >= 0, 'actualSelectedCost must be a non-negative number');
-  assert(Array.isArray(evidenceRefs) && evidenceRefs.filter(Boolean).length > 0, 'realised outcome requires evidenceRefs');
+  assert(Array.isArray(evidenceRefs) && evidenceRefs.length > 0, 'realised outcome requires evidenceRefs');
+  const suppliedEvidenceRefs = Array.from(evidenceRefs);
+  assert(suppliedEvidenceRefs.every((ref) => typeof ref === 'string' && ref.trim().length > 0),
+    'evidenceRefs must be non-empty strings');
+  const normalizedEvidenceRefs = suppliedEvidenceRefs.map((ref) => ref.trim());
+  assert(new Set(normalizedEvidenceRefs).size === normalizedEvidenceRefs.length,
+    'duplicate realised evidenceRef within outcome');
   assert(typeof attributionKey === 'string' && attributionKey.length > 0, 'attributionKey is required to prevent double counting');
   assert(typeof observedAt === 'string' && Number.isFinite(Date.parse(observedAt)), 'observedAt must be ISO date-time');
 
@@ -73,18 +79,23 @@ export function recordRealisedOutcome(projectedDecision, { actualSelectedCost, e
     actualSelectedCost: Math.round(actualSelectedCost * 100) / 100,
     realisedSaving,
     attributionKey,
-    evidenceRefs: Object.freeze(evidenceRefs.filter(Boolean)),
+    evidenceRefs: Object.freeze(normalizedEvidenceRefs),
     observedAt
   });
 }
 
 export function createOutcomeLedger() {
   const outcomes = new Map();
+  const claimedEvidenceRefs = new Set();
   return Object.freeze({
     record(projectedDecision, actual) {
       const outcome = recordRealisedOutcome(projectedDecision, actual);
       assert(!outcomes.has(outcome.attributionKey), `duplicate attributionKey: ${outcome.attributionKey}`);
+      for (const ref of outcome.evidenceRefs) {
+        assert(!claimedEvidenceRefs.has(ref), `duplicate realised evidenceRef: ${ref}`);
+      }
       outcomes.set(outcome.attributionKey, outcome);
+      for (const ref of outcome.evidenceRefs) claimedEvidenceRefs.add(ref);
       return outcome;
     },
     get(attributionKey) {
