@@ -59,3 +59,24 @@ test('preserves recommendation-action-outcome windows and competing changes for 
   assert.equal(e.intervention.recommendationId,'rec-77');
   assert.equal(e.intervention.competingChanges.length,2);
 });
+
+test('rejects impossible and ambiguous source observation timestamps',()=>{
+  for(const sourceObservedAt of ['2026-02-30T12:00:00Z','2026-13-01T12:00:00Z','2026-09-20T24:00:00Z','2026-09-20T12:00:00+24:00','2026-09-20','2026-09-20T12:00:00',1726833600000]){
+    assert.throws(()=>createSemanticEnvelope({sourceSystem:'mes',sourceRecordId:'bad-time',sourceObservedAt}),/ISO-8601 timestamp/,String(sourceObservedAt));
+  }
+});
+
+test('accepts a real leap day with an explicit source-local offset',()=>{
+  const e=createSemanticEnvelope({sourceSystem:'mes',sourceRecordId:'leap-day',sourceObservedAt:'2024-02-29T23:59:59.123+01:00'});
+  assert.equal(e.source.observedAt,'2024-02-29T23:59:59.123+01:00');
+});
+
+test('applies the same calendar validation to ingestion, effective, FX and intervention times',()=>{
+  const base={sourceSystem:'mes',sourceRecordId:'event-1',sourceObservedAt:'2026-09-20T12:00:00Z'};
+  for(const input of [
+    {ingestedAt:'2026-02-30T12:00:00Z'},
+    {effectiveFrom:'2026-02-30T12:00:00Z'},
+    {sourceCurrency:'EUR',canonicalCurrency:'GBP',fx:{method:'approved',rate:0.9,rateAsOf:'2026-02-30T00:00:00Z',source:'finance'}},
+    {intervention:{recommendationId:'rec-1',recommendationAt:'2026-02-30T12:00:00Z',actionEffectiveAt:'2026-09-20T12:00:00Z',baselineStart:'2026-09-19T12:00:00Z',baselineEnd:'2026-09-19T13:00:00Z',outcomeStart:'2026-09-20T12:00:00Z',outcomeEnd:'2026-09-20T13:00:00Z'}}
+  ]) assert.throws(()=>createSemanticEnvelope({...base,...input}),/ISO-8601 timestamp/);
+});
