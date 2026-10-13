@@ -4,3 +4,28 @@ const plan={contractVersion:'VECTOR_MANUFACTURING_SCHEDULER_V1',tenant:'a',planI
 test('fails closed until existing attendance payroll gate is ready',()=>{const r=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:false,attendanceInputs:[{employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'}]}});assert.equal(r.ready,false);assert.equal(r.rows.length,0);assert.ok(r.blockers.includes('ATTENDANCE_PAYROLL_GATE_NOT_READY'));});
 test('reconciles schedule to gate-authorised interval without calculating pay',()=>{const r=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'w1',inAt:'2026-09-24T06:05:00Z',outAt:'2026-09-24T14:20:00Z',provenance:{basis:'automatic_evidence'}}]}});assert.equal(r.ready,true);assert.equal(r.rows[0].lateMinutes,5);assert.equal(r.rows[0].overtimeCandidateHours,0.25);assert.equal(r.payCalculationPerformed,false);assert.equal(r.payrollAuthority,false);});
 test('missing or unexpected verified attendance is an explicit blocker',()=>{const r=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'other',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'}]}});assert.equal(r.ready,false);assert.ok(r.blockers.includes('SCHEDULE_ASSIGNMENT_WITHOUT_VERIFIED_ATTENDANCE'));assert.ok(r.blockers.includes('UNEXPECTED_VERIFIED_ATTENDANCE'));});
+test('one attendance interval cannot reconcile two shifts for the same worker',()=>{
+  const twoShiftPlan={...plan,assignments:[plan.assignments[0],{...plan.assignments[0],slotId:'s2',start:'2026-09-25T06:00:00Z',end:'2026-09-25T14:00:00Z'}]};
+  const r=reconcileScheduleToAttendance({plan:twoShiftPlan,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'}]}});
+  assert.equal(r.ready,false);
+  assert.equal(r.rows[0].status,'RECONCILED');
+  assert.equal(r.rows[1].status,'MISSING_VERIFIED_ATTENDANCE');
+});
+test('separate intervals reconcile separate shifts for the same worker',()=>{
+  const twoShiftPlan={...plan,assignments:[plan.assignments[0],{...plan.assignments[0],slotId:'s2',start:'2026-09-25T06:00:00Z',end:'2026-09-25T14:00:00Z'}]};
+  const r=reconcileScheduleToAttendance({plan:twoShiftPlan,payrollProjection:{payrollReady:true,attendanceInputs:[
+    {employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'},
+    {employee:'w1',inAt:'2026-09-25T06:00:00Z',outAt:'2026-09-25T14:00:00Z'}
+  ]}});
+  assert.equal(r.ready,true);
+  assert.deepEqual(r.rows.map(x=>x.status),['RECONCILED','RECONCILED']);
+  assert.equal(r.unexpectedAttendance.length,0);
+});
+test('duplicate attendance intervals are retained as unexpected evidence',()=>{
+  const interval={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'};
+  const r=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[interval,interval]}});
+  assert.equal(r.ready,false);
+  assert.equal(r.rows[0].status,'RECONCILED');
+  assert.equal(r.unexpectedAttendance.length,1);
+  assert.ok(r.blockers.includes('UNEXPECTED_VERIFIED_ATTENDANCE'));
+});
