@@ -4,6 +4,24 @@ const {createAuthoritativePolicySourceRegistry}=require('./authoritative-policy-
 const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.cjs');
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
+const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
+for(const [label,value] of [['unknown','unknown'],['NaN',NaN],['Infinity',Infinity],['negative Infinity',-Infinity],['NaN text','NaN'],['Infinity text','Infinity']]){
+  test('invalid '+label+' source freshness cannot manufacture current evidence',()=>{
+    const r=createAuthoritativePolicySourceRegistry();
+    assert.throws(()=>r.registerSource(sourceWithFreshness(value)),/freshnessHours.*finite/i);
+    assert.equal(r.all().length,0);assert.throws(()=>r.assess('synthetic'),/Unknown source/);
+    assert.throws(()=>createAuthoritativePolicySourceRegistry([sourceWithFreshness(value)]),/freshnessHours.*finite/i);
+  });
+}
+test('finite freshness preserves defaults and clamping but never admits six-year-old evidence',()=>{
+  for(const [value,expected] of [[undefined,24],[null,24],[0,24],['',24],[0.5,1],[-1,1],[24,24],['48',48],[3000,2160]]){
+    const r=createAuthoritativePolicySourceRegistry([sourceWithFreshness(value)]);
+    assert.equal(r.all()[0].freshnessHours,expected);
+    r.recordSnapshot({sourceId:'synthetic',observedAt:'2020-01-01T00:00:00Z',contentDigest:sha('old'),verifiedRetrieval:true});
+    const old=r.assess('synthetic',{at:'2026-10-13T00:00:00Z'});
+    assert.equal(old.usable,false);assert.equal(old.state,'STALE');assert.equal(old.requiresAttention,true);
+  }
+});
 test('verified official snapshot becomes current evidence',()=>{const r=registry();const s=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-09-25T08:00:00Z',contentDigest:sha('v1'),verifiedRetrieval:true});assert.equal(r.assess('gb-law',{at:'2026-09-25T09:00:00Z'}).state,'CURRENT');assert.equal(s.executionAuthority,false);});
 test('stale source cannot silently remain usable',()=>{const r=registry();r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-09-20T08:00:00Z',contentDigest:sha('v1'),verifiedRetrieval:true});const a=r.assess('gb-law',{at:'2026-09-25T09:00:00Z'});assert.equal(a.state,'STALE');assert.equal(a.usable,false);});
 test('unverified retrieval cannot enter authoritative evidence',()=>{const r=registry();assert.throws(()=>r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-09-25T08:00:00Z',contentDigest:sha('v1'),verifiedRetrieval:false}),/verified retrieval/i);});
