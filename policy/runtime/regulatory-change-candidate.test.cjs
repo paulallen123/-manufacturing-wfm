@@ -2,6 +2,24 @@
 const test=require('node:test'); const assert=require('node:assert/strict');
 const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.cjs');
 const sourceAssessment={sourceId:'gb-law',state:'CURRENT',usable:true};
+test('exported material-domain deletion cannot suppress mandatory payroll review',()=>{
+  const {MATERIAL_DOMAINS}=require('./regulatory-change-candidate.cjs');
+  MATERIAL_DOMAINS.delete('payroll');
+  try{const result=candidate(1,'payroll');assert.equal(result.reviewRequired,true);assert.equal(result.state,'QUALIFIED_REVIEW_REQUIRED');assert.equal(result.promotionAuthority,false);}
+  finally{MATERIAL_DOMAINS.add('payroll');}
+});
+test('clearing exported material metadata cannot suppress any qualified review domain',()=>{
+  const {MATERIAL_DOMAINS}=require('./regulatory-change-candidate.cjs'),original=[...MATERIAL_DOMAINS];
+  Set.prototype.clear.call(MATERIAL_DOMAINS);
+  try{for(const domain of original) assert.equal(candidate(1,domain).reviewRequired,true);}
+  finally{for(const domain of original) MATERIAL_DOMAINS.add(domain);}
+});
+test('exported metadata additions do not alter informational candidate review decisions',()=>{
+  const {MATERIAL_DOMAINS}=require('./regulatory-change-candidate.cjs');
+  MATERIAL_DOMAINS.add('informational');
+  try{assert.equal(candidate(1).reviewRequired,false);}
+  finally{MATERIAL_DOMAINS.delete('informational');}
+});
 test('published candidate cannot change policy domain under its original review decision',()=>{
   const result=candidate(1),before=JSON.stringify(result);
   assert.throws(()=>{result.changes[0].domain='working-time';},TypeError);

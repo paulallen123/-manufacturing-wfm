@@ -31,5 +31,5 @@ function createRegulatoryChangeCandidate(input={}){
   Object.freeze(normalised);Object.freeze(payload.affectedSites);
   return Object.freeze({...payload,candidateDigest:digest(payload)});
 }
-module.exports=Object.freeze({createRegulatoryChangeCandidate,MATERIAL_DOMAINS,digest,stable});
+module.exports=Object.freeze({createRegulatoryChangeCandidate,MATERIAL_DOMAINS:new Set(MATERIAL_DOMAINS),digest,stable});
 
