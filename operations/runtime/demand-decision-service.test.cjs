@@ -34,18 +34,19 @@ function fixture(){
       'id TEXT PRIMARY KEY,tenant TEXT NOT NULL,event_key TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,'+
       'employee_id TEXT,source_key TEXT,effective_at_ms INTEGER NOT NULL,payload_json TEXT NOT NULL,reason_code TEXT,detail_json TEXT NOT NULL,created_at TEXT NOT NULL);'
   );
-  const tokenA='token-a',tokenB='token-b',tokenE='token-e';
+  const tokenA='token-a',tokenB='token-b',tokenE='token-e',tokenU='token-unknown';
   db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run('a@example.test','alpha','manager');
   db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run('b@example.test','beta','manager');
   db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run('e@example.test','alpha','employee');
-  for(const [token,email] of [[tokenA,'a@example.test'],[tokenB,'b@example.test'],[tokenE,'e@example.test']]){
+  db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run('u@example.test','alpha','revoked-role');
+  for(const [token,email] of [[tokenA,'a@example.test'],[tokenB,'b@example.test'],[tokenE,'e@example.test'],[tokenU,'u@example.test']]){
     db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(sha256(token),email,Date.now()+60000);
   }
   const ins=db.prepare('INSERT INTO workforce_lifecycle_events(id,tenant,event_key,kind,status,employee_id,source_key,effective_at_ms,payload_json,reason_code,detail_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)');
   ins.run('a1','alpha','a1','ABSENCE','ACCEPTED','emp-1',null,Date.parse('2026-09-22T08:00:00Z'),'{}','OK','{}','2026-09-22T08:00:00Z');
   ins.run('b1','beta','b1','AGENCY_ASSIGNMENT','ACCEPTED','emp-2',null,Date.parse('2026-09-22T08:00:00Z'),'{}','OK','{}','2026-09-22T08:00:00Z');
   db.close();
-  return {dir,dbPath,tokenA,tokenB,tokenE};
+  return {dir,dbPath,tokenA,tokenB,tokenE,tokenU};
 }
 async function call(service,req){
   const res=makeRes(); await service.handleRequest(req,res); return {res,json:res.body?JSON.parse(res.body):null};
@@ -71,6 +72,17 @@ test('manager summary is tenant isolated and employee access is denied',async()=
     assert.equal(b.json.topDemand.decisionKey,'agency-labour-control');
     const e=await call(service,makeReq('GET','/api/operations/intelligence/summary',{cookie:'wfm_session='+f.tokenE}));
     assert.equal(e.res.statusCode,403);
+  }finally{service.close();fs.rmSync(f.dir,{recursive:true,force:true});}
+});
+
+test('unknown current role cannot read intelligence summaries, demand, episodes, or delivery wrappers',async()=>{
+  const f=fixture(),service=createDemandDecisionService({dbPath:f.dbPath,internalToken:'internal'});
+  try{
+    for(const route of ['summary','demand','decisions','delivery-disruptions']){
+      const response=await call(service,makeReq('GET','/api/operations/intelligence/'+route,{cookie:'wfm_session='+f.tokenU}));
+      assert.equal(response.res.statusCode,403,route);
+      assert.equal(Object.hasOwn(response.json,'tenant'),false,route);
+    }
   }finally{service.close();fs.rmSync(f.dir,{recursive:true,force:true});}
 });
 
