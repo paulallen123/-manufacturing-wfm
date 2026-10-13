@@ -4,19 +4,33 @@ const REQUIRED_EVIDENCE=['impairment','policy','workforce','restorationPlan'];
 function clean(v){return typeof v==='string'?v.trim():'';}
 function finite(v){return typeof v==='number'&&Number.isFinite(v);}
 function clampNonNegative(v){return finite(v)&&v>=0?v:null;}
+function nonNegativeInteger(v){return clampNonNegative(v)!=null&&Number.isInteger(v)?v:null;}
+function evidenceAge(v){
+  if(typeof v!=='number'&&(typeof v!=='string'||!v.trim()))return null;
+  const age=Number(v);
+  return finite(age)&&age>=0?age:null;
+}
 
 function evidenceCheck(evidence,maxAgeMinutes){
   for(const key of REQUIRED_EVIDENCE){
     const item=evidence?.[key];
     if(item?.authoritative!==true)return {ok:false,reason:'missing_authoritative_evidence',type:key};
     if(!clean(item.ref)||!clean(item.revision))return {ok:false,reason:'missing_provenance',type:key};
-    if(!finite(Number(item.ageMinutes))||Number(item.ageMinutes)>maxAgeMinutes)return {ok:false,reason:'stale_evidence',type:key};
+    const age=evidenceAge(item.ageMinutes);
+    if(age==null||age>maxAgeMinutes)return {ok:false,reason:'stale_evidence',type:key};
   }
   return {ok:true};
 }
 
 function eligibleAtSite(workers,siteId,role){
-  return (Array.isArray(workers)?workers:[]).filter(worker=>
+  const scoped=(Array.isArray(workers)?workers:[]).filter(worker=>clean(worker?.siteId)===siteId);
+  const identityCount=new Map();
+  for(const worker of scoped){
+    const id=clean(worker?.id);
+    if(id)identityCount.set(id,(identityCount.get(id)??0)+1);
+  }
+  return scoped.filter(worker=>
+    identityCount.get(clean(worker?.id))===1 &&
     clean(worker?.siteId)===siteId &&
     worker?.available===true &&
     Array.isArray(worker?.competencies) &&
@@ -28,7 +42,8 @@ function eligibleAtSite(workers,siteId,role){
 export function evaluateImpairmentRecoveryPlan(input={}){
   const siteId=clean(input.siteId);
   if(!siteId)return {status:'blocked',reason:'missing_site_scope'};
-  const maxAgeMinutes=finite(input.maxEvidenceAgeMinutes)?input.maxEvidenceAgeMinutes:15;
+  const maxAgeMinutes=input.maxEvidenceAgeMinutes===undefined?15:clampNonNegative(input.maxEvidenceAgeMinutes);
+  if(maxAgeMinutes==null)return {status:'blocked',reason:'invalid_evidence_age_limit'};
   const checked=evidenceCheck(input.evidence,maxAgeMinutes);
   if(!checked.ok)return {status:'blocked',...checked};
 
@@ -40,7 +55,7 @@ export function evaluateImpairmentRecoveryPlan(input={}){
   const policy=input.policy??{};
   if(clean(policy.siteId)!==siteId)return {status:'blocked',reason:'policy_site_mismatch'};
   const controlRole=clean(policy.controlRole);
-  const requiredControlHeadcount=clampNonNegative(policy.requiredControlHeadcount);
+  const requiredControlHeadcount=nonNegativeInteger(policy.requiredControlHeadcount);
   const baselineRestoreMinutes=clampNonNegative(input.baseline?.restoreMinutes);
   if(!controlRole||requiredControlHeadcount==null||baselineRestoreMinutes==null){
     return {status:'blocked',reason:'invalid_control_policy'};
@@ -75,6 +90,9 @@ export function evaluateImpairmentRecoveryPlan(input={}){
   const exposureMinutesReduced=Math.max(0,baselineRestoreMinutes-candidateRestoreMinutes);
   const controlPersonMinutesReleased=exposureMinutesReduced*requiredControlHeadcount;
   const netProductivePersonMinutes=controlPersonMinutesReleased-extraRestorationPersonMinutes-displacedProductionPersonMinutes;
+  if(!finite(controlPersonMinutesReleased)||!finite(netProductivePersonMinutes)){
+    return {status:'blocked',reason:'invalid_restoration_calculation'};
+  }
 
   const customerCommitmentsProtected=input.guardrails?.customerCommitmentsProtected===true;
   const processSafetyProtected=input.guardrails?.processSafetyProtected===true;
@@ -104,7 +122,7 @@ export function assessHotWorkCoverage({siteId,policy,workers,task}={}){
   if(!scope||clean(task?.siteId)!==scope||clean(policy?.siteId)!==scope)return {status:'blocked',reason:'site_scope_mismatch'};
   if(task?.hotWork!==true)return {status:'not_applicable'};
   const role=clean(policy?.fireWatchRole);
-  const required=clampNonNegative(policy?.fireWatchHeadcount);
+  const required=nonNegativeInteger(policy?.fireWatchHeadcount);
   if(!role||required==null)return {status:'blocked',reason:'invalid_fire_watch_policy'};
   const hotWorkerId=clean(task?.assignedWorkerId);
   let eligible=eligibleAtSite(workers,scope,role);
