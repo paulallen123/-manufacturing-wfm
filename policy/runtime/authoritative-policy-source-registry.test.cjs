@@ -5,7 +5,7 @@ const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.c
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
 const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
-for(const invalid of ['2026-02-30T08:00:00Z','2025-02-29T08:00:00Z','1900-02-29T08:00:00Z','2026-04-31T08:00:00+01:00','2026-06-31']){
+for(const invalid of ['2026-02-30T08:00:00Z','2025-02-29T08:00:00Z','1900-02-29T08:00:00Z','2026-04-31T08:00:00+01:00','2026-06-31','+002026-02-30T08:00:00Z','2026-02-30t08:00:00z','2026-02-30 08:00:00Z','2026-2-30 08:00:00Z']){
   test('impossible calendar timestamp '+invalid+' cannot enter source evidence',()=>{
     const r=registry();
     assert.throws(()=>r.recordSnapshot({sourceId:'gb-law',observedAt:invalid,contentDigest:sha('invalid'),verifiedRetrieval:true}),/observedAt.*valid ISO/);
@@ -18,7 +18,7 @@ for(const invalid of ['2026-02-30T08:00:00Z','2025-02-29T08:00:00Z','1900-02-29T
   });
 }
 test('valid leap days and timezone offsets retain exact instants and receipt binding',()=>{
-  for(const observedAt of ['2024-02-29T23:30:00-02:00','2000-02-29T08:00:00Z','2026-04-30T23:30:00-02:00','2026-03-01T00:30:00+02:00']){
+  for(const observedAt of ['2024-02-29T23:30:00-02:00','2000-02-29T08:00:00Z','2026-04-30T23:30:00-02:00','2026-03-01T00:30:00+02:00','+002000-02-29T08:00:00Z','-000004-02-29T08:00:00Z','0000-02-29T08:00:00Z','2024-02-29t08:00:00z','2024-2-29 08:00:00Z']){
     const r=registry(),snapshot=r.recordSnapshot({sourceId:'gb-law',observedAt,contentDigest:sha(observedAt),verifiedRetrieval:true});
     assert.equal(snapshot.observedAt,new Date(observedAt).toISOString());
     const a=r.assess('gb-law',{at:observedAt});

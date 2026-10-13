@@ -6,7 +6,7 @@ function stable(v){if(Array.isArray(v)) return '['+v.map(stable).join(',')+']';i
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function text(v,max=240){return String(v??'').trim().slice(0,max);}
 function iso(v,name){
-  const raw=text(v,80),ms=Date.parse(raw),date=/^(\d{4})-(\d{2})-(\d{2})(?:T|$)/.exec(raw);
+  const raw=text(v,80),ms=Date.parse(raw),date=/^([+-]\d{6}|\d{4})-(\d{1,2})-(\d{1,2})(?=\D|$)/.exec(raw);
   let calendarValid=true;
   if(date){
     const year=Number(date[1]),month=Number(date[2]),day=Number(date[3]);
