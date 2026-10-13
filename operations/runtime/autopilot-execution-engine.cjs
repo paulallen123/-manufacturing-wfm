@@ -6,6 +6,7 @@ const PREFIX='/api/operations/autopilot',PERMIT_TTL_MS=15*60*1000;
 const AUTHORISED_ROLES=new Set(['manager','supervisor','director','admin','payroll_admin']);
 function sha256(v){return createHash('sha256').update(String(v)).digest('hex');}
 function compact(v,max=240){return String(v??'').trim().slice(0,max);}
+function planString(value,label,max=240){if(typeof value!=='string')throw new Error(label+' must be a string.');return compact(value,max);}
 function iso(v){const n=Date.parse(String(v??''));return Number.isFinite(n)?new Date(n).toISOString():null;}
 function publicDetail(state,detail){return state==='VERIFIED'?{...detail,outcomeDigest:null,outcomeStatus:'UNPROVEN'}:detail;}
 function cookieToken(req){for(const part of String(req?.headers?.cookie||'').split(';')){const p=part.trim();if(p.startsWith('wfm_session='))return p.slice(12);}return '';}
@@ -16,10 +17,15 @@ function safePlan(input={}){
  if(compact(input.adapter,80)!=='workforce-lifecycle')throw new Error('Unsupported Autopilot execution adapter.');
  if(input.reversible!==true)throw new Error('Autopilot execution requires a reversible action.');
  const a=input.action&&typeof input.action==='object'&&!Array.isArray(input.action)?input.action:null;if(!a)throw new Error('Autopilot action is required.');
- const kind=compact(a.kind,40).toUpperCase();if(!['OVERTIME_OVERRIDE','AGENCY_ASSIGNMENT'].includes(kind))throw new Error('Autopilot workforce execution is limited to approved overtime or agency assignment actions.');
- if(!compact(a.employeeId,120)||!iso(a.effectiveAt))throw new Error('Autopilot workforce action requires employeeId and effectiveAt.');
- const rb=input.rollback&&typeof input.rollback==='object'&&!Array.isArray(input.rollback)?input.rollback:null;if(!rb||!compact(rb.eventKey,160)||!compact(rb.reason,300))throw new Error('Autopilot execution requires an explicit rollback plan.');
- return {adapter:'workforce-lifecycle',reversible:true,action:{eventKey:compact(a.eventKey,160)||'autopilot-action',kind,employeeId:compact(a.employeeId,120),effectiveAt:iso(a.effectiveAt),payload:a.payload&&typeof a.payload==='object'&&!Array.isArray(a.payload)?JSON.parse(JSON.stringify(a.payload)):{}},rollback:{eventKey:compact(rb.eventKey,160),reason:compact(rb.reason,300)},expectedOutcome:input.expectedOutcome&&typeof input.expectedOutcome==='object'&&!Array.isArray(input.expectedOutcome)?JSON.parse(JSON.stringify(input.expectedOutcome)):null};
+ const kind=planString(a.kind,'Action kind',40).toUpperCase();if(!['OVERTIME_OVERRIDE','AGENCY_ASSIGNMENT'].includes(kind))throw new Error('Autopilot workforce execution is limited to approved overtime or agency assignment actions.');
+ const employeeId=planString(a.employeeId,'Employee ID',120),effectiveAt=planString(a.effectiveAt,'Effective time');
+ if(!employeeId||!iso(effectiveAt))throw new Error('Autopilot workforce action requires employeeId and effectiveAt.');
+ const eventKey=a.eventKey==null?'':planString(a.eventKey,'Action event key',160);
+ const rb=input.rollback&&typeof input.rollback==='object'&&!Array.isArray(input.rollback)?input.rollback:null;
+ if(!rb)throw new Error('Autopilot execution requires an explicit rollback plan.');
+ const rollbackKey=planString(rb.eventKey,'Rollback event key',160),rollbackReason=planString(rb.reason,'Rollback reason',300);
+ if(!rollbackKey||!rollbackReason)throw new Error('Autopilot execution requires an explicit rollback plan.');
+ return {adapter:'workforce-lifecycle',reversible:true,action:{eventKey:eventKey||'autopilot-action',kind,employeeId,effectiveAt:iso(effectiveAt),payload:a.payload&&typeof a.payload==='object'&&!Array.isArray(a.payload)?JSON.parse(JSON.stringify(a.payload)):{}},rollback:{eventKey:rollbackKey,reason:rollbackReason},expectedOutcome:input.expectedOutcome&&typeof input.expectedOutcome==='object'&&!Array.isArray(input.expectedOutcome)?JSON.parse(JSON.stringify(input.expectedOutcome)):null};
 }
 function promote(shadow){return createDecisionEpisode({tenant:shadow.tenant,site:shadow.site,decisionType:shadow.decisionType,triggerId:shadow.triggerId,triggeredAt:shadow.triggeredAt,contextRevision:shadow.contextRevision,mode:'HUMAN_APPROVAL',sourceEvidence:shadow.sourceEvidence,objective:{...(shadow.objective?.weights||{}),uncertaintyPenalty:shadow.objective?.uncertaintyPenalty},options:shadow.options});}
 function createAutopilotExecutionEngine(options={}){
