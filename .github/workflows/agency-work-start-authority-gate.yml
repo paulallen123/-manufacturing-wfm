@@ -25,3 +25,16 @@ jobs:
       - run: node --test test/frontier/agency-work-start-readiness.test.mjs
       - run: node --check src/frontier/agency-work-start-readiness.mjs
       - run: docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA=${{ github.sha }} -t vector-agency-authority:gate .
+      - name: Verify and test installed agency source
+        shell: bash
+        run: |
+          set -euo pipefail
+          container_id=$(docker create vector-agency-authority:gate)
+          trap 'docker rm -f "$container_id" >/dev/null' EXIT
+          mkdir -p installed-agency/src/frontier installed-agency/test/frontier
+          docker cp "$container_id":/app/operations-runtime/agency/. installed-agency/src/frontier/
+          cmp src/frontier/agency-work-start-readiness.mjs installed-agency/src/frontier/agency-work-start-readiness.mjs
+          cmp src/frontier/agency-identity-continuity.mjs installed-agency/src/frontier/agency-identity-continuity.mjs
+          cp test/frontier/agency-work-start-readiness.test.mjs installed-agency/test/frontier/
+          node --test installed-agency/test/frontier/agency-work-start-readiness.test.mjs
+          docker image inspect --format '{{.Id}}' vector-agency-authority:gate

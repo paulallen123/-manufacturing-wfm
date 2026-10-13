@@ -34,6 +34,40 @@ test('missing, conflicting, expired, and unaccepted authority fail before contin
   for(const [rows,reason] of cases){let calls=0;const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([rows,rows]),evaluateContinuity:async()=>{calls+=1;return continuity();}}));assert.equal(result.workStartReady,false,reason);assert.equal(result.reason,reason);assert.equal(calls,0);assert.equal(result.scheduleWriteAuthorized,false);}
 });
 
+test('unknown assurance conflict evidence withholds readiness before continuity evaluation',async()=>{
+  for(const value of [undefined,null,'unknown','',0,1,{},[], 'False','f ']){
+    for(const postgres of [false,true]){
+      let calls=0;
+      const row=authority({conflicted:value});
+      const reader=postgres?createPostgresAgencyWorkStartAuthorityStore({query:async()=>({rows:[row]})}):authorityStore([[row],[row]]);
+      const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:reader,evaluateContinuity:async()=>{calls++;return continuity();}}));
+      assert.equal(result.workStartReady,false,`${String(value)} postgres=${postgres}`);
+      assert.equal(result.reason,'work_start_current_assurance_conflict_unknown');
+      assert.equal(calls,0);
+      assert.equal(result.workStartWriteAuthorized,false);
+    }
+  }
+});
+
+test('explicit supported conflict booleans retain their meaning',async()=>{
+  for(const value of [false,'f','false']){
+    const row=authority({conflicted:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,true);
+  }
+  for(const value of [true,'t','true']){
+    const row=authority({conflicted:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.reason,'work_start_current_assurance_conflicted');
+  }
+});
+
+test('conflict evidence becoming unknown on the second authority read invalidates readiness',async()=>{
+  const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[authority()],[authority({conflicted:null})]])}));
+  assert.equal(result.workStartReady,false);
+  assert.equal(result.reason,'work_start_current_assurance_conflict_unknown');
+});
+
 test('overlength authority identifiers cannot match a permitted prefix or mint work-start readiness',async()=>{
   const workerId='W'.repeat(100);
   const valid=authority({workerId});

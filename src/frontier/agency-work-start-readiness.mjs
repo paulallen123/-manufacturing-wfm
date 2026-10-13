@@ -52,7 +52,10 @@ const authorityText=(value,max)=>{
 };
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
 const iso=value=>{const parsed=ms(value);return parsed===null?null:new Date(parsed).toISOString();};
-const bool=value=>value===true||value==='t'||value==='true';
+// PostgreSQL booleans may arrive as primitives or explicit textual aliases.
+// Any other value is unknown evidence, never proof that assurance is clear.
+const bool=value=>value===true||value==='t'||value==='true'?true:
+  value===false||value==='f'||value==='false'?false:null;
 const stable=value=>Array.isArray(value)?value.map(stable):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])])):value;
 const digest=(value,length=32)=>crypto.createHash('sha256').update(String(value??'')).digest('hex').slice(0,length);
 function required(value,name,max=200){const clean=text(value,max+1);if(!clean||clean.length>max)throw new TypeError(`${name} invalid`);return clean;}
@@ -106,6 +109,7 @@ function validateAuthority(rows,scope,nowMs,assignmentEndMs){
   if(!hex(row.assuranceVersionId,32))return {ok:false,reason:'work_start_current_assurance_missing'};
   if(row.assignmentFingerprint!==scope.assignmentFingerprint)return {ok:false,reason:'work_start_assignment_mismatch'};
   if(row.conflicted)return {ok:false,reason:'work_start_current_assurance_conflicted'};
+  if(row.conflicted!==false)return {ok:false,reason:'work_start_current_assurance_conflict_unknown'};
   if(!['confirm_preferred_worker','partial_fill'].includes(row.acceptedAction)||!hex(row.acceptedResponseFingerprint,16)||!row.acceptedAt)return {ok:false,reason:'work_start_accepted_response_missing'};
   const checkedAtMs=ms(row.checkedAt),promotedAtMs=ms(row.promotedAt),acceptedAtMs=ms(row.acceptedAt);
   if(checkedAtMs===null||promotedAtMs===null||acceptedAtMs===null||checkedAtMs>nowMs||promotedAtMs>nowMs||acceptedAtMs>nowMs)return {ok:false,reason:'work_start_authority_time_invalid'};
