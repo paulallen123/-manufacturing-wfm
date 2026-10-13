@@ -1,7 +1,7 @@
 name: Policy population source regression
 on:
   push:
-    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013', 'backlog/policy-confidence-admission-20261013', 'proof/policy-image-admission-20261013', 'backlog/policy-finite-freshness-20261013', 'backlog/policy-candidate-immutability-20261013', 'backlog/policy-source-metadata-20261013']
+    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013', 'backlog/policy-confidence-admission-20261013', 'proof/policy-image-admission-20261013', 'backlog/policy-finite-freshness-20261013', 'backlog/policy-candidate-immutability-20261013', 'backlog/policy-source-metadata-20261013', 'proof/installed-archive-workflow-evidence-20261013']
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,7 +35,7 @@ jobs:
           node --test policy/runtime/*.test.cjs
 
   full-image-policy-regression:
-    if: github.actor == github.repository_owner && (github.ref == 'refs/heads/proof/policy-image-admission-20261013' || github.ref == 'refs/heads/backlog/policy-finite-freshness-20261013' || github.ref == 'refs/heads/backlog/policy-candidate-immutability-20261013' || github.ref == 'refs/heads/backlog/policy-source-metadata-20261013')
+    if: github.actor == github.repository_owner && (github.ref == 'refs/heads/proof/policy-image-admission-20261013' || github.ref == 'refs/heads/backlog/policy-finite-freshness-20261013' || github.ref == 'refs/heads/backlog/policy-candidate-immutability-20261013' || github.ref == 'refs/heads/backlog/policy-source-metadata-20261013' || github.ref == 'refs/heads/proof/installed-archive-workflow-evidence-20261013')
     needs: source-regression
     runs-on: ubuntu-24.04
     timeout-minutes: 40
@@ -72,4 +72,38 @@ jobs:
                 esac
               done
               node --test /tmp/policy-installed-tests/*.test.cjs
+            '
+
+      - name: Execute retained archive checks against installed workflow engines
+        if: github.ref == 'refs/heads/proof/installed-archive-workflow-evidence-20261013'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --user node --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/operations/runtime,target=/proof/source,readonly" \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz,target=/proof/sealed-runtime.tgz,readonly" \
+            -e "EXPECTED_SOURCE_SHA=$GITHUB_SHA" \
+            -e WFM_EVIDENCE_SEALED_ARCHIVE=/proof/sealed-runtime.tgz \
+            "vector-policy-proof:$GITHUB_SHA" -c '
+              set -eu
+              test "$(cat /app/.wfm-build-source-sha)" = "$EXPECTED_SOURCE_SHA"
+              test "$(node --version)" = "v22.23.2"
+              echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /proof/sealed-runtime.tgz" | sha256sum -c -
+              mkdir /tmp/workflow-installed-tests
+              for name in tenant-calendar.cjs workflow-action-evidence-contract.cjs workflow-action-evidence-bridge.cjs; do
+                cmp "/proof/source/$name" "/app/operations-runtime/$name"
+                ln -s "/app/operations-runtime/$name" "/tmp/workflow-installed-tests/$name"
+              done
+              cp /proof/source/workflow-action-evidence-contract.test.cjs /proof/source/workflow-action-evidence-bridge.test.cjs /tmp/workflow-installed-tests/
+              set +e
+              node --test --test-reporter=tap /tmp/workflow-installed-tests/*.test.cjs > /tmp/workflow-installed.tap 2>&1
+              result=$?
+              set -e
+              cat /tmp/workflow-installed.tap
+              test "$result" -eq 0
+              grep -q "^# skipped 0$" /tmp/workflow-installed.tap
+              test "$(grep -c "^ok .*preserves the pinned .*session before any loopback forwarding" /tmp/workflow-installed.tap)" -eq 9
+              grep -q "^ok .*pinned direct actor still revokes genuine changed source plus client and records containment audit" /tmp/workflow-installed.tap
+              grep -q "^ok .*pinned observe-only actor updates client metadata on a successful authenticated loopback read" /tmp/workflow-installed.tap
+              grep -q "^ok .*canonical sealed producers preserve permission and audited sign-off behavior" /tmp/workflow-installed.tap
             '
