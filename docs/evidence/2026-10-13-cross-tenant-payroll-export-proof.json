@@ -1,0 +1,38 @@
+{
+  "itemId": "issue-265-cross-tenant-payroll-export-denial",
+  "stage": "TESTED_ISOLATED",
+  "requirementSource": "GitHub issue #265, security/tenant-isolation lane: Cross-tenant payroll/export denial. Draft PR #378 explicitly covers employee and manager role denial but excludes cross-tenant payroll-admin isolation.",
+  "ownerConflictCheck": {
+    "observedAt": "2026-10-13",
+    "result": "No matching cross-tenant payroll export branch or narrow open PR found. PR #378's body explicitly excludes this requirement and changes the existing browser runner, which this package leaves untouched. Canonical integration/release owner retains runner and deployment authority.",
+    "limits": "Private chats and leases were not visible; recheck before adoption."
+  },
+  "exactBase": "f3e1afc97ffba869e10c697cc6f66efac628ea8a",
+  "changedFiles": [
+    "scripts/cross-tenant-payroll-export-proof.mjs",
+    "tests/cross-tenant-payroll-export-proof.test.mjs",
+    "docs/evidence/2026-10-13-cross-tenant-payroll-export-proof.json"
+  ],
+  "implementation": "Added a bounded read-only GET probe for the existing /api/payroll-export/{batchId} route. It rejects same-tenant or malformed scope before network access, disables redirects, requires HTTP 403/404, exact source headers, and absence of CSV/download headers. It accepts a caller-supplied authenticated request context, so it creates no session, release, export writer, runner, or deployment.",
+  "tests": [
+    {
+      "command": "node --test tests/cross-tenant-payroll-export-proof.test.mjs",
+      "result": "7 passed, 0 failed, 0 skipped, synthetic authenticated request context only"
+    },
+    {
+      "command": "node --check scripts/cross-tenant-payroll-export-proof.mjs; git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "review": "Independent review pending; no reviewer approval claimed.",
+  "canonicalIntegration": "Pending existing Golden Journey runner owner's adoption. No browser runner file was changed.",
+  "deployment": "NOT_DEPLOYED",
+  "hostedCustomerProof": "NOT_PROVEN",
+  "remainingRisks": [
+    "The caller must independently establish the actor's current tenant and payroll-admin role, and the released batch's different tenant, from authenticated durable readback.",
+    "The injected request context must be the actor's real hosted browser session; a synthetic fake cannot establish isolation.",
+    "A denial status and absent CSV headers do not alone prove that no sensitive response body leaked; the canonical owner must inspect the actual hosted body and audit trail.",
+    "The serving SHA and private access are not independently verified by this package."
+  ],
+  "nextAction": "Canonical owner reviews the package, binds it to a fresh tenant-B payroll-admin browser context and tenant-A released batch from the exact serving SHA, then runs the read-only negative probe with body/audit inspection before checking off issue #265."
+}
