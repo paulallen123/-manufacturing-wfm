@@ -8,6 +8,7 @@ on:
       - 'operations/runtime/decision-episode.cjs'
       - 'operations/runtime/delivery-replay-*.cjs'
       - 'operations/runtime/delivery-replay.test.cjs'
+      - 'operations/runtime/delivery-snapshot.test.cjs'
       - '.github/workflows/delivery-disruption-replay.yml'
   push:
     branches:
@@ -29,4 +30,4 @@ jobs:
           node-version: '22.23.2'
           package-manager-cache: false
       - name: Exact replay and contention regression
-        run: node --test operations/runtime/delivery-replay.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/delivery-disruption-shadow.test.cjs
+        run: node --test operations/runtime/delivery-replay.test.cjs operations/runtime/delivery-snapshot.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/delivery-disruption-shadow.test.cjs
