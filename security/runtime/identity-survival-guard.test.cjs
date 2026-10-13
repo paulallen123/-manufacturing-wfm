@@ -178,6 +178,65 @@ test('policy version change forces re-authentication rather than silently changi
   } finally { f.close(); }
 });
 
+test('permission revocation invalidates an already bound session before its next privileged request', () => {
+  const f = fixture();
+  try {
+    f.control.db.prepare('UPDATE users SET permissions=? WHERE email=?')
+      .run('["payroll.release"]', 'manager@alpha');
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager), res()), false);
+    f.control.db.prepare('UPDATE users SET permissions=? WHERE email=?')
+      .run('[]', 'manager@alpha');
+    const response = res();
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager, { method:'POST', url:'/api/payroll/release' }), response), true);
+    assert.equal(response.statusCode, 401);
+    assert.equal(activeSession(f.control.db, f.tokens.alphaManager), undefined);
+    assert.ok(activeSession(f.control.db, f.tokens.bravoManager));
+  } finally { f.close(); }
+});
+
+test('role changes cannot silently upgrade a bound session', () => {
+  const f = fixture();
+  try {
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaEmployee), res()), false);
+    f.control.db.prepare('UPDATE users SET role=? WHERE email=?').run('manager', 'employee@alpha');
+    const response = res();
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaEmployee, { method:'POST', url:'/api/company' }), response), true);
+    assert.equal(response.statusCode, 401);
+    assert.equal(activeSession(f.control.db, f.tokens.alphaEmployee), undefined);
+  } finally { f.close(); }
+});
+
+test('a pre-upgrade binding without authority evidence requires a fresh login', () => {
+  const f = fixture();
+  try {
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager), res()), false);
+    f.control.db.prepare('DELETE FROM identity_session_authority WHERE token_hash=?')
+      .run(tokenHash(f.tokens.alphaManager));
+    const response = res();
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager), response), true);
+    assert.equal(response.statusCode, 401);
+    assert.equal(activeSession(f.control.db, f.tokens.alphaManager), undefined);
+  } finally { f.close(); }
+});
+
+test('an older prebound proof session cannot acquire current permission evidence on upgrade', () => {
+  const f = fixture();
+  try {
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager), res()), false);
+    const hash = tokenHash(f.tokens.alphaManager);
+    const generation = f.control.db.prepare('SELECT started_at_ms FROM identity_authority_generation WHERE id=1').get().started_at_ms;
+    f.control.db.prepare('INSERT INTO proof_runner_sessions VALUES(?,?,?,?,?,?)')
+      .run(hash, 'manager@alpha', 'alpha', 'manager', generation - 1000, Date.now() + 60_000);
+    f.control.db.prepare('UPDATE identity_session_bindings SET issuer=?,bound_at=? WHERE token_hash=?')
+      .run('wfm-proof-runner', new Date(generation - 1000).toISOString(), hash);
+    f.control.db.prepare('DELETE FROM identity_session_authority WHERE token_hash=?').run(hash);
+    const response = res();
+    assert.equal(f.guard.beforeRequest(req(f.tokens.alphaManager), response), true);
+    assert.equal(response.statusCode, 401);
+    assert.equal(activeSession(f.control.db, f.tokens.alphaManager), undefined);
+  } finally { f.close(); }
+});
+
 test('unknown or expired bearer is denied before the application', () => {
   const f = fixture();
   try {

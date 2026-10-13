@@ -89,6 +89,14 @@ function createIdentitySurvivalGuard(options = {}) {
       policy_version INTEGER NOT NULL,
       bound_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS identity_session_authority(
+      token_hash TEXT PRIMARY KEY REFERENCES identity_session_bindings(token_hash) ON DELETE CASCADE,
+      authority_digest TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS identity_authority_generation(
+      id INTEGER PRIMARY KEY CHECK(id=1),
+      started_at_ms INTEGER NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS proof_runner_sessions(
       token_hash TEXT PRIMARY KEY,
       email TEXT NOT NULL,
@@ -112,21 +120,27 @@ function createIdentitySurvivalGuard(options = {}) {
   `);
 
   ensurePasskeySchema(db);
+  db.prepare('INSERT OR IGNORE INTO identity_authority_generation(id,started_at_ms) VALUES(1,?)').run(Date.now());
+  const authorityGenerationStmt = db.prepare('SELECT started_at_ms FROM identity_authority_generation WHERE id=1');
   const passkeySessionStmt = db.prepare('SELECT * FROM passkey_sessions WHERE token_hash=?');
   const passkeyCredentialStmt = db.prepare('SELECT id FROM passkey_credentials WHERE id=? AND tenant=? AND email=? AND revoked_at IS NULL');
   const ensureControlStmt = db.prepare(`INSERT OR IGNORE INTO identity_tenant_control
     (tenant,session_epoch,policy_version,privileged_freeze,updated_at) VALUES(?,1,1,0,?)`);
   const controlStmt = db.prepare('SELECT * FROM identity_tenant_control WHERE tenant=?');
-  const sessionStmt = db.prepare(`SELECT s.token_hash,s.email,s.expires,u.tenant,u.role
+  const hasPermissions = db.prepare('PRAGMA table_info(users)').all().some(column => column.name === 'permissions');
+  const sessionStmt = db.prepare(`SELECT s.token_hash,s.email,s.expires,u.tenant,u.role${hasPermissions ? ',u.permissions' : ''}
     FROM sessions s JOIN users u ON u.email=s.email
     WHERE s.token_hash=? AND s.expires>?`);
   const bindingStmt = db.prepare('SELECT * FROM identity_session_bindings WHERE token_hash=?');
+  const authorityStmt = db.prepare('SELECT authority_digest FROM identity_session_authority WHERE token_hash=?');
   const proofRunnerSessionStmt = db.prepare('SELECT * FROM proof_runner_sessions WHERE token_hash=?');
   const bindStmt = db.prepare(`INSERT INTO identity_session_bindings
     (token_hash,tenant,issuer,audience,session_epoch,policy_version,bound_at)
     VALUES(?,?,?,?,?,?,?)`);
+  const bindAuthorityStmt = db.prepare('INSERT INTO identity_session_authority(token_hash,authority_digest) VALUES(?,?)');
   const deleteSessionStmt = db.prepare('DELETE FROM sessions WHERE token_hash=?');
   const deleteBindingStmt = db.prepare('DELETE FROM identity_session_bindings WHERE token_hash=?');
+  const deleteAuthorityStmt = db.prepare('DELETE FROM identity_session_authority WHERE token_hash=?');
   const eventStmt = db.prepare(`INSERT INTO identity_guard_events
     (tenant,token_hash_prefix,event,detail,created_at) VALUES(?,?,?,?,?)`);
 
@@ -141,6 +155,7 @@ function createIdentitySurvivalGuard(options = {}) {
 
   function containSession(row, tokenHash, event, detail) {
     try { deleteSessionStmt.run(tokenHash); } catch {}
+    try { deleteAuthorityStmt.run(tokenHash); } catch {}
     try { deleteBindingStmt.run(tokenHash); } catch {}
     record(row?.tenant || null, tokenHash, event, detail);
   }
@@ -189,22 +204,34 @@ function createIdentitySurvivalGuard(options = {}) {
 
     ensureControlStmt.run(row.tenant, new Date().toISOString());
     const control = controlStmt.get(row.tenant);
+    const authorityDigest = 'v1:' + sha256(JSON.stringify([row.role, hasPermissions ? row.permissions : null]));
     let binding = bindingStmt.get(tokenHash);
     if (!binding) {
       bindStmt.run(tokenHash, row.tenant, expectedIssuer, audience,
         Number(control.session_epoch), Number(control.policy_version), new Date().toISOString());
+      bindAuthorityStmt.run(tokenHash, authorityDigest);
       binding = bindingStmt.get(tokenHash);
       record(row.tenant, tokenHash, 'session-resource-bound', {
         issuer: expectedIssuer, audience, sessionEpoch: control.session_epoch, policyVersion: control.policy_version
       });
     }
 
-    const mismatch =
+    const scopeMismatch =
       binding.tenant !== row.tenant ||
       binding.issuer !== expectedIssuer ||
       binding.audience !== audience ||
       Number(binding.session_epoch) !== Number(control.session_epoch) ||
       Number(binding.policy_version) !== Number(control.policy_version);
+    // Passkey/proof issuers pre-bind sessions before their first product request.
+    // Their issuer and role are independently checked above; bind the additional
+    // permission snapshot only after that existing authority check succeeds.
+    const preboundSession = passkeySession || proofRunnerSession;
+    const generationMs = Number(authorityGenerationStmt.get()?.started_at_ms);
+    if (!scopeMismatch && !authorityStmt.get(tokenHash) && preboundSession &&
+        Number(preboundSession.issued_at) > generationMs && Date.parse(binding.bound_at) > generationMs) {
+      bindAuthorityStmt.run(tokenHash, authorityDigest);
+    }
+    const mismatch = scopeMismatch || authorityStmt.get(tokenHash)?.authority_digest !== authorityDigest;
 
     if (mismatch) {
       containSession(row, tokenHash, 'session-binding-mismatch-contained', {
@@ -213,7 +240,8 @@ function createIdentitySurvivalGuard(options = {}) {
         issuerMatch: binding.issuer === expectedIssuer,
         audienceMatch: binding.audience === audience,
         sessionEpochMatch: Number(binding.session_epoch) === Number(control.session_epoch),
-        policyVersionMatch: Number(binding.policy_version) === Number(control.policy_version)
+        policyVersionMatch: Number(binding.policy_version) === Number(control.policy_version),
+        authorityMatch: authorityStmt.get(tokenHash)?.authority_digest === authorityDigest
       });
       return writeJson(res, 401, { error: 'Session security context changed. Sign in again.' });
     }
