@@ -26,6 +26,46 @@ function isPrivateIpv4(hostname) {
   return false;
 }
 
+function bareIpLiteral(hostname) {
+  const value = String(hostname || '').toLowerCase();
+  return value.startsWith('[') && value.endsWith(']') ? value.slice(1, -1) : value;
+}
+
+function ipv6Words(address) {
+  const value = bareIpLiteral(address);
+  if (isIP(value) !== 6) return null;
+  const halves = value.split('::');
+  if (halves.length > 2) return null;
+  const parse = part => part ? part.split(':').map(word => Number.parseInt(word, 16)) : [];
+  const left = parse(halves[0]);
+  const right = halves.length === 2 ? parse(halves[1]) : [];
+  if ([...left, ...right].some(word => !Number.isInteger(word) || word < 0 || word > 0xffff)) return null;
+  if (halves.length === 1) return left.length === 8 ? left : null;
+  const missing = 8 - left.length - right.length;
+  if (missing < 1) return null;
+  return [...left, ...Array(missing).fill(0), ...right];
+}
+
+function isPrivateIpv6(address) {
+  const words = ipv6Words(address);
+  if (!words) return false;
+  const first = words[0];
+  if (words.slice(0, 7).every(word => word === 0) && (words[7] === 0 || words[7] === 1)) return true;
+  if ((first & 0xfe00) === 0xfc00) return true;
+  if ((first & 0xffc0) === 0xfe80 || (first & 0xffc0) === 0xfec0) return true;
+  if ((first & 0xff00) === 0xff00) return true;
+
+  const embeddedIpv4 = [
+    words[6] >> 8,
+    words[6] & 0xff,
+    words[7] >> 8,
+    words[7] & 0xff
+  ].join('.');
+  const mappedOrCompatible = words.slice(0, 5).every(word => word === 0) && (words[5] === 0 || words[5] === 0xffff);
+  const nat64WellKnown = words[0] === 0x64 && words[1] === 0xff9b && words.slice(2, 6).every(word => word === 0);
+  return (mappedOrCompatible || nat64WellKnown) && isPrivateIpv4(embeddedIpv4);
+}
+
 function assertSafeHttpsUrl(raw, { sameOrigin } = {}) {
   const url = new URL(String(raw));
   if (url.protocol !== 'https:') throw new Error('Directory discovery refuses non-HTTPS endpoints.');
@@ -34,9 +74,10 @@ function assertSafeHttpsUrl(raw, { sameOrigin } = {}) {
   if (!hostname || hostname === 'localhost' || hostname.endsWith('.localhost')) {
     throw new Error('Directory discovery refuses local endpoints.');
   }
-  const ipVersion = isIP(hostname);
-  if (ipVersion === 4 && isPrivateIpv4(hostname)) throw new Error('Directory discovery refuses private IPv4 endpoints.');
-  if (ipVersion === 6 && (hostname === '::1' || hostname.startsWith('fe80:') || hostname.startsWith('fc') || hostname.startsWith('fd'))) {
+  const literal = bareIpLiteral(hostname);
+  const ipVersion = isIP(literal);
+  if (ipVersion === 4 && isPrivateIpv4(literal)) throw new Error('Directory discovery refuses private IPv4 endpoints.');
+  if (ipVersion === 6 && isPrivateIpv6(literal)) {
     throw new Error('Directory discovery refuses private IPv6 endpoints.');
   }
   if (sameOrigin && url.origin !== sameOrigin) throw new Error('Directory discovery pagination attempted to leave the authorized origin.');
