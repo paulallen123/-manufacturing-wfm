@@ -20,9 +20,9 @@ function theory(results=['PASS','PASS','PASS']){return {
   counterfactual:'Same scheduling/payroll decision without the country pack.',
   noCustomerMutation:true,
   scenarios:[
-    {id:'verified-effective-pack',kind:'normal',result:results[0]},
-    {id:'missing-country-pack',kind:'edge',result:results[1]},
-    {id:'tampered-or-stale-pack',kind:'adversarial',result:results[2]}
+    {id:'verified-effective-pack',kind:'normal',result:results[0],evidenceRef:'test:verified',observations:[{id:'decision',expected:'advisory',actual:'advisory'}]},
+    {id:'missing-country-pack',kind:'edge',result:results[1],evidenceRef:'test:missing',observations:[{id:'decision',expected:'deny',actual:'deny'}]},
+    {id:'tampered-or-stale-pack',kind:'adversarial',result:results[2],evidenceRef:'test:tampered',observations:[{id:'decision',expected:'deny',actual:'deny'}]}
   ]
 };}
 function impl(extra={}){return {attempted:true,reusesCanonicalOwner:true,createsDuplicateLoop:false,createsSecondSourceOfTruth:false,rollbackReady:true,tenantIsolationPreserved:true,advisoryFirst:true,...extra};}
@@ -39,6 +39,77 @@ test('implementation cannot start before design and theory pass',()=>{
 test('a falsified theory is retained and routed to redesign rather than dropped',()=>{
   const r=assessResearchCandidate({item:{id:'country-policy',tags:['country-policy']},design:design(),theory:theory(['PASS','FAIL','PASS']),implementation:impl()});
   assert.equal(r.theoryPass,false); assert.equal(r.state,'THEORY_REJECTED_RETAIN_WITH_ROUTE'); assert.equal(r.next,'REDESIGN_OR_MORE_EVIDENCE'); assert.equal(r.mayDrop,false);
+});
+test('bare PASS labels cannot admit implementation without reproducible observations',()=>{
+  const unproved=theory();
+  unproved.scenarios=unproved.scenarios.map(({id,kind,result})=>({id,kind,result}));
+  const r=assessResearchCandidate({item:{id:'manufacturing-event-disruption-cost',tags:['manufacturing']},design:design(),theory:unproved,implementation:impl()});
+  assert.equal(r.theoryReady,false);
+  assert.equal(r.theoryPass,false);
+  assert.equal(r.implementationAdmitted,false);
+});
+test('a claimed PASS with contradictory observation is retained as a failed theory',()=>{
+  const contradicted=theory();
+  contradicted.scenarios[2].observations[0].actual='advisory';
+  const r=assessResearchCandidate({item:{id:'manufacturing-event-disruption-cost',tags:['manufacturing']},design:design(),theory:contradicted,implementation:impl()});
+  assert.equal(r.theoryReady,true);
+  assert.equal(r.theoryPass,false);
+  assert.deepEqual(r.scenarioFailures,['tampered-or-stale-pack']);
+  assert.equal(r.implementationAdmitted,false);
+});
+test('duplicate scenario IDs cannot hide a failed observation',()=>{
+  const duplicated=theory();
+  duplicated.scenarios[2].id=duplicated.scenarios[1].id;
+  const r=assessResearchCandidate({item:{id:'manufacturing-event-disruption-cost',tags:['manufacturing']},design:design(),theory:duplicated,implementation:impl()});
+  assert.equal(r.theoryReady,false);
+  assert.equal(r.theoryPass,false);
+});
+test('mutating observation getters cannot turn contradictory evidence into theory admission',()=>{
+  const mutable=theory();
+  let reads=0;
+  Object.defineProperty(mutable.scenarios[2],'observations',{enumerable:true,get(){
+    reads++;
+    return reads===1?[{id:'decision',expected:'deny',actual:'allow'}]:[];
+  }});
+  const r=assessResearchCandidate({item:{id:'factory-playback',tags:['simulation']},design:design(),theory:mutable,implementation:impl()});
+  assert.equal(r.theoryPass,false);
+  assert.equal(r.implementationAdmitted,false);
+  assert.equal(reads,0,'admission must not invoke caller-owned accessors');
+});
+test('polluted array push cannot rewrite contradictory observations during snapshot',()=>{
+  const contradicted=theory();
+  contradicted.scenarios[2].observations[0].actual='allow';
+  const originalPush=Array.prototype.push;
+  let substitutions=0;
+  try{
+    Array.prototype.push=function(...values){
+      const altered=values.map(value=>{
+        if(value && value.id==='decision' && value.actual==='allow'){
+          substitutions++;
+          return {...value,actual:'deny'};
+        }
+        return value;
+      });
+      return Reflect.apply(originalPush,this,altered);
+    };
+    const r=assessResearchCandidate({item:{id:'factory-playback',tags:['simulation']},design:design(),theory:contradicted,implementation:impl()});
+    assert.equal(r.theoryPass,false);
+    assert.equal(r.implementationAdmitted,false);
+    assert.deepEqual(r.scenarioFailures,['tampered-or-stale-pack']);
+    assert.equal(substitutions,0,'snapshot must not call inherited push');
+  }finally{Array.prototype.push=originalPush;}
+});
+test('polluted Array.every cannot admit contradictory theory observations',()=>{
+  const contradicted=theory();
+  contradicted.scenarios[2].observations[0].actual='allow';
+  const originalEvery=Array.prototype.every;
+  try{
+    Array.prototype.every=()=>true;
+    const r=assessResearchCandidate({item:{id:'factory-playback',tags:['simulation']},design:design(),theory:contradicted,implementation:impl()});
+    assert.equal(r.theoryPass,false);
+    assert.equal(r.implementationAdmitted,false);
+    assert.deepEqual(r.scenarioFailures,['tampered-or-stale-pack']);
+  }finally{Array.prototype.every=originalEvery;}
 });
 test('high-impact country policy implementation must remain advisory or use independent authority',()=>{
   const blocked=assessResearchCandidate({item:{id:'country-policy',tags:['country-policy','payroll']},design:design(),theory:theory(),implementation:impl({advisoryFirst:false,independentAuthorityGate:false})});
