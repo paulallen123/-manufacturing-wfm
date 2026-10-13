@@ -1,0 +1,32 @@
+name: Maintenance workforce preflight gate
+
+on:
+  pull_request:
+    branches: [release/vector-customer-ready-candidate-20260925]
+    paths:
+      - 'operations/runtime/maintenance-workforce-preflight.cjs'
+      - 'operations/runtime/maintenance-workforce-preflight.test.cjs'
+      - '.github/workflows/maintenance-workforce-preflight-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-maintenance-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up approved Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Verify advisory evidence boundary
+        run: node operations/runtime/maintenance-workforce-preflight.test.cjs
+      - name: Build exact product image
+        run: docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA=${{ github.event.pull_request.head.sha || github.sha }} -t vector-maintenance-preflight:gate .
