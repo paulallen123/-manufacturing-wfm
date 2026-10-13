@@ -317,8 +317,12 @@ function screenQualityWorkforceShadow(input = {}) {
   const bound = {
     scope: Object.fromEntries(SCOPE_FIELDS.map(field => [field, scope[field]])),
     contextRevision: context.sourceRevision,
+    contextObservedAt: utc(context.observedAt),
     sourceRevisions: Object.fromEntries(Object.entries(context.sourceRevisions).sort(([a], [b]) => a.localeCompare(b))),
-    contextProvenance: context.provenance.recordHash.toLowerCase(),
+    contextProvenance: {
+      source: context.provenance.source,
+      recordHash: context.provenance.recordHash.toLowerCase()
+    },
     quality, confounders, workforce, policyVersion: policy.version,
     policyProvenance: policy.provenance, policyDigest, asOf: asOfIso
   };
@@ -404,3 +408,4 @@ module.exports = Object.freeze({
   CONTRACT_VERSION, REQUIRED_CONFOUNDERS, screenQualityWorkforceShadow,
   displayableWorkforceRecommendation
 });
+
