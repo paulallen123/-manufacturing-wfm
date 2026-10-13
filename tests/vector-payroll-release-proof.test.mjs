@@ -51,6 +51,10 @@ const completePayrollJourney = {
     rowCount: 172,
     checksumHeader: checksum,
     computedChecksum: checksum,
+    exportDenials: [
+      { role: 'employee', batchId: 'payroll-2026-09-07-001', status: 403, checksumHeader: null, contentDisposition: null },
+      { role: 'manager', batchId: 'payroll-2026-09-07-001', status: 403, checksumHeader: null, contentDisposition: null }
+    ],
     reconciliationOk: true
   }
 };
@@ -82,4 +86,17 @@ test('payroll proof accepts exact all-team sign-offs and one checksum-bound pers
   assert.equal(result.scopedPayrollJourneyVerified, true);
   assert.equal(result.missingEvidence.includes('all-team-weekly-sign-off'), false);
   assert.equal(result.missingEvidence.includes('payroll-reconciliation-business-action'), false);
+});
+
+test('payroll proof requires fresh employee and manager export denials for the released batch', () => {
+  for (const exportDenials of [undefined, [], [completePayrollJourney.release.exportDenials[0]],
+    [{ ...completePayrollJourney.release.exportDenials[0], status: 200, checksumHeader: checksum, contentDisposition: 'attachment' },
+      completePayrollJourney.release.exportDenials[1]],
+    [completePayrollJourney.release.exportDenials[0], { ...completePayrollJourney.release.exportDenials[1], batchId: 'other-batch' }]]) {
+    const result = roleProofResult({ status: 'BOUND' }, leaveJourney, attendanceJourney, {
+      ...completePayrollJourney, release: { ...completePayrollJourney.release, exportDenials }
+    });
+    assert.equal(result.scopedPayrollJourneyVerified, false);
+    assert.ok(result.missingEvidence.includes('payroll-export-role-denial'));
+  }
 });

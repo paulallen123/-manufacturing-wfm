@@ -47,6 +47,15 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
       && item.refreshedStatus === 'signed');
   const release = payrollJourney?.release;
   const checksum = typeof release?.computedChecksum === 'string' ? release.computedChecksum : '';
+  const exportDenials = Array.isArray(release?.exportDenials) ? release.exportDenials : [];
+  const deniedRoles = new Set(exportDenials.map(item => item?.role));
+  const payrollExportRoleDenied = exportDenials.length === 2
+    && deniedRoles.size === 2
+    && ['employee', 'manager'].every(role => deniedRoles.has(role))
+    && exportDenials.every(item => item.batchId === release.batchId
+      && [403, 404].includes(item.status)
+      && item.checksumHeader === null
+      && item.contentDisposition === null);
   const payrollReleaseBound = release?.responseStatus === 200
     && typeof release.batchId === 'string' && release.batchId.length > 0
     && release.status === 'released'
@@ -57,7 +66,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     && release.auditBatchId === release.batchId
     && release.freshLoginBatchId === release.batchId
     && release.reconciliationOk === true;
-  const scopedPayrollJourneyVerified = allTeamWeeklySignOffBound && payrollReleaseBound;
+  const scopedPayrollJourneyVerified = allTeamWeeklySignOffBound && payrollReleaseBound && payrollExportRoleDenied;
   return {
     status: 'PARTIAL',
     roleChecks: 'PASS',
@@ -85,6 +94,7 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
       ...(attendanceJourney?.weeklySignOffCompleted === true ? [] : ['weekly-sign-off-business-action']),
       ...(weeklySignOffVersionBound ? [] : ['weekly-sign-off-version-binding']),
       ...(allTeamWeeklySignOffBound ? [] : ['all-team-weekly-sign-off']),
+      ...(payrollExportRoleDenied ? [] : ['payroll-export-role-denial']),
       'server-audit-readback',
       'exact-backend-binding',
       ...(scopedPayrollJourneyVerified ? [] : ['payroll-reconciliation-business-action']),
