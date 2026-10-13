@@ -1,0 +1,58 @@
+{
+  "itemId": "edge09-cont-hosted-cookie-oracle",
+  "stage": "TESTED_ISOLATED",
+  "requirement": "Hosted authentication harness Secure-cookie oracle diagnostics; use the existing proof admission path, exercise the six historical fixtures plus adversarial header forms, and fail closed before loopback cookie replay without Secure Set-Cookie evidence.",
+  "sources": [
+    "orchestration/VECTOR_CAPABILITY_REGISTRY.json at 23482b19f981d08dd85c5d38aba197617757a8a0, edge09-cont-hosted-cookie-oracle",
+    "PR#77, autonomy/reliability-hosted-auth-harness-20260918 at 129cf7cb9653a4e91805e6a7866caf48eada4c31"
+  ],
+  "ownerConflictCheck": {
+    "observedAt": "2026-10-13",
+    "result": "Provisional unowned isolated package; historical source branch exists, current candidate lacks the validator, and no newer hosted-cookie-oracle branch was visible in remote heads. Active CI runner work changes resilience/ci-provider-failover.cjs and its validator, not these files.",
+    "limits": "GitHub issue/PR state, private task leases and other chats could not be verified because GH_TOKEN is invalid. Canonical security/proof admission owner retains integration and release authority."
+  },
+  "exactBase": "f3e1afc97ffba869e10c697cc6f66efac628ea8a",
+  "changedFiles": [
+    ".github/workflows/autonomous-integration-fabric.yml",
+    ".github/workflows/identity-runtime-guard.yml",
+    "scripts/validate-hosted-auth-harness.mjs",
+    "scripts/run-forge-ci.mjs",
+    "reliability/fixtures/hosted-auth-harness.json",
+    "docs/evidence/2026-10-13-hosted-auth-cookie-oracle.json"
+  ],
+  "implementation": "Ported the historical validator into the existing core CI runner. Its static check now covers literal, variable and multiline Cookie headers and ignores comment-only proof text. Both current loopback-login workflows now assert the Secure Set-Cookie attribute before extracting and replaying a synthetic session cookie. The validator remains a static admission check; actual response semantics still require exact hosted execution.",
+  "tests": [
+    {
+      "command": "node scripts/validate-hosted-auth-harness.mjs --fixtures reliability/fixtures/hosted-auth-harness.json",
+      "before": "6 historical cases passed; 4 new adversarial cases failed against the historical validator",
+      "after": "10/10 cases passed"
+    },
+    {
+      "command": "node scripts/validate-hosted-auth-harness.mjs --scan .github/workflows",
+      "before": "2 findings: autonomous-integration-fabric.yml and identity-runtime-guard.yml lacked Secure-attribute assertions",
+      "after": "24 YAML files scanned, 0 findings"
+    },
+    {
+      "command": "bash synthetic Set-Cookie grep checks",
+      "result": "Secure response fixture accepted with exit 0; otherwise identical response without Secure rejected with exit 1"
+    },
+    {
+      "command": "node scripts/run-forge-ci.mjs",
+      "result": "PASS, exit 0; new fixture and workflow-scan gates ran inside the core CI sequence. Recorded Node test suites: 5/5, 25/25, 174/174 and 45/45 passed, 0 failed. This is local source CI, not a hosted result."
+    },
+    {
+      "command": "node --check scripts/validate-hosted-auth-harness.mjs; node --check scripts/run-forge-ci.mjs; git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "review": "Independent review pending; no reviewer approval claimed.",
+  "canonicalIntegration": "Pending adoption and exact-candidate verification by canonical security/proof admission owner.",
+  "deployment": "NOT_DEPLOYED",
+  "hostedCustomerProof": "NOT_PROVEN",
+  "remainingRisks": [
+    "Static source inspection cannot establish that a real response emitted a Secure cookie or that every shell form is parsed; exact hosted proof is required.",
+    "This isolated branch is not the canonical integration or release candidate.",
+    "Issue/PR and lease ownership remain incompletely observable while repository API authentication is invalid."
+  ],
+  "nextAction": "Publish the isolated package for independent review, then let the canonical owner adopt it, run exact-candidate CI and approved staging deployment, and verify the hosted login and protected-resource journey with synthetic actors."
+}

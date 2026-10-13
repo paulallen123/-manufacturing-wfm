@@ -4,6 +4,8 @@ import { spawnSync } from 'node:child_process';
 const checks = [
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
+  ['node', ['scripts/validate-hosted-auth-harness.mjs', '--fixtures', 'reliability/fixtures/hosted-auth-harness.json']],
+  ['node', ['scripts/validate-hosted-auth-harness.mjs', '--scan', '.github/workflows']],
   ['node', ['scripts/validate-research-convergence-ledger.mjs']],
   ['node', ['--test','resilience/research-convergence-theory-simulator.test.cjs']],
   ['node', ['scripts/validate-product-factory.mjs']],

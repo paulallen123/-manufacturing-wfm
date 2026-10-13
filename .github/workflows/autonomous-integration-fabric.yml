@@ -102,6 +102,7 @@ jobs:
 
           login_code="$(curl -sS -D /tmp/login.headers -o /tmp/login.body -w '%{http_code}'             -H 'Host: staging.integration.test'             -H 'X-Forwarded-Proto: https'             -H 'Origin: https://staging.integration.test'             -H 'Content-Type: application/json'             --data "{\"email\":\"manager@northstar.example\",\"password\":\"$password\"}"             http://127.0.0.1:38119/api/login)"
           test "$login_code" = '200'
+          grep -Eiq '^set-cookie:.*;[[:space:]]*Secure([;[:space:]]|$)' /tmp/login.headers
           cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/login.headers | cut -d';' -f1)"
           test -n "$cookie"
 

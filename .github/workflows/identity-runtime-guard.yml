@@ -147,6 +147,7 @@ jobs:
             docker logs "$cid" >&2 || true
             exit 1
           fi
+          grep -Eiq '^set-cookie:.*;[[:space:]]*Secure([;[:space:]]|$)' /tmp/login.headers
           cookie="$(awk 'BEGIN{IGNORECASE=1} /^set-cookie:/ {gsub("\\r",""); print $2; exit}' /tmp/login.headers | cut -d';' -f1)"
           test -n "$cookie"
           echo 'login=PASS'

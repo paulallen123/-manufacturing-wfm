@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "observed_plain_loopback_cookie_jar",
+      "expected": "FAIL",
+      "expected_code": "PLAIN_HTTP_SECURE_COOKIE_JAR_ORACLE",
+      "source": "WFM_HOSTED_STAGING=true\ncurl -c /tmp/employee.cookie -H 'X-Forwarded-Proto: https' --data '{}' http://127.0.0.1:3000/api/login\ncurl -b /tmp/employee.cookie -H 'X-Forwarded-Proto: https' http://127.0.0.1:3000/api/bootstrap"
+    },
+    {
+      "name": "canonical_explicit_loopback_session",
+      "expected": "PASS",
+      "source": "WFM_HOSTED_STAGING=true\ncurl -D /tmp/login.headers -H 'X-Forwarded-Proto: https' --data '{}' http://127.0.0.1:3000/api/login\ngrep -qi '^set-cookie: .*Secure' /tmp/login.headers\ncookie=$(awk '/^set-cookie:/ {print $2}' /tmp/login.headers | cut -d';' -f1)\ncurl -H \"Cookie: $cookie\" -H 'X-Forwarded-Proto: https' http://127.0.0.1:3000/api/bootstrap"
+    },
+    {
+      "name": "real_https_cookie_jar",
+      "expected": "PASS",
+      "source": "WFM_HOSTED_STAGING=true\ncurl -c /tmp/session.cookie --data '{}' https://staging.example.test/api/login\ncurl -b /tmp/session.cookie https://staging.example.test/api/bootstrap"
+    },
+    {
+      "name": "explicit_cookie_without_set_cookie_proof",
+      "expected": "FAIL",
+      "expected_code": "LOOPBACK_SESSION_COOKIE_NOT_PROVEN",
+      "source": "WFM_HOSTED_STAGING=true\ncurl --data '{}' http://127.0.0.1:3000/api/login\ncurl -H \"Cookie: $cookie\" http://127.0.0.1:3000/api/bootstrap"
+    },
+    {
+      "name": "external_plain_http_explicit_cookie",
+      "expected": "FAIL",
+      "expected_code": "AUTH_COOKIE_ON_NON_LOOPBACK_HTTP",
+      "source": "WFM_HOSTED_STAGING=true\ncurl -D /tmp/login.headers --data '{}' http://staging.example.test/api/login\ngrep -qi '^set-cookie: .*Secure' /tmp/login.headers\ncookie=$(awk '/^set-cookie:/ {print $2}' /tmp/login.headers)\ncurl -H \"Cookie: $cookie\" http://staging.example.test/api/bootstrap"
+    },
+    {
+      "name": "non_hosted_local_test_out_of_scope",
+      "expected": "PASS",
+      "source": "curl -c /tmp/test.cookie --data '{}' http://127.0.0.1:3000/api/login\ncurl -b /tmp/test.cookie http://127.0.0.1:3000/api/bootstrap"
+    },
+    {
+      "name": "loopback_literal_cookie_without_proof",
+      "expected": "FAIL",
+      "expected_code": "LOOPBACK_SESSION_COOKIE_NOT_PROVEN",
+      "source": "WFM_HOSTED_STAGING=true\ncurl --data \"{}\" http://127.0.0.1:3000/api/login\ncurl -H \"Cookie: session=synthetic\" http://127.0.0.1:3000/api/bootstrap"
+    },
+    {
+      "name": "external_plain_http_literal_cookie",
+      "expected": "FAIL",
+      "expected_code": "AUTH_COOKIE_ON_NON_LOOPBACK_HTTP",
+      "source": "WFM_HOSTED_STAGING=true\ncurl --data \"{}\" http://staging.example.test/api/login\ncurl -H \"Cookie: session=synthetic\" http://staging.example.test/api/bootstrap"
+    },
+    {
+      "name": "multiline_cookie_header_without_proof",
+      "expected": "FAIL",
+      "expected_code": "LOOPBACK_SESSION_COOKIE_NOT_PROVEN",
+      "source": "WFM_HOSTED_STAGING=true\ncurl --data \"{}\" http://127.0.0.1:3000/api/login\ncurl --header \"Cookie:\n session=synthetic\" http://127.0.0.1:3000/api/bootstrap"
+    },
+    {
+      "name": "commented_headers_do_not_count_as_proof",
+      "expected": "FAIL",
+      "expected_code": "LOOPBACK_SESSION_COOKIE_NOT_PROVEN",
+      "source": "WFM_HOSTED_STAGING=true\ncurl --data \"{}\" http://127.0.0.1:3000/api/login\n# curl -D /tmp/login.headers http://127.0.0.1:3000/api/login\n# grep -qi \"^set-cookie: .*Secure\" /tmp/login.headers\ncurl -H \"Cookie: session=synthetic\" http://127.0.0.1:3000/api/bootstrap"
+    }
+  ]
+}
