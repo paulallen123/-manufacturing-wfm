@@ -5,6 +5,51 @@ const {createSchedulingPlan,evaluateOpenShift,evaluateSwap,repairSchedulingPlan,
 
 const baseReq={id:'line4-welder',site:'tamworth',line:'line-4',role:'welder',start:'2026-09-24T06:00:00Z',end:'2026-09-24T14:00:00Z',
   headcount:1,requiredSkills:['welding-l3'],requiredCertifications:['weld-cert'],tags:['DAY'],productionPriority:90,customerPriority:85,marginAtRisk:8000,evidenceRefs:['mes:44']};
+
+test('availability union covers a shift across touching and overlapping unordered windows',()=>{
+ for(const windows of [
+  [['10:00','14:00'],['06:00','10:00']],
+  [['06:00','11:00'],['10:00','14:00']],
+  [['05:00','08:00'],['08:00','10:00'],['09:00','15:00']]
+ ]){
+  const availability=windows.map(([a,b])=>({start:'2026-09-24T'+a+':00Z',end:'2026-09-24T'+b+':00Z'}));
+  const p=createSchedulingPlan(input({workers:[worker('a',{availability})]}));
+  assert.equal(p.quality.coveragePct,100);assert.equal(p.assignments[0].workerId,'a');
+  assert.equal(p.executionPermitted,false);
+ }
+});
+test('availability union preserves genuine gaps and cannot borrow another worker windows',()=>{
+ const availability=[{start:baseReq.start,end:'2026-09-24T10:00:00Z'},
+  {start:'2026-09-24T10:00:00.001Z',end:baseReq.end}];
+ const p=createSchedulingPlan(input({workers:[worker('a',{availability}),worker('b',{availability:[availability[1]]})]}));
+ assert.equal(p.quality.coveragePct,0);
+});
+test('certification must be effective by shift start and valid through shift end',()=>{
+ for(const effectiveAt of ['2026-09-24T06:00:00.001Z','2026-09-24T10:00:00Z']){
+  const p=createSchedulingPlan(input({workers:[worker('a',{certifications:[{name:'weld-cert',effectiveAt,expiresAt:'2027-01-01T00:00:00Z'}]})]}));
+  assert.equal(p.quality.coveragePct,0);
+  assert.ok(p.unfilled[0].topReasons.some(x=>x.reason==='CERTIFICATION_INVALID:weld-cert'));
+ }
+ const p=createSchedulingPlan(input({workers:[worker('a',{certifications:[{name:'weld-cert',effectiveAt:baseReq.start,expiresAt:baseReq.end}]})]}));
+ assert.equal(p.quality.coveragePct,100);
+});
+test('an expired certification must not hide a valid renewal regardless of evidence order',()=>{
+ const expired={name:'weld-cert',effectiveAt:'2026-01-01T00:00:00Z',expiresAt:'2026-09-01T00:00:00Z'};
+ const current={name:'weld-cert',effectiveAt:baseReq.start,expiresAt:baseReq.end};
+ for(const certifications of [[expired,current],[current,expired]]){
+  assert.equal(createSchedulingPlan(input({workers:[worker('a',{certifications})]})).quality.coveragePct,100);
+ }
+});
+test('malformed declared certification effectivity fails closed',()=>{
+ for(const effectiveAt of ['',null,false,17,'2026-09-24T06:00:00']){
+  assert.throws(()=>createSchedulingPlan(input({workers:[worker('a',{certifications:[{name:'weld-cert',effectiveAt,expiresAt:baseReq.end}]})]})),/certification effective/i);
+ }
+});
+test('normalised legacy worker remains valid when evaluated again',()=>{
+ const normalised=require('./manufacturing-scheduling-engine.cjs').normaliseWorker(worker('a'));
+ const result=evaluateOpenShift({requirement:baseReq,workers:[normalised],policy:{}});
+ assert.equal(result.ranked[0].eligible,true);
+});
 function worker(id,o={}){
   return {id,type:'EMPLOYEE',status:'ACTIVE',homeSite:'tamworth',eligibleSites:['tamworth'],skills:['welding-l3'],
     certifications:[{name:'weld-cert',expiresAt:'2027-01-01T00:00:00Z'}],
