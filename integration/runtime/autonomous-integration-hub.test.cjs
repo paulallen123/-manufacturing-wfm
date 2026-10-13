@@ -10,10 +10,31 @@ const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const {
   createAutonomousIntegrationHub,
+  screenWorkforceProvenanceShadow,
   mappingSuggestions,
   detectProduct,
   validCredentialReference
 } = require('./autonomous-integration-hub.cjs');
+
+function provenanceFixture(now = '2026-10-13T07:30:00.000Z') {
+  const at = offset => new Date(Date.parse(now) + offset).toISOString();
+  return {
+    simulation: true,
+    processEvent: {
+      tenant: 'alpha', site: 'site-1', workCentre: 'line-1', batchRef: 'lot-42',
+      operationRef: 'weld', eventId: 'event-42', occurredAt: at(-60000),
+      sourceRevision: 'mes-r1', sourceHash: 'a'.repeat(64)
+    },
+    workforceSnapshot: {
+      tenant: 'alpha', site: 'site-1', workCentre: 'line-1', operationRef: 'weld',
+      processEventId: 'event-42', observedAt: at(-120000),
+      validFrom: at(-300000), validUntil: at(600000), requiredSkill: 'WELD_L1',
+      qualifiedCount: 2, requiredCount: 2, qualificationState: 'VALID',
+      qualificationValidUntil: at(600000), supervisorApproved: true,
+      qualityState: 'PASS', sourceRevision: 'skills-r1', sourceHash: 'b'.repeat(64)
+    }
+  };
+}
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
@@ -574,4 +595,76 @@ test('reconciliation stores only counts and digests, not raw employee payloads',
   } finally {
     f.close();
   }
+});
+
+test('synthetic process and aggregate skill evidence produce a privacy-limited shadow receipt', () => {
+  const input = provenanceFixture();
+  const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(result.status, 'SIMULATED_COMPLIANT');
+  assert.equal(result.executionPermitted, false);
+  assert.equal(result.disclosure.batchRef, 'lot-42');
+  assert.equal(result.disclosure.qualifiedCount, 2);
+  assert.match(result.inputDigest, /^[a-f0-9]{64}$/);
+  assert.equal(JSON.stringify(result).includes(input.processEvent.sourceHash), false);
+  assert.deepEqual(screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z'), result);
+});
+
+test('shadow provenance refuses cross-tenant, stale, expired, incomplete and tampered evidence', () => {
+  const changes = [
+    x => { x.processEvent.tenant = 'bravo'; },
+    x => { x.workforceSnapshot.site = 'site-2'; },
+    x => { x.workforceSnapshot.processEventId = 'other'; },
+    x => { x.workforceSnapshot.observedAt = '2026-10-13T07:20:00.000Z'; },
+    x => { x.workforceSnapshot.qualificationState = 'EXPIRED'; },
+    x => { x.workforceSnapshot.qualificationState = 'REVOKED'; },
+    x => { x.workforceSnapshot.qualificationValidUntil = x.processEvent.occurredAt; },
+    x => { x.workforceSnapshot.supervisorApproved = false; },
+    x => { x.workforceSnapshot.qualityState = 'UNKNOWN'; },
+    x => { x.workforceSnapshot.qualifiedCount = 1; },
+    x => { x.workforceSnapshot.personName = 'PRIVATE WORKER'; },
+    x => { x.workforceSnapshot.sourceHash = 'invalid'; },
+    x => { x.processEvent.batchRef = 42; },
+    x => { x.simulation = false; },
+    x => { x.expectedDigest = '0'.repeat(64); }
+  ];
+  for (let i = 0; i < 1008; i++) {
+    const input = provenanceFixture();
+    changes[i % changes.length](input);
+    const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+    assert.notEqual(result.status, 'SIMULATED_COMPLIANT', `case ${i}`);
+    assert.equal(result.executionPermitted, false);
+    assert.equal(result.disclosure, null);
+  }
+});
+
+test('saved digest detects changed aggregate evidence on replay', () => {
+  const input = provenanceFixture();
+  const at = '2026-10-13T07:30:00.000Z';
+  const first = screenWorkforceProvenanceShadow(input, 'alpha', at);
+  const replay = structuredClone(input);
+  replay.expectedDigest = first.inputDigest;
+  assert.deepEqual(screenWorkforceProvenanceShadow(replay, 'alpha', at), first);
+  replay.workforceSnapshot.qualifiedCount = 3;
+  const changed = screenWorkforceProvenanceShadow(replay, 'alpha', at);
+  assert.equal(changed.status, 'UNVERIFIABLE');
+  assert.equal(changed.reason, 'DIGEST_MISMATCH');
+});
+
+test('manager-only tenant-scoped provenance shadow route does not persist supplied evidence', async () => {
+  const f = fixture();
+  try {
+    const body = provenanceFixture(new Date().toISOString());
+    const endpoint = '/api/integrations/autonomous/workforce-provenance/shadow';
+    assert.equal((await call(f.hub, null, 'POST', endpoint, body)).status, 401);
+    assert.equal((await call(f.hub, f.tokens.employee, 'POST', endpoint, body)).status, 403);
+    const result = await call(f.hub, f.tokens.manager, 'POST', endpoint, body);
+    assert.equal(result.status, 200);
+    assert.equal(result.body.status, 'SIMULATED_COMPLIANT');
+    const crossTenant = structuredClone(body);
+    crossTenant.processEvent.tenant = 'bravo';
+    assert.equal((await call(f.hub, f.tokens.manager, 'POST', endpoint, crossTenant)).body.status, 'UNVERIFIABLE');
+    const db = new DatabaseSync(f.dbPath, { readOnly: true });
+    assert.equal(db.prepare('SELECT count(*) AS n FROM integration_events').get().n, 0);
+    db.close();
+  } finally { f.close(); }
 });
