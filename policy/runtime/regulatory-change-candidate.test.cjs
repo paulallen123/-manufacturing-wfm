@@ -3,6 +3,24 @@ const test=require('node:test'); const assert=require('node:assert/strict');
 const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.cjs');
 const PREVIOUS='a'.repeat(64),NEXT='b'.repeat(64);
 const sourceAssessment={sourceId:'gb-law',state:'CURRENT',usable:true,snapshotDigest:NEXT};
+test('case variants of every known material domain retain mandatory qualified review',()=>{
+  const domains=['working-time','overtime','rest','absence','holiday','payroll','privacy','worker-category','certification','safety','ai-governance'];
+  for(const domain of domains){
+    for(const submitted of [domain.toUpperCase(),domain[0].toUpperCase()+domain.slice(1),'  '+domain.toUpperCase()+'  ']){
+      const result=candidate(1,submitted);
+      assert.equal(result.reviewRequired,true,submitted);assert.equal(result.state,'QUALIFIED_REVIEW_REQUIRED');
+      assert.equal(result.changes[0].domain,submitted.trim());assert.equal(result.promotionAuthority,false);assert.equal(result.executionAuthority,false);
+    }
+  }
+});
+test('nonmaterial domain text and mixed material candidates preserve evidence and review rules',()=>{
+  for(const domain of ['informational','INFORMATIONAL','Informational','evidence-retention']){
+    const result=candidate(1,domain);assert.equal(result.reviewRequired,false);assert.equal(result.changes[0].domain,domain);
+  }
+  const changes=[{id:'metadata',domain:'informational',jurisdiction:'GB',confidence:1,ambiguity:'LOW',sourceRefs:['synthetic:source']},{id:'law',domain:'PAYROLL',jurisdiction:'GB',confidence:1,ambiguity:'LOW',sourceRefs:['synthetic:source']}];
+  const result=createRegulatoryChangeCandidate({sourceAssessment,previousSnapshotDigest:PREVIOUS,nextSnapshotDigest:NEXT,changes});
+  assert.equal(result.reviewRequired,true);assert.deepEqual(result.changes.map(x=>x.domain),['informational','PAYROLL']);
+});
 test('assessment snapshot cannot change between identity validation and matching',()=>{
   let reads=0;
   const assessment={...sourceAssessment,get snapshotDigest(){reads++;return reads===1?'c'.repeat(64):NEXT;}};
