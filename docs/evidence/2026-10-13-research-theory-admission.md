@@ -15,3 +15,9 @@
 Independent exact-head re-review of `be8eacc9fcb09ea978470dd7d03aed8e23fa21be` was **NOT READY** (issue #288 comment `6149082622`). A polluted inherited `Array.prototype.push` replaced a contradictory observation while `inertSnapshot()` built its owned array; the public assessor then returned `theoryPass=true` and `implementationAdmitted=true`. The 9/9 focused suite and CI passed on the rejected head, so those green results cannot be used as admission evidence.
 
 The follow-up assigns copied array elements by index, traverses descriptor own keys with a captured index/length loop, and removes `Object.entries()` iterator dispatch in the snapshot. The new held-out-style `push` regression keeps the contradictory observation and records zero `push` substitutions. Focused suite 10/10 and `VECTOR_FORGE_CORE_CI=PASS` on Node v24.19.0; syntax and diff checks passed. This is again **TESTED locally**, pending a fresh independent exact-head review, canonical reconciliation and exact-image/hosted proof. Factory Playback #374 remains blocked on its own evidence-linked scenarios.
+
+## Third independent review correction
+
+Independent review of `340871451d38b84322bc0c58e4f91a14305535f7` was **NOT READY** (issue #288 comment `6150352577`). A polluted inherited `Array.prototype.every` turned contradictory deny/allow observations into false-green `theoryPass=true` and `implementationAdmitted=true`. Its 10/10 suite and CircleCI result were insufficient.
+
+The new repair uses index-bounded loops for list, string, design, scenario and observation checks, engine routing, failure collection and returned IDs. The new public-entry regression poisons `every` and keeps the contradictory scenario failed. Focused suite 11/11, core CI PASS, syntax and diff checks PASS on Node v24.19.0. **TESTED locally; independent exact-head re-review pending.** No research ledger row was advanced, and #374 remains independently blocked.
