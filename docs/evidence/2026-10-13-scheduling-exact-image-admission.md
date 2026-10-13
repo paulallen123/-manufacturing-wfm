@@ -37,22 +37,38 @@ identity and byte-for-byte installation of the reviewed scheduling engine. A
 successful build without the selected engine in the final serving image is a
 failure, not a pass.
 
-## Evidence state before execution
+## Execution evidence
 
 - Source syntax and 97/97 focused tests: author-reported on Node v24.19.0.
 - Independent source review: READY at exact head, with held-out tamper cases.
 - CircleCI 807: terminal SUCCESS for exact head.
-- Supported Node 22.23.2 affected suite: pending this workflow.
-- Unchanged complete Docker admission: pending this workflow.
-- Final serving-image scheduler byte identity: pending this workflow.
+- GitHub Actions run 38440811045, job 115446581978: exact target checkout,
+  Node v22.23.2 binding and scheduler blob binding passed. The consumer suite
+  ran 196 tests: 192 passed and 4 failed. The installed-image job was skipped
+  because it correctly depends on source admission.
+- One failure was a proof prerequisite omission: the composed bootstrap refused
+  to start because `security/runtime` dependencies were not installed. The
+  workflow now runs the repository-prescribed `npm ci --prefix
+  security/runtime --ignore-scripts` before the suite.
+- Three failures are a deterministic product-integration blocker. Stored plans
+  are bound with `authorityScope` after `planId` is calculated, while PR352's
+  new `verifiedPriorPlan` recalculates identity across that appended field.
+  Consequently `/repair/shadow` returns 400; both authority-projection variants
+  then dereference an absent `repair.repairedPlan` and fail. No unchanged rerun
+  was performed.
+- Corrected supported-runtime affected suite: pending the workflow rerun.
+- Unchanged complete Docker admission and final image byte identity: blocked
+  until source admission passes.
 - Canonical integration, deployment, hosted proof and customer proof: not
   attempted by this package.
 
 ## Risks and next action
 
 The target is based on historical `90ad90fc...`, not the current canonical
-union, so even a green result remains isolated evidence. The canonical owner
-must reconcile the reviewed scheduler with PR320/341/346/353/356 and the
-current `48dce8f...` source, rerun combined native/image gates, deploy once
-through approved controls, and prove the authenticated manager journey,
+union, so even a green result remains isolated evidence. The PR352 owner must
+first reconcile prior-plan identity with the service-owned `authorityScope`
+binding without weakening tamper detection, then rerun this exact gate. The
+canonical owner must reconcile the reviewed scheduler with PR320/341/346/353/356
+and the current `48dce8f...` source, rerun combined native/image gates, deploy
+once through approved controls, and prove the authenticated manager journey,
 persisted readback, downstream consequence and audit on one serving SHA.
