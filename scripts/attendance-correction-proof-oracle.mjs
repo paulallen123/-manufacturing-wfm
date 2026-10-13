@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { types } from 'node:util';
 
 // Pure, deliberately narrow evidence oracle. It neither executes corrections nor
 // authenticates receipts. The owner must authenticate contract and collector first.
@@ -84,6 +85,32 @@ function canonical(value) {
   return JSON.stringify(value);
 }
 
+// Receipt packets are JSON data. Reject executable property reads before the
+// schema or semantic checks touch any caller-owned object.
+function plainJsonTree(value) {
+  const pending = [value], seen = new Set();
+  let visited = 0;
+  while (pending.length) {
+    const item = pending.pop();
+    if (item === null || typeof item !== 'object') continue;
+    if (++visited > 10000 || types.isProxy(item) || seen.has(item)) return false;
+    seen.add(item);
+    const array = Array.isArray(item);
+    if (!array && ![Object.prototype, null].includes(Object.getPrototypeOf(item))) return false;
+    const descriptors = Object.getOwnPropertyDescriptors(item);
+    const keys = Reflect.ownKeys(descriptors);
+    if (array && Object.keys(item).length !== item.length) return false;
+    for (const key of keys) {
+      if (typeof key === 'symbol') return false;
+      const descriptor = descriptors[key];
+      if (array && key === 'length') continue;
+      if (!descriptor.enumerable || !Object.hasOwn(descriptor, 'value')) return false;
+      pending.push(descriptor.value);
+    }
+  }
+  return true;
+}
+
 // For schema-valid JSON only; no I/O, clock, randomness, environment or secrets.
 export function evidenceHash(value) {
   return createHash('sha256').update(canonical(value)).digest('hex');
@@ -132,6 +159,10 @@ function validate(contract, evidence, scenario) {
       status: issues.length ? (issues.some(i => i.code === 'MISSING') ? 'BLOCKED_REQUIRED_DATA' : 'INVALID_EVIDENCE') : 'EVIDENCE_CONSISTENT',
       mutationProven: !issues.length && scenario === 'apply', issues };
   };
+  if (!plainJsonTree(contract) || !plainJsonTree(evidence)) {
+    issues.push({ path: 'packet', code: 'INVALID_JSON', message: 'Supply inert JSON receipt data without accessors, proxies, hidden fields or cycles.' });
+    return finish();
+  }
   validateShape(contract, baseContract, 'contract', issues);
   validateShape(evidence, evidenceShape, 'evidence', issues);
   if (issues.length) return finish();

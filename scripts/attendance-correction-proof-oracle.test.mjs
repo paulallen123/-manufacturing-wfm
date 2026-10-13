@@ -238,6 +238,18 @@ test('missing evidence is BLOCKED_REQUIRED_DATA, never skip or pass', () => {
   assert.equal(validateApplication(undefined, undefined).status, 'BLOCKED_REQUIRED_DATA');
   assert.equal(validateRejection(fixture('reject').contract, undefined).mutationProven, false);
 });
+test('accessor-backed and proxied receipt fields are not plain JSON evidence', () => {
+  const accessor = fixture();
+  const original = accessor.evidence.actions[0].receiptId;
+  Object.defineProperty(accessor.evidence.actions[0], 'receiptId', {
+    enumerable: true, configurable: true, get: () => original,
+  });
+  reject(accessor);
+
+  const proxy = fixture();
+  proxy.evidence.actions[0] = new Proxy(proxy.evidence.actions[0], {});
+  reject(proxy);
+});
 test('separate entrypoints cannot stitch rejection into successful apply', () => {
   const r = fixture('reject'), a = fixture();
   assert.equal(validateApplication(r.contract, r.evidence).mutationProven, false);
