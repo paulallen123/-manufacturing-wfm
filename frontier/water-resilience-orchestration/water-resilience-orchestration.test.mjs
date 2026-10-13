@@ -246,3 +246,43 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
+
+test('negative ranking inputs cannot make a water plan look beneficial',()=>{
+ for(const [field,value,expected] of [
+  ['scarcityWeight',-1,{status:'blocked',reason:'water_slot_economics_invalid',slot:2}],
+  ['waterTariffPerM3',-1,{status:'blocked',reason:'water_slot_economics_invalid',slot:2}],
+ ]){
+  const input=fixture();input.policy.slots[1][field]=value;
+  assertUnsafe(input,expected);
+ }
+ const input=fixture();input.tasks[0].latePenalty=-1;
+ assertUnsafe(input,{status:'rejected',reason:'task_invalid',taskId:'T1'});
+ const unset=fixture();unset.policy.slots[1].scarcityWeight=null;
+ const result=evaluate(unset);
+ assert.equal(result.status,'safe_candidate');
+ assert.equal(result.metrics.scarcityWeightedWater,13);
+ for(const value of ['',false,[]]){
+  for(const field of ['scarcityWeight','waterTariffPerM3']){
+   const malformed=fixture();malformed.policy.slots[1][field]=value;
+   assertUnsafe(malformed,{status:'blocked',reason:'water_slot_economics_invalid',slot:2});
+  }
+  const malformed=fixture();malformed.tasks[0].latePenalty=value;
+  assertUnsafe(malformed,{status:'rejected',reason:'task_invalid',taskId:'T1'});
+ }
+ for(const value of [null,'',false,[]]){
+  for(const field of ['freshWaterM3','effluentM3']){
+   const malformed=fixture();malformed.tasks[0][field]=value;
+   assertUnsafe(malformed,{status:'rejected',reason:'task_invalid',taskId:'T1'});
+  }
+  for(const [field,reason] of [['freshWaterAvailableM3','water_capacity_invalid'],['effluentCapacityM3','effluent_capacity_invalid']]){
+   const malformed=fixture();malformed.policy.slots[1][field]=value;
+   assertUnsafe(malformed,{status:'blocked',reason,slot:2});
+  }
+ }
+ const overflow=fixture();
+ overflow.tasks[0].freshWaterM3=1e308;
+ overflow.policy.slots[1].freshWaterAvailableM3=1e308;
+ overflow.policy.slots[1].minimumReserveM3=0;
+ overflow.policy.slots[1].scarcityWeight=1e308;
+ assertUnsafe(overflow,{status:'blocked',reason:'water_metrics_invalid'});
+});
