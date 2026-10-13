@@ -5,8 +5,14 @@ on:
     branches: [release/vector-customer-ready-candidate-20260925]
     paths:
       - 'ux-overlay/vector-shell.js'
+      - 'ux-overlay/vector-shell.css'
       - 'ux-overlay/vector-action-queue.test.cjs'
+      - 'ux-overlay/vector-gusto.test.cjs'
+      - 'ux-overlay/vector-staffology-controls.test.cjs'
+      - 'ux-overlay/vector-settings-navigation.test.cjs'
       - '.github/workflows/action-queue-freshness-gate.yml'
+      - 'scripts/prove-installed-action-queue.cjs'
+      - 'scripts/prove-installed-action-queue.test.cjs'
   workflow_dispatch:
 
 permissions:
@@ -24,4 +30,15 @@ jobs:
           package-manager-cache: false
       - run: node --test ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
       - run: node --check ux-overlay/vector-shell.js
+      - run: node --test scripts/prove-installed-action-queue.test.cjs
       - run: docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA=${{ github.sha }} -t vector-action-queue-freshness:gate .
+      - name: Verify installed action queue bytes and behavior
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+          image_id=$(docker image inspect vector-action-queue-freshness:gate --format '{{.Id}}')
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --user 1000:1000 --entrypoint node --tmpfs /tmp:rw,nosuid,nodev,size=64m \
+            -e VECTOR_EXPECTED_SOURCE_SHA="$EXPECTED_SHA" -e VECTOR_PROOF_IMAGE_ID="$image_id" \
+            -v "$PWD:/proof-source:ro" "$image_id" /proof-source/scripts/prove-installed-action-queue.cjs
