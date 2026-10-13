@@ -16,7 +16,8 @@ for (const observedAt of [
   '2026-04-31T08:00:00+01:00', '2026-06-31T08:00:00-02:00',
   '1900-02-29T08:00:00Z', '2100-02-29T08:00:00Z',
   '0001-02-29T08:00:00Z', '2026-02-30', '2026-2-30',
-  '2026-02-30 08:00:00Z'
+  '2026-02-30 08:00:00Z', '2026-02-30Z', '2026-02-030',
+  '-000000-02-29T08:00:00Z', '-000000-02-29'
 ]) {
   test(`reject impossible observation ${observedAt} rather than rewrite its calendar day`, () => {
     assert.throws(() => normaliseDemandSignal(signal(observedAt)), /Valid observedAt is required/);

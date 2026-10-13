@@ -14,12 +14,12 @@ function iso(value){
   if(!raw||!Number.isFinite(ms)) throw new Error('Valid observedAt is required.');
   // Date.parse rolls impossible ISO-style days into the next month. Validate
   // the written calendar before applying any timezone offset normalization.
-  const calendar=/^([+-]\d{6}|\d{4})-(\d{1,2})-(\d{1,2})(?:[Tt\s]|$)/.exec(raw);
+  const calendar=/^([+-]\d{6}|\d{4})-(\d+)-(\d+)/.exec(raw);
   if(calendar){
     const year=Number(calendar[1]),month=Number(calendar[2]),day=Number(calendar[3]);
     const leap=year%4===0&&(year%100!==0||year%400===0);
     const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
-    if(month<1||month>12||day<1||day>days[month-1]) throw new Error('Valid observedAt is required.');
+    if(calendar[1]==='-000000'||month<1||month>12||day<1||day>days[month-1]) throw new Error('Valid observedAt is required.');
   }
   return new Date(ms).toISOString();
 }
