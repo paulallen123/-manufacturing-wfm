@@ -16,11 +16,12 @@ function fixture() {
   const request = { id: binding.requestId, employee: binding.employeeId, date: binding.requestDate,
     status: 'pending', revision: 1, minutes: 450 };
   return { binding, captures: {
-    before: capture('before', 0, 1, 'employee', binding.employeeId, 'employee-session-1', { leave, requestCount: 0 }),
+    before: capture('before', 0, 1, 'employee', binding.employeeId, 'employee-session-1',
+      { leave, requestCount: 0, requestIds: [] }),
     pending: capture('pending', 1, 2, 'employee', binding.employeeId, 'employee-session-1',
-      { leave: pendingLeave, requestCount: 1, request }),
+      { leave: pendingLeave, requestCount: 1, requestIds: [binding.requestId], request }),
     overlap: capture('overlap', 2, 2, 'employee', binding.employeeId, 'employee-session-1',
-      { leave: pendingLeave, requestCount: 1, request, requestId: binding.requestId,
+      { leave: pendingLeave, requestCount: 1, requestIds: [binding.requestId], request, requestId: binding.requestId,
         command: 'leave-request', reasonCode: 'OVERLAP', attemptDate: binding.requestDate,
         attemptMinutes: binding.requestMinutes, httpStatus: 409 }),
     manager: capture('manager', 3, 3, 'manager', 'manager-1', 'manager-session-1',
@@ -44,6 +45,9 @@ for (const [name, edit, reason] of [
   ['manager is employee', p => { p.captures.manager.actorId = p.binding.employeeId; }, 'ACTOR_AUTHORITY_UNPROVEN'],
   ['stale decision version', p => { p.captures.manager.stateVersion = 2; }, 'VERSION_CHAIN_UNPROVEN'],
   ['overlap creates a second request', p => { p.captures.overlap.requestCount = 2; }, 'OVERLAP_REFUSAL_UNPROVEN'],
+  ['target request already existed before action', p => {
+    p.captures.before.requestIds = [p.binding.requestId]; p.captures.before.requestCount = 1;
+  }, 'REQUEST_CREATION_UNPROVEN'],
   ['unrelated 409', p => { p.captures.overlap.reasonCode = 'VERSION_CONFLICT'; }, 'OVERLAP_REFUSAL_UNPROVEN'],
   ['overlap on different date', p => { p.captures.overlap.attemptDate = '2026-10-21'; }, 'OVERLAP_REFUSAL_UNPROVEN'],
   ['overlap changes entitlement', p => { p.captures.overlap.leave = { ...p.captures.overlap.leave, availableMinutes: 300 }; }, 'OVERLAP_CHANGED_BALANCE'],
@@ -55,6 +59,11 @@ for (const [name, edit, reason] of [
   ['audit before request', p => { p.captures.manager.audit.at = '2026-10-13T09:59:00.000Z'; }, 'REQUEST_BOUND_AUDIT_UNPROVEN'],
   ['audit after manager readback', p => { p.captures.manager.audit.at = '2026-10-13T10:04:00.000Z'; }, 'REQUEST_BOUND_AUDIT_UNPROVEN'],
   ['double debit on approval', p => { p.captures.fresh.leave.availableMinutes = 300; }, 'ENTITLEMENT_TRANSITION_UNPROVEN'],
+  ['invalid absolute available balance', p => {
+    p.captures.before.leave.availableMinutes += 300;
+    p.captures.pending.leave.availableMinutes += 300;
+    p.captures.fresh.leave.availableMinutes += 300;
+  }, 'ENTITLEMENT_TRANSITION_UNPROVEN'],
   ['out of order capture', p => { p.captures.manager.capturedAt = '2026-10-13T10:01:00.000Z'; }, 'CAPTURE_ORDER_UNPROVEN'],
   ['duplicate response', p => { p.captures.manager.responseId = 'pending'; }, 'DUPLICATE_RESPONSE']
 ]) test(`blocks ${name}`, () => {

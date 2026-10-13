@@ -78,6 +78,19 @@ export function assessLeaveJourneyEvidence(raw) {
     && manager.stateVersion === pending.stateVersion + 1
     && fresh.stateVersion === manager.stateVersion, 'VERSION_CHAIN_UNPROVEN');
   const request = pending.request || {};
+  const requestIds = value => Array.isArray(value) && value.every(id)
+    && new Set(value).size === value.length;
+  check(requestIds(before.requestIds) && requestIds(pending.requestIds)
+    && requestIds(overlap.requestIds) && before.requestIds.length === before.requestCount
+    && pending.requestIds.length === pending.requestCount
+    && overlap.requestIds.length === overlap.requestCount
+    && !before.requestIds.includes(binding.requestId)
+    && pending.requestIds.includes(binding.requestId)
+    && pending.requestIds.length === before.requestIds.length + 1
+    && before.requestIds.every(value => pending.requestIds.includes(value))
+    && overlap.requestIds.length === pending.requestIds.length
+    && overlap.requestIds.every(value => pending.requestIds.includes(value)),
+  'REQUEST_CREATION_UNPROVEN');
   check(request.id === binding.requestId && request.employee === binding.employeeId
     && request.status === 'pending' && positive(request.revision)
     && request.minutes === binding.requestMinutes && request.date === binding.requestDate,
@@ -108,6 +121,7 @@ export function assessLeaveJourneyEvidence(raw) {
     && Date.parse(audit.at) <= Date.parse(manager.capturedAt), 'REQUEST_BOUND_AUDIT_UNPROVEN');
   const a = before.leave || {}, b = pending.leave || {}, c = fresh.leave || {}, n = binding.requestMinutes;
   check([a, b, c].every(row => ['pendingMinutes', 'bookedMinutes', 'remainingMinutes', 'availableMinutes'].every(key => minutes(row[key])))
+    && [a, b, c].every(row => row.availableMinutes === row.remainingMinutes - row.pendingMinutes)
     && b.pendingMinutes === a.pendingMinutes + n && b.bookedMinutes === a.bookedMinutes
     && b.remainingMinutes === a.remainingMinutes && b.availableMinutes === a.availableMinutes - n
     && c.pendingMinutes === b.pendingMinutes - n && c.bookedMinutes === b.bookedMinutes + n
