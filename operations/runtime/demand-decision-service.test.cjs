@@ -99,3 +99,49 @@ test('trusted worker can persist a shadow decision but cannot grant execution au
     assert.equal(list.json.episodes[0].mode,'SHADOW');
   }finally{service.close();fs.rmSync(f.dir,{recursive:true,force:true});}
 });
+
+function deliveryInput(){
+  const at='2026-10-12T08:00:00.000Z',scope={tenant:'alpha',site:'north',line:'L1',order:'O1',material:'M1',shipment:'S1'};
+  const event=(kind,id,payload)=>({kind,id,revision:1,scope:{...scope},source:'test-'+kind,sourceRevision:'1',
+    recordHash:'a'.repeat(64),observedAt:'2026-10-12T07:55:00.000Z',confidence:0.95,payload});
+  return {scope,asOf:at,policy:{version:'p1',currency:'GBP',maxAgeMinutes:30,minConfidence:0.6},evidence:[
+    event('inventory','inv',{quantityOnHand:100,safetyStock:20,unit:'kg'}),
+    event('consumption','cons',{quantityPerHour:40,startsAt:at,unit:'kg'}),
+    event('requirement','req',{remainingQuantity:200,requiredAt:'2026-10-12T09:00:00.000Z',unit:'kg'}),
+    event('eta','eta',{arrivesAt:'2026-10-12T13:00:00.000Z'}),
+    event('economics','econ',{currency:'GBP',lostContributionPerHour:10000,idleLabourPerHour:1000,recoveryOvertimePerHour:500,customerPenalty:2000,componentsNonOverlapping:true})
+  ],options:[{id:'transfer',kind:'INTER_SITE_TRANSFER',recoveredHours:2,costUpper:3000,avoidedCostLower:15000,
+    feasibility:{safety:true,quality:true,qualifiedStaff:true,capacity:true,approvalRoute:true},sourceRef:'transfer:1'}]};
+}
+test('delivery route requires source verification and isolates immutable shadow results by tenant',async()=>{
+  const f=fixture(),url='/api/operations/intelligence/delivery-disruption/shadow';
+  const disabled=createDemandDecisionService({dbPath:f.dbPath,internalToken:'internal'});
+  const body={tenant:'alpha',input:deliveryInput()};
+  try{
+    assert.equal((await call(disabled,makeReq('POST',url,{body,headers:{'x-wfm-demand-internal':'internal'}}))).res.statusCode,503);
+  }finally{disabled.close();}
+  let authenticated=0,attested=false;
+  const service=createDemandDecisionService({dbPath:f.dbPath,internalToken:'internal',verifyDeliveryEvidence(input,tenant){
+    authenticated++;return attested&&tenant==='alpha'&&input.scope.tenant==='alpha'&&input.evidence.length===5;
+  }});
+  try{
+    const post=b=>call(service,makeReq('POST',url,{body:b,headers:{'x-wfm-demand-internal':'internal'}}));
+    assert.equal((await call(service,makeReq('POST',url,{body,headers:{'x-wfm-demand-internal':'wrong'}}))).res.statusCode,403);
+    assert.equal((await post({...body,tenant:'beta'})).res.statusCode,400);
+    // The verifier sees the parsed snapshot; demonstrate an explicit refusal before allowing it.
+    const rejected=await post(body);assert.equal(rejected.res.statusCode,422);
+    assert.equal(authenticated,1);
+    attested=true;
+    const created=await post(body);assert.equal(created.res.statusCode,201);
+    assert.equal(created.json.shadow.status,'RECOVERY_OPTIONS');
+    assert.equal(created.json.shadow.episode.recommendation.executionPermitted,false);
+    assert.equal((await post(body)).json.idempotent,true);
+    const get=(token)=>call(service,makeReq('GET','/api/operations/intelligence/delivery-disruptions',{cookie:'wfm_session='+token}));
+    assert.equal((await get(f.tokenA)).json.shadows.length,1);
+    assert.equal((await get(f.tokenB)).json.shadows.length,0);
+    assert.equal((await get(f.tokenE)).res.statusCode,403);
+    const decisions=await call(service,makeReq('GET','/api/operations/intelligence/decisions',{cookie:'wfm_session='+f.tokenA}));
+    assert.equal(decisions.json.episodes.length,1);
+  }finally{service.close();fs.rmSync(f.dir,{recursive:true,force:true});}
+});
+

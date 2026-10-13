@@ -10,7 +10,7 @@ const AUTHORITY = Object.freeze({
   POLICY_BOUNDED: 'POLICY_GATE_REQUIRED'
 });
 const BENEFIT_METRICS = new Set(['throughputUnits','planAttainmentPct']);
-const COST_METRICS = new Set(['labourCost','delayMinutes','riskScore','energyCost','qualityRisk']);
+const COST_METRICS = new Set(['labourCost','delayMinutes','riskScore','energyCost','qualityRisk','disruptionCost']);
 
 function clone(value){ return value == null ? value : JSON.parse(JSON.stringify(value)); }
 function stable(value){
@@ -45,7 +45,11 @@ function list(value,max=50,maxLen=200){
 }
 function normalisePrediction(input={}){
   const out={};
-  for(const key of [...BENEFIT_METRICS,...COST_METRICS]) out[key]=numberOrNull(input[key],key);
+  for(const key of [...BENEFIT_METRICS,...COST_METRICS]) {
+    // Optional extension: retain historical episode/receipt bytes when absent.
+    if(key==='disruptionCost'&&!Object.hasOwn(input,key)) continue;
+    out[key]=numberOrNull(input[key],key);
+  }
   return out;
 }
 function normaliseOption(input={}){
@@ -67,6 +71,7 @@ function normaliseObjective(objective={}){
   const weights={};
   let total=0;
   for(const key of [...BENEFIT_METRICS,...COST_METRICS]){
+    if(key==='disruptionCost'&&!Object.hasOwn(objective,key)) continue;
     const n=Number(objective[key]??0);
     if(!Number.isFinite(n)||n<0) throw new Error(`Objective weight ${key} must be a non-negative number.`);
     weights[key]=n; total+=n;
@@ -167,6 +172,7 @@ function recordDecisionOutcome(selectedEpisode,input={}){
   const predicted=(selectedEpisode.options||[]).find(o=>o.id===selectedEpisode.selection.optionId)?.prediction||{};
   const predictionError={};
   for(const key of [...BENEFIT_METRICS,...COST_METRICS]){
+    if(key==='disruptionCost'&&!Object.hasOwn(actual,key)&&!Object.hasOwn(predicted,key)) continue;
     predictionError[key]=(predicted[key]!=null&&actual[key]!=null)?Number((actual[key]-predicted[key]).toFixed(8)):null;
   }
   const outcome={observedAt,evidenceRefs,actual,predictionError,notes:text(input.notes,600)||null};
@@ -177,3 +183,4 @@ module.exports=Object.freeze({
   CONTRACT_VERSION,MODES,AUTHORITY,BENEFIT_METRICS,COST_METRICS,
   stable,digest,createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,rankOptions
 });
+
