@@ -34,8 +34,8 @@ function createTenantCalendar({env=process.env,now=null}={}){
  function zoneFor(site){return site&&siteZones[site]?siteZones[site]:tenantTimeZone;}
  function snapshot({tenant,site,maxAgeMs=defaultMaxAgeMs}={}){
   const at=Number(clock());if(!Number.isFinite(at))fail('Server calendar clock is invalid.');
-  const timeZone=zoneFor(site),parts=localParts(at,timeZone);
-  return Object.freeze({schemaVersion:'tenant-calendar-1',tenant:tenant?clean(tenant,160):null,site:site?clean(site,120):null,timeZone,asOf:new Date(at).toISOString(),localDate:parts.date,localTime:parts.time,maxAgeMs:Number(maxAgeMs),source:'server-authoritative-tenant-calendar'});
+  const normalizedSite=site?clean(site,120):null,timeZone=zoneFor(normalizedSite),parts=localParts(at,timeZone);
+  return Object.freeze({schemaVersion:'tenant-calendar-1',tenant:tenant?clean(tenant,160):null,site:normalizedSite,timeZone,asOf:new Date(at).toISOString(),localDate:parts.date,localTime:parts.time,maxAgeMs:Number(maxAgeMs),source:'server-authoritative-tenant-calendar'});
  }
  function periodForState(state,context={}){
   const snap=snapshot(context),periods=Array.isArray(state?.payrollControl?.periods)?state.payrollControl.periods:[],period=currentPeriod(periods,snap.localDate);
@@ -47,3 +47,4 @@ function createTenantCalendar({env=process.env,now=null}={}){
  return Object.freeze({snapshot,periodForState,zoneFor,freshness:input=>freshness({...input,nowMs:Number(clock())})});
 }
 module.exports={createTenantCalendar,currentPeriod,freshness,validZone};
+
