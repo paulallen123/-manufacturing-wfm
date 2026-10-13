@@ -11,7 +11,9 @@ function normaliseSource(input={}){
   const id=text(input.id,160),authorityTier=text(input.authorityTier,60).toUpperCase(),channel=text(input.channel,40).toUpperCase();
   if(!id||!AUTHORITY_TIERS.has(authorityTier)||!CHANNELS.has(channel)) throw new Error('Source requires id, supported authorityTier and channel.');
   const jurisdiction=text(input.jurisdiction,120); if(!jurisdiction) throw new Error('Source jurisdiction is required.');
-  const freshnessHours=Math.max(1,Math.min(24*90,Number(input.freshnessHours||24)));
+  const declaredFreshness=input.freshnessHours,requestedFreshness=Number(declaredFreshness||24);
+  if(!Number.isFinite(requestedFreshness)||(typeof declaredFreshness==='number'&&!Number.isFinite(declaredFreshness))) throw new Error('Source freshnessHours must be finite.');
+  const freshnessHours=Math.max(1,Math.min(24*90,requestedFreshness));
   const core={contractVersion:'VECTOR_POLICY_SOURCE_V1',id,authorityTier,channel,jurisdiction,canonicalReference:text(input.canonicalReference,500),nativeLanguages:list(input.nativeLanguages,20,32),freshnessHours,active:input.active!==false,customerSupplied:authorityTier==='CUSTOMER_PRIVATE_INSTRUMENT',grantsExecutionAuthority:false};
   if(!core.canonicalReference) throw new Error('Source canonicalReference is required.');
   return Object.freeze({...core,sourceDigest:digest(core)});
