@@ -1,0 +1,31 @@
+name: Reporting Interchange Proof
+
+on:
+  pull_request:
+    branches: [release/vector-customer-ready-candidate-20260925]
+    paths:
+      - 'reporting/runtime/vector-report-interchange.cjs'
+      - 'reporting/runtime/vector-report-interchange.test.cjs'
+      - 'verification/reporting-independent-proof.cjs'
+      - '.github/workflows/reporting-interchange-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-interchange:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up approved Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Run source contract
+        run: node --test reporting/runtime/vector-report-interchange.test.cjs
+      - name: Run independent adversarial proof
+        run: node verification/reporting-independent-proof.cjs
