@@ -2,6 +2,7 @@ export const WATER_RESILIENCE_VERSION='water-resilience-orchestration-v0.1.0';
 
 const clean=v=>typeof v==='string'?v.trim():'';
 const finite=v=>typeof v==='number'&&Number.isFinite(v);
+const nonNegativeSetting=v=>(finite(v)||(typeof v==='string'&&v.trim()!==''&&finite(Number(v))))&&Number(v)>=0;
 const ts=v=>{const n=Date.parse(String(v??''));return Number.isFinite(n)?n:null;};
 
 function policyGate(policy,now){
@@ -67,10 +68,11 @@ export function evaluateWaterResiliencePlan({policy,workers=[],tasks=[],plan,now
   }
   for(const t of tasks){
     if(clean(t?.siteId)!==siteId)return {status:'rejected',reason:'task_site_mismatch',taskId:t?.id??null};
-    if(!clean(t?.id)||!clean(t?.skill)||!finite(Number(t?.freshWaterM3))||Number(t.freshWaterM3)<0||!finite(Number(t?.effluentM3))||Number(t.effluentM3)<0){
+    if(!clean(t?.id)||!clean(t?.skill)||!nonNegativeSetting(t?.freshWaterM3)||!nonNegativeSetting(t?.effluentM3)){
       return {status:'rejected',reason:'task_invalid',taskId:t?.id??null};
     }
     if(!Number.isInteger(t.earliestSlot)||!Number.isInteger(t.latestSlot)||t.latestSlot<t.earliestSlot)return {status:'rejected',reason:'task_window_invalid',taskId:t.id};
+    if(t.latePenalty!=null&&!nonNegativeSetting(t.latePenalty))return {status:'rejected',reason:'task_invalid',taskId:t.id};
   }
 
   const seenTask=new Set(),workerUse=new Set();
@@ -90,6 +92,9 @@ export function evaluateWaterResiliencePlan({policy,workers=[],tasks=[],plan,now
 
     const s=slots.get(slot);
     if(s.authoritative!==true)return {status:'blocked',reason:'water_slot_not_authoritative',slot};
+    if((s.scarcityWeight!=null&&!nonNegativeSetting(s.scarcityWeight))||
+       (s.waterTariffPerM3!=null&&!nonNegativeSetting(s.waterTariffPerM3)))
+      return {status:'blocked',reason:'water_slot_economics_invalid',slot};
     if(s.restrictionActive===true&&task.allowedDuringRestriction!==true)return {status:'rejected',reason:'task_not_allowed_during_restriction',taskId:task.id,slot};
     if(!sourceAllowed(task,s))return {status:'rejected',reason:'water_source_not_approved',taskId:task.id,slot};
 
@@ -99,7 +104,7 @@ export function evaluateWaterResiliencePlan({policy,workers=[],tasks=[],plan,now
     row.effluentM3+=Number(task.effluentM3);
     row.tasks.push(task.id);
 
-    const scarcity=finite(Number(s.scarcityWeight))?Number(s.scarcityWeight):1;
+    const scarcity=s.scarcityWeight==null?1:Number(s.scarcityWeight);
     const tariff=finite(Number(s.waterTariffPerM3))?Number(s.waterTariffPerM3):0;
     scarcityWeightedWater+=Number(task.freshWaterM3)*scarcity;
     waterCost+=Number(task.freshWaterM3)*tariff;
@@ -115,8 +120,8 @@ export function evaluateWaterResiliencePlan({policy,workers=[],tasks=[],plan,now
     const available=Number(s.freshWaterAvailableM3);
     const reserve=Number(s.minimumReserveM3??0);
     const effluentCap=Number(s.effluentCapacityM3);
-    if(!finite(available)||!finite(reserve)||reserve<0)return {status:'blocked',reason:'water_capacity_invalid',slot};
-    if(!finite(effluentCap)||effluentCap<0)return {status:'blocked',reason:'effluent_capacity_invalid',slot};
+    if(!nonNegativeSetting(s.freshWaterAvailableM3)||(s.minimumReserveM3!=null&&!nonNegativeSetting(s.minimumReserveM3)))return {status:'blocked',reason:'water_capacity_invalid',slot};
+    if(!nonNegativeSetting(s.effluentCapacityM3))return {status:'blocked',reason:'effluent_capacity_invalid',slot};
     const usable=Math.max(0,available-reserve);
     reserveBreachM3+=Math.max(0,row.freshWaterM3-usable);
     effluentBreachM3+=Math.max(0,row.effluentM3-effluentCap);
@@ -127,6 +132,8 @@ export function evaluateWaterResiliencePlan({policy,workers=[],tasks=[],plan,now
 
   const freshWaterM3=[...perSlot.values()].reduce((s,x)=>s+x.freshWaterM3,0);
   const effluentM3=[...perSlot.values()].reduce((s,x)=>s+x.effluentM3,0);
+  if(![freshWaterM3,effluentM3,scarcityWeightedWater,waterCost,restrictionExposureM3,latenessPenalty].every(finite))
+    return {status:'blocked',reason:'water_metrics_invalid'};
   return {
     status:'safe_candidate',planId:plan.id,
     metrics:{freshWaterM3,effluentM3,scarcityWeightedWater,waterCost,restrictionExposureM3,latenessPenalty},
