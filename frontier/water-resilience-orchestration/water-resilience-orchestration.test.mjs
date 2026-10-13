@@ -246,3 +246,20 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
+
+test('negative or non-finite late penalties cannot reward delayed work',()=>{
+ for(const value of [-5,NaN,Infinity,-Infinity,'-5',null,'',{}]){
+  const input=fixture();input.tasks[0].latePenalty=value;
+  assertUnsafe(input,{status:'rejected',reason:'task_late_penalty_invalid',taskId:'T1'});
+ }
+});
+
+test('valid zero and positive late penalties preserve safe rankings',()=>{
+ for(const value of [0,2]){
+  const input=fixture();input.tasks[0].latePenalty=value;
+  const result=evaluate(input);
+  assert.equal(result.status,'safe_candidate');
+  assert.equal(result.metrics.latenessPenalty,value);
+ }
+});
+
