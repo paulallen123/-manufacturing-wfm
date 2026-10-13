@@ -43,6 +43,7 @@ test('realtime events are tenant isolated, audience filtered, ordered and replay
 
   assert.deepEqual(service.eventsForTenant('A','manager',0).map(x=>x.topic),['demand.updated','workspace.updated']);
   assert.deepEqual(service.eventsForTenant('A','employee',0).map(x=>x.topic),['workspace.updated']);
+  assert.deepEqual(service.eventsForTenant('A','revoked',0),[]);
   assert.deepEqual(service.eventsForTenant('B','manager',0).map(x=>x.topic),['workspace.updated']);
   assert.deepEqual(service.eventsForTenant('A','manager',first.seq).map(x=>x.seq),[second.seq]);
   assert.ok(second.seq>first.seq);
@@ -57,4 +58,16 @@ test('realtime events are tenant isolated, audience filtered, ordered and replay
   verify.close();
   service.close();
   fs.rmSync(dir,{recursive:true,force:true});
+});
+
+test('unrecognised persisted roles never inherit manager realtime audience',()=>{
+  for(const role of ['revoked','unknown','contractor','',null,42]){
+    assert.equal(roleAllowed(role,'manager'),false,`role ${String(role)} received manager audience`);
+    assert.equal(roleAllowed(role,'admin'),false);
+    assert.equal(roleAllowed(role,'all'),false);
+  }
+  for(const role of ['manager','director','supervisor','company-admin','payroll_admin','admin','superuser','operations','finance']){
+    assert.equal(roleAllowed(role,'manager'),true,`recognised ${role} lost manager audience`);
+  }
+  assert.equal(roleAllowed('employee','manager'),false);
 });

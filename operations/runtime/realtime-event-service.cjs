@@ -5,6 +5,7 @@ const { DatabaseSync } = require('node:sqlite');
 
 const PREFIX = '/api/realtime';
 const MAX_PAYLOAD_BYTES = 16 * 1024;
+const KNOWN_ROLES = new Set(['employee','manager','director','supervisor','company-admin','payroll_admin','admin','superuser','operations','finance']);
 
 function sha256(v){ return createHash('sha256').update(String(v)).digest('hex'); }
 function compact(v,max=120){ return String(v??'').trim().slice(0,max); }
@@ -32,6 +33,7 @@ function normaliseAudience(value){
 }
 function roleAllowed(role,audience){
   const r=compact(role,40).toLowerCase();
+  if(!KNOWN_ROLES.has(r)) return false;
   if(audience==='all') return true;
   if(audience==='employee') return r==='employee';
   if(audience==='manager') return r && r!=='employee';
