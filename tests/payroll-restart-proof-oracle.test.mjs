@@ -3,11 +3,14 @@ import test from 'node:test';
 import { assessPayrollRestartProof } from '../scripts/payroll-restart-proof-oracle.mjs';
 
 const before = () => ({ candidateSha: 'a'.repeat(40), deploymentId: 'deploy-1', bootId: 'boot-1',
+  serviceId: 'synthetic-service', volumeId: 'synthetic-volume',
   tenantId: 'synthetic-tenant', period: 'synthetic-period', batchId: 'synthetic-batch', rowCount: 2,
   checksum: 'b'.repeat(64), exportChecksum: 'b'.repeat(64), status: 'released',
   auditBatchId: 'synthetic-batch', freshLoginBatchId: 'synthetic-batch' });
 const after = () => ({ ...before(), deploymentId: 'deploy-2', bootId: 'boot-2' });
-const restart = () => ({ executed: true, receiptId: 'synthetic-restart', observedAt: '2026-10-13T12:00:00Z', volumeMounted: true });
+const restart = () => ({ executed: true, receiptId: 'synthetic-restart', observedAt: '2026-10-13T12:00:00Z',
+  volumeMounted: true, serviceId: 'synthetic-service', volumeId: 'synthetic-volume',
+  candidateSha: 'a'.repeat(40), fromBootId: 'boot-1', toBootId: 'boot-2' });
 
 test('admits same exact candidate and readbacks across witnessed restart', () => {
   assert.deepEqual(assessPayrollRestartProof({ before: before(), after: after(), restart: restart() }),
@@ -17,6 +20,8 @@ test('admits same exact candidate and readbacks across witnessed restart', () =>
 for (const [name, mutate, blocker] of [
   ['missing volume', value => { value.restart.volumeMounted = false; }, 'restart-and-durable-volume-unproven'],
   ['no process change', value => { value.after.bootId = value.before.bootId; }, 'process-restart-unproven'],
+  ['old receipt', value => { value.restart.toBootId = 'other-boot'; }, 'restart-receipt-mismatch'],
+  ['volume changed', value => { value.after.volumeId = 'other-volume'; }, 'service-or-volume-drift'],
   ['candidate changed', value => { value.after.candidateSha = 'c'.repeat(40); }, 'candidate-drift'],
   ['tenant changed', value => { value.after.tenantId = 'other-tenant'; }, 'scope-drift'],
   ['batch changed', value => { value.after.batchId = 'new-batch'; value.after.auditBatchId = 'new-batch'; value.after.freshLoginBatchId = 'new-batch'; }, 'payroll-state-drift'],
