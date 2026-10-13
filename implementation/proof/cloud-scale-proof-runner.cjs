@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const http = require('node:http');
 const { performance } = require('node:perf_hooks');
-const { validateExpectedEngineBlob, assertEngineBlob } = require('./cloud-scale-proof-identity.cjs');
+const { validateExpectedEngineBlob, loadVerifiedEngine } = require('./cloud-scale-proof-identity.cjs');
 
 const ENGINE_PATH = process.env.WFM_CONFIG_ENGINE_PATH || '/tmp/configuration-inference-engine.cjs';
 const EXPECTED_ENGINE_BLOB = process.env.WFM_CONFIG_ENGINE_GIT_BLOB_SHA;
@@ -11,9 +11,10 @@ const PORT = Number(process.env.PORT || 3000);
 // Refuse an absent or malformed expectation before loading an arbitrary engine.
 validateExpectedEngineBlob(EXPECTED_ENGINE_BLOB);
 const engineBytes = fs.readFileSync(ENGINE_PATH);
-const engineBlobSha = assertEngineBlob(engineBytes, EXPECTED_ENGINE_BLOB);
-
-const { buildConfigurationProposal } = require(ENGINE_PATH);
+const verifiedEngine = loadVerifiedEngine(engineBytes,ENGINE_PATH,EXPECTED_ENGINE_BLOB);
+const engineBlobSha = verifiedEngine.gitBlobSha;
+const { buildConfigurationProposal } = verifiedEngine.exports;
+if(typeof buildConfigurationProposal!=='function')throw new Error('Verified configuration engine export is unavailable.');
 
 function money(value) {
   return Math.round(Number(value) * 100) / 100;

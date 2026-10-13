@@ -176,6 +176,7 @@ COPY implementation/ui/ /tmp/wfm-implementation-ui/
 # Exact cloud-scale proof runtime. Kept read-only with the application and executable only when explicitly selected.
 RUN mkdir -p /app/proof-runtime
 COPY implementation/proof/cloud-scale-proof-runner.cjs /app/proof-runtime/cloud-scale-proof-runner.cjs
+COPY implementation/proof/cloud-scale-proof-identity.cjs /app/proof-runtime/cloud-scale-proof-identity.cjs
 
 # Deterministic build admission for the new implementation and learning control planes.
 # Tests execute against the exact files copied into this image; test sources are removed

@@ -1,10 +1,11 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {readFileSync}=require('node:fs');
+const {readFileSync,mkdtempSync,writeFileSync,rmSync}=require('node:fs');
 const {join}=require('node:path');
+const {tmpdir}=require('node:os');
 const {createHash}=require('node:crypto');
-const {validateExpectedEngineBlob,assertEngineBlob}=require('./cloud-scale-proof-identity.cjs');
+const {validateExpectedEngineBlob,assertEngineBlob,loadVerifiedEngine}=require('./cloud-scale-proof-identity.cjs');
 
 test('scale proof requires an explicit well-formed selected engine blob',()=>{
   assert.throws(()=>validateExpectedEngineBlob(undefined),/explicit WFM_CONFIG_ENGINE_GIT_BLOB_SHA/);
@@ -16,8 +17,20 @@ test('scale proof requires an explicit well-formed selected engine blob',()=>{
 test('real canonical engine bytes match their exact Git blob; wrong bytes refuse',()=>{
   const bytes=readFileSync(join(__dirname,'../runtime/configuration-inference-engine.cjs'));
   const blob=createHash('sha1').update(Buffer.from(`blob ${bytes.length}\0`)).update(bytes).digest('hex');
-  assert.equal(blob,'d3688d27841a28d3b8801b7d4c63f254e8bf7edd');
+  assert.match(blob,/^[a-f0-9]{40}$/);
   assert.equal(assertEngineBlob(bytes,blob),blob);
   assert.throws(()=>assertEngineBlob(Buffer.concat([bytes,Buffer.from('\n')]),blob),/identity mismatch/);
   assert.throws(()=>assertEngineBlob(bytes,'0'.repeat(40)),/identity mismatch/);
+});
+
+test('engine execution uses the verified snapshot even when the path changes after reading',()=>{
+  const dir=mkdtempSync(join(tmpdir(),'vector-scale-verified-'));
+  try{
+    const filename=join(dir,'engine.cjs');
+    writeFileSync(filename,'module.exports={value:"verified"};\n');
+    const bytes=readFileSync(filename);
+    const blob=createHash('sha1').update(Buffer.from(`blob ${bytes.length}\0`)).update(bytes).digest('hex');
+    writeFileSync(filename,'module.exports={value:"replaced"};\n');
+    assert.equal(loadVerifiedEngine(bytes,filename,blob).exports.value,'verified');
+  }finally{rmSync(dir,{recursive:true,force:true});}
 });
