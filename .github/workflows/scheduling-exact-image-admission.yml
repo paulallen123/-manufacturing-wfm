@@ -40,6 +40,9 @@ jobs:
           git hash-object \
             operations/runtime/manufacturing-scheduling-engine.cjs \
             operations/runtime/manufacturing-scheduling-engine.test.cjs
+      - name: Install composed-runtime proof dependencies
+        shell: bash
+        run: npm ci --prefix security/runtime --ignore-scripts
       - name: Exercise scheduler and affected consumers
         run: |
           node --test \
