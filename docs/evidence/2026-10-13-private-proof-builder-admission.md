@@ -8,7 +8,7 @@ Issue [#185](https://github.com/paulallen123/-manufacturing-wfm/issues/185) reco
 
 ## Owner and conflict check
 
-At selection on 2026-10-13, #185 had no assignee, matching open PR, or matching current branch. GitHub branch search for `private-browser-proof` and `dockerfile-path` returned no branches. The existing private harness source branch `development/private-proof-harness-20260919-1308` and Railway service are historical proof infrastructure; this work does not modify either. The live candidate Railway service has a separate staged source SHA change owned by the release lane, so no Railway mutation was made.
+At selection on 2026-10-13, #185 had no assignee or matching open PR. GitHub branch search for `private-browser-proof` and `dockerfile-path` returned no branches. The existing private harness source branch `development/private-proof-harness-20260919-1308` last committed on 2026-09-20 and is historical proof infrastructure; this work does not modify it. The live candidate Railway service has a separate staged source SHA change owned by the release lane, so no Railway mutation was made.
 
 ## Exact source and observed failure
 
@@ -19,8 +19,9 @@ At selection on 2026-10-13, #185 had no assignee, matching open PR, or matching 
 
 ## Changed files and result
 
-- `scripts/classify-proof-blocker.mjs`: classifies a configured Dockerfile plus observed Railpack execution as `PROVIDER_BUILD_PATH_MISMATCH`. Its existing result quarantines affected promotion while unrelated development continues. The optional `--build-config <file> --enforce` CLI exits 2 for this mismatch.
-- `scripts/validate-proof-blocker-classifier.mjs`: regression covers the mismatch, CLI exit, and fail-closed behavior when config is missing or declares Railpack.
+- `scripts/classify-proof-blocker.mjs`: classifies a Dockerfile/Railpack conflict only when the build configuration, deployment metadata, and log are bound to the same deployment ID, source SHA and snapshot ID. Its existing result quarantines affected promotion while unrelated development continues. The optional `--deployment-context <file> --enforce` CLI exits 2 for every blocking classification.
+- `scripts/validate-proof-blocker-classifier.mjs`: regression covers deployment binding, nested Dockerfile paths, CLI exit, and fail-closed behavior when bound context is missing.
+- `release/development-proof-control.json`: declares the new blocker class.
 - `release/proof-blocker-knowledge.json` and `scripts/validate-development-proof-readiness.mjs`: retain the issue as a learned blocker with a permanent guard check.
 
 The classifier distinguishes evidence about the provider build path from a product test failure. It does not claim to repair Railway's effective builder selection. No secret values or customer data were read or written.
@@ -28,11 +29,12 @@ The classifier distinguishes evidence about the provider build path from a produ
 ## Tests and gates
 
 - Red first: `node scripts/validate-proof-blocker-classifier.mjs` failed because `UNKNOWN_FAIL_CLOSED` was returned instead of `PROVIDER_BUILD_PATH_MISMATCH`.
-- Green on local Node v24.19.0: classifier validator passed; development proof preflight passed (`files=379`, `localRefs=16`, `learnedGuards=27`); `git diff --check` passed.
-- Green on pinned Node v22.23.2 Docker image digest `sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96`: classifier validator and development proof preflight passed.
+- Independent review identified four defects in the first revision: enforcement exit code, deployment/config binding, missing declared blocker class, and nested Dockerfile paths. All four were repaired with regressions. The first revision's green test results do not count as final evidence.
+- Green on local Node v24.19.0 after repair: classifier validator passed; development proof preflight passed (`files=379`, `localRefs=17`, `learnedGuards=27`); `git diff --check` passed.
+- Green on pinned Node v22.23.2 Docker image digest `sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96` after repair: classifier validator and development proof preflight passed; `git diff --check` passed.
 
 ## Review, integration, deployment and next action
 
-Independent review: **pending**. Canonical integration: **pending**. Package deployment: **none**. Private harness and customer proof: **not proven**. The classifier must receive the effective service build configuration and one deployment's build log together; a log without config remains `UNKNOWN_FAIL_CLOSED`.
+Independent review: **completed on first revision; final repair review pending**. Canonical integration: **pending**. Package deployment: **none**. Private harness and customer proof: **not proven**. The currently available Railway service configuration and historical deployment log are not an independently bound deployment snapshot, so this historical incident remains a suspected builder conflict. The classifier needs a deployment-bound build configuration, source SHA, snapshot ID and build log; missing binding remains `UNKNOWN_FAIL_CLOSED` and exits 2 under `--enforce`.
 
-The canonical owner should review this four-file package, reconcile it with the current candidate head, and admit it through the release controls. For #185 itself, the owner or Railway must resolve why the configured Dockerfile is ignored, then run a fresh exact-SHA private proof build and the five-role hosted proof. Until then this lane remains blocked and must not count as customer proof.
+The canonical owner should review this six-file package, reconcile it with the current candidate head, and admit it through the release controls. For #185 itself, the owner or Railway must obtain deployment-bound configuration evidence, resolve why Railpack appeared despite the Dockerfile configuration if confirmed, then run a fresh exact-SHA private proof build and the five-role hosted proof. Until then this lane remains blocked and must not count as customer proof.

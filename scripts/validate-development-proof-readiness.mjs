@@ -10,6 +10,7 @@ const knowledge=JSON.parse(fs.readFileSync(path.join(ROOT,'release/proof-blocker
 
 assert.equal(control.schemaVersion,1);
 assert.equal(control.name,'VECTOR_DEVELOPMENT_TO_PROOF_CONTROL_V1');
+assert.ok(control.blockerClasses.includes('PROVIDER_BUILD_PATH_MISMATCH'));
 for(const key of [
   'everyChangeHasProofRoute','preflightBeforeExpensiveProof','classifyBeforeRetry',
   'rootCauseRepairBeforeRetry','neverWeakenGateToGetGreen','exactSourceShaAcrossFallbackLanes',

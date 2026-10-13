@@ -3,8 +3,14 @@ import fs from 'node:fs';
 
 export function classifyProofBlocker(input='',context={}){
   const text=String(input||'');
-  const configuredDocker=String(context?.build?.builder||'').toUpperCase()==='DOCKERFILE' &&
-    /^Dockerfile(?:\.[A-Za-z0-9_-]+)?$/.test(String(context?.build?.dockerfilePath||''));
+  const deployment=context?.deployment;
+  const boundBuild=typeof deployment?.id==='string' && deployment.id.length>0 &&
+    /^[a-f0-9]{40}$/i.test(String(deployment.sourceSha||'')) &&
+    typeof deployment.snapshotId==='string' && deployment.snapshotId.length>0 &&
+    context.logsDeploymentId===deployment.id && context.build?.deploymentId===deployment.id &&
+    context.build?.sourceSha===deployment.sourceSha && context.build?.snapshotId===deployment.snapshotId;
+  const configuredDocker=boundBuild && String(context.build.builder||'').toUpperCase()==='DOCKERFILE' &&
+    /^(?:\.\/)?(?:[A-Za-z0-9_-]+\/)*Dockerfile(?:\.[A-Za-z0-9_-]+)?$/.test(String(context.build.dockerfilePath||''));
   const ranRailpack=/using build driver railpack-v\d|\[railway\] prepare railpack-v\d/i.test(text);
   if(configuredDocker && ranRailpack) return result('PROVIDER_BUILD_PATH_MISMATCH',true,true,true,
     'Preserve the exact source SHA and configured Dockerfile path. Have the release owner or Railway inspect why the effective builder entered Railpack; use an approved independent proof lane meanwhile. Do not count this build as application proof.');
@@ -46,9 +52,9 @@ function result(blockerClass,blocking,developmentCanContinue,fallbackAllowed,nex
 if(import.meta.url===new URL('file://'+process.argv[1]).href){
   const fileIndex=process.argv.indexOf('--file');
   const input=fileIndex>=0 ? fs.readFileSync(process.argv[fileIndex+1],'utf8') : fs.readFileSync(0,'utf8');
-  const buildIndex=process.argv.indexOf('--build-config');
-  const context=buildIndex>=0 ? {build:JSON.parse(fs.readFileSync(process.argv[buildIndex+1],'utf8'))} : {};
+  const buildIndex=process.argv.indexOf('--deployment-context');
+  const context=buildIndex>=0 ? JSON.parse(fs.readFileSync(process.argv[buildIndex+1],'utf8')) : {};
   const classification=classifyProofBlocker(input,context);
   process.stdout.write(JSON.stringify(classification,null,2)+'\n');
-  if(process.argv.includes('--enforce') && classification.blockerClass==='PROVIDER_BUILD_PATH_MISMATCH') process.exitCode=2;
+  if(process.argv.includes('--enforce') && classification.blocking) process.exitCode=2;
 }
