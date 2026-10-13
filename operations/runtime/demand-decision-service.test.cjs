@@ -157,3 +157,20 @@ test('delivery route requires source verification and isolates immutable shadow 
   }finally{service.close();fs.rmSync(f.dir,{recursive:true,force:true});}
 });
 
+test('a changed rejected option source revision persists a distinct delivery wrapper',async()=>{
+  const f=fixture(),url='/api/operations/intelligence/delivery-disruption/shadow';
+  const service=createDemandDecisionService({dbPath:f.dbPath,internalToken:'internal',verifyDeliveryEvidence:()=>true});
+  try{
+    const first=deliveryInput();first.options[0].feasibility.quality=false;
+    const next=structuredClone(first);next.options[0].sourceRef='transfer:2';
+    const post=input=>call(service,makeReq('POST',url,{body:{tenant:'alpha',input},headers:{'x-wfm-demand-internal':'internal'}}));
+    const a=await post(first),b=await post(next),replay=await post(next);
+    assert.equal(a.res.statusCode,201);assert.equal(b.res.statusCode,201);
+    assert.notEqual(a.json.shadow.digest,b.json.shadow.digest);
+    assert.equal(replay.res.statusCode,200);
+    const db=new DatabaseSync(f.dbPath);
+    try{assert.equal(db.prepare('SELECT count(*) AS n FROM vector_delivery_disruption_shadows').get().n,2);}
+    finally{db.close();}
+  }finally{service.close();fs.rmSync(f.dir,{recursive:true,force:true});}
+});
+

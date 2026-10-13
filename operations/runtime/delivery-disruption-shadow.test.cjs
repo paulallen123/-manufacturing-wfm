@@ -69,6 +69,17 @@ test('unsafe, unauthorised and direct-actuation options never rank',()=>{
   const a=input();a.options[0].feasibility.qualifiedStaff=false;a.options[1].directScheduleWrite=true;
   const r=evaluateDeliveryDisruption(a);assert.equal(r.status,'NO_SAFE_RECOVERY');assert.equal(r.rankedOptions.length,0);assert.equal(r.episode.recommendation.optionId,'do-nothing');
 });
+test('a rejected option source revision changes the wrapper identity without disclosing the raw source reference',()=>{
+  const a=input();a.options[0].feasibility.quality=false;
+  const first=evaluateDeliveryDisruption(a);
+  const secondInput=structuredClone(a);secondInput.options[0].sourceRef='transfer:2';
+  const second=evaluateDeliveryDisruption(secondInput);
+  assert.equal(first.status,'RECOVERY_OPTIONS');
+  assert.notEqual(second.digest,first.digest);
+  assert.equal(first.episode.episodeId,second.episode.episodeId);
+  assert.equal(JSON.stringify(first).includes('transfer:1'),false);
+  assert.equal(JSON.stringify(second).includes('transfer:2'),false);
+});
 test('identical replay is deterministic and a material source change changes the result identity',()=>{
   const a=input();const first=evaluateDeliveryDisruption(a);
   a.evidence.push(structuredClone(a.evidence[0]));
