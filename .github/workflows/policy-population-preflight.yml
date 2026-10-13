@@ -1,7 +1,7 @@
 name: Policy population source regression
 on:
   push:
-    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013']
+    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013', 'backlog/policy-confidence-admission-20261013']
   workflow_dispatch:
 permissions:
   contents: read
