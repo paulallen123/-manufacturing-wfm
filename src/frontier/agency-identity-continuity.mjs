@@ -75,6 +75,9 @@ const SIGNALS=Object.freeze({
 });
 
 const text=(value,max=200)=>typeof value==='string'?value.trim().slice(0,max):'';
+// Observation and ingress rows are evidence, not display text: reject their
+// original overlength values instead of creating a valid-looking prefix.
+const evidenceText=(value,max)=>typeof value==='string'&&value.length<=max?value.trim():'';
 const stable=value=>Array.isArray(value)?value.map(stable):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])])):value;
 const digest=(value,length=32)=>crypto.createHash('sha256').update(String(value??'')).digest('hex').slice(0,length);
 const ms=value=>{const parsed=typeof value==='number'?value:Date.parse(value);return Number.isFinite(parsed)?parsed:null;};
@@ -122,24 +125,24 @@ function normalizeFingerprintArray(value){
     try{raw=JSON.parse(raw);}catch{return [];}
   }
   if(!Array.isArray(raw))return [];
-  return [...new Set(raw.map(item=>text(item,32).toLowerCase()).filter(item=>/^[0-9a-f]{32}$/.test(item)))].sort();
+  return [...new Set(raw.map(item=>evidenceText(item,32).toLowerCase()).filter(item=>/^[0-9a-f]{32}$/.test(item)))].sort();
 }
 
 function safeObservation(row){
   if(!row||typeof row!=='object'||Array.isArray(row))return null;
   return {
-    sourceSystemId:text(row.source_system_id??row.sourceSystemId,100),
-    sourceEventFingerprint:text(row.source_event_fingerprint??row.sourceEventFingerprint,32).toLowerCase(),
-    subjectFingerprint:text(row.subject_fingerprint??row.subjectFingerprint,32).toLowerCase(),
-    signalType:text(row.signal_type??row.signalType,80),
+    sourceSystemId:evidenceText(row.source_system_id??row.sourceSystemId,100),
+    sourceEventFingerprint:evidenceText(row.source_event_fingerprint??row.sourceEventFingerprint,32).toLowerCase(),
+    subjectFingerprint:evidenceText(row.subject_fingerprint??row.subjectFingerprint,32).toLowerCase(),
+    signalType:evidenceText(row.signal_type??row.signalType,80),
     observedAt:iso(row.observed_at??row.observedAt),
-    tenantId:text(row.tenant_id??row.tenantId,100),
-    siteId:text(row.site_id??row.siteId,100),
-    requestId:text(row.request_id??row.requestId,100),
-    agencyId:text(row.agency_id??row.agencyId,100),
-    workerId:text(row.worker_id??row.workerId,100),
-    assignmentFingerprint:text(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
-    assuranceVersionId:text(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
+    tenantId:evidenceText(row.tenant_id??row.tenantId,100),
+    siteId:evidenceText(row.site_id??row.siteId,100),
+    requestId:evidenceText(row.request_id??row.requestId,100),
+    agencyId:evidenceText(row.agency_id??row.agencyId,100),
+    workerId:evidenceText(row.worker_id??row.workerId,100),
+    assignmentFingerprint:evidenceText(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
+    assuranceVersionId:evidenceText(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
     provenanceBindingFingerprints:normalizeFingerprintArray(row.provenance_binding_fingerprints??row.provenanceBindingFingerprints),
   };
 }

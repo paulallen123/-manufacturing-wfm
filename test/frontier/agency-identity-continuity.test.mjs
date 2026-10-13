@@ -65,6 +65,34 @@ test('missing or mismatched authenticated ingress provenance cannot satisfy cont
   }
 });
 
+test('overlength observation and ingress fingerprints cannot become valid by truncation',async()=>{
+  const base=observation({sourceEventFingerprint:'1'.repeat(32)});
+  assert.equal((await evaluateAgencyIdentityContinuity(input([base]))).continuityPassed,true);
+  for(const field of ['sourceEventFingerprint','subjectFingerprint','assignmentFingerprint','assuranceVersionId']){
+    for(const suffix of ['forged','   ']){
+      const row=observation({[field]:base[field]+suffix});
+      // These are synthetic adapter rows. Even a provenance list shaped to the
+      // shortened row must not authorize the overlength original observation.
+      const shortened={...row,[field]:base[field]};
+      row.provenanceBindingFingerprints=[bindingFp(shortened)];
+      assert.equal((await evaluateAgencyIdentityContinuity(input([row]))).continuityPassed,false,`${field} ${suffix}`);
+    }
+  }
+  const row=observation({sourceEventFingerprint:'2'.repeat(32)});
+  for(const suffix of ['forged','   ']){
+    row.provenanceBindingFingerprints=[bindingFp(row)+suffix];
+    assert.equal((await evaluateAgencyIdentityContinuity(input([row]))).continuityPassed,false,'ingress fingerprint');
+  }
+  const sourceId='s'.repeat(100);
+  const longSource=observation({sourceSystemId:sourceId+'forged'});
+  longSource.provenanceBindingFingerprints=[bindingFp({...longSource,sourceSystemId:sourceId})];
+  assert.equal((await evaluateAgencyIdentityContinuity(input([longSource],{policy:policy({allowedSources:{[sourceId]:['access_pass']}})}))).continuityPassed,false,'source identifier');
+  const workerId='w'.repeat(100);
+  const longWorker=observation({workerId:workerId+'forged'});
+  longWorker.provenanceBindingFingerprints=[bindingFp({...longWorker,workerId})];
+  assert.equal((await evaluateAgencyIdentityContinuity(input([longWorker],{workerBinding:{workerId,assuranceVersionId:ASSURANCE}}))).continuityPassed,false,'worker identifier');
+});
+
 test('policy must be explicitly role/site scoped and unavailable evidence store fails closed',async()=>{
   const badPolicy=await evaluateAgencyIdentityContinuity(input([observation()],{policy:policy({siteId:'OTHER'})}));
   assert.equal(badPolicy.continuityPassed,false);assert.equal(badPolicy.reason,'identity_continuity_policy_invalid');
