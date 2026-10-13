@@ -5,6 +5,17 @@ function iso(value,name,{required=false}={}){
     if(required) throw new TypeError(`${name} is required`);
     return null;
   }
+  const match=typeof value==='string'&&/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-]\d{2}:\d{2})$/.exec(value);
+  if(!match) throw new TypeError(`${name} must be an ISO-8601 timestamp`);
+  const [,yearText,monthText,dayText,hourText,minuteText,secondText,zone]=match;
+  const [year,month,day,hour,minute,second]=[yearText,monthText,dayText,hourText,minuteText,secondText].map(Number);
+  const leap=year%4===0&&(year%100!==0||year%400===0);
+  const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+  const offsetHour=zone==='Z'?0:Number(zone.slice(1,3));
+  const offsetMinute=zone==='Z'?0:Number(zone.slice(4,6));
+  if(year<1||month<1||month>12||day<1||day>days[month-1]||hour>23||minute>59||second>59||offsetHour>23||offsetMinute>59){
+    throw new TypeError(`${name} must be an ISO-8601 timestamp`);
+  }
   const parsed=new Date(value);
   if(Number.isNaN(parsed.getTime())) throw new TypeError(`${name} must be an ISO-8601 timestamp`);
   return {raw:String(value),epochMs:parsed.getTime()};
