@@ -238,6 +238,54 @@ test('missing evidence is BLOCKED_REQUIRED_DATA, never skip or pass', () => {
   assert.equal(validateApplication(undefined, undefined).status, 'BLOCKED_REQUIRED_DATA');
   assert.equal(validateRejection(fixture('reject').contract, undefined).mutationProven, false);
 });
+test('accessor-backed and proxied receipt fields are not plain JSON evidence', () => {
+  const accessor = fixture();
+  const original = accessor.evidence.actions[0].receiptId;
+  Object.defineProperty(accessor.evidence.actions[0], 'receiptId', {
+    enumerable: true, configurable: true, get: () => original,
+  });
+  reject(accessor);
+
+  const proxy = fixture();
+  proxy.evidence.actions[0] = new Proxy(proxy.evidence.actions[0], {});
+  reject(proxy);
+});
+test('polluted array iteration cannot hide an accessor receipt from JSON admission', () => {
+  const f = fixture();
+  const receiptId = f.evidence.actions[0].receiptId;
+  let getterReads = 0;
+  Object.defineProperty(f.evidence.actions[0], 'receiptId', {
+    enumerable: true, get() { getterReads++; return receiptId; },
+  });
+  const originalIterator = Array.prototype[Symbol.iterator];
+  try {
+    Array.prototype[Symbol.iterator] = function* () {
+      for (let i = 0; i < this.length; i++) if (this[i] !== 'receiptId') yield this[i];
+    };
+    const result = validate(f);
+    assert.notEqual(result.status, 'EVIDENCE_CONSISTENT');
+    assert.equal(getterReads, 0);
+  } finally {
+    Array.prototype[Symbol.iterator] = originalIterator;
+  }
+});
+test('polluted Array.includes cannot admit a forged review status', () => {
+  const f = fixture('reject');
+  f.contract.preState.review.status = 'forged-status';
+  f.contract.preStateHash = evidenceHash(f.contract.preState);
+  f.evidence.before.review.status = 'forged-status';
+  for (const a of f.evidence.actions) a.state.review.status = 'forged-status';
+  for (const o of f.evidence.observations) o.state.review.status = 'forged-status';
+  const originalIncludes = Array.prototype.includes;
+  try {
+    Array.prototype.includes = () => true;
+    const result = validate(f);
+    assert.notEqual(result.status, 'EVIDENCE_CONSISTENT');
+    assert.equal(result.mutationProven, false);
+  } finally {
+    Array.prototype.includes = originalIncludes;
+  }
+});
 test('separate entrypoints cannot stitch rejection into successful apply', () => {
   const r = fixture('reject'), a = fixture();
   assert.equal(validateApplication(r.contract, r.evidence).mutationProven, false);
