@@ -1,0 +1,17 @@
+# Support self-help knowledge ownership
+
+Requirement: F5.1 zero-engineer support and F5.4 Trust/evidence/authority controls in VECTOR-Friday-release-backlog-2026-10-11.md; existing deterministic Tier-0 helper must retain approved advice, source evidence and role scope despite public catalogue edits.
+
+Ownership: focused current open-PR, issue and selfhelp branch searches returned no matching package; latest #265 page 5, visible Actions jobs and canonical tree were inspected. Reservation: https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6150646605. Other chats/private leases cannot be exhaustively observed. Continue customer proof remains sole canonical integration/deployment owner. This package starts no runtime/controller/shared writer.
+
+Exact base: release/vector-customer-ready-candidate-20260925@48dce8f697825c8cd5f99b3e5aeea3953647f8c2, tree cc8ff3737036dec8fe69a90e0759289661280537. Base helper blob 90f294b136fedf38a3a9a39df81b490c8209561a. Changed helper resilience/support-selfhelp.cjs; adds resilience/support-selfhelp.test.cjs, this record and .github/workflows/support-selfhelp-ownership.yml. Original scripts/validate-support-selfhelp.mjs remains unchanged.
+
+Result: exported catalogue entries now have detached role/source arrays and fresh RegExp instances. answer() continues to use private original records. Existing public catalogue shape is retained; supported replies, abstentions and actionAuthority:false remain unchanged. Public catalogue mutation no longer configures the answer engine. This is not whole-process intrinsic hardening or authenticated actor binding.
+
+Actual local verification on Node v24.19.0: existing validator PASS 10 cases before and after; new regression RED 1 pass/4 failures, exit 1, then GREEN 5/5 with zero failures/skips/cancellations, exit 0. Syntax checks on helper/test passed. Tests exercise edits to advice, intent, sources, roles, pattern arrays, RegExp internal compile() and returned sources. Full repository suite, Docker, supported Node22 and installed runtime were not run locally. The local workbench contains only exact fetched files, not a full checkout. Dedicated read-only workflow schedules the supported source check; scheduling alone is no success receipt.
+
+Review: independent exact-source review pending at publication. Integration: isolated draft handoff, not canonically adopted. Deployment/hosted/customer proof: none. Fresh Railway service observation: SUCCESS deployment faca24a2-10b9-4289-bc49-3406e44f7272 still uses older 90ad90fcf60adaca9abacdd4ad14bf392f95e585; staged patch b453aa80-4763-4a08-a4f5-d5d27534b2c8 points to 48d but is not accepted.
+
+Material packaging limitation: current Dockerfile copies source into the discarded autonomy-proof stage and explicitly excludes support/repair source from the final runtime stage. This helper repair does not establish a changed serving support path. No bootstrap, Docker or deployment file was changed.
+
+Strongest state: BUILT / TESTED locally. Remaining: independent review, supported-runtime receipt, canonical owner adoption, combined exact release gates, explicit serving support integration and authenticated same-image customer evidence. Next action: canonical owner review and adopt this bounded change; determine the authoritative installed support path before enabling any runtime claim. Preserve release controls and synthetic-data boundary.

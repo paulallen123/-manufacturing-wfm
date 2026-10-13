@@ -83,4 +83,16 @@ function answer({ text, role='support', version='0.6.76-hosted-staging-rc1' } = 
   };
 }
 
-module.exports = { answer, KNOWLEDGE };
+// Public catalogue inspection must not grant write access to the records used
+// by answer(). RegExp objects need distinct instances as compile() can alter
+// their internal matcher even when a surrounding array is frozen.
+module.exports = {
+  answer,
+  KNOWLEDGE: Object.freeze(KNOWLEDGE.map(item => ({
+    ...item,
+    sources: [...item.sources],
+    roles: [...item.roles],
+    patterns: item.patterns.map(pattern => new RegExp(pattern.source, pattern.flags))
+  })))
+};
+
