@@ -36,6 +36,10 @@ const learnedGuardChecks={
     ['resilience/pre-freeze-simulator.cjs','PROVIDER_DEGRADED_PREEXECUTION'],
     ['release/proof-lane-policy.json','failureDomain']
   ],
+  'configured-dockerfile-ran-railpack':[
+    ['scripts/classify-proof-blocker.mjs','PROVIDER_BUILD_PATH_MISMATCH'],
+    ['scripts/validate-proof-blocker-classifier.mjs','PROVIDER_BUILD_PATH_MISMATCH']
+  ],
   'hosted-proof-lane-runtime-contract-missing':[
     ['resilience/pre-freeze-simulator.cjs','RUNTIME_VARIABLE_CONTRACT_MISSING'],
     ['resilience/pre-freeze-simulator.cjs','WFM_PUBLIC_ORIGIN'],

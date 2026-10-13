@@ -209,6 +209,14 @@
       "learnedFrom": "Attendance-owned weekly sign-off convergence assault 2026-09-25",
       "prevention": "When source-route ownership changes, update the regression to prove both the protected dirty-state hold and the permitted transition from the new authoritative route; never preserve retired route labels as expected state.",
       "permanentGuard": "workflow regression asserts Attendance hold and vector-weekly-signoff transition"
+    },
+    {
+      "id": "configured-dockerfile-ran-railpack",
+      "class": "PROVIDER_BUILD_PATH_MISMATCH",
+      "symptom": "A proof service configured for a named Dockerfile enters Railpack and fails before the Docker proof stage starts.",
+      "learnedFrom": "issue #185, private proof harness deployment 13fd2993, 2026-09-27",
+      "prevention": "Compare the service's current builder and Dockerfile path with the actual deployment build driver. Quarantine that proof receipt and keep the exact candidate on an approved independent lane until the release owner resolves the effective builder.",
+      "permanentGuard": "classify-proof-blocker configured-Dockerfile/Railpack mismatch regression"
     }
   ]
 }

@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {classifyProofBlocker} from './classify-proof-blocker.mjs';
 
 const cases=[
@@ -22,4 +27,23 @@ const unknown=classifyProofBlocker('Build Failed without useful evidence');
 assert.equal(unknown.blockerClass,'UNKNOWN_FAIL_CLOSED');
 assert.equal(unknown.globalStop,false);
 assert.equal(unknown.affectedScopeMode,'DIAGNOSTIC_ONLY');
+const railpackLog='using build driver railpack-v0.40.0\n[railway] prepare railpack-v0.40.0\nScript start.sh not found\nRailpack could not determine how to build the app.';
+const dockerConfig={builder:'DOCKERFILE',dockerfilePath:'Dockerfile.current-candidate-role-browser-proof'};
+const wrongBuilder=classifyProofBlocker(railpackLog,{build:dockerConfig});
+assert.equal(wrongBuilder.blockerClass,'PROVIDER_BUILD_PATH_MISMATCH');
+assert.equal(wrongBuilder.blocking,true);
+assert.equal(wrongBuilder.affectedPromotion,'QUARANTINED');
+assert.equal(wrongBuilder.globalStop,false);
+assert.match(wrongBuilder.nextAction,/Dockerfile|provider/i);
+assert.equal(classifyProofBlocker(railpackLog).blockerClass,'UNKNOWN_FAIL_CLOSED');
+assert.equal(classifyProofBlocker(railpackLog,{build:{builder:'RAILPACK'}}).blockerClass,'UNKNOWN_FAIL_CLOSED');
+const temporary=mkdtempSync(join(tmpdir(),'vector-builder-classifier-'));
+try{
+  const logFile=join(temporary,'build.log'),buildFile=join(temporary,'build.json');
+  writeFileSync(logFile,railpackLog);writeFileSync(buildFile,JSON.stringify(dockerConfig));
+  const cli=spawnSync(process.execPath,[fileURLToPath(new URL('./classify-proof-blocker.mjs',import.meta.url)),
+    '--file',logFile,'--build-config',buildFile,'--enforce'],{encoding:'utf8'});
+  assert.equal(cli.status,2,cli.stderr);
+  assert.equal(JSON.parse(cli.stdout).blockerClass,'PROVIDER_BUILD_PATH_MISMATCH');
+}finally{rmSync(temporary,{recursive:true,force:true});}
 console.log('VECTOR_PROOF_BLOCKER_CLASSIFIER=PASS cases='+cases.length+' scopedIsolation=true');

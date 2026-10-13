@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 
-export function classifyProofBlocker(input=''){
+export function classifyProofBlocker(input='',context={}){
   const text=String(input||'');
+  const configuredDocker=String(context?.build?.builder||'').toUpperCase()==='DOCKERFILE' &&
+    /^Dockerfile(?:\.[A-Za-z0-9_-]+)?$/.test(String(context?.build?.dockerfilePath||''));
+  const ranRailpack=/using build driver railpack-v\d|\[railway\] prepare railpack-v\d/i.test(text);
+  if(configuredDocker && ranRailpack) return result('PROVIDER_BUILD_PATH_MISMATCH',true,true,true,
+    'Preserve the exact source SHA and configured Dockerfile path. Have the release owner or Railway inspect why the effective builder entered Railpack; use an approved independent proof lane meanwhile. Do not count this build as application proof.');
   const hasTestFailure=/\bnot ok\b|ERR_ASSERTION|AssertionError|# fail\s+[1-9]/i.test(text);
   const providerOnly=/runner_id=0|no runner allocated|runner allocation|builder unavailable|provider unavailable|scheduling build[^\n]*(?:timeout|failed before execution)/i.test(text) && !hasTestFailure;
   if(providerOnly) return result('PROVIDER_DEGRADED',false,true,true,'Run the identical source SHA through the next executable independent proof lane.');
@@ -41,5 +46,9 @@ function result(blockerClass,blocking,developmentCanContinue,fallbackAllowed,nex
 if(import.meta.url===new URL('file://'+process.argv[1]).href){
   const fileIndex=process.argv.indexOf('--file');
   const input=fileIndex>=0 ? fs.readFileSync(process.argv[fileIndex+1],'utf8') : fs.readFileSync(0,'utf8');
-  process.stdout.write(JSON.stringify(classifyProofBlocker(input),null,2)+'\n');
+  const buildIndex=process.argv.indexOf('--build-config');
+  const context=buildIndex>=0 ? {build:JSON.parse(fs.readFileSync(process.argv[buildIndex+1],'utf8'))} : {};
+  const classification=classifyProofBlocker(input,context);
+  process.stdout.write(JSON.stringify(classification,null,2)+'\n');
+  if(process.argv.includes('--enforce') && classification.blockerClass==='PROVIDER_BUILD_PATH_MISMATCH') process.exitCode=2;
 }
