@@ -1,0 +1,31 @@
+name: Scheduling preference proof gate
+
+on:
+  pull_request:
+    branches: [release/vector-customer-ready-candidate-20260925]
+    paths:
+      - 'operations/runtime/manufacturing-scheduling-engine.cjs'
+      - 'operations/runtime/manufacturing-scheduling-engine.test.cjs'
+      - 'operations/runtime/scheduling-preference-fairness-proof.test.cjs'
+      - '.github/workflows/scheduling-preference-proof-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-preference-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up approved Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v4.4.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Verify preference and fairness ranking
+        run: node --test operations/runtime/scheduling-preference-fairness-proof.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs
