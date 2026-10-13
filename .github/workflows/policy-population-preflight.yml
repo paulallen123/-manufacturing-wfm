@@ -1,7 +1,7 @@
 name: Policy population source regression
 on:
   push:
-    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013', 'backlog/policy-confidence-admission-20261013']
+    branches: ['backlog/policy-population-preflight-20261013', 'backlog/policy-provenance-immutability-20261013', 'backlog/policy-source-observation-20261013', 'backlog/policy-confidence-admission-20261013', 'proof/policy-image-admission-20261013']
   workflow_dispatch:
 permissions:
   contents: read
@@ -33,3 +33,43 @@ jobs:
           test "$(node --version)" = "v22.23.2"
           git ls-files --stage -- policy/runtime
           node --test policy/runtime/*.test.cjs
+
+  full-image-policy-regression:
+    if: github.actor == github.repository_owner && github.ref == 'refs/heads/proof/policy-image-admission-20261013'
+    needs: source-regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact policy stack
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Execute unchanged complete Docker admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          docker build --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="$GITHUB_SHA" -t "vector-policy-proof:$GITHUB_SHA" .
+      - name: Verify installed bytes and execute installed policy engines
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --user node --entrypoint /bin/sh \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/policy/runtime,target=/proof/source,readonly" \
+            -e "EXPECTED_SOURCE_SHA=$GITHUB_SHA" "vector-policy-proof:$GITHUB_SHA" -c '
+              set -eu
+              test "$(cat /app/.wfm-build-source-sha)" = "$EXPECTED_SOURCE_SHA"
+              test "$(node --version)" = "v22.23.2"
+              mkdir /tmp/policy-installed-tests
+              for source in /proof/source/*.cjs; do
+                name=$(basename "$source")
+                case "$name" in
+                  *.test.cjs) cp "$source" "/tmp/policy-installed-tests/$name" ;;
+                  *) cmp "$source" "/app/policy-runtime/$name"
+                     ln -s "/app/policy-runtime/$name" "/tmp/policy-installed-tests/$name" ;;
+                esac
+              done
+              node --test /tmp/policy-installed-tests/*.test.cjs
+            '
