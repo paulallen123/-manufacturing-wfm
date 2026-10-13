@@ -64,7 +64,8 @@
       "deliveryStage": "CONVERGENCE_PROOF",
       "theoryStatus": "PASS_ISOLATED",
       "implementationStatus": "CANONICAL",
-      "nextLifecycleAction": "Complete hosted Golden Journey/outcome proof and continue evolution."
+      "isolatedHardeningEvidence": "docs/evidence/2026-10-13-energy-confidence-admission.md",
+      "nextLifecycleAction": "Canonical owner to reconcile the isolated confidence-admission fix, then bind real energy/process/workforce source evidence and complete exact-candidate hosted Golden Journey/outcome proof."
     },
     {
       "id": "manufacturing-event-disruption-cost",
