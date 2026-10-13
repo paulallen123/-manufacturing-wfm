@@ -24,3 +24,11 @@ test('unproven locale is identified rather than silently publishing English cont
   assert.equal(plan.jobs.length,0);
   assert.ok(plan.localisationRequired.length>0);
 });
+
+test('explicit empty role scope cannot expand to every default training role',()=>{
+  const base={changedDependencies:['absence'],productSha:'1234567890abcdef1234567890abcdef12345678',targetOrigin:'https://vector.example'};
+  for(const roles of [[],[''],{}]){
+    assert.throws(()=>planTrainingRegeneration({...base,roles}),error=>error.statusCode===400&&/roles/i.test(error.message));
+  }
+  assert.ok(planTrainingRegeneration(base).jobs.length>0,'omitted roles retain the documented default scope');
+});
