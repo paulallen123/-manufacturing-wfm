@@ -7,6 +7,7 @@ on:
       - 'implementation/proof/cloud-scale-proof-identity.cjs'
       - 'implementation/proof/cloud-scale-proof-identity.test.cjs'
       - 'implementation/runtime/configuration-inference-engine.cjs'
+      - 'Dockerfile'
       - '.github/workflows/cloud-scale-identity-gate.yml'
 
 permissions:
@@ -31,3 +32,12 @@ jobs:
             WFM_CONFIG_ENGINE_GIT_BLOB_SHA="$(git hash-object implementation/runtime/configuration-inference-engine.cjs)" \
             WFM_PROOF_ONESHOT=true node implementation/proof/cloud-scale-proof-runner.cjs > "$RUNNER_TEMP/scale-receipt.json"
           node -e 'const r=require(process.argv[1]);if(r.status!=="PASS"||r.scale.employees!==10000||r.scale.sites!==50||r.failedAssertions.length||!r.engineIdentity.exact||!r.claimBoundary.includes("does not bind the whole serving candidate"))process.exit(1)' "$RUNNER_TEMP/scale-receipt.json"
+      - name: Prove copied image runtime includes identity helper
+        run: |
+          grep -Fqx 'COPY implementation/proof/cloud-scale-proof-identity.cjs /app/proof-runtime/cloud-scale-proof-identity.cjs' Dockerfile
+          mkdir "$RUNNER_TEMP/proof-runtime"
+          cp implementation/proof/cloud-scale-proof-runner.cjs implementation/proof/cloud-scale-proof-identity.cjs "$RUNNER_TEMP/proof-runtime/"
+          WFM_CONFIG_ENGINE_PATH="$PWD/implementation/runtime/configuration-inference-engine.cjs" \
+            WFM_CONFIG_ENGINE_GIT_BLOB_SHA="$(git hash-object implementation/runtime/configuration-inference-engine.cjs)" \
+            WFM_PROOF_ONESHOT=true node "$RUNNER_TEMP/proof-runtime/cloud-scale-proof-runner.cjs" > "$RUNNER_TEMP/copied-scale-receipt.json"
+          node -e 'const r=require(process.argv[1]);if(r.status!=="PASS"||r.failedAssertions.length)process.exit(1)' "$RUNNER_TEMP/copied-scale-receipt.json"
