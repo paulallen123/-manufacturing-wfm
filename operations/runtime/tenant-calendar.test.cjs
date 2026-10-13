@@ -37,3 +37,17 @@ test('calendar snapshot and freshness use one server-authoritative clock and tim
  assert.equal(calendar.freshness({asOf:'2026-10-06T04:20:00Z',timeZone:snap.timeZone,maxAgeMs:snap.maxAgeMs}).fresh,true);
  assert.deepEqual(calendar.freshness({asOf:'2026-10-06T04:00:00Z',timeZone:snap.timeZone,maxAgeMs:snap.maxAgeMs}).fresh,false);
 });
+
+test('site timezone lookup uses the normalized site identity',()=>{
+ const calendar=createTenantCalendar({env:{
+  WFM_TENANT_TIMEZONE:'Europe/London',
+  WFM_SITE_TIMEZONES_JSON:JSON.stringify({Tamworth:'Australia/Sydney'})
+ },now:()=>Date.parse('2026-10-06T14:30:00Z')});
+ const exact=calendar.snapshot({tenant:'northstar-demo',site:'Tamworth'});
+ const padded=calendar.snapshot({tenant:'northstar-demo',site:' Tamworth '});
+ assert.deepEqual(padded,exact);
+ assert.equal(padded.site,'Tamworth');
+ assert.equal(padded.timeZone,'Australia/Sydney');
+ assert.equal(padded.localDate,'2026-10-07');
+});
+
