@@ -64,6 +64,18 @@ test('duplicate scenario IDs cannot hide a failed observation',()=>{
   assert.equal(r.theoryReady,false);
   assert.equal(r.theoryPass,false);
 });
+test('mutating observation getters cannot turn contradictory evidence into theory admission',()=>{
+  const mutable=theory();
+  let reads=0;
+  Object.defineProperty(mutable.scenarios[2],'observations',{enumerable:true,get(){
+    reads++;
+    return reads===1?[{id:'decision',expected:'deny',actual:'allow'}]:[];
+  }});
+  const r=assessResearchCandidate({item:{id:'factory-playback',tags:['simulation']},design:design(),theory:mutable,implementation:impl()});
+  assert.equal(r.theoryPass,false);
+  assert.equal(r.implementationAdmitted,false);
+  assert.equal(reads,0,'admission must not invoke caller-owned accessors');
+});
 test('high-impact country policy implementation must remain advisory or use independent authority',()=>{
   const blocked=assessResearchCandidate({item:{id:'country-policy',tags:['country-policy','payroll']},design:design(),theory:theory(),implementation:impl({advisoryFirst:false,independentAuthorityGate:false})});
   assert.equal(blocked.theoryPass,true); assert.equal(blocked.implementationAdmitted,false);

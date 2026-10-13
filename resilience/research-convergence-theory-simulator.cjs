@@ -1,5 +1,5 @@
 'use strict';
-const {isDeepStrictEqual}=require('node:util');
+const {isDeepStrictEqual,types}=require('node:util');
 
 const ENGINE_IDS = Object.freeze([
   'orchestrator',
@@ -16,6 +16,36 @@ function list(v){return Array.isArray(v)?v.filter(Boolean):[];}
 function strings(v){return list(v).map(String);}
 function hasText(v){return typeof v==='string' && v.trim().length>0;}
 function allText(v){return strings(v).length>0 && strings(v).every(hasText);}
+
+function inertSnapshot(value, seen=new Set(), depth=0){
+  if(value===null || typeof value==='string' || typeof value==='number' || typeof value==='boolean') return value;
+  if(typeof value!=='object' || types.isProxy(value) || depth>24 || seen.has(value)) throw new TypeError('Research evidence must be inert data.');
+  const prototype=Object.getPrototypeOf(value);
+  if(!Array.isArray(value) && prototype!==Object.prototype && prototype!==null) throw new TypeError('Research evidence must be plain data.');
+  seen.add(value);
+  const descriptors=Object.getOwnPropertyDescriptors(value);
+  let result;
+  if(Array.isArray(value)){
+    const length=descriptors.length.value;
+    if(length>1000) throw new TypeError('Research evidence array too large.');
+    result=[];
+    for(let i=0;i<length;i++){
+      const field=descriptors[i];
+      if(!field || !Object.hasOwn(field,'value')) throw new TypeError('Research evidence arrays must be dense data.');
+      result.push(inertSnapshot(field.value,seen,depth+1));
+    }
+    if(Object.keys(descriptors).some(key=>key!=='length' && !/^(0|[1-9]\d*)$/.test(key))) throw new TypeError('Research evidence arrays cannot carry extra fields.');
+  }else{
+    result=Object.create(null);
+    for(const [key,field] of Object.entries(descriptors)){
+      if(!field.enumerable) continue;
+      if(!Object.hasOwn(field,'value')) throw new TypeError('Research evidence cannot use accessors.');
+      result[key]=inertSnapshot(field.value,seen,depth+1);
+    }
+  }
+  seen.delete(value);
+  return result;
+}
 
 function routeResearchToEngines(item={}){
   const tags=new Set(strings(item.tags).map(x=>x.toLowerCase()));
@@ -52,10 +82,12 @@ function scenarioPassed(scenario){
 }
 
 function assessResearchCandidate(input={}){
-  const item=input.item||{};
-  const design=input.design||{};
-  const theory=input.theory||{};
-  const implementation=input.implementation||{};
+  let candidate;
+  try{candidate=inertSnapshot(input);}catch{candidate={};}
+  const item=candidate.item||{};
+  const design=candidate.design||{};
+  const theory=candidate.theory||{};
+  const implementation=candidate.implementation||{};
   const engines=routeResearchToEngines(item);
   const designPass=designComplete(design);
   const theoryReady=designPass && theoryComplete(theory);
