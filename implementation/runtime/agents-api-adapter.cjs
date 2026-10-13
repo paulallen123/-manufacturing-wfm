@@ -264,13 +264,15 @@ function createAgentsApiAdapter(options = {}) {
     return { sessionId: payload.id, reused: false, status, profile: ACTIVE_READONLY_PROFILE };
   }
 
-  async function analyzeSession({ sessionId, runId, tenant, toolHandler, startTurn = false, prompt = null }) {
+  async function analyzeSession({ sessionId, runId, tenant, toolHandler, startTurn = false, prompt = null, assertCurrentIdentity = null }) {
     sessionId = text(sessionId, 256);
     runId = text(runId, 128);
     tenant = text(tenant, 128);
     const run = runById.get(runId);
     if (!sessionId || !run || run.tenant !== tenant) throw new Error('VECTOR_AGENTS_RUN_IDENTITY_MISMATCH');
     if (typeof toolHandler !== 'function') throw new Error('VECTOR_AGENTS_READONLY_TOOL_HANDLER_REQUIRED');
+    if (assertCurrentIdentity !== null && typeof assertCurrentIdentity !== 'function') throw new Error('VECTOR_AGENTS_CURRENT_IDENTITY_GUARD_REQUIRED');
+    const guardCurrentIdentity = () => { if (assertCurrentIdentity) assertCurrentIdentity(); };
 
     const allowed = new Set(ACTIVE_READONLY_TOOLS.map(item => item.name));
     const calledTools = new Set();
@@ -328,6 +330,7 @@ function createAgentsApiAdapter(options = {}) {
             output: serialized
           });
         }
+        guardCurrentIdentity();
         const submitted = await request('/sessions/' + encodeURIComponent(sessionId) + '/events', {
           method: 'POST', body: { events }
         });
@@ -367,6 +370,7 @@ function createAgentsApiAdapter(options = {}) {
       if (!started && status === 'idle') {
         const message = text(prompt, 8000) ||
           'Re-inspect the current VECTOR customer-proof state using every read-only function. Report identity alignment, blockers, drift and next safe actions.';
+        guardCurrentIdentity();
         const submitted = await request('/sessions/' + encodeURIComponent(sessionId) + '/events', {
           method: 'POST',
           body: {
@@ -418,6 +422,7 @@ function createAgentsApiAdapter(options = {}) {
           error.statusCode = 409;
           throw error;
         }
+        guardCurrentIdentity();
         upsertReport.run(
           sessionId, runId, tenant, candidateSha, deploymentId, ACTIVE_READONLY_PROFILE,
           report.slice(0, 32 * 1024), new Date().toISOString()

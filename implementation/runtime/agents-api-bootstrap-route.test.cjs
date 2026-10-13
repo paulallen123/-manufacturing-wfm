@@ -19,7 +19,9 @@ function request(method, url, body, token) {
   req.headers = token ? { 'x-wfm-implementation-internal': token } : {};
   return req;
 }
-function fixture(fetchImpl) {
+function fixture(fetchImpl, statusForTenant = tenant => tenant === 'northstar-demo'
+  ? { runId: 'run-1', tenant, state: 'BUILDING', operationalReady: false, requirements: [{ key: 'time-policies', satisfied: false }] }
+  : null) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-agents-route-'));
   const dbPath = path.join(dir, 'test.sqlite');
   const db = new DatabaseSync(dbPath);
@@ -31,9 +33,7 @@ function fixture(fetchImpl) {
     dbPath, internalToken: 'internal-token', candidateSha: 'a'.repeat(40), deploymentId: 'deployment-1',
     apiKey: 'test-key', model: 'gpt-6-sol', fetchImpl,
     pollIntervalMs: 0, maxPolls: 8,
-    statusForTenant: tenant => tenant === 'northstar-demo'
-      ? { state: 'BUILDING', operationalReady: false, requirements: [{ key: 'time-policies', satisfied: false }] }
-      : null
+    statusForTenant
   });
   return { dir, route, close() { route.close(); fs.rmSync(dir, { recursive: true, force: true }); } };
 }
@@ -93,6 +93,69 @@ test('wrong internal token fails before contacting OpenAI', async () => {
   } finally { f.close(); }
 });
 
+test('historical same-tenant run cannot read current-run readiness or create a session', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-agents-run-binding-'));
+  const dbPath = path.join(dir, 'test.sqlite');
+  const db = new DatabaseSync(dbPath);
+  db.exec('CREATE TABLE implementation_runs(id TEXT PRIMARY KEY,tenant TEXT NOT NULL);');
+  db.prepare('INSERT INTO implementation_runs VALUES(?,?)').run('historical-run', 'northstar-demo');
+  db.prepare('INSERT INTO implementation_runs VALUES(?,?)').run('current-run', 'northstar-demo');
+  db.close();
+  let networkCalls = 0;
+  const route = createAgentsApiBootstrapRoute({
+    dbPath, internalToken: 'internal', candidateSha: 'a'.repeat(40), deploymentId: 'dep-1', apiKey: 'test-key',
+    fetchImpl: async () => { networkCalls++; throw new Error('network must not be reached'); },
+    statusForTenant: () => ({ runId: 'current-run', tenant: 'northstar-demo', operationalReady: true })
+  });
+  try {
+    await assert.rejects(route.bootstrap({ runId: 'historical-run', tenant: 'northstar-demo' }),
+      /VECTOR_AGENTS_CURRENT_RUN_MISMATCH/);
+    assert.equal(networkCalls, 0);
+    const check = new DatabaseSync(dbPath);
+    try { assert.equal(check.prepare('SELECT COUNT(*) AS n FROM vector_agents_sessions').get().n, 0); }
+    finally { check.close(); }
+  } finally { route.close(); fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('run rotation after session creation blocks the agent turn', async () => {
+  let activeRun = 'run-1';
+  const calls = [];
+  const f = fixture(async (url, init = {}) => {
+    calls.push({ url: String(url), method: init.method });
+    if (String(url).endsWith('/v1/agents/sessions') && init.method === 'POST') {
+      activeRun = 'run-2';
+      return new Response(JSON.stringify({ id: 'sess_rotated', status: 'idle' }), { status: 200 });
+    }
+    throw new Error('agent turn must not start');
+  }, tenant => ({ runId: activeRun, tenant, operationalReady: false }));
+  try {
+    await assert.rejects(f.route.bootstrap({ runId: 'run-1', tenant: 'northstar-demo' }),
+      /VECTOR_AGENTS_CURRENT_RUN_MISMATCH/);
+    assert.deepEqual(calls.map(call => call.method), ['POST']);
+  } finally { f.close(); }
+});
+
+test('run rotation while reading session state blocks message submission', async () => {
+  let activeRun = 'run-1';
+  const calls = [];
+  const f = fixture(async (url, init = {}) => {
+    url = String(url); calls.push({ url, method: init.method });
+    if (url.endsWith('/v1/agents/sessions') && init.method === 'POST')
+      return new Response(JSON.stringify({ id: 'sess_rotated_during_get', status: 'idle' }), { status: 200 });
+    if (url.endsWith('/sess_rotated_during_get') && init.method === 'GET') {
+      activeRun = 'run-2';
+      return new Response(JSON.stringify({ id: 'sess_rotated_during_get', status: 'idle', required_actions: [] }), { status: 200 });
+    }
+    if (url.includes('/turns?')) return new Response(JSON.stringify({ data: [] }), { status: 200 });
+    throw new Error('stale run must not submit an agent event');
+  }, tenant => ({ runId: activeRun, tenant, operationalReady: false }));
+  try {
+    await assert.rejects(f.route.bootstrap({ runId: 'run-1', tenant: 'northstar-demo' }),
+      /VECTOR_AGENTS_CURRENT_RUN_MISMATCH/);
+    assert.equal(calls.some(call => call.url.endsWith('/events') && call.method === 'POST'), false);
+  } finally { f.close(); }
+});
+
 test('server startup uses the same bootstrap without copying internal credentials', async () => {
   let sessionReads = 0;
   const f = fixture(async (url, init={}) => {
@@ -141,7 +204,7 @@ test('bootstrap tool outputs are fresh sanitized read-only state', async () => {
     dbPath,internalToken:'internal',candidateSha:'a'.repeat(40),deploymentId:'dep-1',
     apiKey:'k',model:'gpt-6-sol',pollIntervalMs:0,maxPolls:8,
     statusForTenant:()=>({
-      state:'BUILDING',operationalReady:false,
+      runId:'run-1',tenant:'northstar-demo',state:'BUILDING',operationalReady:false,
       requirements:[
         {key:'tenant-environment',satisfied:false,status:'MISSING',detail:{secret:'must-not-leak'}},
         {key:'time-policies',satisfied:false,status:'MISSING'}

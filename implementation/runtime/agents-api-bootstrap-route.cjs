@@ -124,6 +124,18 @@ function createAgentsApiBootstrapRoute(options = {}) {
       throw error;
     }
 
+    function currentStatus() {
+      const status = statusForTenant(tenant);
+      if (!status || status.runId !== runId || status.tenant !== tenant) {
+        const error = new Error('VECTOR_AGENTS_CURRENT_RUN_MISMATCH');
+        error.code = 'VECTOR_AGENTS_CURRENT_RUN_MISMATCH';
+        error.statusCode = 409;
+        throw error;
+      }
+      return status;
+    }
+    currentStatus();
+
     const initialInput = [
       'ACTIVE READ-ONLY VECTOR CUSTOMER-PROOF CONTROL.',
       'Canonical binding: ' + JSON.stringify({ candidateSha, deploymentId, runId, tenant }) + '.',
@@ -132,9 +144,10 @@ function createAgentsApiBootstrapRoute(options = {}) {
       'Do not mutate VECTOR, invent policy or payroll authority, submit evidence, deploy, create alternate implementations or claim customer-ready.'
     ].join(' ');
     const session = await adapter.ensureSession({ runId, tenant, initialInput });
+    currentStatus();
 
     const toolHandler = async name => {
-      const status = statusForTenant(tenant);
+      const status = currentStatus();
       if (name === 'get_vector_binding') {
         return {
           candidateSha, deploymentId, runId, tenant,
@@ -155,8 +168,10 @@ function createAgentsApiBootstrapRoute(options = {}) {
       runId,
       tenant,
       startTurn: true,
+      assertCurrentIdentity: currentStatus,
       toolHandler
     });
+    const finalStatus = currentStatus();
     console.log('VECTOR_AGENTS_ANALYSIS=' + JSON.stringify({
       status: analysis.status,
       sessionId: session.sessionId,
@@ -171,7 +186,7 @@ function createAgentsApiBootstrapRoute(options = {}) {
       profile: ACTIVE_READONLY_PROFILE,
       analysis,
       binding: { candidateSha, deploymentId, runId, tenant },
-      operationalReady: statusForTenant(tenant)?.operationalReady === true,
+      operationalReady: finalStatus.operationalReady === true,
       writeEnabled: false
     };
   }
