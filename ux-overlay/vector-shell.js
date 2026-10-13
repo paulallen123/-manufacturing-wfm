@@ -439,7 +439,7 @@ async function loadTimeReviewEvidence(){
     const identity=sourceIdentity(),scope=body.scope;
     if(!scope||scope.tenant!==identity.tenant||scope.personId!==identity.id||!/^\d{4}-\d{2}-\d{2}$/.test(String(scope.period||''))||scope.teamId!==null||scope.sourceId!==null||!/^[a-f0-9]{64}$/.test(String(body.contextKey||'')))throw new Error('time-review evidence scope mismatch');
     const envelopeAsOf=Date.parse(String(body.asOf||'')),calendarAsOf=Date.parse(String(calendar.asOf||'')),maxAgeMs=Number(body.maxAgeMs);
-    if(String(body.timeZone||'')!==String(calendar.timeZone||'')||maxAgeMs!==Number(calendar.maxAgeMs)||!Number.isFinite(envelopeAsOf)||!Number.isFinite(calendarAsOf)||Math.abs(envelopeAsOf-calendarAsOf)>Math.max(30000,maxAgeMs))throw new Error('time-review evidence calendar mismatch');
+    if(String(body.timeZone||'')!==String(calendar.timeZone||'')||!Number.isFinite(maxAgeMs)||maxAgeMs<=0||maxAgeMs!==Number(calendar.maxAgeMs)||!Number.isFinite(envelopeAsOf)||!Number.isFinite(calendarAsOf)||envelopeAsOf>calendarAsOf+30000||calendarAsOf-envelopeAsOf>maxAgeMs)throw new Error('time-review evidence calendar mismatch');
     if(!timeReviewEvidenceCurrent(epoch,owner))return false;
     state.timeReviewEvidence={status:body.availability==='available'?'ready':body.availability,items:body.availability==='unavailable'?[]:body.items.map(item=>acceptTimeReviewEvidenceItem(item,body)).filter(Boolean),unavailable:body.unavailable,contextKey:body.contextKey,scope,owner};
   }catch{
