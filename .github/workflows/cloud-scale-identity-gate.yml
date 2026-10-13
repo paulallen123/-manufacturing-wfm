@@ -1,0 +1,33 @@
+name: Cloud scale engine identity gate
+
+on:
+  pull_request:
+    paths:
+      - 'implementation/proof/cloud-scale-proof-runner.cjs'
+      - 'implementation/proof/cloud-scale-proof-identity.cjs'
+      - 'implementation/proof/cloud-scale-proof-identity.test.cjs'
+      - 'implementation/runtime/configuration-inference-engine.cjs'
+      - '.github/workflows/cloud-scale-identity-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-scale:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Explicit source identity and synthetic scale proof
+        run: |
+          node --test implementation/proof/cloud-scale-proof-identity.test.cjs
+          WFM_CONFIG_ENGINE_PATH="$PWD/implementation/runtime/configuration-inference-engine.cjs" \
+            WFM_CONFIG_ENGINE_GIT_BLOB_SHA="$(git hash-object implementation/runtime/configuration-inference-engine.cjs)" \
+            WFM_PROOF_ONESHOT=true node implementation/proof/cloud-scale-proof-runner.cjs > "$RUNNER_TEMP/scale-receipt.json"
+          node -e 'const r=require(process.argv[1]);if(r.status!=="PASS"||r.scale.employees!==10000||r.scale.sites!==50||r.failedAssertions.length||!r.engineIdentity.exact||!r.claimBoundary.includes("does not bind the whole serving candidate"))process.exit(1)' "$RUNNER_TEMP/scale-receipt.json"

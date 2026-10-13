@@ -2,23 +2,16 @@
 
 const fs = require('node:fs');
 const http = require('node:http');
-const { createHash } = require('node:crypto');
 const { performance } = require('node:perf_hooks');
+const { validateExpectedEngineBlob, assertEngineBlob } = require('./cloud-scale-proof-identity.cjs');
 
 const ENGINE_PATH = process.env.WFM_CONFIG_ENGINE_PATH || '/tmp/configuration-inference-engine.cjs';
-const EXPECTED_ENGINE_BLOB = process.env.WFM_CONFIG_ENGINE_GIT_BLOB_SHA || 'd3688d27841a28d3b8801b7d4c63f254e8bf7edd';
+const EXPECTED_ENGINE_BLOB = process.env.WFM_CONFIG_ENGINE_GIT_BLOB_SHA;
 const PORT = Number(process.env.PORT || 3000);
-
-function gitBlobSha(content) {
-  const body = Buffer.isBuffer(content) ? content : Buffer.from(content);
-  return createHash('sha1').update(Buffer.from(`blob ${body.length}\0`)).update(body).digest('hex');
-}
-
+// Refuse an absent or malformed expectation before loading an arbitrary engine.
+validateExpectedEngineBlob(EXPECTED_ENGINE_BLOB);
 const engineBytes = fs.readFileSync(ENGINE_PATH);
-const engineBlobSha = gitBlobSha(engineBytes);
-if (engineBlobSha !== EXPECTED_ENGINE_BLOB) {
-  throw new Error(`Configuration engine identity mismatch: ${engineBlobSha} != ${EXPECTED_ENGINE_BLOB}`);
-}
+const engineBlobSha = assertEngineBlob(engineBytes, EXPECTED_ENGINE_BLOB);
 
 const { buildConfigurationProposal } = require(ENGINE_PATH);
 
@@ -217,15 +210,14 @@ function runProof() {
     environment: 'REAL_CLOUD_PROOF_RUNTIME_WHEN_HOSTED',
     productionMutation: false,
     customerMutation: false,
-    claimBoundary: 'Exact candidate configuration-inference engine plus an independent deterministic payroll reconciliation harness. This proves cloud execution, scale behaviour and fail-closed data handling only; it does not claim a live payroll/HCM/ERP provider connection or customer production implementation.'
+    claimBoundary: 'Explicitly selected configuration-inference engine blob plus an independent deterministic payroll reconciliation harness. The blob match alone does not bind the whole serving candidate or prove cloud execution; this synthetic scale receipt does not claim a live payroll/HCM/ERP provider connection or customer production implementation.'
   };
 }
 
 const receipt = runProof();
 process.stdout.write(JSON.stringify(receipt) + '\n');
-if (receipt.status !== 'PASS') process.exit(1);
-if (process.env.WFM_PROOF_ONESHOT === 'true') process.exit(0);
-
+if (receipt.status !== 'PASS') process.exitCode = 1;
+else if (process.env.WFM_PROOF_ONESHOT !== 'true') {
 const server = http.createServer((req, res) => {
   const path = String(req.url || '/').split('?')[0];
   res.setHeader('Cache-Control', 'no-store');
@@ -250,3 +242,4 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, '::', () => {
   process.stdout.write(`WFM_CLOUD_SCALE_PROOF_LISTENING=${PORT}\n`);
 });
+}
