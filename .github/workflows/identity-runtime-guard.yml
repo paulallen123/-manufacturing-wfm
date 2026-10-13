@@ -6,6 +6,10 @@ on:
       - main
       - identity-runtime-guard
       - 'autonomy/**'
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
 
 permissions:
   contents: read
@@ -37,6 +41,9 @@ jobs:
           set -euo pipefail
           node scripts/validate-deployment.mjs
           node scripts/validate-resilience-scenarios.mjs
+
+      - name: Enforce proof integrity contract
+        run: node --test scripts/proof-integrity-contract.test.mjs
 
       - name: Prove guard source uses only reviewed local or Node built-in modules
         shell: bash
