@@ -68,6 +68,34 @@ test('conflict evidence becoming unknown on the second authority read invalidate
   assert.equal(result.reason,'work_start_current_assurance_conflict_unknown');
 });
 
+test('malformed coverage expiry cannot become open-ended assurance through either reader',async()=>{
+  for(const value of ['', 'not-a-date', false, true, NaN, Infinity, {}, []]){
+    for(const postgres of [false,true]){
+      let calls=0;
+      const row=authority({coverageUntil:value});
+      const reader=postgres?createPostgresAgencyWorkStartAuthorityStore({query:async()=>({rows:[row]})}):authorityStore([[row],[row]]);
+      const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:reader,evaluateContinuity:async()=>{calls++;return continuity();}}));
+      assert.equal(result.workStartReady,false,`${String(value)} postgres=${postgres}`);
+      assert.equal(result.reason,'work_start_current_assurance_does_not_cover_assignment');
+      assert.equal(calls,0);
+    }
+  }
+});
+
+test('explicit open-ended coverage and parseable future expiry retain compatibility',async()=>{
+  for(const value of [null,'2027-12-31T23:59:59.000Z',new Date('2027-12-31T23:59:59.000Z')]){
+    const row=authority({coverageUntil:value});
+    const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[row],[row]])}));
+    assert.equal(result.workStartReady,true);
+  }
+});
+
+test('coverage expiry becoming malformed during continuity evaluation invalidates readiness',async()=>{
+  const result=await evaluateAgencyWorkStartReadiness(input({authorityStore:authorityStore([[authority({coverageUntil:null})],[authority({coverageUntil:'not-a-date'})]])}));
+  assert.equal(result.workStartReady,false);
+  assert.equal(result.reason,'work_start_current_assurance_does_not_cover_assignment');
+});
+
 test('overlength authority identifiers cannot match a permitted prefix or mint work-start readiness',async()=>{
   const workerId='W'.repeat(100);
   const valid=authority({workerId});

@@ -77,7 +77,9 @@ function safeAuthorityRow(row={}){
     assuranceVersionId:authorityText(row.assurance_version_id??row.assuranceVersionId,32).toLowerCase(),
     assignmentFingerprint:authorityText(row.assignment_fingerprint??row.assignmentFingerprint,24).toLowerCase(),
     checkedAt:iso(row.checked_at??row.checkedAt),
-    coverageUntil:(row.coverage_until??row.coverageUntil)==null?null:iso(row.coverage_until??row.coverageUntil),
+    // Keep malformed supplied expiry distinct from intentional open-ended null,
+    // including when an adapter-normalized row is validated a second time.
+    coverageUntil:(row.coverage_until??row.coverageUntil)==null?null:(iso(row.coverage_until??row.coverageUntil)??''),
     promotedAt:iso(row.promoted_at??row.promotedAt),
     conflicted:bool(row.conflicted),
     acceptedResponseFingerprint:authorityText(row.token_fingerprint??row.acceptedResponseFingerprint,16).toLowerCase(),
