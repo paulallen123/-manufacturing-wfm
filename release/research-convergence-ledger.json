@@ -428,7 +428,7 @@
       ],
       "origin": "research alignment",
       "prototypeBuilt": true,
-      "status": "QUEUED_FOR_CONVERGENCE",
+      "status": "IN_CONVERGENCE",
       "canonicalTarget": "simulation + resilience + factory-autopilot",
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Replay factory state and decisions to understand incidents, test alternatives and improve future decisions.",
@@ -441,10 +441,11 @@
         "trust-proof-release"
       ],
       "designStatus": "COMPLETE",
-      "deliveryStage": "THEORY_TEST",
-      "theoryStatus": "PENDING_RETEST",
-      "implementationStatus": "QUEUED",
-      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
+      "deliveryStage": "IMPLEMENTATION",
+      "theoryStatus": "PASS_ISOLATED",
+      "implementationStatus": "TESTED_ISOLATED_PENDING_REVIEW",
+      "evidence": "docs/evidence/2026-10-13-factory-playback-isolated-package.md",
+      "nextLifecycleAction": "Obtain independent review, then have the canonical integration owner adopt the exact package and run exact-candidate and hosted customer proof."
     },
     {
       "id": "frontier-t9-earned-autonomy",
