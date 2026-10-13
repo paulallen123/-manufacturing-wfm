@@ -34,7 +34,7 @@ jobs:
           node -e 'const r=require(process.argv[1]);if(r.status!=="PASS"||r.scale.employees!==10000||r.scale.sites!==50||r.failedAssertions.length||!r.engineIdentity.exact||!r.claimBoundary.includes("does not bind the whole serving candidate"))process.exit(1)' "$RUNNER_TEMP/scale-receipt.json"
       - name: Prove copied image runtime includes identity helper
         run: |
-          grep -Fqx 'COPY implementation/proof/cloud-scale-proof-identity.cjs /app/proof-runtime/cloud-scale-proof-identity.cjs' Dockerfile
+          tr -d '\r' < Dockerfile | grep -Fqx 'COPY implementation/proof/cloud-scale-proof-identity.cjs /app/proof-runtime/cloud-scale-proof-identity.cjs'
           mkdir "$RUNNER_TEMP/proof-runtime"
           cp implementation/proof/cloud-scale-proof-runner.cjs implementation/proof/cloud-scale-proof-identity.cjs "$RUNNER_TEMP/proof-runtime/"
           WFM_CONFIG_ENGINE_PATH="$PWD/implementation/runtime/configuration-inference-engine.cjs" \
