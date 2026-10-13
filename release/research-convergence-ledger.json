@@ -277,6 +277,21 @@
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Prove worker/factory capability without unnecessarily exposing sensitive underlying evidence.",
       "convergenceRoute": "Reconcile with the existing trust spine and evidence provenance so privacy-preserving proof becomes a capability of the canonical evidence model, not a parallel identity system.",
+      "isolatedHardeningEvidence": {
+        "date": "2026-10-13",
+        "sourcePr": 215,
+        "draftPr": 432,
+        "baseRef": "frontier/capability-provenance-v1",
+        "sourceBlobAtBase": "06f079543cdbb4964ee1aea15465afb3e28f08e7",
+        "testBlobAtBase": "138958f6834d1c6550a4b9da9fb968c093b6e364",
+        "status": "TESTED",
+        "focusedTests": "9/9 pass on Node 24 after red-first regressions",
+        "independentReview": "no remaining blockers within bounded PII scope",
+        "canonicalIntegration": "not adopted",
+        "deployment": "not deployed",
+        "hostedCustomerProof": "not proven",
+        "evidence": "docs/evidence/2026-10-13-capability-provenance-direct-pii.md"
+      },
       "preserveGoldenJourneyPriority": true,
       "assignedEngines": [
         "orchestrator",
