@@ -65,6 +65,8 @@ function validateSourceActionEvidence(input){
     if(!FRESHNESS_STATES.includes(freshnessState)) errors.push('FRESHNESS_STATE_INVALID');
     if(freshnessState!=='unknown'&&!freshnessPolicyRef) errors.push('FRESHNESS_POLICY_REQUIRED');
     if(freshnessState==='current'&&!validUntil) errors.push('CURRENT_VALID_UNTIL_REQUIRED');
+    if(freshnessState==='current'&&observedAt&&validUntil&&Date.parse(validUntil)<=Date.parse(observedAt))
+      errors.push('CURRENT_VALIDITY_BEFORE_OBSERVATION');
     if(freshness.validUntil!=null&&!validUntil) errors.push('FRESHNESS_VALID_UNTIL_INVALID');
   }
 
