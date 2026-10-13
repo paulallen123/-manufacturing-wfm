@@ -172,3 +172,38 @@ test('stored plan can be repaired in shadow mode after no-show',async()=>{const 
  const x=await call(s,req('POST','/api/operations/scheduling/repair/shadow',{body:{tenant:'alpha',priorPlanId:created.json.plan.planId,input:{workers,contextRevision:'twin:2',event:{type:'NO_SHOW',unavailableWorkerIds:['w1'],evidenceRef:'clock:1'},sourceEvidence:['clock:1']}},headers:{'x-wfm-scheduling-internal':'secret'}}));
  assert.equal(x.res.statusCode,201);assert.equal(x.json.repair.executionPermitted,false);assert.equal(x.json.repair.repairedPlan.assignments[0].workerId,'w2');
 }finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}});
+
+test('configured shift limit survives service reopen, readback, replay and repair',async()=>{
+ const f=fixture();let s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret'});
+ try{
+  const sample=input();sample.policy={maxShiftHours:8};
+  const request=()=>req('POST','/api/operations/scheduling/plan/shadow',{body:{tenant:'alpha',input:sample},headers:{'x-wfm-scheduling-internal':'secret'}});
+  const created=await call(s,request());assert.equal(created.res.statusCode,201);assert.equal(created.json.plan.policy.maxShiftHours,8);
+  s.close();s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret'});
+  const read=await call(s,req('GET','/api/operations/scheduling/plans',{cookie:'wfm_session=mgr'}));
+  assert.equal(read.json.plans[0].policy.maxShiftHours,8);assert.equal(read.json.plans[0].planId,created.json.plan.planId);
+  const replay=await call(s,request());assert.equal(replay.res.statusCode,200);assert.equal(replay.json.idempotent,true);
+  const longer={...sample.requirements[0],end:'2026-09-24T14:00:00.001Z'};
+  const repair=await call(s,req('POST','/api/operations/scheduling/repair/shadow',{
+   headers:{'x-wfm-scheduling-internal':'secret'},body:{tenant:'alpha',priorPlanId:created.json.plan.planId,input:{workers:sample.workers,requirements:[longer],contextRevision:'twin:2',event:{type:'DEMAND_CHANGE',evidenceRef:'mes:2'},sourceEvidence:['mes:2']}}
+  }));
+  assert.equal(repair.res.statusCode,201);assert.equal(repair.json.repair.repairedPlan.policy.maxShiftHours,8);
+  assert.equal(repair.json.repair.repairedPlan.quality.filledSlots,0);assert.equal(repair.json.repair.executionPermitted,false);
+  const foreign=await call(s,req('GET','/api/operations/scheduling/plans',{cookie:'wfm_session=bravo'}));assert.equal(foreign.json.plans.length,0);
+ }finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}
+});
+test('manager scenario enforces shift limit while malformed policies leave storage unchanged',async()=>{
+ const f=fixture(),s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret'});
+ try{
+  const sample=input();sample.policy={maxShiftHours:7.5};
+  const scenario=await call(s,req('POST','/api/operations/scheduling/what-if',{cookie:'wfm_session=mgr',body:{input:sample}}));
+  assert.equal(scenario.res.statusCode,200);assert.equal(scenario.json.plan.quality.filledSlots,0);assert.equal(scenario.json.persisted,false);
+  assert.ok(scenario.json.plan.unfilled[0].topReasons.some(r=>r.reason==='MAX_SHIFT_HOURS_BREACH'));
+  for(const value of [null,0,'8',false]){
+   sample.policy.maxShiftHours=value;
+   const rejected=await call(s,req('POST','/api/operations/scheduling/plan/shadow',{headers:{'x-wfm-scheduling-internal':'secret'},body:{tenant:'alpha',input:sample}}));
+   assert.equal(rejected.res.statusCode,400);assert.match(rejected.json.error,/maxShiftHours/);assert.equal(rejected.json.executionPermitted,false);
+  }
+  assert.equal(s.recentPlans('alpha').length,0);assert.equal(s.recentPlans('bravo').length,0);
+ }finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}
+});

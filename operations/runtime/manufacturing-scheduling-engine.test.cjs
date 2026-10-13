@@ -178,3 +178,64 @@ test('UTC and explicit offsets denote identical instants; reversed overnight dat
  assert.throws(()=>evaluateOpenShift({requirement:shift('bad','2026-09-24T22:00:00Z','2026-09-24T06:00:00Z'),workers:[]}));
  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[],currentAssignments:null}));
 });
+
+// #202 WFM depth: configured per-shift fatigue limits, shared by every evaluator.
+test('maximum shift hours allows the exact boundary and rejects one millisecond over',()=>{
+ const exact={...early,end:'2026-09-24T18:00:00Z'};
+ const over={...exact,end:'2026-09-24T18:00:00.001Z'};
+ const args={workers:[wideWorker('a')],policy:{maxShiftHours:12}};
+ assert.equal(evaluateOpenShift({...args,requirement:exact}).ranked[0].eligible,true);
+ const denied=evaluateOpenShift({...args,requirement:over}).ranked[0];
+ assert.equal(denied.eligible,false);
+ assert.ok(denied.failures.includes('MAX_SHIFT_HOURS_BREACH'));
+ assert.equal(evaluateOpenShift({workers:[wideWorker('a')],requirement:over}).ranked[0].eligible,true);
+});
+test('maximum shift hours uses elapsed instants across overnight and DST offsets',()=>{
+ const overnight=shift('overnight','2026-10-24T22:00:00+01:00','2026-10-25T10:00:00Z');
+ const w=wideWorker('a',{availability:[{start:'2026-10-24T00:00:00Z',end:'2026-10-26T00:00:00Z'}]});
+ assert.equal(evaluateOpenShift({requirement:overnight,workers:[w],policy:{maxShiftHours:13}}).ranked[0].eligible,true);
+ assert.equal(evaluateOpenShift({requirement:overnight,workers:[w],policy:{maxShiftHours:12}}).ranked[0].eligible,false);
+});
+test('invalid explicit maximum shift hours is rejected rather than coerced or defaulted',()=>{
+ for(const value of [null,0,-1,NaN,Infinity,-Infinity,'12',true,false,[],{},new Number(12)]){
+  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[wideWorker('a')],policy:{maxShiftHours:value}}),/maxShiftHours/);
+ }
+ assert.equal(evaluateOpenShift({requirement:{...early,end:'2026-09-24T06:30:00Z'},workers:[wideWorker('a')],policy:{maxShiftHours:0.5}}).ranked[0].eligible,true);
+});
+test('exact and greedy plans leave overlong shifts unfilled with an explicit reason',()=>{
+ for(const exactSlotLimit of [1,10]){
+  const requirements=[early,{...early,id:'overlong',start:'2026-09-25T06:00:00Z',end:'2026-09-25T19:00:00Z'}];
+  const p=createSchedulingPlan(input({workers:[wideWorker('a')],requirements,policy:{maxShiftHours:12,exactSlotLimit}}));
+  assert.equal(p.quality.filledSlots,1);assert.equal(p.validation.valid,true);
+  assert.equal(p.policy.maxShiftHours,12);
+  assert.ok(p.unfilled[0].topReasons.some(r=>r.reason==='MAX_SHIFT_HOURS_BREACH'));
+  assert.equal(p.executionPermitted,false);
+ }
+});
+test('independent schedule validation rejects an overlong assigned slot',()=>{
+ const long={...early,end:'2026-09-24T19:00:00Z'};
+ const r=validate([long],[assignment(long,'a')],{maxShiftHours:12});
+ assert.equal(r.valid,false);assert.ok(r.violations[0].reasons.includes('MAX_SHIFT_HOURS_BREACH'));
+});
+test('swap rejects an overlong leg without mutating input',()=>{
+ const x=swapInput();delete x.currentAssignments;x.requirementA.end='2026-09-24T19:00:00Z';x.policy.maxShiftHours=12;
+ const before=JSON.stringify(x);freezeDeep(x);
+ const r=evaluateSwap(x);assert.equal(r.eligible,false);assert.ok(r.reasons.includes('MAX_SHIFT_HOURS_BREACH'));
+ assert.equal(JSON.stringify(x),before);assert.equal(r.executionPermitted,false);
+});
+test('repair inherits the persisted maximum shift hours policy',()=>{
+ const prior=createSchedulingPlan(input({workers:[wideWorker('a')],policy:{maxShiftHours:12}}));
+ const r=repairSchedulingPlan({priorPlan:prior,workers:[wideWorker('a')],requirements:[{...early,end:'2026-09-24T19:00:00Z'}],event:{type:'DEMAND_CHANGE',evidenceRef:'mes:45'}});
+ assert.equal(r.repairedPlan.policy.maxShiftHours,12);assert.equal(r.repairedPlan.quality.filledSlots,0);
+ assert.ok(r.repairedPlan.unfilled[0].topReasons.some(x=>x.reason==='MAX_SHIFT_HOURS_BREACH'));
+});
+test('maximum shift hours participates in plan identity only when configured',()=>{
+ const x=input({workers:[wideWorker('a')]});
+ const unset=createSchedulingPlan(x),configured=createSchedulingPlan({...x,policy:{...x.policy,maxShiftHours:12}});
+ assert.equal(Object.hasOwn(unset.policy,'maxShiftHours'),false);
+ assert.notEqual(configured.planId,unset.planId);
+ assert.notEqual(configured.planId,createSchedulingPlan({...x,policy:{...x.policy,maxShiftHours:10}}).planId);
+});
+test('existing capability discovery advertises configured maximum shift hours',()=>{
+ assert.equal(capabilityContract().tableStakes.configuredMaximumShiftHours,true);
+});

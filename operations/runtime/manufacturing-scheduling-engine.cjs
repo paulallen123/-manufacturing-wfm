@@ -51,7 +51,11 @@ function normaliseAssignments(input=[]){
 
 function normalisePolicy(input={}){
   const w=input.weights||{};
+  const maxShiftHours=input.maxShiftHours;
+  if(maxShiftHours!==undefined&&(typeof maxShiftHours!=='number'||!Number.isFinite(maxShiftHours)||maxShiftHours<=0))
+    throw new Error('maxShiftHours must be a finite positive number when configured.');
   return {
+    ...(maxShiftHours!==undefined?{maxShiftHours}:{}),
     minRestHours:clamp(input.minRestHours,0,72,11),
     maxWeeklyHours:clamp(input.maxWeeklyHours,1,168,48),
     maxOvertimeHours:clamp(input.maxOvertimeHours,0,100,12),
@@ -195,6 +199,7 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
   if(worker.previousShiftEnd&&((ms(slot.start)-ms(worker.previousShiftEnd))/3600000)<policy.minRestHours) failures.push('MINIMUM_REST_BREACH');
   if(projectedWeek>policy.maxWeeklyHours) failures.push('MAX_WEEKLY_HOURS_BREACH');
   if(projectedOT>policy.maxOvertimeHours) failures.push('MAX_OVERTIME_BREACH');
+  if(policy.maxShiftHours!==undefined&&duration>policy.maxShiftHours) failures.push('MAX_SHIFT_HOURS_BREACH');
   if(worker.consecutiveShifts+1>policy.maxConsecutiveShifts) failures.push('MAX_CONSECUTIVE_SHIFTS_BREACH');
   if(night&&worker.consecutiveNights+1>policy.maxConsecutiveNights) failures.push('MAX_CONSECUTIVE_NIGHTS_BREACH');
   if(assignments.some(a=>a.workerId===worker.id&&overlaps(a.start,a.end,slot.start,slot.end))) failures.push('OVERLAPPING_ASSIGNMENT');
@@ -355,6 +360,7 @@ function createSchedulingPlan(input={}){
     contractVersion:CONTRACT_VERSION,solverVersion:SOLVER_VERSION,tenant,contextRevision,
     createdAt:iso(input.createdAt||new Date().toISOString(),'createdAt'),mode:'SHADOW',executionPermitted:false,
     sourceEvidence,policy:{minRestHours:policy.minRestHours,maxWeeklyHours:policy.maxWeeklyHours,maxOvertimeHours:policy.maxOvertimeHours,
+      ...(policy.maxShiftHours!==undefined?{maxShiftHours:policy.maxShiftHours}:{}),
       maxConsecutiveShifts:policy.maxConsecutiveShifts,maxConsecutiveNights:policy.maxConsecutiveNights,crossSiteAllowed:policy.crossSiteAllowed,
       agencyAllowed:policy.agencyAllowed,contingentAllowed:policy.contingentAllowed,ruleVersion:policy.ruleVersion,
       requiredRuleRefs:policy.requiredRuleRefs,weights:policy.weights},
@@ -422,6 +428,7 @@ function capabilityContract(){
     contractVersion:CONTRACT_VERSION,
     tableStakes:{
       demandForecastConsumption:true,skillsAndCertification:true,availability:true,minimumRestAndHours:true,
+      configuredMaximumShiftHours:true,
       overtimeLimitsAndCost:true,agencyAndContingentLabour:true,multiSiteEligibility:true,employeePreferences:true,
       fairnessSignals:true,fatigueSignals:true,openShiftEligibility:true,shiftSwapValidation:true,
       realTimeShadowRepair:true,explainableInfeasibility:true,independentScheduleValidation:true,scheduleQualityKpis:true
