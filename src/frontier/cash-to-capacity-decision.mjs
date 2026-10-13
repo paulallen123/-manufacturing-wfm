@@ -1,6 +1,7 @@
 export const CASH_TO_CAPACITY_PRESENTATION_VERSION='cash-to-capacity-presentation-v0.2.0';
 
 const REQUIRED_EVIDENCE=['productionPlan','workforceEligibility','customerCommitment','financialMilestone'];
+const MANAGER_VIEW_ROLES=new Set(['manager','director','operations','supervisor','company-admin','payroll_admin','admin','superuser']);
 
 function finite(value){return typeof value==='number'&&Number.isFinite(value);}
 function clean(value){return typeof value==='string'?value.trim():'';}
@@ -66,7 +67,7 @@ export function buildCashToCapacityPresentation(input={}){
 
 export function roleView(card,role){
   if(!card)return null;
-  if(role==='employee')return null;
+  if(!MANAGER_VIEW_ROLES.has(role)&&role!=='finance'&&role!=='operations-director')return null;
   const milestone=money(card.invoiceMilestoneAmountAdvanced,card.currency);
   const economic=money(card.estimatedEconomicValue,card.currency);
   const labour=money(card.additionalLabourCost,card.currency);
@@ -89,3 +90,4 @@ export function roleView(card,role){
     detailLevel:'manager'
   };
 }
+
