@@ -33,10 +33,11 @@ function createAuthoritativePolicySourceRegistry(initial=[]){
     const snap=latest(source.id),atIso=iso(at,'at');
     if(!source.active) return Object.freeze({sourceId:source.id,state:'DISABLED',usable:false,requiresAttention:true});
     if(!snap) return Object.freeze({sourceId:source.id,state:'NO_EVIDENCE',usable:false,requiresAttention:true});
-    const ageHours=(Date.parse(atIso)-Date.parse(snap.observedAt))/3600000,stale=ageHours>source.freshnessHours;
-    return Object.freeze({sourceId:source.id,state:stale?'STALE':'CURRENT',usable:!stale,requiresAttention:stale,ageHours:Number(ageHours.toFixed(3)),freshnessHours:source.freshnessHours,snapshotDigest:snap.snapshotDigest});
+    const ageHours=(Date.parse(atIso)-Date.parse(snap.observedAt))/3600000,stale=ageHours>source.freshnessHours,notYetObserved=ageHours<0;
+    return Object.freeze({sourceId:source.id,state:notYetObserved?'NOT_YET_OBSERVED':stale?'STALE':'CURRENT',usable:!stale&&!notYetObserved,requiresAttention:stale||notYetObserved,ageHours:Number(ageHours.toFixed(3)),freshnessHours:source.freshnessHours,snapshotDigest:snap.snapshotDigest});
   }
   function all(){return [...sources.values()].sort((a,b)=>a.id.localeCompare(b.id));}
   return Object.freeze({registerSource,recordSnapshot,latest,assess,all});
 }
 module.exports=Object.freeze({AUTHORITY_TIERS,CHANNELS,normaliseSource,createAuthoritativePolicySourceRegistry,digest,stable});
+
