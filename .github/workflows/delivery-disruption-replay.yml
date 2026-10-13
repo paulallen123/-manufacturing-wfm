@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'operations/runtime/demand-decision-service.cjs'
+      - 'operations/runtime/delivery-disruption-shadow.cjs'
+      - 'operations/runtime/decision-episode.cjs'
       - 'operations/runtime/delivery-replay-*.cjs'
       - 'operations/runtime/delivery-replay.test.cjs'
       - '.github/workflows/delivery-disruption-replay.yml'
