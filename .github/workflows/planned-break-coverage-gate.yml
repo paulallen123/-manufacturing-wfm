@@ -1,0 +1,26 @@
+name: Planned break declared coverage gate
+
+on:
+  pull_request:
+    branches: [release/vector-customer-ready-candidate-20260925]
+    paths:
+      - 'operations/runtime/planned-break-coverage.cjs'
+      - 'operations/runtime/planned-break-coverage.test.cjs'
+      - '.github/workflows/planned-break-coverage-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-declared-break-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - run: node --test operations/runtime/planned-break-coverage.test.cjs operations/runtime/manufacturing-scheduling-engine.test.cjs
+      - run: node --check operations/runtime/planned-break-coverage.cjs && node --check operations/runtime/planned-break-coverage.test.cjs
