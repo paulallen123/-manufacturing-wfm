@@ -5,6 +5,21 @@ const {createRegulatoryChangeCandidate}=require('./regulatory-change-candidate.c
 const sha=s=>createHash('sha256').update(s).digest('hex');
 function registry(){return createAuthoritativePolicySourceRegistry([{id:'gb-law',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'official:gb',nativeLanguages:['en'],freshnessHours:24}]);}
 const sourceWithFreshness=freshnessHours=>({id:'synthetic',authorityTier:'PRIMARY_GOVERNMENT',channel:'API',jurisdiction:'GB',canonicalReference:'synthetic:source',freshnessHours});
+test('registered source language evidence cannot change under its admitted digest',()=>{
+  const r=registry(),source=r.all()[0],before=JSON.stringify(source);
+  assert.throws(()=>source.nativeLanguages.push('altered'),TypeError);
+  assert.throws(()=>{source.nativeLanguages[0]='altered';},TypeError);
+  assert.equal(JSON.stringify(source),before);
+  const snapshot=r.recordSnapshot({sourceId:'gb-law',observedAt:'2026-09-25T08:00:00Z',contentDigest:sha('v1'),verifiedRetrieval:true});
+  assert.equal(snapshot.sourceDigest,source.sourceDigest);assert.deepEqual(r.all()[0].nativeLanguages,['en']);
+});
+test('registerSource result freezes normalized language evidence while caller inputs and returned lists stay detached',()=>{
+  const input={...sourceWithFreshness(24),nativeLanguages:['en','en','fr']},r=createAuthoritativePolicySourceRegistry(),source=r.registerSource(input),before=JSON.stringify(source);
+  assert.throws(()=>source.nativeLanguages.splice(0,1),TypeError);
+  input.nativeLanguages.push('caller-edit');const list=r.all();list.pop();
+  assert.equal(JSON.stringify(source),before);assert.deepEqual(source.nativeLanguages,['en','fr']);assert.equal(r.all().length,1);
+  assert.equal(source.grantsExecutionAuthority,false);
+});
 for(const [label,value] of [['unknown','unknown'],['NaN',NaN],['Infinity',Infinity],['negative Infinity',-Infinity],['NaN text','NaN'],['Infinity text','Infinity']]){
   test('invalid '+label+' source freshness cannot manufacture current evidence',()=>{
     const r=createAuthoritativePolicySourceRegistry();
