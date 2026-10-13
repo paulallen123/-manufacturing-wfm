@@ -13,6 +13,13 @@ function compact(value, max = 500) {
   return String(value ?? '').slice(0, max);
 }
 
+function exactSessionId(value) {
+  if (typeof value !== 'string' || !value || value !== value.trim() || value.length > 80 || /[\u0000-\u001f\u007f]/.test(value)) {
+    throw new Error('OAuth session ID is invalid.');
+  }
+  return value;
+}
+
 function safeHttpsOrigin(value) {
   const url = new URL(String(value || ''));
   if (url.protocol !== 'https:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
@@ -52,7 +59,7 @@ function verifyState(secret, state, nowMs = Date.now()) {
   if (!payload || typeof payload !== 'object') throw new Error('Invalid OAuth state.');
   if (!payload.s || !payload.p || !Number.isFinite(Number(payload.e))) throw new Error('Invalid OAuth state.');
   if (Number(payload.e) < nowMs) throw new Error('OAuth state has expired.');
-  return { sessionId: compact(payload.s, 80), provider: compact(payload.p, 40), expiresAt: Number(payload.e) };
+  return { sessionId: exactSessionId(payload.s), provider: compact(payload.p, 40), expiresAt: Number(payload.e) };
 }
 
 async function readTokenResponse(response, maxBytes = 128 * 1024) {
@@ -125,9 +132,10 @@ function createDirectoryOAuthBroker(options = {}) {
     const normalizedProvider = compact(provider, 40).toUpperCase();
     if (normalizedProvider !== 'ENTRA') throw new Error('Automatic OAuth discovery is not enabled for this provider.');
     if (!stateReady() || !entra.clientId || !entra.clientSecret) throw new Error('Microsoft Entra discovery is not configured.');
+    const exactSession = exactSessionId(sessionId);
     const expiresAt = now() + 10 * 60 * 1000;
-    const state = signState(stateSecret, { s: compact(sessionId, 80), p: normalizedProvider, e: expiresAt });
-    const verifier = deriveVerifier(stateSecret, compact(sessionId, 80));
+    const state = signState(stateSecret, { s: exactSession, p: normalizedProvider, e: expiresAt });
+    const verifier = deriveVerifier(stateSecret, exactSession);
     const redirectUri = publicOrigin + PREFIX + '/oauth/callback/entra';
     const url = new URL('https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize');
     url.searchParams.set('client_id', entra.clientId);
