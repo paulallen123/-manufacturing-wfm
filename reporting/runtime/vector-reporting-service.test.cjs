@@ -55,6 +55,18 @@ test('catalog is role governed and keeps payroll/audit restricted',()=>{
   assert.ok(payroll.sources.some(s=>s.id==='payroll-control'));
   assert.equal(payroll.sources.some(s=>s.id==='audit-evidence'),false);
   assert.ok(Reporting.visibleCatalog('director').sources.some(s=>s.id==='audit-evidence'));
+  assert.equal(Reporting.visibleCatalog('director').sources.some(s=>s.id==='payroll-control'),false);
+  assert.ok(Reporting.visibleCatalog('admin').sources.some(s=>s.id==='payroll-control'));
+});
+
+test('director cannot create or retain payroll reports without payroll authority',async()=>{
+  const x=setup();try{
+    assert.equal((await call(x.service,'POST','/api/reporting/reports','director-a',{definition:{sourceId:'payroll-control'}})).status,400);
+    const report=await makeReport(x);
+    changeRole(x,'payroll@a.example','director');
+    assert.equal((await call(x.service,'GET','/api/reporting/reports/'+report.id,'payroll-a')).status,404);
+    assert.deepEqual((await call(x.service,'GET','/api/reporting/reports','payroll-a')).body.reports,[]);
+  }finally{x.close();}
 });
 
 async function makeReport(x,token='payroll-a',sourceId='payroll-control'){
