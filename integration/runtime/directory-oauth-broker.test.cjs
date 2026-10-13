@@ -138,3 +138,23 @@ test('short state secret or missing origin disables automatic Entra authorizatio
   assert.equal(broker.availability().find(x => x.key === 'ENTRA').configured, false);
   assert.throws(() => broker.buildAuthorization({ sessionId: 'x', provider: 'ENTRA' }), /not configured/);
 });
+
+
+test('OAuth discovery rejects overlength session IDs instead of truncating signed state and PKCE identity', () => {
+  const broker = configured(async () => { throw new Error('not expected'); });
+  const prefix = 's'.repeat(80);
+  const a = prefix + 'A';
+  const b = prefix + 'B';
+  assert.equal(deriveVerifier('state-secret-that-is-long-enough-for-hmac-2026', a) === deriveVerifier('state-secret-that-is-long-enough-for-hmac-2026', b), false);
+  assert.throws(() => broker.buildAuthorization({ sessionId: a, provider: 'ENTRA' }), /session/i);
+  assert.throws(() => broker.buildAuthorization({ sessionId: b, provider: 'ENTRA' }), /session/i);
+});
+
+test('signed OAuth state rejects overlength or ambiguous session identifiers', () => {
+  const secret = 'state-secret-that-is-long-enough-for-hmac-2026';
+  const expires = 2_000;
+  for (const sessionId of ['x'.repeat(81), ' session-1', 'session-1 ', 'session\n1']) {
+    const state = signState(secret, { s: sessionId, p: 'ENTRA', e: expires });
+    assert.throws(() => verifyState(secret, state, 1_000), /Invalid OAuth state|session/i);
+  }
+});
