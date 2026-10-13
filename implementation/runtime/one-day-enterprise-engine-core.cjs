@@ -17,6 +17,14 @@ const { createOrganisationAccessSetup } = require('./organisation-access-setup.c
 const { createCustomerWorkspaceRegistry } = require('./customer-workspace.cjs');
 const { installOrganisationAccessLifecycle } = require('./organisation-access-lifecycle.cjs');
 const { validateStrictReadinessEvidence, validEffectiveDate } = require('./readiness-evidence-contract.cjs');
+// Source and sealed runtime use different directory layouts for the same schema file.
+let personFieldsModule;
+try { personFieldsModule = require('../../integration/runtime/canonical-person-fields.cjs'); }
+catch (error) {
+  if (error.code !== 'MODULE_NOT_FOUND' || !error.message.includes('canonical-person-fields.cjs')) throw error;
+  personFieldsModule = require('../integration-runtime/canonical-person-fields.cjs');
+}
+const { PERSON_FIELDS } = personFieldsModule;
 
 const PREFIX = '/api/implementation/autonomous';
 const INTERNAL_HEADER = 'x-wfm-implementation-internal';
@@ -75,6 +83,38 @@ function nowIso() {
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
+}
+
+function verifiedCanonicalPeople(batch, rows) {
+  if (!batch || !Array.isArray(rows) || rows.length < 1 ||
+      rows.length !== Number(batch.record_count) ||
+      rows.length !== Number(batch.source_count)) return null;
+  const ids = new Set();
+  const checksums = [];
+  const sites = new Set();
+  const departments = new Set();
+  const allowed = new Set(PERSON_FIELDS);
+  for (const row of rows) {
+    if (row.connection_id !== batch.connection_id || !/^[a-f0-9]{64}$/.test(row.employee_key || '') ||
+        !/^[a-f0-9]{64}$/.test(row.record_checksum || '') || ids.has(row.employee_key)) return null;
+    let person;
+    try { person = JSON.parse(row.canonical_json); } catch { return null; }
+    if (!person || typeof person !== 'object' || Array.isArray(person) ||
+        Object.keys(person).some(field => !allowed.has(field)) ||
+        !['string', 'number'].includes(typeof person.employeeId) || !String(person.employeeId).trim() ||
+        sha256(String(person.employeeId).trim()) !== row.employee_key) return null;
+    const checksum = sha256(JSON.stringify(PERSON_FIELDS.map(field => [field, person[field] ?? null])));
+    if (checksum !== row.record_checksum) return null;
+    ids.add(row.employee_key);
+    checksums.push(checksum);
+    const site = compact(person.location, 180).trim();
+    const department = compact(person.department, 180).trim();
+    if (site) sites.add(site);
+    if (department) departments.add(department);
+  }
+  if (sha256([batch.connection_id, String(batch.mapping_version), ...checksums.sort()].join('|')) !== batch.batch_checksum ||
+      sites.size !== Number(batch.site_count) || departments.size !== Number(batch.department_count)) return null;
+  return { employeeKeys: [...ids].sort(), sites: [...sites].sort(), departments: [...departments].sort() };
 }
 function canonicalJson(value) {
   if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value);
@@ -1082,22 +1122,10 @@ function createOneDayEnterpriseEngine(options = {}) {
     if (!batch) return null;
 
     const rows = db.prepare(
-      'SELECT employee_key,record_checksum,canonical_json FROM integration_canonical_people WHERE batch_id=? AND tenant=? ORDER BY employee_key'
+      'SELECT connection_id,employee_key,record_checksum,canonical_json FROM integration_canonical_people WHERE batch_id=? AND tenant=? ORDER BY employee_key'
     ).all(batch.id, tenant);
-    if (rows.length !== Number(batch.record_count) || rows.length < 1) return null;
-
-    const sites = new Set();
-    const departments = new Set();
-    const employeeKeys = new Set();
-    for (const row of rows) {
-      const canonical = parseJsonSafe(row.canonical_json, {});
-      if (!row.employee_key || employeeKeys.has(row.employee_key)) return null;
-      employeeKeys.add(row.employee_key);
-      const site = compact(canonical.location, 180).trim();
-      const department = compact(canonical.department, 180).trim();
-      if (site) sites.add(site);
-      if (department) departments.add(department);
-    }
+    const verified = verifiedCanonicalPeople(batch, rows);
+    if (!verified) return null;
 
     return {
       batchId: batch.id,
@@ -1107,12 +1135,12 @@ function createOneDayEnterpriseEngine(options = {}) {
       systemKey: batch.product_key,
       systemName: batch.display_name,
       employeeCount: rows.length,
-      employeeKeys: [...employeeKeys].sort(),
-      employeeKeyDigests: [...employeeKeys].sort().map(value=>sha256(String(value)).slice(0,24)),
-      siteCount: sites.size,
-      departmentCount: departments.size,
-      sites: [...sites].sort(),
-      departments: [...departments].sort(),
+      employeeKeys: verified.employeeKeys,
+      employeeKeyDigests: verified.employeeKeys.map(value=>sha256(String(value)).slice(0,24)),
+      siteCount: verified.sites.length,
+      departmentCount: verified.departments.length,
+      sites: verified.sites,
+      departments: verified.departments,
       importedAt: batch.created_at,
       provenance: 'authorized-validated-canonical-import'
     };
@@ -2980,5 +3008,6 @@ function createOneDayEnterpriseEngine(options = {}) {
 module.exports = {
   createOneDayEnterpriseEngine,
   REQUIREMENTS,
-  criticalPathRemainingMinutes
+  criticalPathRemainingMinutes,
+  verifiedCanonicalPeople
 };
