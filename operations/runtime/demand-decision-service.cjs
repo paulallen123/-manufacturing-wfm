@@ -38,6 +38,11 @@ function deepFreezeJson(value){
   if(value&&typeof value==='object'){for(const v of Object.values(value))deepFreezeJson(v);Object.freeze(value);}
   return value;
 }
+function canonicalJson(value){
+  if(value===null||typeof value!=='object')return JSON.stringify(value);
+  if(Array.isArray(value))return '['+value.map(canonicalJson).join(',')+']';
+  return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonicalJson(value[k])).join(',')+'}';
+}
 function compact(v,max=240){ return String(v??'').trim().slice(0,max); }
 function secureEqual(a,b){
   const x=Buffer.from(String(a||'')), y=Buffer.from(String(b||''));
@@ -237,12 +242,14 @@ function createDemandDecisionService(options={}){
     if(!tenant||body.input?.scope?.tenant!==tenant)return writeJson(res,400,{error:'Delivery tenant scope is required and must match.'});
     const owned=deepFreezeJson(snapshotJson(body.input));
     const verifierInput=snapshotJson(owned);
-    const inputIdentity=sha256(JSON.stringify({tenant,input:owned}));
+    const inputIdentity=sha256(canonicalJson({tenant,input:owned}));
     // A verifier must authenticate every source record and option evidence against
     // the tenant-scoped snapshot. A true result is the only accepted attestation.
     let verified=false;
     try{verified=await verifyDeliveryEvidence(verifierInput,tenant)===true;}catch{}
-    if(!verified||sha256(JSON.stringify({tenant,input:verifierInput}))!==inputIdentity||owned.scope?.tenant!==tenant)
+    let attestedIdentity=null;
+    try{attestedIdentity=sha256(canonicalJson({tenant,input:snapshotJson(verifierInput)}));}catch{}
+    if(!verified||attestedIdentity!==inputIdentity||owned.scope?.tenant!==tenant)
       return writeJson(res,422,{error:'Delivery evidence could not be authenticated.'});
     const shadow=evaluateDeliveryDisruption(owned);
     if(shadow.status==='INSUFFICIENT_EVIDENCE')return writeJson(res,422,{shadow});
