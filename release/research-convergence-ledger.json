@@ -442,9 +442,13 @@
       ],
       "designStatus": "COMPLETE",
       "deliveryStage": "THEORY_TEST",
-      "theoryStatus": "PENDING_RETEST",
+      "theoryStatus": "PASS_ISOLATED_BOUNDED",
       "implementationStatus": "QUEUED",
-      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
+      "theoryEvidenceRefs": [
+        "operations/runtime/factory-playback.theory.test.cjs",
+        "docs/evidence/2026-10-13-factory-playback-theory.md"
+      ],
+      "nextLifecycleAction": "Canonical owner to review the isolated theory package, then connect authoritative factory snapshots to existing simulation and Decision Episodes; exact-image and hosted Golden Journey proof remain required."
     },
     {
       "id": "frontier-t9-earned-autonomy",
