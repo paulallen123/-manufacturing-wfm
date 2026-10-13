@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { types } = require('node:util');
 
 const CONTRACT_VERSION = 'VECTOR_MANUFACTURING_SCHEDULER_V1';
 const SOLVER_VERSION = 'VECTOR_DETERMINISTIC_OPTIMISER_V1';
@@ -18,13 +19,26 @@ function text(v,max=200){ return String(v??'').trim().slice(0,max); }
 function list(v,max=100,maxLen=160){
   return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];
 }
-function strictRefs(v,max=100,maxLen=220){
-  if(!Array.isArray(v)||v.length>max) return [];
-  for(let i=0;i<v.length;i++){
-    const x=v[i];
-    if(!Object.prototype.hasOwnProperty.call(v,i)||typeof x!=='string'||!x.trim()||x.trim().length>maxLen) return [];
+function strictRefsResult(v,max=100,maxLen=220){
+  if(!Array.isArray(v)||types.isProxy(v)) return {valid:false,refs:[]};
+  const length=v.length,refs=[];
+  if(length>max) return {valid:false,refs:[]};
+  for(let i=0;i<length;i++){
+    const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
+    if(!descriptor||descriptor.enumerable!==true||
+      !Object.prototype.hasOwnProperty.call(descriptor,'value')) return {valid:false,refs:[]};
+    const x=descriptor.value;
+    if(typeof x!=='string') return {valid:false,refs:[]};
+    const trimmed=x.trim();
+    if(!trimmed||trimmed.length>maxLen) return {valid:false,refs:[]};
+    refs.push(trimmed);
   }
-  return [...new Set(v.map(x=>x.trim()))];
+  if(v.length!==length) return {valid:false,refs:[]};
+  return {valid:true,refs:[...new Set(refs)]};
+}
+function strictRefs(v,max=100,maxLen=220){
+  const result=strictRefsResult(v,max,maxLen);
+  return result.valid?result.refs:[];
 }
 function n(v,f=0){ const x=Number(v); return Number.isFinite(x)?x:f; }
 function clamp(v,min,max,f){ const x=Number(v); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }
@@ -494,10 +508,12 @@ function repairSchedulingPlan(input={}){
   const unavailable=new Set(list(input.event?.unavailableWorkerIds,1000,120));
   const workers=(input.workers||[]).map(w=>unavailable.has(text(w.id,120))?{...w,status:'UNAVAILABLE'}:w);
   const preferred={}; for(const a of prior.assignments||[]) if(a.workerId) preferred[a.slotId]=a.workerId;
-  const repairSources=[
-    ...(Array.isArray(input.sourceEvidence)?input.sourceEvidence:[]),
-    ...(Array.isArray(prior.sourceEvidence)?prior.sourceEvidence:[])
-  ];
+  const inputSources=input.sourceEvidence===undefined||input.sourceEvidence===null
+    ?{valid:true,refs:[]}:strictRefsResult(input.sourceEvidence,300,220);
+  const priorSources=strictRefsResult(prior.sourceEvidence,300,220);
+  if(!inputSources.valid||!priorSources.valid)
+    throw new Error('sourceEvidence must contain valid dense references.');
+  const repairSources=[...inputSources.refs,...priorSources.refs];
   if(input.event?.evidenceRef!==undefined&&input.event?.evidenceRef!==null) repairSources.push(input.event.evidenceRef);
   const repaired=createSchedulingPlan({
     tenant:prior.tenant,contextRevision:text(input.contextRevision||prior.contextRevision,180),

@@ -545,6 +545,140 @@ test('L11 evidence authority: count limits accept their boundary and reject the 
   assert.throws(() => plan([req('source-over-limit', 'A', '08:00:00', '10:00:00')], worker(), policy,
     [...source300, 'source:300']), /sourceEvidence/);
 });
+function substitutingRefs(declared, substituted) {
+  const refs = [...declared];
+  Object.defineProperty(refs, 'map', {
+    value: () => [...substituted], enumerable: false, configurable: true
+  });
+  return refs;
+}
+function authorityPathResults(requirement, attackPolicy, attackSource) {
+  const other = req(requirement.id + '-other', 'A', '12:00:00', '14:00:00');
+  const openEligible = check(requirement, [], overtimeWorker(), attackPolicy, attackSource)
+    .ranked[0].eligible;
+  const planFilled = plan([requirement], overtimeWorker(), attackPolicy, attackSource)
+    .quality.filledSlots;
+  const swapEligible = e.evaluateSwap({
+    workerA: overtimeWorker('w1'), workerB: overtimeWorker('w2'),
+    requirementA: requirement, requirementB: other, policy: attackPolicy,
+    sourceEvidence: attackSource,
+    currentAssignments: [assignment(requirement, 'w1'), assignment(other, 'w2')]
+  }).eligible;
+  const validPrior = plan([requirement], overtimeWorker('w1'), overtimeAuthority,
+    ['fixture:staff', 'policy:overtime:approved']);
+  const repairFilled = e.repairSchedulingPlan({
+    priorPlan: validPrior, workers: [overtimeWorker('w1'), overtimeWorker('w2')],
+    requirements: [requirement], policy: attackPolicy, sourceEvidence: attackSource,
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' }
+  }).repairedPlan.quality.filledSlots;
+  return { openEligible, planFilled, swapEligible, repairFilled };
+}
+test('L11 evidence authority: policy arrays cannot substitute references after validation', () => {
+  const forged = 'policy:forged';
+  const attackPolicy = { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100,
+    evidenceRefs: substitutingRefs(['policy:declared-but-unbound'], [forged])
+  } };
+  assert.deepEqual(authorityPathResults(
+    req('policy-map-substitution', 'A', '08:00:00', '10:00:00'),
+    attackPolicy, [forged]
+  ), { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+});
+test('L11 evidence authority: source arrays cannot substitute references after validation', () => {
+  const forged = 'policy:forged';
+  const attackPolicy = { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100, evidenceRefs: [forged]
+  } };
+  assert.deepEqual(authorityPathResults(
+    req('source-map-substitution', 'A', '08:00:00', '10:00:00'),
+    attackPolicy, substitutingRefs(['source:declared'], [forged])
+  ), { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+});
+function proxyRefs(declared, substituted) {
+  return new Proxy([...declared], {
+    get(target, property, receiver) {
+      const index = typeof property === 'string' && /^\d+$/.test(property) ? Number(property) : null;
+      return index === null ? Reflect.get(target, property, receiver) :
+        (substituted[index] === undefined ? Reflect.get(target, property, receiver) : substituted[index]);
+    }
+  });
+}
+function accessorRefs(declared, substituted, mutate) {
+  const refs = [...declared];
+  Object.defineProperty(refs, '0', {
+    enumerable: true, configurable: true,
+    get() {
+      if (mutate) mutate(refs);
+      return substituted[0];
+    }
+  });
+  return refs;
+}
+function authorityAttempts(requirement, attackPolicy, attackSource) {
+  try {
+    return authorityPathResults(requirement, attackPolicy, attackSource);
+  } catch {
+    const other = req(requirement.id + '-other', 'A', '12:00:00', '14:00:00');
+    const openEligible = check(requirement, [], overtimeWorker(), attackPolicy, attackSource)
+      .ranked[0].eligible;
+    const swapEligible = e.evaluateSwap({
+      workerA: overtimeWorker('w1'), workerB: overtimeWorker('w2'),
+      requirementA: requirement, requirementB: other, policy: attackPolicy,
+      sourceEvidence: attackSource,
+      currentAssignments: [assignment(requirement, 'w1'), assignment(other, 'w2')]
+    }).eligible;
+    let planFilled = 0;
+    try { planFilled = plan([requirement], overtimeWorker(), attackPolicy, attackSource).quality.filledSlots; }
+    catch {}
+    let repairFilled = 0;
+    try {
+      const validPrior = plan([requirement], overtimeWorker('w1'), overtimeAuthority,
+        ['fixture:staff', 'policy:overtime:approved']);
+      repairFilled = e.repairSchedulingPlan({
+        priorPlan: validPrior, workers: [overtimeWorker('w1'), overtimeWorker('w2')],
+        requirements: [requirement], policy: attackPolicy, sourceEvidence: attackSource,
+        createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+        event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' }
+      }).repairedPlan.quality.filledSlots;
+    } catch {}
+    return { openEligible, planFilled, swapEligible, repairFilled };
+  }
+}
+test('L11 evidence authority: proxied policy and source arrays cannot substitute references', () => {
+  const forged = 'policy:proxy-forged';
+  const requirement = req('proxy-substitution', 'A', '08:00:00', '10:00:00');
+  const source = [forged];
+  assert.deepEqual(authorityAttempts(requirement, { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100,
+    evidenceRefs: proxyRefs(['policy:declared-but-unbound'], [forged])
+  } }, source), { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+  assert.deepEqual(authorityAttempts(requirement, { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100, evidenceRefs: [forged]
+  } }, proxyRefs(['source:declared'], [forged])),
+  { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+});
+test('L11 evidence authority: accessor-backed policy and source arrays cannot execute', () => {
+  const forged = 'policy:accessor-forged';
+  const requirement = req('accessor-substitution', 'A', '08:00:00', '10:00:00');
+  assert.deepEqual(authorityAttempts(requirement, { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100,
+    evidenceRefs: accessorRefs(['policy:declared-but-unbound'], [forged])
+  } }, [forged]), { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+  assert.deepEqual(authorityAttempts(requirement, { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100, evidenceRefs: [forged]
+  } }, accessorRefs(['source:declared'], [forged])),
+  { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+});
+test('L11 evidence authority: getters cannot rewrite later evidence declarations', () => {
+  const forged = ['policy:getter-forged:0', 'policy:getter-forged:1'];
+  const requirement = req('getter-mutation', 'A', '08:00:00', '10:00:00');
+  const mutatingPolicyRefs = accessorRefs(['policy:declared:0', 'policy:declared:1'], forged,
+    refs => { refs[1] = forged[1]; });
+  assert.deepEqual(authorityAttempts(requirement, { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100, evidenceRefs: mutatingPolicyRefs
+  } }, forged), { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+});
 test('L11 overtime authority: non-string evidence references never become authority by coercion', () => {
   for (const ref of [{}, true, 7]) {
     const malformed = { ...policy,
