@@ -285,7 +285,7 @@
       ],
       "origin": "global regulated/sensitive manufacturing research",
       "prototypeBuilt": true,
-      "status": "QUEUED_FOR_CONVERGENCE",
+      "status": "IN_CONVERGENCE",
       "canonicalTarget": "scheduling + compliance + factory-autopilot",
       "mustConvergeOrBeSuperseded": true,
       "customerValue": "Ensure staffing/intervention decisions respect controlled-zone access, contamination, safety and transition constraints.",
@@ -300,10 +300,11 @@
         "trust-proof-release"
       ],
       "designStatus": "COMPLETE",
-      "deliveryStage": "THEORY_TEST",
-      "theoryStatus": "PENDING_RETEST",
-      "implementationStatus": "QUEUED",
-      "nextLifecycleAction": "Re-run design-linked normal/edge/adversarial theory tests, then implement only after theory admission."
+      "deliveryStage": "IMPLEMENTATION",
+      "theoryStatus": "PASS_ISOLATED_SOURCE_UNPROVEN",
+      "implementationStatus": "CANONICAL_SHADOW_SOURCE_WITH_UNADOPTED_FIX",
+      "evidence": "docs/evidence/2026-10-13-controlled-zone-transition-controls.md",
+      "nextLifecycleAction": "Canonical owner to reconcile this isolated transition-control admission fix; then bind site policy, task and access evidence to authenticated source receipts, rerun exact-image tests and collect hosted/customer outcome proof."
     },
     {
       "id": "water-resilience-orchestration",

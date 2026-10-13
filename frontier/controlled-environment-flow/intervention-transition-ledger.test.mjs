@@ -106,6 +106,31 @@ const reject=(input,reason)=>{
  assert.equal(r.consolidationCandidates?.length??0,0);
  assert.notEqual(r.metrics?.potentialEntryReduction,1);
 };
+
+test('invalid transition controls cannot produce a ready movement ledger',()=>{
+ for(const value of [-1,'',false,[],Infinity]){
+  for(const field of ['controlMinutes','controlCost']){
+   const input=fixture();input.policy.transitions[0][field]=value;
+   reject(input,'transition_rule_invalid');
+  }
+ }
+ for(const value of ['true',null,1]){
+  const input=fixture();input.policy.transitions[0].gowningCycle=value;
+  reject(input,'transition_rule_invalid');
+ }
+ const unknown=fixture();unknown.policy.transitions[0].controlCost=null;
+ const result=buildInterventionTransitionLedger(unknown);
+ assert.equal(result.status,'ledger_ready');
+ assert.equal(result.movement[0].controlCost,null);
+ assert.equal(result.metrics.observedControlCost,null);
+ const unknownMinutes=fixture();unknownMinutes.policy.transitions[0].controlMinutes=null;
+ const unknownResult=buildInterventionTransitionLedger(unknownMinutes);
+ assert.equal(unknownResult.status,'ledger_ready');
+ assert.equal(unknownResult.movement[0].controlMinutes,null);
+ assert.equal(unknownResult.metrics.observedControlMinutes,null);
+ const overflow=fixture();overflow.policy.transitions[0].controlMinutes=1e308;
+ reject(overflow,'transition_metrics_invalid');
+});
 const addZone=(input,zone)=>{
  input.policy.zones[zone]={maxBundleGapMinutes:30,maxContinuousMinutes:180};
  input.policy.transitions.push({from:'OUT',to:zone,allowed:true},{from:zone,to:'OUT',allowed:true});
