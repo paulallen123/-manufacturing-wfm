@@ -419,7 +419,7 @@
       "deliveryStage": "THEORY_TEST",
       "theoryStatus": "FAIL_DIRECT_TWIN_PORT",
       "implementationStatus": "QUEUED_BLOCKED",
-      "blockers": ["PR#230 projection expects 14 node types rejected by the current authoritative Implementation Digital Twin schema; direct port cannot accept genuine machine/material/order source records."],
+      "blockers": ["Full PR#230 asset coverage expects 15 node types rejected by the current authoritative Implementation Digital Twin schema; the projector can handle the currently supported subset, but machine/material/order/knowledge source records cannot enter a current Twin revision."],
       "evidence": "docs/evidence/2026-10-13-asset-projection-schema-admission.md",
       "nextLifecycleAction": "Canonical Digital Twin and integration-fabric owners must design a provenance-bound asset source adapter and approve its node mapping or a schema extension; re-run normal, edge and adversarial theory tests before implementation."
     },
