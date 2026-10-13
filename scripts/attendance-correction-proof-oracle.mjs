@@ -12,7 +12,10 @@ const integer = value => Number.isSafeInteger(value) && value >= 0;
 const positive = value => integer(value) && value > 0;
 const bool = value => typeof value === 'boolean';
 const literal = expected => value => value === expected;
-const oneOf = (...values) => value => values.includes(value);
+const oneOf = (...values) => value => {
+  for (let i = 0; i < values.length; i++) if (values[i] === value) return true;
+  return false;
+};
 const utc = value => typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:00\.000Z$/.test(value)
   && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
 const list = (shape, max) => ({ $list: shape, $max: max });
@@ -78,9 +81,21 @@ const evidenceShape = {
 };
 
 function canonical(value) {
-  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
+  if (Array.isArray(value)) {
+    let output = '[';
+    for (let i = 0; i < value.length; i++) output += (i ? ',' : '') + canonical(value[i]);
+    return output + ']';
+  }
   if (value !== null && typeof value === 'object') {
-    return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';
+    const keys = Object.keys(value);
+    for (let i = 1; i < keys.length; i++) {
+      const key = keys[i]; let j = i - 1;
+      while (j >= 0 && keys[j] > key) { keys[j + 1] = keys[j]; j--; }
+      keys[j + 1] = key;
+    }
+    let output = '{';
+    for (let i = 0; i < keys.length; i++) output += (i ? ',' : '') + JSON.stringify(keys[i]) + ':' + canonical(value[keys[i]]);
+    return output + '}';
   }
   return JSON.stringify(value);
 }
@@ -123,7 +138,7 @@ export function evidenceHash(value) {
 }
 
 function validateShape(value, shape, path, issues) {
-  const fail = (code, message) => issues.push({ path, code, message });
+  const fail = (code, message) => { issues[issues.length] = { path, code, message }; };
   if (value === undefined) { fail('MISSING', 'Supply this required evidence field.'); return; }
   if (typeof shape === 'function') {
     if (!shape(value)) fail('UNSUPPORTED_VALUE', 'Supply the declared v1 type, bound or supported semantics.');
@@ -135,44 +150,61 @@ function validateShape(value, shape, path, issues) {
     return;
   }
   if (!value || typeof value !== 'object' || Array.isArray(value)
-      || ![Object.prototype, null].includes(Object.getPrototypeOf(value))) {
+      || Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) {
     fail('INVALID_OBJECT', 'Supply a plain JSON object.'); return;
   }
-  for (const key of Object.keys(shape)) validateShape(value[key], shape[key], `${path}.${key}`, issues);
+  const shapeKeys = Object.keys(shape);
+  for (let i = 0; i < shapeKeys.length; i++) {
+    const key = shapeKeys[i];
+    validateShape(value[key], shape[key], `${path}.${key}`, issues);
+  }
   // Do not echo unknown field names: they can themselves contain private data.
-  if (Object.keys(value).some(k => !Object.hasOwn(shape, k))) fail('UNKNOWN_FIELD', 'Remove undeclared fields; credentials, names and success labels are not accepted.');
+  const keys = Object.keys(value);
+  for (let i = 0; i < keys.length; i++) if (!Object.hasOwn(shape, keys[i])) {
+    fail('UNKNOWN_FIELD', 'Remove undeclared fields; credentials, names and success labels are not accepted.');
+    break;
+  }
 }
 
 function worked(value, path, check) {
   const start = Date.parse(value.clockIn), end = Date.parse(value.clockOut);
   check(end > start && end - start <= 24 * 60 * 60000, path, 'INTERVAL', 'Use a positive elapsed interval of at most 24 hours.');
   let unpaid = 0, previousEnd = start;
-  value.breaks.forEach((b, i) => {
+  for (let i = 0; i < value.breaks.length; i++) {
+    const b = value.breaks[i];
     const a = Date.parse(b.start), z = Date.parse(b.end);
     check(a >= start && z <= end && z > a && a >= previousEnd,
       `${path}.breaks[${i}]`, 'BREAK_INTERVAL', 'Order non-overlapping, positive breaks inside the shift.');
     previousEnd = z;
     if (!b.paid) unpaid += (z - a) / 60000;
-  });
+  }
   return (end - start) / 60000 - unpaid;
 }
 
 function validate(contract, evidence, scenario) {
   const issues = [];
   const finish = () => {
-    issues.sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : a.code < b.code ? -1 : a.code > b.code ? 1 : 0);
+    for (let i = 1; i < issues.length; i++) {
+      const issue = issues[i]; let j = i - 1;
+      while (j >= 0 && (issues[j].path > issue.path || issues[j].path === issue.path && issues[j].code > issue.code)) {
+        issues[j + 1] = issues[j]; j--;
+      }
+      issues[j + 1] = issue;
+    }
+    let missing = false;
+    for (let i = 0; i < issues.length; i++) if (issues[i].code === 'MISSING') missing = true;
     return { schema: SCHEMA, scenario,
-      status: issues.length ? (issues.some(i => i.code === 'MISSING') ? 'BLOCKED_REQUIRED_DATA' : 'INVALID_EVIDENCE') : 'EVIDENCE_CONSISTENT',
+      status: issues.length ? (missing ? 'BLOCKED_REQUIRED_DATA' : 'INVALID_EVIDENCE') : 'EVIDENCE_CONSISTENT',
       mutationProven: !issues.length && scenario === 'apply', issues };
   };
   if (!plainJsonTree(contract) || !plainJsonTree(evidence)) {
-    issues.push({ path: 'packet', code: 'INVALID_JSON', message: 'Supply inert JSON receipt data without accessors, proxies, hidden fields or cycles.' });
+    issues[issues.length] = { path: 'packet', code: 'INVALID_JSON', message: 'Supply inert JSON receipt data without accessors, proxies, hidden fields or cycles.' };
     return finish();
   }
   validateShape(contract, baseContract, 'contract', issues);
   validateShape(evidence, evidenceShape, 'evidence', issues);
   if (issues.length) return finish();
-  const check = (ok, path, code, message) => { if (!ok) issues.push({ path, code, message }); };
+  const check = (ok, path, code, message) => { if (!ok) issues[issues.length] = { path, code, message }; };
   const equal = (actual, expected, path) => check(canonical(actual) === canonical(expected), path, 'MISMATCH', 'Match the independently approved contract or correlated authoritative receipt exactly.');
   equal(contract.scenario, scenario, 'contract.scenario');
   equal(evidence.scenario, scenario, 'evidence.scenario');
@@ -185,7 +217,10 @@ function validate(contract, evidence, scenario) {
     equal(item.scope, contract.scope, `${path}.scope`);
   };
   const actors = contract.actors;
-  check(new Set(Object.values(actors)).size === 4, 'contract.actors', 'DUPLICATE_ACTOR', 'Use distinct employee, proposer, approver and payroll person IDs.');
+  const actorIds = [actors.employee, actors.proposer, actors.approver, actors.payroll];
+  let distinctActors = true;
+  for (let i = 0; i < actorIds.length; i++) for (let j = i + 1; j < actorIds.length; j++) if (actorIds[i] === actorIds[j]) distinctActors = false;
+  check(distinctActors, 'contract.actors', 'DUPLICATE_ACTOR', 'Use distinct employee, proposer, approver and payroll person IDs.');
   equal(contract.scope.employeeId, actors.employee, 'contract.scope.employeeId');
   bind(evidence, 'evidence');
   const verifyState = (s, path) => {
@@ -237,14 +272,16 @@ function validate(contract, evidence, scenario) {
   const useSession = (s, person, role, at, path, usage) => {
     equal(s.personId, person, `${path}.personId`); equal(s.role, role, `${path}.role`);
     check(Date.parse(s.issuedAt) <= Date.parse(at) && Date.parse(s.expiresAt) > Date.parse(at), path, 'SESSION_TIME', 'Use a session issued before the observation and not expired.');
-    for (const [field, registry] of [['id', sessionsById], ['assertionReceiptId', sessionsByAssertion]]) {
+    const checkIdentity = (field, registry) => {
       const previous = registry.get(s[field]);
       if (previous) {
         check(previous.identity === canonical(s), `${path}.${field}`, 'SESSION_IDENTITY_CONFLICT', 'Reuse a session or assertion ID only with its unchanged person, role, paired ID and validity timestamps.');
         check(usage !== 'fresh' && !previous.fresh, `${path}.${field}`, 'DUPLICATE_SESSION', 'Fresh-session identities must not occur in any other action or observation.');
         previous.fresh ||= usage === 'fresh';
       } else registry.set(s[field], { identity: canonical(s), fresh: usage === 'fresh' });
-    }
+    };
+    checkIdentity('id', sessionsById);
+    checkIdentity('assertionReceiptId', sessionsByAssertion);
   };
   let previousAt = Date.parse(evidence.beforeAt), previousVersion = evidence.beforeVersion;
   const expectedState = index => {
@@ -258,10 +295,11 @@ function validate(contract, evidence, scenario) {
     s.sourceFingerprint = evidenceHash({ sourceVersion: s.scope.sourceVersion, rawHash: s.rawHash, effective: s.effective });
     return s;
   };
-  evidence.actions.forEach((a, i) => {
+  for (let i = 0; i < evidence.actions.length; i++) {
+    const a = evidence.actions[i];
     const path = `evidence.actions[${i}]`, phase = phases[i];
-    if (!phase) return;
-    const [command, status, person, role, type] = phase;
+    if (!phase) continue;
+    const command = phase[0], status = phase[1], person = phase[2], role = phase[3], type = phase[4];
     bind(a, path); verifyState(a.state, `${path}.state`); inWindow(a.at, `${path}.at`);
     useSession(a.session, person, role, a.at, `${path}.session`, 'action');
     unique(a.receiptId, `${path}.receiptId`); unique(a.ui.eventId, `${path}.ui.eventId`); unique(a.ui.responseId, `${path}.ui.responseId`);
@@ -289,10 +327,11 @@ function validate(contract, evidence, scenario) {
         requestId: evidence.requestId, revision: i + 1, type, actorId: person, at: a.at, version: a.versionAfter }, `evidence.audit[${i}]`);
     }
     previousAt = Date.parse(a.at); previousVersion = a.versionAfter;
-  });
+  }
   const terminal = evidence.actions[phases.length - 1];
   const observed = new Set();
-  evidence.observations.forEach((o, i) => {
+  for (let i = 0; i < evidence.observations.length; i++) {
+    const o = evidence.observations[i];
     const path = `evidence.observations[${i}]`, key = `${o.role}:${o.mode}`;
     bind(o, path); verifyState(o.state, `${path}.state`); unique(o.receiptId, `${path}.receiptId`); inWindow(o.at, `${path}.at`);
     check(!observed.has(key), path, 'DUPLICATE_OBSERVATION', 'Supply one refresh and one fresh-session readback for each role.'); observed.add(key);
@@ -305,11 +344,17 @@ function validate(contract, evidence, scenario) {
     if (o.mode === 'fresh') {
       check(Date.parse(o.session.issuedAt) > previousAt, `${path}.session.issuedAt`, 'STALE_SESSION', 'Authenticate a new signed session after the final decision.');
     }
-  });
-  for (const role of ['employee', 'manager', 'payroll']) {
-    for (const mode of ['refresh', 'fresh']) check(observed.has(`${role}:${mode}`), 'evidence.observations', 'MISSING', 'Supply refresh and fresh-session observations for employee, manager and payroll.');
-    const refresh = evidence.observations.find(o => o.role === role && o.mode === 'refresh');
-    const fresh = evidence.observations.find(o => o.role === role && o.mode === 'fresh');
+  }
+  const roles = ['employee', 'manager', 'payroll'], modes = ['refresh', 'fresh'];
+  for (let r = 0; r < roles.length; r++) {
+    const role = roles[r];
+    for (let m = 0; m < modes.length; m++) check(observed.has(`${role}:${modes[m]}`), 'evidence.observations', 'MISSING', 'Supply refresh and fresh-session observations for employee, manager and payroll.');
+    let refresh, fresh;
+    for (let i = 0; i < evidence.observations.length; i++) {
+      const o = evidence.observations[i];
+      if (o.role === role && o.mode === 'refresh') refresh = o;
+      if (o.role === role && o.mode === 'fresh') fresh = o;
+    }
     if (refresh && fresh) check(refresh.session.id !== fresh.session.id && refresh.session.assertionReceiptId !== fresh.session.assertionReceiptId,
       'evidence.observations', 'DUPLICATE_SESSION', 'Fresh login must differ from the refresh session and assertion.');
     if (refresh && fresh) check(Date.parse(fresh.session.issuedAt) > Date.parse(refresh.at) && Date.parse(fresh.at) > Date.parse(refresh.at),

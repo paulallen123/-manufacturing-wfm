@@ -269,6 +269,23 @@ test('polluted array iteration cannot hide an accessor receipt from JSON admissi
     Array.prototype[Symbol.iterator] = originalIterator;
   }
 });
+test('polluted Array.includes cannot admit a forged review status', () => {
+  const f = fixture('reject');
+  f.contract.preState.review.status = 'forged-status';
+  f.contract.preStateHash = evidenceHash(f.contract.preState);
+  f.evidence.before.review.status = 'forged-status';
+  for (const a of f.evidence.actions) a.state.review.status = 'forged-status';
+  for (const o of f.evidence.observations) o.state.review.status = 'forged-status';
+  const originalIncludes = Array.prototype.includes;
+  try {
+    Array.prototype.includes = () => true;
+    const result = validate(f);
+    assert.notEqual(result.status, 'EVIDENCE_CONSISTENT');
+    assert.equal(result.mutationProven, false);
+  } finally {
+    Array.prototype.includes = originalIncludes;
+  }
+});
 test('separate entrypoints cannot stitch rejection into successful apply', () => {
   const r = fixture('reject'), a = fixture();
   assert.equal(validateApplication(r.contract, r.evidence).mutationProven, false);
