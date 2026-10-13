@@ -25,17 +25,24 @@ export function verifyWeeklySignoffAudit({ expected, submissions, managerCapture
         row.revision < 0 || typeof row.actor !== 'string' || !row.actor)) fail();
   const audit = payrollCapture.audit;
   if (!Array.isArray(audit)) fail();
-  const relevant = audit.filter(row => row?.type === 'team-signed' && ids.has(row?.team));
+  const relevant = audit.filter(row => row?.type === 'team-signed');
   if (relevant.length !== ids.size || new Set(relevant.map(row => row.team)).size !== ids.size) fail();
+
+  const scopeMatches = row => Object.entries({ tenant: expected.tenant, period: expected.period,
+    candidateSha: sha, deploymentId: expected.deploymentId }).every(([key, value]) =>
+    !Object.hasOwn(row, key) || row[key] === value);
 
   const rows = expected.teamIds.map(teamId => {
     const submitted = submissions.find(row => row.teamId === teamId);
     const manager = managerCapture.teams.find(row => row.id === teamId);
     const payroll = payrollCapture.teams.find(row => row.id === teamId);
     const event = relevant.find(row => row.team === teamId);
-    if (manager.status !== 'signed' || payroll.status !== 'signed' ||
+    if (!scopeMatches(manager) || !scopeMatches(payroll) || !scopeMatches(event) ||
+        manager.status !== 'signed' || payroll.status !== 'signed' ||
         manager.signature?.by !== submitted.actor ||
         manager.signature?.revision !== submitted.revision ||
+        (payroll.signature != null && (payroll.signature.by !== submitted.actor ||
+          payroll.signature.revision !== submitted.revision)) ||
         event.actor !== submitted.actor || event.revision !== submitted.revision) fail();
     return { teamId, actor: submitted.actor, revision: submitted.revision };
   });
