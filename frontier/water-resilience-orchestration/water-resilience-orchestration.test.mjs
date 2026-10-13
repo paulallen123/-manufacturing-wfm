@@ -57,6 +57,34 @@ test('water source compatibility cannot be traded for cost',()=>{
  assert.equal(evaluateWaterResiliencePlan({policy:reclaimed,workers,tasks,plan,now}).reason,'water_source_not_approved');
 });
 
+for(const missing of [undefined,null,'','   ']){
+ test(`missing authoritative water source ${String(missing)} blocks both assigned and unused slots`,()=>{
+  for(const slotIndex of [0,1,2]){
+   const input=structuredClone({policy,workers,tasks,plan:{id:'source-evidence',assignments:[{taskId:'T1',workerId:'W1',slot:2},{taskId:'T2',workerId:'W2',slot:1}]},now});
+   if(missing===undefined)delete input.policy.slots[slotIndex].waterSource;
+   else input.policy.slots[slotIndex].waterSource=missing;
+   const before=structuredClone(input);
+   const expected={status:'blocked',reason:'water_source_missing',slot:slotIndex+1};
+   assert.deepEqual(evaluateWaterResiliencePlan(input),expected);
+   const ranked=compareWaterResiliencePlans({...input,plans:[input.plan]});
+   assert.equal(ranked.status,'no_safe_candidate');
+   assert.equal(ranked.preferred,null);
+   assert.deepEqual(ranked.safe,[]);
+   assert.deepEqual(ranked.rejected,[expected]);
+   assert.deepEqual(input,before);
+  }
+ });
+}
+
+test('an explicit fresh source admits normal planning; explicit reclaimed source is subject to task compatibility',()=>{
+ const input=structuredClone({policy,workers,tasks,plan:{id:'source-evidence',assignments:[{taskId:'T1',workerId:'W1',slot:2},{taskId:'T2',workerId:'W2',slot:1}]},now});
+ assert.equal(evaluateWaterResiliencePlan(input).status,'safe_candidate');
+ input.policy.slots[1].waterSource='reclaimed';
+ assert.equal(evaluateWaterResiliencePlan(input).reason,'water_source_not_approved');
+ input.tasks[0].allowedWaterSources=['reclaimed'];
+ assert.equal(evaluateWaterResiliencePlan(input).status,'safe_candidate');
+});
+
 test('skills and site boundaries fail closed',()=>{
  const badWorkers=structuredClone(workers);badWorkers[0].siteId='S2';
  const plan={id:'x',assignments:[{taskId:'T1',workerId:'W1',slot:2},{taskId:'T2',workerId:'W2',slot:1}]};
@@ -246,3 +274,4 @@ test('ranking remains exposure, scarcity, tariff, lateness, then plan ID',()=>{
  input.plans.reverse();
  assert.deepEqual(compareWaterResiliencePlans(input),result);
 });
+

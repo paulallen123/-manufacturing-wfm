@@ -35,7 +35,7 @@ function uniqueRows(rows,keyFor){
 function sourceAllowed(task,slot){
   const allowed=Array.isArray(task.allowedWaterSources)?task.allowedWaterSources:[];
   if(!allowed.length)return false;
-  const source=clean(slot.waterSource)||'fresh';
+  const source=clean(slot.waterSource);
   return allowed.includes(source);
 }
 
@@ -56,6 +56,11 @@ export function evaluateWaterResiliencePlan({policy,workers=[],tasks=[],plan,now
   if(slotIndex.error)return {status:'blocked',reason:slotIndex.error==='invalid'?'water_slots_invalid':'water_slot_id_duplicate'};
   const slots=slotIndex.map;
   if(!slots.size)return {status:'blocked',reason:'water_slots_missing'};
+  // Every authoritative slot needs a source, including currently unused slots:
+  // an incomplete policy must not silently turn unknown water into fresh water.
+  for(const [slot,row] of slots){
+    if(!clean(row.waterSource))return {status:'blocked',reason:'water_source_missing',slot};
+  }
 
   const workerIndex=uniqueRows(workers,w=>referenceKey(w.id));
   if(workerIndex.error)return {status:'rejected',reason:workerIndex.error==='invalid'?'workers_invalid':'worker_id_duplicate'};
@@ -163,3 +168,4 @@ export function reconcileWaterOutcome({recommendation,decision,observed,operatio
     authorityBoundary:'Outcome learning may calibrate future advice but cannot automatically alter water policy, quality limits, permits, recipes or workforce rules.'
   };
 }
+
