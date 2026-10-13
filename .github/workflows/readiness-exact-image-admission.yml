@@ -1,0 +1,121 @@
+name: Readiness remediation exact source and image admission
+
+on:
+  push:
+    branches: ['proof/readiness-image-6f9e-20261013']
+    paths:
+      - '.github/workflows/readiness-exact-image-admission.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: readiness-image-6f9e-20261013
+  cancel-in-progress: false
+
+env:
+  TARGET_SHA: 6f9e0324b0eb3b190e3f30c262b152ebd998d8aa
+
+jobs:
+  ownership-guard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Refuse unowned proof execution
+        shell: bash
+        run: test "$GITHUB_ACTOR" = "$GITHUB_REPOSITORY_OWNER"
+
+  exact-source-regression:
+    needs: ownership-guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Bind exact reviewed source and supported runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(node --version)" = "v22.23.2"
+          test "$(git hash-object implementation/ui/implementation-journey.js)" = \
+            "2fc38a99e115b14d9cbf800d136fb20d39aef6f7"
+          test "$(git hash-object implementation/ui/implementation-observer.test.cjs)" = \
+            "1d640c1c7f8e6b09753af08b94becc8190bbeb15"
+      - name: Exercise readiness labels and adjacent setup regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test \
+            implementation/ui/implementation-observer.test.cjs \
+            implementation/ui/workspace-setup.test.cjs
+          node --check implementation/ui/implementation-journey.js
+
+  exact-installed-image:
+    needs: [ownership-guard, exact-source-regression]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 1
+      - name: Build the exact target through existing Docker admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          docker build --progress=plain \
+            --build-arg RAILWAY_GIT_COMMIT_SHA="$TARGET_SHA" \
+            -t "vector-readiness-proof:$TARGET_SHA" .
+      - name: Verify final image identity and exact UI installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --user node --entrypoint node \
+            --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/implementation/ui,target=/proof/ui,readonly" \
+            -e "EXPECTED_SOURCE_SHA=$TARGET_SHA" \
+            "vector-readiness-proof:$TARGET_SHA" -e '
+              const fs = require("node:fs");
+              const sourceSha = fs.readFileSync("/app/.wfm-build-source-sha", "utf8").trim();
+              if (sourceSha !== process.env.EXPECTED_SOURCE_SHA) throw new Error("source SHA mismatch");
+              if (process.version !== "v22.23.2") throw new Error("Node runtime mismatch");
+              const source = fs.readFileSync("/proof/ui/implementation-journey.js", "utf8");
+              const bundle = fs.readFileSync("/app/public/vector-ui.js", "utf8");
+              const marker = ";/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n";
+              const next = "\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */";
+              const start = bundle.indexOf(marker);
+              const end = bundle.indexOf(next, start + marker.length);
+              if (start < 0 || end < 0) throw new Error("implementation journey markers missing");
+              const installed = bundle.slice(start + marker.length, end);
+              if (installed !== source) throw new Error("installed implementation journey differs from reviewed source");
+              for (const text of ["Population coverage incomplete", "Training readiness evidence incomplete", "Team ready"]) {
+                if (!installed.includes(text)) throw new Error("readiness label missing: " + text);
+              }
+            '
+
+  admission-verdict:
+    if: always()
+    needs: [ownership-guard, exact-source-regression, exact-installed-image]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every named admission job to succeed
+        shell: bash
+        env:
+          GUARD_RESULT: ${{ needs.ownership-guard.result }}
+          SOURCE_RESULT: ${{ needs.exact-source-regression.result }}
+          IMAGE_RESULT: ${{ needs.exact-installed-image.result }}
+        run: |
+          test "$GUARD_RESULT" = success
+          test "$SOURCE_RESULT" = success
+          test "$IMAGE_RESULT" = success
