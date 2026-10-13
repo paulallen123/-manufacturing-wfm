@@ -9,12 +9,19 @@ function createGlobalSitePolicyPreflight({graph}={}){
   function assess(input={}){
     const tenant=text(input.tenant,120),site=input.site||{},workers=Array.isArray(input.workers)?input.workers:[];
     if(!tenant||!text(site.id,120)) throw new Error('tenant and site.id are required.');
+    if(!Array.isArray(input.workers)) throw new Error('Explicit workforce array required for policy preflight.');
+    const workforce=[],workerIds=new Set();
+    for(let index=0;index<workers.length;index++){
+      const worker=workers[index],workerId=text(worker?.id,160);
+      if(!workerId) throw new Error('Every workforce row requires a worker id.');
+      if(workerIds.has(workerId)) throw new Error('Worker ids must be unique in policy preflight.');
+      workerIds.add(workerId);workforce.push({worker,workerId});
+    }
     const country=text(site.country,2).toUpperCase(),baseQuestions=[];
     if(!/^[A-Z]{2}$/.test(country)) baseQuestions.push({code:'SITE_COUNTRY_REQUIRED',scope:'site',siteId:site.id});
     if(!text(site.legalEntityId,160)) baseQuestions.push({code:'LEGAL_ENTITY_REQUIRED',scope:'site',siteId:site.id});
     const results=[];
-    for(const worker of workers){
-      const workerId=text(worker.id,160); if(!workerId) continue;
+    for(const {worker,workerId} of workforce){
       const workCountry=text(worker.workLocationCountry||country,2).toUpperCase();
       const context={country:workCountry,subdivision:text(worker.workLocationSubdivision||site.subdivision,80)||null,sector:text(worker.sector||site.sector,120)||null,legalEntityId:text(worker.legalEntityId||site.legalEntityId,160)||null,siteId:text(site.id,120),employmentCategory:text(worker.employmentCategory,120)||null,workerClass:text(worker.workerClass,120)||null,collectiveAgreements:list(worker.collectiveAgreements||site.collectiveAgreements,20,160),workLocationCountry:workCountry,workLocationSubdivision:text(worker.workLocationSubdivision,80)||null};
       if(!context.employmentCategory) baseQuestions.push({code:'EMPLOYMENT_CATEGORY_REQUIRED',scope:'worker',workerId});
@@ -36,3 +43,4 @@ function createGlobalSitePolicyPreflight({graph}={}){
   return Object.freeze({assess});
 }
 module.exports=Object.freeze({createGlobalSitePolicyPreflight,digest,stable});
+
