@@ -58,13 +58,20 @@ without those exact named jobs succeeding is a failure, not a pass; an
   conditions are replaced by a mandatory failing `ownership-guard` dependency.
   The image verifier is also read-only and networkless and now exercises the
   installed engine rather than proving bytes alone.
-- Three failures are a deterministic product-integration blocker. Stored plans
+- Corrected run 38441123234, job 115447661250: dependency installation passed;
+  206 tests ran, 203 passed and 3 failed with zero skip/cancel. The sole
+  remaining failures are the two authority-projection variants and stored
+  no-show repair. Image job 115447891050 correctly skipped.
+- Those three failures are a deterministic product-integration blocker. Stored plans
   are bound with `authorityScope` after `planId` is calculated, while PR352's
   new `verifiedPriorPlan` recalculates identity across that appended field.
   Consequently `/repair/shadow` returns 400; both authority-projection variants
   then dereference an absent `repair.repairedPlan` and fail. No unchanged rerun
   was performed.
-- Corrected supported-runtime affected suite: pending the workflow rerun.
+- Hardened run 38441294264 completed FAILURE as designed: ownership guard
+  succeeded; source job 115448308283 again ran 206 tests (203 pass, 3 fail,
+  zero skip/cancel); the exact-image job skipped; and final verdict job
+  115448510329 failed because not every named admission job succeeded.
 - Unchanged complete Docker admission and final image byte identity: blocked
   until source admission passes.
 - Canonical integration, deployment, hosted proof and customer proof: not
