@@ -50,6 +50,41 @@ test('stale impairment evidence blocks the recommendation',()=>{
   assert.equal(r.reason,'stale_evidence');
 });
 
+test('invalid evidence ages and limits cannot qualify an impairment plan',()=>{
+  for(const age of [-1,null,'',Number.POSITIVE_INFINITY]){
+    const input=structuredClone(base);input.evidence.impairment.ageMinutes=age;
+    assert.equal(evaluateImpairmentRecoveryPlan(input).status,'blocked',String(age));
+  }
+  for(const limit of [-1,Number.POSITIVE_INFINITY]){
+    const input=structuredClone(base);input.maxEvidenceAgeMinutes=limit;
+    assert.equal(evaluateImpairmentRecoveryPlan(input).status,'blocked',String(limit));
+  }
+});
+
+test('fractional policy headcounts cannot qualify or claim hot-work coverage',()=>{
+  const input=structuredClone(base);input.policy.requiredControlHeadcount=1.5;
+  assert.equal(evaluateImpairmentRecoveryPlan(input).reason,'invalid_control_policy');
+  const hotWork=assessHotWorkCoverage({siteId:'s1',policy:{siteId:'s1',fireWatchRole:'fire_watch',fireWatchHeadcount:1.5},workers,task:{siteId:'s1',hotWork:true,assignedWorkerId:'m1'}});
+  assert.equal(hotWork.reason,'invalid_fire_watch_policy');
+});
+
+test('overflowed person-minute calculations cannot qualify a restoration option',()=>{
+  const input=structuredClone(base);
+  input.baseline.restoreMinutes=1e308;
+  input.restorationOption.restoreMinutes=0;
+  assert.equal(evaluateImpairmentRecoveryPlan(input).status,'blocked');
+});
+
+test('duplicate or anonymous worker rows cannot fill distinct control roles',()=>{
+  const input=structuredClone(base);
+  input.workers=[input.workers[0],structuredClone(input.workers[0]),input.workers[2]];
+  assert.equal(evaluateImpairmentRecoveryPlan(input).reason,'mandatory_control_coverage_gap');
+  const hotWork=assessHotWorkCoverage({siteId:'s1',policy:{siteId:'s1',fireWatchRole:'fire_watch',fireWatchHeadcount:2},workers:input.workers,task:{siteId:'s1',hotWork:true,assignedWorkerId:'m1'}});
+  assert.equal(hotWork.reason,'fire_watch_gap');
+  input.workers[1].id='';
+  assert.equal(evaluateImpairmentRecoveryPlan(input).reason,'mandatory_control_coverage_gap');
+});
+
 test('one worker cannot be both hot worker and fire watch when site policy prohibits dual role',()=>{
   const one=[{id:'solo',siteId:'micro',available:true,competencies:['welder','fire_watch'],competencyCurrent:true}];
   const r=assessHotWorkCoverage({siteId:'micro',policy:{siteId:'micro',fireWatchRole:'fire_watch',fireWatchHeadcount:1,dualRoleProhibited:true},workers:one,task:{siteId:'micro',hotWork:true,assignedWorkerId:'solo'}});
