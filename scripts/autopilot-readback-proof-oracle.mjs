@@ -1,4 +1,6 @@
 const id = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,179}$/.test(value);
+const opaque = (value, max) => typeof value === 'string' && value.length > 0
+  && value.length <= max && value === value.trim();
 const sha = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
 const utc = value => typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value)
   && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
@@ -15,8 +17,8 @@ export function assessAutopilotReadbackEvidence(jsonText) {
   const check = (condition, reason) => { if (!condition) blockers.push(reason); };
   const b = packet?.binding || {};
   const { permit, execution, status, lifecycle } = packet?.captures || {};
-  check(sha(b.candidateSha) && id(b.deploymentId) && id(b.tenant)
-    && id(b.contextRevision) && id(b.episodeId) && id(b.optionId), 'BINDING_UNPROVEN');
+  check(sha(b.candidateSha) && id(b.deploymentId) && opaque(b.tenant, 120)
+    && opaque(b.contextRevision, 180) && id(b.episodeId) && opaque(b.optionId, 120), 'BINDING_UNPROVEN');
   if (![permit, execution, status, lifecycle].every(value => value && typeof value === 'object' && !Array.isArray(value))) {
     return { status: 'BLOCKED', blockers: [...new Set([...blockers, 'CAPTURES_MISSING'])] };
   }
@@ -30,12 +32,12 @@ export function assessAutopilotReadbackEvidence(jsonText) {
   const action = p.plan?.action || {};
   check(permit.httpStatus === 201 && permit.body?.contractVersion === 'VECTOR_AUTOPILOT_PERMIT_V1'
     && id(p.permitId) && p.tenant === b.tenant && p.shadowEpisodeId === b.episodeId
-    && p.optionId === b.optionId && p.contextRevision === b.contextRevision
-    && id(p.actorRef) && utc(p.issuedAt) && utc(p.expiresAt)
+    && p.optionId === b.optionId && id(p.episodeId) && p.contextRevision === b.contextRevision
+    && opaque(p.actorRef, 180) && utc(p.issuedAt) && utc(p.expiresAt)
     && Date.parse(p.issuedAt) <= Date.parse(permit.capturedAt)
     && Date.parse(p.expiresAt) > Date.parse(execution.capturedAt)
     && p.plan?.adapter === 'workforce-lifecycle' && p.plan?.reversible === true
-    && id(action.eventKey) && id(action.employeeId)
+    && opaque(action.eventKey, 160) && opaque(action.employeeId, 120)
     && ['OVERTIME_OVERRIDE', 'AGENCY_ASSIGNMENT'].includes(action.kind), 'PERMIT_UNPROVEN');
   const e = execution.body?.result || {};
   check(execution.httpStatus === 200 && execution.body?.contractVersion === 'VECTOR_AUTOPILOT_EXECUTION_V1'
@@ -54,15 +56,22 @@ export function assessAutopilotReadbackEvidence(jsonText) {
     && ['PREPARED', 'APPLIED', 'VERIFIED'].every(state => matched.some(row => row.state === state))
     && preparedAt >= Date.parse(p.issuedAt) && preparedAt <= appliedAt
     && appliedAt <= verifiedAt && verifiedAt <= Date.parse(execution.capturedAt)
+    && matched.find(row => row.state === 'PREPARED')?.detail?.episodeId === p.episodeId
+    && matched.find(row => row.state === 'PREPARED')?.detail?.optionId === p.optionId
     && matched.find(row => row.state === 'APPLIED')?.detail?.eventId === e.detail?.eventId
     && matched.find(row => row.state === 'VERIFIED')?.detail?.eventId === e.detail?.eventId
     && matched.find(row => row.state === 'VERIFIED')?.detail?.outcomeStatus === 'UNPROVEN'
     && matched.find(row => row.state === 'VERIFIED')?.detail?.outcomeDigest === null,
   'EXECUTION_HISTORY_UNPROVEN');
   const l = lifecycle.body || {};
-  check(lifecycle.httpStatus === 200 && l.tenant === b.tenant && l.eventKey === action.eventKey
-    && l.id === e.detail?.eventId && l.status === 'ACCEPTED'
-    && l.employeeId === action.employeeId && l.kind === action.kind,
+  const lifecycleMatches = Array.isArray(l.recent)
+    ? l.recent.filter(row => row?.eventKey === action.eventKey) : [];
+  const readback = lifecycleMatches[0];
+  check(lifecycle.httpStatus === 200 && l.tenant === b.tenant
+    && Number.isInteger(l.eventCount) && l.eventCount >= l.recent?.length
+    && lifecycleMatches.length === 1 && readback.id === e.detail?.eventId
+    && readback.status === 'ACCEPTED' && readback.employeeId === action.employeeId
+    && readback.kind === action.kind,
   'LIFECYCLE_READBACK_UNPROVEN');
   return Object.freeze({ contractVersion: 'VECTOR_AUTOPILOT_READBACK_EVIDENCE_V1',
     status: blockers.length ? 'BLOCKED' : 'EVIDENCE_CONSISTENT',
