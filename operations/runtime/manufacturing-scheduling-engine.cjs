@@ -401,6 +401,11 @@ function repairSchedulingPlan(input={}){
   const type=text(input.event?.type,40).toUpperCase(),prior=input.priorPlan;
   if(!REPAIR_EVENTS.includes(type)) throw new Error('Unsupported scheduling repair event.');
   if(!prior||prior.contractVersion!==CONTRACT_VERSION) throw new Error('Valid prior scheduling plan is required.');
+  if(['ABSENCE','NO_SHOW'].includes(type)){
+    const ids=input.event?.unavailableWorkerIds;
+    if(!Array.isArray(ids)||ids.length===0||ids.length>1000||ids.some(id=>typeof id!=='string'||!id.trim()||id.trim().length>120))
+      throw new Error('unavailableWorkerIds must be a non-empty array of worker IDs.');
+  }
   const unavailable=new Set(list(input.event?.unavailableWorkerIds,1000,120));
   const workers=(input.workers||[]).map(w=>unavailable.has(text(w.id,120))?{...w,status:'UNAVAILABLE'}:w);
   const preferred={}; for(const a of prior.assignments||[]) if(a.workerId) preferred[a.slotId]=a.workerId;
@@ -442,3 +447,4 @@ module.exports=Object.freeze({
   evaluateWorkerForSlot,validateSchedule,createSchedulingPlan,evaluateOpenShift,evaluateSwap,repairSchedulingPlan,
   capabilityContract,stable,digest
 });
+
