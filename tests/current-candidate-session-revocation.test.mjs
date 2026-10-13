@@ -50,3 +50,11 @@ test('rejects plaintext remote origins and aliases of the bootstrap route before
     protectedPath: '/api/bootstrap?again=1', fetchImpl }), /Protected API path/);
   assert.equal(calls, 0);
 });
+test('malformed cookie errors never carry the supplied secret', async () => {
+  const secret = 'wfm_session=synthetic_token; unwanted=secret';
+  await assert.rejects(proveSessionRevocation({ ...options('https://vector.example'), cookie: secret }), error => {
+    assert.equal(JSON.stringify(error).includes(secret), false);
+    assert.equal(error.actual, undefined);
+    return /single session cookie/.test(error.message);
+  });
+});
