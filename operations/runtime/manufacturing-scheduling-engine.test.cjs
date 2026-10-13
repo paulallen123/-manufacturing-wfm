@@ -714,4 +714,155 @@ test('L11 availability: over-limit windows are rejected independent of input ord
     assert.throws(() => e.normaliseWorker(worker({ availability: raw })), /at most 200/);
   }
 });
+test('L11 evidence authority: prototype iterator pollution cannot substitute validated references', () => {
+  const declared = 'policy:declared-but-unbound';
+  const forged = 'policy:iterator-forged';
+  const attackPolicy = { ...policy, overtimeAuthorisation: {
+    authorised: true, maxHours: 100, evidenceRefs: [declared]
+  } };
+  const original = Object.getOwnPropertyDescriptor(Array.prototype, Symbol.iterator);
+  let result;
+  Object.defineProperty(Array.prototype, Symbol.iterator, {
+    configurable: true, writable: true,
+    value: function* pollutedIterator() {
+      if (this.length === 1 && this[0] === declared) {
+        yield forged;
+        return;
+      }
+      yield* original.value.call(this);
+    }
+  });
+  try {
+    result = authorityAttempts(
+      req('iterator-substitution', 'A', '08:00:00', '10:00:00'),
+      attackPolicy, [forged]
+    );
+  } finally {
+    Object.defineProperty(Array.prototype, Symbol.iterator, original);
+  }
+  assert.deepEqual(result,
+    { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+});
+test('L11 repair authority: created plans deeply freeze identity-bound state', () => {
+  const requirement = req('deep-frozen-prior', 'A', '08:00:00', '10:00:00');
+  const prior = plan([requirement], overtimeWorker(), policy, ['fixture:staff']);
+  assert.equal(Object.isFrozen(prior), true);
+  assert.equal(Object.isFrozen(prior.sourceEvidence), true);
+  assert.equal(Object.isFrozen(prior.policy), true);
+  assert.equal(Object.isFrozen(prior.policy.overtimeAuthorisation), true);
+  assert.equal(Object.isFrozen(prior.policy.overtimeAuthorisation.evidenceRefs), true);
+  assert.equal(Object.isFrozen(prior.requirements), true);
+  assert.equal(Object.isFrozen(prior.requirements[0]), true);
+  assert.equal(Object.isFrozen(prior.assignments), true);
+  assert.throws(() => { prior.sourceEvidence.push('policy:forged'); }, TypeError);
+  assert.throws(() => { prior.policy.overtimeAuthorisation.authorised = true; }, TypeError);
+});
+test('L11 repair authority: altered deserialised prior plans fail identity verification', () => {
+  const requirement = req('tampered-prior', 'A', '08:00:00', '10:00:00');
+  const workers = [overtimeWorker('w1'), overtimeWorker('w2')];
+  const prior = plan([requirement], workers[0], policy, ['fixture:staff']);
+  const persisted = JSON.parse(JSON.stringify(prior));
+  const accepted = e.repairSchedulingPlan({
+    priorPlan: persisted, workers, createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' }
+  });
+  assert.equal(accepted.priorPlanId, prior.planId);
+  const tampered = JSON.parse(JSON.stringify(prior));
+  tampered.sourceEvidence.push('policy:forged');
+  tampered.policy.overtimeAuthorisation = {
+    authorised: true, maxHours: 100, evidenceRefs: ['policy:forged']
+  };
+  assert.throws(() => e.repairSchedulingPlan({
+    priorPlan: tampered, workers, createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' }
+  }), /prior scheduling plan identity/i);
+});
+test('L11 overtime authority: accessor-backed caps cannot change after validation', () => {
+  const evidenceRef = 'policy:accessor-cap';
+  let reads = 0;
+  const overtimeAuthorisation = {
+    authorised: true, evidenceRefs: [evidenceRef]
+  };
+  Object.defineProperty(overtimeAuthorisation, 'maxHours', {
+    enumerable: true, configurable: true,
+    get() {
+      reads++;
+      return reads % 5 === 0 ? 1000 : 1;
+    }
+  });
+  const result = authorityAttempts(
+    req('accessor-cap', 'A', '08:00:00', '10:00:00'),
+    { ...policy, overtimeAuthorisation }, [evidenceRef]
+  );
+  assert.deepEqual(result,
+    { openEligible: false, planFilled: 0, swapEligible: false, repairFilled: 0 });
+  assert.equal(reads, 0);
+});
+test('L11 repair authority: prototype methods cannot hide prior-plan tampering from identity', () => {
+  const evidenceRef = 'policy:map-forged';
+  const requirement = req('map-polluted-prior', 'A', '08:00:00', '10:00:00');
+  const workers = [overtimeWorker('w1'), overtimeWorker('w2')];
+  const prior = plan([requirement], workers[0], policy, ['fixture:staff']);
+  const tampered = JSON.parse(JSON.stringify(prior));
+  tampered.sourceEvidence.push(evidenceRef);
+  const originalMap = Object.getOwnPropertyDescriptor(Array.prototype, 'map');
+  Object.defineProperty(Array.prototype, 'map', {
+    configurable: true, writable: true,
+    value(callback, thisArg) {
+      if (this.length === 2 && this[0] === 'fixture:staff' && this[1] === evidenceRef)
+        return [callback.call(thisArg, this[0], 0, this)];
+      return originalMap.value.call(this, callback, thisArg);
+    }
+  });
+  try {
+    assert.throws(() => e.repairSchedulingPlan({
+      priorPlan: tampered, workers,
+      policy: { ...policy, overtimeAuthorisation: {
+        authorised: true, maxHours: 100, evidenceRefs: [evidenceRef]
+      } },
+      createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+      event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' }
+    }), /prior scheduling plan identity/i);
+  } finally {
+    Object.defineProperty(Array.prototype, 'map', originalMap);
+  }
+});
+test('L11 repair authority: special own keys cannot disappear from prior-plan identity', () => {
+  const requirement = req('special-key-prior', 'A', '08:00:00', '10:00:00');
+  const workers = [overtimeWorker('w1'), overtimeWorker('w2')];
+  const prior = plan([requirement], workers[0], policy, ['fixture:staff']);
+  const tampered = JSON.parse(JSON.stringify(prior));
+  Object.defineProperty(tampered, '__proto__', {
+    value: { forged: true }, enumerable: true, writable: true, configurable: true
+  });
+  assert.throws(() => e.repairSchedulingPlan({
+    priorPlan: tampered, workers, createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'ABSENCE', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:absence' }
+  }), /prior scheduling plan identity/i);
+});
+test('L11 evidence authority: prototype JSON hooks cannot rewrite the owned plan', () => {
+  const legitimate = 'policy:overtime:legit';
+  const forged = 'policy:overtime:forged';
+  const requirement = req('json-hook-plan', 'A', '08:00:00', '10:00:00');
+  const original = Object.getOwnPropertyDescriptor(Array.prototype, 'toJSON');
+  Object.defineProperty(Array.prototype, 'toJSON', {
+    configurable: true, writable: true,
+    value() {
+      if (this.length === 1 && this[0] === legitimate) return [forged];
+      return this;
+    }
+  });
+  try {
+    const created = plan([requirement], overtimeWorker('w1'), {
+      ...policy,
+      overtimeAuthorisation: { authorised: true, maxHours: 100, evidenceRefs: [legitimate] }
+    }, ['fixture:staff', legitimate]);
+    assert.deepEqual(created.sourceEvidence, ['fixture:staff', legitimate]);
+    assert.deepEqual(created.policy.overtimeAuthorisation.evidenceRefs, [legitimate]);
+    assert.equal(created.quality.filledSlots, 1);
+  } finally {
+    if (original) Object.defineProperty(Array.prototype, 'toJSON', original);
+    else delete Array.prototype.toJSON;
+  }
+});
 }

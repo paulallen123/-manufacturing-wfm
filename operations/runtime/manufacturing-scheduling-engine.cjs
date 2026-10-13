@@ -10,18 +10,117 @@ const REPAIR_EVENTS = Object.freeze(['ABSENCE','NO_SHOW','PRODUCTION_CHANGE','LI
 
 function clone(v){ return v==null?v:JSON.parse(JSON.stringify(v)); }
 function stable(v){
-  if(Array.isArray(v)) return '['+v.map(stable).join(',')+']';
-  if(v&&typeof v==='object') return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';
+  if(Array.isArray(v)){
+    let out='[';
+    for(let i=0;i<v.length;i++) out+=(i?',':'')+stable(v[i]);
+    return out+']';
+  }
+  if(v&&typeof v==='object'){
+    const keys=Object.keys(v);
+    for(let i=1;i<keys.length;i++){
+      const key=keys[i];
+      let j=i-1;
+      while(j>=0&&keys[j]>key){ keys[j+1]=keys[j]; j--; }
+      keys[j+1]=key;
+    }
+    let out='{';
+    for(let i=0;i<keys.length;i++){
+      const key=keys[i];
+      out+=(i?',':'')+JSON.stringify(key)+':'+stable(v[key]);
+    }
+    return out+'}';
+  }
   return JSON.stringify(v);
 }
 function digest(v){ return createHash('sha256').update(stable(v)).digest('hex'); }
+function planIdentity(v){
+  const identity=Object.create(null);
+  const keys=Object.keys(v);
+  for(let i=0;i<keys.length;i++){
+    const key=keys[i];
+    if(key!=='createdAt'&&key!=='planId') identity[key]=v[key];
+  }
+  return digest(identity);
+}
+function deepFreeze(v){
+  if(v===null||typeof v!=='object'||Object.isFrozen(v)) return v;
+  const keys=Object.keys(v);
+  for(let i=0;i<keys.length;i++) deepFreeze(v[keys[i]]);
+  return Object.freeze(v);
+}
+function inertSnapshot(v,ancestors=new WeakSet()){
+  if(v===null||typeof v==='string'||typeof v==='boolean') return v;
+  if(typeof v==='number'){
+    if(!Number.isFinite(v)) throw new Error('Non-finite plan value.');
+    return v;
+  }
+  if(typeof v!=='object'||types.isProxy(v)||ancestors.has(v))
+    throw new Error('Prior plan must be an inert acyclic data structure.');
+  ancestors.add(v);
+  let out;
+  if(Array.isArray(v)){
+    const length=v.length,keys=Object.keys(v);
+    if(keys.length!==length||Object.getOwnPropertySymbols(v).length)
+      throw new Error('Prior plan arrays must be dense inert data.');
+    out=[];
+    for(let i=0;i<length;i++){
+      const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
+      if(!descriptor||descriptor.enumerable!==true||
+        !Object.prototype.hasOwnProperty.call(descriptor,'value'))
+        throw new Error('Prior plan arrays must contain inert values.');
+      out[i]=inertSnapshot(descriptor.value,ancestors);
+    }
+  }else{
+    const prototype=Object.getPrototypeOf(v),keys=Object.keys(v);
+    if((prototype!==Object.prototype&&prototype!==null)||
+      Object.getOwnPropertyNames(v).length!==keys.length||Object.getOwnPropertySymbols(v).length)
+      throw new Error('Prior plan objects must contain enumerable inert data only.');
+    out={};
+    for(let i=0;i<keys.length;i++){
+      const key=keys[i],descriptor=Object.getOwnPropertyDescriptor(v,key);
+      if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+        throw new Error('Prior plan objects must contain inert values.');
+      Object.defineProperty(out,key,{value:inertSnapshot(descriptor.value,ancestors),
+        enumerable:true,writable:true,configurable:true});
+    }
+  }
+  ancestors.delete(v);
+  return out;
+}
+function verifiedPriorPlan(raw){
+  let prior;
+  try { prior=inertSnapshot(raw); }
+  catch { throw new Error('Valid inert prior scheduling plan is required.'); }
+  if(!prior||prior.contractVersion!==CONTRACT_VERSION)
+    throw new Error('Valid prior scheduling plan is required.');
+  if(typeof prior.planId!=='string'||!/^[a-f0-9]{64}$/.test(prior.planId)||
+    planIdentity(prior)!==prior.planId)
+    throw new Error('Prior scheduling plan identity verification failed.');
+  return prior;
+}
 function text(v,max=200){ return String(v??'').trim().slice(0,max); }
 function list(v,max=100,maxLen=160){
   return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];
 }
+function refLookup(refs){
+  const lookup=Object.create(null);
+  for(let i=0;i<refs.length;i++) lookup[refs[i]]=true;
+  return lookup;
+}
+function refsContained(refs,lookup){
+  for(let i=0;i<refs.length;i++) if(!Object.prototype.hasOwnProperty.call(lookup,refs[i])) return false;
+  return true;
+}
+function ownDataValue(record,key){
+  if(record===null||typeof record!=='object'||Array.isArray(record)||types.isProxy(record))
+    return {valid:false,value:undefined};
+  const descriptor=Object.getOwnPropertyDescriptor(record,key);
+  return descriptor&&Object.prototype.hasOwnProperty.call(descriptor,'value')
+    ?{valid:true,value:descriptor.value}:{valid:false,value:undefined};
+}
 function strictRefsResult(v,max=100,maxLen=220){
   if(!Array.isArray(v)||types.isProxy(v)) return {valid:false,refs:[]};
-  const length=v.length,refs=[];
+  const length=v.length,refs=[],seen=Object.create(null);
   if(length>max) return {valid:false,refs:[]};
   for(let i=0;i<length;i++){
     const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
@@ -31,10 +130,13 @@ function strictRefsResult(v,max=100,maxLen=220){
     if(typeof x!=='string') return {valid:false,refs:[]};
     const trimmed=x.trim();
     if(!trimmed||trimmed.length>maxLen) return {valid:false,refs:[]};
-    refs.push(trimmed);
+    if(!Object.prototype.hasOwnProperty.call(seen,trimmed)){
+      seen[trimmed]=true;
+      refs[refs.length]=trimmed;
+    }
   }
   if(v.length!==length) return {valid:false,refs:[]};
-  return {valid:true,refs:[...new Set(refs)]};
+  return {valid:true,refs};
 }
 function strictRefs(v,max=100,maxLen=220){
   const result=strictRefsResult(v,max,maxLen);
@@ -73,17 +175,20 @@ function normaliseAssignments(input=[]){
 
 function normalisePolicy(input={},sourceEvidence=[]){
   const w=input.weights||{};
-  const rawOvertime=input.overtimeAuthorisation;
-  const overtimeEvidence=rawOvertime&&typeof rawOvertime==='object'&&!Array.isArray(rawOvertime)
-    ?strictRefs(rawOvertime.evidenceRefs,100,220):[];
-  const authoritativeSources=new Set(strictRefs(sourceEvidence,300,220));
-  const overtimeAuthorised=rawOvertime&&typeof rawOvertime==='object'&&!Array.isArray(rawOvertime)&&
-    rawOvertime.authorised===true&&typeof rawOvertime.maxHours==='number'&&
-    Number.isFinite(rawOvertime.maxHours)&&rawOvertime.maxHours>=0&&rawOvertime.maxHours<=100&&
-    overtimeEvidence.length>0&&overtimeEvidence.every(ref=>authoritativeSources.has(ref));
+  const overtimeField=ownDataValue(input,'overtimeAuthorisation');
+  const rawOvertime=overtimeField.valid?overtimeField.value:null;
+  const authorisedField=ownDataValue(rawOvertime,'authorised');
+  const maxHoursField=ownDataValue(rawOvertime,'maxHours');
+  const evidenceField=ownDataValue(rawOvertime,'evidenceRefs');
+  const overtimeEvidence=evidenceField.valid?strictRefs(evidenceField.value,100,220):[];
+  const maxHours=maxHoursField.value;
+  const authoritativeSources=refLookup(strictRefs(sourceEvidence,300,220));
+  const overtimeAuthorised=authorisedField.value===true&&typeof maxHours==='number'&&
+    Number.isFinite(maxHours)&&maxHours>=0&&maxHours<=100&&
+    overtimeEvidence.length>0&&refsContained(overtimeEvidence,authoritativeSources);
   const overtimeAuthorisation=Object.freeze({
     authorised:overtimeAuthorised,
-    maxHours:overtimeAuthorised?rawOvertime.maxHours:0,
+    maxHours:overtimeAuthorised?maxHours:0,
     evidenceRefs:Object.freeze(overtimeAuthorised?overtimeEvidence:[])
   });
   return {
@@ -465,8 +570,8 @@ function createSchedulingPlan(input={}){
     requirements:reqs,assignments:solved.assignments.sort((a,b)=>a.slotId.localeCompare(b.slotId)),
     quality:quality(solved.assignments,allSlots),unfilled,validation,claimBoundary:'SHADOW_ONLY_NO_PRODUCTION_MUTATION'
   };
-  const identity=clone(payload); delete identity.createdAt;
-  return Object.freeze({...clone(payload),planId:digest(identity)});
+  const owned=inertSnapshot(payload);
+  return deepFreeze({...owned,planId:planIdentity(owned)});
 }
 function evaluateOpenShift(input={}){
   const sourceEvidence=strictRefs(input.sourceEvidence,300,220);
@@ -502,9 +607,9 @@ function evaluateSwap(input={}){
     reasons:eligible?[]:[...new Set([...bToA.failures,...aToB.failures])],legs:{workerBToRequirementA:bToA,workerAToRequirementB:aToB}};
 }
 function repairSchedulingPlan(input={}){
-  const type=text(input.event?.type,40).toUpperCase(),prior=input.priorPlan;
+  const type=text(input.event?.type,40).toUpperCase();
   if(!REPAIR_EVENTS.includes(type)) throw new Error('Unsupported scheduling repair event.');
-  if(!prior||prior.contractVersion!==CONTRACT_VERSION) throw new Error('Valid prior scheduling plan is required.');
+  const prior=verifiedPriorPlan(input.priorPlan);
   const unavailable=new Set(list(input.event?.unavailableWorkerIds,1000,120));
   const workers=(input.workers||[]).map(w=>unavailable.has(text(w.id,120))?{...w,status:'UNAVAILABLE'}:w);
   const preferred={}; for(const a of prior.assignments||[]) if(a.workerId) preferred[a.slotId]=a.workerId;
@@ -513,8 +618,11 @@ function repairSchedulingPlan(input={}){
   const priorSources=strictRefsResult(prior.sourceEvidence,300,220);
   if(!inputSources.valid||!priorSources.valid)
     throw new Error('sourceEvidence must contain valid dense references.');
-  const repairSources=[...inputSources.refs,...priorSources.refs];
-  if(input.event?.evidenceRef!==undefined&&input.event?.evidenceRef!==null) repairSources.push(input.event.evidenceRef);
+  const repairSources=[];
+  for(let i=0;i<inputSources.refs.length;i++) repairSources[repairSources.length]=inputSources.refs[i];
+  for(let i=0;i<priorSources.refs.length;i++) repairSources[repairSources.length]=priorSources.refs[i];
+  if(input.event?.evidenceRef!==undefined&&input.event?.evidenceRef!==null)
+    repairSources[repairSources.length]=input.event.evidenceRef;
   const repaired=createSchedulingPlan({
     tenant:prior.tenant,contextRevision:text(input.contextRevision||prior.contextRevision,180),
     createdAt:input.createdAt||new Date().toISOString(),
