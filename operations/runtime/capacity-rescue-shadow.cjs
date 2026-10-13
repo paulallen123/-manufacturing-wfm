@@ -93,7 +93,7 @@ function normaliseAction(input={},planId){
 function economicValue(input={}){
   const keys=['recoveredContribution','avoidedDowntime','avoidedExpedite','avoidedLabourPremium','avoidedScrap','interventionCost','inducedDownstreamCost'];
   const out={};
-  for(const k of keys) out[k]=num(input[k],'economic '+k,{nullable:true});
+  for(const k of keys) out[k]=num(input[k],'economic '+k,{min:0,nullable:true});
   out.netRecoveredValue=keys.some(k=>out[k]==null)?null:
     out.recoveredContribution+out.avoidedDowntime+out.avoidedExpedite+
     out.avoidedLabourPremium+out.avoidedScrap-out.interventionCost-out.inducedDownstreamCost;
@@ -267,3 +267,4 @@ function buildCapacityRescueShadow(input={}){
 module.exports=Object.freeze({
   TRIGGERS,DOMAINS,ACTION_TYPES,buildCapacityRescueShadow,normaliseConstraint,normalisePlan
 });
+
