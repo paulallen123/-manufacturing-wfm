@@ -58,3 +58,17 @@ test('employee view hides finance decision while manager and finance wording sta
   assert.match(roleView(card,'finance').primary,/Estimated economic value/);
   assert.match(roleView(card,'finance').secondary,/not realised/);
 });
+
+test('unknown or revoked roles cannot inherit the manager cash view',()=>{
+  const card=buildCashToCapacityPresentation(good).card;
+  for(const role of ['revoked','unknown','contractor','',null,42,{}]){
+    assert.equal(roleView(card,role),null,String(role));
+  }
+  assert.equal(roleView(card,'operations-director').detailLevel,'cross-site');
+  assert.equal(roleView(card,'manager').detailLevel,'manager');
+  assert.equal(roleView(card,'finance').detailLevel,'financial');
+  for(const role of ['director','operations','supervisor','company-admin','payroll_admin','admin','superuser']){
+    assert.equal(roleView(card,role).detailLevel,'manager',role);
+  }
+});
+
