@@ -8,7 +8,9 @@ export async function proveSessionRevocation({ origin, cookie, expectedSha, expe
   assert.ok(target.protocol === 'https:' ||
     (target.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)),
   'Session cookies require HTTPS or local loopback');
-  assert.match(cookie, /^wfm_session=[A-Za-z0-9_-]+$/, 'A single session cookie is required');
+  if (typeof cookie !== 'string' || !/^wfm_session=[A-Za-z0-9_-]+$/.test(cookie)) {
+    throw new Error('A single session cookie is required');
+  }
   assert.match(expectedSha, /^[a-f0-9]{40}$/, 'Exact serving SHA is required');
   const protectedUrl = new URL(protectedPath, origin);
   assert.ok(protectedPath.startsWith('/api/') && protectedUrl.origin === origin &&
