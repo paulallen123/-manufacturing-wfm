@@ -4,7 +4,7 @@ Evidence time: 2026-10-13 07:49 UTC. Status: **TESTED** in an isolated worktree.
 
 ## Requirement and source
 
-`factory-playback` in `release/research-convergence-ledger.json` (source PR #230) requires a chronological, read only reconstruction of factory state and decisions by composing existing simulation, Decision Episode, realtime, outcome proof and recovery evidence. `docs/VECTOR_RESEARCH_ALIGNMENT_2026-09-23.md` specifies that it is an evidence projection, not a new historian, MES, machine control system, or source of operational authority.
+`factory-playback` in `release/research-convergence-ledger.json` (source PR #230) requires a chronological, read only reconstruction of factory state and decisions by composing existing simulation, Decision Episode, realtime, outcome proof and recovery evidence. The historical PR #230 branch's `docs/VECTOR_RESEARCH_ALIGNMENT_2026-09-23.md` specifies that it is an evidence projection, not a new historian, MES, machine control system, or source of operational authority; that document is not present on this base.
 
 ## Owner and conflict check
 
@@ -14,20 +14,20 @@ The ledger assigns the existing orchestrator, product evolution, frontier, and t
 
 Base: `90ad90fcf60adaca9abacdd4ad14bf392f95e585` (merged October product source; no canonical or staging ref modified).
 
-- `operations/runtime/factory-playback.cjs`: port the existing PR #230 read only projection; require an intact Outcome Proof digest, matching tenant, site, decision type and selected option, and internally consistent classification before presenting realised financial value.
-- `operations/runtime/factory-playback.test.cjs`: retain historical normal and tenant cases; add actual Outcome Proof engine integration and altered, wrong site, wrong option, and unsealed proof cases.
+- `operations/runtime/factory-playback.cjs`: port the existing PR #230 read only projection; regenerate proofs through the current Outcome Proof engine, require matching tenant/site and selected option, bind realtime service rows through explicit trusted tenant/site scope, and keep undated proof evidence off the chronological timeline.
+- `operations/runtime/factory-playback.test.cjs`: retain historical normal and tenant cases; add actual Outcome Proof engine integration, altered/wrong-scope/unsealed proof, shadow authority, and realtime service row shape cases.
 - `release/research-convergence-ledger.json`: advance only this research row to isolated implementation with the evidence pointer.
 - This evidence file.
 
-The projection accepts already tenant scoped realtime records from the existing service. It is an internal helper with no HTTP route or execution authority. A digest detects alteration; it is not an authenticity signature. The canonical owner must preserve authenticated tenant scoped retrieval when wiring the helper into a product route.
+The projection accepts only explicitly bound realtime rows. The existing `eventsForTenant` service omits tenant/site on each returned row; `scopeRealtimeEvents` binds rows after an authenticated tenant query and retains only rows whose payload has the exact site. Independent review confirmed current scheduling and Autopilot publishers omit `payload.site`, so those current records are filtered and live realtime coverage remains an integration gate. It is an internal helper with no HTTP route or execution authority. A digest detects alteration; it is not an authenticity signature. The canonical owner must preserve authenticated tenant scoped retrieval when wiring the helper into a product route.
 
 ## Test and review evidence
 
 Initial port: `node --test operations/runtime/factory-playback.test.cjs` — 2 passed, 0 failed.
 
-After hardening: `node --test operations/runtime/factory-playback.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/decision-outcome-proof.test.cjs` — 14 passed, 0 failed. `node scripts/validate-research-convergence-ledger.mjs` — PASS, 16 items registered, 13 pending. `git diff --check` — PASS. No product test failure was observed. GitHub CLI and full discussion retrieval failed as described above.
+Initial hardening: `node --test operations/runtime/factory-playback.test.cjs operations/runtime/decision-episode.test.cjs operations/runtime/decision-outcome-proof.test.cjs` — 14 passed, 0 failed. Independent review found unsafe scope/proof admission and false chronology/authority labels, which were repaired. Final focused run — 18 passed, 0 failed. `node scripts/validate-research-convergence-ledger.mjs` — PASS, 16 items registered, 13 pending. `git diff --check` — PASS. No product test failure was observed. GitHub CLI and full discussion retrieval failed as described above.
 
-Independent review: **PENDING**. Canonical integration: **PENDING**. Exact candidate deployment: **NOT RUN**. Hosted/customer proof: **NOT RUN**. No customer readiness or realised customer value is claimed.
+Independent review: **COMPLETE for this isolated package**; three Important findings were repaired, and re-review found no remaining Critical/Important helper defect. Publisher site tagging remains an integration gap. Canonical integration: **PENDING**. Exact candidate deployment: **NOT RUN**. Hosted/customer proof: **NOT RUN**. No customer readiness or realised customer value is claimed.
 
 ## Remaining risk and next action
 
