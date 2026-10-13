@@ -12,7 +12,11 @@ function planTrainingRegeneration(input={}){
   if(!changedDependencies.length) throw new Error('At least one changed training dependency is required.');
   const productSha=String(input.productSha||'');
   const targetOrigin=String(input.targetOrigin||'');
-  const roles=unique(input.roles).length?unique(input.roles):[...DEFAULT_ROLES];
+  const requestedRoles=unique(input.roles);
+  if(input.roles!==undefined&&(!Array.isArray(input.roles)||!requestedRoles.length)){
+    throw Object.assign(new Error('Explicit training roles must be a non-empty list.'),{statusCode:400});
+  }
+  const roles=input.roles===undefined?[...DEFAULT_ROLES]:requestedRoles;
   const locales=unique(input.locales).length?unique(input.locales):['en-GB'];
   const competencies=affectedCompetencies(changedDependencies);
   const jobs=[],pendingAnchors=[],localisationRequired=[],notAssigned=[];
