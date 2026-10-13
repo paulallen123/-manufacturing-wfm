@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { createDecisionOutcomeProof } = require('./decision-outcome-proof.cjs');
 
 const CONTRACT_VERSION='VECTOR_FACTORY_PLAYBACK_V1';
 const EPISODE_VERSION='VECTOR_DECISION_EPISODE_V1';
@@ -15,11 +16,22 @@ function text(v,max=240){return String(v??'').trim().slice(0,max);}
 function iso(v){const raw=text(v,80),ms=Date.parse(raw);return raw&&Number.isFinite(ms)?new Date(ms).toISOString():null;}
 function list(v,max=20,maxLen=220){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 
+// Call only after eventsForTenant has queried the authenticated tenant. Its rows omit
+// tenant and site, so bind the trusted query scope and retain only site-tagged rows.
+function scopeRealtimeEvents(events,{tenant,site}={}){
+  if(!tenant||!site) throw new Error('Trusted tenant and site scope are required.');
+  return (Array.isArray(events)?events:[]).filter(event=>{
+    const payload=event?.payload;
+    return payload&&payload.site===site&&(!payload.tenant||payload.tenant===tenant);
+  }).map(event=>({...event,tenant,site}));
+}
+
 function safeRealtimeEvent(event,episode){
   if(!event||typeof event!=='object') return null;
   const createdAt=iso(event.createdAt);
   if(!createdAt) return null;
   const payload=event.payload&&typeof event.payload==='object'&&!Array.isArray(event.payload)?event.payload:{};
+  if(event.tenant!==episode.tenant||event.site!==episode.site) return null;
   if(payload.tenant&&String(payload.tenant)!==String(episode.tenant)) return null;
   if(payload.site&&episode.site&&String(payload.site)!==String(episode.site)) return null;
   const evidenceRefs=list(payload.evidenceRefs||payload.sourceEvidence||[],12,220);
@@ -51,9 +63,9 @@ function episodeEvents(episode){
     entityRef:null,decisionRef:episode.episodeId,evidenceRefs:list(episode.sourceEvidence,20,220),sourceType:'decision-episode'
   });
   if(episode.selection&&iso(episode.selection.selectedAt)) events.push({
-    at:iso(episode.selection.selectedAt),kind:episode.selection.executionPermitted===true?'ACTION_AUTHORISED':'OPTION_SELECTED',topic:'decision.selected',
-    title:episode.selection.executionPermitted===true?'Action authorised':'Option selected',
-    summary:text(episode.selection.optionId,120)+' · '+text(episode.selection.authorityDecision,80),
+    at:iso(episode.selection.selectedAt),kind:'OPTION_SELECTED',topic:'decision.selected',
+    title:'Option selected',
+    summary:text(episode.selection.optionId,120),
     entityRef:episode.selection.actorRef?text(episode.selection.actorRef,180):null,decisionRef:episode.episodeId,evidenceRefs:[],sourceType:'decision-episode'
   });
   if(episode.outcome&&iso(episode.outcome.observedAt)) events.push({
@@ -64,33 +76,37 @@ function episodeEvents(episode){
   return events;
 }
 
-function proofEvents(proofs,episode){
+function proofAnnotations(proofs,episode){
   return (Array.isArray(proofs)?proofs:[]).filter(proof=>{
     if(!proof||proof.recordType!=='vector-decision-outcome-proof'||proof.episodeId!==episode.episodeId||proof.tenant!==episode.tenant||proof.site!==episode.site) return false;
     if(proof.decisionType!==episode.decisionType||proof.selectedOptionId!==episode.selection?.optionId) return false;
     if(!/^[a-f0-9]{64}$/.test(String(proof.proofDigest||''))) return false;
     const {proofDigest,...core}=proof;
     if(digest(core)!==proofDigest) return false;
-    if(proof.classification==='REALISED_FINANCIAL') return proof.realisedFinancialOutcome===true&&proof.verifiedOperationalOutcome===true&&!!proof.observed;
-    if(proof.classification==='VERIFIED_OPERATIONAL') return proof.realisedFinancialOutcome===false&&proof.verifiedOperationalOutcome===true&&!!proof.observed;
-    return proof.classification==='SIMULATED'&&proof.realisedFinancialOutcome===false&&proof.verifiedOperationalOutcome===false;
+    try {
+      const canonical=createDecisionOutcomeProof({episode,metric:proof.metric,direction:proof.direction,
+        classification:proof.classification,baselineActual:proof.observed?.baseline,
+        baselineEvidenceRefs:proof.evidence?.baseline,financeEvidenceRefs:proof.evidence?.finance,
+        currency:proof.currency,measurementWindow:proof.measurementWindow});
+      return canonical.proofDigest===proofDigest;
+    } catch { return false; }
   }).map(proof=>{
-    const at=iso(proof.measurementWindow?.end)||iso(episode.outcome?.observedAt)||iso(episode.triggeredAt);
     return {
-      at,kind:proof.realisedFinancialOutcome?'FINANCIAL_VALUE_VERIFIED':'OUTCOME_PROOF_RECORDED',topic:'decision.proof',
-      title:proof.realisedFinancialOutcome?'Realised value verified':'Outcome proof recorded',
+      kind:proof.realisedFinancialOutcome?'FINANCIAL_VALUE_EVIDENCE':'OUTCOME_PROOF_EVIDENCE',topic:'decision.proof',
+      title:proof.realisedFinancialOutcome?'Realised value evidence':'Outcome proof evidence',
       summary:text(proof.classification,40)+' · '+text(proof.metric,80),
       entityRef:null,decisionRef:episode.episodeId,evidenceRefs:list([...(proof.evidence?.baseline||[]),...(proof.evidence?.result||[]),...(proof.evidence?.finance||[])],30,220),sourceType:'outcome-proof'
     };
-  }).filter(x=>x.at);
+  });
 }
 
 function createFactoryPlayback(input={}){
   const episode=input.episode;
   if(!episode||episode.contractVersion!==EPISODE_VERSION||!episode.episodeId) throw new Error('Valid decision episode is required.');
   const realtime=(Array.isArray(input.realtimeEvents)?input.realtimeEvents:[]).map(event=>safeRealtimeEvent(event,episode)).filter(Boolean);
-  const timeline=[...episodeEvents(episode),...realtime,...proofEvents(input.outcomeProofs,episode)]
+  const timeline=[...episodeEvents(episode),...realtime]
     .sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)||a.kind.localeCompare(b.kind)||String(a.topic).localeCompare(String(b.topic)));
+  const undatedProofs=proofAnnotations(input.outcomeProofs,episode);
   const core={
     contractVersion:CONTRACT_VERSION,
     tenant:text(episode.tenant,120),
@@ -99,6 +115,7 @@ function createFactoryPlayback(input={}){
     decisionType:text(episode.decisionType,120),
     timeline,
     eventCount:timeline.length,
+    undatedProofs,
     readOnly:true,
     executionPermitted:false,
     claimBoundary:'Playback reconstructs evidence already recorded by authoritative VECTOR services. It does not create operational authority or invent missing events.'
@@ -106,4 +123,4 @@ function createFactoryPlayback(input={}){
   return Object.freeze({...core,playbackDigest:digest(core)});
 }
 
-module.exports=Object.freeze({CONTRACT_VERSION,createFactoryPlayback,digest,stable});
+module.exports=Object.freeze({CONTRACT_VERSION,createFactoryPlayback,scopeRealtimeEvents,digest,stable});
