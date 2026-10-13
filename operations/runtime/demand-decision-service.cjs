@@ -174,7 +174,7 @@ function createDemandDecisionService(options={}){
   function requireManager(req,res){
     const c=ctx(req);
     if(!c){writeJson(res,401,{error:'Sign in is required.'});return null;}
-    if(String(c.role).toLowerCase()==='employee'){
+    if(!['manager','director','supervisor'].includes(String(c.role).toLowerCase())){
       writeJson(res,403,{error:'Decision intelligence requires an authorised manager or administrator.'});return null;
     }
     return c;
