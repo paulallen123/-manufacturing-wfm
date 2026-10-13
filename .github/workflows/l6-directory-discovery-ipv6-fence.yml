@@ -1,0 +1,26 @@
+name: L6 directory discovery IPv6 fence
+
+on:
+  pull_request:
+    branches:
+      - release/vector-customer-ready-candidate-20260925
+    paths:
+      - integration/worker/directory-discovery-worker.cjs
+      - integration/worker/directory-discovery-worker.test.cjs
+      - .github/workflows/l6-directory-discovery-ipv6-fence.yml
+
+permissions:
+  contents: read
+
+jobs:
+  targeted:
+    if: github.head_ref == 'l6/directory-discovery-ipv6-fence-20261013'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Run directory discovery worker tests
+        run: node --test integration/worker/directory-discovery-worker.test.cjs
