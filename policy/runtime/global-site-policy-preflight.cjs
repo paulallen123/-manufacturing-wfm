@@ -3,19 +3,20 @@ const { createHash } = require('node:crypto');
 function stable(v){if(Array.isArray(v)) return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object') return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v);}
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function text(v,max=160){return String(v??'').trim().slice(0,max);}
+function countryCode(v){return typeof v==='string'?v.trim().toUpperCase():'';}
 function list(v,max=100,maxLen=160){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 function createGlobalSitePolicyPreflight({graph}={}){
   if(!graph||typeof graph.resolve!=='function') throw new Error('Global site preflight requires jurisdiction policy graph.');
   function assess(input={}){
     const tenant=text(input.tenant,120),site=input.site||{},workers=Array.isArray(input.workers)?input.workers:[];
     if(!tenant||!text(site.id,120)) throw new Error('tenant and site.id are required.');
-    const country=text(site.country,2).toUpperCase(),baseQuestions=[];
+    const country=countryCode(site.country),baseQuestions=[];
     if(!/^[A-Z]{2}$/.test(country)) baseQuestions.push({code:'SITE_COUNTRY_REQUIRED',scope:'site',siteId:site.id});
     if(!text(site.legalEntityId,160)) baseQuestions.push({code:'LEGAL_ENTITY_REQUIRED',scope:'site',siteId:site.id});
     const results=[];
     for(const worker of workers){
       const workerId=text(worker.id,160); if(!workerId) continue;
-      const workCountry=text(worker.workLocationCountry||country,2).toUpperCase();
+      const workCountry=countryCode(worker.workLocationCountry==null||worker.workLocationCountry===''?country:worker.workLocationCountry);
       const context={country:workCountry,subdivision:text(worker.workLocationSubdivision||site.subdivision,80)||null,sector:text(worker.sector||site.sector,120)||null,legalEntityId:text(worker.legalEntityId||site.legalEntityId,160)||null,siteId:text(site.id,120),employmentCategory:text(worker.employmentCategory,120)||null,workerClass:text(worker.workerClass,120)||null,collectiveAgreements:list(worker.collectiveAgreements||site.collectiveAgreements,20,160),workLocationCountry:workCountry,workLocationSubdivision:text(worker.workLocationSubdivision,80)||null};
       if(!context.employmentCategory) baseQuestions.push({code:'EMPLOYMENT_CATEGORY_REQUIRED',scope:'worker',workerId});
       const resolved=/^[A-Z]{2}$/.test(workCountry)?graph.resolve({legalAt:input.legalAt,knownAt:input.knownAt,context}):null;
@@ -36,3 +37,4 @@ function createGlobalSitePolicyPreflight({graph}={}){
   return Object.freeze({assess});
 }
 module.exports=Object.freeze({createGlobalSitePolicyPreflight,digest,stable});
+
