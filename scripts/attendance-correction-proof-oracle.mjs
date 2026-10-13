@@ -90,22 +90,28 @@ function canonical(value) {
 function plainJsonTree(value) {
   const pending = [value], seen = new Set();
   let visited = 0;
-  while (pending.length) {
-    const item = pending.pop();
+  while (pending.length !== 0) {
+    const index = pending.length - 1;
+    const item = pending[index];
+    pending.length = index;
     if (item === null || typeof item !== 'object') continue;
     if (++visited > 10000 || types.isProxy(item) || seen.has(item)) return false;
     seen.add(item);
     const array = Array.isArray(item);
-    if (!array && ![Object.prototype, null].includes(Object.getPrototypeOf(item))) return false;
+    if (!array) {
+      const prototype = Object.getPrototypeOf(item);
+      if (prototype !== Object.prototype && prototype !== null) return false;
+    }
     const descriptors = Object.getOwnPropertyDescriptors(item);
     const keys = Reflect.ownKeys(descriptors);
     if (array && Object.keys(item).length !== item.length) return false;
-    for (const key of keys) {
+    for (let i = 0, length = keys.length; i < length; i++) {
+      const key = keys[i];
       if (typeof key === 'symbol') return false;
       const descriptor = descriptors[key];
       if (array && key === 'length') continue;
       if (!descriptor.enumerable || !Object.hasOwn(descriptor, 'value')) return false;
-      pending.push(descriptor.value);
+      pending[pending.length] = descriptor.value;
     }
   }
   return true;

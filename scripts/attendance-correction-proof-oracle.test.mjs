@@ -250,6 +250,25 @@ test('accessor-backed and proxied receipt fields are not plain JSON evidence', (
   proxy.evidence.actions[0] = new Proxy(proxy.evidence.actions[0], {});
   reject(proxy);
 });
+test('polluted array iteration cannot hide an accessor receipt from JSON admission', () => {
+  const f = fixture();
+  const receiptId = f.evidence.actions[0].receiptId;
+  let getterReads = 0;
+  Object.defineProperty(f.evidence.actions[0], 'receiptId', {
+    enumerable: true, get() { getterReads++; return receiptId; },
+  });
+  const originalIterator = Array.prototype[Symbol.iterator];
+  try {
+    Array.prototype[Symbol.iterator] = function* () {
+      for (let i = 0; i < this.length; i++) if (this[i] !== 'receiptId') yield this[i];
+    };
+    const result = validate(f);
+    assert.notEqual(result.status, 'EVIDENCE_CONSISTENT');
+    assert.equal(getterReads, 0);
+  } finally {
+    Array.prototype[Symbol.iterator] = originalIterator;
+  }
+});
 test('separate entrypoints cannot stitch rejection into successful apply', () => {
   const r = fixture('reject'), a = fixture();
   assert.equal(validateApplication(r.contract, r.evidence).mutationProven, false);
