@@ -13,6 +13,7 @@ const { enforceDurableState } = require('./durable-state-guard.cjs');
 const { createRuntimeIdentity } = require('./runtime-identity.cjs');
 const { serveRetiredPresentation } = require('./retired-presentation.cjs');
 const { enforceHostedApplicationUser } = require('./hosted-application-user-guard.cjs');
+const { applyCrawlerBoundary } = require('./crawler-boundary.cjs');
 const { createAutonomousIntegrationHub } = require('/app/integration-runtime/autonomous-integration-hub.cjs');
 const { createAdaptiveLearningEngine } = require('/app/learning-runtime/adaptive-learning-engine.cjs');
 const { createTrainingDeliveryService } = require('/app/learning-runtime/training-delivery-service.cjs');
@@ -470,6 +471,7 @@ http.createServer = function guardedCreateServer(listener) {
     // Bind every asset/API response to the exact process source so browser proof
     // detects mixed revisions during rolling or multi-replica deployments.
     runtimeIdentity.applyResponseHeaders(res);
+    if (applyCrawlerBoundary(req, res, { hosted })) return;
     const guardianStarted = process.hrtime.bigint();
     if (t9CustomerGuardian && !t9CustomerGuardianInitError && typeof res.once === 'function') {
       res.once('finish', () => {

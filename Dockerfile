@@ -4,6 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
+RUN node --test security/runtime/crawler-boundary.test.cjs
 RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
@@ -120,7 +121,7 @@ RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit
 COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs /app/security-runtime/
 COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
-COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs /app/security-runtime/
+COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs security/runtime/crawler-boundary.cjs /app/security-runtime/
 RUN node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');s=s.replace('</head>','<script src=\"/passkey-session-ui.js\" defer></script></head>');fs.writeFileSync(p,s);" \
  && node --check /app/security-runtime/passkey-auth.cjs
 
