@@ -14,7 +14,7 @@ function normaliseSource(input={}){
   const declaredFreshness=input.freshnessHours,requestedFreshness=Number(declaredFreshness||24);
   if(!Number.isFinite(requestedFreshness)||(typeof declaredFreshness==='number'&&!Number.isFinite(declaredFreshness))) throw new Error('Source freshnessHours must be finite.');
   const freshnessHours=Math.max(1,Math.min(24*90,requestedFreshness));
-  const core={contractVersion:'VECTOR_POLICY_SOURCE_V1',id,authorityTier,channel,jurisdiction,canonicalReference:text(input.canonicalReference,500),nativeLanguages:list(input.nativeLanguages,20,32),freshnessHours,active:input.active!==false,customerSupplied:authorityTier==='CUSTOMER_PRIVATE_INSTRUMENT',grantsExecutionAuthority:false};
+  const core={contractVersion:'VECTOR_POLICY_SOURCE_V1',id,authorityTier,channel,jurisdiction,canonicalReference:text(input.canonicalReference,500),nativeLanguages:Object.freeze(list(input.nativeLanguages,20,32)),freshnessHours,active:input.active!==false,customerSupplied:authorityTier==='CUSTOMER_PRIVATE_INSTRUMENT',grantsExecutionAuthority:false};
   if(!core.canonicalReference) throw new Error('Source canonicalReference is required.');
   return Object.freeze({...core,sourceDigest:digest(core)});
 }
