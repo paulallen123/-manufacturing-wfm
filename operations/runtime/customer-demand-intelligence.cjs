@@ -111,4 +111,4 @@ function rankDemandProblems(inputs=[]){
   return [...groups.values()].map(aggregateProblem)
     .sort((a,b)=>b.priority-a.priority||b.evidenceStrength-a.evidenceStrength||a.decisionKey.localeCompare(b.decisionKey));
 }
-module.exports=Object.freeze({EVIDENCE_TYPES,SOURCE_TYPES,SILENT_SOURCES,normaliseDemandSignal,rankDemandProblems});
+module.exports=Object.freeze({EVIDENCE_TYPES,SOURCE_TYPES,SILENT_SOURCES:new Set(SILENT_SOURCES),normaliseDemandSignal,rankDemandProblems});
