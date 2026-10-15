@@ -73,7 +73,7 @@ const PROVENANCE_EVENT_FIELDS = Object.freeze([
   'occurredAt', 'sourceRevision', 'sourceHash'
 ]);
 const PROVENANCE_WORKFORCE_FIELDS = Object.freeze([
-  'tenant', 'site', 'workCentre', 'operationRef', 'processEventId',
+  'tenant', 'site', 'workCentre', 'batchRef', 'operationRef', 'processEventId',
   'observedAt', 'validFrom', 'validUntil', 'requiredSkill', 'qualifiedCount',
   'requiredCount', 'qualificationState', 'qualificationValidUntil',
   'supervisorApproved', 'qualityState', 'sourceRevision', 'sourceHash'
@@ -103,7 +103,7 @@ function screenWorkforceProvenanceShadow(input, tenant, asOf) {
       !provenanceFields(workforce, PROVENANCE_WORKFORCE_FIELDS))
     return provenanceDenied('INCOMPLETE_OR_EXCESS_CLAIMS');
   const eventIds = ['tenant', 'site', 'workCentre', 'batchRef', 'operationRef', 'eventId', 'sourceRevision'];
-  const workforceIds = ['tenant', 'site', 'workCentre', 'operationRef', 'processEventId', 'requiredSkill', 'sourceRevision'];
+  const workforceIds = ['tenant', 'site', 'workCentre', 'batchRef', 'operationRef', 'processEventId', 'requiredSkill', 'sourceRevision'];
   if (!eventIds.every(key => typeof event[key] === 'string' && PROVENANCE_ID.test(event[key])) ||
       !workforceIds.every(key => typeof workforce[key] === 'string' && PROVENANCE_ID.test(workforce[key])) ||
       !PROVENANCE_HASH.test(event.sourceHash || '') ||
@@ -111,6 +111,7 @@ function screenWorkforceProvenanceShadow(input, tenant, asOf) {
     return provenanceDenied('INVALID_SOURCE_REFERENCE');
   if (event.tenant !== tenant || workforce.tenant !== tenant ||
       event.site !== workforce.site || event.workCentre !== workforce.workCentre ||
+      event.batchRef !== workforce.batchRef ||
       event.operationRef !== workforce.operationRef || event.eventId !== workforce.processEventId)
     return provenanceDenied('CROSS_SCOPE_LINK');
   const occurred = provenanceTime(event.occurredAt);

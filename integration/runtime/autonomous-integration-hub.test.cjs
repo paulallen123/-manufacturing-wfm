@@ -26,7 +26,7 @@ function provenanceFixture(now = '2026-10-13T07:30:00.000Z') {
       sourceRevision: 'mes-r1', sourceHash: 'a'.repeat(64)
     },
     workforceSnapshot: {
-      tenant: 'alpha', site: 'site-1', workCentre: 'line-1', operationRef: 'weld',
+      tenant: 'alpha', site: 'site-1', workCentre: 'line-1', batchRef: 'lot-42', operationRef: 'weld',
       processEventId: 'event-42', observedAt: at(-120000),
       validFrom: at(-300000), validUntil: at(600000), requiredSkill: 'WELD_L1',
       qualifiedCount: 2, requiredCount: 2, qualificationState: 'VALID',
@@ -609,6 +609,24 @@ test('synthetic process and aggregate skill evidence produce a privacy-limited s
   assert.deepEqual(screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z'), result);
 });
 
+test('shadow provenance requires a workforce lot reference for the process event', () => {
+  const input = provenanceFixture();
+  delete input.workforceSnapshot.batchRef;
+  const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(result.status, 'UNVERIFIABLE');
+  assert.equal(result.executionPermitted, false);
+  assert.equal(result.disclosure, null);
+});
+
+test('shadow provenance rejects another lot even when site, operation and event ID agree', () => {
+  const input = provenanceFixture();
+  input.workforceSnapshot.batchRef = 'lot-43';
+  const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(result.status, 'UNVERIFIABLE');
+  assert.equal(result.reason, 'CROSS_SCOPE_LINK');
+  assert.equal(result.disclosure, null);
+});
+
 test('shadow provenance refuses cross-tenant, stale, expired, incomplete and tampered evidence', () => {
   const changes = [
     x => { x.processEvent.tenant = 'bravo'; },
@@ -663,6 +681,9 @@ test('manager-only tenant-scoped provenance shadow route does not persist suppli
     const crossTenant = structuredClone(body);
     crossTenant.processEvent.tenant = 'bravo';
     assert.equal((await call(f.hub, f.tokens.manager, 'POST', endpoint, crossTenant)).body.status, 'UNVERIFIABLE');
+    const crossLot = structuredClone(body);
+    crossLot.workforceSnapshot.batchRef = 'lot-43';
+    assert.equal((await call(f.hub, f.tokens.manager, 'POST', endpoint, crossLot)).body.status, 'UNVERIFIABLE');
     const db = new DatabaseSync(f.dbPath, { readOnly: true });
     assert.equal(db.prepare('SELECT count(*) AS n FROM integration_events').get().n, 0);
     db.close();
