@@ -29,3 +29,46 @@ test('duplicate attendance intervals are retained as unexpected evidence',()=>{
   assert.equal(r.unexpectedAttendance.length,1);
   assert.ok(r.blockers.includes('UNEXPECTED_VERIFIED_ATTENDANCE'));
 });
+test('overlapping evidence has an order-invariant maximum one-to-one assignment',()=>{
+  const assignments=[plan.assignments[0],{...plan.assignments[0],slotId:'s2',start:'2026-09-24T14:00:00Z',end:'2026-09-24T22:00:00Z'}];
+  const narrow={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'};
+  const broad={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T22:00:00Z'};
+  const results=[];
+  for(const orderedAssignments of [assignments,[...assignments].reverse()])for(const attendanceInputs of [[broad,narrow],[narrow,broad]]){
+    results.push(reconcileScheduleToAttendance({plan:{...plan,assignments:orderedAssignments},payrollProjection:{payrollReady:true,attendanceInputs}}));
+  }
+  assert.ok(results.every(r=>r.ready===true));
+  assert.ok(results.every(r=>r.rows.find(x=>x.slotId==='s1').actualHours===8));
+  assert.ok(results.every(r=>r.rows.find(x=>x.slotId==='s2').actualHours===16));
+  assert.equal(new Set(results.map(r=>r.reconciliationId)).size,1);
+});
+test('byte-identical attendance evidence cannot cover two shifts',()=>{
+  const duplicate={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T22:00:00Z',provenance:{basis:'automatic_evidence',exportId:'one'}};
+  const assignments=[plan.assignments[0],{...plan.assignments[0],slotId:'s2',start:'2026-09-24T14:00:00Z',end:'2026-09-24T22:00:00Z'}];
+  const r=reconcileScheduleToAttendance({plan:{...plan,assignments},payrollProjection:{payrollReady:true,attendanceInputs:[duplicate,{...duplicate,provenance:{...duplicate.provenance}}]}});
+  assert.equal(r.ready,false);
+  assert.equal(r.rows.filter(x=>x.status==='RECONCILED').length,1);
+  assert.equal(r.rows.filter(x=>x.status==='MISSING_VERIFIED_ATTENDANCE').length,1);
+  assert.equal(r.unexpectedAttendance.length,1);
+  assert.ok(r.blockers.includes('UNEXPECTED_VERIFIED_ATTENDANCE'));
+});
+test('a contested interval is reassigned when another shift has no alternative',()=>{
+  const assignments=[plan.assignments[0],{...plan.assignments[0],slotId:'s2',start:'2026-09-24T13:00:00Z',end:'2026-09-24T21:00:00Z'}];
+  const exact={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'};
+  const alternative={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T12:00:00Z'};
+  const r=reconcileScheduleToAttendance({plan:{...plan,assignments},payrollProjection:{payrollReady:true,attendanceInputs:[exact,alternative]}});
+  assert.equal(r.ready,true);
+  assert.equal(r.rows.find(x=>x.slotId==='s1').actualHours,6);
+  assert.equal(r.rows.find(x=>x.slotId==='s2').actualHours,8);
+});
+test('the same source interval stays single-use despite unrelated metadata',()=>{
+  const assignments=[plan.assignments[0],{...plan.assignments[0],slotId:'s2',start:'2026-09-24T14:00:00Z',end:'2026-09-24T22:00:00Z'}];
+  const first={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T22:00:00Z',provenance:{basis:'automatic_evidence',exportId:'one'}};
+  const second={...first,displayNote:'duplicate row'};
+  const r=reconcileScheduleToAttendance({plan:{...plan,assignments},payrollProjection:{payrollReady:true,attendanceInputs:[first,second]}});
+  assert.equal(r.ready,false);
+  assert.equal(r.quality.reconciledAssignments,1);
+  assert.equal(r.unexpectedAttendance.length,1);
+  const reversed=reconcileScheduleToAttendance({plan:{...plan,assignments},payrollProjection:{payrollReady:true,attendanceInputs:[second,first]}});
+  assert.equal(reversed.reconciliationId,r.reconciliationId);
+});
