@@ -1,39 +1,124 @@
 'use strict';
 const {createHash}=require('node:crypto');
 const VERSION='VECTOR_SCHEDULE_ATTENDANCE_RECONCILIATION_V1';
-function stable(v){if(Array.isArray(v))return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v);}
+const MAX_ITEMS=100000;
+function append(array,value){array[array.length]=value;}
+function sorted(values,compare){
+  let source=[];
+  for(let i=0;i<values.length;i++)source[i]=values[i];
+  for(let width=1;width<source.length;width*=2){
+    const target=new Array(source.length);
+    for(let start=0;start<source.length;start+=2*width){
+      let left=start,right=Math.min(start+width,source.length),at=start;
+      const leftEnd=right,rightEnd=Math.min(start+2*width,source.length);
+      while(left<leftEnd&&right<rightEnd)target[at++]=compare(source[left],source[right])<=0?source[left++]:source[right++];
+      while(left<leftEnd)target[at++]=source[left++];
+      while(right<rightEnd)target[at++]=source[right++];
+    }
+    source=target;
+  }
+  return source;
+}
+function snapshot(value,label,seen=new WeakSet(),depth=0){
+  if(value===null||typeof value==='string'||typeof value==='number'||typeof value==='boolean'||value===undefined)return value;
+  if(typeof value!=='object'||depth>24||seen.has(value))throw new Error('Invalid '+label+' value.');
+  seen.add(value);
+  let copy;
+  if(Array.isArray(value)){
+    if(Object.getPrototypeOf(value)!==Array.prototype||value.length>MAX_ITEMS)throw new Error('Invalid '+label+' array.');
+    const keys=Reflect.ownKeys(value);
+    if(keys.length!==value.length+1)throw new Error('Invalid '+label+' array properties.');
+    copy=new Array(value.length);
+    for(let i=0;i<value.length;i++){
+      const property=Object.getOwnPropertyDescriptor(value,String(i));
+      if(!property||!Object.hasOwn(property,'value'))throw new Error('Invalid '+label+' array index.');
+      copy[i]=snapshot(property.value,label,seen,depth+1);
+    }
+  }else{
+    const prototype=Object.getPrototypeOf(value);
+    if(prototype!==Object.prototype&&prototype!==null)throw new Error('Invalid '+label+' object.');
+    const keys=Reflect.ownKeys(value);
+    if(keys.length>MAX_ITEMS)throw new Error('Invalid '+label+' object size.');
+    copy=Object.create(null);
+    for(let i=0;i<keys.length;i++){
+      const key=keys[i],property=Object.getOwnPropertyDescriptor(value,key);
+      if(typeof key!=='string'||!property||!Object.hasOwn(property,'value'))throw new Error('Invalid '+label+' object property.');
+      copy[key]=snapshot(property.value,label,seen,depth+1);
+    }
+  }
+  seen.delete(value);
+  return copy;
+}
+function ownValue(value,key,label){
+  const property=value&&Object.getOwnPropertyDescriptor(value,key);
+  if(property&&!Object.hasOwn(property,'value'))throw new Error('Invalid '+label+' property.');
+  return property?.value;
+}
+function stable(value){
+  if(Array.isArray(value)){
+    let result='[';
+    for(let i=0;i<value.length;i++)result+=(i?',':'')+stable(value[i]);
+    return result+']';
+  }
+  if(value&&typeof value==='object'){
+    const keys=sorted(Reflect.ownKeys(value),(a,b)=>a<b?-1:a>b?1:0);
+    let result='{';
+    for(let i=0;i<keys.length;i++)result+=(i?',':'')+JSON.stringify(keys[i])+':'+stable(value[keys[i]]);
+    return result+'}';
+  }
+  return JSON.stringify(value);
+}
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function ms(v){const n=Date.parse(v);return Number.isFinite(n)?n:null;}
 function hours(a,b){return Math.max(0,(ms(b)-ms(a))/3600000);}
 function mins(a,b){return (ms(b)-ms(a))/60000;}
 function reconcileScheduleToAttendance({plan,payrollProjection}={}){
-  if(!plan||plan.contractVersion!=='VECTOR_MANUFACTURING_SCHEDULER_V1')throw new Error('Valid VECTOR scheduling plan required.');
+  if(!plan||ownValue(plan,'contractVersion','plan')!=='VECTOR_MANUFACTURING_SCHEDULER_V1')throw new Error('Valid VECTOR scheduling plan required.');
   if(!payrollProjection||typeof payrollProjection!=='object')throw new Error('Attendance payroll projection required.');
-  const base={version:VERSION,tenant:plan.tenant,planId:plan.planId,payrollAuthority:false,payCalculationPerformed:false,claimBoundary:'RECONCILIATION_ONLY_PAY_RULES_REMAIN_DOWNSTREAM'};
-  if(payrollProjection.payrollReady!==true){const out={...base,ready:false,blockers:['ATTENDANCE_PAYROLL_GATE_NOT_READY'],rows:[],unexpectedAttendance:[],quality:{scheduledAssignments:(plan.assignments||[]).filter(a=>a.workerId).length,reconciledAssignments:0,coveragePct:0}};return Object.freeze({...out,reconciliationId:digest(out)});}
-  const attendance=payrollProjection.attendanceInputs||[];
-  const assignments=(plan.assignments||[]).filter(x=>x.workerId).sort((a,b)=>
-    ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end)||String(a.slotId).localeCompare(String(b.slotId)));
+  const rawAssignments=ownValue(plan,'assignments','plan');
+  const allAssignments=snapshot(rawAssignments,'assignments');
+  if(!Array.isArray(allAssignments))throw new Error('Valid assignments array required.');
+  const assignments=[];
+  for(let i=0;i<allAssignments.length;i++){
+    const assignment=allAssignments[i];
+    if(!assignment||typeof assignment!=='object'||Array.isArray(assignment))throw new Error('Valid assignment required.');
+    if(assignment.workerId)append(assignments,assignment);
+  }
+  const base={version:VERSION,tenant:snapshot(ownValue(plan,'tenant','plan'),'tenant'),planId:snapshot(ownValue(plan,'planId','plan'),'planId'),payrollAuthority:false,payCalculationPerformed:false,claimBoundary:'RECONCILIATION_ONLY_PAY_RULES_REMAIN_DOWNSTREAM'};
+  if(ownValue(payrollProjection,'payrollReady','payroll projection')!==true){const out={...base,ready:false,blockers:['ATTENDANCE_PAYROLL_GATE_NOT_READY'],rows:[],unexpectedAttendance:[],quality:{scheduledAssignments:assignments.length,reconciledAssignments:0,coveragePct:0}};return Object.freeze({...out,reconciliationId:digest(out)});}
+  const rawAttendance=ownValue(payrollProjection,'attendanceInputs','payroll projection');
+  const attendance=snapshot(rawAttendance,'attendance');
+  if(!Array.isArray(attendance))throw new Error('Valid attendance array required.');
+  const orderedAssignments=sorted(assignments,(a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end)||String(a.slotId).localeCompare(String(b.slotId)));
   const byEmployee=new Map(),uniqueEvidence=new Map();
-  attendance.forEach((entry,index)=>{
+  for(let index=0;index<attendance.length;index++){
+    const entry=attendance[index];
+    if(!entry||typeof entry!=='object'||Array.isArray(entry))throw new Error('Valid attendance entry required.');
     const identity=stable([String(entry.employee),ms(entry.inAt)??entry.inAt,ms(entry.outAt)??entry.outAt]);
     const previous=uniqueEvidence.get(identity);
-    if(previous&&stable(previous.entry)<=stable(entry))return;
+    if(previous&&stable(previous.entry)<=stable(entry))continue;
     uniqueEvidence.set(identity,{entry,index,identity});
-  });
+  }
   for(const {entry,index,identity} of uniqueEvidence.values()){
     const worker=String(entry.employee);
     if(!byEmployee.has(worker))byEmployee.set(worker,[]);
-    byEmployee.get(worker).push({entry,index,identity});
+    append(byEmployee.get(worker),{entry,index,identity});
   }
-  const candidates=assignments.map(a=>(byEmployee.get(String(a.workerId))||[]).filter(({entry})=>
-    Number.isFinite(ms(entry.inAt))&&Number.isFinite(ms(entry.outAt))&&
-    ms(entry.outAt)>ms(entry.inAt)&&ms(a.start)<ms(entry.outAt)&&ms(entry.inAt)<ms(a.end))
-    .sort((x,y)=>Math.abs(ms(a.start)-ms(x.entry.inAt))+Math.abs(ms(a.end)-ms(x.entry.outAt))-
+  const candidates=[];
+  for(let i=0;i<orderedAssignments.length;i++){
+    const a=orderedAssignments[i],pool=byEmployee.get(String(a.workerId))||[],matches=[];
+    for(let j=0;j<pool.length;j++){
+      const entry=pool[j].entry;
+      if(Number.isFinite(ms(entry.inAt))&&Number.isFinite(ms(entry.outAt))&&ms(entry.outAt)>ms(entry.inAt)&&ms(a.start)<ms(entry.outAt)&&ms(entry.inAt)<ms(a.end))append(matches,pool[j]);
+    }
+    append(candidates,sorted(matches,(x,y)=>Math.abs(ms(a.start)-ms(x.entry.inAt))+Math.abs(ms(a.end)-ms(x.entry.outAt))-
       Math.abs(ms(a.start)-ms(y.entry.inAt))-Math.abs(ms(a.end)-ms(y.entry.outAt))||x.identity.localeCompare(y.identity)));
+  }
   const ownerByEvidence=new Map();
   function assign(assignmentIndex,visited){
-    for(const evidence of candidates[assignmentIndex]){
+    const options=candidates[assignmentIndex];
+    for(let i=0;i<options.length;i++){
+      const evidence=options[i];
       if(visited.has(evidence.index))continue;
       visited.add(evidence.index);
       const current=ownerByEvidence.get(evidence.index);
@@ -44,22 +129,31 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
     }
     return false;
   }
-  assignments.forEach((_,index)=>assign(index,new Set()));
+  for(let i=0;i<orderedAssignments.length;i++)assign(i,new Set());
   const matchByAssignment=new Map(),used=new Set(),rows=[];
   for(const [evidenceIndex,assignmentIndex] of ownerByEvidence){
     used.add(evidenceIndex);
     matchByAssignment.set(assignmentIndex,attendance[evidenceIndex]);
   }
-  for(const [assignmentIndex,a] of assignments.entries()){
-    const p=matchByAssignment.get(assignmentIndex);
-    if(!p){rows.push({slotId:a.slotId,workerId:a.workerId,status:'MISSING_VERIFIED_ATTENDANCE',scheduledHours:Number(hours(a.start,a.end).toFixed(3)),actualHours:null,varianceHours:null,lateMinutes:null,earlyLeaveMinutes:null,overtimeCandidateHours:null});continue;}
-    const scheduled=hours(a.start,a.end),actual=hours(p.inAt,p.outAt),late=Math.max(0,mins(a.start,p.inAt)),early=Math.max(0,mins(p.outAt,a.end)),variance=actual-scheduled;
-    rows.push({slotId:a.slotId,workerId:a.workerId,status:'RECONCILED',scheduledHours:Number(scheduled.toFixed(3)),actualHours:Number(actual.toFixed(3)),varianceHours:Number(variance.toFixed(3)),lateMinutes:Number(late.toFixed(1)),earlyLeaveMinutes:Number(early.toFixed(1)),overtimeCandidateHours:Number(Math.max(0,variance).toFixed(3)),attendanceProvenance:p.provenance||null});
+  let reconciled=0,totalScheduled=0,totalActual=0,totalOvertime=0;
+  for(let i=0;i<orderedAssignments.length;i++){
+    const a=orderedAssignments[i],p=matchByAssignment.get(i),scheduled=hours(a.start,a.end);
+    totalScheduled+=Number(scheduled.toFixed(3));
+    if(!p){append(rows,{slotId:a.slotId,workerId:a.workerId,status:'MISSING_VERIFIED_ATTENDANCE',scheduledHours:Number(scheduled.toFixed(3)),actualHours:null,varianceHours:null,lateMinutes:null,earlyLeaveMinutes:null,overtimeCandidateHours:null});continue;}
+    const actual=hours(p.inAt,p.outAt),late=Math.max(0,mins(a.start,p.inAt)),early=Math.max(0,mins(p.outAt,a.end)),variance=actual-scheduled,overtime=Number(Math.max(0,variance).toFixed(3));
+    append(rows,{slotId:a.slotId,workerId:a.workerId,status:'RECONCILED',scheduledHours:Number(scheduled.toFixed(3)),actualHours:Number(actual.toFixed(3)),varianceHours:Number(variance.toFixed(3)),lateMinutes:Number(late.toFixed(1)),earlyLeaveMinutes:Number(early.toFixed(1)),overtimeCandidateHours:overtime,attendanceProvenance:p.provenance||null});
+    reconciled++;totalActual+=Number(actual.toFixed(3));totalOvertime+=overtime;
   }
-  const unexpected=attendance.filter((x,index)=>!used.has(index)).map(x=>({workerId:String(x.employee),inAt:x.inAt,outAt:x.outAt,provenance:x.provenance||null})).sort((a,b)=>stable(a).localeCompare(stable(b)));
-  const scheduled=rows.length,reconciled=rows.filter(r=>r.status==='RECONCILED').length,coverage=scheduled?reconciled/scheduled*100:100;
-  const blockers=[];if(rows.some(r=>r.status!=='RECONCILED'))blockers.push('SCHEDULE_ASSIGNMENT_WITHOUT_VERIFIED_ATTENDANCE');if(unexpected.length)blockers.push('UNEXPECTED_VERIFIED_ATTENDANCE');
-  const out={...base,ready:blockers.length===0,blockers,rows,unexpectedAttendance:unexpected,quality:{scheduledAssignments:scheduled,reconciledAssignments:reconciled,coveragePct:Number(coverage.toFixed(2)),totalScheduledHours:Number(rows.reduce((s,r)=>s+(r.scheduledHours||0),0).toFixed(3)),totalActualHours:Number(rows.reduce((s,r)=>s+(r.actualHours||0),0).toFixed(3)),overtimeCandidateHours:Number(rows.reduce((s,r)=>s+(r.overtimeCandidateHours||0),0).toFixed(3))}};
+  const unexpected=[];
+  for(let i=0;i<attendance.length;i++)if(!used.has(i)){
+    const entry=attendance[i];
+    append(unexpected,{workerId:String(entry.employee),inAt:entry.inAt,outAt:entry.outAt,provenance:entry.provenance||null});
+  }
+  const orderedUnexpected=sorted(unexpected,(a,b)=>stable(a).localeCompare(stable(b)));
+  const scheduled=rows.length,coverage=scheduled?reconciled/scheduled*100:100,blockers=[];
+  if(reconciled!==scheduled)append(blockers,'SCHEDULE_ASSIGNMENT_WITHOUT_VERIFIED_ATTENDANCE');
+  if(orderedUnexpected.length)append(blockers,'UNEXPECTED_VERIFIED_ATTENDANCE');
+  const out={...base,ready:blockers.length===0,blockers,rows,unexpectedAttendance:orderedUnexpected,quality:{scheduledAssignments:scheduled,reconciledAssignments:reconciled,coveragePct:Number(coverage.toFixed(2)),totalScheduledHours:Number(totalScheduled.toFixed(3)),totalActualHours:Number(totalActual.toFixed(3)),overtimeCandidateHours:Number(totalOvertime.toFixed(3))}};
   return Object.freeze({...out,reconciliationId:digest(out)});
 }
 module.exports={VERSION,reconcileScheduleToAttendance};

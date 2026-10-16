@@ -72,3 +72,42 @@ test('the same source interval stays single-use despite unrelated metadata',()=>
   const reversed=reconcileScheduleToAttendance({plan:{...plan,assignments},payrollProjection:{payrollReady:true,attendanceInputs:[second,first]}});
   assert.equal(reversed.reconciliationId,r.reconciliationId);
 });
+test('inherited entries cannot erase a declared shift',()=>{
+  const original=Array.prototype.entries;
+  let result;
+  try{
+    Array.prototype.entries=function*(){};
+    result=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[]}});
+  }finally{Array.prototype.entries=original;}
+  assert.equal(result.ready,false);
+  assert.equal(result.quality.scheduledAssignments,1);
+  assert.equal(result.rows[0].status,'MISSING_VERIFIED_ATTENDANCE');
+});
+test('inherited filter cannot erase schedule and unexpected evidence',()=>{
+  const original=Array.prototype.filter;
+  let result;
+  try{
+    Array.prototype.filter=function(){return [];};
+    result=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'other',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'}]}});
+  }finally{Array.prototype.filter=original;}
+  assert.equal(result.ready,false);
+  assert.equal(result.quality.scheduledAssignments,1);
+  assert.equal(result.unexpectedAttendance.length,1);
+});
+test('sparse, accessor and custom-traversal input arrays are rejected',()=>{
+  const hole=new Array(1);
+  const accessor=[plan.assignments[0]];
+  Object.defineProperty(accessor,'0',{get(){return plan.assignments[0];}});
+  const custom=[plan.assignments[0]];
+  custom[Symbol.iterator]=function*(){};
+  for(const assignments of [hole,accessor,custom]){
+    assert.throws(()=>reconcileScheduleToAttendance({plan:{...plan,assignments},payrollProjection:{payrollReady:true,attendanceInputs:[]}}));
+  }
+  const evidence=[{employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'}];
+  Object.defineProperty(evidence,'0',{get(){return {employee:'w1'};}});
+  assert.throws(()=>reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:evidence}}));
+});
+test('a ready projection requires explicit schedule and attendance arrays',()=>{
+  assert.throws(()=>reconcileScheduleToAttendance({plan:{...plan,assignments:undefined},payrollProjection:{payrollReady:true,attendanceInputs:[]}}));
+  assert.throws(()=>reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:undefined}}));
+});
