@@ -130,7 +130,10 @@ function cookieToken(req){
   return '';
 }
 function roleLevel(role){ return ROLE_LEVEL[compact(role,40).toLowerCase()] ?? -1; }
-function permitted(role,minRole){ return roleLevel(role)>=roleLevel(minRole); }
+function permitted(role,minRole){
+  if(minRole==='payroll_admin') return ['payroll_admin','admin','superuser'].includes(compact(role,40).toLowerCase());
+  return roleLevel(role)>=roleLevel(minRole);
+}
 function sourceById(id){ return SOURCES.find(s=>s.id===id)||null; }
 function visibleCatalog(role){
   const sources=SOURCES.filter(s=>permitted(role,s.minRole));

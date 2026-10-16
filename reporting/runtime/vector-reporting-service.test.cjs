@@ -54,7 +54,15 @@ test('catalog is role governed and keeps payroll/audit restricted',()=>{
   const payroll=Reporting.visibleCatalog('payroll_admin');
   assert.ok(payroll.sources.some(s=>s.id==='payroll-control'));
   assert.equal(payroll.sources.some(s=>s.id==='audit-evidence'),false);
-  assert.ok(Reporting.visibleCatalog('director').sources.some(s=>s.id==='audit-evidence'));
+  const director=Reporting.visibleCatalog('director');
+  assert.ok(director.sources.some(s=>s.id==='audit-evidence'));
+  assert.equal(director.sources.some(s=>s.id==='payroll-control'),false);
+  assert.equal(director.templates.some(t=>t.sourceId==='payroll-control'),false);
+  for(const role of ['admin','superuser']){
+    const catalog=Reporting.visibleCatalog(role);
+    assert.ok(catalog.sources.some(s=>s.id==='payroll-control'));
+    assert.ok(catalog.sources.some(s=>s.id==='audit-evidence'));
+  }
 });
 
 async function makeReport(x,token='payroll-a',sourceId='payroll-control'){
@@ -71,6 +79,27 @@ test('payroll actor cannot list or fetch director audit report',async()=>{
   const x=setup();try{
     const report=await makeReport(x,'director-a','audit-evidence');
     assert.deepEqual((await call(x.service,'GET','/api/reporting/reports','payroll-a')).body.reports,[]);
+    assert.equal((await call(x.service,'GET','/api/reporting/reports/'+report.id,'payroll-a')).status,404);
+  }finally{x.close();}
+});
+
+test('director cannot create, list or fetch payroll reports',async()=>{
+  const x=setup();try{
+    const report=await makeReport(x);
+    assert.equal((await call(x.service,'POST','/api/reporting/reports','director-a',{definition:{sourceId:'payroll-control'}})).status,400);
+    assert.deepEqual((await call(x.service,'GET','/api/reporting/reports','director-a')).body.reports,[]);
+    assert.equal((await call(x.service,'GET','/api/reporting/reports/'+report.id,'director-a')).status,404);
+  }finally{x.close();}
+});
+
+test('change from payroll admin to director blocks scheduled payroll delivery',async()=>{
+  let sent=0;const x=setup({deliveryAdapter:{authorize:()=>true,deliver:async()=>{sent++;return {};}}});try{
+    const report=await makeReport(x);
+    await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'private@payroll.example'});
+    changeRole(x,'payroll@a.example','director');
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(sent,0);
     assert.equal((await call(x.service,'GET','/api/reporting/reports/'+report.id,'payroll-a')).status,404);
   }finally{x.close();}
 });
