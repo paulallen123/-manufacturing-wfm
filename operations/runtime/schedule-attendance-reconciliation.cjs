@@ -1,19 +1,21 @@
 'use strict';
 const {createHash}=require('node:crypto');
+const {types:{isProxy}}=require('node:util');
 const VERSION='VECTOR_SCHEDULE_ATTENDANCE_RECONCILIATION_V1';
 const MAX_ITEMS=100000;
-function append(array,value){array[array.length]=value;}
+function writeIndex(array,index,value){Object.defineProperty(array,String(index),{value,writable:true,enumerable:true,configurable:true});}
+function append(array,value){writeIndex(array,array.length,value);}
 function sorted(values,compare){
   let source=[];
-  for(let i=0;i<values.length;i++)source[i]=values[i];
+  for(let i=0;i<values.length;i++)writeIndex(source,i,values[i]);
   for(let width=1;width<source.length;width*=2){
     const target=new Array(source.length);
     for(let start=0;start<source.length;start+=2*width){
       let left=start,right=Math.min(start+width,source.length),at=start;
       const leftEnd=right,rightEnd=Math.min(start+2*width,source.length);
-      while(left<leftEnd&&right<rightEnd)target[at++]=compare(source[left],source[right])<=0?source[left++]:source[right++];
-      while(left<leftEnd)target[at++]=source[left++];
-      while(right<rightEnd)target[at++]=source[right++];
+      while(left<leftEnd&&right<rightEnd)writeIndex(target,at++,compare(source[left],source[right])<=0?source[left++]:source[right++]);
+      while(left<leftEnd)writeIndex(target,at++,source[left++]);
+      while(right<rightEnd)writeIndex(target,at++,source[right++]);
     }
     source=target;
   }
@@ -21,7 +23,7 @@ function sorted(values,compare){
 }
 function snapshot(value,label,seen=new WeakSet(),depth=0){
   if(value===null||typeof value==='string'||typeof value==='number'||typeof value==='boolean'||value===undefined)return value;
-  if(typeof value!=='object'||depth>24||seen.has(value))throw new Error('Invalid '+label+' value.');
+  if(typeof value!=='object'||isProxy(value)||depth>24||seen.has(value))throw new Error('Invalid '+label+' value.');
   seen.add(value);
   let copy;
   if(Array.isArray(value)){
@@ -32,7 +34,7 @@ function snapshot(value,label,seen=new WeakSet(),depth=0){
     for(let i=0;i<value.length;i++){
       const property=Object.getOwnPropertyDescriptor(value,String(i));
       if(!property||!Object.hasOwn(property,'value'))throw new Error('Invalid '+label+' array index.');
-      copy[i]=snapshot(property.value,label,seen,depth+1);
+      writeIndex(copy,i,snapshot(property.value,label,seen,depth+1));
     }
   }else{
     const prototype=Object.getPrototypeOf(value);
@@ -50,6 +52,7 @@ function snapshot(value,label,seen=new WeakSet(),depth=0){
   return copy;
 }
 function ownValue(value,key,label){
+  if(isProxy(value))throw new Error('Invalid '+label+' proxy.');
   const property=value&&Object.getOwnPropertyDescriptor(value,key);
   if(property&&!Object.hasOwn(property,'value'))throw new Error('Invalid '+label+' property.');
   return property?.value;

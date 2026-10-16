@@ -1,5 +1,6 @@
 'use strict';
 const test=require('node:test');const assert=require('node:assert/strict');const {reconcileScheduleToAttendance}=require('./schedule-attendance-reconciliation.cjs');
+const {spawnSync}=require('node:child_process');
 const plan={contractVersion:'VECTOR_MANUFACTURING_SCHEDULER_V1',tenant:'a',planId:'p1',assignments:[{slotId:'s1',workerId:'w1',start:'2026-09-24T06:00:00Z',end:'2026-09-24T14:00:00Z'}]};
 test('fails closed until existing attendance payroll gate is ready',()=>{const r=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:false,attendanceInputs:[{employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'}]}});assert.equal(r.ready,false);assert.equal(r.rows.length,0);assert.ok(r.blockers.includes('ATTENDANCE_PAYROLL_GATE_NOT_READY'));});
 test('reconciles schedule to gate-authorised interval without calculating pay',()=>{const r=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'w1',inAt:'2026-09-24T06:05:00Z',outAt:'2026-09-24T14:20:00Z',provenance:{basis:'automatic_evidence'}}]}});assert.equal(r.ready,true);assert.equal(r.rows[0].lateMinutes,5);assert.equal(r.rows[0].overtimeCandidateHours,0.25);assert.equal(r.payCalculationPerformed,false);assert.equal(r.payrollAuthority,false);});
@@ -110,4 +111,21 @@ test('sparse, accessor and custom-traversal input arrays are rejected',()=>{
 test('a ready projection requires explicit schedule and attendance arrays',()=>{
   assert.throws(()=>reconcileScheduleToAttendance({plan:{...plan,assignments:undefined},payrollProjection:{payrollReady:true,attendanceInputs:[]}}));
   assert.throws(()=>reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:undefined}}));
+});
+test('inherited numeric setters cannot erase internal assignment arrays',()=>{
+  const script=`
+    const {reconcileScheduleToAttendance}=require(${JSON.stringify(require.resolve('./schedule-attendance-reconciliation.cjs'))});
+    const plan=${JSON.stringify(plan)};
+    Object.defineProperty(Array.prototype,'0',{configurable:true,set(value){if(this.length>0)Object.defineProperty(this,'0',{value,writable:true,enumerable:true,configurable:true});}});
+    let result;
+    try{result=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[]}})}finally{delete Array.prototype[0]}
+    process.stdout.write(JSON.stringify({ready:result.ready,scheduledAssignments:result.quality.scheduledAssignments,status:result.rows[0]?.status}));
+  `;
+  const child=spawnSync(process.execPath,['-e',script],{encoding:'utf8'});
+  assert.equal(child.status,0,child.stderr);
+  assert.deepEqual(JSON.parse(child.stdout),{ready:false,scheduledAssignments:1,status:'MISSING_VERIFIED_ATTENDANCE'});
+});
+test('array proxies cannot hide declared assignments',()=>{
+  const hidden=new Proxy([plan.assignments[0]],{get(target,key,receiver){return key==='length'?0:Reflect.get(target,key,receiver);},ownKeys(){return ['length'];}});
+  assert.throws(()=>reconcileScheduleToAttendance({plan:{...plan,assignments:hidden},payrollProjection:{payrollReady:true,attendanceInputs:[]}}));
 });
