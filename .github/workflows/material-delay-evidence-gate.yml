@@ -1,0 +1,70 @@
+name: Material delay evidence gate
+
+on:
+  push:
+    branches: ['backlog/l8-material-delay-evidence-20261017']
+    paths:
+      - 'operations/runtime/material-delay-evidence.cjs'
+      - 'operations/runtime/material-delay-evidence.test.cjs'
+      - '.github/workflows/material-delay-evidence-gate.yml'
+      - 'docs/evidence/2026-10-17-material-delay-evidence.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: material-delay-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  admission:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fail closed outside the exact owner branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ github.actor }}" = "${{ github.repository_owner }}"
+          test "${{ github.repository }}" = "paulallen123/-manufacturing-wfm"
+          test "${{ github.ref }}" = "refs/heads/backlog/l8-material-delay-evidence-20261017"
+          case "${{ github.event_name }}" in
+            push|workflow_dispatch) ;;
+            *) exit 1 ;;
+          esac
+
+  source-regression:
+    needs: admission
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact isolated source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Use the supported Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Verify exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          test "$(node --version)" = "v22.23.2"
+      - name: Execute focused and repository regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check operations/runtime/material-delay-evidence.cjs
+          node --check operations/runtime/material-delay-evidence.test.cjs
+          node --test operations/runtime/material-delay-evidence.test.cjs
+          node scripts/run-forge-ci.mjs
+      - name: Build the unchanged product image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull=false \
+            --build-arg "RAILWAY_GIT_COMMIT_SHA=${{ github.sha }}" \
+            -t "vector-material-delay:${{ github.sha }}" .
+
