@@ -122,3 +122,97 @@ test('finite numeric scores preserve improvement semantics without a ratio-only 
     'promote','safe-non-mutating-improvement');
 });
 
+const verifiedOutcome=(overrides={})=>({
+  tenantScope:'outcome-tenant',source:'verified-outcome-ledger',category:'scheduling',
+  fingerprint:'shift-cover',baseline:1,result:2,verified:true,evidenceRef:'proof:execution-1',
+  ...overrides
+});
+
+for(const field of ['baseline','result']){
+  for(const value of [NaN,Infinity,-Infinity]){
+    test(`verified outcome rejects non-finite ${field} before recording learning`,()=>{
+      const engine=new AdaptiveIntelligenceEngine();
+      const before=engine.snapshot();
+      assert.throws(()=>engine.ingestOutcome(verifiedOutcome({[field]:value})),
+        {message:'OUTCOME_NUMERIC_BASELINE_RESULT_REQUIRED'});
+      assert.deepEqual(engine.snapshot(),before);
+    });
+  }
+}
+
+test('evidence-reference whitespace aliases replay one canonical outcome',()=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  const original=engine.ingestOutcome(verifiedOutcome({evidenceRef:'proof:execution-1'}));
+  assert.deepEqual(
+    engine.ingestOutcome(verifiedOutcome({evidenceRef:' proof:execution-1 '})),
+    original
+  );
+  assert.equal(engine.snapshot().outcomes.length,1);
+  assert.equal(engine.snapshot().skills.length,0);
+  assert.equal(engine.snapshot().outcomes[0].evidenceRef,'proof:execution-1');
+});
+
+test('a padded evidence-reference alias cannot rewrite the canonical outcome',()=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  engine.ingestOutcome(verifiedOutcome({evidenceRef:'proof:execution-1'}));
+  const before=engine.snapshot();
+  assert.throws(
+    ()=>engine.ingestOutcome(verifiedOutcome({evidenceRef:' proof:execution-1 ',result:3})),
+    {message:'OUTCOME_EVIDENCE_REPLAY_CONFLICT'}
+  );
+  assert.deepEqual(engine.snapshot(),before);
+});
+
+test('replaying one verified outcome cannot manufacture repeated learning wins',()=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  const original=engine.ingestOutcome(verifiedOutcome());
+  for(let i=0;i<5;i++) assert.deepEqual(engine.ingestOutcome(verifiedOutcome()),original);
+  assert.equal(engine.snapshot().outcomes.length,1);
+  assert.equal(engine.snapshot().skills.length,0);
+});
+
+test('three distinct verified outcomes retain one evidence-backed skill candidate',()=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  for(let i=1;i<=3;i++) engine.ingestOutcome(verifiedOutcome({evidenceRef:'proof:execution-'+i}));
+  const snapshot=engine.snapshot();
+  assert.equal(snapshot.outcomes.length,3);
+  assert.equal(snapshot.skills.length,1);
+  assert.equal(snapshot.skills[0].verifiedWinCount,3);
+  assert.equal(snapshot.skills[0].authority,'none');
+  assert.equal(snapshot.skills[0].evidenceRefs.length,3);
+});
+
+for(const [field,value] of [
+  ['baseline',0],['result',3],['category','payroll'],['fingerprint','another-shift'],
+  ['verified',false],['createdAt','2026-10-12T08:00:00Z']
+]){
+  test(`conflicting ${field} under one outcome evidence identity cannot rewrite learning`,()=>{
+    const engine=new AdaptiveIntelligenceEngine();
+    engine.ingestOutcome(verifiedOutcome());
+    const before=engine.snapshot();
+    assert.throws(()=>engine.ingestOutcome(verifiedOutcome({[field]:value})),
+      {message:'OUTCOME_EVIDENCE_REPLAY_CONFLICT'});
+    assert.deepEqual(engine.snapshot(),before);
+  });
+}
+
+for(const evidenceRef of [undefined,null,'',' ',{},[]]){
+  test(`verified outcome requires a non-empty string evidence reference: ${JSON.stringify(evidenceRef)}`,()=>{
+    const engine=new AdaptiveIntelligenceEngine();
+    assert.throws(()=>engine.ingestOutcome(verifiedOutcome({evidenceRef})),
+      {message:'VERIFIED_OUTCOME_EVIDENCE_REFERENCE_REQUIRED'});
+    assert.equal(engine.snapshot().outcomes.length,0);
+    assert.equal(engine.snapshot().skills.length,0);
+  });
+}
+
+test('outcome evidence identity remains isolated by tenant and source',()=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  engine.ingestOutcome(verifiedOutcome());
+  engine.ingestOutcome(verifiedOutcome({tenantScope:'another-tenant'}));
+  engine.ingestOutcome(verifiedOutcome({source:'another-ledger'}));
+  assert.equal(engine.snapshot().outcomes.length,3);
+  assert.equal(engine.snapshot().skills.length,0);
+});
+
+

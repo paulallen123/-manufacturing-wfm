@@ -22,7 +22,18 @@ export class AdaptiveIntelligenceEngine {
     if(input.crossTenantRawMemory===true) throw new Error('CROSS_TENANT_RAW_MEMORY_FORBIDDEN');
     if(input.containsSecret===true) throw new Error('SECRET_IN_LEARNING_MEMORY_FORBIDDEN');
     if(input.memoryGrantsAuthority===true) throw new Error('LEARNING_MEMORY_AUTHORITY_FORBIDDEN');
-    if(typeof input.baseline!=='number'||typeof input.result!=='number') throw new Error('OUTCOME_NUMERIC_BASELINE_RESULT_REQUIRED');
+    if(typeof input.baseline!=='number'||!Number.isFinite(input.baseline)||
+      typeof input.result!=='number'||!Number.isFinite(input.result)) throw new Error('OUTCOME_NUMERIC_BASELINE_RESULT_REQUIRED');
+    const evidenceRef=typeof input.evidenceRef==='string'?input.evidenceRef.trim():null;
+    if(input.verified===true&&!evidenceRef) throw new Error('VERIFIED_OUTCOME_EVIDENCE_REFERENCE_REQUIRED');
+    const existing=evidenceRef?
+      this.#outcomes.find(x=>x.tenantScope===String(input.tenantScope)&&x.source===String(input.source)&&x.evidenceRef===evidenceRef):null;
+    if(existing){
+      if(existing.category!==String(input.category)||existing.fingerprint!==String(input.fingerprint)||
+        existing.baseline!==input.baseline||existing.result!==input.result||existing.verified!==(input.verified===true)||
+        (input.createdAt!=null&&input.createdAt!==existing.createdAt)) throw new Error('OUTCOME_EVIDENCE_REPLAY_CONFLICT');
+      return clone(existing);
+    }
 
     const receipt={
       id:'out_'+hash([input.tenantScope,input.fingerprint,input.source,input.baseline,input.result,this.#outcomes.length]).slice(0,16),
@@ -34,7 +45,7 @@ export class AdaptiveIntelligenceEngine {
       result:input.result,
       delta:input.result-input.baseline,
       verified:input.verified===true,
-      evidenceRef:input.evidenceRef||null,
+      evidenceRef,
       createdAt:input.createdAt||nowIso()
     };
     this.#outcomes.push(receipt);
@@ -178,4 +189,5 @@ export class AdaptiveIntelligenceEngine {
     });
   }
 }
+
 
