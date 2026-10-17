@@ -129,3 +129,44 @@ test('array proxies cannot hide declared assignments',()=>{
   const hidden=new Proxy([plan.assignments[0]],{get(target,key,receiver){return key==='length'?0:Reflect.get(target,key,receiver);},ownKeys(){return ['length'];}});
   assert.throws(()=>reconcileScheduleToAttendance({plan:{...plan,assignments:hidden},payrollProjection:{payrollReady:true,attendanceInputs:[]}}));
 });
+test('inherited Map iteration cannot manufacture a non-overlapping evidence match',()=>{
+  const script=`
+    const {reconcileScheduleToAttendance}=require(${JSON.stringify(require.resolve('./schedule-attendance-reconciliation.cjs'))});
+    const plan=${JSON.stringify(plan)};
+    const original=Map.prototype[Symbol.iterator];
+    Map.prototype[Symbol.iterator]=function*(){yield [0,0]};
+    let result;
+    try{result=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'w1',inAt:'2026-09-25T06:00:00Z',outAt:'2026-09-25T14:00:00Z'}]}})}finally{Map.prototype[Symbol.iterator]=original}
+    process.stdout.write(JSON.stringify({ready:result.ready,status:result.rows[0]?.status,unexpected:result.unexpectedAttendance.length}));
+  `;
+  const child=spawnSync(process.execPath,['-e',script],{encoding:'utf8'});
+  assert.equal(child.status,0,child.stderr);
+  assert.deepEqual(JSON.parse(child.stdout),{ready:false,status:'MISSING_VERIFIED_ATTENDANCE',unexpected:1});
+});
+test('inherited Map values cannot erase verified attendance',()=>{
+  const script=`
+    const {reconcileScheduleToAttendance}=require(${JSON.stringify(require.resolve('./schedule-attendance-reconciliation.cjs'))});
+    const plan=${JSON.stringify(plan)};
+    const original=Map.prototype.values;
+    Map.prototype.values=function*(){};
+    let result;
+    try{result=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'}]}})}finally{Map.prototype.values=original}
+    process.stdout.write(JSON.stringify({ready:result.ready,status:result.rows[0]?.status,unexpected:result.unexpectedAttendance.length}));
+  `;
+  const child=spawnSync(process.execPath,['-e',script],{encoding:'utf8'});
+  assert.equal(child.status,0,child.stderr);
+  assert.deepEqual(JSON.parse(child.stdout),{ready:true,status:'RECONCILED',unexpected:0});
+});
+test('returned receipt and nested provenance stay immutable under attempted edits',()=>{
+  const evidence={employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z',provenance:{basis:'automatic_evidence',nested:{ref:'one'}}};
+  const result=reconcileScheduleToAttendance({plan,payrollProjection:{payrollReady:true,attendanceInputs:[evidence,{...evidence,employee:'other'}]}});
+  const originalId=result.reconciliationId;
+  for(const value of [result,result.rows,result.rows[0],result.rows[0].attendanceProvenance,result.rows[0].attendanceProvenance.nested,result.blockers,result.unexpectedAttendance,result.unexpectedAttendance[0],result.unexpectedAttendance[0].provenance,result.quality])assert.equal(Object.isFrozen(value),true);
+  assert.throws(()=>{result.rows[0].status='MISSING_VERIFIED_ATTENDANCE'});
+  assert.throws(()=>{result.rows.pop()});
+  assert.throws(()=>{result.rows[0].attendanceProvenance.nested.ref='changed'});
+  assert.throws(()=>{result.quality.reconciledAssignments=99});
+  assert.equal(result.reconciliationId,originalId);
+  assert.equal(result.rows[0].status,'RECONCILED');
+  assert.equal(result.quality.reconciledAssignments,1);
+});

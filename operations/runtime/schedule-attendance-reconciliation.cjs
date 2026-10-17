@@ -72,6 +72,15 @@ function stable(value){
   return JSON.stringify(value);
 }
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
+function deepFreeze(value){
+  if(value&&typeof value==='object'){
+    const keys=Reflect.ownKeys(value);
+    for(let i=0;i<keys.length;i++)deepFreeze(Object.getOwnPropertyDescriptor(value,keys[i]).value);
+    Object.freeze(value);
+  }
+  return value;
+}
+function receipt(out){deepFreeze(out);return Object.freeze({...out,reconciliationId:digest(out)});}
 function ms(v){const n=Date.parse(v);return Number.isFinite(n)?n:null;}
 function hours(a,b){return Math.max(0,(ms(b)-ms(a))/3600000);}
 function mins(a,b){return (ms(b)-ms(a))/60000;}
@@ -88,28 +97,33 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
     if(assignment.workerId)append(assignments,assignment);
   }
   const base={version:VERSION,tenant:snapshot(ownValue(plan,'tenant','plan'),'tenant'),planId:snapshot(ownValue(plan,'planId','plan'),'planId'),payrollAuthority:false,payCalculationPerformed:false,claimBoundary:'RECONCILIATION_ONLY_PAY_RULES_REMAIN_DOWNSTREAM'};
-  if(ownValue(payrollProjection,'payrollReady','payroll projection')!==true){const out={...base,ready:false,blockers:['ATTENDANCE_PAYROLL_GATE_NOT_READY'],rows:[],unexpectedAttendance:[],quality:{scheduledAssignments:assignments.length,reconciledAssignments:0,coveragePct:0}};return Object.freeze({...out,reconciliationId:digest(out)});}
+  if(ownValue(payrollProjection,'payrollReady','payroll projection')!==true){const out={...base,ready:false,blockers:['ATTENDANCE_PAYROLL_GATE_NOT_READY'],rows:[],unexpectedAttendance:[],quality:{scheduledAssignments:assignments.length,reconciledAssignments:0,coveragePct:0}};return receipt(out);}
   const rawAttendance=ownValue(payrollProjection,'attendanceInputs','payroll projection');
   const attendance=snapshot(rawAttendance,'attendance');
   if(!Array.isArray(attendance))throw new Error('Valid attendance array required.');
   const orderedAssignments=sorted(assignments,(a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end)||String(a.slotId).localeCompare(String(b.slotId)));
-  const byEmployee=new Map(),uniqueEvidence=new Map();
+  const byEmployee=Object.create(null),uniqueByIdentity=Object.create(null),uniqueEvidence=[];
   for(let index=0;index<attendance.length;index++){
     const entry=attendance[index];
     if(!entry||typeof entry!=='object'||Array.isArray(entry))throw new Error('Valid attendance entry required.');
     const identity=stable([String(entry.employee),ms(entry.inAt)??entry.inAt,ms(entry.outAt)??entry.outAt]);
-    const previous=uniqueEvidence.get(identity);
-    if(previous&&stable(previous.entry)<=stable(entry))continue;
-    uniqueEvidence.set(identity,{entry,index,identity});
+    const position=uniqueByIdentity[identity];
+    if(position!==undefined){
+      if(stable(uniqueEvidence[position].entry)>stable(entry))writeIndex(uniqueEvidence,position,{entry,index,identity});
+      continue;
+    }
+    uniqueByIdentity[identity]=uniqueEvidence.length;
+    append(uniqueEvidence,{entry,index,identity});
   }
-  for(const {entry,index,identity} of uniqueEvidence.values()){
+  for(let i=0;i<uniqueEvidence.length;i++){
+    const {entry,index,identity}=uniqueEvidence[i];
     const worker=String(entry.employee);
-    if(!byEmployee.has(worker))byEmployee.set(worker,[]);
-    append(byEmployee.get(worker),{entry,index,identity});
+    if(byEmployee[worker]===undefined)byEmployee[worker]=[];
+    append(byEmployee[worker],{entry,index,identity});
   }
   const candidates=[];
   for(let i=0;i<orderedAssignments.length;i++){
-    const a=orderedAssignments[i],pool=byEmployee.get(String(a.workerId))||[],matches=[];
+    const a=orderedAssignments[i],pool=byEmployee[String(a.workerId)]||[],matches=[];
     for(let j=0;j<pool.length;j++){
       const entry=pool[j].entry;
       if(Number.isFinite(ms(entry.inAt))&&Number.isFinite(ms(entry.outAt))&&ms(entry.outAt)>ms(entry.inAt)&&ms(a.start)<ms(entry.outAt)&&ms(entry.inAt)<ms(a.end))append(matches,pool[j]);
@@ -117,30 +131,34 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
     append(candidates,sorted(matches,(x,y)=>Math.abs(ms(a.start)-ms(x.entry.inAt))+Math.abs(ms(a.end)-ms(x.entry.outAt))-
       Math.abs(ms(a.start)-ms(y.entry.inAt))-Math.abs(ms(a.end)-ms(y.entry.outAt))||x.identity.localeCompare(y.identity)));
   }
-  const ownerByEvidence=new Map();
+  const ownerByEvidence=[];
+  for(let i=0;i<attendance.length;i++)writeIndex(ownerByEvidence,i,-1);
   function assign(assignmentIndex,visited){
     const options=candidates[assignmentIndex];
     for(let i=0;i<options.length;i++){
       const evidence=options[i];
-      if(visited.has(evidence.index))continue;
-      visited.add(evidence.index);
-      const current=ownerByEvidence.get(evidence.index);
-      if(current===undefined||assign(current,visited)){
-        ownerByEvidence.set(evidence.index,assignmentIndex);
+      if(visited[evidence.index])continue;
+      visited[evidence.index]=true;
+      const current=ownerByEvidence[evidence.index];
+      if(current<0||assign(current,visited)){
+        writeIndex(ownerByEvidence,evidence.index,assignmentIndex);
         return true;
       }
     }
     return false;
   }
-  for(let i=0;i<orderedAssignments.length;i++)assign(i,new Set());
-  const matchByAssignment=new Map(),used=new Set(),rows=[];
-  for(const [evidenceIndex,assignmentIndex] of ownerByEvidence){
-    used.add(evidenceIndex);
-    matchByAssignment.set(assignmentIndex,attendance[evidenceIndex]);
+  for(let i=0;i<orderedAssignments.length;i++){
+    assign(i,Object.create(null));
+  }
+  const matchByAssignment=[],rows=[];
+  for(let i=0;i<orderedAssignments.length;i++)writeIndex(matchByAssignment,i,null);
+  for(let evidenceIndex=0;evidenceIndex<ownerByEvidence.length;evidenceIndex++){
+    const assignmentIndex=ownerByEvidence[evidenceIndex];
+    if(assignmentIndex>=0)writeIndex(matchByAssignment,assignmentIndex,attendance[evidenceIndex]);
   }
   let reconciled=0,totalScheduled=0,totalActual=0,totalOvertime=0;
   for(let i=0;i<orderedAssignments.length;i++){
-    const a=orderedAssignments[i],p=matchByAssignment.get(i),scheduled=hours(a.start,a.end);
+    const a=orderedAssignments[i],p=matchByAssignment[i],scheduled=hours(a.start,a.end);
     totalScheduled+=Number(scheduled.toFixed(3));
     if(!p){append(rows,{slotId:a.slotId,workerId:a.workerId,status:'MISSING_VERIFIED_ATTENDANCE',scheduledHours:Number(scheduled.toFixed(3)),actualHours:null,varianceHours:null,lateMinutes:null,earlyLeaveMinutes:null,overtimeCandidateHours:null});continue;}
     const actual=hours(p.inAt,p.outAt),late=Math.max(0,mins(a.start,p.inAt)),early=Math.max(0,mins(p.outAt,a.end)),variance=actual-scheduled,overtime=Number(Math.max(0,variance).toFixed(3));
@@ -148,7 +166,7 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
     reconciled++;totalActual+=Number(actual.toFixed(3));totalOvertime+=overtime;
   }
   const unexpected=[];
-  for(let i=0;i<attendance.length;i++)if(!used.has(i)){
+  for(let i=0;i<attendance.length;i++)if(ownerByEvidence[i]<0){
     const entry=attendance[i];
     append(unexpected,{workerId:String(entry.employee),inAt:entry.inAt,outAt:entry.outAt,provenance:entry.provenance||null});
   }
@@ -157,6 +175,6 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
   if(reconciled!==scheduled)append(blockers,'SCHEDULE_ASSIGNMENT_WITHOUT_VERIFIED_ATTENDANCE');
   if(orderedUnexpected.length)append(blockers,'UNEXPECTED_VERIFIED_ATTENDANCE');
   const out={...base,ready:blockers.length===0,blockers,rows,unexpectedAttendance:orderedUnexpected,quality:{scheduledAssignments:scheduled,reconciledAssignments:reconciled,coveragePct:Number(coverage.toFixed(2)),totalScheduledHours:Number(totalScheduled.toFixed(3)),totalActualHours:Number(totalActual.toFixed(3)),overtimeCandidateHours:Number(totalOvertime.toFixed(3))}};
-  return Object.freeze({...out,reconciliationId:digest(out)});
+  return receipt(out);
 }
 module.exports={VERSION,reconcileScheduleToAttendance};
