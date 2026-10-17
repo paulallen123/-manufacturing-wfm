@@ -6,6 +6,7 @@ const checks = [
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
   ['node', ['scripts/validate-research-convergence-ledger.mjs']],
   ['node', ['--test','resilience/research-convergence-theory-simulator.test.cjs']],
+  ['node', ['--test','trust/runtime/provable-autonomy-shadow.test.cjs']],
   ['node', ['scripts/validate-product-factory.mjs']],
   ['node', ['scripts/validate-isolated-environment-provisioning-plan.mjs']],
   ['node', ['scripts/validate-resilience-scenarios.mjs']],

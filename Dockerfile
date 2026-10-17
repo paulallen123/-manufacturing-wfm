@@ -4,6 +4,7 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
+RUN node --test trust/runtime/provable-autonomy-shadow.test.cjs
 RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
@@ -164,7 +165,7 @@ RUN mkdir -p /app/reporting-runtime /app/policy-runtime
 COPY reporting/runtime/vector-reporting-service.cjs /app/reporting-runtime/vector-reporting-service.cjs
 COPY policy/runtime/country-policy-pack-registry.cjs policy/runtime/jurisdiction-policy-graph.cjs policy/runtime/global-site-policy-preflight.cjs policy/runtime/authoritative-policy-source-registry.cjs policy/runtime/regulatory-change-candidate.cjs /app/policy-runtime/
 RUN mkdir -p /app/trust-runtime
-COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs
+COPY trust/runtime/vector-trust-spine.cjs trust/runtime/provable-autonomy-shadow.cjs /app/trust-runtime/
 COPY src/frontier/cash-to-capacity-engine.mjs src/frontier/cash-to-capacity-evidence.mjs src/frontier/cash-to-capacity-decision.mjs src/frontier/cash-to-capacity-outcome.mjs src/frontier/energy-bill-evidence.mjs src/frontier/energy-data-reconciliation.mjs src/frontier/energy-flexibility.mjs src/frontier/energy-input-hardening.mjs src/frontier/energy-profile-benchmark.mjs src/frontier/energy-profile-binding.mjs /app/operations-runtime/
 RUN mkdir -p /app/operations-runtime/agency /app/operations-runtime/attendance
 COPY src/frontier/agency-*.mjs /app/operations-runtime/agency/
@@ -194,7 +195,8 @@ COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/
 COPY operations/runtime/workforce-lifecycle-router.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/tenant-calendar.test.cjs operations/runtime/workforce-lifecycle-guard.test.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-bridge.test.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/workflow-action-evidence-sources.test.cjs operations/runtime/decision-episode.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.cjs operations/runtime/decision-outcome-proof.test.cjs operations/runtime/realtime-event-service.cjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/t9-customer-guardian.cjs operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/
 COPY reporting/runtime/vector-reporting-service.cjs reporting/runtime/vector-reporting-service.test.cjs /tmp/wfm-tests/reporting/runtime/
-COPY trust/runtime/vector-trust-spine.cjs trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/trust/runtime/
+COPY trust/runtime/vector-trust-spine.cjs trust/runtime/vector-trust-spine.test.cjs trust/runtime/provable-autonomy-shadow.cjs trust/runtime/provable-autonomy-shadow.test.cjs /tmp/wfm-tests/trust/runtime/
+RUN node --test /tmp/wfm-tests/trust/runtime/provable-autonomy-shadow.test.cjs
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
  && VECTOR_SETUP_POLICY_RUNTIME_ROOT=/app/implementation-runtime node --test /tmp/wfm-tests/implementation/runtime/setup-only-policy.test.cjs /tmp/wfm-tests/implementation/runtime/customer-workspace.test.cjs \
