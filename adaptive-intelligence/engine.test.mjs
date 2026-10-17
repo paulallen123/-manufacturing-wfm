@@ -128,6 +128,41 @@ const verifiedOutcome=(overrides={})=>({
   ...overrides
 });
 
+for(const field of ['baseline','result']){
+  for(const value of [NaN,Infinity,-Infinity]){
+    test(`verified outcome rejects non-finite ${field} before recording learning`,()=>{
+      const engine=new AdaptiveIntelligenceEngine();
+      const before=engine.snapshot();
+      assert.throws(()=>engine.ingestOutcome(verifiedOutcome({[field]:value})),
+        {message:'OUTCOME_NUMERIC_BASELINE_RESULT_REQUIRED'});
+      assert.deepEqual(engine.snapshot(),before);
+    });
+  }
+}
+
+test('evidence-reference whitespace aliases replay one canonical outcome',()=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  const original=engine.ingestOutcome(verifiedOutcome({evidenceRef:'proof:execution-1'}));
+  assert.deepEqual(
+    engine.ingestOutcome(verifiedOutcome({evidenceRef:' proof:execution-1 '})),
+    original
+  );
+  assert.equal(engine.snapshot().outcomes.length,1);
+  assert.equal(engine.snapshot().skills.length,0);
+  assert.equal(engine.snapshot().outcomes[0].evidenceRef,'proof:execution-1');
+});
+
+test('a padded evidence-reference alias cannot rewrite the canonical outcome',()=>{
+  const engine=new AdaptiveIntelligenceEngine();
+  engine.ingestOutcome(verifiedOutcome({evidenceRef:'proof:execution-1'}));
+  const before=engine.snapshot();
+  assert.throws(
+    ()=>engine.ingestOutcome(verifiedOutcome({evidenceRef:' proof:execution-1 ',result:3})),
+    {message:'OUTCOME_EVIDENCE_REPLAY_CONFLICT'}
+  );
+  assert.deepEqual(engine.snapshot(),before);
+});
+
 test('replaying one verified outcome cannot manufacture repeated learning wins',()=>{
   const engine=new AdaptiveIntelligenceEngine();
   const original=engine.ingestOutcome(verifiedOutcome());
@@ -179,4 +214,5 @@ test('outcome evidence identity remains isolated by tenant and source',()=>{
   assert.equal(engine.snapshot().outcomes.length,3);
   assert.equal(engine.snapshot().skills.length,0);
 });
+
 
