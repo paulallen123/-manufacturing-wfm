@@ -1,0 +1,117 @@
+name: Hybrid resource exact source and image admission
+
+on:
+  push:
+    branches:
+      - proof/hybrid-resource-image-36bd93b-20261017
+    paths:
+      - .github/workflows/hybrid-resource-image-36bd93b.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hybrid-resource-image-36bd93b-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  authority:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Fail closed outside owner-authored proof push
+        env:
+          ACTOR: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          REPOSITORY: ${{ github.repository }}
+          REF: ${{ github.ref }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          test "$ACTOR" = "$OWNER"
+          test "$OWNER" = paulallen123
+          test "$REPOSITORY" = paulallen123/-manufacturing-wfm
+          test "$REF" = refs/heads/proof/hybrid-resource-image-36bd93b-20261017
+          test "$EVENT" = push
+
+  admission:
+    needs: authority
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      TARGET_SHA: 36bd93bd5d3dffb4c33768bbf3ca86fd0af601b4
+      IMAGE: hybrid-resource-proof:36bd93b
+    steps:
+      - name: Check out immutable target, not proof branch or PR merge
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: 36bd93bd5d3dffb4c33768bbf3ca86fd0af601b4
+          persist-credentials: false
+      - name: Verify exact target and reviewed blobs
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git rev-parse HEAD:operations/runtime/hybrid-resource-shadow.cjs)" = 63d5d52432e4ded3c6238d016cdd3871833701fe
+          test "$(git rev-parse HEAD:operations/runtime/hybrid-resource-shadow.test.cjs)" = 3426bfad13350f619d54c9b58d26e9e60a2486b2
+          test "$(git hash-object operations/runtime/hybrid-resource-shadow.cjs)" = 63d5d52432e4ded3c6238d016cdd3871833701fe
+          test "$(git hash-object operations/runtime/hybrid-resource-shadow.test.cjs)" = 3426bfad13350f619d54c9b58d26e9e60a2486b2
+          test "$(git hash-object Dockerfile)" = a31e87448e6950906691c13d56ed6c9cc986bb55
+      - name: Install supported exact Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.23.2
+          check-latest: false
+      - name: Syntax and hybrid resource plus Decision Episode source suites
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = v22.23.2
+          node --check operations/runtime/hybrid-resource-shadow.cjs
+          node --check operations/runtime/hybrid-resource-shadow.test.cjs
+          node --test operations/runtime/hybrid-resource-shadow.test.cjs operations/runtime/decision-episode.test.cjs
+      - name: Build unchanged target Dockerfile without deployment
+        run: |
+          set -euo pipefail
+          git diff --exit-code HEAD
+          test "$(git hash-object Dockerfile)" = a31e87448e6950906691c13d56ed6c9cc986bb55
+          docker build --progress=plain --build-arg RAILWAY_GIT_COMMIT_SHA="$TARGET_SHA" --tag "$IMAGE" --file Dockerfile .
+          docker image inspect "$IMAGE" --format 'FINAL_IMAGE_ID={{.Id}}'
+      - name: Inspect sealed final image and installed-path boundary
+        run: |
+          set -euo pipefail
+          expected="$(sha256sum operations/runtime/hybrid-resource-shadow.cjs | cut -d ' ' -f 1)"
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --user node --entrypoint node \
+            -e TARGET_SHA="$TARGET_SHA" -e EXPECTED_MODULE_SHA256="$expected" "$IMAGE" -e '
+            const fs = require("node:fs");
+            const crypto = require("node:crypto");
+            const assert = require("node:assert/strict");
+            assert.equal(process.version, "v22.23.2");
+            assert.notEqual(process.getuid(), 0);
+            assert.equal(fs.readFileSync("/app/.wfm-build-source-sha", "utf8").trim(), process.env.TARGET_SHA);
+            console.log("FINAL_IMAGE_NODE_VERSION=" + process.version);
+            console.log("FINAL_IMAGE_SEALED_SOURCE_SHA=" + process.env.TARGET_SHA);
+            const path = "/app/operations-runtime/hybrid-resource-shadow.cjs";
+            if (fs.existsSync(path)) {
+              const hash = crypto.createHash("sha256").update(fs.readFileSync(path)).digest("hex");
+              assert.equal(hash, process.env.EXPECTED_MODULE_SHA256);
+              console.log("HYBRID_RESOURCE_INSTALLED_PATH_BYTE_MATCH=" + path);
+            } else {
+              console.log("HYBRID_RESOURCE_INSTALLED_PATH_ABSENT=" + path);
+              console.log("SOURCE_IMAGE_ADMISSION_ONLY; MODULE_INSTALLATION_NOT_PROVEN");
+            }
+            '
+
+  verdict:
+    if: ${{ always() }}
+    needs: [authority, admission]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Reject failed, cancelled, or skipped prerequisites
+        env:
+          AUTHORITY_RESULT: ${{ needs.authority.result }}
+          ADMISSION_RESULT: ${{ needs.admission.result }}
+        run: |
+          set -euo pipefail
+          test "$AUTHORITY_RESULT" = success
+          test "$ADMISSION_RESULT" = success
+          echo 'PASS: isolated exact-target source/image admission only; module installation requires explicit byte-match evidence; no integration, deployment, customer, or production authority.'
