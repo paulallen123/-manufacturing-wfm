@@ -15,3 +15,19 @@ function observations(){return [10,11,10,12,11,13,12,14].map((value,i)=>({at:new
 test('trusted forecast endpoint returns uncertainty and optional labour translation',async()=>{const f=fixture(),s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret'});try{const x=await call(s,req('POST','/api/operations/scheduling/forecast/shadow',{headers:{'x-wfm-scheduling-internal':'secret'},body:{input:{observations:observations(),horizonPeriods:2},capacity:{unitsPerLabourHour:2,shiftHours:8}}}));assert.equal(x.status,200);assert.equal(x.json.forecast.steps.length,2);assert.ok(x.json.forecast.steps[0].p90>=x.json.forecast.steps[0].p50);assert.ok(x.json.labour.steps[0].p90Headcount>=x.json.labour.steps[0].p50Headcount);assert.equal(x.json.authority,'NO_EXECUTION');}finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}});
 test('reconciliation persists only gate-authorised attendance and never gains payroll authority',async()=>{const f=fixture(),s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret'});try{const p=await call(s,req('POST','/api/operations/scheduling/plan/shadow',{headers:{'x-wfm-scheduling-internal':'secret'},body:{tenant:'alpha',input:planInput()}}));const planId=p.json.plan.planId;let x=await call(s,req('POST','/api/operations/scheduling/reconcile/shadow',{headers:{'x-wfm-scheduling-internal':'secret'},body:{tenant:'alpha',planId,payrollProjection:{payrollReady:false,attendanceInputs:[]}}}));assert.equal(x.status,201);assert.equal(x.json.reconciliation.ready,false);assert.equal(x.json.reconciliation.payrollAuthority,false);x=await call(s,req('POST','/api/operations/scheduling/reconcile/shadow',{headers:{'x-wfm-scheduling-internal':'secret'},body:{tenant:'alpha',planId,payrollProjection:{payrollReady:true,attendanceInputs:[{employee:'w1',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z',provenance:{basis:'automatic_evidence'}}]}}}));assert.equal(x.status,201);assert.equal(x.json.reconciliation.ready,true);assert.equal(x.json.reconciliation.payCalculationPerformed,false);}finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}});
 test('manager forecast what-if remains non-executing',async()=>{const f=fixture(),s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret'});try{const x=await call(s,req('POST','/api/operations/scheduling/forecast/what-if',{cookie:'wfm_session=mgr',body:{input:{observations:observations(),horizonPeriods:1}}}));assert.equal(x.status,200);assert.equal(x.json.scenarioOnly,true);assert.equal(x.json.authority,'NO_EXECUTION');}finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}});
+test('both forecast routes reject a malformed observation without partial advice',async()=>{
+  const f=fixture(),s=createSchedulingIntelligenceService({dbPath:f.dbPath,internalToken:'secret'});
+  try{
+    const input={observations:[...observations(),{at:'2026-09-09T00:00:00Z',value:'12',evidenceRef:'mes:bad'}]};
+    for(const [url,options] of [
+      ['/forecast/shadow',{headers:{'x-wfm-scheduling-internal':'secret'}}],
+      ['/forecast/what-if',{cookie:'wfm_session=mgr'}]
+    ]){
+      const x=await call(s,req('POST','/api/operations/scheduling'+url,{...options,body:{input}}));
+      assert.equal(x.status,400);
+      assert.equal(x.json.executionPermitted,false);
+      assert.equal(Object.hasOwn(x.json,'forecast'),false);
+      assert.equal(Object.hasOwn(x.json,'labour'),false);
+    }
+  }finally{s.close();fs.rmSync(f.dir,{recursive:true,force:true});}
+});

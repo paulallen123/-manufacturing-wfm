@@ -5,3 +5,13 @@ test('forecast ensemble returns p50 p90 confidence and model evidence',()=>{cons
 test('planned evidence-backed adjustment changes demand',()=>{const a=forecastDemand({observations:obs([10,10,10,10,10,10]),horizonPeriods:1});const b=forecastDemand({observations:obs([10,10,10,10,10,10]),horizonPeriods:1,adjustments:[{type:'PERCENT',value:20,evidenceRef:'erp:order-spike'}]});assert.ok(b.steps[0].p50>a.steps[0].p50);assert.ok(b.adjustmentEvidence.includes('erp:order-spike'));});
 test('translates production units into headcount with p90 preserved',()=>{const f=forecastDemand({observations:obs([800,820,780,850,830,860]),horizonPeriods:1});const h=toHeadcountForecast({forecast:f,unitsPerLabourHour:20,shiftHours:8});assert.ok(h.steps[0].p90Headcount>=h.steps[0].p50Headcount);assert.equal(h.claimBoundary,'CAPACITY_TRANSLATION_REQUIRES_CUSTOMER_VALIDATED_RATE');});
 test('insufficient history fails explicitly',()=>{assert.throws(()=>forecastDemand({observations:obs([1,2,3])}),/At least four/);});
+test('a malformed demand observation rejects the complete forecast batch',()=>{
+  for(const value of ['9',true,-1,NaN,Infinity]){
+    assert.throws(()=>forecastDemand({observations:obs([10,11,12,13,value])}),/Invalid demand observation/);
+  }
+});
+test('genuine zero demand remains valid and counted',()=>{
+  const f=forecastDemand({observations:obs([0,1,0,1,0])});
+  assert.equal(f.historyCount,5);
+  assert.equal(f.sourceEvidence.length,5);
+});
