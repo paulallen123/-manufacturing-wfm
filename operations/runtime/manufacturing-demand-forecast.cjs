@@ -11,11 +11,11 @@ function mean(xs){return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:0;}
 function sd(xs){if(xs.length<2)return 0;const m=mean(xs);return Math.sqrt(xs.reduce((s,x)=>s+(x-m)*(x-m),0)/(xs.length-1));}
 function mae(actual,pred){return actual.length?actual.reduce((s,x,i)=>s+Math.abs(x-pred[i]),0)/actual.length:Infinity;}
 function normalise(input){
-  const observations=(Array.isArray(input.observations)?input.observations:[]).map((o,i)=>({
-    at:o.at?new Date(o.at).toISOString():String(i),
-    value:Math.max(0,num(o.value??o.headcount??o.units,NaN)),
-    evidenceRef:text(o.evidenceRef,220)||null
-  })).filter(o=>Number.isFinite(o.value));
+  const observations=(Array.isArray(input.observations)?input.observations:[]).map((o,i)=>{
+    const value=o&&typeof o==='object'&&!Array.isArray(o)?o.value??o.headcount??o.units:undefined;
+    if(typeof value!=='number'||!Number.isFinite(value)||value<0)throw new Error(`Invalid demand observation at index ${i}.`);
+    return {at:o.at?new Date(o.at).toISOString():String(i),value,evidenceRef:text(o.evidenceRef,220)||null};
+  });
   if(observations.length<4)throw new Error('At least four valid demand observations are required.');
   const horizon=Math.max(1,Math.min(96,Math.trunc(num(input.horizonPeriods,1))));
   const season=Math.max(2,Math.min(168,Math.trunc(num(input.seasonLength,7))));
