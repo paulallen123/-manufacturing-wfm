@@ -170,3 +170,25 @@ test('returned receipt and nested provenance stay immutable under attempted edit
   assert.equal(result.rows[0].status,'RECONCILED');
   assert.equal(result.quality.reconciledAssignments,1);
 });
+test('collation-equal slot ids retain the same attendance attribution across input order',()=>{
+  const first={...plan.assignments[0],slotId:'é'};
+  const second={...first,slotId:'e\u0301'};
+  const attendanceInputs=[
+    {employee:'w1',inAt:first.start,outAt:first.end},
+    {employee:'w1',inAt:first.start,outAt:'2026-09-24T16:00:00Z'}
+  ];
+  const results=[[first,second],[second,first]].map(assignments=>reconcileScheduleToAttendance({plan:{...plan,assignments},payrollProjection:{payrollReady:true,attendanceInputs}}));
+  assert.deepEqual(results[0].rows,results[1].rows);
+  assert.equal(results[0].reconciliationId,results[1].reconciliationId);
+});
+test('collation-equal unexpected worker ids have a canonical order',()=>{
+  const first={employee:'é',inAt:'2026-09-24T06:00:00Z',outAt:'2026-09-24T14:00:00Z'};
+  const second={...first,employee:'e\u0301'};
+  const results=[[first,second],[second,first]].map(attendanceInputs=>reconcileScheduleToAttendance({plan:{...plan,assignments:[]},payrollProjection:{payrollReady:true,attendanceInputs}}));
+  assert.deepEqual(results[0].unexpectedAttendance,results[1].unexpectedAttendance);
+  assert.equal(results[0].reconciliationId,results[1].reconciliationId);
+});
+test('duplicate slot ids fail closed before matching',()=>{
+  const duplicate={...plan.assignments[0],workerId:'w2'};
+  assert.throws(()=>reconcileScheduleToAttendance({plan:{...plan,assignments:[plan.assignments[0],duplicate]},payrollProjection:{payrollReady:true,attendanceInputs:[]}}));
+});

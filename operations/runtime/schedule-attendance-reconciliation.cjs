@@ -3,6 +3,7 @@ const {createHash}=require('node:crypto');
 const {types:{isProxy}}=require('node:util');
 const VERSION='VECTOR_SCHEDULE_ATTENDANCE_RECONCILIATION_V1';
 const MAX_ITEMS=100000;
+function compareCodeUnits(a,b){return a<b?-1:a>b?1:0;}
 function writeIndex(array,index,value){Object.defineProperty(array,String(index),{value,writable:true,enumerable:true,configurable:true});}
 function append(array,value){writeIndex(array,array.length,value);}
 function sorted(values,compare){
@@ -64,7 +65,7 @@ function stable(value){
     return result+']';
   }
   if(value&&typeof value==='object'){
-    const keys=sorted(Reflect.ownKeys(value),(a,b)=>a<b?-1:a>b?1:0);
+    const keys=sorted(Reflect.ownKeys(value),compareCodeUnits);
     let result='{';
     for(let i=0;i<keys.length;i++)result+=(i?',':'')+JSON.stringify(keys[i])+':'+stable(value[keys[i]]);
     return result+'}';
@@ -90,10 +91,12 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
   const rawAssignments=ownValue(plan,'assignments','plan');
   const allAssignments=snapshot(rawAssignments,'assignments');
   if(!Array.isArray(allAssignments))throw new Error('Valid assignments array required.');
-  const assignments=[];
+  const assignments=[],seenSlots=Object.create(null);
   for(let i=0;i<allAssignments.length;i++){
     const assignment=allAssignments[i];
     if(!assignment||typeof assignment!=='object'||Array.isArray(assignment))throw new Error('Valid assignment required.');
+    if(typeof assignment.slotId!=='string'||!assignment.slotId.trim()||seenSlots[assignment.slotId])throw new Error('Unique assignment slotId required.');
+    seenSlots[assignment.slotId]=true;
     if(assignment.workerId)append(assignments,assignment);
   }
   const base={version:VERSION,tenant:snapshot(ownValue(plan,'tenant','plan'),'tenant'),planId:snapshot(ownValue(plan,'planId','plan'),'planId'),payrollAuthority:false,payCalculationPerformed:false,claimBoundary:'RECONCILIATION_ONLY_PAY_RULES_REMAIN_DOWNSTREAM'};
@@ -101,7 +104,7 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
   const rawAttendance=ownValue(payrollProjection,'attendanceInputs','payroll projection');
   const attendance=snapshot(rawAttendance,'attendance');
   if(!Array.isArray(attendance))throw new Error('Valid attendance array required.');
-  const orderedAssignments=sorted(assignments,(a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end)||String(a.slotId).localeCompare(String(b.slotId)));
+  const orderedAssignments=sorted(assignments,(a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end)||compareCodeUnits(a.slotId,b.slotId));
   const byEmployee=Object.create(null),uniqueByIdentity=Object.create(null),uniqueEvidence=[];
   for(let index=0;index<attendance.length;index++){
     const entry=attendance[index];
@@ -129,7 +132,7 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
       if(Number.isFinite(ms(entry.inAt))&&Number.isFinite(ms(entry.outAt))&&ms(entry.outAt)>ms(entry.inAt)&&ms(a.start)<ms(entry.outAt)&&ms(entry.inAt)<ms(a.end))append(matches,pool[j]);
     }
     append(candidates,sorted(matches,(x,y)=>Math.abs(ms(a.start)-ms(x.entry.inAt))+Math.abs(ms(a.end)-ms(x.entry.outAt))-
-      Math.abs(ms(a.start)-ms(y.entry.inAt))-Math.abs(ms(a.end)-ms(y.entry.outAt))||x.identity.localeCompare(y.identity)));
+      Math.abs(ms(a.start)-ms(y.entry.inAt))-Math.abs(ms(a.end)-ms(y.entry.outAt))||compareCodeUnits(x.identity,y.identity)));
   }
   const ownerByEvidence=[];
   for(let i=0;i<attendance.length;i++)writeIndex(ownerByEvidence,i,-1);
@@ -170,7 +173,7 @@ function reconcileScheduleToAttendance({plan,payrollProjection}={}){
     const entry=attendance[i];
     append(unexpected,{workerId:String(entry.employee),inAt:entry.inAt,outAt:entry.outAt,provenance:entry.provenance||null});
   }
-  const orderedUnexpected=sorted(unexpected,(a,b)=>stable(a).localeCompare(stable(b)));
+  const orderedUnexpected=sorted(unexpected,(a,b)=>compareCodeUnits(stable(a),stable(b)));
   const scheduled=rows.length,coverage=scheduled?reconciled/scheduled*100:100,blockers=[];
   if(reconciled!==scheduled)append(blockers,'SCHEDULE_ASSIGNMENT_WITHOUT_VERIFIED_ATTENDANCE');
   if(orderedUnexpected.length)append(blockers,'UNEXPECTED_VERIFIED_ATTENDANCE');
