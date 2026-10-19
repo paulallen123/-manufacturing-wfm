@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 # Discarded Railway build stage: prove T0-T4 zero-engineer support and bounded recovery
 # against the exact candidate sources. Nothing from this stage is copied into runtime.
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
@@ -13,7 +14,9 @@ RUN node --test implementation/runtime/setup-only-policy.test.cjs implementation
 RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs verification/first-use-regressions-20261012/deferred-connections.test.cjs
 RUN node --test scripts/patch-payroll-money.test.mjs
 RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
-RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
+RUN --mount=type=secret,id=proxy_ca \
+ if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+ npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 RUN node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs
 RUN node --test integrations/staffology/configured-site-authority.test.cjs integrations/staffology/configured-site-source-writer.test.cjs integrations/staffology/employee-import-previews.test.cjs integrations/staffology/employee-preview-consumer.test.cjs scripts/staffology-preview-route.test.mjs scripts/staffology-preview-active-route.test.mjs
@@ -116,7 +119,9 @@ RUN node /tmp/retire-legacy-presentation.mjs /app/public \
 # add the defence overlay as a separately reviewable layer.
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/package.json security/runtime/package-lock.json /app/security-runtime/
-RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
+RUN --mount=type=secret,id=proxy_ca \
+ if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+ npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
 COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs /app/security-runtime/
 COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
