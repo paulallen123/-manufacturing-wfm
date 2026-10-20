@@ -1,6 +1,6 @@
 # Payroll export serialization regression
 
-State: **TESTED locally; independent review pending**. This is a test-only
+State: **TESTED locally; independently source-reviewed**. This is a test-only
 integration-support package, not new product functionality or release authority.
 
 ## Requirement and ownership
@@ -45,7 +45,7 @@ The test verifies the archive hash before reading its four real domain modules.
 It uses fresh VM contexts for CommonJS and browser-global loading, actual
 category/employee acknowledgement and independent-manager sign-off, actual
 release, batch readback and retry methods. Synthetic fixtures exist only in
-memory. A test-only decoder independently checks 19 CSV fields, quotes/commas,
+memory. A test-only decoder independently checks 19-column width and five named values, quotes/commas,
 Unicode, leading-zero payroll ID, exact minutes and decimal gross, source record,
 CRLF, JSON serialization/readback and idempotent retry. This is not an HTTP
 checksum assertion, browser execution, SQLite restart, or provider import.
@@ -108,9 +108,20 @@ No workflow, Dockerfile, archive, runtime, shared runner, freeze trigger, releas
 gate or security configuration changed. Deployment identifiers in older ledger
 entries were not revalidated or used as authority by this package.
 
-Next action: an independent reviewer runs the above Node 22 command and reviews
-the two-file diff. The sole canonical integrator then adopts only this bounded
+Independent source review subsequently completed on exact head
+`943408ccb74b694c5460d64233db1fd28f27a592` through the parent coordination thread.
+Verdict: **acceptable for the narrow test-only scope, no blocking defect**.
+The reviewer checked the two-file scope, archive hash, real source methods,
+specific serialization rejection, complete signed-state comparison and separate
+module contexts. They did **not** run the tests or independently reproduce 20/20.
+This evidence-only correction addresses their nonblocking wording finding:
+the test checks 19-column width and five named values, not all 19 field values.
+No formal GitHub approval is implied; the test source remains unchanged.
+
+Next action: the sole canonical integrator adopts only this bounded
 test/evidence package, reconciles it with the existing Golden Journey work and
-runs the accepted exact-candidate gates. Keep draft until that review; no merge
+runs the accepted exact-candidate gates, including an independent Node22 rerun.
+Docker's explicit test list does not yet include this new file; adoption into that
+shared gate is solely the integrator's work. Keep draft; no merge
 or deployment is requested here. A green domain test does not establish safe
 spreadsheet interpretation, authenticated HTTP behavior or customer readiness.
