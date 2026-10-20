@@ -3,8 +3,8 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {buildAbsenceRecoveryShadow}=require('./absence-recovery-shadow.cjs');
 
-test('builds first factory-autopilot shadow decision from simulated candidates',()=>{
-  const result=buildAbsenceRecoveryShadow({
+function input(){
+  return {
     tenant:'alpha',site:'tamworth',triggerKind:'ABSENCE',triggerId:'absence:42',
     triggeredAt:'2026-09-22T08:00:00Z',contextRevision:'twin:abc',
     requiredSkills:['welding-l2'],affectedLines:['line-4'],
@@ -15,11 +15,56 @@ test('builds first factory-autopilot shadow decision from simulated candidates',
       {id:'redeploy',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0.1,prediction:{labourCost:120,planAttainmentPct:98,riskScore:1},evidenceRefs:['sim:b']},
       {id:'agency',feasible:false,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0.2,prediction:{labourCost:400,planAttainmentPct:100,riskScore:1},evidenceRefs:['sim:c']}
     ]
-  });
+  };
+}
+test('builds first factory-autopilot shadow decision from simulated candidates',()=>{
+  const result=buildAbsenceRecoveryShadow(input());
   assert.equal(result.shadowOnly,true);
   assert.equal(result.executionPermitted,false);
   assert.equal(result.episode.recommendation.optionId,'redeploy');
 });
 test('requires skills and source evidence',()=>{
   assert.throws(()=>buildAbsenceRecoveryShadow({triggerKind:'ABSENCE'}),/required skill|Source evidence/);
+});
+
+test('published shadow constraints and episode cannot change under the same identity',()=>{
+  const result=buildAbsenceRecoveryShadow(input());
+  const before=JSON.stringify(result),identity=result.episode.episodeId;
+  for(const mutate of [
+    ()=>{result.requiredSkills[0]='unverified-skill';},
+    ()=>{result.affectedLines.push('different-line');},
+    ()=>{result.episode.recommendation.optionId='agency';},
+    ()=>{result.episode.recommendation.executionPermitted=true;},
+    ()=>{result.episode.recommendation.ranking[0].score=100;},
+    ()=>{result.episode.options[0].prediction.labourCost=999;},
+    ()=>{result.episode.options[0].evidenceRefs.push('unverified-source');},
+    ()=>{result.episode.sourceEvidence.splice(0);},
+    ()=>{result.episode.objective.weights.labourCost=1;}
+  ])assert.throws(mutate,TypeError);
+  assert.equal(result.episode.episodeId,identity);
+  assert.equal(JSON.stringify(result),before);
+  function frozen(value){
+    if(!value||typeof value!=='object')return;
+    assert.equal(Object.isFrozen(value),true);
+    for(const child of Object.values(value))frozen(child);
+  }
+  frozen(result);
+});
+
+test('freezing an absence result does not freeze caller data or alter serialized advice',()=>{
+  const source=input(),expected=JSON.stringify(buildAbsenceRecoveryShadow(source));
+  const result=buildAbsenceRecoveryShadow(source);
+  source.requiredSkills.push('later-skill');
+  source.affectedLines[0]='later-line';
+  source.sourceEvidence.push('later-source');
+  source.candidates[0].prediction.labourCost=800;
+  source.candidates[0].evidenceRefs.push('later-ref');
+  source.objective.labourCost=1;
+  assert.equal(Object.isFrozen(source.candidates[0].prediction),false);
+  assert.equal(JSON.stringify(result),expected);
+  const restored=JSON.parse(JSON.stringify(result));
+  assert.equal(restored.episode.recommendation.optionId,'redeploy');
+  assert.equal(restored.shadowOnly,true);
+  assert.equal(restored.executionPermitted,false);
+  assert.equal(restored.episode.recommendation.executionPermitted,false);
 });
