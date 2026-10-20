@@ -52,3 +52,5 @@ review_vector_actual_staffology_payroll_codes=2026-10-02 parenta3e17ebfbcd3e667e
 2026-10-02 reconcile idle Agents session against latest durable turn; preserve actual usage_limit_exceeded and stop before duplicate message. Parent42fe08035ae7e2f0033e3029213332bf56402c75; red retained, implementation144of144 zero skips. Exact non-deploy CIRCLE_SHA1 admission required.
 
 2026-10-03 registered existing worker execution repair; exact canonical parent74533ed802fa20ab35b811b316194a2614af009b; selective native c88a78d67b8848f446c9a4a03b3cb58bd639608f delta preserves all unrelated canonical blobs; original74533 RED2 retained; local Node22.23.2 focused55of55 implementation145of145 zero skips; one exact-CIRCLE_SHA1 contained non-deploy build required; hosted execute/evidence/customer-proof UNPROVEN; prior-marker-records-historical.
+
+2026-10-20 staged-source-preflight isolated admission: source commit 66271b21c7982479d5ed925ebf7b7390bd13eda6; issue #265 exact-candidate release binding; focused 4/4 and local FORGE core PASS; request exact CircleCI non-deploy runtime/image validation; no patch acceptance, staging deploy, production approval or customer-ready claim.
