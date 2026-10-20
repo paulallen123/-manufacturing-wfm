@@ -1,6 +1,6 @@
 # Immutable absence-recovery advisory
 
-State: **TESTED locally; independent review pending**.
+State: **TESTED locally; independently source-reviewed**.
 
 Requirement: existing PR #226 absence/qualified-labour-shortage shadow decisions
 and #265 F4 decision-evidence consistency. A returned advisory must not change
@@ -92,10 +92,19 @@ Syntax and `git diff --check` passed.
 
 ## Boundaries and next action
 
-Independent exact-head review is pending through the parent coordination channel;
-the known broken local review server was not retried. The sole integrator,
+Independent source review completed through the parent coordination channel on
+exact head `cd0f5b5d447dfd4a8f05bef70f524ba9e15ba558`: **acceptable for the narrow
+normalized-output immutability repair, no blocker**. The reviewer checked owned
+result recursion, JSON-cloned episode data, normalized lists, consumer
+compatibility, mutation/detachment tests and existing Docker wiring. They did
+**not** rerun the 12 tests. No formal GitHub approval is implied.
+
+The committed "does not alter serialized advice" test compares two repaired
+calls: it proves determinism and caller detachment. The base-versus-fixed byte
+comparison is the separate author-run check above, not that regression.
+The known broken local review server was not retried. The sole integrator,
 Continue customer proof (`01a12a1a-6c4a-7221-9862-ca8ddcd0f5a1`), retains adoption
-and release ownership. Keep draft until independent review.
+and release ownership. Keep draft pending integration admission.
 
 No canonical integration, Docker/image admission, deployment, hosted/customer
 proof, provider calls, workforce/payroll mutation or measured benefit occurred.
@@ -103,6 +112,6 @@ This is normalized output immutability only: it does not repair arbitrary active
 input/prototype behavior, authenticate source evidence, freeze JSON transmitted
 to clients, or add missing constraint fields to the episode digest.
 
-Next: independently review the exact diff and rerun the Node22 command; then the
+Next: independently rerun the Node22 command; then the
 sole integrator reconciles this delta onto one candidate and runs the existing
 combined/image/hosted gates before any operational or customer-proof claim.
