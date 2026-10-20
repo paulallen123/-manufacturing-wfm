@@ -1,6 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const {createHash}=require('node:crypto');
 const {buildAbsenceRecoveryShadow}=require('./absence-recovery-shadow.cjs');
 
 function input(){
@@ -51,7 +52,17 @@ test('published shadow constraints and episode cannot change under the same iden
   frozen(result);
 });
 
-test('freezing an absence result does not freeze caller data or alter serialized advice',()=>{
+test('serialized advice matches the pinned canonical base golden digest',()=>{
+  // SHA-256 of JSON.stringify(buildAbsenceRecoveryShadow(input())) generated
+  // from BOTH modules at canonical 48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
+  // Base absence module blob: 0051f54d3ee78e306fbc8c4657983d7d416eeb9e.
+  // This literal must not be regenerated from the implementation under test.
+  const serialized=JSON.stringify(buildAbsenceRecoveryShadow(input()));
+  assert.equal(createHash('sha256').update(serialized).digest('hex'),
+    'c109c04632ebcfbe35d1782bfe3dfe0da5a32d58918ddcc680d59eb5116817fb');
+});
+
+test('freezing an absence result keeps caller data mutable and detached',()=>{
   const source=input(),expected=JSON.stringify(buildAbsenceRecoveryShadow(source));
   const result=buildAbsenceRecoveryShadow(source);
   source.requiredSkills.push('later-skill');
