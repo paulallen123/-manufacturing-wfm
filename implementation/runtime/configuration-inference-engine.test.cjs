@@ -206,3 +206,19 @@ test('one evidenced synthetic employee retains existing proposed structure and s
   assert.equal(proposal.safety.payrollRulesAutoApplied, false);
   assert.equal(JSON.stringify(people), before);
 });
+
+
+for (const [label, people] of [
+ ['missing structure', [{employeeId:'E1'}]],
+ ['blank structure', [{employeeId:'E1',location:'  ',department:'  '}]],
+ ['partial identity', [{employeeId:'E1',location:'S1',department:'D1'},{location:'S2',department:'D2'}]]
+]) {
+ test(`incomplete organisation evidence requires review: ${label}`, () => {
+  const result=inferOrganisationModel(people);
+  assert.equal(result.autoApply,false);
+  assert.equal(result.status,'EXCEPTION');
+  assert.ok(result.confidence<0.98);
+  const proposal=buildConfigurationProposal({people});
+  assert.ok(proposal.decisions.some(item=>item.key==='organisation-structure'));
+ });
+}

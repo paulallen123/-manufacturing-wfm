@@ -54,15 +54,20 @@ function inferOrganisationModel(people) {
   const employeeIds = new Set();
   const orphanManagers = [];
   const duplicateEmployeeIds = [];
+  const missingStructure = [];
+  let missingIdentityCount = 0;
 
   for (const person of people || []) {
     const id = compact(person.employeeId);
-    if (!id) continue;
+    if (!id) { missingIdentityCount++; continue; }
     if (employeeIds.has(id)) duplicateEmployeeIds.push(id);
     employeeIds.add(id);
 
-    const site = compact(person.location || 'UNASSIGNED');
-    const department = compact(person.department || 'UNASSIGNED');
+    const location = compact(person.location);
+    const departmentName = compact(person.department);
+    if (!location || !departmentName) missingStructure.push({ employeeId: id, missing: [!location && 'location', !departmentName && 'department'].filter(Boolean) });
+    const site = location || 'UNASSIGNED';
+    const department = departmentName || 'UNASSIGNED';
     if (!sites.has(site)) sites.set(site, new Set());
     sites.get(site).add(department);
   }
@@ -76,8 +81,10 @@ function inferOrganisationModel(people) {
   }
 
   const total = (people || []).filter(p => compact(p.employeeId)).length;
-  const valid = total - orphanManagers.length - duplicateEmployeeIds.length;
-  const confidence = total > 0 ? Math.max(0, valid / total) : 0;
+  const valid = total - orphanManagers.length - duplicateEmployeeIds.length - missingStructure.length;
+  const sourceCount = (people || []).length;
+  const confidence = sourceCount > 0 ? Math.max(0, valid / sourceCount) : 0;
+  const incomplete = missingIdentityCount > 0 || missingStructure.length > 0;
 
   return {
     sites: [...sites.entries()]
@@ -87,11 +94,14 @@ function inferOrganisationModel(people) {
         departments: [...departments].sort()
       })),
     peopleCount: total,
+    sourceCount,
+    missingIdentityCount,
+    missingStructure,
     orphanManagers,
     duplicateEmployeeIds: [...new Set(duplicateEmployeeIds)].sort(),
     confidence: round(confidence),
-    status: orphanManagers.length === 0 && duplicateEmployeeIds.length === 0 && confidence >= STRUCTURAL_CONFIDENCE ? 'PROPOSED' : 'EXCEPTION',
-    autoApply: confidence >= STRUCTURAL_CONFIDENCE && orphanManagers.length === 0 && duplicateEmployeeIds.length === 0
+    status: !incomplete && orphanManagers.length === 0 && duplicateEmployeeIds.length === 0 && confidence >= STRUCTURAL_CONFIDENCE ? 'PROPOSED' : 'EXCEPTION',
+    autoApply: !incomplete && confidence >= STRUCTURAL_CONFIDENCE && orphanManagers.length === 0 && duplicateEmployeeIds.length === 0
   };
 }
 
@@ -338,3 +348,4 @@ module.exports = {
   parseClockMinutes,
   bucketMinutes
 };
+
