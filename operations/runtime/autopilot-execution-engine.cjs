@@ -72,7 +72,7 @@ function createAutopilotExecutionEngine(options={}){
  async function executePermit({tenant,permitId,currentContextRevision}){
   const p=permitQ.get(tenant,permitId);if(!p)throw Object.assign(new Error('Autopilot permit not found.'),{statusCode:404});if(Date.parse(p.expires_at)<=Date.now())throw Object.assign(new Error('Autopilot permit expired. Re-approve current evidence.'),{statusCode:409});
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
-  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED'].includes(prior.state))return {executionId,idempotent:true,...prior};
+  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED'].includes(prior.state))return {executionId,idempotent:true,...prior};
   if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
   log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)});let applied=null;
   try{
@@ -85,8 +85,19 @@ function createAutopilotExecutionEngine(options={}){
    const detail={eventId:verified.id,outcomeDigest:null,outcomeStatus:'UNPROVEN'};
    log(executionId,permitId,tenant,'VERIFIED',detail);return {executionId,idempotent:false,state:'VERIFIED',detail};
   }catch(error){
-   log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error.message,300)});if(!applied?.event?.id){log(executionId,permitId,tenant,'CONTAINED',{reason:'NO_CONFIRMED_APPLY'});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'NO_CONFIRMED_APPLY'}};}
-   try{const rb=lifecycle.applyTrustedEvent({tenant,eventKey:plan.rollback.eventKey,event:{kind:'RETRO_CHANGE',employeeId:plan.action.employeeId,effectiveAt:new Date().toISOString(),payload:{targetEventId:applied.event.id,reason:plan.rollback.reason,approvalRef:permitId,correction:{autopilotRollback:true}}}});if(rb?.decision?.status!=='ACCEPTED')throw new Error('Compensating rollback was rejected.');const confirmed=lifecycle.getTrustedEvent({tenant,eventKey:plan.rollback.eventKey});if(!confirmed||confirmed.status!=='ACCEPTED')throw new Error('Rollback verification failed.');log(executionId,permitId,tenant,'ROLLED_BACK',{rollbackEventId:confirmed.id});return {executionId,idempotent:false,state:'ROLLED_BACK',detail:{rollbackEventId:confirmed.id}};}catch(rbError){log(executionId,permitId,tenant,'CONTAINED',{reason:'ROLLBACK_UNCONFIRMED',error:compact(rbError.message,300)});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'ROLLBACK_UNCONFIRMED'}};}
+   log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error?.message,300)});
+   if(!applied?.event?.id){
+    // A thrown adapter call may already have committed. Read independently, but
+    // never infer non-application from an absent/failed/eventually-consistent read.
+    let observed=null;try{observed=lifecycle.getTrustedEvent?.({tenant,eventKey:plan.action.eventKey});}catch{}
+    const acceptedEventObserved=observed?.status==='ACCEPTED'&&typeof observed.id==='string'&&observed.id.trim().length>0;
+    // An accepted event at the key does not bind all approved payload fields.
+    // Preserve the readback as evidence without promoting it to action success.
+    const detail={reason:'APPLY_OUTCOME_UNKNOWN',externalState:'UNKNOWN',readbackStatus:acceptedEventObserved?'ACCEPTED_EVENT_OBSERVED':'UNCONFIRMED',observedEventId:acceptedEventObserved?observed.id:null,requiresReconciliation:true};
+    log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
+    return {executionId,idempotent:false,state:'RECONCILIATION_REQUIRED',detail};
+   }
+   try{const rb=lifecycle.applyTrustedEvent({tenant,eventKey:plan.rollback.eventKey,event:{kind:'RETRO_CHANGE',employeeId:plan.action.employeeId,effectiveAt:new Date().toISOString(),payload:{targetEventId:applied.event.id,reason:plan.rollback.reason,approvalRef:permitId,correction:{autopilotRollback:true}}}});if(rb?.decision?.status!=='ACCEPTED')throw new Error('Compensating rollback was rejected.');const confirmed=lifecycle.getTrustedEvent({tenant,eventKey:plan.rollback.eventKey});if(!confirmed||confirmed.status!=='ACCEPTED')throw new Error('Rollback verification failed.');log(executionId,permitId,tenant,'ROLLED_BACK',{rollbackEventId:confirmed.id});return {executionId,idempotent:false,state:'ROLLED_BACK',detail:{rollbackEventId:confirmed.id}};}catch(rbError){const detail={reason:'ROLLBACK_UNCONFIRMED',externalState:'UNKNOWN',eventId:applied.event.id,requiresReconciliation:true,error:compact(rbError?.message,300)};log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);return {executionId,idempotent:false,state:'RECONCILIATION_REQUIRED',detail};}
   }
  }
  function statusForTenant(tenant,limit=50){return tenantQ.all(tenant,Math.max(1,Math.min(100,Number(limit)||50))).map(r=>({executionId:r.execution_id,permitId:r.permit_id,state:r.state,detail:publicDetail(r.state,JSON.parse(r.detail_json)),createdAt:r.created_at}));}

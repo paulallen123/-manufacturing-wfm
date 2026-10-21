@@ -19,7 +19,9 @@ test('a reused event key cannot turn a different event into verified Autopilot e
  const engine=track(createAutopilotExecutionEngine({dbPath,lifecycleAdapter:guard}));
  const permit=engine.issueHumanPermit({tenant:'A',episodeId:episode.episodeId,optionId:'overtime',actorRef:'manager',contextRevision:'r1',plan:{adapter:'workforce-lifecycle',reversible:true,action:{eventKey:'occupied-key',kind:'OVERTIME_OVERRIDE',employeeId:'E1',effectiveAt:'2026-09-26T12:00:00Z',payload:{minutes:60}},rollback:{eventKey:'rollback-proof',reason:'restore'}}});
  const result=await engine.executePermit({tenant:'A',permitId:permit.permitId,currentContextRevision:'r1'});
- assert.equal(result.state,'CONTAINED','an existing STARTER must not verify an OVERTIME action');
+ assert.equal(result.state,'RECONCILIATION_REQUIRED','an existing STARTER must not verify an OVERTIME action');
+ assert.equal(result.detail.externalState,'UNKNOWN');
+ assert.equal(result.detail.requiresReconciliation,true);
  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM workforce_lifecycle_events WHERE kind='OVERTIME_OVERRIDE'").get().n,0);
  assert.equal(guard.getTrustedEvent({tenant:'A',eventKey:'occupied-key'}).kind,'STARTER');
  assert.ok(!engine.statusForTenant('A').some(e=>e.state==='VERIFIED'));
