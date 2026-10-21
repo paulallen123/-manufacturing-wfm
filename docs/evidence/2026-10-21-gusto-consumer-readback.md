@@ -45,6 +45,30 @@ Tool/access failures: initial git status from /workspace failed because it was n
 
 ## Limits and handoff
 
-This is in-process HTTP-handler execution, not actual HTTP transport. Closing/reopening the hub/database is not a process/container restart. The second session is preseeded, not a fresh login. Fixture source records and OAuth values do not establish real provider authentication or payroll accuracy. No Node 22, image, hosted, browser, live provider, or customer test ran.
+This is in-process HTTP-handler execution, not actual HTTP transport. Closing/reopening the hub/database is not a process/container restart. The second session is preseeded, not a fresh login. Fixture source records and OAuth values do not establish real provider authentication or payroll accuracy. The initial run did not include Node 22; the exact Node 22.23.2 follow-up is recorded below. No image, hosted, browser, live provider, or customer test ran.
 
 The release owner may adopt these two new files, rerun on the exact composed candidate/runtime, then perform approved transport/image/fresh-login/audit and provider evidence gates. This package cannot close #202/#265 or confer release authority. No approval is pending for this completed local proof; canonical adoption and broader proof remain outside lane7 scope.
+
+## Required Node 22.23.2 follow-up
+
+Published PR #505 head `56448b3ab22a4c35ab5406b192921731b0083e20` was verified against both the GitHub PR metadata and `git ls-remote origin refs/heads/proof/lane7-connector-contract-20261021`; local HEAD matched with a clean worktree before execution. PR remains draft/open, based on `48dce8f697825c8cd5f99b3e5aeea3953647f8c2`. All executable bytes were tested at that exact published head; this follow-up changes only this evidence document.
+
+Downloaded official `https://nodejs.org/dist/v22.23.2/node-v22.23.2-linux-x64.tar.xz` into /tmp and checked its SHA-256 against the same release's SHASUMS256.txt: `d60acfe00a2932254bb0ad20e01b0d74397a0875595de719654b214f4b03f307`. Extracted binary `/tmp/node-v22.23.2-linux-x64/bin/node --version` reported `v22.23.2`. No package dependencies or product files changed.
+
+Actual execution on Linux x86_64:
+
+```sh
+/tmp/node-v22.23.2-linux-x64/bin/node --test integration/runtime/gusto-consumer-readback.test.cjs
+/tmp/node-v22.23.2-linux-x64/bin/node --test integration/runtime/gusto-consumer-readback.test.cjs integration/runtime/gusto-company-connector.test.cjs integration/runtime/gusto-integration-hub.test.cjs
+```
+
+- Focused: **3 tests, 3 pass, 0 fail, 0 skip/cancel/todo; exit 0**, 221.376853 ms.
+- Affected combined: **40 tests, 40 pass, 0 fail, 0 skip/cancel/todo; exit 0**, 10367.177319 ms. This includes the focused cases; counts are not additive.
+- Both subprocess exit codes were captured directly. No failures occurred in this follow-up.
+- Independent review remains the separately recorded **Node 24.19.0** review above. This Node 22 execution was performed by lane7, not an independent Node 22 reviewer.
+
+Raw local logs and SHA-256:
+- `/tmp/lane7-node22-focused.tap`: `36567a0a75733fc85934820ca88bf0b66460e61eb284f4a0e247e25e92c023c7`.
+- `/tmp/lane7-node22-affected.tap`: `3c6be9f141358b6e65674e93ef75a3b774eb13a765d68fdd8a04bf7477ef3c68`.
+
+Required local-runtime gap is closed. Hold for the sole release owner's exact integrated-candidate gate; no hosted/provider writes, integration, deployment or customer-proof claim.
