@@ -1,0 +1,1879 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-21T20:21:08.741Z",
+  "scope": "59 accepted F0-F7 outcomes; research16/intake14/held6 retained as separate pending reconciliation dimensions, not counted as distinct added outcomes.",
+  "canonicalSHA": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+  "sourceVersion": "45",
+  "capabilities": [
+    {
+      "id": "F0.1",
+      "customerOutcome": "One persistent workspace from verified signing",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114347631)",
+      "priority": "P4",
+      "dependencies": "Authenticated signing event; resource/key authority; existing provisioner",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "15-case v3 matrix plus repeat login/renewal must reuse workspace and completed questionnaire",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Owner implementation underway (coordinator relay); not hosted-proven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Separate accessible workspace from operational readiness; one durable idempotent tenant/run binding",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F0.2",
+      "customerOutcome": "Organisation profile and secure access",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114347631)",
+      "priority": "P4",
+      "dependencies": "Owner integration of reported 0c5fe630… profile/access patch; existing bootstrap/Docker seams",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Authenticated least-privilege entry; cross-tenant denial; refresh/new-login persistence; genuine useful safe action",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Isolated patch reported tested/reviewed; adoption pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Adopt exact reviewed bytes and rerun integrated regression; do not duplicate profile module",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F0.3",
+      "customerOutcome": "One-time questionnaire, adaptive configuration and later updates",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114347631)",
+      "priority": "P4",
+      "dependencies": "F0.1–2; compiler/autopilot; authoritative answers; policy approval",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Hidden-answer invalidation, concurrent edits, failed-create/lost-ack recovery, same environment, affected-proof reopening",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Owner implementation underway; completion persistence unproven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Implement autosave/resume/completion/version persistence in same workspace; renewals/daily use must not restart interview",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.1",
+      "customerOutcome": "Exclusive writer and proof-worker activation",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#288](https://github.com/paulallen123/-manufacturing-wfm/issues/288)",
+      "priority": "P1",
+      "dependencies": "Secure server-side API configuration and exact owner/worker/lease binding",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Scoped authentication, durable same-session continuation, stale-fence/duplicate-owner/budget/cancel denial; no secrets in evidence",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Current relay: 21 unowned jobs, zero leases, fence 50; Agents key absent",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Bind existing owner/worker and reconcile jobs before claim; no new competing executor",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.2",
+      "customerOutcome": "Source, onboarding and operating population reconciliation",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#256](https://github.com/paulallen123/-manufacturing-wfm/issues/256)",
+      "priority": "P1",
+      "dependencies": "Authoritative source namespace and exact identity mapping; complete population",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "No count-only equivalence; correct tenant/company/site/provider; checksum/version; restart/replay; actual operating readback",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Current relay: two source records, four onboarding records, 42 unbound operating people",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Produce ID-level missing/extra/conflicting/unbound report; resolve only with authoritative bindings",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.3",
+      "customerOutcome": "Customer time/absence/entitlement/payroll policies",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265)",
+      "priority": "P1",
+      "dependencies": "Current approved effective-dated customer rules and approvals",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Independent expected calculations, missing/conflicting input denial, policy revision invalidates stale proof",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Blocked on genuine authoritative customer evidence; no invented policy completion",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Inventory exact missing policy fields and approval sources; compile approved values",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.4",
+      "customerOutcome": "Genuine role competency",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114032589)",
+      "priority": "P1",
+      "dependencies": "Correct population/roles; real assessments and authorised certification evidence",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "No passive training grants mastery; all required roles represented and assessed; fresh state",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Assignments/content exist; population and competency proof distinct and incomplete",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Separate roster coverage from learning/privileged/frontline completion; obtain genuine evidence",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.5",
+      "customerOutcome": "CORE-01 rejection and non-zero applied correction",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6113531983)",
+      "priority": "P1",
+      "dependencies": "Exact owner/runner binding and authorised fixture for applied mutation",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Raw unchanged, effective exactly changed, independent minutes, r1/r2/r3, distinct actors, weekly/payroll revision consequence, fresh login/audit",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Business workflow built; legacy proof adapter stale; oracle designed",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Build independent two-scenario oracle and rebind existing signed-session/UI adapter",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.6",
+      "customerOutcome": "Truthful readiness remediation labels",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114032589)",
+      "priority": "P1",
+      "dependencies": "Shared implementation UI ownership; naturally occurring or authorised test state",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Six-case label matrix; no Team ready false green; exact browser refresh/new-login evidence",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Confirmed current-source defect; PR303 partially fixed other labels",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Use roleLearningPopulationReady for population label; retain combined final gate",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.7",
+      "customerOutcome": "Staffology protected-profile and downstream proof",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#292](https://github.com/paulallen123/-manufacturing-wfm/issues/292)",
+      "priority": "P1",
+      "dependencies": "Valid protected profile; approved employer/person/period mapping; provider access and scoped authority",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Submission → provider acceptance → independent readback → ID/period/amount reconciliation; no blind retry after uncertainty",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Current owner relay: STAFFOLOGY_PROOF_PROFILE_INVALID; provider journey unproven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Diagnose exact profile validation failure without secrets or provider writes; satisfy approved inputs",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.8",
+      "customerOutcome": "Complete operational Golden Journey",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265)",
+      "priority": "P1",
+      "dependencies": "F0, identity/policies/competency, period, correction, provider prerequisites",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Employee leave/time → approvals → every team sign-off → payroll/export checksum → provider → audit → fresh-session readback",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Latest relay 3/21; operationalReady=false; whole journey unproven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Execute first genuinely incomplete eligible gate and retain exact receipts",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.9",
+      "customerOutcome": "Role/mobile/accessibility proof",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265)",
+      "priority": "P1",
+      "dependencies": "Enabled real features; role-specific actors and current runtime",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Desktop/390px/tablet, keyboard/focus/error/empty/loading, employee/manager/payroll/admin roles, freshness race",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Scoped nine UI checks relayed; task-level complete proof unestablished",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Run task scenarios, not just page rendering; preserve role-first FORGE",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.10",
+      "customerOutcome": "Fresh hosted security and tenant proof",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265)",
+      "priority": "P1",
+      "dependencies": "Exact release artifact/configuration and approved test scope",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Tenant/role/payroll denial, revoked session/permission race, immutable source identity, prompt/data injection boundaries",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Prior scoped evidence cannot close changed final build",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Run full required negative suite on final candidate",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.11",
+      "customerOutcome": "Durability, recovery and rollback",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265)",
+      "priority": "P1",
+      "dependencies": "Approved restart/fault window, durable data and independent oracle",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Restart/fresh login, backup or stale-restore detection, failed deployment rollback, unknown-effect reconciliation, no duplicate invitation/send",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Mandatory proof outstanding for final combined artifact",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Prove persisted acknowledged effects and recovery on exact build",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F1.12",
+      "customerOutcome": "Whole-product final sign-off and scale",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114347631)",
+      "priority": "P1",
+      "dependencies": "Every mandatory requirement and combined regression; independent review",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "All 21 gates retained, zero skipped mandatory checks, scale/current-value boundaries and rollback; promote identical artifact",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Not customer-proven; no defensible Friday guarantee",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Freeze tested exact artifact, execute final uninterrupted combined journey and observation",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.1",
+      "customerOutcome": "Advanced manufacturing scheduling",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#233](https://github.com/paulallen123/-manufacturing-wfm/pull/233)",
+      "priority": "P9",
+      "dependencies": "Authoritative skills, availability, rest, policy, cost/demand; F0 inputs",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        233
+      ],
+      "acceptanceScenarios": "Independent feasibility; shifts/swaps/rotations/fairness/disruption; stale concurrent inputs; explainable shortfalls; real role journey",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Open branch: shadow/evaluation; 12/12 focused reported; hosted proof missing",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile existing scheduler and integrate only unique safe delta",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.2",
+      "customerOutcome": "Universal manager action queue",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#54](https://github.com/paulallen123/-manufacturing-wfm/issues/54), [#80](https://github.com/paulallen123/-manufacturing-wfm/pull/80)",
+      "priority": "P9",
+      "dependencies": "Existing owning leave/time/sign-off routes and permissions",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        80
+      ],
+      "acceptanceScenarios": "Deterministic blocker priorities/reasons; no hidden mandatory work; return context; mobile/accessibility",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Prototype syntax/composition reported; hosted/accessibility unproven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile current queue, preserve one-click owning-workflow actions",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.3",
+      "customerOutcome": "Invisible/no-new-hardware attendance",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#83](https://github.com/paulallen123/-manufacturing-wfm/pull/83)",
+      "priority": "P9",
+      "dependencies": "Authoritative permitted existing signals; source lifecycle; privacy and payroll boundaries",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        83
+      ],
+      "acceptanceScenarios": "Corroboration/false-signal denial, departure anchor, revocation, replay, concurrency, restart, outage soak, payroll exclusion",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Extensive source and tests integrated; production datastore/provider/soak proof open",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Close genuine source ingress and production-path persistence instead of duplicate engine",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.4",
+      "customerOutcome": "Agency labour and Agency OS",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#82](https://github.com/paulallen123/-manufacturing-wfm/pull/82), [#88](https://github.com/paulallen123/-manufacturing-wfm/pull/88), [#239](https://github.com/paulallen123/-manufacturing-wfm/pull/239)",
+      "priority": "P9",
+      "dependencies": "Supplier and worker authority, response delivery, rights/eligibility and real outcomes",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        82,
+        88,
+        239
+      ],
+      "acceptanceScenarios": "Eligibility before rank, one effect, uncertain-send reconcile, attendance/claimed/invoiced match, no unsafe exploration",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Base canonical; Agency OS shadow; PostgreSQL race/hosted/outcome proof open",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile existing labour/unknown-delivery/OS layers; implement only missing lifecycle seam",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.5",
+      "customerOutcome": "Adaptive training/coaching/video/voice",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#79](https://github.com/paulallen123/-manufacturing-wfm/pull/79), [#232](https://github.com/paulallen123/-manufacturing-wfm/pull/232)",
+      "priority": "P9",
+      "dependencies": "Source-grounded content, role tasks, actual supported voice/media service",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        79,
+        232
+      ],
+      "acceptanceScenarios": "Grounding, accessibility, language/voice, release-bound artifacts, no mastery from generated video/attendance alone",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Canonical training components; source-built media enhancements; genuine competency pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Wire existing Show/Guide/Practise/Test and quality-controlled delivery",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.6",
+      "customerOutcome": "Governed enterprise reporting and exports",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#237](https://github.com/paulallen123/-manufacturing-wfm/issues/237)",
+      "priority": "P9",
+      "dependencies": "Explicit source schemas, role/catalog scope and declared consumers",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Formula-risk, null/empty/value distinctions, exact IDs/types/digests, round-trip, source/role/tenant and actual consumer proof",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Reporting UI/service present; typed export static gap verified",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Build typed interchange helper/tests, then owner wires existing UI/service",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.7",
+      "customerOutcome": "Vecta voice/text authorised operations",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#241](https://github.com/paulallen123/-manufacturing-wfm/pull/241)",
+      "priority": "P9",
+      "dependencies": "Registered deterministic actions, consent, supported language/speech provider",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        241
+      ],
+      "acceptanceScenarios": "Permission recheck, expiring exact plan, clear yes/no, provider failure safe, genuine microphone/TTS/locale journey and readback",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Source/syntax and some pure behavior reported; first real action leave; others navigation only",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Complete requested actual registered actions while preserving confirmation and verification",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.8",
+      "customerOutcome": "Native iOS/Android and secure connections",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#242](https://github.com/paulallen123/-manufacturing-wfm/pull/242), [#243](https://github.com/paulallen123/-manufacturing-wfm/pull/243)",
+      "priority": "P9",
+      "dependencies": "Native build/distribution authority, device access, existing action engine/integration hub",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        242,
+        243
+      ],
+      "acceptanceScenarios": "Mobile Golden Journey, biometric UX security, offline/recovery, secure server-side integration; actual store/distribution evidence",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Initial native client and broker on isolated branches; device/store gates pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile native branch, exercise device-level journey and supported release path",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F2.9",
+      "customerOutcome": "Coherent FORGE desktop/mobile/tablet experience",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#225](https://github.com/paulallen123/-manufacturing-wfm/pull/225)",
+      "priority": "P9",
+      "dependencies": "All integrated feature packages and deterministic source contracts",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        225
+      ],
+      "acceptanceScenarios": "Task completion, real data, before/after friction, permissions, loading/empty/error/accessibility and capability preservation",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Large canonical convergence exists; whole role experience unproven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Integrate into approved role-first routes; do not replace UI",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.1",
+      "customerOutcome": "Adaptive implementation and Launch Autopilot",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#79](https://github.com/paulallen123/-manufacturing-wfm/pull/79), [#224](https://github.com/paulallen123/-manufacturing-wfm/pull/224), [#228](https://github.com/paulallen123/-manufacturing-wfm/pull/228), [#231](https://github.com/paulallen123/-manufacturing-wfm/pull/231), [#274](https://github.com/paulallen123/-manufacturing-wfm/pull/274)",
+      "priority": "P9",
+      "dependencies": "F0; source inputs; compiler; current run; existing worker",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        79,
+        224,
+        228,
+        231,
+        274
+      ],
+      "acceptanceScenarios": "Contract→discovery→configuration→tests→training→readiness persists and resumes; no second controller",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Substantial canonical/branch work; adaptive interview branch tests partly authored/unexecuted",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile all stacked deltas into existing owner path; ask unresolved exceptions only",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.2",
+      "customerOutcome": "Implementation Digital Twin and impact revalidation",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#224](https://github.com/paulallen123/-manufacturing-wfm/pull/224), [#228](https://github.com/paulallen123/-manufacturing-wfm/pull/228), [#231](https://github.com/paulallen123/-manufacturing-wfm/pull/231)",
+      "priority": "P9",
+      "dependencies": "Versioned answers/data/policies and dependency map",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        224,
+        228,
+        231
+      ],
+      "acceptanceScenarios": "Only affected configuration/tests/training/proof invalidated; no stale green; same workspace/data",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Revision kernel exists; integrated customer change proof pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reuse deterministic revision barrier; connect later customer updates",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.3",
+      "customerOutcome": "Genuine provisioning/key binding/crash recovery",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#161](https://github.com/paulallen123/-manufacturing-wfm/pull/161), [#169](https://github.com/paulallen123/-manufacturing-wfm/pull/169), [#223](https://github.com/paulallen123/-manufacturing-wfm/pull/223), [#213](https://github.com/paulallen123/-manufacturing-wfm/issues/213)",
+      "priority": "P9",
+      "dependencies": "Approved resource authority, encryption/signing references, owner provisioner",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        161,
+        169,
+        223
+      ],
+      "acceptanceScenarios": "Exactly one create, mandatory keys, lost ack/restart, isolation, authoritative provider effect and persisted run",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Key-plan repair reported converged; actual creation and F0 access ordering incomplete",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Prove actual effect not precreated fixture; retain F0 access/readiness distinction",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.4",
+      "customerOutcome": "Source-data handoff into implementation",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#256](https://github.com/paulallen123/-manufacturing-wfm/issues/256)",
+      "priority": "P9",
+      "dependencies": "Authorised complete source data, mappings, correct customer scope",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Persisted canonical facts, checksum/mapping version, invalid/duplicate/revoked auth, restart/replay and downstream readiness",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Canonical batch/people tables and two-record fixture proof now exist; full operating binding unproven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Use existing import path and independent population diagnoser",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.5",
+      "customerOutcome": "Passkey/passwordless account lifecycle",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#294](https://github.com/paulallen123/-manufacturing-wfm/pull/294), [#295](https://github.com/paulallen123/-manufacturing-wfm/pull/295), [#296](https://github.com/paulallen123/-manufacturing-wfm/pull/296)",
+      "priority": "P9",
+      "dependencies": "Canonical identity/onboarding modules; preserve payroll composer and latest source",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        294,
+        295,
+        296
+      ],
+      "acceptanceScenarios": "Enrolment, invitation namespace, recovery/revocation, atomic account/audit/session, concurrency and fresh authentication",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Stacked source/local/Linux evidence reported; current adoption must reconcile",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Identify already-incorporated bytes before adopting remaining passkey/startup deltas",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.6",
+      "customerOutcome": "Integration fabric setup and lifecycle",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#76](https://github.com/paulallen123/-manufacturing-wfm/pull/76), [#102](https://github.com/paulallen123/-manufacturing-wfm/pull/102), [#106](https://github.com/paulallen123/-manufacturing-wfm/pull/106), [#142](https://github.com/paulallen123/-manufacturing-wfm/pull/142), [#194](https://github.com/paulallen123/-manufacturing-wfm/pull/194)",
+      "priority": "P9",
+      "dependencies": "Authenticated provider scope, immutable namespace/mapping, safe supported protocols",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        76,
+        102,
+        106,
+        142,
+        194
+      ],
+      "acceptanceScenarios": "Discovery/auth/activation, freshness, paging/checkpoints, source completeness, reconnect/outage/replay/reconciliation",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "85 integrated paths in superset manifest; many helpers locally tested; real customer proof missing",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reuse catalog/registry and shared authority primitives; close exact durable runtime seams",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.7",
+      "customerOutcome": "Staffology end-to-end operational path",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#292](https://github.com/paulallen123/-manufacturing-wfm/pull/292)",
+      "priority": "P9",
+      "dependencies": "F1.7; genuine employer/employee/period identity and scoped authority",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        292
+      ],
+      "acceptanceScenarios": "Lifecycle/person/period/payroll exactness; accepted effect and independently reconciled readback",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Code/local isolation evidence exists; current protected profile blocks provider proof",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Repair approved profile/configuration seam then existing provider path",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.8",
+      "customerOutcome": "Broader provider-specific certification",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#194](https://github.com/paulallen123/-manufacturing-wfm/pull/194), [#278](https://github.com/paulallen123/-manufacturing-wfm/pull/278)",
+      "priority": "P9",
+      "dependencies": "Per-provider tenant/sandbox access, company scope, mappings, test/operation consent",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        194,
+        278
+      ],
+      "acceptanceScenarios": "Actual scoped auth and bounded round-trip; downstream acceptance/reconciliation where required; sandbox stays sandbox",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Composed catalog: 212 rows; 127 spec, 82 discovery, three platform-authenticated; no payroll/provider certification inferred",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Use each exact catalog next-evidence step; prioritise required customer systems",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F3.9",
+      "customerOutcome": "Global/multi-site/effective-date implementation",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#196](https://github.com/paulallen123/-manufacturing-wfm/issues/196), [#202](https://github.com/paulallen123/-manufacturing-wfm/issues/202)",
+      "priority": "P9",
+      "dependencies": "Authoritative company/site/country/timezone/currency and customer policies",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Unicode/locale/timezone/DST/currency, company/site isolation, policy provenance, scale and role journeys",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Global context validators/source evidence; jurisdiction/customer proof incomplete",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile effective-dated global facts and site scope; no inferred legal rules",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.1",
+      "customerOutcome": "Factory Graph/capability model",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#75](https://github.com/paulallen123/-manufacturing-wfm/pull/75), [#93](https://github.com/paulallen123/-manufacturing-wfm/pull/93), [#205](https://github.com/paulallen123/-manufacturing-wfm/pull/205), [#92](https://github.com/paulallen123/-manufacturing-wfm/issues/92)",
+      "priority": "P9",
+      "dependencies": "Trusted identity/provenance across people/assets/lines/materials/orders",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        75,
+        93,
+        205
+      ],
+      "acceptanceScenarios": "Historical/effective/observed time, referential scope, reproducible decisions and actual user workflow",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Kernel built; event and capability ledger rows pending retest/convergence",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile graph models into existing deterministic Decision Episode",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.2",
+      "customerOutcome": "Engineering document/drawing/BOM/routing intelligence",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#202](https://github.com/paulallen123/-manufacturing-wfm/issues/202), [#205](https://github.com/paulallen123/-manufacturing-wfm/pull/205)",
+      "priority": "P9",
+      "dependencies": "Authorised source documents, revision and semantic validation",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        205
+      ],
+      "acceptanceScenarios": "Extraction/search fidelity, revision provenance, permissions, uncertainty and validated customer decision",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Programme target; component model exists, full extraction/search proof not established",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Map actual current document pipeline and complete smallest missing grounded stage",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.3",
+      "customerOutcome": "Maintenance operations",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#202](https://github.com/paulallen123/-manufacturing-wfm/issues/202)",
+      "priority": "P9",
+      "dependencies": "Asset/work-order/parts/technician and safety authority inputs",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Correct asset scope, qualification/parts/downtime, no safety actuation, persisted role action/audit",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Programme target; individual feature completion requires source/task reconciliation",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Complete current asset/work-order/inspection/parts/eligibility workflow before new screens",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.4",
+      "customerOutcome": "Decision Twin, Capacity Rescue, late-material recovery",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#52](https://github.com/paulallen123/-manufacturing-wfm/issues/52), [#226](https://github.com/paulallen123/-manufacturing-wfm/pull/226), [#240](https://github.com/paulallen123/-manufacturing-wfm/pull/240)",
+      "priority": "P9",
+      "dependencies": "Authoritative feasible options, policy/cost/demand, explicit action authority",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        226,
+        240
+      ],
+      "acceptanceScenarios": "Held-out scenarios, hard constraints, alternatives, bounded optimum claim, stale version denial, reversible execution",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Deterministic shadow/consequence components built; enabled execution/outcomes not whole-proven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Wire existing consequence engine to authorised action and independent result",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.5",
+      "customerOutcome": "Savings and Outcome Ledger",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#204](https://github.com/paulallen123/-manufacturing-wfm/pull/204), [#205](https://github.com/paulallen123/-manufacturing-wfm/pull/205), [#196](https://github.com/paulallen123/-manufacturing-wfm/issues/196), [#202](https://github.com/paulallen123/-manufacturing-wfm/issues/202)",
+      "priority": "P9",
+      "dependencies": "Actual baseline/attendance/payroll/production and attribution evidence",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        204,
+        205
+      ],
+      "acceptanceScenarios": "Projected/avoided/redeployed/actual realised separated; independent attribution and overlap controls",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Schemas/engine components built; real customer value intentionally unmeasured",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Close predicted→observed→reconciled ledger with no double counting",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.6",
+      "customerOutcome": "Cash-to-Capacity",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#210](https://github.com/paulallen123/-manufacturing-wfm/pull/210)",
+      "priority": "P9",
+      "dependencies": "ERP/AR/treasury/production evidence, currency/entity scope",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        210
+      ],
+      "acceptanceScenarios": "Cash timing versus economic saving, negative cases, hard constraints and real outcome reconciliation",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Canonical original engine/tests; UI/API/hosted outcome proof pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Complete canonical decision surface and exact evidence→decision→outcome route",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.7",
+      "customerOutcome": "Energy-aware workforce/production planning",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#67](https://github.com/paulallen123/-manufacturing-wfm/issues/67), [#69](https://github.com/paulallen123/-manufacturing-wfm/pull/69)",
+      "priority": "P9",
+      "dependencies": "Tariff/usage/ERP actuals/production baseline and feasibility",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        69
+      ],
+      "acceptanceScenarios": "Freshness/revision, safe process flexibility, net value, no double count or machine/grid actuation",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Canonical original engines/tests; live data/UI/outcome proof pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Wire existing engine to real permitted inputs and FORGE decision task",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F4.8",
+      "customerOutcome": "Engineering memory/outcome learning",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#204](https://github.com/paulallen123/-manufacturing-wfm/pull/204), [#205](https://github.com/paulallen123/-manufacturing-wfm/pull/205), [#273](https://github.com/paulallen123/-manufacturing-wfm/pull/273)",
+      "priority": "P9",
+      "dependencies": "Sufficient verified outcomes and deterministic constraints",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        204,
+        205,
+        273
+      ],
+      "acceptanceScenarios": "As-known-at replay, no leakage, hold-out improvement, rollback, no new authority from learning",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Adaptive/governed components canonical; real-history proof pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Consume verified result history; prove calibration and safe change process",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F5.1",
+      "customerOutcome": "Zero-engineer support",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#86](https://github.com/paulallen123/-manufacturing-wfm/pull/86)",
+      "priority": "P8",
+      "dependencies": "Real supported detectors/remediators; distinct verifier; approved forensic stores",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        86
+      ],
+      "acceptanceScenarios": "T0–T4 scope honest; no silent loss, stale fingerprint denial, independent durable terminal readback",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Substantial source built; historical exact green stale, current hosted proof missing",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Execute current supported detect→diagnose→repair/contain→verify→recover",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F5.2",
+      "customerOutcome": "Incident memory and recurrence prevention",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#238](https://github.com/paulallen123/-manufacturing-wfm/pull/238)",
+      "priority": "P8",
+      "dependencies": "Verified incident/repair evidence, regressions and containment authority",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        238
+      ],
+      "acceptanceScenarios": "Fingerprint mismatch safe; compound incidents; no secret/PII memory; measured repeat recovery and zero replayed effects",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Controller/tests source-built; extreme live recovery unproven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Connect reusable prevention only after certified resolution receipts",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F5.3",
+      "customerOutcome": "Blocker continuity and result consumption",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#234](https://github.com/paulallen123/-manufacturing-wfm/pull/234), [#251](https://github.com/paulallen123/-manufacturing-wfm/pull/251), [#262](https://github.com/paulallen123/-manufacturing-wfm/pull/262)",
+      "priority": "P8",
+      "dependencies": "Current jobs/results/owner claims; supported alternate proof routes",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        234,
+        251,
+        262
+      ],
+      "acceptanceScenarios": "No blind retries, no unchanged polling counted, active blockers exact and durable, no second runner",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Existing controllers/handoffs; exact runtime behavior reconciliation needed",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Consume terminal work, advance independent package, resume existing job without duplicate",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F5.4",
+      "customerOutcome": "Trust/evidence/authority controls",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#229](https://github.com/paulallen123/-manufacturing-wfm/pull/229), [#235](https://github.com/paulallen123/-manufacturing-wfm/pull/235), [#269](https://github.com/paulallen123/-manufacturing-wfm/pull/269), [#270](https://github.com/paulallen123/-manufacturing-wfm/pull/270), [#275](https://github.com/paulallen123/-manufacturing-wfm/pull/275)",
+      "priority": "P8",
+      "dependencies": "Immutable source/artifact/effect evidence and independent authority",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        229,
+        235,
+        269,
+        270,
+        275
+      ],
+      "acceptanceScenarios": "Wrong source/tenant, jointly forged artifact/metadata, scoped-versus-whole PASS, stale proof and unauthorised action denial",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Canonical trust spine and branch deltas; whole exact assurance incomplete",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reconcile exact artifact reconstruction, proof-carrying state and stale/duplicate runner gates",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F5.5",
+      "customerOutcome": "Enforced release protection",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#1](https://github.com/paulallen123/-manufacturing-wfm/issues/1), [#208](https://github.com/paulallen123/-manufacturing-wfm/issues/208), [#209](https://github.com/paulallen123/-manufacturing-wfm/issues/209)",
+      "priority": "P8",
+      "dependencies": "Repository administration and deployment enforcement authority",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Real prevention of direct/unapproved/mismatched release; signed source/image binding; no policy-only closure",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Historical unprotected branch incidents; built marker-spoof repair; current control configuration unverified here",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Read current protection/rulesets; close or supersede each incident with evidence",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F5.6",
+      "customerOutcome": "Post-implementation customer-proof enforcement",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6113279263)",
+      "priority": "P8",
+      "dependencies": "Exact candidate/config/schema/artifact identity and admission implementation",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Changed build/config reopens gates; customer-specific fresh proof and required observation before closure",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Required operating contract; runtime enforcement must be proven",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Keep complete()/AWAITING_EVIDENCE distinct from proof closure; invalidate affected evidence",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.1",
+      "customerOutcome": "Portable Skills Trust",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#55](https://github.com/paulallen123/-manufacturing-wfm/issues/55)",
+      "priority": "P9",
+      "dependencies": "Authentic external skill/qualification source and status/revocation authority",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Holder/site/skill/expiry/revocation; no AI-awarded qualification; real source proof",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "User-requested Friday target; prior experimental/design state",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reuse existing eligibility evidence, implement smallest reviewed trust boundary",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.2",
+      "customerOutcome": "Quality-to-workforce feedback",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#57](https://github.com/paulallen123/-manufacturing-wfm/issues/57)",
+      "priority": "P9",
+      "dependencies": "Valid quality/process context, bias/confounding controls, authorised employee use",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "No individual misconduct inference; causal uncertainty explicit; held-out operational value and correct permissions",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "User-requested Friday target; research/experiment proof pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Falsify worker-blame assumptions and build advisory source-bound feedback",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.3",
+      "customerOutcome": "Hybrid human/robot capacity",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#60](https://github.com/paulallen123/-manufacturing-wfm/issues/60)",
+      "priority": "P9",
+      "dependencies": "Authoritative machine/flow capacity and qualified labour constraints",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "No robot/OT control; valid unavailable/degraded states, human safety/consent constraints",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "User-requested Friday target; research/experiment proof pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reuse read-only resource model to compare feasible capacity options",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.4",
+      "customerOutcome": "Portable autonomy evidence",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#62](https://github.com/paulallen123/-manufacturing-wfm/issues/62)",
+      "priority": "P9",
+      "dependencies": "Existing permitted-action receipts and exact verified artifact/effect chain",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Independent verification, tamper/replay/stale/fence denial; explicit attestation limitations",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "User-requested Friday target; experiment/design state",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Export existing verifiable evidence without inventing new authority system",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.5",
+      "customerOutcome": "Privacy-preserving manufacturing provenance",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#65](https://github.com/paulallen123/-manufacturing-wfm/issues/65), [#215](https://github.com/paulallen123/-manufacturing-wfm/pull/215)",
+      "priority": "P9",
+      "dependencies": "Qualification/holder/process/product evidence and minimum disclosure",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        215
+      ],
+      "acceptanceScenarios": "Correct credential/tenant/site/skill/process/status; no direct worker PII; real provenance readback",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Prototype built; ledger queued for retest/convergence",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Retest exact prototype then compose canonical capability attestation",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.6",
+      "customerOutcome": "Industrial semantic read-only bridge",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#71](https://github.com/paulallen123/-manufacturing-wfm/issues/71), [#276](https://github.com/paulallen123/-manufacturing-wfm/pull/276), [#277](https://github.com/paulallen123/-manufacturing-wfm/pull/277)",
+      "priority": "P9",
+      "dependencies": "Already admitted industrial observation, plant/site scope, correct semantics",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        276,
+        277
+      ],
+      "acceptanceScenarios": "No OT/control/write/payroll/attendance/causal/checkpoint authority; wrong site/tenant/hash rejected",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Bounded bridge code/local tests; hosted/live-provider proof pending",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Reuse current observation→workforce-context bridge and prove exact inputs",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.7",
+      "customerOutcome": "Water-constrained planning",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#218](https://github.com/paulallen123/-manufacturing-wfm/pull/218)",
+      "priority": "P9",
+      "dependencies": "Authoritative water/process/effluent/permit/utility rules",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        218
+      ],
+      "acceptanceScenarios": "Feasibility and hard quality/permit/reserve/labour guards; freshness and measured net value",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Prototype 8/8 reported; ledger queued retest/convergence",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Retest and compose existing planner into approved decision surface",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.8",
+      "customerOutcome": "Sensitive-zone planning",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#216](https://github.com/paulallen123/-manufacturing-wfm/pull/216)",
+      "priority": "P9",
+      "dependencies": "Authoritative QMS/CCS/MES/tasks/qualifications/access policy",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        216
+      ],
+      "acceptanceScenarios": "No self-granted access/qualification; transition/occupancy and process integrity; site isolation",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Two 7/7 prototype suites reported; queued retest/convergence",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Retest existing controlled-environment planner; source integration before UI",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.9",
+      "customerOutcome": "Degraded-mode and loss-prevention workforce recovery",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#212](https://github.com/paulallen123/-manufacturing-wfm/pull/212), [#214](https://github.com/paulallen123/-manufacturing-wfm/pull/214)",
+      "priority": "P9",
+      "dependencies": "Engineering-approved fallback, impairment/restoration, skill/safety evidence",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        212,
+        214
+      ],
+      "acceptanceScenarios": "No OT/interlock/safety override; infeasible fallback refusal; realistic replay; approved recovery proof",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Prototype tests/simulations reported; queued retest/convergence",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Compose existing two planners; keep distinct diagnosis and authority",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F6.10",
+      "customerOutcome": "SkillChain resilience",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#211](https://github.com/paulallen123/-manufacturing-wfm/pull/211)",
+      "priority": "P9",
+      "dependencies": "Authoritative skills/production/supply dependencies and explicit assumptions",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        211
+      ],
+      "acceptanceScenarios": "No invented disruption probabilities/competence; held-out comparison and genuine training/outcome evidence",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Prototype and synthetic value comparison; queued retest/convergence",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Retest existing value-aware skill planner against independent baseline",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F7.1",
+      "customerOutcome": "Authoritative operational-period ingestion/rollover",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#297](https://github.com/paulallen123/-manufacturing-wfm/pull/297)",
+      "priority": "P9",
+      "dependencies": "Existing authoritative payrollControl.periods ingestion path; server-derived tenant",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [
+        297
+      ],
+      "acceptanceScenarios": "Impossible date rejection, real time-review/payroll consumption, duplicate/retry/overlap semantics, isolation and fresh readback",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "Distinct accepted requirement; existing PR unsafe/not mergeable",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Replace side-table/client-tenant/date implementation through real period owner",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    },
+    {
+      "id": "F7.2",
+      "customerOutcome": "No-loss backlog reconciliation and exact claims",
+      "requirementSource": {
+        "file": "libfile_2552aea5f0e481919e371dfdff5c7c85",
+        "version": "45"
+      },
+      "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114347631)",
+      "priority": "P9",
+      "dependencies": "All appendices; accepted owner scopes, canonical bytes, proof evidence",
+      "canonicalModule": null,
+      "owner": null,
+      "supportingPRs": [],
+      "acceptanceScenarios": "Every original requirement retained, duplicate reason/superset evidence, separate local/deployed/proven counts",
+      "implementationState": "DISCOVERED",
+      "reportedHistoricalState": "This scope index recovered; unique task denominator still requires per-delta adjudication",
+      "proofLevels": {
+        "isolated": null,
+        "integrated": null,
+        "hosted": null,
+        "provider": null,
+        "customer": null
+      },
+      "riskClass": "UNASSESSED",
+      "released": null,
+      "nextTask": "Map each record to retained unique delta or proven successor; no mass merge/close",
+      "remainingGaps": [
+        "Current implementation and proof must be reconciled; historical state is not live verification."
+      ]
+    }
+  ],
+  "stateMeaning": "Current independently reconciled lifecycle; DISCOVERED does not assert no historical implementation. See reportedHistoricalState."
+}

@@ -212,7 +212,7 @@ for (const interruptedState of ['PREPARED', 'APPLIED']) {
       const retry = await reopened.executePermit(args);
       assert.equal(repeatWrites, 0, 'reopening must not dispatch another write');
       assert.equal(result.state, 'RECONCILIATION_REQUIRED');
-      assert.equal(result.detail.reason, 'INTERRUPTED_EXECUTION');
+      assert.equal(result.detail.reason, 'PRIOR_EXECUTION_UNRESOLVED');
       assert.equal(result.detail.externalState, 'UNKNOWN');
       assert.equal(result.detail.interruptedState, interruptedState);
       assert.equal(retry.state, 'RECONCILIATION_REQUIRED');
@@ -222,4 +222,87 @@ for (const interruptedState of ['PREPARED', 'APPLIED']) {
     } finally { reopened.close(); sample.close(); }
   });
 }
+
+test('concurrent processes claim a permit once without holding a database lock over adapter I/O', async () => {
+  const sample = setup({});
+  const args = { tenant: sample.tenant, permitId: sample.permit.permitId, currentContextRevision: 'r1' };
+  const marker = path.join(sample.dir, 'concurrent-writes.txt');
+  sample.engine.close();
+  const { DatabaseSync } = require('node:sqlite');
+  const blocker = new DatabaseSync(sample.dbPath);
+  blocker.exec('CREATE TABLE adapter_lock_probe(id INTEGER PRIMARY KEY)');
+  const script = `
+    const fs = require('node:fs');
+    const { DatabaseSync } = require('node:sqlite');
+    const { createAutopilotExecutionEngine } = require(${JSON.stringify(require.resolve('./autopilot-execution-engine.cjs'))});
+    const engine = createAutopilotExecutionEngine({ dbPath: ${JSON.stringify(sample.dbPath)}, lifecycleAdapter: {
+      applyTrustedEvent() {
+        fs.appendFileSync(${JSON.stringify(marker)}, 'write\\n');
+        const other = new DatabaseSync(${JSON.stringify(sample.dbPath)});
+        try { other.exec('INSERT INTO adapter_lock_probe DEFAULT VALUES'); }
+        catch (error) { fs.appendFileSync(${JSON.stringify(marker)}, 'lock-held\\n'); }
+        finally { other.close(); }
+        throw new Error('synthetic response lost');
+      }, getTrustedEvent() { return null; }
+    } });
+    process.send('ready');
+    process.once('message', async () => {
+      process.send('started');
+      try { const result = await engine.executePermit(${JSON.stringify(args)}); process.send({ result }); }
+      catch (error) { process.send({ error: error.message }); }
+      finally { engine.close(); process.disconnect(); }
+    });
+  `;
+  const children = [];
+  try {
+    for (let i = 0; i < 2; i++) {
+      const child = require('node:child_process').spawn(process.execPath, ['-e', script], { stdio: ['ignore', 'ignore', 'pipe', 'ipc'] });
+      const messages = []; let stderr = '';
+      child.on('message', m => messages.push(m)); child.stderr.on('data', b => { stderr += b; });
+      const done = new Promise(resolve => child.on('exit', code => resolve({ code, messages, stderr })));
+      children.push({ child, messages, done });
+    }
+    async function until(predicate) {
+      const deadline = Date.now() + 5000;
+      while (!predicate()) { if (Date.now() > deadline) throw new Error('child coordination timed out'); await new Promise(resolve => setTimeout(resolve, 10)); }
+    }
+    await until(() => children.every(c => c.messages.includes('ready')));
+    // A shared reader allows both old implementations to inspect empty history,
+    // but prevents either intent from committing until both processes start.
+    blocker.exec('BEGIN; SELECT * FROM vector_autopilot_execution_events');
+    for (const { child } of children) child.send('go');
+    await until(() => children.every(c => c.messages.includes('started')));
+    await new Promise(resolve => setTimeout(resolve, 300));
+    blocker.exec('COMMIT');
+    const outcomes = await Promise.all(children.map(c => c.done));
+    for (const outcome of outcomes) {
+      assert.equal(outcome.code, 0, outcome.stderr);
+      const response = outcome.messages.find(m => typeof m === 'object');
+      assert.equal(response?.error, undefined);
+      assert.equal(response?.result?.state, 'RECONCILIATION_REQUIRED');
+    }
+    assert.equal(fs.readFileSync(marker, 'utf8'), 'write\n', 'one dispatch and no SQLite lock across adapter I/O');
+    assert.equal(blocker.prepare('SELECT COUNT(*) AS n FROM adapter_lock_probe').get().n, 1);
+  } finally {
+    for (const { child } of children) child.kill();
+    blocker.close(); sample.close();
+  }
+});
+test('failed claim commit rolls back without dispatch and permits a safe retry', async () => {
+  let calls = 0;
+  const sample = setup({ applyTrustedEvent() { calls++; throw new Error('synthetic uncertainty'); }, getTrustedEvent() { return null; } });
+  const { DatabaseSync } = require('node:sqlite');
+  const blocker = new DatabaseSync(sample.dbPath);
+  const args = { tenant: sample.tenant, permitId: sample.permit.permitId, currentContextRevision: 'r1' };
+  try {
+    blocker.exec('BEGIN; SELECT * FROM vector_autopilot_execution_events');
+    await assert.rejects(sample.engine.executePermit(args), /database is locked/);
+    assert.equal(calls, 0);
+    assert.equal(sample.engine.statusForTenant(sample.tenant).length, 0);
+    blocker.exec('COMMIT');
+    const retry = await sample.engine.executePermit(args);
+    assert.equal(retry.state, 'RECONCILIATION_REQUIRED');
+    assert.equal(calls, 1);
+  } finally { blocker.close(); sample.close(); }
+});
 }

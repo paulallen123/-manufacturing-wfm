@@ -1,37 +1,31 @@
-# VECTOR execution checkpoint
-Updated 2026-10-21T16:47:27.069Z
+# VECTOR execution state
+Updated: 2026-10-21T20:24:28.372Z
 ## Objective
-Complete canonical empty-source and unknown-write repairs through actual image and hosted proof. First journey and full backlog remain incomplete.
-## Source and serving identities
+Finish existing critical repair PRs through canonical integration, immutable image, hosted journey and recovery proof. First journey/full product incomplete.
+## Identities
 Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
-PR501 test/vector-empty-organisation-regression-20261020 @765a131bbccc86f2e66f79d30d69bfe5849d03ae; empty-source source fix independently22/22, CI marker/branch admission added; no status/check-run reported at latest inspection.
-PR444 codex/autopilot-plan-shape-20261013 repair @a103854037ef3dd8dc74da2c5b87eb20fe3157e1; independently20/20 Node22, scoped ISOLATED_TESTED.
-Serving deployment057e19a2-7d49-4390-8705-63e71ea79a89 @90ad90fcf60adaca9abacdd4ad14bf392f95e585; Railway project43367a88-2233-4c6b-9018-0ce234dd73ca env eed9f097-610a-416e-83b9-6bc7bdb3eeef service cded4ff7-24b1-4aaa-a7e2-67f143583bc2.
-URL https://vector-customer-ready-candidate-production.up.railway.app/ browser sign-in only; setup wizard not verified.
-Rollback artifact: existing serving deployment retained; immutable digest and actual restore drill not yet verified.
-## Owners and jobs
-Integration owner: this Work session. PR444 scope claim6321418911 expires2026-10-21T18:00Z; reconcile remote before takeover.
-Agent /root/containment_repair: bounded local interrupted PREPARED/APPLIED replay reproducer and fail-closed guard; no remote changes.
-Independent verifier /root/review_inference: finished current20/20 review, no active verification job.
-No persistent Work executor established. CI running state unknown, not claimed active.
-## Completed proof
-Empty-source regression:15 failing baseline assertions then22/22 focused passing; no source yields zero confidence and blocks auto-apply.
-Autopilot:6 new cases fail baseline;20/20 adjacent final; unknown apply/unconfirmed rollback require reconciliation and suppress same-permit replay after durable record. Synthetic/local only.
-Manifest evidence/vector-execution-20261021-autopilot/manifest.json; hashes bind exact repaired files.
-## Next executable actions
-1. Reconcile both PR heads and CI states; inspect real CircleCI logs for765a before any promotion.
-2. Finish interrupted-state guard in existing PR444, then independent review.
-3. Integrate only through existing release review gates; cold exact-image + hosted + recovery proof required.
-4. Continue reviewed PR dispositions and authoritative backlog reconciliation without claiming all275 classified.
-## Dependencies and approvals
-CircleCI browser shows expired session/sign-in; no exposed CircleCI connector operation for logs/trigger. Secure sign-in needed to inspect missing run.
-Branch-protection API403 (integration lacks administration); do not interpret empty rulesets or clean mergeable as approval.
-Library current backlog/intake reads timed out; issue202/265 and repository remain accessible.
-No Docker executable; no shell GitHub credentials; use connector with expected-head guard.
-Live reports fixtureOnly true, productionApproved false, pilotReady false. No provider or customer proof.
-High-risk merges/deploys require appropriate release gates. No customer/provider writes or invitations performed.
-## Outstanding safety gaps
-Fresh-permit quarantine, historical CONTAINED states, PREPARED/APPLIED crash window, payload-bound readback, compensation authority/recovery remain unproven.
-
-## Successor checkpoint 2026-10-21T16:49:03.591Z
-Supersedes above job/gap notes: PR501 exact765a core job1035SUCCESS and runtime job1036PENDING. CircleCI login request declined; no credential retry. PR444 interrupted-state guard independently22/22 synthetic Node22 with actual child exit at PREPARED/APPLIED; persisted unknown outcome blocks same-permit dispatch. This does not provide full recovery or provider proof. Guard in this commit; source/test hashes in evidence/vector-execution-20261021-autopilot/interrupted-replay.json. Root and independent verifier ran22/22. Independent local HTTP also execute409/retry409/status200 and applyCalls1 for uncertain write; exact HTTP artifact pending. Railway serving recheck unchanged90ad90f. Agent work complete; no persistent Work runner. Next: CI1036 result and exact-image validation for combined repair, then approved canonical convergence. No live mutation.
+PR501 test/vector-empty-organisation-regression-20261020 @b4aa6e2a3662e8cc3465bec02e2b50d06e32b083.
+PR444 codex/autopilot-plan-shape-20261013: this checkpoint carries atomic-claim successor to b05d7f467224bee3cf6d03bcf1c2944c04fa268c; exact file hashes in atomic-claim.json.
+Serving90ad90fcf60adaca9abacdd4ad14bf392f95e585, Railway deployment057e19a2-7d49-4390-8705-63e71ea79a89.
+Project43367a88-2233-4c6b-9018-0ce234dd73ca, env eed9f097-610a-416e-83b9-6bc7bdb3eeef, service cded4ff7-24b1-4aaa-a7e2-67f143583bc2.
+URL https://vector-customer-ready-candidate-production.up.railway.app/; sign-in observed only, setup wizard unverified.
+Rollback: retained serving deployment marked rollback-capable; digest/restore drill not verified.
+## Jobs and ownership
+Root current session integration owner. Independent reviewer /root/review_inference and implementation /root/containment_repair completed bounded work. See inventory/ownership.json; revalidate remote before reclaiming leases. No persistent Work runner.
+CircleCI1035 core SUCCESS,1036 runtime FAILURE for765a131bbccc86f2e66f79d30d69bfe5849d03ae. Failure root cause unknown; detailed logs require CircleCI authentication, secure sign-in declined. Do not rerun unchanged or treat skipped successors as image proof.
+## Latest proof
+PR501: empty-source + incomplete-structure inference25/25 Node22, independent96 held-out assertions. Missing identity/location/department always requires review.
+PR444: unknown write and failed compensation honesty, interrupted replay guard, SQLite atomic claim;24/24 Node22 independently verified, actual synthetic child-process concurrency/crash tests. Claim committed before external adapter/publisher I/O. Same permit/same correctly locking DB scope only.
+No installed-image/hosted/provider/customer proof for these repairs. Nothing newly released.
+## Scope inventory
+Current Library backlog v45 and intake v67 accessible. Backlog lines1-710 inspected, including all59 F0-F7 outcomes and16 research headings. Intake first120 lines inspected, not full1242.
+inventory/capability-map.yaml preserves all59 as current reconciliation DISCOVERED plus historical reported states, sources/dependencies/acceptance. Null mappings are explicit gaps, not discarded scope.
+14 intake/six held packages/16 research rows still need full deduplication and current adoption mapping. Full275 PR snapshot available on PR501; classifications incomplete.
+## Next executable action
+Obtain authorized logs for CircleCI1036 and identify first failing step; fix only demonstrated cause and rerun exact-image gate. Continue provider-authority/quarantine and source provenance work independently. Converge repairs into canonical through required reviews; no merge solely on local tests.
+## Approval boundaries and blockers
+No branch-protection administration read access (403); do not bypass protection. No local Docker or shell GitHub credential; connector publication uses expected-head guard.
+No customer/provider write authorization, credential binding or acceptance evidence established. Managed auth/wizard not yet exercised. Live fixtureOnly true, productionApproved false, pilotReady false.
+Fresh-permit quarantine, legacy CONTAINED migration, expired-permit reconciliation, async provider contracts, payload-bound readback, compensation authority/effects remain open. Source freshness/provenance and manager-cycle validation unproven.
+## Continuity
+Read this state, reconcile both PR heads/deployments/jobs, then resume without replaying external writes. No autonomous background implementation after this Work turn.

@@ -72,16 +72,28 @@ function createAutopilotExecutionEngine(options={}){
  async function executePermit({tenant,permitId,currentContextRevision}){
   const p=permitQ.get(tenant,permitId);if(!p)throw Object.assign(new Error('Autopilot permit not found.'),{statusCode:404});if(Date.parse(p.expires_at)<=Date.now())throw Object.assign(new Error('Autopilot permit expired. Re-approve current evidence.'),{statusCode:409});
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
-  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED'].includes(prior.state))return {executionId,idempotent:true,...prior};
+  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40);let prior;
+  // Serialize history inspection and durable intent creation across connections.
+  // Commit before invoking either the adapter or the event publisher.
+  db.exec('BEGIN IMMEDIATE');
+  try{
+   prior=last(executionId);
+   if(!prior){
+    if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
+    eventI.run(executionId,permitId,tenant,'PREPARED',JSON.stringify({episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)}),new Date().toISOString());
+   }
+   db.exec('COMMIT');
+  }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
+  if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED'].includes(prior.state))return {executionId,idempotent:true,...prior};
   if(prior){
    // A durable intent without a terminal receipt may have crossed the adapter
    // boundary before the worker stopped. Do not dispatch the same permit again.
-   const detail={reason:'INTERRUPTED_EXECUTION',externalState:'UNKNOWN',interruptedState:prior.state,requiresReconciliation:true};
+   const detail={reason:'PRIOR_EXECUTION_UNRESOLVED',externalState:'UNKNOWN',interruptedState:prior.state,requiresReconciliation:true};
    log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
    return {executionId,idempotent:true,state:'RECONCILIATION_REQUIRED',detail};
   }
-  if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
-  log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)});let applied=null;
+  try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state:'PREPARED'}});}catch{}
+  let applied=null;
   try{
    const action={...plan.action,payload:{...plan.action.payload}};if(action.kind==='OVERTIME_OVERRIDE'){action.payload.approvalRef=permitId;action.payload.approvedBy=p.actor_ref;}
    applied=lifecycle.applyTrustedEvent({tenant,eventKey:plan.action.eventKey,event:action});if(applied?.decision?.status!=='ACCEPTED')throw new Error('Authoritative lifecycle adapter rejected the action.');
