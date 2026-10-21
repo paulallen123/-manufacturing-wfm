@@ -179,4 +179,47 @@ test('non-Error rollback throw persists reconciliation state without repeating m
     assert.equal(applies, 2);
   } finally { sample.close(); }
 });
+
+for (const interruptedState of ['PREPARED', 'APPLIED']) {
+  test(`worker death at ${interruptedState} cannot repeat a possibly applied write`, async () => {
+    const sample = setup({});
+    const args = { tenant: sample.tenant, permitId: sample.permit.permitId, currentContextRevision: 'r1' };
+    const marker = path.join(sample.dir, 'external-write-count.txt');
+    sample.engine.close();
+    const script = `
+      const fs = require('node:fs');
+      const { createAutopilotExecutionEngine } = require(${JSON.stringify(require.resolve('./autopilot-execution-engine.cjs'))});
+      const engine = createAutopilotExecutionEngine({ dbPath: ${JSON.stringify(sample.dbPath)}, lifecycleAdapter: {
+        applyTrustedEvent() {
+          fs.appendFileSync(${JSON.stringify(marker)}, 'write\\n');
+          if (${JSON.stringify(interruptedState)} === 'PREPARED') process.exit(19);
+          return { event: { id: 'persisted-event' }, decision: { status: 'ACCEPTED' } };
+        },
+        getTrustedEvent() { process.exit(19); }
+      } });
+      engine.executePermit(${JSON.stringify(args)}).catch(() => process.exit(20));
+    `;
+    const child = require('node:child_process').spawnSync(process.execPath, ['-e', script], { encoding: 'utf8' });
+    assert.equal(child.status, 19, child.stderr);
+    let repeatWrites = 0;
+    const reopened = createAutopilotExecutionEngine({ dbPath: sample.dbPath, lifecycleAdapter: {
+      applyTrustedEvent() { repeatWrites++; fs.appendFileSync(marker, 'write\n'); return { event: { id: 'repeated-event' }, decision: { status: 'ACCEPTED' } }; },
+      getTrustedEvent() { return { id: 'repeated-event', status: 'ACCEPTED' }; }
+    } });
+    try {
+      assert.equal(reopened.statusForTenant(sample.tenant)[0].state, interruptedState);
+      const result = await reopened.executePermit(args);
+      const retry = await reopened.executePermit(args);
+      assert.equal(repeatWrites, 0, 'reopening must not dispatch another write');
+      assert.equal(result.state, 'RECONCILIATION_REQUIRED');
+      assert.equal(result.detail.reason, 'INTERRUPTED_EXECUTION');
+      assert.equal(result.detail.externalState, 'UNKNOWN');
+      assert.equal(result.detail.interruptedState, interruptedState);
+      assert.equal(retry.state, 'RECONCILIATION_REQUIRED');
+      assert.equal(retry.idempotent, true);
+      assert.equal(repeatWrites, 0);
+      assert.equal(fs.readFileSync(marker, 'utf8'), 'write\n');
+    } finally { reopened.close(); sample.close(); }
+  });
+}
 }

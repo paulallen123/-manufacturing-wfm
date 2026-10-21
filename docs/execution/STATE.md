@@ -32,3 +32,6 @@ Live reports fixtureOnly true, productionApproved false, pilotReady false. No pr
 High-risk merges/deploys require appropriate release gates. No customer/provider writes or invitations performed.
 ## Outstanding safety gaps
 Fresh-permit quarantine, historical CONTAINED states, PREPARED/APPLIED crash window, payload-bound readback, compensation authority/recovery remain unproven.
+
+## Successor checkpoint 2026-10-21T16:49:03.591Z
+Supersedes above job/gap notes: PR501 exact765a core job1035SUCCESS and runtime job1036PENDING. CircleCI login request declined; no credential retry. PR444 interrupted-state guard independently22/22 synthetic Node22 with actual child exit at PREPARED/APPLIED; persisted unknown outcome blocks same-permit dispatch. This does not provide full recovery or provider proof. Guard in this commit; source/test hashes in evidence/vector-execution-20261021-autopilot/interrupted-replay.json. Root and independent verifier ran22/22. Independent local HTTP also execute409/retry409/status200 and applyCalls1 for uncertain write; exact HTTP artifact pending. Railway serving recheck unchanged90ad90f. Agent work complete; no persistent Work runner. Next: CI1036 result and exact-image validation for combined repair, then approved canonical convergence. No live mutation.

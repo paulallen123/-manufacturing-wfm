@@ -73,6 +73,13 @@ function createAutopilotExecutionEngine(options={}){
   const p=permitQ.get(tenant,permitId);if(!p)throw Object.assign(new Error('Autopilot permit not found.'),{statusCode:404});if(Date.parse(p.expires_at)<=Date.now())throw Object.assign(new Error('Autopilot permit expired. Re-approve current evidence.'),{statusCode:409});
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
   const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED'].includes(prior.state))return {executionId,idempotent:true,...prior};
+  if(prior){
+   // A durable intent without a terminal receipt may have crossed the adapter
+   // boundary before the worker stopped. Do not dispatch the same permit again.
+   const detail={reason:'INTERRUPTED_EXECUTION',externalState:'UNKNOWN',interruptedState:prior.state,requiresReconciliation:true};
+   log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
+   return {executionId,idempotent:true,state:'RECONCILIATION_REQUIRED',detail};
+  }
   if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
   log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)});let applied=null;
   try{
