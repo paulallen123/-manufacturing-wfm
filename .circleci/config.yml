@@ -206,5 +206,6 @@ workflows:
                 - /release\/.*/
                 - /staging\/.*/
                 - /review\/staffology-.*/
+                - test/vector-empty-organisation-regression-20261020
             tags:
               ignore: /.*/
