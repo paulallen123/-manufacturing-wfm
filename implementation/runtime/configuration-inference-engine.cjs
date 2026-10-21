@@ -75,9 +75,9 @@ function inferOrganisationModel(people) {
     }
   }
 
-  const total = Math.max(1, (people || []).filter(p => compact(p.employeeId)).length);
+  const total = (people || []).filter(p => compact(p.employeeId)).length;
   const valid = total - orphanManagers.length - duplicateEmployeeIds.length;
-  const confidence = Math.max(0, valid / total);
+  const confidence = total > 0 ? Math.max(0, valid / total) : 0;
 
   return {
     sites: [...sites.entries()]
