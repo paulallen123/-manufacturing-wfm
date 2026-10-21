@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "runId": "vector-execution-20261021-empty-source",
+  "timestamp": "2026-10-21T16:39:01.879Z",
+  "requirement": "No source -> no inference -> explicit unresolved configuration",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "subjectCommit": "dd502a129606261765272e74aea89630e4279743",
+  "subjectTree": "99a0afac123657f0159c671c1efeaf7dbeb6a846",
+  "parentCommit": "8dbbc18aec0c8f11d2ec4bf8d4932a579a02efc2",
+  "pullRequest": 274,
+  "oraclePullRequest": 501,
+  "proof": {
+    "classification": "ISOLATED_TESTED",
+    "data": "synthetic",
+    "baseline": {
+      "runtime": "Node24.19.0",
+      "tests": 22,
+      "pass": 7,
+      "fail": 15
+    },
+    "repaired": [
+      {
+        "runtime": "Node24.19.0",
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0
+      },
+      {
+        "runtime": "Node22.23.2",
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0
+      }
+    ],
+    "independentReview": {
+      "agent": "/root/review_inference",
+      "runtime": "Node24.19.0",
+      "suitePass": 22,
+      "heldOutAssertions": 254,
+      "findings": 0,
+      "formalGithubApproval": false
+    },
+    "remoteSourceAndTestBytesVerified": true
+  },
+  "sourceBlob": "7cbae15f8a242eb0b77ade6afaafa13af1753964",
+  "testBlob": "619c41224aaf3c84decc22896c5a5e1c7013d14d",
+  "deployment": {
+    "changed": false,
+    "observedServingSha": "90ad90fcf60adaca9abacdd4ad14bf392f95e585",
+    "observedCanonicalSha": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+    "deploymentId": "057e19a2-7d49-4390-8705-63e71ea79a89",
+    "fixtureOnly": true,
+    "pilotReady": false,
+    "productionApproved": false
+  },
+  "notProven": [
+    "full PR274 integration",
+    "installed Docker image",
+    "hosted repaired source",
+    "authenticated browser journey",
+    "provider readback",
+    "customer acceptance"
+  ],
+  "scopeLimits": [
+    "mixed invalid workforce rows",
+    "malformed null records",
+    "source freshness/provenance",
+    "full backlog delivery"
+  ],
+  "command": "node --test --test-reporter=tap implementation/runtime/configuration-inference-engine.test.cjs tests/organisation-inference-empty-source.test.cjs"
+}
