@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "runId": "vector-execution-20261021-empty-source",
+  "timestamp": "2026-10-21T16:39:01.879Z",
+  "requirement": "No source -> no inference -> explicit unresolved configuration",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "subjectCommit": "93d1bbb45e72ce6434057cea7e4408b91ed0b077",
+  "subjectTree": "92a69eb4c4886140d1540933bd7b206d91278faf",
+  "parentCommit": "2953f04625cf1291d1d198c0e59439358352b54a",
+  "pullRequest": 501,
+  "oraclePullRequest": 501,
+  "proof": {
+    "classification": "ISOLATED_TESTED",
+    "data": "synthetic",
+    "baseline": {
+      "runtime": "Node24.19.0",
+      "tests": 22,
+      "pass": 7,
+      "fail": 15
+    },
+    "repaired": [
+      {
+        "runtime": "Node24.19.0",
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0
+      },
+      {
+        "runtime": "Node22.23.2",
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0
+      }
+    ],
+    "independentReview": {
+      "agent": "/root/review_inference",
+      "runtime": "Node22.23.2",
+      "suitePass": 22,
+      "findings": 0,
+      "formalGithubApproval": false
+    },
+    "remoteSourceAndTestBytesVerified": true
+  },
+  "sourceBlob": "f35e1df3fd7bc5ecdc8a3609f4fec4ee5e0df3a7",
+  "testBlob": "121eb83f924b56ee6ccfdafc0553f5457ff0508e",
+  "deployment": {
+    "changed": false,
+    "observedServingSha": "90ad90fcf60adaca9abacdd4ad14bf392f95e585",
+    "observedCanonicalSha": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+    "deploymentId": "057e19a2-7d49-4390-8705-63e71ea79a89",
+    "fixtureOnly": true,
+    "pilotReady": false,
+    "productionApproved": false
+  },
+  "notProven": [
+    "installed Docker image",
+    "hosted repaired source",
+    "authenticated browser journey",
+    "provider readback",
+    "customer acceptance"
+  ],
+  "scopeLimits": [
+    "mixed invalid workforce rows",
+    "malformed null records",
+    "source freshness/provenance",
+    "full backlog delivery",
+    "PR274 broader adaptive UI intentionally not included"
+  ],
+  "command": "node --test --test-reporter=tap implementation/runtime/configuration-inference-engine.test.cjs",
+  "notes": [
+    "Canonical-based two-line source fix; PR274 remains broader HARVEST with four conflicting files.",
+    "All regression cases moved into existing Docker-admitted test file; no Docker/freeze changes.",
+    "CircleCI core status success job1030; heavy image admission not established."
+  ]
+}

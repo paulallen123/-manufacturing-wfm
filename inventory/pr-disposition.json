@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-21T16:42:35.684Z",
+  "complete": false,
+  "totalOpen": 275,
+  "draftsAtInventory": 261,
+  "reviewed": [
+    {
+      "pr": 501,
+      "disposition": "ADOPT",
+      "scope": "two-line missing/unusable identity repair and regression",
+      "releaseStatus": "ISOLATED_TESTED; image/hosted pending"
+    },
+    {
+      "pr": 274,
+      "disposition": "HARVEST",
+      "reason": "Broader adaptive setup useful but four files conflict; preserve canonical policy forms and setup. Narrow repair delivered via501."
+    },
+    {
+      "pr": 453,
+      "disposition": "ORACLE",
+      "reason": "Characterizes false containment; green diagnostic tests are not a safety pass."
+    },
+    {
+      "pr": 444,
+      "disposition": "BLOCKED",
+      "reason": "Validator work retained; unknown-write repair undergoing independent review; no release proof."
+    }
+  ],
+  "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption."
+}
