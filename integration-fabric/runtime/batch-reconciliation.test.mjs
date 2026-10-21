@@ -106,3 +106,23 @@ test('scoped identity preserves legitimate multi-row worker records',()=>{
   assert.notEqual(a,b);
   assert.equal(a,makeScopedExternalIdentity({provider:'sap-fieldglass',connector:'worker-download',scope:{buyer:'GB01'},recordId:'W123',dimensions:{rateUom:'HOUR',task:'T1',costCenter:'A'}}));
 });
+
+const identityFixture={provider:'synthetic',connector:'fixture',scope:{tenant:'synthetic-only'}};
+for(const [name,fields] of [['omitted',{}],['undefined',{recordId:undefined}],['null',{recordId:null}]]){
+  test(`scoped identity rejects ${name} record ID before hashing`,()=>{
+    assert.throws(()=>makeScopedExternalIdentity({...identityFixture,...fields}),/recordId is required/);
+  });
+}
+
+test('literal sentinel IDs and numeric zero retain canonical identity semantics',()=>{
+  // Pinned outputs from canonical48dce8f; these real string IDs remain valid.
+  assert.equal(makeScopedExternalIdentity({...identityFixture,recordId:'undefined'}),
+    '88716534c20850554bd582141eb29c6cf690331680b54fe56b2c62677c88b242');
+  assert.equal(makeScopedExternalIdentity({...identityFixture,recordId:'null'}),
+    'b6dbd64e1820bf1e46267aaf0de17686f60de7cf86db40c8a8e640010e0c3bfa');
+  assert.equal(makeScopedExternalIdentity({...identityFixture,recordId:0}),
+    makeScopedExternalIdentity({...identityFixture,recordId:'0'}));
+  assert.notEqual(makeScopedExternalIdentity({...identityFixture,recordId:'001'}),
+    makeScopedExternalIdentity({...identityFixture,recordId:'1'}));
+  assert.throws(()=>makeScopedExternalIdentity({...identityFixture,recordId:''}),/recordId is required/);
+});
