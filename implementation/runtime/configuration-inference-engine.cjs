@@ -75,9 +75,9 @@ function inferOrganisationModel(people) {
     }
   }
 
-  const total = Math.max(1, (people || []).filter(p => compact(p.employeeId)).length);
+  const total = (people || []).filter(p => compact(p.employeeId)).length;
   const valid = total - orphanManagers.length - duplicateEmployeeIds.length;
-  const confidence = Math.max(0, valid / total);
+  const confidence = total > 0 ? Math.max(0, valid / total) : 0;
 
   return {
     sites: [...sites.entries()]
@@ -309,8 +309,12 @@ function buildConfigurationProposal(input = {}) {
     risk: 'MEDIUM',
     reason: 'STRUCTURE_EXCEPTIONS',
     ownerRole: 'HR / Operations',
-    question: 'I found structure exceptions in the employee data. Which site, department or reporting relationship should VECTOR use?',
-    evidenceSummary: organisation.orphanManagers.length + ' orphan manager reference(s) and ' + organisation.duplicateEmployeeIds.length + ' duplicate employee ID(s) need review.',
+    question: organisation.peopleCount === 0
+      ? 'No identifiable employees were found. Which authoritative workforce source should VECTOR use?'
+      : 'I found structure exceptions in the employee data. Which site, department or reporting relationship should VECTOR use?',
+    evidenceSummary: organisation.peopleCount === 0
+      ? 'No identifiable employee records are available; organisation configuration remains unresolved.'
+      : organisation.orphanManagers.length + ' orphan manager reference(s) and ' + organisation.duplicateEmployeeIds.length + ' duplicate employee ID(s) need review.',
     answerMode: 'CONFIRM_OR_CHANGE',
     confidence: organisation.confidence,
     detail: organisation
@@ -389,3 +393,4 @@ module.exports = {
   parseClockMinutes,
   bucketMinutes
 };
+
