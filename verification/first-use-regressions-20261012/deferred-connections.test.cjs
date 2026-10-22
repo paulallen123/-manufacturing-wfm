@@ -60,7 +60,7 @@ function loadSealedCompiler(t) {
   assert.equal(sha256(fs.readFileSync(archive)), archiveSha256, 'sealed runtime archive changed');
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'deferred-connections-compiler-'));
   const extracted = spawnSync('tar', [
-    '-xzf', archive, '-C', directory,
+    '--no-same-owner', '-xzf', archive, '-C', directory,
     'lib/configuration-compiler.cjs', 'lib/autonomy-safety-kernel.cjs'
   ], {encoding: 'utf8'});
   assert.equal(extracted.status, 0, extracted.stderr);
