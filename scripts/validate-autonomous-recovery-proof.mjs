@@ -92,7 +92,7 @@ try {
   assert(fs.existsSync(artifact), `Runtime artifact missing: ${manifest.runtime_artifact}`);
   const artifactSha = digestFile(artifact);
   assert(artifactSha === manifest.runtime_sha256, `Runtime SHA mismatch: expected ${manifest.runtime_sha256}, got ${artifactSha}`);
-  execFileSync('tar', ['-xzf', artifact, '-C', runtimeDir], { stdio: 'pipe' });
+  execFileSync('tar', ['--no-same-owner', '-xzf', artifact, '-C', runtimeDir], { stdio: 'pipe' });
 
   const remediationPath = path.join(runtimeDir, 'lib', 'autonomous-remediation.cjs');
   const safetyPath = path.join(runtimeDir, 'lib', 'autonomy-safety-kernel.cjs');
