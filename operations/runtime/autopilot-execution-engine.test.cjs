@@ -513,3 +513,74 @@ test('readback cannot mutate the snapshotted applied event identifier',async()=>
  finally{sample.close();}
 });
 }
+
+// Deterministic two-connection interleaving; no live provider concurrency.
+test('stale retry must not supersede a verified receipt committed after inspection',async()=>{
+ let calls=0;const sample=setup({applyTrustedEvent(){calls++;throw new Error('must not dispatch');}});
+ const p=sample.engine.issueHumanPermit({tenant:'A',episodeId:sample.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()});
+ const {digest}=require('./decision-episode.cjs');
+ const executionId='exec-'+digest({permitId:p.permitId,tenant:'A',contextRevision:'r7'}).slice(0,40);
+ const db=new DatabaseSync(path.join(sample.dir,'x.db'));
+ const insert=state=>db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)').run(executionId,p.permitId,'A',state,'{}',new Date().toISOString());
+ insert('PREPARED');
+ const original=DatabaseSync.prototype.exec;let injected=false;
+ DatabaseSync.prototype.exec=function(sql){const result=original.call(this,sql);if(sql==='COMMIT'&&!injected){injected=true;insert('VERIFIED');}return result;};
+ try{
+  const result=await sample.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'});
+  const states=db.prepare('SELECT state FROM vector_autopilot_execution_events ORDER BY id').all().map(x=>x.state);
+  console.log(JSON.stringify({result:result.state,states,calls}));
+  assert.equal(calls,0);
+  assert.equal(states.at(-1),'VERIFIED','stale retry downgraded completed execution');
+ }finally{DatabaseSync.prototype.exec=original;db.close();sample.engine.close();fs.rmSync(sample.dir,{recursive:true,force:true});}
+});
+
+function interruptedRetry(t,publishEvent){
+ let calls=0;
+ const sample=setup({applyTrustedEvent(){calls++;throw Error('must not dispatch');}});
+ const dbPath=path.join(sample.dir,'x.db'),db=new DatabaseSync(dbPath);
+ if(publishEvent){sample.engine.close();sample.engine=createAutopilotExecutionEngine({dbPath,lifecycleAdapter:{applyTrustedEvent(){calls++;throw Error('must not dispatch');}},publishEvent});}
+ t.after(()=>{db.close();sample.engine.close();fs.rmSync(sample.dir,{recursive:true,force:true});});
+ const permit=sample.engine.issueHumanPermit({tenant:'A',episodeId:sample.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()});
+ const {digest}=require('./decision-episode.cjs');
+ const executionId='exec-'+digest({permitId:permit.permitId,tenant:'A',contextRevision:'r7'}).slice(0,40);
+ const insert=state=>db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)').run(executionId,permit.permitId,'A',state,'{}',new Date().toISOString());
+ insert('PREPARED');
+ return {db,insert,engine:sample.engine,calls:()=>calls,states:()=>db.prepare('SELECT state FROM vector_autopilot_execution_events ORDER BY id').all().map(x=>x.state),retry:()=>sample.engine.executePermit({tenant:'A',permitId:permit.permitId,currentContextRevision:'r7'})};
+}
+test('retry reconciliation is committed before publishing and remains idempotent',async t=>{
+ let published=0,s,publishedAfterCommit=false;
+ s=interruptedRetry(t,()=>{published++;s.db.exec('BEGIN IMMEDIATE');try{assert.deepEqual(s.states(),['PREPARED','RECONCILIATION_REQUIRED']);}finally{s.db.exec('ROLLBACK');}publishedAfterCommit=true;});
+ const result=await s.retry();
+ assert.equal(result.state,'RECONCILIATION_REQUIRED');assert.equal(result.detail.interruptedState,'PREPARED');
+ assert.equal(result.detail.externalState,'UNKNOWN');assert.equal(result.idempotent,true);
+ assert.equal(published,1);assert.equal(publishedAfterCommit,true);assert.equal(s.calls(),0);
+ assert.equal((await s.retry()).state,'RECONCILIATION_REQUIRED');
+ assert.deepEqual(s.states(),['PREPARED','RECONCILIATION_REQUIRED']);assert.equal(published,1);
+});
+for(const failure of ['append','commit'])test(`retry ${failure} failure rolls back and releases writer lock`,async t=>{
+ let published=0;const s=interruptedRetry(t,()=>{published++;});
+ const original=DatabaseSync.prototype.exec;
+ if(failure==='append')s.db.exec("CREATE TRIGGER reject_retry BEFORE INSERT ON vector_autopilot_execution_events WHEN NEW.state='RECONCILIATION_REQUIRED' BEGIN SELECT RAISE(ABORT,'synthetic append failure'); END;");
+ else DatabaseSync.prototype.exec=function(sql){if(sql==='COMMIT')throw Error('synthetic commit failure');return original.call(this,sql);};
+ try{await assert.rejects(s.retry(),/synthetic .* failure/);}finally{DatabaseSync.prototype.exec=original;}
+ assert.deepEqual(s.states(),['PREPARED']);assert.equal(s.calls(),0);assert.equal(published,0);
+ s.db.exec('BEGIN IMMEDIATE');s.db.exec('ROLLBACK');
+ if(failure==='append')s.db.exec('DROP TRIGGER reject_retry');
+ assert.equal((await s.retry()).state,'RECONCILIATION_REQUIRED');assert.equal(published,1);
+});
+test('retry holds writer lock through reconciliation append',async t=>{
+ const s=interruptedRetry(t),original=DatabaseSync.prototype.exec;let blocked=false;
+ DatabaseSync.prototype.exec=function(sql){
+  if(sql==='COMMIT'){
+   try{s.insert('VERIFIED');}catch(error){assert.match(error.message,/locked/);blocked=true;}
+  }
+  return original.call(this,sql);
+ };
+ try{await s.retry();}finally{DatabaseSync.prototype.exec=original;}
+ assert.equal(blocked,true);assert.deepEqual(s.states(),['PREPARED','RECONCILIATION_REQUIRED']);assert.equal(s.calls(),0);
+});
+for(const state of ['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED','BLOCKED'])test(`retry preserves committed ${state} without appending`,async t=>{
+ const s=interruptedRetry(t);s.insert(state);
+ const result=await s.retry();assert.equal(result.state,state);assert.equal(result.idempotent,true);
+ assert.deepEqual(s.states(),['PREPARED',state]);assert.equal(s.calls(),0);
+});
