@@ -8,7 +8,7 @@ function input() {
   return {
     tenantId: 'synthetic-tenant', siteId: 'site-1', asOf: '2026-10-22T12:00:00Z',
     period: { start: '2026-10-22T08:00:00Z', end: '2026-10-22T11:00:00Z' },
-    source: { name: 'WFM_SCHEDULE', revision: 'r7', digest: 'sha256:fixture',
+    source: { tenantId: 'synthetic-tenant', siteId: 'site-1', name: 'WFM_SCHEDULE', revision: 'r7', digest: 'sha256:fixture',
       observedAt: '2026-10-22T11:30:00Z', complete: true },
     policyRevision: 'premium-policy-r3',
     segments: [
@@ -35,6 +35,8 @@ test('uses shared pay rounding for separate assignments without claiming savings
 test('rejects repeated, overlapping, foreign, stale and coerced evidence', () => {
   const mutations = [
     x => { x.source.complete = false; },
+    x => { x.source.tenantId = 'other-tenant'; },
+    x => { x.source.siteId = 'other-site'; },
     x => { x.source.observedAt = '2026-10-22T12:30:00Z'; },
     x => { x.segments[1].siteId = 'other'; },
     x => { x.segments[1].evidenceRef = 'segment-a1'; },

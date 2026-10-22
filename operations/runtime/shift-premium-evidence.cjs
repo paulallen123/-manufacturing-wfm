@@ -36,6 +36,7 @@ function assessShiftPremiumEvidence(input) {
   if (end <= start || end - start > 31 * 86400000 || end > asOf) throw Error('The completed period must be positive and bounded.');
   const policyRevision = label(own(input, 'policyRevision'), 'policyRevision');
   const source = own(input, 'source');
+  if (own(source, 'tenantId') !== tenantId || own(source, 'siteId') !== siteId) throw Error('Source tenant/site differs from requested scope.');
   if (own(source, 'complete') !== true) throw Error('The source snapshot must be complete.');
   const sourceName = label(own(source, 'name'), 'source.name');
   const sourceRevision = label(own(source, 'revision'), 'source.revision');
@@ -81,7 +82,7 @@ function assessShiftPremiumEvidence(input) {
     contractVersion: CONTRACT_VERSION, status: premiumPence > 0 ? 'SUPPLIED_PLANNED_PREMIUM' : 'NO_DECLARED_PREMIUM',
     tenantId, siteId, asOf: input.asOf,
     period: Object.freeze({ start: period.start, end: period.end }),
-    source: Object.freeze({ name: sourceName, revision: sourceRevision, digest: sourceDigest, observedAt: source.observedAt }),
+    source: Object.freeze({ tenantId, siteId, name: sourceName, revision: sourceRevision, digest: sourceDigest, observedAt: source.observedAt }),
     policyRevision, segmentCount: segments.length, basePence, grossPence, premiumPence,
     evidenceRefs: Object.freeze(refs), claimedSavingsPence: null,
     sourceAuthenticated: false, actionAuthority: false

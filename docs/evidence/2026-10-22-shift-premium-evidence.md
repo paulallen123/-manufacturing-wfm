@@ -14,9 +14,9 @@ Base `48dce8f697825c8cd5f99b3e5aeea3953647f8c2`. New files: `operations/runtime/
 
 ## Result and tests
 
-The read-only assessor requires an exact tenant/site and completed period, source name/revision/digest/completeness, policy revision and bounded segments. Each segment binds assignment/evidence references, the policy revision and a premium code. It rejects duplicate refs, overlap within the same assignment, foreign scope, invalid intervals, coercible rates/multipliers, missing or accessor-backed fields and unsafe pence totals. Different assignments may legitimately overlap. It reports aggregate base, gross and premium pence, omits assignment identifiers and keeps `claimedSavingsPence:null`, `sourceAuthenticated:false` and `actionAuthority:false`.
+The read-only assessor requires an exact tenant/site and completed period, source tenant/site/name/revision/digest/completeness, policy revision and bounded segments. Each segment binds assignment/evidence references, the policy revision and a premium code. It rejects duplicate refs, overlap within the same assignment, foreign scope, invalid intervals, coercible rates/multipliers, missing or accessor-backed fields and unsafe pence totals. Different assignments may legitimately overlap. It reports aggregate base, gross and premium pence, omits assignment identifiers and keeps `claimedSavingsPence:null`, `sourceAuthenticated:false` and `actionAuthority:false`.
 
-Initial TDD failed on the missing module as expected. Focused tests passed 3/3. The adjacent shared money suite passed 16/16. Full operations runtime passed 376/376 with the declared passkey dependency installed; local FORGE core gate passed; diff check passed. Exact external image and hosted tests have not run. Synthetic data only.
+Initial TDD failed on the missing module as expected. Focused tests passed 3/3. The adjacent shared money suite passed 16/16. Full operations runtime passed 376/376 with the declared passkey dependency installed; local FORGE core gate passed; diff check passed. Subsequent source tenant/site regressions failed on the first commit and passed after source binding was added. Exact external image and hosted tests have not run. Synthetic data only.
 
 ## State and next action
 
