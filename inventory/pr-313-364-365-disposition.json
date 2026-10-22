@@ -1,0 +1,304 @@
+{
+  "schema": "vector.pr-disposition.readonly.v1",
+  "observedAt": "2026-10-22T20:57:02.308Z",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "canonicalComparedSha": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+  "scope": [
+    313,
+    364,
+    365
+  ],
+  "method": "Read-only GitHub metadata, diffs, comments, review records, exact-head commit statuses/workflow runs and canonical source comparison. No tests or remote mutations performed.",
+  "limits": [
+    "ADOPT means recommended coherent candidate for controlled integration, not merge/deploy authorization or verified integration.",
+    "PR metadata reports historical base SHA 90ad90f; comparison uses separately pinned canonical 48dce8f. New combined 129033 candidate was not inspected by this assessment.",
+    "Past test counts in reviews are reported evidence, not tests rerun here.",
+    "No customer/provider proof or current owner availability inferred."
+  ],
+  "pullRequests": [
+    {
+      "number": 313,
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/313",
+      "title": "Contain native setup operations with current original authority",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": {
+        "ref": "codex/native-setup-containment-20261012",
+        "sha": "09e4eeba73d3dab57a7a8a40663c0160668de803"
+      },
+      "base": {
+        "ref": "release/vector-customer-ready-candidate-20260925",
+        "metadataSha": "90ad90fcf60adaca9abacdd4ad14bf392f95e585"
+      },
+      "disposition": "BLOCKED",
+      "rationale": "Coherent native setup/current-authority containment package, but its exact-head Linux final-image admission failed. Isolated review claims cannot override that failure.",
+      "gaps": [
+        "Apply the prepared Staffology synthetic fixture adoption through authorized registry constructor, preserving fail-closed operational guard; this repair is only reported in comments, not landed.",
+        "Repeat the three failing active-route cases, 33-test Staffology layer and full exact-image admission on the changed exact SHA.",
+        "Reconcile nineteen paths with current canonical candidate and obtain required current release approvals.",
+        "Revalidate existing owner/lease before any adoption; visible coordination explicitly preserves incumbent ownership."
+      ],
+      "sources": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/313#issuecomment-6133002482",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/313#issuecomment-6134562658",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/313#issuecomment-6140736690"
+      ],
+      "canonicalFinding": "Five new files absent from inspected canonical tree, including native-setup-containment.cjs and packaging patch; remaining changed paths differ.",
+      "releaseReady": false,
+      "files": [
+        {
+          "path": "Dockerfile",
+          "status": "modified",
+          "headBlob": "241241fe451126a4cb4624775c27db69e86bab4e",
+          "canonicalBlob": "a31e87448e6950906691c13d56ed6c9cc986bb55"
+        },
+        {
+          "path": "implementation/runtime/customer-workspace.cjs",
+          "status": "modified",
+          "headBlob": "16b97d8db5edd9d8eb3d43ebc552e8502b2a75eb",
+          "canonicalBlob": "0e68fa64c0812ea35f419141ec977b928aeae656"
+        },
+        {
+          "path": "implementation/runtime/customer-workspace.test.cjs",
+          "status": "modified",
+          "headBlob": "1ffce23560e0b7fc020f5997d0930c3d5d54a873",
+          "canonicalBlob": "3501cbf3827b312d4766b77d366a22c556e83ddf"
+        },
+        {
+          "path": "implementation/runtime/implementation-run-schema.cjs",
+          "status": "added",
+          "headBlob": "843ff65b9c692f16db58c166731ed081436fd537",
+          "canonicalBlob": null
+        },
+        {
+          "path": "implementation/runtime/native-setup-containment.cjs",
+          "status": "added",
+          "headBlob": "87eafabe6ea9f3a6bf4dd6847a23c7ce0e1032e4",
+          "canonicalBlob": null
+        },
+        {
+          "path": "implementation/runtime/native-setup-containment.test.cjs",
+          "status": "added",
+          "headBlob": "4413c5e0d5e7e8a70b1325278df83ef7e8eb9c72",
+          "canonicalBlob": null
+        },
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine-core.cjs",
+          "status": "modified",
+          "headBlob": "dcc6d5997a1f27061021d1e5f286cf99bca8f12c",
+          "canonicalBlob": "658273f24ea59e7dfc02b4b3fa89ecf66147f6f5"
+        },
+        {
+          "path": "implementation/runtime/one-day-enterprise-engine.test.cjs",
+          "status": "modified",
+          "headBlob": "218b654db03360de9d7a9248e3389a7f603bb15c",
+          "canonicalBlob": "ffefdecda3ca81acbd06d8ce8041664929a765f9"
+        },
+        {
+          "path": "implementation/runtime/setup-only-policy.cjs",
+          "status": "modified",
+          "headBlob": "38b9734bffde9cf25c2002c6ee798b5bef25d89f",
+          "canonicalBlob": "efc0bef0f3fe405d89facc3f397df55f29670648"
+        },
+        {
+          "path": "implementation/runtime/setup-only-policy.test.cjs",
+          "status": "modified",
+          "headBlob": "4502b6a1dbcd95711ed18dfc856c549f2281fad2",
+          "canonicalBlob": "48fcfa59c5774e2d92e154a12b76e9cba8a41822"
+        },
+        {
+          "path": "operations/runtime/workflow-action-evidence-bridge.cjs",
+          "status": "modified",
+          "headBlob": "fdd91e84f73dd33c8c7c841a7719abe1b3703d94",
+          "canonicalBlob": "ee35c57553409e1c4cbfd50a6028ce1debd4ab29"
+        },
+        {
+          "path": "operations/runtime/workflow-action-evidence-bridge.test.cjs",
+          "status": "modified",
+          "headBlob": "f8dd057506feaf2e9687bb7158bb695deac44d89",
+          "canonicalBlob": "b4615177ef59ad16dbef2b2b7a2a8bec3e25781a"
+        },
+        {
+          "path": "operations/runtime/workflow-action-evidence-sources.cjs",
+          "status": "modified",
+          "headBlob": "4a7d8680d9858c4215ae0b1a11640d6c4b9aabab",
+          "canonicalBlob": "30d8119843b31a54b7cde356d8ffde92ccbe1eb4"
+        },
+        {
+          "path": "operations/runtime/workflow-action-evidence-sources.test.cjs",
+          "status": "modified",
+          "headBlob": "26c85c86b35903d35d93cb97b70e5a091ce33678",
+          "canonicalBlob": "df6a6c351f27739e8ef6e4fe00b0305f43a62abd"
+        },
+        {
+          "path": "scripts/compose-vector-local-runtime.mjs",
+          "status": "modified",
+          "headBlob": "96f6a6a0c731b82eb2bf60ea1ec64daf5bb983f2",
+          "canonicalBlob": "01f81c9434948531371a5648cca9f49e7e2c8fbf"
+        },
+        {
+          "path": "scripts/patch-native-setup-containment.mjs",
+          "status": "added",
+          "headBlob": "d05b97f3dd7f2ad0440849b409d3c0a0c19205ef",
+          "canonicalBlob": null
+        },
+        {
+          "path": "security/runtime/bootstrap.cjs",
+          "status": "modified",
+          "headBlob": "dc918904ef1d71d2667f5ae340968840764a2154",
+          "canonicalBlob": "9064f5a6d06608f3ad7f07c9c830bf95cb838b22"
+        },
+        {
+          "path": "tests/vector-runtime-packaging.test.cjs",
+          "status": "modified",
+          "headBlob": "91f51809f91581223c3b4fe808b807969ac8cef3",
+          "canonicalBlob": "9fb64089e54adcf1c52df761c304b740991da9d5"
+        },
+        {
+          "path": "verification/setup-only-native-containment.test.cjs",
+          "status": "added",
+          "headBlob": "cca58494d575e3bbe73d6a010cfe54e94bde278f",
+          "canonicalBlob": null
+        }
+      ],
+      "reviews": [],
+      "ci": {
+        "commitStatuses": [
+          {
+            "context": "ci/circleci: forge_core_validation",
+            "state": "success",
+            "url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/555",
+            "at": "2026-10-12T21:18:49Z"
+          }
+        ],
+        "githubRuns": [
+          {
+            "id": 38309916716,
+            "head": "09e4eeba73d3dab57a7a8a40663c0160668de803",
+            "status": "completed",
+            "conclusion": "failure",
+            "url": "https://github.com/paulallen123/-manufacturing-wfm/actions/runs/38309916716"
+          }
+        ]
+      }
+    },
+    {
+      "number": 364,
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/364",
+      "title": "Fail closed on ambiguous proof-runner principals",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": {
+        "ref": "frontier/l12-proof-runner-principal-20261013",
+        "sha": "91da2d752f599f4c2d357ba6cedfea2ddf4d6f2f"
+      },
+      "base": {
+        "ref": "release/vector-customer-ready-candidate-20260925",
+        "metadataSha": "90ad90fcf60adaca9abacdd4ad14bf392f95e585"
+      },
+      "disposition": "ADOPT",
+      "rationale": "Small coherent source/test change prevents ambiguous normalized-email authentication from selecting arbitrary tenant/role. Exact canonical source still uses userStmt.get(email), so the identified boundary correction remains relevant.",
+      "gaps": [
+        "Source-level READY review is COMMENTED by same GitHub account as PR author, not a distinct formal APPROVED review.",
+        "Reconcile against current combined candidate, run approved Node 22.23.2/final-image and combined integration gates.",
+        "Verify hosted authentication, durable fresh login/readback and audit reconciliation on the deployed exact artifact.",
+        "Explicitly accept or repair residual best-effort rejection audit behavior; successful session creation remains transactionally audited."
+      ],
+      "sources": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/364#pullrequestreview-5498505465"
+      ],
+      "canonicalFinding": "Canonical source blob 0165b9a5207eeb870e2690c4da6456ec8457db7e uses case-insensitive SELECT and .get(email), with no multi-match rejection.",
+      "releaseReady": false,
+      "files": [
+        {
+          "path": "security/runtime/proof-runner-auth.cjs",
+          "status": "modified",
+          "headBlob": "fbc0b6b974bb98821294de3ff456376c4385d73e",
+          "canonicalBlob": "0165b9a5207eeb870e2690c4da6456ec8457db7e"
+        },
+        {
+          "path": "security/runtime/proof-runner-auth.test.cjs",
+          "status": "modified",
+          "headBlob": "98f3e63ff4745c279867225df2b68155f19088eb",
+          "canonicalBlob": "429954089f3ca7bdc47aed41058859a594f964d7"
+        }
+      ],
+      "reviews": [
+        {
+          "state": "COMMENTED"
+        }
+      ],
+      "ci": {
+        "commitStatuses": [
+          {
+            "context": "ci/circleci: forge_core_validation",
+            "state": "success",
+            "url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/681",
+            "at": "2026-10-13T03:32:48Z"
+          }
+        ],
+        "githubRuns": []
+      }
+    },
+    {
+      "number": 365,
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/365",
+      "title": "Bind stored assignments to current plan scope",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "head": {
+        "ref": "frontier/l11-plan-assignment-scope-20261013",
+        "sha": "dc0862ae1b0f587acab981d2507ae71cb1302d1d"
+      },
+      "base": {
+        "ref": "release/vector-customer-ready-candidate-20260925",
+        "metadataSha": "90ad90fcf60adaca9abacdd4ad14bf392f95e585"
+      },
+      "disposition": "ADOPT",
+      "rationale": "Small coherent source/test change binds stored assignments to their current requirement and rejects malformed/orphan identities. Canonical source only checks assignments matching each requirement and does not perform the new orphan/site/time checks.",
+      "gaps": [
+        "Source-level READY review is COMMENTED by same GitHub account as PR author, not a distinct formal APPROVED review.",
+        "Reconcile against current combined candidate and run approved Node 22.23.2/final-image admission; source reviewer lacked packaged legacy artifact.",
+        "Verify authenticated hosted plan filtering, durable/fresh-login behavior and audit reconciliation on exact deployed artifact."
+      ],
+      "sources": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/365#pullrequestreview-5498793112"
+      ],
+      "canonicalFinding": "Canonical source blob 84dbe408de681c9cd282b0f0ed4cf5dd10a03afc lacks new orphan assignment/identity/site-time binding checks.",
+      "releaseReady": false,
+      "files": [
+        {
+          "path": "operations/runtime/scheduling-authority.cjs",
+          "status": "modified",
+          "headBlob": "3e63b51d640849e58de279083f24027ff67e1950",
+          "canonicalBlob": "84dbe408de681c9cd282b0f0ed4cf5dd10a03afc"
+        },
+        {
+          "path": "operations/runtime/scheduling-authority.test.cjs",
+          "status": "modified",
+          "headBlob": "6a8680ca5b5c23bb636e2fc1b755fe3eeb93abfb",
+          "canonicalBlob": "741eff09008e20bb1cbc6f71e87fef343cb9240f"
+        }
+      ],
+      "reviews": [
+        {
+          "state": "COMMENTED"
+        }
+      ],
+      "ci": {
+        "commitStatuses": [
+          {
+            "context": "ci/circleci: forge_core_validation",
+            "state": "success",
+            "url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/684",
+            "at": "2026-10-13T03:52:27Z"
+          }
+        ],
+        "githubRuns": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: installed wrapper valid persisted readback verifies approved action
+ok 1 - installed wrapper valid persisted readback verifies approved action
+  ---
+  duration_ms: 335.613816
+  type: 'test'
+  ...
+# Subtest: installed wrapper payload corruption injection stays unknown without compensation
+ok 2 - installed wrapper payload corruption injection stays unknown without compensation
+  ---
+  duration_ms: 154.347487
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1105.323064

@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-21T16:42:35.684Z",
+  "observedAt": "2026-10-22T20:57:39.517Z",
   "complete": false,
   "totalOpen": 275,
-  "draftsAtInventory": 261,
+  "draftsAtInventory": 259,
   "reviewed": [
     {
       "pr": 501,
       "disposition": "ADOPT",
-      "scope": "two-line missing/unusable identity repair and regression",
-      "releaseStatus": "ISOLATED_TESTED; image/hosted pending"
+      "scope": "Canonical-based combined inference and Autopilot repair candidate12903305db3b0f5fde0debcab8dfc5f314eeb1a2",
+      "releaseStatus": "Exact129033 core1048 and runtime1049 SUCCESS; reviewed recovery successor requires fresh CI; no canonical merge/hosted proof"
     },
     {
       "pr": 274,
@@ -23,8 +23,57 @@
     },
     {
       "pr": 444,
+      "disposition": "ADOPT",
+      "reason": "Independent72/72 and exact composition review; donor d6f5a99c1381ffc9cb17f9af731267b9d50088e5 integrated into PR501 candidate, not canonical/released."
+    },
+    {
+      "pr": 504,
+      "disposition": "ADOPT",
+      "head": "e8fe808a01d073cc38681dcc11c48580ba6afc91",
+      "scope": "null/undefined external record identity guard plus existing regression",
+      "reason": "Exact three-file diff read; rejects absent IDs before coercion, retains valid string/numeric semantics. Receipt reports author and independent28/28 Node22; not rerun by this integration owner.",
+      "releaseStatus": "Queued behind current safety/image gates; no source adoption yet. Actual production consumer absent in checked owner evidence, must establish before runtime claim."
+    },
+    {
+      "pr": 313,
+      "head": "09e4eeba73d3dab57a7a8a40663c0160668de803",
       "disposition": "BLOCKED",
-      "reason": "Validator work retained; unknown-write repair undergoing independent review; no release proof."
+      "reason": "Coherent native setup/current-authority containment package, but its exact-head Linux final-image admission failed. Isolated review claims cannot override that failure.",
+      "gaps": [
+        "Apply the prepared Staffology synthetic fixture adoption through authorized registry constructor, preserving fail-closed operational guard; this repair is only reported in comments, not landed.",
+        "Repeat the three failing active-route cases, 33-test Staffology layer and full exact-image admission on the changed exact SHA.",
+        "Reconcile nineteen paths with current canonical candidate and obtain required current release approvals.",
+        "Revalidate existing owner/lease before any adoption; visible coordination explicitly preserves incumbent ownership."
+      ],
+      "releaseReady": false,
+      "evidence": "inventory/pr-313-364-365-disposition.json"
+    },
+    {
+      "pr": 364,
+      "head": "91da2d752f599f4c2d357ba6cedfea2ddf4d6f2f",
+      "disposition": "ADOPT",
+      "reason": "Small coherent source/test change prevents ambiguous normalized-email authentication from selecting arbitrary tenant/role. Exact canonical source still uses userStmt.get(email), so the identified boundary correction remains relevant.",
+      "gaps": [
+        "Source-level READY review is COMMENTED by same GitHub account as PR author, not a distinct formal APPROVED review.",
+        "Reconcile against current combined candidate, run approved Node 22.23.2/final-image and combined integration gates.",
+        "Verify hosted authentication, durable fresh login/readback and audit reconciliation on the deployed exact artifact.",
+        "Explicitly accept or repair residual best-effort rejection audit behavior; successful session creation remains transactionally audited."
+      ],
+      "releaseReady": false,
+      "evidence": "inventory/pr-313-364-365-disposition.json"
+    },
+    {
+      "pr": 365,
+      "head": "dc0862ae1b0f587acab981d2507ae71cb1302d1d",
+      "disposition": "ADOPT",
+      "reason": "Small coherent source/test change binds stored assignments to their current requirement and rejects malformed/orphan identities. Canonical source only checks assignments matching each requirement and does not perform the new orphan/site/time checks.",
+      "gaps": [
+        "Source-level READY review is COMMENTED by same GitHub account as PR author, not a distinct formal APPROVED review.",
+        "Reconcile against current combined candidate and run approved Node 22.23.2/final-image admission; source reviewer lacked packaged legacy artifact.",
+        "Verify authenticated hosted plan filtering, durable/fresh-login behavior and audit reconciliation on exact deployed artifact."
+      ],
+      "releaseReady": false,
+      "evidence": "inventory/pr-313-364-365-disposition.json"
     }
   ],
   "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption."
