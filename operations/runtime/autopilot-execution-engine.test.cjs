@@ -305,4 +305,165 @@ test('failed claim commit rolls back without dispatch and permits a safe retry',
     assert.equal(calls, 1);
   } finally { blocker.close(); sample.close(); }
 });
+test('concurrent distinct permits cannot bypass affected employee quarantine', async () => {
+  const sample = setup({});
+  const args = { tenant: sample.tenant, permitId: sample.permit.permitId, currentContextRevision: 'r1' };
+  const secondPermit = sample.engine.issueHumanPermit({ ...sample.permit, episodeId: sample.permit.shadowEpisodeId, now: Date.now() + 1000 });
+  const marker = path.join(sample.dir, 'concurrent-writes.txt');
+  sample.engine.close();
+  const { DatabaseSync } = require('node:sqlite');
+  const blocker = new DatabaseSync(sample.dbPath);
+  blocker.exec('CREATE TABLE adapter_lock_probe(id INTEGER PRIMARY KEY)');
+  const script = `
+    const fs = require('node:fs');
+    const { DatabaseSync } = require('node:sqlite');
+    const { createAutopilotExecutionEngine } = require(${JSON.stringify(require.resolve('./autopilot-execution-engine.cjs'))});
+    const engine = createAutopilotExecutionEngine({ dbPath: ${JSON.stringify(sample.dbPath)}, lifecycleAdapter: {
+      applyTrustedEvent() {
+        fs.appendFileSync(${JSON.stringify(marker)}, 'write\\n');
+        const other = new DatabaseSync(${JSON.stringify(sample.dbPath)});
+        try { other.exec('INSERT INTO adapter_lock_probe DEFAULT VALUES'); }
+        catch (error) { fs.appendFileSync(${JSON.stringify(marker)}, 'lock-held\\n'); }
+        finally { other.close(); }
+        throw new Error('synthetic response lost');
+      }, getTrustedEvent() { return null; }
+    } });
+    process.send('ready');
+    process.once('message', async () => {
+      process.send('started');
+      try { const result = await engine.executePermit({...${JSON.stringify(args)}, permitId: process.env.TEST_PERMIT}); process.send({ result }); }
+      catch (error) { process.send({ error: error.message }); }
+      finally { engine.close(); process.disconnect(); }
+    });
+  `;
+  const children = [];
+  try {
+    for (let i = 0; i < 2; i++) {
+      const child = require('node:child_process').spawn(process.execPath, ['-e', script], { stdio: ['ignore', 'ignore', 'pipe', 'ipc'], env: { ...process.env, TEST_PERMIT: i === 0 ? sample.permit.permitId : secondPermit.permitId } });
+      const messages = []; let stderr = '';
+      child.on('message', m => messages.push(m)); child.stderr.on('data', b => { stderr += b; });
+      const done = new Promise(resolve => child.on('exit', code => resolve({ code, messages, stderr })));
+      children.push({ child, messages, done });
+    }
+    async function until(predicate) {
+      const deadline = Date.now() + 5000;
+      while (!predicate()) { if (Date.now() > deadline) throw new Error('child coordination timed out'); await new Promise(resolve => setTimeout(resolve, 10)); }
+    }
+    await until(() => children.every(c => c.messages.includes('ready')));
+    // A shared reader allows both old implementations to inspect empty history,
+    // but prevents either intent from committing until both processes start.
+    blocker.exec('BEGIN; SELECT * FROM vector_autopilot_execution_events');
+    for (const { child } of children) child.send('go');
+    await until(() => children.every(c => c.messages.includes('started')));
+    await new Promise(resolve => setTimeout(resolve, 300));
+    blocker.exec('COMMIT');
+    const outcomes = await Promise.all(children.map(c => c.done));
+    for (const outcome of outcomes) {
+      assert.equal(outcome.code, 0, outcome.stderr);
+      const response = outcome.messages.find(m => typeof m === 'object');
+      if (response?.error) assert.match(response.error, /blocked pending reconciliation/);
+      else assert.ok(['RECONCILIATION_REQUIRED','BLOCKED'].includes(response?.result?.state));
+    }
+    assert.equal(fs.readFileSync(marker, 'utf8'), 'write\n', 'one dispatch and no SQLite lock across adapter I/O');
+    assert.equal(blocker.prepare('SELECT COUNT(*) AS n FROM adapter_lock_probe').get().n, 1);
+  } finally {
+    for (const { child } of children) child.kill();
+    blocker.close(); sample.close();
+  }
+});
+for (const scenario of ['renewed', 'new-key', 'expired', 'other-kind']) {
+ test(`affected scope blocks ${scenario} fresh permit`, async () => {
+  let calls = 0; const sample = setup({ applyTrustedEvent() { calls++; throw new Error('unknown'); }, getTrustedEvent() { return null; } });
+  const realNow = Date.now; const started = realNow();
+  try {
+   const args = { tenant: sample.tenant, permitId: sample.permit.permitId, currentContextRevision: 'r1' };
+   await sample.engine.executePermit(args);
+   if (scenario === 'expired') { Date.now = () => started + 16*60*1000; await assert.rejects(sample.engine.executePermit(args), /expired/); }
+   const plan = JSON.parse(JSON.stringify(sample.permit.plan));
+   if (scenario === 'new-key') plan.action.eventKey += '-new';
+   if (scenario === 'other-kind') plan.action.kind = 'AGENCY_ASSIGNMENT';
+   const next = sample.engine.issueHumanPermit({ ...sample.permit, episodeId: sample.permit.shadowEpisodeId, plan, now: Date.now()+1000 });
+   const blocked=await sample.engine.executePermit({ ...args, permitId: next.permitId });
+   assert.equal(blocked.state,'BLOCKED');assert.equal(blocked.detail.externalState,'NOT_DISPATCHED');assert.ok(blocked.detail.blockingExecutionId);
+   const retry=await sample.engine.executePermit({ ...args, permitId: next.permitId });assert.equal(retry.state,'BLOCKED');assert.equal(retry.idempotent,true);
+   assert.equal(sample.engine.statusForTenant(sample.tenant)[0].state,'BLOCKED');
+   assert.equal(calls, 1);
+  } finally { Date.now = realNow; sample.close(); }
+ });
+}
+for (const previousState of ['CONTAINED', 'ROLLED_BACK', 'UNRECOGNIZED', 'PREPARED', 'APPLIED', 'VERIFIED']) {
+ test(`fresh permit treats prior ${previousState} conservatively`, async () => {
+  let calls = 0; const sample = setup({ applyTrustedEvent() { calls++; throw new Error('unknown'); }, getTrustedEvent() { return null; } });
+  const db = new DatabaseSync(sample.dbPath);
+  try {
+   db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)').run('historical',sample.permit.permitId,sample.tenant,previousState,'{}',new Date().toISOString());
+   const next = sample.engine.issueHumanPermit({ ...sample.permit, episodeId: sample.permit.shadowEpisodeId, now: Date.now()+1000 });
+   const args = { tenant: sample.tenant, permitId: next.permitId, currentContextRevision: 'r1' };
+   if(previousState === 'VERIFIED') { await sample.engine.executePermit(args); assert.equal(calls,1); }
+   else { assert.equal((await sample.engine.executePermit(args)).state,'BLOCKED'); assert.equal(calls,0); }
+  } finally { db.close(); sample.close(); }
+ });
+}
+for (const historicalPlan of ['{bad-json', '{}', JSON.stringify({adapter:'unknown',action:{employeeId:'synthetic-worker'}}), JSON.stringify({adapter:'workforce-lifecycle',action:{employeeId:' synthetic-worker '}}), JSON.stringify({adapter:'workforce-lifecycle',action:{employeeId:'x'.repeat(121)}}), '{"adapter":"workforce-lifecycle","action":{"employeeId":42}}']) {
+ test(`malformed historical scope fails closed: ${historicalPlan}`, async () => {
+  let calls=0; const sample=setup({applyTrustedEvent(){calls++;throw new Error('unknown');}});
+  const db=new DatabaseSync(sample.dbPath);
+  try {
+   const row=db.prepare('SELECT * FROM vector_autopilot_permits WHERE permit_id=?').get(sample.permit.permitId);
+   db.prepare('INSERT INTO vector_autopilot_permits VALUES(?,?,?,?,?,?,?,?)').run('malformed',row.tenant,row.episode_id,row.selected_episode_json,historicalPlan,row.actor_ref,row.issued_at,row.expires_at);
+   db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)').run('malformed-execution','malformed',sample.tenant,'RECONCILIATION_REQUIRED','{}',new Date().toISOString());
+   const result=await sample.engine.executePermit({tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'});assert.equal(result.state,'BLOCKED');assert.equal(result.detail.reason,'HISTORICAL_SCOPE_INVALID');
+   assert.equal(calls,0);
+  } finally { db.close();sample.close(); }
+ });
+}
+test('quarantine preserves employee and tenant isolation', async () => {
+ let calls=0; const sample=setup({applyTrustedEvent(){calls++;throw new Error('unknown');},getTrustedEvent(){return null;}});
+ const db=new DatabaseSync(sample.dbPath);
+ try {
+  const args={tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'};
+  await sample.engine.executePermit(args);
+  const plan=JSON.parse(JSON.stringify(sample.permit.plan));plan.action.employeeId='other-worker';
+  const other=sample.engine.issueHumanPermit({...sample.permit,episodeId:sample.permit.shadowEpisodeId,plan,now:Date.now()+1000});
+  await sample.engine.executePermit({...args,permitId:other.permitId});
+  const episode=JSON.parse(db.prepare('SELECT episode_json FROM vector_decision_episodes WHERE tenant=?').get(sample.tenant).episode_json);episode.tenant='other-tenant';
+  db.prepare('INSERT INTO vector_decision_episodes VALUES(?,?,?,?,?)').run(episode.tenant,episode.episodeId,episode.decisionType,JSON.stringify(episode),new Date().toISOString());
+  const otherTenant=sample.engine.issueHumanPermit({...sample.permit,tenant:episode.tenant,episodeId:episode.episodeId,now:Date.now()+1000});
+  await sample.engine.executePermit({...args,tenant:episode.tenant,permitId:otherTenant.permitId});
+  assert.equal(calls,3);
+ } finally {db.close();sample.close();}
+});
+test('latest BLOCKED cannot hide an earlier dispatch intent', async () => {
+ let calls=0;const sample=setup({applyTrustedEvent(){calls++;throw new Error('unknown');}});const db=new DatabaseSync(sample.dbPath);
+ try {
+  const insert=db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)');
+  for(const state of ['PREPARED','BLOCKED'])insert.run('legacy-hidden',sample.permit.permitId,sample.tenant,state,'{}',new Date().toISOString());
+  const next=sample.engine.issueHumanPermit({...sample.permit,episodeId:sample.permit.shadowEpisodeId,now:Date.now()+1000});
+  const result=await sample.engine.executePermit({tenant:sample.tenant,permitId:next.permitId,currentContextRevision:'r1'});
+  assert.equal(result.state,'BLOCKED');assert.equal(result.detail.blockingExecutionId,'legacy-hidden');assert.equal(calls,0);
+ }finally{db.close();sample.close();}
+});
+test('missing historical permit fails closed', async () => {
+ let calls=0;const sample=setup({applyTrustedEvent(){calls++;}});const db=new DatabaseSync(sample.dbPath);
+ try {
+  db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)').run('orphan','missing',sample.tenant,'PREPARED','{}',new Date().toISOString());
+  const result=await sample.engine.executePermit({tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'});
+  assert.equal(result.state,'BLOCKED');assert.equal(result.detail.reason,'HISTORICAL_SCOPE_INVALID');assert.equal(calls,0);
+ }finally{db.close();sample.close();}
+});
+test('blocked-only receipts do not poison scope once prior latest state is verified', async () => {
+ let calls=0;const sample=setup({applyTrustedEvent(){calls++;throw new Error('unknown');},getTrustedEvent(){return null;}});const db=new DatabaseSync(sample.dbPath);
+ try {
+  const args={tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'};
+  const first=await sample.engine.executePermit(args);
+  const issue=now=>sample.engine.issueHumanPermit({...sample.permit,episodeId:sample.permit.shadowEpisodeId,now});
+  const second=issue(Date.now()+1000);
+  assert.equal((await sample.engine.executePermit({...args,permitId:second.permitId})).state,'BLOCKED');
+  // Synthetic receipt injection tests latest-state lookup, not provider proof.
+  db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)').run(first.executionId,sample.permit.permitId,sample.tenant,'VERIFIED','{}',new Date().toISOString());
+  const third=issue(Date.now()+2000);
+  assert.equal((await sample.engine.executePermit({...args,permitId:third.permitId})).state,'RECONCILIATION_REQUIRED');
+  assert.equal(calls,2);
+ }finally{db.close();sample.close();}
+});
 }

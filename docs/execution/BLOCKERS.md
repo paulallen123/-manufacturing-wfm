@@ -1,6 +1,6 @@
-# Current blockers
-
-- CircleCI runtime1036 failed on765a; first failing step/logs unavailable. Requires authorized CircleCI log read. Owner: execution owner. Recheck when access/evidence supplied; no blind retry.
-- Exact-image/hosted/recovery gates absent for both successor repairs. No promotion.
-- Provider/customer authority and credentials absent; no external mutation/customer proof.
-- Full intake/held/research deduplication and PR dispositions incomplete; scope retained in capability map.
+# Blockers at 2026-10-22T20:33:50.736Z
+- P0: mismatched readback still becomes VERIFIED; synthetic reproduction retained. Owner root/containment repair; next bounded repair.
+- Exact-image1045 pending; hosted authenticated journey/recovery not proven. No promotion.
+- Hosted proof lane ownership/configuration/durable storage not fully verified; do not accept global staged changes.
+- Provider/customer action authority and evidence absent; no external write/customer-proof claims.
+- Full intake/held/research deduplication and PR dispositions incomplete, scope retained.

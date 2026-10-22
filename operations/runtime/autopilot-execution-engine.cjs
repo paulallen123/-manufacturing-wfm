@@ -46,6 +46,7 @@ function createAutopilotExecutionEngine(options={}){
  const ep=db.prepare('SELECT episode_json FROM vector_decision_episodes WHERE tenant=? AND episode_id=?'),permitQ=db.prepare('SELECT * FROM vector_autopilot_permits WHERE tenant=? AND permit_id=?');
  const permitI=db.prepare('INSERT INTO vector_autopilot_permits VALUES(?,?,?,?,?,?,?,?)'),eventI=db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)');
  const executionQ=db.prepare('SELECT state,detail_json,created_at FROM vector_autopilot_execution_events WHERE execution_id=? ORDER BY id'),tenantQ=db.prepare('SELECT execution_id,permit_id,state,detail_json,created_at FROM vector_autopilot_execution_events WHERE tenant=? ORDER BY id DESC LIMIT ?');
+ const scopeQ=db.prepare('SELECT e.execution_id,e.state,p.plan_json FROM vector_autopilot_execution_events e LEFT JOIN vector_autopilot_permits p ON p.permit_id=e.permit_id AND p.tenant=e.tenant WHERE e.tenant=? AND (e.state!=\'BLOCKED\' OR EXISTS(SELECT 1 FROM vector_autopilot_execution_events earlier WHERE earlier.execution_id=e.execution_id AND earlier.state!=\'BLOCKED\')) AND e.id=(SELECT MAX(latest.id) FROM vector_autopilot_execution_events latest WHERE latest.execution_id=e.execution_id)');
  function ctx(req){const t=cookieToken(req);return t?auth.get(sha256(t),Date.now())||null:null;}
  function manager(req,res){const c=ctx(req);if(!c){writeJson(res,401,{error:'Sign in is required.'});return null;}if(!AUTHORISED_ROLES.has(String(c.role).toLowerCase())){writeJson(res,403,{error:'Autopilot execution requires an authorised manager or administrator.'});return null;}
   if(req.method==='POST'){
@@ -72,19 +73,31 @@ function createAutopilotExecutionEngine(options={}){
  async function executePermit({tenant,permitId,currentContextRevision}){
   const p=permitQ.get(tenant,permitId);if(!p)throw Object.assign(new Error('Autopilot permit not found.'),{statusCode:404});if(Date.parse(p.expires_at)<=Date.now())throw Object.assign(new Error('Autopilot permit expired. Re-approve current evidence.'),{statusCode:409});
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
-  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40);let prior;
+  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40);let prior,blocked=null;
   // Serialize history inspection and durable intent creation across connections.
   // Commit before invoking either the adapter or the event publisher.
   db.exec('BEGIN IMMEDIATE');
   try{
    prior=last(executionId);
    if(!prior){
+    // Scope comes from immutable approved plans, never an event key or renewed
+    // permit. Unparseable historical scope cannot safely be narrowed.
+    for(const previous of scopeQ.all(tenant)){
+     let scope;try{scope=JSON.parse(previous.plan_json);}catch{}
+     const valid=scope&&scope.adapter==='workforce-lifecycle'&&typeof scope.action?.employeeId==='string'&&scope.action.employeeId.length>0&&scope.action.employeeId.length<=120&&scope.action.employeeId===scope.action.employeeId.trim();
+     if(!valid){blocked={reason:'HISTORICAL_SCOPE_INVALID',externalState:'NOT_DISPATCHED',blockingExecutionId:previous.execution_id};break;}
+     if(scope.adapter===plan.adapter&&scope.action.employeeId===plan.action.employeeId&&previous.state!=='VERIFIED'){blocked={reason:'PRIOR_EXECUTION_UNRESOLVED',externalState:'NOT_DISPATCHED',blockingExecutionId:previous.execution_id};break;}
+    }
+    if(blocked)eventI.run(executionId,permitId,tenant,'BLOCKED',JSON.stringify(blocked),new Date().toISOString());
+    else{
     if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
     eventI.run(executionId,permitId,tenant,'PREPARED',JSON.stringify({episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)}),new Date().toISOString());
+    }
    }
    db.exec('COMMIT');
   }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
-  if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED'].includes(prior.state))return {executionId,idempotent:true,...prior};
+  if(blocked)return {executionId,idempotent:false,state:'BLOCKED',detail:blocked};
+  if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED','BLOCKED'].includes(prior.state))return {executionId,idempotent:true,...prior};
   if(prior){
    // A durable intent without a terminal receipt may have crossed the adapter
    // boundary before the worker stopped. Do not dispatch the same permit again.
