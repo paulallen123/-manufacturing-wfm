@@ -1,0 +1,467 @@
+{
+  "observedAt": "2026-10-22T20:36:45.537Z",
+  "sourceLinesRead": "1-440 of1242; later history not fully read",
+  "records": [
+    {
+      "id": "INTAKE-01",
+      "title": "Typed report V3",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "libfile_9227110269a48191a3d03b4dbfba75a5",
+        "libfile_e8b27868df6c81918aa0e28e3c57c03c"
+      ],
+      "historicalReceipt": "Intake stage 3. Identity state: latest isolated V3.\n\n- V3 patch; `04532d2556dbfa0c3d3bf11e5d98a7d515ca69b307137a12a1fde1d735958143`; `libfile_9227110269a48191a3d03b4dbfba75a5`\n- author commit; `babd1a013c6b9578a974753710725917e7cea456`\n- independent review; `libfile_e8b27868df6c81918aa0e28e3c57c03c`\n\nV3 independently approved with 26 targeted checks; author reports 116.\n\nSupported Node22 selected-tests gate: **PASSED**, bound to the shared source-bound receipt above. Broader release and whole-artifact approval remain open.\n\nV1 and V2 are superseded by V3.\n\nUnrun or unresolved gates: Real-reader verification (missing); Packaging verification (missing). The supported Node22 selected-tests result does not establish final release-version verification.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-02",
+      "title": "Reporting UI final cumulative patch",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "libfile_fe52258c4bec8191ae111c3370802609",
+        "libfile_ec8364b6526081919d291217418e23ea"
+      ],
+      "historicalReceipt": "Intake stage 3. Identity state: final isolated cumulative patch.\n\n- final cumulative patch; `3ec30ddbd9b277a1827e3dea3c6e0bfde1136bbbbf80274eb1a6567bf1b0b1ed`; `libfile_fe52258c4bec8191ae111c3370802609`; reviewed reporting predecessor preimage `20afd22a2cb1740eb62eace02fd828deaa5fc16a6711955380646fa02a7294f8`\n- source and evidence companion; `libfile_ec8364b6526081919d291217418e23ea`\n\n75 independent checks plus 6 actual Chromium tab-return checks.\n\nUse the final cumulative patch; an incremental apply-check alone is insufficient. Verify the predecessor hash before intake.\n\nThe latest independently accepted exact90ad isolated full run is **TESTED: 81/81**, Reporting **75/75** plus six genuine lifecycle scenarios **6/6**, zero failures/skips/cancellations/todos. It ran 09:49:16–09:51:47 UTC on tree `a1f404614b5a382cf7be95d5b328e1c107bd826f`, with the exact approved repaired helper/oracle. All 52 cleanup records and 24 trusted genuine events verify within the stated observer qualifications. Prior79/81, focused diagnoses, the original eight cleanup/strict lifecycle failures and all REDs remain preserved. The earlier Runtime.evaluate cause/stage is still unresolved. Exact release application/current 48d adoption, real-reader/collector wiring where relevant, final image, deployment and hosted acceptance remain open; local 81/81 does not transfer to those gates.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-03",
+      "title": "Training stale-session correction",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "libfile_d323e39acdbc8191ae621e1cc1fe5b31",
+        "libfile_dbfc79f0d62881919b4039796d4ae4b1"
+      ],
+      "historicalReceipt": "Intake stage 4. Identity state: isolated correction patch.\n\n- training patch; `3f81953a3f00e47497eafb2edfb9d6d5fd62d2fbc520209f27f286e445f9a7bb`; `libfile_d323e39acdbc8191ae621e1cc1fe5b31`\n- independent review; `libfile_dbfc79f0d62881919b4039796d4ae4b1`\n\nStale-session P2 closed with 8 plus 4 independent checks.\n\nSupported Node22 selected-tests gate: **PASSED**, bound to the shared source-bound receipt above. Broader release and whole-artifact approval remain open.\n\nNo additional supersession or overlap identity was supplied.\n\nUnrun or unresolved gates: Genuine collector evidence (missing).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-04",
+      "title": "Population assembler and adapter V1",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "libfile_e79c1eba5fbc81919779c43be7047cd0"
+      ],
+      "historicalReceipt": "Intake stage 4. Identity state: isolated assembler and cumulative adapter V1.\n\n- standalone assembler patch; `d50c702555948a57942ea2de077cf9b0acf13d463ca247cc1eaed6e23abfac55`\n- adapter V1 cumulative patch; `d25e803329a2be967ed1d5e949fc921b7e9849ff7f2661ae7ea44a6dd7baaff1`; `libfile_e79c1eba5fbc81919779c43be7047cd0` version 1\n\nStandalone assembler approved with 111 checks. Adapter V1 has 28 plus 5 independent checks; source_count drift and mutable-verifier findings are closed.\n\nSupported Node22 selected-tests gate: **PASSED**, bound to the shared source-bound receipt above. Broader release and whole-artifact approval remain open. The historical parent gate now has separate 28/28 acceptance and 5/5 closure/revocation Node22 receipts; it adds no 475-test count or authority/admission claim.\n\nIntake the standalone assembler before the cumulative adapter. The historical adapter-closure reviewer Library replacement failed. Exact closure is retained in the task response; no saved replacement of that review is claimed. The new source-bound Node22 receipt has its own separate saved independent review.\n\nUnrun or unresolved gates: Actual source, scope, and replay owners (missing). The previously source-unavailable parent Node22 gate is closed only by the separate 28+5 receipts.\n\nOther open gates: Diagnostic authority remains false or unverified (unverified).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-05",
+      "title": "Empty-cost engine and compatible UI",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "libfile_ba38242cc70081918231feb4649a6696",
+        "libfile_97a82dd2b9a481919d4530f7e340f832"
+      ],
+      "historicalReceipt": "Intake stage 2. Identity state: two isolated sealed-preimage patches.\n\n- empty-cost engine patch; `7694aa8708b5ad5b169dc67da1c137a60abf5095f22571b9321c0e2881b8f4d3`; `libfile_ba38242cc70081918231feb4649a6696`; sealed engine preimage `9dce4e7281da433d1b8ae2efa783bd0e30fef43d4c4f6e0e210478ff0c3475f5`\n- economic-compatible UI patch; `cb3f4101ecce2bc63512ac20c4c3c0354eb8790b0a2451cf614c14227a5cf912`; `libfile_97a82dd2b9a481919d4530f7e340f832`; exact recovered 24,640 bytes; sealed cost UI preimage `ebf4a0b32dc1a0ff927eead33f119f7294ab4212219eca767e952ff8cb1c2aed`; sealed cost UI postimage `2fcb4ed8caf9743b41deebeab39aed2acf2209132ac52870b2145adbc44ec95e`\n\nEngine has 18 independent checks; UI has 19.\n\nBoth patches must apply at their exact sealed preimages before subsequent transforms. The supplied UI preimage and postimage bind only to the sealed cost UI transformed by the economic-compatible patch, not the reporting UI. The empty-cost engine sealed preimage is now recorded; bounded engine/UI transforms now have accepted source-bound Node22 receipts; final release application still requires verification.\n\nSupported Node22 cost gates: engine **18/18** and economic-compatible UI **19/19**, separately accepted on overlay `1d5cb2a2872e1780cb20a16b384767bfec53ab50`. Unresolved gates: final release application at the exact sealed preimages, full serial 20-path execution, final-image packaging and authenticated hosted acceptance. The reconstructed 12-path source overlay does not establish those outcomes.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-06",
+      "title": "Capacity wrapper store",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        340,
+        354
+      ],
+      "historicalSourceReferences": [
+        "libfile_6d584701b6e88191b91870d40b2989b3"
+      ],
+      "historicalReceipt": "Intake stage 8. Identity state: isolated wrapper-store patch.\n\n- wrapper-store patch; `96434d5d8613de372f9770f56f252fab339e0c7687b78d0196d90e509088ea5b`; `libfile_6d584701b6e88191b91870d40b2989b3`\n\nApproved with 68 plus 29 local checks and 11 characterizations.\n\nThis is not a drop-in PR340 delivery helper. Capacity wrapper evidence, PR340 delivery-service evidence, and PR354 adaptive-intelligence evidence remain explicitly separate.\n\nOther open gates: Service authority and concurrency issues remain (open).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-07",
+      "title": "Water numeric and overflow successor",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        349,
+        329,
+        330,
+        332,
+        344,
+        355
+      ],
+      "historicalSourceReferences": [
+        "libfile_63f37b69e9dc819185c8a3bc1b325c5a",
+        "libfile_16d2b8e1da3c81919d06e127c6df2881"
+      ],
+      "historicalReceipt": "Intake stage 5. Identity state: isolated numeric patch with overflow successor.\n\n- numeric patch; `b8b58fde68351f25a858962b5132b88b2bfc22f4ae23d1b6dc6810544517ab45`\n- overflow successor patch; `5fa98a9e76dc9e1377f9344e8c3247fa02df2c0e633f953f1e525e584d1dd225`\n- source companion; `libfile_63f37b69e9dc819185c8a3bc1b325c5a`\n\nNumeric scoped passes: 140 plus 85. Overflow successor scoped independent passes: 140 plus 27 plus 85.\n\nIndependent source closure verifies the overflow patch against exact approved numeric proposal preimages and both supplied successor modules. The separate PR349 compatibility ledger retains its own numeric-compatible preimage and overflow guards; it must not be replaced by the canonical-derived proposal ledger. The previously unspecified application-mode lead remains in history. PR329, PR330, PR332, PR344, PR349, and PR355 overlap; reconcile their exact preimages rather than applying them blindly.\n\nOther open gates: Ten authority requirements remain (open); Outcome-subtraction overflow remains (open). The former proof owner stopped with Node24 only after a proxy 403 runtime fetch. Replacement proof-only task `01a134b9-f343-7296-a61f-068b1b6d30f0`, admitted 10:06 UTC, has independently verified Node22.23.2 binary SHA-256 `3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327`. Exact source closure is approved, but the consumer has **zero source bytes and zero tests**. Original packet and new minimal JSON each failed initial transfer plus one supported retry, four download-failed outcomes. No explicit HTTP status or access denial is established; the cause remains unclassified. No more retries are underway. Blocked receipt `libfile_16d2b8e1da3c81919d06e127c6df2881` version 1 is retained. No bypass, product failure, competing writer or product edits are established. Existing source ownership is retained; supported Node22 water execution remains unrun.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-08",
+      "title": "Scheduling task-input rejection",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        357,
+        320,
+        346,
+        352,
+        353,
+        356
+      ],
+      "historicalSourceReferences": [
+        "libfile_34fea5514a448191a5c0de68009c2388"
+      ],
+      "historicalReceipt": "Intake stage 6. Identity state: isolated proposal against exact PR357 head.\n\n- rejection proposal; `e6c3a99054f71f4828153ca680f760c55cb09862a5c13b1451274452be83364a`; `libfile_34fea5514a448191a5c0de68009c2388`\n- PR357 base head; `70a8e8fa68b4b2ec7c30ed0ef0e00791a05addd0`\n\n11/11 independent checks; 158 affected checks pass and 1 WebAuthn check is blocked.\n\nReconcile scheduler PR320, PR346, PR352, PR353, and PR356 with the PR357 owner. No second author; integration remains solely owned by Continue customer proof.\n\nUnrun or unresolved gates: Blocked affected WebAuthn check (blocked).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-09",
+      "title": "Retirement guard and signature reconciliation",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        342,
+        343,
+        350
+      ],
+      "historicalSourceReferences": [
+        "libfile_6f58ca1ec924819198254b4e278441dc"
+      ],
+      "historicalReceipt": "Intake stage 7. Identity state: latest heads only; final combined artifact missing.\n\n- PR342 latest head; `c2faea2d692e4a412c9581f9ae3f25e13ce11ee2`\n- PR343 latest head; `adc208a090a2daca1f8103693185acc8c0b5cc28`\n- PR350 latest head; `34b8892670be343d2c7642b4c4f19ac2c5c1bf96`\n- retirement evidence; `libfile_6f58ca1ec924819198254b4e278441dc`\n\nLatest heads are supplied; no positive-authentication test count is supplied.\n\nRestore the nonempty integratedPaths guard from PR343 while retaining the PR350 signature check. Reconcile PR342, PR343, and PR350 into one selected composition.\n\nUnrun or unresolved gates: Final guard-plus-signature composition verification (missing); Positive authentication proof (missing).\n\nOther open gates: Keyless denials do not establish positive authentication (evidence limitation).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-10",
+      "title": "PR340 delivery-service correction",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        340
+      ],
+      "historicalSourceReferences": [
+        "libfile_d57c46d6a82c819187d2b331377fa821"
+      ],
+      "historicalReceipt": "Intake stage 8. Identity state: held PR head and correction contract.\n\n- PR340 held head; `60825a4f9bccee22ee2fe190a01b8f4365c8c35b`\n- correction contract; `libfile_d57c46d6a82c819187d2b331377fa821` version 1\n\nHeld with 6 reproduced service failures.\n\nHeld for service correction; the capacity wrapper store is not its drop-in replacement.\n\nUnrun or unresolved gates: Corrected exact-head service rerun (missing).\n\nOther open gates: Six reproduced service failures (failed).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-11",
+      "title": "Adaptive intelligence finite-score and outcome-evidence replay",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        354,
+        348
+      ],
+      "historicalSourceReferences": [],
+      "historicalReceipt": "Intake stage 8. Identity state: outside-canonical PR head with exact installed run.\n\n- PR354 head; `fa2734386b3e7c1cf5e40b59b32b0d158998c2a5`\n- PR348 underlying head; `8036297a3c0504cc654a35040070371d44fc5fc1`\n- Docker and installed-engine run; `38312894458`; SUCCESS\n\nExact Docker/installed-engine run 38312894458 is SUCCESS; Node version is not supplied.\n\nPR354 adaptive intelligence covers finite-score and outcome-evidence replay and stacks the recorded PR348 head. PR354 remains outside canonical. Exact Docker and installed-engine success does not establish caller authority, durable restart deduplication, or live proof.\n\nUnrun or unresolved gates: Caller authority proof (not proven); Durable restart deduplication proof (not proven); Live proof (not proven).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-12",
+      "title": "Energy donor-base source union and retained execution evidence",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        315,
+        319,
+        325,
+        339
+      ],
+      "historicalSourceReferences": [
+        "libfile_89246142ab8c81919ab1161e1dcc4abc"
+      ],
+      "historicalReceipt": "Intake stage 9. Identity state: exact corrected v1 packet and donor-base source/recorded execution evidence accepted; consumer-history RED and runtime/adoption qualifications remain.\n\n- authoritative union engine SHA-256 `8009d90f730c949c7e7003b52bab8dce81f80dcad3f8d7a2c57c09422dce267f`; test postimage `95ebcef078f62b003317f9ddd90cfb6fb1e62157a545ae8d99772dab9c9ba4d5`\n- accepted packet `libfile_89246142ab8c81919ab1161e1dcc4abc` version 1, 76,478 bytes; SHA-256 `d041fc21a2a527539c270b288c6605b00d7040f3a394463f0f9054cba1efad05`\n- exact PR315 donor base `0ea4c7e3726391edd10702902c781f9530671bd3`; source-only tree `26f6c610d575e968144fd63cbef4c2d1df8465b9`\n- immutable donors: PR319 `69bb5188f4e844f1961862b6a92776bd2b7ee401`; PR325 `d5d449ba9d49432b69b4d7b1116a9db15388e919`; PR339 `f684195a3d62418979a859ac1e550f70a8f77fa1`\n\nThe first reported actual donor-base union execution has retained **60/60** passing TAP across seven files (22+8+2+6+5+6+11), zero failures/skips/cancellations/todos. Exact names match 60 source declarations; immutable recipe, strict two-file patch and the 1,394-entry source tree independently recompute. Node22.23.2, binary hash and commands remain **author-attested**, not an independent runtime interrogation or rerun. The 1,500 scenarios/500 permutations are inner test cases, not additional TAP tests. Passing TAP SHA-256 `82b3c462d4a1c37eeaa76e5be2a9702467b5f917c1e3661ffce0e1a65553a063`.\n\nThe separate consumer-history oracle remains **0 pass/1 expected fail**, not part of 60/60. It first proves full-event denial, then exposes loss of conflict/history when the convenience reducer returns only one selected signal. Only the first RED loop variant ran; later reversed/duplicate variants in that loop did not. This is an unclosed admission requirement, not a demonstrated live consumer defect. Rejected diagnostic economics may still contain Infinity/NaN; guarded executability is not all-field numeric finiteness or reconstructible discarded history. RED TAP SHA-256 `347ddd19ccb103bb4e2e91d0eb00a4a76aeeb72f8e5701abd52c363523408f66`.\n\nThe v0 hold is preserved: 76,477 bytes, SHA-256 `31a7f5e01e1945053995f964e5f98c7eb011843ab32b334a1f8c5c2d57ce9c1f`; raw engine frame `f8c8130e03a795015446df883368dff84600887247267d6d7ec9689aaf8c1b56` omitted one terminal LF. Independent original held review SHA-256 `def520882c2b88bf5ed3ef8440ba626d93d4b0cb08a0c3b7c303540246ba1154`, JSON `f9770d3c0d0fccc864d6a2b9fb98f61fafe931bf26466887d369334a97394040`. Corrected v1 closure SHA-256 `4b159eca8a66267a0dff8139806ee66ad8e833fa79e0568a9e8f7b34cdc4cc77`, JSON `802d886b26bab63cd5637e0e05ec5ebc5820f552622c8f02d9965a602e37848f`. All six declared frames now match; sole change is one LF at zero-based v0 offset 30,366. No new execution occurred from that packaging correction, and no saved Library review is claimed.\n\nThe original unexecuted-source lead and separate 55 PR325 Node22 passes remain historical; they are not retroactively union tests. Existing PR315/317/319/325/339 overlap/supersession requires the single canonical owner. **No result transfers to 90ad/current 48d**, canonical composition, a final image, deployment or authenticated hosted/customer proof. Real consumer event-history preservation and supported combined canonical/final-image gates remain open.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-13",
+      "title": "Time Review oracle",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "libfile_e2674caff4708191a212473b95f1c256"
+      ],
+      "historicalReceipt": "Intake stage 4. Identity state: isolated oracle patch.\n\n- oracle patch; `4406fe7bcded5c383f64d3613aa536140ce738ee50d591e05b5b6762bd701342`; `libfile_e2674caff4708191a212473b95f1c256`\n\n182 local plus 5 composition checks.\n\nOracle and composition checks do not substitute for the actual authenticated collector.\n\nUnrun or unresolved gates: Actual authenticated transaction, state, and period collector (missing).",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "INTAKE-14",
+      "title": "Attendance and clockout HTTP proof",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "libfile_3af8c828e22881918ad07fcf069cf2ee",
+        "libfile_4573288fb0c08191bc7df8201de6abc3",
+        "libfile_037a41ec53b08191b42e4c01e947626f"
+      ],
+      "historicalReceipt": "Intake stage 4. Identity state: **independently verified local TESTED on exact90ad**; current 48d adoption/recomposition and release/hosted gates remain pending.\n\n- supply contract; `libfile_3af8c828e22881918ad07fcf069cf2ee`; 26 locked packages and 25 historical synthetic supply checks, not HTTP passes\n- accepted execution packet; `libfile_4573288fb0c08191bc7df8201de6abc3` version 0, 353,036 bytes; SHA-256 `3dcc24dc1118db41ccd197269918673968b43d5f6c1f905c2634d2ae2ee14a24`; all six complete raw evidence sections verified\n- approved/executed two-file patch; SHA-256 `a25f90eb1991019aaa1f81f2878c6c0637056aa4e86a579871b71ec565407fde`, 6,125 bytes\n- executed runtime harness; SHA-256 `a3a656f185a5d6a222ab849d279439bef9985da38bc1142a5ee1a0d3e75195f1`, 2,867 bytes\n- executed HTTP test; SHA-256 `9cd8f26ff3664f5d58b730e24a83dcedc357405f1e780bc4456de906182d51f2`, 15,918 bytes\n\nThe same sole isolated task's completed full run on Node22.23.2 passed **10/10 TAP nodes: two top-level nodes plus all eight route leaves**, with zero failures/skips/cancellations/todos. It used the genuine composed runtime, fresh synthetic disposable tenants and owned loopback only, at exact historical commit `90ad90fcf60adaca9abacdd4ad14bf392f95e585`, tree `d085ebb4a99b43bec560fd113c0cc0709d8ac21e`. These are not ten new unique functional cases or current 48d/hosted acceptance. Full TAP SHA-256 `b24fb8d3e17804bea3b9faa2c3566caf195da3145ee032fadfd93a0fc2515801`.\n\nIndependent final execution review SHA-256 `cb6249333758d48d4cbad378cc3db5c69413afbdfd81b24106276064dddac07e`; companion JSON `19af723642fffb2298dde28d4cabf1d75779779dbb2b3d992d98dd4bfebc8a61`. No Library save of the review is claimed. Exact approved postimages match independent reconstruction. The complete 96-input/1,639-output lists and recorded-order digests, admitted source and saved post-run integrity checks verify. Source-set SHA-256 `17fe2f536eba1e935e3ea7822929f98a17220623cc66b3054e83ad968c11726f`; runtime-set SHA-256 `229e238ffe415cb616aeb78dba49651d8f0f25b4c2035d0c8827649649fb0b79`. Local dependency count remains 26; local paths/hashes are not cold final-image import admission or a disk-versus-returned-loader transcript. Remote runtime bytes and binaries were not redownloaded or separately executed by the reviewer.\n\nThe executed mandatory-audit leaf verifies a unique request-specific audit token, the genuine `audit()`/personal command/route stack and exact source header. A real unrelated HTTP500 is explicitly rejected as the audit witness. The expired absolute-budget control executes inside the same passing leaf, not as another TAP node. Complete domain rollback comparisons cover all eight personal/audit tables across both tenants. Clean retry uses the same clockout key and payload, commits exactly one effect, and verifies duplicate-free replay, payrollApproved:false and the genuine personnel subject. Current authority reread, cross-tenant isolation, changed-content rejection and actual bootstrap-restart durable replay pass. No actor, tenant or external authority is borrowed from the synthetic seed.\n\nThe final packet retains a domain hash and executed strict-equality assertions, not complete final-run database row dumps. The bounded combined child log may truncate; it is not complete raw stderr or a hard real-time scheduling guarantee. Acceptance is therefore **local synthetic HTTP TESTED**, not final-image, deployed or customer-proven.\n\n**History stays immutable and separate:** original unchanged fixture **1/2**, with first synthetic clock-in500 and all eight route leaves unrun; approved fixture/internal-message expectation **8/10**, with seven route leaves passing, the audit leaf failing and its parent also failing; approved bounded fault witness **10/10**, all eight leaves passing. Raw history is 22 TAP attempts, 19 passes and three retained failures, not a unique functional-case total. Original RED packet `libfile_037a41ec53b08191b42e4c01e947626f` version 0, SHA-256 `919f91ceb4e60166c55d05cf2c09040f6bda3a1c8b7209cb591aea2555a83afa`, the earlier blocked/zero-test source receipt, historical one-file fixture patch `4e0bfd987e602fc2b9626b8cf38c873bfe74a422b4cc29206d1e71a84526b6d4`, prior proposals and prior seed observation remain preserved. Final success erases none of them.\n\nUnrun or unresolved gates: existing sole integrator's current 48d reconciliation/adoption, current 48d recomposition and affected verification, owner-pinned dependency/cold final-image admission, full-image/final-artifact verification, canonical integration, deployment and authenticated hosted/customer proof. The exact90ad local result must not transfer to the newer release head. Reporting and all other intake lanes keep their existing states.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "H01",
+      "title": "Staffology future-effective leaver deletion",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138177936",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/90ad90fcf60adaca9abacdd4ad14bf392f95e585/integrations/staffology/canonical-runtime-bridge.cjs"
+      ],
+      "historicalReceipt": "Status: HELD. Evidence: SOURCE_CONFIRMED_P1_WITH_REPORTED_FAILED_SUPPLEMENTAL_RUNTIME. Existing lane: Existing accepted L6 integration source owner; no handover inferred. Sole integrator: Continue customer proof.\n\nSources: [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138177936), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/blob/90ad90fcf60adaca9abacdd4ad14bf392f95e585/integrations/staffology/canonical-runtime-bridge.cjs).\n\nIdentity: source sha256: `cec22f1b9921f456b91c3940f76151b9669f03680dc72b748980663715a4f591`; repair contract sha256 reported: `f9851f6222b1420905d47ddce56b9fd7d7ced53e2fe1c494e6db3131c1087f32`.\n\nSource-confirmed: Exact 90ad source bytes reproduce the receipt source hash. peopleEnvelope classifies Former when status is Former OR effectiveTo is truthy, then emits operation=delete; no observation-date comparison is made. The Current/2026-10-13/future-2026-12-31 case is consistent with that static path; no live deletion is established.\n\nReceipt-reported: 17/18  (Node24.19.0 supplemental; outside declared Node22 range).\n\nOwnership and overlap: Preserve the existing L6 owner; do not assign a second integration writer. Shares Staffology population/lifecycle and identity seams with item 4 evidence, but is not covered by its synthetic diagnostic tests. No mutation or current exclusive owner acceptance is inferred from the receipt.\n\nStill open: Authoritative current Staffology status/effective-date field semantics. Existing owner lifecycle contract and repair; independent reviewer remains unassigned. Supported Node22.23.2/final-image and relevant affected-suite evidence. Authenticated exact-bound provider/customer proof before corresponding claims.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "H02",
+      "title": "SAP equal-time conflict reconciliation",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138878533",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/90ad90fcf60adaca9abacdd4ad14bf392f95e585/artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz"
+      ],
+      "historicalReceipt": "Status: HELD. Evidence: SOURCE_CONFIRMED_TIE_SELECTION_WITH_REPORTED_FAILED_SUPPLEMENTAL_RUNTIME. Existing lane: Existing accepted L6 execution/source owner; independent reviewer unassigned. Sole integrator: Continue customer proof.\n\nSources: [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138878533), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/blob/90ad90fcf60adaca9abacdd4ad14bf392f95e585/artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz).\n\nIdentity: member sha256: `bb3fcbd81eef003ddb8cd50ed580c64ba077f4e90bc5e4bdcc647906048361f7`; repair contract sha256 reported: `7a3e6479acd6bcee7fea0411764c36a6f40f608cf7a92aa9fd9b618dc497ba0d`.\n\nSource-confirmed: Exact-candidate archive bytes reproduce the Git blob and member hash. Equal-time provider rows are selected by lexical status order; equal-time local rows keep the first input row. Source contains no explicit same-time conflict state or conflict contribution to divergence.\n\nReceipt-reported: 14/16 provider lexical tie and local input-order conflict cases (Node24.19.0 supplemental; outside declared Node22 range).\n\nOwnership and overlap: Retain the existing L6 owner, shared sealed-artifact composition and provider-evidence boundary. Different source member from Oracle warning normalization; do not duplicate either owner repair.\n\nStill open: Existing owner deterministic conflict contract and reviewed exact patch. Supported Node22 final-image input-order invariance and strictly newer correction recovery. Independent reviewer and authenticated provider/native reconciliation evidence.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "H03",
+      "title": "Oracle warning-status acknowledgement overlay",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [],
+      "historicalSourceReferences": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138244970",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6137555648",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6136927902",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/90ad90fcf60adaca9abacdd4ad14bf392f95e585/artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz"
+      ],
+      "historicalReceipt": "Status: HELD. Evidence: SOURCE_CONFIRMED_DEFECT_WITH_REPORTED_UNAPPLIED_OVERLAY_VALIDATION. Existing lane: Existing accepted L6 source owner; independent reviewer unassigned. Sole integrator: Continue customer proof.\n\nSources: [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138244970), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6137555648), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6136927902), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/blob/90ad90fcf60adaca9abacdd4ad14bf392f95e585/artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz).\n\nIdentity: member sha256: `5aee5da0ae2e70a94617edb9b6ee86e814c54b6c647922a6b60ac71bec3a37b0`; minimal patch sha256 reported: `99529a90df71250de8f8719977074d87441b0c7b4162eaf9799632ec92d1db73`.\n\nSource-confirmed: The frozen exact-90ad normalizer checks complete/success before warning/partial and excludes partial but not warning in the success branch. Static source therefore permits Completed with warning to select accepted. The frozen artifact still contains the original expression; the require-time overlay is not canonical implementation.\n\nReceipt-reported: 20/21 baseline (Node24.19.0 supplemental); 21/21 require-time overlay (Node24.19.0 supplemental).\n\nOwnership and overlap: Same existing L6 integration owner and sealed-artifact release seam as SAP; separate source member and test receipt. Overlay 21/21 does not close implementation, provider acceptance, business reconciliation, or customer proof.\n\nStill open: Authoritative provider-specific warning semantics. Accepted owner applies or supersedes the one-line repair and obtains independent review. Supported Node22.23.2, affected payroll suites, final image and exact-bound provider/customer proof.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "H04",
+      "title": "PR364 normalized-email proof identity",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        314
+      ],
+      "historicalSourceReferences": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/364",
+        "https://github.com/paulallen123/-manufacturing-wfm/compare/90ad90fcf60adaca9abacdd4ad14bf392f95e585...91da2d752f599f4c2d357ba6cedfea2ddf4d6f2f",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/364#pullrequestreview-5498505465",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6137551591",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6137688951"
+      ],
+      "historicalReceipt": "Status: HELD. Evidence: SOURCE_REVIEWED_DRAFT_WITH_REPORTED_ISOLATED_CHECKS. Existing lane: Isolated L12 fence: VECTOR Frontier Research execution; lease ended at draft handoff. Sole integrator: Continue customer proof.\n\nSources: [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/pull/364), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/compare/90ad90fcf60adaca9abacdd4ad14bf392f95e585...91da2d752f599f4c2d357ba6cedfea2ddf4d6f2f), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/pull/364#pullrequestreview-5498505465), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6137551591), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6137688951).\n\nIdentity: head commit: `91da2d752f599f4c2d357ba6cedfea2ddf4d6f2f`.\n\nSource-confirmed: Open, draft, unmerged; exactly two files, one commit ahead and zero behind exact 90ad. Case-insensitive signed-email lookup uses all matches; zero matches retain 403, multiple matches return generic 409 before nonce/session transaction or cookie writes. Unique stored exact email remains the session foreign-key identity. Rejection audit record catches and suppresses insert failure; refusal can lack a durable rejection event. Exact-head CircleCI forge_core_validation status is successful; runtime version and full-image depth are not established by status alone.\n\nReceipt-reported: 9/9 authentication; 8/8 identity-survival guard; independent source review: READY reported; no runtime rerun in this reconciliation.\n\nOwnership and overlap: Recorded L12 isolated owner is Frontier Research; its draft-handoff lease grants no canonical adoption. PR314 Trust Spine changed files are disjoint; preserve identity/security composition through the existing integrator. No free new writer fence or current live execution lock is established.\n\nStill open: Existing single integrator adopts or explicitly rejects the exact head and fence. Proof-rejection audit durability residual. Supported Node22/final image and authenticated hosted durable/fresh-login/audit/customer proof.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "H05",
+      "title": "PR365 stored assignment validity",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        357,
+        233,
+        365
+      ],
+      "historicalSourceReferences": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/365",
+        "https://github.com/paulallen123/-manufacturing-wfm/compare/90ad90fcf60adaca9abacdd4ad14bf392f95e585...dc0862ae1b0f587acab981d2507ae71cb1302d1d",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/365#pullrequestreview-5498793112",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6137691487",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6138178716"
+      ],
+      "historicalReceipt": "Status: HELD. Evidence: SOURCE_REVIEWED_DRAFT_WITH_REPORTED_FOCUSED_PUBLIC_ENTRY_CHECKS. Existing lane: Isolated L11 fence: VECTOR Frontier Research execution; lease ended at draft handoff. Sole integrator: Continue customer proof.\n\nSources: [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/pull/365), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/compare/90ad90fcf60adaca9abacdd4ad14bf392f95e585...dc0862ae1b0f587acab981d2507ae71cb1302d1d), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/pull/365#pullrequestreview-5498793112), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6137691487), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6138178716).\n\nIdentity: head commit: `dc0862ae1b0f587acab981d2507ae71cb1302d1d`.\n\nSource-confirmed: Open, draft, unmerged; exactly two files, one commit ahead and zero behind exact 90ad. Canonical nonempty trimmed requirement IDs, exact assignment site/start/end, and orphan membership are checked. Existing service consumer filters plans through assertPlan and withholds invalid plans; that consumer is unchanged by this PR. Exact-head CircleCI forge_core_validation status is successful; runtime version and final-image depth are not established by status alone.\n\nReceipt-reported: 5/5 focused/public-entry/redaction; 12/12 denied malformed-ID matrix; independent source review: READY reported; legacy packaged archive absent in reviewer environment.\n\nOwnership and overlap: Item 8/PR357 and PR233 modify scheduling-intelligence-service.cjs, not either PR365 authority file. This is a consumer/composition dependency rather than a direct two-file collision; coordinate with the existing PR357 owner. Frontier Research isolated handoff is not canonical integration permission.\n\nStill open: Existing single integrator adopts or explicitly rejects the exact head and fence. Supported Node22 and packaged/final-image evidence. Authenticated hosted assignment/durable/fresh-login/downstream/audit/customer proof.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    },
+    {
+      "id": "H06",
+      "title": "Agency current-base two-file package",
+      "requirementSource": {
+        "file": "vector-release-intake-manifest.md",
+        "libraryFile": "libfile_6e1d1a6868888191af42281363f8dc40",
+        "version": 67
+      },
+      "state": "DISCOVERED",
+      "released": null,
+      "currentProof": null,
+      "owner": null,
+      "canonicalModule": null,
+      "supportingPRs": [
+        239
+      ],
+      "historicalSourceReferences": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138880814",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239#issuecomment-6138251021",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6138250705",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+      ],
+      "historicalReceipt": "Status: HELD. Evidence: RECEIPT_BACKED_OWNER_READY_PACKAGE_WITH_SOURCE_BYTES_UNAVAILABLE. Existing lane: Existing L4 Product/Agency lane; exact sole-owner package acceptance not verified. Sole integrator: Continue customer proof.\n\nSources: [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6138880814), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/pull/239#issuecomment-6138251021), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/issues/288#issuecomment-6138250705), [receipt or exact source](https://github.com/paulallen123/-manufacturing-wfm/pull/239).\n\nIdentity: package sha256 reported: `728d87da54932810a2d15cd7712cd3282923fa3cbb01e399a2f31b8d7d4eaa30`.\n\nSource-confirmed: Both proposed package paths are absent at exact candidate 90ad. PR239 remains draft/open/unmerged with nine files and a historical noncanonical base. Both proposed package paths overlap the stale PR239 change set. Historical PR239 source still has trimmed/truncated IDs and missing tenant/placement scope bindings. Receipts expose no retrievable new patch bytes or resulting commit/blob identities; the new hash and READY/test claims are not independently byte/test verified here.\n\nReceipt-reported: 40/40 affected suite (Node24.19.0); 15/15 clean applied two-file package; final independent re-review: READY reported, no Critical/Important findings reported.\n\nOwnership and overlap: Do not adopt stale nine-file PR239 or substitute its earlier 217-line old-head patch. Preserve existing L4/canonical integration ownership; shared bootstrap/Docker/FORGE/composition seams remain reserved. Owner-ready receipt is not accepted ownership or a free fence for another author.\n\nStill open: Explicit accepted sole owner, exact hash/two-file fence, reviewer and execution terms. Materialize and independently verify the exact current-base add-package. Supported Node22.23.2, affected/integration/runtime-packaging/final-image gates. Existing single-owner adoption and authenticated durable/fresh-login/reconciliation/audit/customer proof.",
+      "remainingGap": "Reconcile source-bound historical evidence and existing ownership with current canonical implementation; do not transfer prior proof to current SHA."
+    }
+  ],
+  "proofRule": "Receipt text is historical attributed evidence, not a new independent test or adoption decision."
+}

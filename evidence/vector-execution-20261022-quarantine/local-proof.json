@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-10-22T20:32:30.074799+00:00",
+  "baseRef": "a383ad2f",
+  "baseEngineGitBlob": "5b5a31248ec40fcba5dd4df46c5e9911def8a7e8",
+  "scope": "Cross-permit tenant/adapter/employee fail-closed quarantine with durable NOT_DISPATCHED receipts",
+  "files": {
+    "operations/runtime/autopilot-execution-engine.cjs": "706b3cd6b3cc5275632f3b2de6d622e29354c865952cb62ce96454d578d441c5",
+    "operations/runtime/autopilot-execution-engine.test.cjs": "88540073e95724bb371a519ca50583cc822b8f0103f49313c05438de5a8f3771"
+  },
+  "tests": {
+    "runtime": "Node22.23.2",
+    "pass": 45,
+    "fail": 0,
+    "skip": 0,
+    "command": "node --test operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs"
+  },
+  "baselineReproduction": "../autopilot-quarantine-simulation/results.json",
+  "limitations": [
+    "VERIFIED remains status-only readback without payload binding",
+    "no production/provider/customer proof",
+    "no reconciliation clearance API",
+    "malformed historical scope blocks tenant conservatively",
+    "query scaling not benchmarked"
+  ],
+  "remoteMutations": false,
+  "baseSHA": "a383ad2fef540529b332f0fd4eef2d3882facd18",
+  "independentReview": {
+    "verifier": "/root/review_inference",
+    "pass": 45,
+    "fail": 0,
+    "skip": 0,
+    "fileHashesVerified": true,
+    "result": "No scoped blocker"
+  }
+}

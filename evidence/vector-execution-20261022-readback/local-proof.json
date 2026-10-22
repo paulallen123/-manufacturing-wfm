@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-10-22T20:38:25.982426+00:00",
+  "baseSHA": "640fac5e7bb79f07dd32c6764a4868f943dcaa9d",
+  "scope": "Snapshot approved action/applied ID, bind trusted readback, disable automatic compensation on uncertainty",
+  "files": {
+    "operations/runtime/autopilot-execution-engine.cjs": "d2faf04702e82f572b5cf87824f218f968c4ab39e56a0707210b6ae863fecac5",
+    "operations/runtime/autopilot-execution-engine.test.cjs": "f1eb60575a2c2d4f114303bc9922ec2aa24230c64ea26976a5cee08d0741d38d",
+    "operations/runtime/workforce-lifecycle-guard.cjs": "6b8a6bc95f8c4c37f72041514298d28d2af4bf2e4c79d7a0e7166db011bbd511"
+  },
+  "tests": {
+    "runtime": "Node22.23.2",
+    "pass": 72,
+    "fail": 0,
+    "skip": 0,
+    "command": "node --test operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-ingress.security.test.cjs operations/runtime/autopilot-replay.regression.test.cjs operations/runtime/workforce-lifecycle-guard.test.cjs"
+  },
+  "contract": "Trusted getTrustedEvent adds tenant and payload; publicEvent HTTP shape unchanged",
+  "fixtureCorrection": "Concurrent lock probe waits1500ms for other process short claim; still fails if adapter owner holds lock over I/O",
+  "limitations": [
+    "Only local lifecycle receipt proof, not external provider proof",
+    "No independently measured operational or financial outcome",
+    "No automatic compensation or reconciliation release API",
+    "Existing historical VERIFIED evidence not retroactively revalidated",
+    "No hosted/customer proof"
+  ],
+  "remoteMutations": false
+}

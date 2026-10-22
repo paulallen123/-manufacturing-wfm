@@ -1,0 +1,36 @@
+{
+  "updatedAt": "2026-10-22T20:33:50.736Z",
+  "integrationOwner": "current Work session",
+  "visibility": "Visible agents and checked PRs only; external chats not exhaustively observable.",
+  "leases": [
+    {
+      "task": "Autopilot atomic same-permit claim",
+      "owner": "/root/containment_repair",
+      "branch": "codex/autopilot-plan-shape-20261013",
+      "scope": [
+        "operations/runtime/autopilot-execution-engine.cjs",
+        "operations/runtime/autopilot-execution-engine.test.cjs"
+      ],
+      "expiresAt": "2026-10-22T20:33:50.736Z",
+      "status": "completed bounded task; reconcile remote before next claim"
+    },
+    {
+      "task": "Missing structure inference",
+      "owner": "/root",
+      "branch": "test/vector-empty-organisation-regression-20261020",
+      "scope": [
+        "implementation/runtime/configuration-inference-engine.cjs",
+        "implementation/runtime/configuration-inference-engine.test.cjs"
+      ],
+      "expiresAt": "2026-10-22T20:33:50.736Z",
+      "status": "completed bounded task; reconcile remote before next claim"
+    },
+    {
+      "task": "Independent verification",
+      "owner": "/root/review_inference",
+      "scope": "read-only verification",
+      "expiresAt": "2026-10-22T20:33:50.736Z",
+      "status": "completed bounded task; reconcile remote before next claim"
+    }
+  ]
+}

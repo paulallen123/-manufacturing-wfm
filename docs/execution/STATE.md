@@ -1,43 +1,27 @@
-# VECTOR execution checkpoint — current delivery PR501
-
-This checkpoint supersedes the earlier PR274 checkpoint for the narrow empty-source correction. PR274 remains HARVEST for broader adaptive setup changes; its four conflict files require preserving current canonical safeguards.
-
-Current tested repair commit: 93d1bbb45e72ce6434057cea7e4408b91ed0b077. Existing PR501 is the single canonical-based delivery path. Node22 independent and author runs22/22. Regression now lives in the existing Docker-admitted suite; actual image execution is not yet proven. CircleCI core job1030 status success does not certify heavy admission. Full PR inventory preserved with unreviewed rows explicitly unclassified.
-
 # VECTOR execution checkpoint
-
-Updated: 2026-10-21T16:39:01.879Z
-
-## Objective and current bounded result
-Deliver the narrow repair through existing canonical-based PR501; preserve PR274 as broader HARVEST. Source commit 93d1bbb45e72ce6434057cea7e4408b91ed0b077 has passed focused Node22/24 tests and independent local review. This is ISOLATED_TESTED, not integrated, deployed or customer-proven. The evidence-only checkpoint commit containing this file does not change executable bytes.
-
-## Current identities
-- Canonical: release/vector-customer-ready-candidate-20260925 @ 48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
-- Serving: 90ad90fcf60adaca9abacdd4ad14bf392f95e585; deployment 057e19a2-7d49-4390-8705-63e71ea79a89.
-- Project: 43367a88-2233-4c6b-9018-0ce234dd73ca; environment eed9f097-610a-416e-83b9-6bc7bdb3eeef; service cded4ff7-24b1-4aaa-a7e2-67f143583bc2.
-- URL: https://vector-customer-ready-candidate-production.up.railway.app/
-- Pending patch b453aa80-4763-4a08-a4f5-d5d27534b2c8 targets 48dce8f only; not accepted.
-- Rollback: current serving artifact retained; actual recovery not exercised in this run.
-
-## Ownership and authority
-User appointed this Work session execution owner. Repair continues existing PR274 scope; reservation comment 6321217091. Existing canonical release owner remains recorded as task01a15e4a-0bc0-7093-84bf-e963f7750039. No competing release runner or frozen tenant mutation. Visible PR274 head unchanged since 2026-09-28; other chats/jobs cannot be comprehensively observed. Publication requires expected-head fast-forward guard. Recheck before any next write.
-
-## Verified observations
-- 275 open PRs; 261 drafts, fetched across three GitHub pages. Disposition review remains incomplete.
-- No AGENTS.md found in recursive canonical or PR274 trees.
-- Live HTTP runtime identity independently reports build-file-matched, fixtureOnly true, productionApproved false, pilotReady false.
-- Public browser renders secure passkey sign-in. Authenticated setup wizard not verified.
-- Git clone lacks shell credentials; authenticated connector remains usable. No credentials changed.
-- Branch-protection read denied 403 by integration; empty rulesets do not prove no protection.
-- CircleCI freeze guard may halt heavy tests; green status alone is insufficient proof.
-
-## Next executable actions
-1. Read this checkpoint and current PR501 ref; verify repair, CI and independent exact-image/hosted approval before promotion.
-2. Reconcile PR274's broader changes against canonical, with full changed-file and existing owner review; do not merge the entire PR based on this narrow suite.
-3. Add this regression to exact-image admission through the canonical owner; repair any resulting integration failures.
-4. Inspect and repair the Autopilot external-write/readback/containment path in its existing ownership scope.
-5. Complete Adopt/Harvest/Oracle/Blocked/Discard review of remaining PRs using actual diffs.
-6. Run the exact frozen candidate through image, hosted, authenticated, recovery and independent release gates before authorized deployment.
-
-## Dependencies and limits
-Formal independent approval and exact-image/hosted proof remain missing. This session has no Docker executable and no shell GitHub auth; connector handles publication. A supported Node22.23.2 binary was downloaded from nodejs.org and verified against its official checksum. Real customer/provider credentials and bounded mutation consent remain prerequisites for provider/customer proof. No background runner is established by this checkpoint. Resume only after reconciling current remote state.
+Updated 2026-10-22T20:41:07.568Z
+## Objective and source
+Finish critical repairs, then prove the integrated customer journey. Full accepted backlog remains in scope.
+Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
+Integrated candidate PR501: this commit combines inference17f6f9930f7c0fdfcdbb516fc9a95f513e53a14c with reviewed Autopilotd6f5a99c1381ffc9cb17f9af731267b9d50088e5. Resolve containing commit for exact candidate SHA.
+Autopilot donor PR444 @d6f5a99c1381ffc9cb17f9af731267b9d50088e5; retained provenance, no separate release candidate.
+## Serving and rollback
+Serving90ad90fcf60adaca9abacdd4ad14bf392f95e585; Railway deployment057e19a2-7d49-4390-8705-63e71ea79a89. Project43367a88-2233-4c6b-9018-0ce234dd73ca, env eed9f097-610a-416e-83b9-6bc7bdb3eeef, service cded4ff7-24b1-4aaa-a7e2-67f143583bc2.
+URL https://vector-customer-ready-candidate-production.up.railway.app/; sign-in observed, authenticated wizard unverified. Retained serving artifact is rollback lead; digest/restore drill unverified.
+## Completed proof
+PR444 quarantine passes author/root/independent45/45 Node22.23.2, zero skips. Across fresh permits, same tenant/adapter/employee unresolved intent blocks another dispatch atomically. BLOCKED means NOT_DISPATCHED, not unknown external state. Malformed history fails closed; unrelated employees/tenants unaffected.
+PR501 inference25/25 plus independent96 held-out assertions. Scale proof14/14; wrong source fingerprint rejected. Rootless tar fixture corrections retained.
+Proof is ISOLATED_TESTED synthetic; no installed-image, hosted customer journey, provider or customer acceptance established.
+## Jobs and ownership
+CircleCI1044 core SUCCESS;1045 runtime SUCCESS for exact17f6 at latest check. No redundant rerun. Earlier1036 failure retained; its detailed first-failure log remains unavailable. Local source binding defect reproduced and repaired independently.
+Root integration owner. /root/containment_repair author, /root/review_inference independent review, /root/deployment_verify read-only lane assessment completed. No persistent Work runner.
+## Next executable action
+Readback identity/payload binding repair completed, independent/root72/72 plus local HTTP mismatch409 and no compensation. Trusted getter enriches tenant/payload only; public HTTP event shape unchanged. Combined focused97/97 Node22 pass; next observe exact combined CircleCI gate, then secure hosted proof lane ownership/configuration and authenticated journey/recovery.
+Existing hardening proof lane48ee3ceb-9cfc-4399-b3a1-3628e3603815 may be technically reusable; ownership UNKNOWN and no volume. See hardening-lane-readonly.md. Never accept environment-wide staged patch b453aa80: it also changes customer-ready deployment.
+## Scope and dependencies
+All59 F0-F7 rows preserved in capability-map.yaml. Current275 open PRs/259 drafts recounted; classification incomplete.14 intake/six held captured distinctly in intake-reconciliation.json with historical receipts and no transferred proof.16 research rows still need mapping. Library backlogv45 partly read; intakev67 lines1-440/1242 read.
+Remaining safety gaps: historical VERIFIED receipt revalidation, compensation authority/effects, authorized reconciliation, async provider contracts, expired-permit reconciliation, source provenance/freshness.
+Production/customer credentials and authorized external action scope unestablished. Live fixtureOnly=true, productionApproved=false, pilotReady=false.
+## Boundaries and continuity
+No merge/deploy, production/provider mutation or customer-proof claim. Required reviews/CI/environment approvals remain mandatory. Branch protection admin read403; do not bypass.
+On resume reconcile PR heads, current jobs, ownership and deployment before acting. No external write replay. If this Work turn ends, execution pauses unless a real identified job is still running.

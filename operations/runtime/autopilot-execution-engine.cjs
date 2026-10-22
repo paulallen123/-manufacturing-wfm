@@ -6,6 +6,7 @@ const PREFIX='/api/operations/autopilot',PERMIT_TTL_MS=15*60*1000;
 const AUTHORISED_ROLES=new Set(['manager','supervisor','director','admin','payroll_admin']);
 function sha256(v){return createHash('sha256').update(String(v)).digest('hex');}
 function compact(v,max=240){return String(v??'').trim().slice(0,max);}
+function planString(value,label,max=240){if(typeof value!=='string')throw new Error(label+' must be a string.');return compact(value,max);}
 function iso(v){const n=Date.parse(String(v??''));return Number.isFinite(n)?new Date(n).toISOString():null;}
 function publicDetail(state,detail){return state==='VERIFIED'?{...detail,outcomeDigest:null,outcomeStatus:'UNPROVEN'}:detail;}
 function cookieToken(req){for(const part of String(req?.headers?.cookie||'').split(';')){const p=part.trim();if(p.startsWith('wfm_session='))return p.slice(12);}return '';}
@@ -13,13 +14,18 @@ function pathOf(req){return String(req?.url||'/').split('?')[0]||'/';}
 function writeJson(res,status,body){if(res.headersSent||res.writableEnded)return true;res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.end(JSON.stringify(body));return true;}
 async function readJson(req,max=131072){let size=0,chunks=[];for await(const chunk of req){const b=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);size+=b.length;if(size>max){const e=new Error('Request body too large.');e.statusCode=413;throw e;}chunks.push(b);}if(!chunks.length)return{};try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{const e=new Error('Invalid JSON body.');e.statusCode=400;throw e;}}
 function safePlan(input={}){
- if(compact(input.adapter,80)!=='workforce-lifecycle')throw new Error('Unsupported Autopilot execution adapter.');
+ if(typeof input.adapter!=='string'||compact(input.adapter,80)!=='workforce-lifecycle')throw new Error('Unsupported Autopilot execution adapter.');
  if(input.reversible!==true)throw new Error('Autopilot execution requires a reversible action.');
  const a=input.action&&typeof input.action==='object'&&!Array.isArray(input.action)?input.action:null;if(!a)throw new Error('Autopilot action is required.');
- const kind=compact(a.kind,40).toUpperCase();if(!['OVERTIME_OVERRIDE','AGENCY_ASSIGNMENT'].includes(kind))throw new Error('Autopilot workforce execution is limited to approved overtime or agency assignment actions.');
- if(!compact(a.employeeId,120)||!iso(a.effectiveAt))throw new Error('Autopilot workforce action requires employeeId and effectiveAt.');
- const rb=input.rollback&&typeof input.rollback==='object'&&!Array.isArray(input.rollback)?input.rollback:null;if(!rb||!compact(rb.eventKey,160)||!compact(rb.reason,300))throw new Error('Autopilot execution requires an explicit rollback plan.');
- return {adapter:'workforce-lifecycle',reversible:true,action:{eventKey:compact(a.eventKey,160)||'autopilot-action',kind,employeeId:compact(a.employeeId,120),effectiveAt:iso(a.effectiveAt),payload:a.payload&&typeof a.payload==='object'&&!Array.isArray(a.payload)?JSON.parse(JSON.stringify(a.payload)):{}},rollback:{eventKey:compact(rb.eventKey,160),reason:compact(rb.reason,300)},expectedOutcome:input.expectedOutcome&&typeof input.expectedOutcome==='object'&&!Array.isArray(input.expectedOutcome)?JSON.parse(JSON.stringify(input.expectedOutcome)):null};
+ const kind=planString(a.kind,'Action kind',40).toUpperCase();if(!['OVERTIME_OVERRIDE','AGENCY_ASSIGNMENT'].includes(kind))throw new Error('Autopilot workforce execution is limited to approved overtime or agency assignment actions.');
+ const employeeId=planString(a.employeeId,'Employee ID',120),effectiveAt=planString(a.effectiveAt,'Effective time');
+ if(!employeeId||!iso(effectiveAt))throw new Error('Autopilot workforce action requires employeeId and effectiveAt.');
+ const eventKey=Object.hasOwn(a,'eventKey')?planString(a.eventKey,'Action event key',160):'';
+ const rb=input.rollback&&typeof input.rollback==='object'&&!Array.isArray(input.rollback)?input.rollback:null;
+ if(!rb)throw new Error('Autopilot execution requires an explicit rollback plan.');
+ const rollbackKey=planString(rb.eventKey,'Rollback event key',160),rollbackReason=planString(rb.reason,'Rollback reason',300);
+ if(!rollbackKey||!rollbackReason)throw new Error('Autopilot execution requires an explicit rollback plan.');
+ return {adapter:'workforce-lifecycle',reversible:true,action:{eventKey:eventKey||'autopilot-action',kind,employeeId,effectiveAt:iso(effectiveAt),payload:a.payload&&typeof a.payload==='object'&&!Array.isArray(a.payload)?JSON.parse(JSON.stringify(a.payload)):{}},rollback:{eventKey:rollbackKey,reason:rollbackReason},expectedOutcome:input.expectedOutcome&&typeof input.expectedOutcome==='object'&&!Array.isArray(input.expectedOutcome)?JSON.parse(JSON.stringify(input.expectedOutcome)):null};
 }
 function promote(shadow){return createDecisionEpisode({tenant:shadow.tenant,site:shadow.site,decisionType:shadow.decisionType,triggerId:shadow.triggerId,triggeredAt:shadow.triggeredAt,contextRevision:shadow.contextRevision,mode:'HUMAN_APPROVAL',sourceEvidence:shadow.sourceEvidence,objective:{...(shadow.objective?.weights||{}),uncertaintyPenalty:shadow.objective?.uncertaintyPenalty},options:shadow.options});}
 function createAutopilotExecutionEngine(options={}){
@@ -40,6 +46,7 @@ function createAutopilotExecutionEngine(options={}){
  const ep=db.prepare('SELECT episode_json FROM vector_decision_episodes WHERE tenant=? AND episode_id=?'),permitQ=db.prepare('SELECT * FROM vector_autopilot_permits WHERE tenant=? AND permit_id=?');
  const permitI=db.prepare('INSERT INTO vector_autopilot_permits VALUES(?,?,?,?,?,?,?,?)'),eventI=db.prepare('INSERT INTO vector_autopilot_execution_events(execution_id,permit_id,tenant,state,detail_json,created_at) VALUES(?,?,?,?,?,?)');
  const executionQ=db.prepare('SELECT state,detail_json,created_at FROM vector_autopilot_execution_events WHERE execution_id=? ORDER BY id'),tenantQ=db.prepare('SELECT execution_id,permit_id,state,detail_json,created_at FROM vector_autopilot_execution_events WHERE tenant=? ORDER BY id DESC LIMIT ?');
+ const scopeQ=db.prepare('SELECT e.execution_id,e.state,p.plan_json FROM vector_autopilot_execution_events e LEFT JOIN vector_autopilot_permits p ON p.permit_id=e.permit_id AND p.tenant=e.tenant WHERE e.tenant=? AND (e.state!=\'BLOCKED\' OR EXISTS(SELECT 1 FROM vector_autopilot_execution_events earlier WHERE earlier.execution_id=e.execution_id AND earlier.state!=\'BLOCKED\')) AND e.id=(SELECT MAX(latest.id) FROM vector_autopilot_execution_events latest WHERE latest.execution_id=e.execution_id)');
  function ctx(req){const t=cookieToken(req);return t?auth.get(sha256(t),Date.now())||null:null;}
  function manager(req,res){const c=ctx(req);if(!c){writeJson(res,401,{error:'Sign in is required.'});return null;}if(!AUTHORISED_ROLES.has(String(c.role).toLowerCase())){writeJson(res,403,{error:'Autopilot execution requires an authorised manager or administrator.'});return null;}
   if(req.method==='POST'){
@@ -66,21 +73,70 @@ function createAutopilotExecutionEngine(options={}){
  async function executePermit({tenant,permitId,currentContextRevision}){
   const p=permitQ.get(tenant,permitId);if(!p)throw Object.assign(new Error('Autopilot permit not found.'),{statusCode:404});if(Date.parse(p.expires_at)<=Date.now())throw Object.assign(new Error('Autopilot permit expired. Re-approve current evidence.'),{statusCode:409});
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
-  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40),prior=last(executionId);if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED'].includes(prior.state))return {executionId,idempotent:true,...prior};
-  if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
-  log(executionId,permitId,tenant,'PREPARED',{episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)});let applied=null;
+  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40);let prior,blocked=null;
+  // Serialize history inspection and durable intent creation across connections.
+  // Commit before invoking either the adapter or the event publisher.
+  db.exec('BEGIN IMMEDIATE');
+  try{
+   prior=last(executionId);
+   if(!prior){
+    // Scope comes from immutable approved plans, never an event key or renewed
+    // permit. Unparseable historical scope cannot safely be narrowed.
+    for(const previous of scopeQ.all(tenant)){
+     let scope;try{scope=JSON.parse(previous.plan_json);}catch{}
+     const valid=scope&&scope.adapter==='workforce-lifecycle'&&typeof scope.action?.employeeId==='string'&&scope.action.employeeId.length>0&&scope.action.employeeId.length<=120&&scope.action.employeeId===scope.action.employeeId.trim();
+     if(!valid){blocked={reason:'HISTORICAL_SCOPE_INVALID',externalState:'NOT_DISPATCHED',blockingExecutionId:previous.execution_id};break;}
+     if(scope.adapter===plan.adapter&&scope.action.employeeId===plan.action.employeeId&&previous.state!=='VERIFIED'){blocked={reason:'PRIOR_EXECUTION_UNRESOLVED',externalState:'NOT_DISPATCHED',blockingExecutionId:previous.execution_id};break;}
+    }
+    if(blocked)eventI.run(executionId,permitId,tenant,'BLOCKED',JSON.stringify(blocked),new Date().toISOString());
+    else{
+    if(!lifecycle?.applyTrustedEvent)throw Object.assign(new Error('Authoritative workforce execution adapter is unavailable.'),{statusCode:503});
+    eventI.run(executionId,permitId,tenant,'PREPARED',JSON.stringify({episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)}),new Date().toISOString());
+    }
+   }
+   db.exec('COMMIT');
+  }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
+  if(blocked)return {executionId,idempotent:false,state:'BLOCKED',detail:blocked};
+  if(prior&&['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED','BLOCKED'].includes(prior.state))return {executionId,idempotent:true,...prior};
+  if(prior){
+   // A durable intent without a terminal receipt may have crossed the adapter
+   // boundary before the worker stopped. Do not dispatch the same permit again.
+   const detail={reason:'PRIOR_EXECUTION_UNRESOLVED',externalState:'UNKNOWN',interruptedState:prior.state,requiresReconciliation:true};
+   log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
+   return {executionId,idempotent:true,state:'RECONCILIATION_REQUIRED',detail};
+  }
+  try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state:'PREPARED'}});}catch{}
+  let applied=null,appliedEventId=null;
   try{
    const action={...plan.action,payload:{...plan.action.payload}};if(action.kind==='OVERTIME_OVERRIDE'){action.payload.approvalRef=permitId;action.payload.approvedBy=p.actor_ref;}
+   const expectedAction=JSON.parse(JSON.stringify(action));
    applied=lifecycle.applyTrustedEvent({tenant,eventKey:plan.action.eventKey,event:action});if(applied?.decision?.status!=='ACCEPTED')throw new Error('Authoritative lifecycle adapter rejected the action.');
-   log(executionId,permitId,tenant,'APPLIED',{eventId:applied.event.id,reasonCode:applied.decision.reasonCode});
-   const verified=lifecycle.getTrustedEvent({tenant,eventKey:plan.action.eventKey});if(!verified||verified.status!=='ACCEPTED')throw new Error('Post-action verification did not confirm authoritative state.');
+   appliedEventId=applied?.event?.id;
+   log(executionId,permitId,tenant,'APPLIED',{eventId:appliedEventId,reasonCode:applied.decision.reasonCode});
+   const verified=lifecycle.getTrustedEvent({tenant,eventKey:plan.action.eventKey});
+   if(!verified||verified.status!=='ACCEPTED'||typeof appliedEventId!=='string'||!appliedEventId.trim()||verified.id!==appliedEventId||verified.tenant!==tenant||verified.eventKey!==plan.action.eventKey||verified.kind!==expectedAction.kind||verified.employeeId!==expectedAction.employeeId||verified.effectiveAt!==expectedAction.effectiveAt||!verified.payload||typeof verified.payload!=='object'||Array.isArray(verified.payload)||digest(verified.payload)!==digest(expectedAction.payload))throw new Error('Post-action readback did not bind the approved action.');
    // Lifecycle readback verifies the event, not independently measured operational benefit.
    // The approving caller's forecast must never acquire measured-outcome authority.
    const detail={eventId:verified.id,outcomeDigest:null,outcomeStatus:'UNPROVEN'};
    log(executionId,permitId,tenant,'VERIFIED',detail);return {executionId,idempotent:false,state:'VERIFIED',detail};
   }catch(error){
-   log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error.message,300)});if(!applied?.event?.id){log(executionId,permitId,tenant,'CONTAINED',{reason:'NO_CONFIRMED_APPLY'});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'NO_CONFIRMED_APPLY'}};}
-   try{const rb=lifecycle.applyTrustedEvent({tenant,eventKey:plan.rollback.eventKey,event:{kind:'RETRO_CHANGE',employeeId:plan.action.employeeId,effectiveAt:new Date().toISOString(),payload:{targetEventId:applied.event.id,reason:plan.rollback.reason,approvalRef:permitId,correction:{autopilotRollback:true}}}});if(rb?.decision?.status!=='ACCEPTED')throw new Error('Compensating rollback was rejected.');const confirmed=lifecycle.getTrustedEvent({tenant,eventKey:plan.rollback.eventKey});if(!confirmed||confirmed.status!=='ACCEPTED')throw new Error('Rollback verification failed.');log(executionId,permitId,tenant,'ROLLED_BACK',{rollbackEventId:confirmed.id});return {executionId,idempotent:false,state:'ROLLED_BACK',detail:{rollbackEventId:confirmed.id}};}catch(rbError){log(executionId,permitId,tenant,'CONTAINED',{reason:'ROLLBACK_UNCONFIRMED',error:compact(rbError.message,300)});return {executionId,idempotent:false,state:'CONTAINED',detail:{reason:'ROLLBACK_UNCONFIRMED'}};}
+   log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error?.message,300)});
+   if(!appliedEventId){
+    // A thrown adapter call may already have committed. Read independently, but
+    // never infer non-application from an absent/failed/eventually-consistent read.
+    let observed=null;try{observed=lifecycle.getTrustedEvent?.({tenant,eventKey:plan.action.eventKey});}catch{}
+    const acceptedEventObserved=observed?.status==='ACCEPTED'&&typeof observed.id==='string'&&observed.id.trim().length>0;
+    // An accepted event at the key does not bind all approved payload fields.
+    // Preserve the readback as evidence without promoting it to action success.
+    const detail={reason:'APPLY_OUTCOME_UNKNOWN',externalState:'UNKNOWN',readbackStatus:acceptedEventObserved?'ACCEPTED_EVENT_OBSERVED':'UNCONFIRMED',observedEventId:acceptedEventObserved?observed.id:null,requiresReconciliation:true};
+    log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
+    return {executionId,idempotent:false,state:'RECONCILIATION_REQUIRED',detail};
+   }
+   // An ambiguous readback grants no authority to dispatch another mutation.
+   // Compensation needs a separate authorization and verified recovery design.
+   const detail={reason:'ACTION_READBACK_UNCONFIRMED',externalState:'UNKNOWN',eventId:appliedEventId,requiresReconciliation:true};
+   log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
+   return {executionId,idempotent:false,state:'RECONCILIATION_REQUIRED',detail};
   }
  }
  function statusForTenant(tenant,limit=50){return tenantQ.all(tenant,Math.max(1,Math.min(100,Number(limit)||50))).map(r=>({executionId:r.execution_id,permitId:r.permit_id,state:r.state,detail:publicDetail(r.state,JSON.parse(r.detail_json)),createdAt:r.created_at}));}
