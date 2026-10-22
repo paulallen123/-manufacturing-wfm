@@ -252,7 +252,7 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
 # configuration and independent payroll reconciliation proof without starting a server.
 RUN WFM_PROOF_ONESHOT=true \
     WFM_CONFIG_ENGINE_PATH=/app/implementation-runtime/configuration-inference-engine.cjs \
-    WFM_CONFIG_ENGINE_GIT_BLOB_SHA=d3688d27841a28d3b8801b7d4c63f254e8bf7edd \
+    WFM_CONFIG_ENGINE_GIT_BLOB_SHA=b47687d87b56a41240e731cf4e2046edf5acfa68 \
     node /app/proof-runtime/cloud-scale-proof-runner.cjs
 
 # Vector-only presentation composition.
