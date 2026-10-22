@@ -222,3 +222,81 @@ for (const [label, people] of [
   assert.ok(proposal.decisions.some(item=>item.key==='organisation-structure'));
  });
 }
+
+for (const field of ['employeeId','location','department']) {
+ test(`object-valued ${field} requires review without coercion`,()=>{
+  let coercions=0;
+  const row={employeeId:'E1',location:'S1',department:'D1',[field]:{toString(){coercions++;return 'forged';}}};
+  const result=buildConfigurationProposal({people:[row]});
+  assert.equal(result.organisation.autoApply,false);
+  assert.equal(result.workforce.autoApply,false);
+  assert.ok(result.decisions.some(x=>x.key==='organisation-structure'));
+  assert.equal(coercions,0);
+ });
+}
+test('prototype, accessor, proxy and custom traversal workforce evidence is inert and requires review',()=>{
+ let calls=0;
+ const valid={employeeId:'E1',location:'S1',department:'D1'};
+ const getter={...valid};Object.defineProperty(getter,'employeeId',{get(){calls++;return 'forged';}});
+ const proxy=new Proxy(valid,{get(){calls++;throw Error('must not execute');},getOwnPropertyDescriptor(){calls++;throw Error('must not execute');}});
+ const custom=[valid,{}];custom[Symbol.iterator]=function*(){calls++;yield valid;};custom.filter=()=>{calls++;return [valid,valid];};
+ for(const people of [[Object.create(valid)],[getter],[proxy],custom,new Proxy([valid],{get(){calls++;throw Error('must not execute');}}),[null],Array(1)]) {
+  const result=buildConfigurationProposal({people});
+  assert.equal(result.organisation.autoApply,false);
+  assert.equal(result.workforce.autoApply,false);
+  assert.ok(result.decisions.some(x=>x.key==='organisation-structure'));
+ }
+ assert.equal(calls,0);
+});
+test('proposal people accessor is rejected without invocation',()=>{
+ let calls=0;const input={get people(){calls++;return [{employeeId:'E1',location:'S1',department:'D1'}];}};
+ const result=buildConfigurationProposal(input);
+ assert.equal(result.organisation.autoApply,false);assert.equal(calls,0);
+});
+test('invalid workforce source preserves supplied row count but never partial assignments',()=>{
+ const people=[{employeeId:'E1',location:'S',department:'D'},{employeeId:{},location:'S',department:'D'}];
+ const structure=inferOrganisationModel(people),workforce=buildMassEmployeeAssignments(people);
+ assert.equal(structure.sourceCount,2);assert.equal(structure.peopleCount,0);
+ assert.equal(structure.invalidSource,true);assert.equal(structure.autoApply,false);
+ assert.deepEqual(workforce.assignments,[]);assert.equal(workforce.autoApply,false);
+ assert.equal(workforce.exceptions[0].reason,'INVALID_WORKFORCE_SOURCE');
+});
+test('frozen and null-prototype own-data people retain valid inference',()=>{
+ const person=Object.assign(Object.create(null),{employeeId:'E1',location:'S',department:'D'});
+ const people=Object.freeze([Object.freeze(person)]);
+ const result=buildConfigurationProposal({people});
+ assert.equal(result.organisation.autoApply,true);assert.equal(result.workforce.autoApply,true);
+ assert.equal(result.workforce.assignments[0].employeeId,'E1');
+});
+
+test('ambient descriptor-map getters never become workforce evidence',()=>{
+ let calls=0;const results=[];
+ for(const key of ['people','employeeId','location','department','managerId','email','firstName','punches','timecards']) {
+  const row={employeeId:'E1',location:'S',department:'D'};delete row[key];
+  const descriptor={configurable:true,get(){calls++;return {value:key==='people'?[row]:'forged'};}};
+  Object.defineProperty(Object.prototype,key,descriptor);
+  try { results.push([key,buildConfigurationProposal(key==='people'?{}:{people:[row]})]); }
+  finally { delete Object.prototype[key]; }
+ }
+ assert.equal(calls,0);
+ for(const [key,result] of results) if(['people','employeeId','location','department'].includes(key)) assert.equal(result.organisation.autoApply,false,key);
+});
+for(const field of ['employeeId','managerId','location','department','wfmRole','jobTitle','employmentType','email','firstName']) {
+ test(`numeric ${field} retains primitive inference behavior`,()=>{
+  const row={employeeId:'42',location:'S',department:'D',[field]:42};
+  const result=buildConfigurationProposal({people:[row]});
+  assert.equal(result.organisation.autoApply,true);assert.equal(result.workforce.autoApply,true);
+ });
+}
+test('unused diagnostic fields cannot invalidate valid workforce evidence',()=>{
+ let calls=0;const row={employeeId:'E1',location:'S',department:'D',email:{toString(){calls++;throw Error('unused');}}};
+ Object.defineProperty(row,'firstName',{get(){calls++;throw Error('unused');}});
+ const result=buildConfigurationProposal({people:[row]});
+ assert.equal(result.organisation.autoApply,true);assert.equal(result.workforce.autoApply,true);assert.equal(calls,0);
+});
+test('100001 valid people have no newly invented capacity rejection',()=>{
+ const people=Array.from({length:100001},(_,i)=>({employeeId:`E${i}`,location:'S',department:'D'}));
+ const result=buildConfigurationProposal({people});
+ assert.equal(result.organisation.autoApply,true);assert.equal(result.workforce.autoApply,true);
+ assert.equal(result.workforce.assignments.length,100001);
+});
