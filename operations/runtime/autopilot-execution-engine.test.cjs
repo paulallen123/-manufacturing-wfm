@@ -28,8 +28,8 @@ test('rejects nonstring operational identifiers and rollback reason before issui
 });
 test('cold-starts on a fresh database without pre-created decision tables',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ap-cold-')),dbPath=path.join(dir,'x.db'),db=new DatabaseSync(dbPath);db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT,role TEXT);CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT,expires INTEGER);');db.close();const engine=createAutopilotExecutionEngine({dbPath,lifecycleAdapter:{}});const verify=new DatabaseSync(dbPath);const row=verify.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='vector_decision_episodes'").get();assert.equal(row?.name,'vector_decision_episodes');verify.close();engine.close();fs.rmSync(dir,{recursive:true,force:true});});
 test('requires current context and reversible plan',()=>{const s=setup({});assert.throws(()=>s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'old',plan:plan()}),/context changed/i);assert.throws(()=>s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:{...plan(),reversible:false}}),/reversible/);s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
-test('executes verifies and is idempotent',async()=>{const m=new Map(),a={applyTrustedEvent({eventKey}){const x={event:{id:'wf-'+eventKey,eventKey,status:'ACCEPTED'},decision:{status:'ACCEPTED',reasonCode:'OK'}};m.set(eventKey,x.event);return x;},getTrustedEvent({eventKey}){return m.get(eventKey)||null;}};const s=setup(a),p=s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()}),r=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'}),r2=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'});assert.equal(r.state,'VERIFIED');assert.equal(r2.idempotent,true);s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
-test('failed verification rolls back or contains',async()=>{const m=new Map();let fail=true;const a={applyTrustedEvent({eventKey,event}){const x={event:{id:'wf-'+eventKey,eventKey,status:'ACCEPTED'},decision:{status:'ACCEPTED',reasonCode:'OK'}};m.set(eventKey,x.event);return x;},getTrustedEvent({eventKey}){if(eventKey==='ot'&&fail){fail=false;return null;}return m.get(eventKey)||null;}};const s=setup(a),p=s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()}),r=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'});assert.equal(r.state,'ROLLED_BACK');s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
+test('executes verifies and is idempotent',async()=>{const m=new Map(),a={applyTrustedEvent({tenant,eventKey,event}){const x={event:{...event,tenant,id:'wf-'+eventKey,eventKey,status:'ACCEPTED'},decision:{status:'ACCEPTED',reasonCode:'OK'}};m.set(eventKey,x.event);return x;},getTrustedEvent({eventKey}){return m.get(eventKey)||null;}};const s=setup(a),p=s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()}),r=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'}),r2=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'});assert.equal(r.state,'VERIFIED');assert.equal(r2.idempotent,true);s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
+test('failed verification requires reconciliation without compensation',async()=>{const m=new Map();let fail=true;const a={applyTrustedEvent({eventKey,event}){const x={event:{id:'wf-'+eventKey,eventKey,status:'ACCEPTED'},decision:{status:'ACCEPTED',reasonCode:'OK'}};m.set(eventKey,x.event);return x;},getTrustedEvent({eventKey}){if(eventKey==='ot'&&fail){fail=false;return null;}return m.get(eventKey)||null;}};const s=setup(a),p=s.engine.issueHumanPermit({tenant:'A',episodeId:s.e.episodeId,optionId:'overtime',actorRef:'m',contextRevision:'r7',plan:plan()}),r=await s.engine.executePermit({tenant:'A',permitId:p.permitId,currentContextRevision:'r7'});assert.equal(r.state,'RECONCILIATION_REQUIRED');assert.equal(m.size,1);assert.equal(m.has('rb'),false);s.engine.close();fs.rmSync(s.dir,{recursive:true,force:true});});
 
 // PR453 containment cases, corrected to require honest unknown-outcome handling.
 // Kept in this existing image-admitted suite so the release gate cannot omit them.
@@ -92,7 +92,7 @@ test('failed apply requires reconciliation when trusted readback is unavailable 
   } finally { sample.close(); }
 });
 
-test('failed compensating rollback requires reconciliation and never claims containment', async () => {
+test('unconfirmed readback never dispatches the proposed compensating rollback', async () => {
   const calls = [];
   const sample = setup({ applyTrustedEvent({ eventKey }) {
     calls.push(eventKey);
@@ -104,10 +104,10 @@ test('failed compensating rollback requires reconciliation and never claims cont
     const first = await sample.engine.executePermit(args);
     const retry = await sample.engine.executePermit(args);
     assert.equal(first.state, 'RECONCILIATION_REQUIRED');
-    assert.equal(first.detail.reason, 'ROLLBACK_UNCONFIRMED');
+    assert.equal(first.detail.reason, 'ACTION_READBACK_UNCONFIRMED');
     assert.equal(retry.idempotent, true);
     assert.equal(retry.state, 'RECONCILIATION_REQUIRED');
-    assert.deepEqual(calls, ['synthetic-action', 'read:synthetic-action', 'synthetic-rollback']);
+    assert.deepEqual(calls, ['synthetic-action', 'read:synthetic-action']);
     assert.deepEqual(sample.engine.statusForTenant(sample.tenant).map(x => x.state),
       ['RECONCILIATION_REQUIRED', 'VERIFY_FAILED', 'APPLIED', 'PREPARED']);
   } finally { sample.close(); }
@@ -162,7 +162,7 @@ for (const thrown of [null, undefined]) {
   });
 }
 
-test('non-Error rollback throw persists reconciliation state without repeating mutation', async () => {
+test('unconfirmed readback cannot invoke even a failing rollback adapter', async () => {
   let applies = 0;
   const sample = setup({ applyTrustedEvent({ eventKey }) {
     applies++;
@@ -174,9 +174,9 @@ test('non-Error rollback throw persists reconciliation state without repeating m
     const first = await sample.engine.executePermit(args);
     const retry = await sample.engine.executePermit(args);
     assert.equal(first.state, 'RECONCILIATION_REQUIRED');
-    assert.equal(first.detail.reason, 'ROLLBACK_UNCONFIRMED');
+    assert.equal(first.detail.reason, 'ACTION_READBACK_UNCONFIRMED');
     assert.equal(retry.idempotent, true);
-    assert.equal(applies, 2);
+    assert.equal(applies, 1);
   } finally { sample.close(); }
 });
 
@@ -239,7 +239,7 @@ test('concurrent processes claim a permit once without holding a database lock o
       applyTrustedEvent() {
         fs.appendFileSync(${JSON.stringify(marker)}, 'write\\n');
         const other = new DatabaseSync(${JSON.stringify(sample.dbPath)});
-        try { other.exec('INSERT INTO adapter_lock_probe DEFAULT VALUES'); }
+        try { other.exec('PRAGMA busy_timeout=1500; INSERT INTO adapter_lock_probe DEFAULT VALUES'); }
         catch (error) { fs.appendFileSync(${JSON.stringify(marker)}, 'lock-held\\n'); }
         finally { other.close(); }
         throw new Error('synthetic response lost');
@@ -322,7 +322,7 @@ test('concurrent distinct permits cannot bypass affected employee quarantine', a
       applyTrustedEvent() {
         fs.appendFileSync(${JSON.stringify(marker)}, 'write\\n');
         const other = new DatabaseSync(${JSON.stringify(sample.dbPath)});
-        try { other.exec('INSERT INTO adapter_lock_probe DEFAULT VALUES'); }
+        try { other.exec('PRAGMA busy_timeout=1500; INSERT INTO adapter_lock_probe DEFAULT VALUES'); }
         catch (error) { fs.appendFileSync(${JSON.stringify(marker)}, 'lock-held\\n'); }
         finally { other.close(); }
         throw new Error('synthetic response lost');
@@ -465,5 +465,51 @@ test('blocked-only receipts do not poison scope once prior latest state is verif
   assert.equal((await sample.engine.executePermit({...args,permitId:third.permitId})).state,'RECONCILIATION_REQUIRED');
   assert.equal(calls,2);
  }finally{db.close();sample.close();}
+});
+for (const mismatch of ['id','eventKey','kind','tenant','employeeId','effectiveAt','payload','missing-payload','absent','throws','string','array']) {
+ test(`readback ${mismatch} cannot verify or authorize compensation`, async () => {
+  let calls=0,readback;
+  const sample=setup({applyTrustedEvent({tenant,eventKey,event}) {
+   calls++;readback={...event,tenant,eventKey,id:'applied-id',status:'ACCEPTED'};
+   return {event:{id:'applied-id'},decision:{status:'ACCEPTED'}};
+  },getTrustedEvent(){
+   if(mismatch==='absent')return null;if(mismatch==='throws')throw new Error('readback unavailable');
+   if(mismatch==='string')return 'ACCEPTED';if(mismatch==='array')return [];
+   const result=JSON.parse(JSON.stringify(readback));
+   if(mismatch==='payload')result.payload.minutes=999;
+   else if(mismatch==='missing-payload')delete result.payload;
+   else result[mismatch]='unrelated';
+   return result;
+  }});
+  try {
+   const args={tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'};
+   const result=await sample.engine.executePermit(args);
+   assert.equal(result.state,'RECONCILIATION_REQUIRED');assert.equal(result.detail.reason,'ACTION_READBACK_UNCONFIRMED');assert.equal(result.detail.externalState,'UNKNOWN');
+   const retry=await sample.engine.executePermit(args);assert.equal(retry.idempotent,true);assert.equal(calls,1,'never dispatch compensation or replay');
+   assert.ok(!sample.engine.statusForTenant(sample.tenant).some(row=>['VERIFIED','ROLLED_BACK'].includes(row.state)));
+  }finally{sample.close();}
+ });
+}
+for(const eventId of ['', '   ', null, 42]){
+ test(`invalid applied ID ${JSON.stringify(eventId)} cannot verify`,async()=>{
+  let calls=0,readback;const sample=setup({applyTrustedEvent({tenant,eventKey,event}){calls++;readback={...event,tenant,eventKey,id:eventId,status:'ACCEPTED'};return {event:{id:eventId},decision:{status:'ACCEPTED'}};},getTrustedEvent(){return readback;}});
+  try{const result=await sample.engine.executePermit({tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'});assert.equal(result.state,'RECONCILIATION_REQUIRED');assert.equal(calls,1);}
+  finally{sample.close();}
+ });
+}
+test('fully bound readback accepts payload key reordering and server approval augmentation',async()=>{
+ let calls=0,readback;const sample=setup({applyTrustedEvent({tenant,eventKey,event}){calls++;readback={...event,tenant,eventKey,id:'approved-id',status:'ACCEPTED',payload:Object.fromEntries(Object.entries(event.payload).reverse())};return {event:{id:'approved-id'},decision:{status:'ACCEPTED'}};},getTrustedEvent(){return readback;}});
+ try{const args={tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'};const result=await sample.engine.executePermit(args);assert.equal(result.state,'VERIFIED');assert.equal(readback.payload.approvalRef,sample.permit.permitId);assert.equal(readback.payload.approvedBy,'synthetic-manager');assert.equal(result.detail.outcomeStatus,'UNPROVEN');assert.equal((await sample.engine.executePermit(args)).idempotent,true);assert.equal(calls,1);}
+ finally{sample.close();}
+});
+test('adapter mutation cannot redefine the approved action used for readback',async()=>{
+ let calls=0,readback;const sample=setup({applyTrustedEvent({tenant,eventKey,event}){calls++;event.payload.minutes=999;readback={...event,tenant,eventKey,id:'mutated-id',status:'ACCEPTED'};return {event:{id:'mutated-id'},decision:{status:'ACCEPTED'}};},getTrustedEvent(){return readback;}});
+ try{const result=await sample.engine.executePermit({tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'});assert.equal(result.state,'RECONCILIATION_REQUIRED');assert.equal(calls,1);}
+ finally{sample.close();}
+});
+test('readback cannot mutate the snapshotted applied event identifier',async()=>{
+ let calls=0,readback,applied;const sample=setup({applyTrustedEvent({tenant,eventKey,event}){calls++;readback={...event,tenant,eventKey,id:'original-id',status:'ACCEPTED'};applied={event:{id:'original-id'},decision:{status:'ACCEPTED'}};return applied;},getTrustedEvent(){applied.event.id='different-id';return {...readback,id:'different-id'};}});
+ try{const result=await sample.engine.executePermit({tenant:sample.tenant,permitId:sample.permit.permitId,currentContextRevision:'r1'});assert.equal(result.state,'RECONCILIATION_REQUIRED');assert.equal(result.detail.eventId,'original-id');assert.equal(calls,1);}
+ finally{sample.close();}
 });
 }

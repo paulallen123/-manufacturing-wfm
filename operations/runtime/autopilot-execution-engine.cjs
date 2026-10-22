@@ -106,19 +106,22 @@ function createAutopilotExecutionEngine(options={}){
    return {executionId,idempotent:true,state:'RECONCILIATION_REQUIRED',detail};
   }
   try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state:'PREPARED'}});}catch{}
-  let applied=null;
+  let applied=null,appliedEventId=null;
   try{
    const action={...plan.action,payload:{...plan.action.payload}};if(action.kind==='OVERTIME_OVERRIDE'){action.payload.approvalRef=permitId;action.payload.approvedBy=p.actor_ref;}
+   const expectedAction=JSON.parse(JSON.stringify(action));
    applied=lifecycle.applyTrustedEvent({tenant,eventKey:plan.action.eventKey,event:action});if(applied?.decision?.status!=='ACCEPTED')throw new Error('Authoritative lifecycle adapter rejected the action.');
-   log(executionId,permitId,tenant,'APPLIED',{eventId:applied.event.id,reasonCode:applied.decision.reasonCode});
-   const verified=lifecycle.getTrustedEvent({tenant,eventKey:plan.action.eventKey});if(!verified||verified.status!=='ACCEPTED')throw new Error('Post-action verification did not confirm authoritative state.');
+   appliedEventId=applied?.event?.id;
+   log(executionId,permitId,tenant,'APPLIED',{eventId:appliedEventId,reasonCode:applied.decision.reasonCode});
+   const verified=lifecycle.getTrustedEvent({tenant,eventKey:plan.action.eventKey});
+   if(!verified||verified.status!=='ACCEPTED'||typeof appliedEventId!=='string'||!appliedEventId.trim()||verified.id!==appliedEventId||verified.tenant!==tenant||verified.eventKey!==plan.action.eventKey||verified.kind!==expectedAction.kind||verified.employeeId!==expectedAction.employeeId||verified.effectiveAt!==expectedAction.effectiveAt||!verified.payload||typeof verified.payload!=='object'||Array.isArray(verified.payload)||digest(verified.payload)!==digest(expectedAction.payload))throw new Error('Post-action readback did not bind the approved action.');
    // Lifecycle readback verifies the event, not independently measured operational benefit.
    // The approving caller's forecast must never acquire measured-outcome authority.
    const detail={eventId:verified.id,outcomeDigest:null,outcomeStatus:'UNPROVEN'};
    log(executionId,permitId,tenant,'VERIFIED',detail);return {executionId,idempotent:false,state:'VERIFIED',detail};
   }catch(error){
    log(executionId,permitId,tenant,'VERIFY_FAILED',{error:compact(error?.message,300)});
-   if(!applied?.event?.id){
+   if(!appliedEventId){
     // A thrown adapter call may already have committed. Read independently, but
     // never infer non-application from an absent/failed/eventually-consistent read.
     let observed=null;try{observed=lifecycle.getTrustedEvent?.({tenant,eventKey:plan.action.eventKey});}catch{}
@@ -129,7 +132,11 @@ function createAutopilotExecutionEngine(options={}){
     log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
     return {executionId,idempotent:false,state:'RECONCILIATION_REQUIRED',detail};
    }
-   try{const rb=lifecycle.applyTrustedEvent({tenant,eventKey:plan.rollback.eventKey,event:{kind:'RETRO_CHANGE',employeeId:plan.action.employeeId,effectiveAt:new Date().toISOString(),payload:{targetEventId:applied.event.id,reason:plan.rollback.reason,approvalRef:permitId,correction:{autopilotRollback:true}}}});if(rb?.decision?.status!=='ACCEPTED')throw new Error('Compensating rollback was rejected.');const confirmed=lifecycle.getTrustedEvent({tenant,eventKey:plan.rollback.eventKey});if(!confirmed||confirmed.status!=='ACCEPTED')throw new Error('Rollback verification failed.');log(executionId,permitId,tenant,'ROLLED_BACK',{rollbackEventId:confirmed.id});return {executionId,idempotent:false,state:'ROLLED_BACK',detail:{rollbackEventId:confirmed.id}};}catch(rbError){const detail={reason:'ROLLBACK_UNCONFIRMED',externalState:'UNKNOWN',eventId:applied.event.id,requiresReconciliation:true,error:compact(rbError?.message,300)};log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);return {executionId,idempotent:false,state:'RECONCILIATION_REQUIRED',detail};}
+   // An ambiguous readback grants no authority to dispatch another mutation.
+   // Compensation needs a separate authorization and verified recovery design.
+   const detail={reason:'ACTION_READBACK_UNCONFIRMED',externalState:'UNKNOWN',eventId:appliedEventId,requiresReconciliation:true};
+   log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
+   return {executionId,idempotent:false,state:'RECONCILIATION_REQUIRED',detail};
   }
  }
  function statusForTenant(tenant,limit=50){return tenantQ.all(tenant,Math.max(1,Math.min(100,Number(limit)||50))).map(r=>({executionId:r.execution_id,permitId:r.permit_id,state:r.state,detail:publicDetail(r.state,JSON.parse(r.detail_json)),createdAt:r.created_at}));}
