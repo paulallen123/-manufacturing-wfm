@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-23T18:34:30.277Z",
+  "updatedAt": "2026-10-23T18:44:13.225Z",
   "integrationOwner": "/root (existing Work integration owner, explicit user resume)",
   "visibility": "Visible agents and checked PRs only; external chats not exhaustively observable.",
   "leases": [
@@ -48,17 +48,29 @@
         "inventory/ownership.json",
         "evidence/vector-integration-20261023/"
       ],
-      "status": "completed source composition; ready guarded publication; build access blocked",
-      "expiresAt": "2026-10-23T18:34:30.277Z"
+      "status": "completed at 1e8330c6d0c67811d47b5c17b44daf75649f9099; no release",
+      "expiresAt": "2026-10-23T19:04:30.279Z"
+    },
+    {
+      "task": "Adopt existing PR364 two-file ambiguity rejection",
+      "owner": "/root",
+      "branch": "test/vector-empty-organisation-regression-20261020",
+      "scope": [
+        "security/runtime/proof-runner-auth.cjs",
+        "security/runtime/proof-runner-auth.test.cjs"
+      ],
+      "status": "bounded adoption checkpoint; reconcile branch before any continuation",
+      "claimComment": 6372135078,
+      "expiresAt": "2026-10-23T18:44:13.225Z"
     }
   ],
   "currentExecution": {
     "identity": "/root",
     "workspace": "/workspace/scratch/cd4e2bcb0821",
-    "claimComment": 6371944102,
-    "sourceParent": "4b79aeec360d64a54b732ac38dc38763163b7e0a",
-    "sourceCompositionTree": "5dc68b8eb2f1645442de45494860aed8b411c0fe",
-    "status": "six-file source adoption checkpoint; no persistent executor",
+    "claimComment": 6372135078,
+    "sourceParent": "1e8330c6d0c67811d47b5c17b44daf75649f9099",
+    "sourceCompositionTree": "b32071f3fe800e1d71243007810a67e705c4f679",
+    "status": "source adoption checkpoint; local workspace unavailable, build access blocked; no persistent worker",
     "persistentRunner": false
   },
   "externalVerification": {

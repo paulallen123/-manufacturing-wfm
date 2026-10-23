@@ -1,0 +1,67 @@
+TAP version 13
+# (node:27) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:27) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: exact candidate exposes the signed proof runner authentication boundary
+ok 1 - exact candidate exposes the signed proof runner authentication boundary
+  ---
+  duration_ms: 2.587196
+  type: 'test'
+  ...
+# Subtest: signed proof identity mints a short-lived audited session without a password
+ok 2 - signed proof identity mints a short-lived audited session without a password
+  ---
+  duration_ms: 110.611781
+  type: 'test'
+  ...
+# Subtest: ambiguous normalized proof identity fails closed before session issuance
+ok 3 - ambiguous normalized proof identity fails closed before session issuance
+  ---
+  duration_ms: 51.286531
+  type: 'test'
+  ...
+# Subtest: signed assertion is single use and replay fails closed
+ok 4 - signed assertion is single use and replay fails closed
+  ---
+  duration_ms: 46.551368
+  type: 'test'
+  ...
+# Subtest: tampered signature and expired assertion are rejected
+ok 5 - tampered signature and expired assertion are rejected
+  ---
+  duration_ms: 53.257485
+  type: 'test'
+  ...
+# Subtest: proof runner refuses non-staging activation
+ok 6 - proof runner refuses non-staging activation
+  ---
+  duration_ms: 3.27441
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back session issuance and permits a clean retry after repair
+ok 7 - audit failure rolls back session issuance and permits a clean retry after repair
+  ---
+  duration_ms: 52.500304
+  type: 'test'
+  ...
+# Subtest: proof session refuses tenant drift before first product request
+ok 8 - proof session refuses tenant drift before first product request
+  ---
+  duration_ms: 104.375444
+  type: 'test'
+  ...
+# Subtest: proof session refuses role drift before first product request
+ok 9 - proof session refuses role drift before first product request
+  ---
+  duration_ms: 91.168056
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 705.533841

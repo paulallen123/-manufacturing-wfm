@@ -14,7 +14,7 @@
     "branch": "test/vector-empty-organisation-regression-20261020",
     "baseSha": "4b79aeec360d64a54b732ac38dc38763163b7e0a",
     "sourceCompositionTree": "5dc68b8eb2f1645442de45494860aed8b411c0fe",
-    "sourceSha": "resolve-containing-commit",
+    "sourceSha": "1e8330c6d0c67811d47b5c17b44daf75649f9099",
     "imageDigest": null,
     "changes": [
       {
@@ -264,8 +264,9 @@
     "status": "ACCEPT bounded source adoption only",
     "sha256": "622c5d631423ecdd7702c291eaa02ec6eb818741585e863b20826f0d3f851da8",
     "report": "current-independent-security-review.md",
-    "treeAuditSha256": "e31f11085e66a1d2b373a821c18fed683e87cbfea136935d33c9a6739af4b103",
-    "formalApproval": false
+    "formalApproval": false,
+    "originalFullAuditSha256": "e31f11085e66a1d2b373a821c18fed683e87cbfea136935d33c9a6739af4b103",
+    "treeAuditRepresentation": "tree-audit.json is a compact derived summary, not the original full audit. It supersedes the invalid truncated export at 1e8330c6. The originalFullAuditSha256 hashes the original local full inventory, NOT this compact summary. Reproducible from exact Git trees."
   },
   "hostedProof": false,
   "providerProof": false,
@@ -279,5 +280,9 @@
     "Non-workforce punch/timecard inertness outside donor repair, remains open",
     "Provider/source provenance and financial/customer claims not established"
   ],
-  "priorFailedEvidencePreserved": true
+  "priorFailedEvidencePreserved": true,
+  "evidenceCorrection": {
+    "timestamp": "2026-10-23T18:44:13.225Z",
+    "reason": "Shell output truncation accidentally persisted as invalid JSON; replaced with parsed compact summary preserving all six diffs, original full audit hash and count. No product source changed by this correction."
+  }
 }

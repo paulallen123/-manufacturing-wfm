@@ -162,6 +162,29 @@ test('signed proof identity mints a short-lived audited session without a passwo
   }
 });
 
+test('ambiguous normalized proof identity fails closed before session issuance', async () => {
+  const f = fixture();
+  const db = new DatabaseSync(f.dbPath);
+  try {
+    db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('other-tenant', 1, '{}');
+    db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)')
+      .run('SUPERUSER@NORTHSTAR.EXAMPLE','other-tenant','su2','payroll',0,'s','00','[]');
+
+    const res = response();
+    assert.equal(await f.auth.handleRequest(request(signedPayload(f), f.origin), res), true);
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.headers['set-cookie'], undefined);
+    for (const table of ['sessions', 'proof_runner_sessions', 'proof_runner_nonces']) {
+      assert.equal(db.prepare('SELECT count(*) AS count FROM ' + table).get().count, 0);
+    }
+    const audit = db.prepare("SELECT event FROM proof_runner_auth_events WHERE event='ambiguous-normalized-email' ORDER BY id DESC LIMIT 1").get();
+    assert.equal(audit.event, 'ambiguous-normalized-email');
+  } finally {
+    db.close();
+    f.close();
+  }
+});
+
 test('signed assertion is single use and replay fails closed', async () => {
   const f = fixture();
   try {

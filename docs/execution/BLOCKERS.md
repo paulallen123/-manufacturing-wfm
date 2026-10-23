@@ -12,3 +12,7 @@
 - Successor freeze marker remains unchanged; automatically green/halting jobs cannot establish executed build. Original npm ci failure unresolved; no TLS/trust change or blind retry.
 - Current agent security review is scoped source evidence, not formal release approval or final image security proof.
 - Earlier storage estimate is not a fixed total-cost guarantee. No new spending or volume creation approved/performed.
+
+
+## 2026-10-23T18:44:13.225Z — same-lane auth adoption and environment interruption
+PR364 ambiguity-at-lookup repair adopted with current independent review; principal lookup remains outside issuance transaction (Important concurrency gap). No hosted auth or production approval. Local execution transport disconnected; GitHub evidence/source checkpoint completed via existing connector. User declined credential request: do not repeat without explicit direction. Existing build task remains completed-blocked, actual logs/image missing. Evidence export truncation corrected to explicitly derived compact audit, not falsely asserted full artifact.

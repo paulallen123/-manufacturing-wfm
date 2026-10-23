@@ -1,3 +1,27 @@
+# Current VECTOR checkpoint — 2026-10-23T18:44:13.225Z
+
+## Objective, source and ownership
+Existing integration owner /root, workspace /workspace/scratch/cd4e2bcb0821; reviewer /root/review_six_file. No new product/controller/release lane.
+Canonical release/vector-customer-ready-candidate-20260925 remains 48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
+PR501 candidate branch test/vector-empty-organisation-regression-20261020: six-file repair published at 1e8330c6d0c67811d47b5c17b44daf75649f9099. This containing successor commit adds exact PR364 auth donor91da2d752f599f4c2d357ba6cedfea2ddf4d6f2f (two source/test files) plus evidence/checkpoint only. Resolve full current candidate SHA from containing commit/PR501; auth source-only composition tree b32071f3fe800e1d71243007810a67e705c4f679. Claim6372135078. No canonical merge or release.
+
+## Substantive results and limitations
+- Adopted bounded rejection of ambiguous normalized-email principals before session issuance. Existing successful unique-principal behavior and controls preserved.
+- Current independent security review accepts exact two-file source adoption. Retained Important: principal lookup before issuance transaction leaves concurrent identity changes unresolved. NOT broad authentication assurance.
+- Original RED8 pass/1 fail (200 instead of409), GREEN9/9, edge11/11 (nine overlap plus two extra), Node22.23.2: loaded and hash checked, NOT rerun. Exact retained evidence at evidence/vector-integration-20261023/auth-manifest.json.
+- Fresh complete Git-tree comparison verifies exactly two changed source leaves and preservation of all prior six-file work.
+- Corrected evidence-only export defect: prior tree-audit.json contained truncated shell output. Replaced with valid compact summary retaining six diffs and original full inventory hash; summary is explicitly not the full original artifact. Original inventory reproducible from recorded exact trees. No source semantics affected.
+- CircleCI1072/1073 returned SUCCESS for1e833; unchanged freeze marker means this does not establish executed build.1050/1051 logs/image remain unavailable.
+- Existing isolated Codex task https://chatgpt.com/s/cd_6adb8f150c00819191fe5d44822c184e result6370021320 remains completed-blocked, no build attempt; no duplication/retrigger or weakening TLS.
+- Local exec transport disconnected during evidence packaging. One diagnostic attempt confirmed disconnect; no repeated shell polling. Browser environment unavailable. Permitted GitHub connection used to finish already-reviewed source checkpoint. No new credential request after declined secure sign-in.
+
+## Serving, approvals and next action
+Serving deployment last observed057e19a2-7d49-4390-8705-63e71ea79a89, last source observation90ad90fcf60adaca9abacdd4ad14bf392f95e585, unchanged; no new verified live wizard URL. Immutable rollback artifact/durable restore still unproven.
+Need authorized CircleCI read access or exported immutable step logs/artifacts for existing task; no secrets in chat. Actual exact-image admission, required formal reviews, hosted authentication/recovery, provider action authority/readback and customer acceptance remain gates.
+Next eligible action: reconcile PR501 head and ownership; use restored execution environment for retained identity-selection concurrency regression/repair or next reviewed eligible donor after scope claim. Do not modify frozen build marker or trigger duplicate build without coordinated admission decision. Full backlog remains accepted, not completed.
+No provider/customer writes, paid resources or deployment mutation. No actual persistent executor; if turn ends Work is paused. Resume from this file and latest PR501 comments, reconcile branches/jobs/external effects first.
+
+## Prior checkpoint — preserved history
 # VECTOR execution checkpoint
 Updated 2026-10-23T18:34:30.277Z
 
@@ -24,7 +48,7 @@ CircleCI plugin skills available, no callable authenticated CircleCI API/CLI tok
 No canonical merge, deploy, provider/customer mutation or production readiness claim. Required current reviews, exact-image admission, hosted authentication/durability/recovery, and provider action authority remain mandatory. Earlier cost estimate was storage-only, not a guaranteed cap on total proof compute/network/API usage.
 
 ## Next executable actions
-1. Verify resulting candidate ref and exact six-file source composition; current independent review accepted exact source tree with no new adoption blocker; report is retained, not formal release approval.
+1. Verify resulting candidate ref and exact six-file source composition; record current independent review.
 2. Reconcile actual CircleCI1050/1051 step output/artifacts with existing task6370021320 when authorized access is restored; only then decide justified bounded exact-image admission. Do not blindly retry prior npm failure.
 3. Continue eligible source integration (e.g. reviewed PR364/365 after ownership/current-source reconciliation) without competing release lineage or treating source evidence as deployment proof.
 4. After all applicable reviews/build/rollback/auth gates, promote through existing approved process, then verify real hosted journey and provider readback.
