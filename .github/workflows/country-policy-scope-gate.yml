@@ -1,0 +1,36 @@
+name: Country policy scope gate
+
+on:
+  pull_request:
+    branches: [release/vector-customer-ready-candidate-20260925]
+    paths:
+      - 'policy/runtime/country-policy-pack-registry.cjs'
+      - 'policy/runtime/country-policy-pack-registry.test.cjs'
+      - 'policy/runtime/global-site-policy-preflight.cjs'
+      - 'policy/runtime/global-site-policy-preflight.test.cjs'
+      - 'policy/runtime/jurisdiction-policy-graph.cjs'
+      - 'policy/runtime/jurisdiction-policy-graph.test.cjs'
+      - '.github/workflows/country-policy-scope-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-policy-scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up approved Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - name: Verify policy boundary contracts
+        run: node --test policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs
+      - name: Build exact product image
+        run: docker build --pull=false --build-arg RAILWAY_GIT_COMMIT_SHA=${{ github.event.pull_request.head.sha || github.sha }} -t vector-country-policy:gate .

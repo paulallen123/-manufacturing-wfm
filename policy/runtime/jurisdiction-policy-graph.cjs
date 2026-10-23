@@ -20,6 +20,13 @@ function stable(v){
 }
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function text(v,max=240){return String(v??'').trim().slice(0,max);}
+function countryCode(v){return typeof v==='string'?v.trim().toUpperCase():'';}
+function countryScope(v,name){
+  if(v==null||v===''||(Array.isArray(v)&&v.length===0)) return v;
+  const values=Array.isArray(v)?v:[v],normalised=values.map(countryCode);
+  if(normalised.some(x=>!/^[A-Z]{2}$/.test(x))) throw new Error((name||'country scope')+' requires ISO alpha-2 country values.');
+  return Array.isArray(v)?[...new Set(normalised)]:normalised[0];
+}
 function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error((name||'timestamp')+' must be valid ISO.');return new Date(ms).toISOString();}
 function list(v,max=100,maxLen=240){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
@@ -56,6 +63,8 @@ function normaliseNode(node={}){
   const sourceRefs=list(node.sourceRefs,40,300);
   if(node.verified!==true||!sourceRefs.length) throw new Error('Policy node must be verified and provenance-backed.');
   const scope=clone(node.scope||{});
+  if(Object.prototype.hasOwnProperty.call(scope,'country')) scope.country=countryScope(scope.country,'Policy node scope.country');
+  if(Object.prototype.hasOwnProperty.call(scope,'workLocationCountry')) scope.workLocationCountry=countryScope(scope.workLocationCountry,'Policy node scope.workLocationCountry');
   const rules=(node.rules||[]).map(rule=>normaliseRule(rule,{sourceRefs}));
   if(!rules.length) throw new Error('Policy node requires at least one rule.');
   if(new Set(rules.map(x=>x.id)).size!==rules.length) throw new Error('Policy rule ids must be unique within a node.');
@@ -118,7 +127,12 @@ function createJurisdictionPolicyGraph(initial=[]){
     const legalAt=iso(input.legalAt||new Date().toISOString(),'legalAt');
     const knownAt=iso(input.knownAt||new Date().toISOString(),'knownAt');
     const context=clone(input.context||{});
-    if(!text(context.country,2)) throw new Error('Jurisdiction resolution requires context.country.');
+    context.country=countryCode(context.country);
+    if(!/^[A-Z]{2}$/.test(context.country)) throw new Error('Jurisdiction resolution requires ISO alpha-2 context.country.');
+    if(context.workLocationCountry!=null&&context.workLocationCountry!==''){
+      context.workLocationCountry=countryCode(context.workLocationCountry);
+      if(!/^[A-Z]{2}$/.test(context.workLocationCountry)) throw new Error('Jurisdiction resolution requires ISO alpha-2 work location country.');
+    }
     const applicable=all().filter(node=>activeAt(node,legalAt,knownAt)&&nodeMatchesContext(node,context));
     const rules=applicable.flatMap(node=>node.rules.map(rule=>({node,rule})));
     const composed=composeRuleSet(rules);
@@ -129,3 +143,4 @@ function createJurisdictionPolicyGraph(initial=[]){
 }
 
 module.exports=Object.freeze({CONTRACT_VERSION,LAYERS,LEGAL_CHARACTERS,OPERATORS,normaliseNode,createJurisdictionPolicyGraph,composeRuleSet,digest,stable});
+
