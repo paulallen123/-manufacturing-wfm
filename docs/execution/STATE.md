@@ -1,3 +1,15 @@
+# Latest execution direction — 2026-10-23T18:47:58.594Z
+
+User instruction: avoid CircleCI while login is unavailable. Stop CircleCI login attempts, polling and requests for the user to retrieve its logs. This supersedes older CircleCI-access next steps below. Record CircleCI as PROVIDER_DEGRADED; it is not a prerequisite for continued source work. Preserve mandatory release evidence and existing protection.
+
+Current product source remains PR501 ef707c1cd6349a32be342e568f9382988489c051. This containing checkpoint changes only records/evidence. Owner /root; local shell responding again. Docker/Podman unavailable. GitHub reports zero Actions PR runs and zero check runs for this candidate. Existing release workflows examined point to older feature branches and other projects, so dispatching them is not a suitable fallback.
+
+Existing authorized Railway read succeeded. Deployment057e19a2-7d49-4390-8705-63e71ea79a89 is SUCCESS, provider metadata source90ad90fcf60adaca9abacdd4ad14bf392f95e585. Its build log reports image digest sha256:ea82c0f65b45175f0f8589c50eea5b6e78949167521883a61f82995521334cd3 and config digest sha256:0c4f6867885aca1d0a7a71d946c7c3309d4f2643c0b7674044e0eb83aae6c43b. This identifies an older rollback artifact; it does not establish current-candidate build proof or a successful rollback drill.
+Evidence: evidence/vector-integration-20261023/non-circleci-build-route.json.
+
+Next: reconcile an existing authorized Railway proof service for current-source build admission; inspect source/configuration/isolation and existing staged changes before any targeted freeze/build. Continue eligible source/security integration. Do not use the old feature-branch deployment workflows, blindly redeploy the customer service, accept the global staged patch, remove required checks, or create another release lane. Existing Codex task remains completed-blocked and is not duplicated. No new build/deploy/spend in this checkpoint. No persistent worker established.
+
+## Earlier checkpoints and historical observations
 # Current VECTOR checkpoint — 2026-10-23T18:44:13.225Z
 
 ## Objective, source and ownership
