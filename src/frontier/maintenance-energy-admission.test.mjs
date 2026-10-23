@@ -78,6 +78,50 @@ test('rejects malformed, non-finite and out-of-range confidence evidence before 
   }
 });
 
+test('rejects accessor and proxy evidence that can drift after validation', () => {
+  const mutations = [
+    value => {
+      let reads = 0;
+      Object.defineProperty(value.process, 'confidence', { enumerable: true,
+        get() { reads += 1; return reads === 1 ? 0.95 : 'not-a-number'; } });
+    },
+    value => {
+      let reads = 0;
+      Object.defineProperty(value.process, 'assetId', { enumerable: true,
+        get() { reads += 1; return reads === 1 ? 'asset-1' : 'asset-2'; } });
+    },
+    value => {
+      let reads = 0;
+      value.option.workforce = new Proxy(value.option.workforce, {
+        get(target, property, receiver) {
+          if (property === 'confidence') { reads += 1; return reads === 1 ? 0.95 : 'not-a-number'; }
+          return Reflect.get(target, property, receiver);
+        }
+      });
+    }
+  ];
+  for (const mutate of mutations) {
+    const value = input(); mutate(value);
+    const result = assessMaintenanceEnergySwap(value);
+    assert.equal(result.status, 'BLOCKED');
+    assert.deepEqual(result.reasons, ['invalid_evidence_shape']);
+  }
+});
+
+test('translates malformed object leaves into a fail-closed result', () => {
+  const mutations = [
+    value => { value.option.energy.grossSaving = {}; },
+    value => { value.option.shiftMinutes = {}; }
+  ];
+  for (const mutate of mutations) {
+    const value = input(); mutate(value);
+    assert.doesNotThrow(() => assessMaintenanceEnergySwap(value));
+    const result = assessMaintenanceEnergySwap(value);
+    assert.equal(result.status, 'BLOCKED');
+    assert.deepEqual(result.reasons, ['invalid_evidence_shape']);
+  }
+});
+
 test('requires current process evidence bound to the maintained asset and work order', () => {
   const mutations = [
     [x => { x.process.assetId = 'asset-2'; }, 'process_binding_mismatch'],

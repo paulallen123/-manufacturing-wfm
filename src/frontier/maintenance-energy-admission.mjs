@@ -1,8 +1,40 @@
 import { evaluateEnergyFlexibility } from './energy-flexibility.mjs';
+import { types as utilTypes } from 'node:util';
 
+const { create, freeze, getOwnPropertyDescriptor, getPrototypeOf, hasOwn } = Object;
+const ownKeys = Reflect.ownKeys;
+const { isProxy } = utilTypes;
+const invalidSnapshot = Symbol('invalid_snapshot');
 const text = value => typeof value === 'string' && value.trim().length > 0 && value.length <= 200;
 const positive = value => Number.isSafeInteger(value) && value > 0;
 const confidence = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;
+function snapshotPlainData(value, seen = new WeakSet(), depth = 0) {
+  if (value === null || ['string', 'number', 'boolean', 'undefined'].includes(typeof value)) return value;
+  if (typeof value !== 'object' || depth > 8 || isProxy(value) || seen.has(value)) return invalidSnapshot;
+  const prototype = getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return invalidSnapshot;
+  const keys = ownKeys(value);
+  if (keys.length > 100 || keys.some(key => typeof key !== 'string')) return invalidSnapshot;
+  seen.add(value);
+  const result = create(null);
+  for (const key of keys) {
+    const descriptor = getOwnPropertyDescriptor(value, key);
+    if (!descriptor || descriptor.enumerable !== true || !hasOwn(descriptor, 'value')) return invalidSnapshot;
+    const snapshot = snapshotPlainData(descriptor.value, seen, depth + 1);
+    if (snapshot === invalidSnapshot) return invalidSnapshot;
+    result[key] = snapshot;
+  }
+  seen.delete(value);
+  return freeze(result);
+}
+function snapshotEvidence(value) {
+  try {
+    const snapshot = snapshotPlainData(value);
+    return snapshot === invalidSnapshot ? null : snapshot;
+  } catch {
+    return null;
+  }
+}
 function instant(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d\.\d{3}Z$/.test(value)) return null;
   const ms = Date.parse(value);
@@ -11,9 +43,11 @@ function instant(value) {
 
 // Admission wrapper around the existing energy engine. Source authenticity and
 // approval stay with the canonical integration owner and workflow controller.
-export function assessMaintenanceEnergySwap(input) {
-  const blocked = reason => Object.freeze({ status: 'BLOCKED', reasons: Object.freeze([reason]),
+export function assessMaintenanceEnergySwap(sourceInput) {
+  const blocked = reason => freeze({ status: 'BLOCKED', reasons: freeze([reason]),
     sourceAuthenticated: false, actionAuthority: false });
+  const input = snapshotEvidence(sourceInput);
+  if (!input) return blocked('invalid_evidence_shape');
   if (!input || !text(input.tenantId) || !text(input.siteId)) return blocked('invalid_scope');
   const now = instant(input.now);
   if (now === null) return blocked('invalid_as_of');
@@ -53,19 +87,24 @@ export function assessMaintenanceEnergySwap(input) {
       proposedStart < allowedStart || proposedEnd > allowedEnd ||
       proposedStart < energyStart || proposedEnd > energyEnd) return blocked('invalid_or_out_of_window_evidence');
   if (signal.status !== 'active' || !positive(signal.revision)) return blocked('energy_signal_not_active');
-  const decision = evaluateEnergyFlexibility({
-    now: input.now, tenantId: input.tenantId, siteId: input.siteId,
-    energySignal: signal, latestKnownSignalRevision: signal.revision,
-    process, options: [option]
-  });
+  let decision;
+  try {
+    decision = evaluateEnergyFlexibility({
+      now: input.now, tenantId: input.tenantId, siteId: input.siteId,
+      energySignal: signal, latestKnownSignalRevision: signal.revision,
+      process, options: [option]
+    });
+  } catch {
+    return blocked('invalid_evidence_shape');
+  }
   const ranked = decision.rankedOptions.find(row => row.id === option.id);
   if (!ranked) {
     const rejected = decision.rejectedOptions.find(row => row.id === option.id);
-    return Object.freeze({ status: 'BLOCKED', reasons: Object.freeze(rejected?.hardConstraintFailures?.length
+    return freeze({ status: 'BLOCKED', reasons: freeze(rejected?.hardConstraintFailures?.length
       ? [...rejected.hardConstraintFailures] : ['no_safe_valuable_maintenance_swap']),
     sourceAuthenticated: false, actionAuthority: false });
   }
-  return Object.freeze({ status: 'ADVISORY', workOrderId: wo.id, workOrderRevision: wo.revision,
+  return freeze({ status: 'ADVISORY', workOrderId: wo.id, workOrderRevision: wo.revision,
     assetId: wo.assetId, optionId: option.id, energySignalRevision: signal.revision,
     sourceName: wo.sourceName, sourceDigest: wo.sourceDigest,
     energyDecisionHash: decision.reproducibilityHash,
