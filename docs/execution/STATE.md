@@ -1,3 +1,12 @@
+# Frozen build request checkpoint — 2026-10-23T19:22:22.927Z
+
+Owner /root. Reviewed source candidate and exact frozen build target: e1ef1a45aa8c3d17cfd84f6fcc23a445e19e07dd, tree942f2683d04c5bf2cfbc3cb80c789b5c9b977247. This containing successor changes evidence/checkpoint only; do not silently move the frozen target to its SHA.
+Railway existing isolated wfm-hosted-ci-fallback has staged patch34df9654-9c5c-4130-afad-526cb4ad45d8: exactly one service/seven fields, no shared variables, deletion, volume or customer changes. Source is pinned; root /; preserved Dockerfile/full tests; receipt-only startup names exact source/tree; watch pattern follows canonical freeze marker but pin prevents push deployment. No build is running.
+Full patch, previous configuration, failure/success preparation and rollback at evidence/vector-auth-race-20261023/build-admission-request.json. This immutable receipt is the targeted one-shot build request; broad automatic freeze marker remains unchanged to avoid unrelated fanout.
+Next action requires specific confirmation to apply this prepared isolated build patch with existing Railway usage-based compute. Tool accept_deploy explicitly requires user confirmation. Exact incremental cost is unverified, not fixed; no subscription/new service/volume approved or created.
+Independent review5633373316 is COMMENT only; no formal required approval, merge, deployment, image or customer proof. Remaining gates unchanged.
+If ending this Work turn, execution pauses; resume by reading this checkpoint and PR501, reconciling staged patch/jobs, and applying only the specifically authorized target. No duplicate Codex build request.
+
 # Current execution checkpoint — 2026-10-23T19:20:21.658Z
 
 Existing integration owner: /root; workspace /workspace/scratch/cd4e2bcb0821. Claim6372732421. No new product/controller/release lane.
