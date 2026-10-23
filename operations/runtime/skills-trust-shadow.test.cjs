@@ -32,10 +32,10 @@ function fixture() {
     credential: { payload, signature: signature(payload) },
     status: { payload: statusPayload, signature: signature(statusPayload) },
     policy: {
-      version: 'trust-v1', maxStatusAgeMs: 300000,
+      tenant: 'tenant-a', version: 'trust-v1', maxStatusAgeMs: 300000,
       issuers: { 'issuer-a': { publicKey, allowedFormats: ['synthetic-vc-v1'] } }
     },
-    mapping: { version: 'mapping-v1', externalSkill: 'weld-1', canonicalSkill: 'WELD_L1', approved: true }
+    mapping: { tenant: 'tenant-a', version: 'mapping-v1', externalSkill: 'weld-1', canonicalSkill: 'WELD_L1', approved: true }
   };
 }
 
@@ -49,11 +49,34 @@ test('valid signed synthetic evidence yields an advisory candidate with minimal 
   assert.equal(result.skillEvidence.tenant, 'tenant-a');
   assert.equal(result.skillEvidence.subjectRef, 'worker-42');
   assert.equal(result.skillEvidence.mappingVersion, 'mapping-v1');
+  assert.equal(result.skillEvidence.sharingScope, 'TENANT_ONLY');
   assert.equal(result.skillEvidence.proofHash, input.status.payload.credentialHash);
   assert.equal(JSON.stringify(result).includes(publicKey), false);
   assert.equal(JSON.stringify(result).includes(input.credential.signature), false);
   assert.ok(Object.isFrozen(result.skillEvidence));
   assert.deepEqual(evaluatePortableSkillEvidence(input), result);
+});
+
+test('issuer policy must belong to the evaluated tenant', () => {
+  const input = fixture();
+  input.policy.tenant = 'tenant-b';
+  assert.equal(evaluatePortableSkillEvidence(input).candidateEligibility, false);
+});
+
+test('skill mapping must belong to the evaluated tenant', () => {
+  const input = fixture();
+  input.mapping.tenant = 'tenant-b';
+  assert.equal(evaluatePortableSkillEvidence(input).candidateEligibility, false);
+});
+
+test('status evidence cannot predate credential issuance', () => {
+  const input = fixture();
+  input.credential.payload.issuedAt = '2026-10-12T11:58:30.000Z';
+  input.credential.signature = signature(input.credential.payload);
+  input.status.payload.credentialHash = createHash('sha256').update(canonical(input.credential.payload)).digest('hex');
+  input.status.payload.checkedAt = '2026-10-12T11:58:00.000Z';
+  input.status.signature = signature(input.status.payload);
+  assert.equal(evaluatePortableSkillEvidence(input).candidateEligibility, false);
 });
 
 test('tampering, subject mismatch, expiry, revocation and stale status fail closed', () => {

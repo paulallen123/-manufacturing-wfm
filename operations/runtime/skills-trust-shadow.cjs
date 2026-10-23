@@ -50,7 +50,8 @@ function evaluatePortableSkillEvidence(input) {
       time(payload.issuedAt) >= time(payload.expiresAt))
     return denied('CREDENTIAL_NOT_CURRENT');
   const issuer = input.policy?.issuers?.[payload.issuer];
-  if (!id(input.policy?.version) || !Number.isSafeInteger(input.policy.maxStatusAgeMs) ||
+  if (input.policy?.tenant !== input.tenant || !id(input.policy?.version) ||
+      !Number.isSafeInteger(input.policy.maxStatusAgeMs) ||
       input.policy.maxStatusAgeMs < 1 || input.policy.maxStatusAgeMs > 86400000 ||
       !issuer || !Array.isArray(issuer.allowedFormats) ||
       !issuer.allowedFormats.includes(payload.format))
@@ -65,11 +66,12 @@ function evaluatePortableSkillEvidence(input) {
     return denied('STATUS_UNBOUND');
   if (!signed(status, input.status.signature, issuer.publicKey))
     return denied('STATUS_PROOF_INVALID');
-  if (time(status.checkedAt) > now || now - time(status.checkedAt) >= input.policy.maxStatusAgeMs)
+  if (time(status.checkedAt) < time(payload.issuedAt) || time(status.checkedAt) > now ||
+      now - time(status.checkedAt) >= input.policy.maxStatusAgeMs)
     return denied('STATUS_STALE');
   if (status.state !== 'VALID') return denied('STATUS_' + status.state);
   const mapping = input.mapping;
-  if (!mapping || !id(mapping.version) || !id(mapping.externalSkill) ||
+  if (!mapping || mapping.tenant !== input.tenant || !id(mapping.version) || !id(mapping.externalSkill) ||
       !id(mapping.canonicalSkill) || mapping.approved !== true ||
       mapping.externalSkill !== payload.skillCode)
     return denied('MAPPING_NOT_APPROVED');
@@ -79,6 +81,7 @@ function evaluatePortableSkillEvidence(input) {
     skillEvidence: Object.freeze({
       tenant: payload.tenant, subjectRef: payload.subjectRef,
       canonicalSkill: mapping.canonicalSkill, mappingVersion: mapping.version,
+      sharingScope: 'TENANT_ONLY',
       issuer: payload.issuer, credentialFormat: payload.format,
       proofHash: status.credentialHash, statusRevision: status.revision,
       verifiedAt: status.checkedAt, expiresAt: payload.expiresAt,
