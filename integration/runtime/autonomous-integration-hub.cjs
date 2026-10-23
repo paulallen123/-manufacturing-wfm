@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
+const { types: { isProxy } } = require('node:util');
 const { DatabaseSync } = require('node:sqlite');
 const { createGustoCompanyConnector } = require('./gusto-company-connector.cjs');
 const { serveGustoOAuthLanding } = require('./gusto-oauth-landing.cjs');
@@ -85,29 +86,88 @@ function provenanceTime(value) {
   const milliseconds = Date.parse(value);
   return Number.isFinite(milliseconds) && new Date(milliseconds).toISOString() === value ? milliseconds : null;
 }
-function provenanceFields(value, fields) {
-  return value && typeof value === 'object' && !Array.isArray(value) &&
-    Object.keys(value).sort().join('|') === [...fields].sort().join('|');
+function provenanceRecord(value, requiredFields, optionalFields = []) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || isProxy(value)) return null;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return null;
+  const keys = Reflect.ownKeys(value);
+  if (keys.length < requiredFields.length || keys.length > requiredFields.length + optionalFields.length) return null;
+  for (let index = 0; index < keys.length; index++) {
+    const key = keys[index];
+    if (typeof key !== 'string') return null;
+    let allowed = false;
+    for (let fieldIndex = 0; fieldIndex < requiredFields.length; fieldIndex++) {
+      if (key === requiredFields[fieldIndex]) { allowed = true; break; }
+    }
+    if (!allowed) {
+      for (let fieldIndex = 0; fieldIndex < optionalFields.length; fieldIndex++) {
+        if (key === optionalFields[fieldIndex]) { allowed = true; break; }
+      }
+    }
+    if (!allowed) return null;
+  }
+  const snapshot = Object.create(null);
+  for (let index = 0; index < requiredFields.length; index++) {
+    const key = requiredFields[index];
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !Object.hasOwn(descriptor, 'value') || descriptor.enumerable !== true) return null;
+    snapshot[key] = descriptor.value;
+  }
+  for (let index = 0; index < optionalFields.length; index++) {
+    const key = optionalFields[index];
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor) continue;
+    if (!Object.hasOwn(descriptor, 'value') || descriptor.enumerable !== true) return null;
+    snapshot[key] = descriptor.value;
+  }
+  return Object.freeze(snapshot);
+}
+function provenanceSnapshot(input) {
+  const root = provenanceRecord(input, ['simulation', 'processEvent', 'workforceSnapshot'], ['expectedDigest']);
+  if (!root) return null;
+  const event = provenanceRecord(root.processEvent, PROVENANCE_EVENT_FIELDS);
+  const workforce = provenanceRecord(root.workforceSnapshot, PROVENANCE_WORKFORCE_FIELDS);
+  if (!event || !workforce) return null;
+  return Object.freeze({
+    simulation: root.simulation,
+    processEvent: event,
+    workforceSnapshot: workforce,
+    expectedDigest: root.expectedDigest
+  });
+}
+function provenanceIdentifiers(record, fields) {
+  for (let index = 0; index < fields.length; index++) {
+    const value = record[fields[index]];
+    if (typeof value !== 'string' || !PROVENANCE_ID.test(value)) return false;
+  }
+  return true;
+}
+function provenanceReceipt(value) {
+  if (value.disclosure) Object.freeze(value.disclosure);
+  return Object.freeze(value);
 }
 function provenanceDenied(reason) {
-  return { contractVersion: 'WORKFORCE_PROVENANCE_SHADOW_V1', status: 'UNVERIFIABLE',
-    reason, executionPermitted: false, inputDigest: null, disclosure: null };
+  return provenanceReceipt({ contractVersion: 'WORKFORCE_PROVENANCE_SHADOW_V1', status: 'UNVERIFIABLE',
+    reason, executionPermitted: false, inputDigest: null, disclosure: null });
 }
 function screenWorkforceProvenanceShadow(input, tenant, asOf) {
-  const event = input?.processEvent;
-  const workforce = input?.workforceSnapshot;
-  const now = provenanceTime(asOf);
-  if (input?.simulation !== true || typeof tenant !== 'string' || !PROVENANCE_ID.test(tenant) || now === null)
-    return provenanceDenied('SYNTHETIC_SCOPE_REQUIRED');
-  if (!provenanceFields(event, PROVENANCE_EVENT_FIELDS) ||
-      !provenanceFields(workforce, PROVENANCE_WORKFORCE_FIELDS))
+  let snapshot;
+  try {
+    snapshot = provenanceSnapshot(input);
+  } catch {
     return provenanceDenied('INCOMPLETE_OR_EXCESS_CLAIMS');
+  }
+  if (!snapshot) return provenanceDenied('INCOMPLETE_OR_EXCESS_CLAIMS');
+  const event = snapshot.processEvent;
+  const workforce = snapshot.workforceSnapshot;
+  const now = provenanceTime(asOf);
+  if (snapshot.simulation !== true || typeof tenant !== 'string' || !PROVENANCE_ID.test(tenant) || now === null)
+    return provenanceDenied('SYNTHETIC_SCOPE_REQUIRED');
   const eventIds = ['tenant', 'site', 'workCentre', 'batchRef', 'operationRef', 'eventId', 'sourceRevision'];
   const workforceIds = ['tenant', 'site', 'workCentre', 'batchRef', 'operationRef', 'processEventId', 'requiredSkill', 'sourceRevision'];
-  if (!eventIds.every(key => typeof event[key] === 'string' && PROVENANCE_ID.test(event[key])) ||
-      !workforceIds.every(key => typeof workforce[key] === 'string' && PROVENANCE_ID.test(workforce[key])) ||
-      !PROVENANCE_HASH.test(event.sourceHash || '') ||
-      !PROVENANCE_HASH.test(workforce.sourceHash || ''))
+  if (!provenanceIdentifiers(event, eventIds) || !provenanceIdentifiers(workforce, workforceIds) ||
+      typeof event.sourceHash !== 'string' || !PROVENANCE_HASH.test(event.sourceHash) ||
+      typeof workforce.sourceHash !== 'string' || !PROVENANCE_HASH.test(workforce.sourceHash))
     return provenanceDenied('INVALID_SOURCE_REFERENCE');
   if (event.tenant !== tenant || workforce.tenant !== tenant ||
       event.site !== workforce.site || event.workCentre !== workforce.workCentre ||
@@ -119,40 +179,41 @@ function screenWorkforceProvenanceShadow(input, tenant, asOf) {
   const from = provenanceTime(workforce.validFrom);
   const until = provenanceTime(workforce.validUntil);
   const qualificationUntil = provenanceTime(workforce.qualificationValidUntil);
-  if ([occurred, observed, from, until, qualificationUntil].some(value => value === null) ||
+  if (occurred === null || observed === null || from === null || until === null || qualificationUntil === null ||
       occurred > now || observed > occurred || from > occurred || until <= occurred ||
       now - observed >= 300000)
     return provenanceDenied('STALE_OR_UNBOUND_TIME');
   if (!Number.isSafeInteger(workforce.qualifiedCount) || workforce.qualifiedCount < 0 ||
       workforce.qualifiedCount > 1000 || !Number.isSafeInteger(workforce.requiredCount) ||
       workforce.requiredCount < 1 || workforce.requiredCount > 1000 ||
-      !['VALID', 'EXPIRED', 'REVOKED', 'UNKNOWN'].includes(workforce.qualificationState) ||
+      (workforce.qualificationState !== 'VALID' && workforce.qualificationState !== 'EXPIRED' &&
+       workforce.qualificationState !== 'REVOKED' && workforce.qualificationState !== 'UNKNOWN') ||
       typeof workforce.supervisorApproved !== 'boolean' ||
-      !['PASS', 'FAIL', 'UNKNOWN'].includes(workforce.qualityState))
+      (workforce.qualityState !== 'PASS' && workforce.qualityState !== 'FAIL' && workforce.qualityState !== 'UNKNOWN'))
     return provenanceDenied('INVALID_AGGREGATE_EVIDENCE');
   const canonical = {
     policyVersion: 'synthetic-shadow-v1',
-    processEvent: Object.fromEntries(PROVENANCE_EVENT_FIELDS.map(key => [key, event[key]])),
-    workforceSnapshot: Object.fromEntries(PROVENANCE_WORKFORCE_FIELDS.map(key => [key, workforce[key]]))
+    processEvent: event,
+    workforceSnapshot: workforce
   };
   const inputDigest = sha256(JSON.stringify(canonical));
-  if (input.expectedDigest !== undefined && input.expectedDigest !== inputDigest)
+  if (snapshot.expectedDigest !== undefined && snapshot.expectedDigest !== inputDigest)
     return provenanceDenied('DIGEST_MISMATCH');
   const reason = workforce.qualificationState !== 'VALID' || qualificationUntil <= occurred
     ? 'QUALIFICATION_NOT_VALID_AT_EXECUTION'
     : workforce.qualifiedCount < workforce.requiredCount ? 'INSUFFICIENT_SKILL_COVERAGE'
       : !workforce.supervisorApproved ? 'SUPERVISION_NOT_CONFIRMED'
         : workforce.qualityState !== 'PASS' ? 'QUALITY_NOT_CONFIRMED' : null;
-  if (reason) return { contractVersion: 'WORKFORCE_PROVENANCE_SHADOW_V1',
+  if (reason) return provenanceReceipt({ contractVersion: 'WORKFORCE_PROVENANCE_SHADOW_V1',
     status: 'SIMULATED_NON_COMPLIANT', reason, executionPermitted: false,
-    inputDigest, disclosure: null };
-  return {
+    inputDigest, disclosure: null });
+  return provenanceReceipt({
     contractVersion: 'WORKFORCE_PROVENANCE_SHADOW_V1', status: 'SIMULATED_COMPLIANT',
     reason: 'FICTIONAL_AGGREGATE_EVIDENCE_ONLY', executionPermitted: false, inputDigest,
     disclosure: { tenant, site: event.site, batchRef: event.batchRef,
       operationRef: event.operationRef, requiredSkill: workforce.requiredSkill,
       qualifiedCount: workforce.qualifiedCount, requiredCount: workforce.requiredCount }
-  };
+  });
 }
 
 function sha256(value) {
@@ -1225,3 +1286,4 @@ module.exports = {
   validCredentialReference,
   screenWorkforceProvenanceShadow
 };
+
