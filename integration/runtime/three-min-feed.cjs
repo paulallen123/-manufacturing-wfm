@@ -1,0 +1,113 @@
+'use strict';
+const {createHash, randomUUID, timingSafeEqual} = require('node:crypto');
+const PREFIX = '/api/integrations/autonomous/feeds/3min';
+const DOMAINS = Object.freeze(['people','organisation','skills','absence','time','production','quality','maintenance','finance','payroll','access-control']);
+const ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
+const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+const MAX_BYTES = 256 * 1024;
+const fields = ['schemaVersion','tenant','site','source','domain','environment','eventId','occurredAt','records'];
+const digest = value => createHash('sha256').update(value).digest('hex');
+const sameSecret = (a,b) => typeof a==='string' && a.length<=512 && timingSafeEqual(createHash('sha256').update(a).digest(),createHash('sha256').update(b).digest());
+function json(res,status,body) {res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.end(JSON.stringify(body));return true;}
+function failure(status,code) {return Object.assign(new Error(code),{status,code});}
+function safeData(value,depth=0) {
+ if(depth>12) return false;
+ if(value===null||typeof value==='string'||typeof value==='boolean')return true;
+ if(typeof value==='number')return Number.isFinite(value);
+ if(!value||typeof value!=='object')return false;
+ return Object.keys(value).every(k=>!['__proto__','prototype','constructor'].includes(k)&&safeData(value[k],depth+1));
+}
+function bindingsFrom(env) {
+ try {
+  const list=JSON.parse(env.WFM_3MIN_FEEDS_JSON||'[]');
+  if(!Array.isArray(list)||list.length>100)throw Error();
+  const result=new Map();
+  for(const item of list){
+   if(!item||Array.isArray(item)||Object.keys(item).sort().join('|')!==['id','tenant','site','source','domain','environment','secretEnv'].sort().join('|')||
+    !['id','tenant','site','source'].every(k=>typeof item[k]==='string'&&ID.test(item[k]))||
+    !DOMAINS.includes(item.domain)||!['sandbox','production'].includes(item.environment)||
+    typeof item.secretEnv!=='string'||!/^WFM_3MIN_[A-Z0-9_]+_TOKEN$/.test(item.secretEnv)||result.has(item.id))throw Error();
+   const binding=Object.freeze({...item,fingerprint:digest(JSON.stringify([item.id,item.tenant,item.site,item.source,item.domain,item.environment]))});
+   result.set(item.id,binding);
+  }
+  return result;
+ }catch{return new Map();}
+}
+// An authenticated transport is not evidence that the original provider data is
+// authorised, current, mapped or reconciled. This inbox cannot grant readiness.
+function createThreeMinFeed({db,env=process.env,now=Date.now}) {
+ const bindings=bindingsFrom(env);
+ db.exec(`CREATE TABLE IF NOT EXISTS integration_feed_inbox(
+  id TEXT PRIMARY KEY,binding_id TEXT NOT NULL,binding_fingerprint TEXT NOT NULL,
+  tenant TEXT NOT NULL,site TEXT NOT NULL,source TEXT NOT NULL,domain TEXT NOT NULL,
+  environment TEXT NOT NULL,event_id TEXT NOT NULL,record_id TEXT NOT NULL,
+  payload_sha256 TEXT NOT NULL,payload_json TEXT NOT NULL,record_count INTEGER NOT NULL,
+  occurred_at TEXT NOT NULL,received_at TEXT NOT NULL,status TEXT NOT NULL,validation_error TEXT,
+  UNIQUE(binding_id,event_id),UNIQUE(binding_id,record_id));
+  CREATE TABLE IF NOT EXISTS integration_feed_deliveries(
+   binding_id TEXT NOT NULL,record_id TEXT NOT NULL,receipt_id TEXT NOT NULL REFERENCES integration_feed_inbox(id),
+   PRIMARY KEY(binding_id,record_id));
+  CREATE INDEX IF NOT EXISTS integration_feed_tenant_received ON integration_feed_inbox(tenant,received_at);`);
+ const byRecord=db.prepare('SELECT i.* FROM integration_feed_deliveries d JOIN integration_feed_inbox i ON i.id=d.receipt_id WHERE d.binding_id=? AND d.record_id=?');
+ const delivery=db.prepare('INSERT INTO integration_feed_deliveries VALUES(?,?,?)');
+ const byEvent=db.prepare('SELECT * FROM integration_feed_inbox WHERE binding_id=? AND event_id=?');
+ const insert=db.prepare('INSERT INTO integration_feed_inbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+ const audit=db.prepare('INSERT INTO integration_events(tenant,connection_id,event,detail_json,created_at) VALUES(?,NULL,?,?,?)');
+ const recent=db.prepare('SELECT id,binding_id,site,source,domain,environment,event_id,record_count,payload_sha256,occurred_at,received_at,status,validation_error FROM integration_feed_inbox WHERE tenant=? ORDER BY rowid DESC LIMIT 50');
+ function receipt(row,replayed){return {receiptId:row.id,status:row.status,replayed,transportAuthenticated:true,sourceAuthenticated:false,executionAuthority:false};}
+ function statusForTenant(tenant){return {transport:'3min-api',schemaVersion:'vector-feed-v1',sourceAuthenticated:false,executionAuthority:false,
+  bindings:[...bindings.values()].filter(b=>b.tenant===tenant).map(b=>({id:b.id,site:b.site,source:b.source,domain:b.domain,environment:b.environment,configured:validToken(env[b.secretEnv])})),
+  receipts:recent.all(tenant).map(r=>({receiptId:r.id,bindingId:r.binding_id,site:r.site,source:r.source,domain:r.domain,environment:r.environment,eventId:r.event_id,recordCount:r.record_count,checksum:r.payload_sha256,occurredAt:r.occurred_at,receivedAt:r.received_at,status:r.status,validationError:r.validation_error}))};}
+ function persist(binding,recordId,body,raw,res,validationError=null){
+  const checksum=digest(raw); const id=binding.id;
+   db.exec('BEGIN IMMEDIATE');
+   try{
+    const existingRecord=byRecord.get(id,recordId);const existingEvent=byEvent.get(id,body.eventId);
+    const existing=existingRecord||existingEvent;
+    if(existing){
+     if((existingRecord&&existingEvent&&existingRecord.id!==existingEvent.id)||existing.binding_fingerprint!==binding.fingerprint||existing.event_id!==body.eventId||existing.payload_sha256!==checksum)throw failure(409,'FEED_REPLAY_CONFLICT');
+     if(!existingRecord)delivery.run(id,recordId,existing.id);
+     db.exec('COMMIT');return json(res,200,receipt(existing,true));
+    }
+    const receiptId=randomUUID(),stamp=new Date(now()).toISOString();
+    insert.run(receiptId,id,binding.fingerprint,binding.tenant,binding.site,binding.source,binding.domain,binding.environment,body.eventId,recordId,checksum,validationError?'{}':raw.toString('utf8'),body.records.length,body.occurredAt,stamp,validationError?'REJECTED_VALIDATION':'RECEIVED_UNVALIDATED',validationError);
+    delivery.run(id,recordId,receiptId);
+    audit.run(binding.tenant,'three-min-feed-received',JSON.stringify({receiptId,bindingId:id,domain:binding.domain,recordCount:body.records.length,checksum,validationError}),stamp);
+    db.exec('COMMIT');return json(res,202,receipt({id:receiptId,status:validationError?'REJECTED_VALIDATION':'RECEIVED_UNVALIDATED'},false));
+   }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
+ }
+ async function handleRequest(req,res){
+  const route=String(req.url||'').split('?')[0];
+  if(!route.startsWith(PREFIX+'/'))return false;
+  if(req.method!=='POST')return json(res,405,{code:'METHOD_NOT_ALLOWED'});
+  const id=route.slice(PREFIX.length+1); const binding=bindings.get(id);
+  if(!binding||!validToken(env[binding.secretEnv]))return json(res,503,{code:'FEED_NOT_CONFIGURED'});
+  if(!sameSecret(req.headers['x-vector-feed-token'],env[binding.secretEnv]))return json(res,401,{code:'FEED_AUTH_REQUIRED'});
+  if(!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type']||'')||req.headers['content-encoding'])return json(res,415,{code:'JSON_REQUIRED'});
+  const recordId=req.headers['x-3minapi-record-id'];
+  if(typeof recordId!=='string'||!UUID.test(recordId))return json(res,400,{code:'INVALID_DELIVERY_ID'});
+  let raw;
+  try{
+   const chunks=[];let size=0;
+   for await(const chunk of req){const b=Buffer.from(chunk);size+=b.length;if(size>MAX_BYTES)throw failure(413,'FEED_TOO_LARGE');chunks.push(b);}
+   raw=Buffer.concat(chunks);
+   let body;try{body=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(raw));}catch{throw failure(400,'INVALID_JSON');}
+   if(!body||Array.isArray(body)||Object.keys(body).sort().join('|')!==fields.slice().sort().join('|')||body.schemaVersion!=='vector-feed-v1'||!safeData(body))throw failure(400,'INVALID_ENVELOPE');
+   for(const key of ['tenant','site','source','domain','environment'])if(body[key]!==binding[key])throw failure(403,'FEED_SCOPE_MISMATCH');
+   const occurred=typeof body.occurredAt==='string'?Date.parse(body.occurredAt):NaN;
+   if(typeof body.eventId!=='string'||!ID.test(body.eventId)||!Number.isFinite(occurred)||new Date(occurred).toISOString()!==body.occurredAt||occurred>now()+300000||
+    !Array.isArray(body.records)||body.records.length<1||body.records.length>500||body.records.some(r=>!r||typeof r!=='object'||Array.isArray(r)))throw failure(400,'INVALID_FEED_RECORDS');
+   return persist(binding,recordId,body,raw,res);
+  }catch(error){
+   if(raw && ['INVALID_JSON','INVALID_ENVELOPE','INVALID_FEED_RECORDS'].includes(error.code)) {
+    // Valid transport credentials bind the rejection to this configured scope.
+    // Retain metadata/digest only, never invalid or unbounded source payloads.
+    try{return persist(binding,recordId,{eventId:'rejected.'+recordId,records:[],occurredAt:new Date(now()).toISOString()},raw,res,error.code);}catch(storageError){error=storageError;}
+   }
+   return json(res,error.status||503,{code:error.code&&error.status?error.code:'FEED_STORAGE_UNAVAILABLE'});
+  }
+ }
+ return {handleRequest,statusForTenant};
+}
+function validToken(value){return typeof value==='string'&&/^[A-Za-z0-9_-]{43,256}$/.test(value);}
+module.exports={createThreeMinFeed,DOMAINS};
