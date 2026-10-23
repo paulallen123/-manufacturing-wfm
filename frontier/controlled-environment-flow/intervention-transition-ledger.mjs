@@ -1,11 +1,94 @@
-export const INTERVENTION_TRANSITION_LEDGER_VERSION='intervention-transition-ledger-v0.1.1';
+import {types as utilTypes} from 'node:util';
 
-const clean=v=>typeof v==='string'?v.trim():'';
-const canonicalId=v=>typeof v==='string'&&v.length>0&&v===v.trim();
+export const INTERVENTION_TRANSITION_LEDGER_VERSION='intervention-transition-ledger-v0.2.0';
+
+const reflectApply=Reflect.apply;
+const reflectOwnKeys=Reflect.ownKeys;
+const objectGetOwnPropertyDescriptors=Object.getOwnPropertyDescriptors;
+const objectGetPrototypeOf=Object.getPrototypeOf;
+const objectCreate=Object.create;
+const objectKeys=Object.keys;
+const objectFreeze=Object.freeze;
+const objectIsFrozen=Object.isFrozen;
+const objectHasOwnProperty=Object.prototype.hasOwnProperty;
+const objectPrototype=Object.prototype;
+const arrayIsArray=Array.isArray;
+const arrayIncludes=Array.prototype.includes;
+const numberIsFinite=Number.isFinite;
+const numberIsInteger=Number.isInteger;
+const stringTrim=String.prototype.trim;
+const stringIncludes=String.prototype.includes;
+const stringReplace=String.prototype.replace;
+const regexpTest=RegExp.prototype.test;
+const canonicalUtcPattern=/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{3})?Z$/;
+const dateParse=Date.parse;
+const dateToISOString=Date.prototype.toISOString;
+const DateConstructor=Date;
+const mathAbs=Math.abs;
+const isProxy=utilTypes.isProxy;
+const clean=v=>typeof v==='string'?reflectApply(stringTrim,v,[]):'';
+const canonicalId=v=>typeof v==='string'&&v.length>0&&v===reflectApply(stringTrim,v,[]);
 const pairKey=(a,b)=>JSON.stringify([a,b]);
 const knownZone=(policy,zone)=>Object.hasOwn(policy.zones??{},zone)&&policy.zones[zone]!=null&&typeof policy.zones[zone]==='object'&&!Array.isArray(policy.zones[zone]);
-const finite=v=>typeof v==='number'&&Number.isFinite(v);
-const ts=v=>{const n=Date.parse(String(v??''));return Number.isFinite(n)?n:null;};
+const finite=v=>typeof v==='number'&&numberIsFinite(v);
+const ts=v=>{const n=dateParse(String(v??''));return numberIsFinite(n)?n:null;};
+const has=(value,key)=>reflectApply(objectHasOwnProperty,value,[key]);
+
+function freeze(value){
+  if(value&&typeof value==='object'&&!reflectApply(objectIsFrozen,Object,[value])){
+    const keys=reflectApply(objectKeys,Object,[value]);
+    for(let index=0;index<keys.length;index++)freeze(value[keys[index]]);
+    reflectApply(objectFreeze,Object,[value]);
+  }
+  return value;
+}
+
+function dataRecord(value,allowed,required=[]){
+  try{
+    if(!value||typeof value!=='object'||reflectApply(arrayIsArray,Array,[value])||reflectApply(isProxy,utilTypes,[value]))return null;
+    const prototype=reflectApply(objectGetPrototypeOf,Object,[value]);
+    if(prototype!==objectPrototype&&prototype!==null)return null;
+    const descriptors=reflectApply(objectGetOwnPropertyDescriptors,Object,[value]);
+    const keys=reflectApply(reflectOwnKeys,Reflect,[descriptors]);
+    for(let index=0;index<keys.length;index++){
+      const key=keys[index];let admitted=false;
+      if(typeof key!=='string')return null;
+      for(let allowedIndex=0;allowedIndex<allowed.length;allowedIndex++)if(key===allowed[allowedIndex]){admitted=true;break;}
+      if(!admitted)return null;
+    }
+    const copy=reflectApply(objectCreate,Object,[null]);
+    for(let index=0;index<keys.length;index++){
+      const key=keys[index];
+      const descriptor=descriptors[key];
+      if(!descriptor.enumerable||!has(descriptor,'value'))return null;
+      copy[key]=descriptor.value;
+    }
+    for(let index=0;index<required.length;index++)if(!has(copy,required[index]))return null;
+    return copy;
+  }catch{return null;}
+}
+
+function instant(value){
+  if(typeof value!=='string'||!reflectApply(regexpTest,canonicalUtcPattern,[value]))return null;
+  const milliseconds=reflectApply(dateParse,DateConstructor,[value]);
+  if(!numberIsFinite(milliseconds))return null;
+  const expected=reflectApply(stringIncludes,value,['.'])?value:reflectApply(stringReplace,value,[/Z$/,'.000Z']);
+  return reflectApply(dateToISOString,new DateConstructor(milliseconds),[])===expected?milliseconds:null;
+}
+
+function outcomeIntrinsicsIntact(){
+  try{
+    return Reflect.apply===reflectApply&&Reflect.ownKeys===reflectOwnKeys&&
+      Object.getOwnPropertyDescriptors===objectGetOwnPropertyDescriptors&&Object.getPrototypeOf===objectGetPrototypeOf&&
+      Object.create===objectCreate&&Object.keys===objectKeys&&Object.freeze===objectFreeze&&Object.isFrozen===objectIsFrozen&&
+      Object.prototype===objectPrototype&&Object.prototype.hasOwnProperty===objectHasOwnProperty&&
+      Array.isArray===arrayIsArray&&Array.prototype.includes===arrayIncludes&&
+      Number.isFinite===numberIsFinite&&Number.isInteger===numberIsInteger&&
+      String.prototype.trim===stringTrim&&String.prototype.includes===stringIncludes&&String.prototype.replace===stringReplace&&
+      RegExp.prototype.test===regexpTest&&Date.parse===dateParse&&Date.prototype.toISOString===dateToISOString&&Date===DateConstructor&&
+      Math.abs===mathAbs&&utilTypes.isProxy===isProxy;
+  }catch{return false;}
+}
 
 function policyGate(policy,now){
   if(!policy||policy.authoritative!==true)return {ok:false,reason:'policy_not_authoritative'};
@@ -255,30 +338,99 @@ export function buildInterventionTransitionLedger({policy,tasks=[],presenceEvent
   };
 }
 
-export function reconcileSensitiveZoneOutcome({recommendation,decision,observed,operations,quality,financial}={}){
-  if(!canonicalId(recommendation?.id)||!canonicalId(recommendation?.siteId)||
-     !['accepted','rejected'].includes(decision?.status))return {status:'incomplete',reason:'decision_missing'};
-  const bound=e=>e?.recommendationId===recommendation.id&&e?.siteId===recommendation.siteId;
-  if(!bound(decision))return {status:'incomplete',reason:'decision_scope_mismatch'};
-  if(decision.status==='rejected')return {status:'recorded',outcomeClass:'rejected_by_human',recommendationId:recommendation.id};
-  if(!bound(observed)||!bound(operations)||!bound(quality)||
-     (financial?.authoritative===true&&!bound(financial)))return {status:'incomplete',reason:'outcome_scope_mismatch'};
-  if(observed?.authoritative!==true||operations?.authoritative!==true)return {status:'incomplete',reason:'operational_evidence_missing'};
-  if(quality?.authoritative!==true)return {status:'incomplete',reason:'quality_evidence_missing'};
-  const predictedEntries=Number(recommendation.predictedEntries),actualEntries=Number(observed.actualEntries);
-  if(!finite(predictedEntries)||!finite(actualEntries))return {status:'incomplete',reason:'entry_values_invalid'};
-  const realisedCost=financial?.authoritative===true&&finite(Number(financial.realisedControlCost))?Number(financial.realisedControlCost):null;
-  return {
-    status:'reconciled',
-    recommendationId:recommendation.id,
-    predicted:{entries:predictedEntries},
-    realised:{
-      entries:actualEntries,
-      productionCompleted:operations.productionCompleted===true,
-      qualityEventCount:Number.isInteger(quality.eventCount)?quality.eventCount:null,
-      realisedControlCost:realisedCost
-    },
-    calibration:{entryError:actualEntries-predictedEntries,absoluteEntryError:Math.abs(actualEntries-predictedEntries)},
-    authorityBoundary:'Outcome evidence can calibrate future advice but cannot alter site policy, qualifications, access authority or process rules automatically.'
-  };
+const OUTCOME_ROOT_FIELDS=['recommendation','decision','observed','operations','quality','financial','now'];
+const RECOMMENDATION_FIELDS=['id','siteId','tenantId','predictedEntries','authoritative','ref','observedAt','maxAgeMinutes'];
+const DECISION_FIELDS=['status','recommendationId','siteId','tenantId','authoritative','ref','observedAt'];
+const OBSERVED_FIELDS=['authoritative','recommendationId','siteId','tenantId','actualEntries','ref','observedAt'];
+const OPERATIONS_FIELDS=['authoritative','recommendationId','siteId','tenantId','productionCompleted','ref','observedAt'];
+const QUALITY_FIELDS=['authoritative','recommendationId','siteId','tenantId','eventCount','ref','observedAt'];
+const FINANCIAL_FIELDS=['authoritative','recommendationId','siteId','tenantId','realisedControlCost','ref','observedAt'];
+const outcomeResult=(status,reason)=>freeze(reason?{status,reason}:{status});
+const nonNegativeNumber=value=>finite(value)&&value>=0;
+const nonNegativeInteger=value=>numberIsInteger(value)&&value>=0;
+const SOURCE_ROLE_PREFIX=freeze({recommendation:'recommendation:',decision:'decision:',observed:'access:',operations:'mes:',quality:'qms:',financial:'finance:'});
+
+function sourceRoleBound(role,ref,recommendationId){
+  return canonicalId(ref)&&ref===SOURCE_ROLE_PREFIX[role]+recommendationId;
+}
+
+function scopeAndSourceBound(recommendation,evidence,role){
+  return evidence.recommendationId===recommendation.id&&
+    evidence.siteId===recommendation.siteId&&
+    evidence.tenantId===recommendation.tenantId&&
+    sourceRoleBound(role,evidence.ref,recommendation.id);
+}
+
+function evidenceTime(evidence,notBefore,now,maxAgeMinutes){
+  const observed=instant(evidence.observedAt);
+  if(observed===null||observed<notBefore||observed>now)return {error:'outcome_time_invalid'};
+  if((now-observed)/60000>maxAgeMinutes)return {error:'outcome_evidence_stale'};
+  return {value:observed};
+}
+
+export function reconcileSensitiveZoneOutcome(input={}){
+  try{
+    if(!outcomeIntrinsicsIntact())return outcomeResult('incomplete','outcome_runtime_invalid');
+    const root=dataRecord(input??{},OUTCOME_ROOT_FIELDS);
+    if(!root)return outcomeResult('incomplete','outcome_evidence_invalid');
+    const recommendation=dataRecord(root.recommendation,RECOMMENDATION_FIELDS,['id','siteId','tenantId','predictedEntries','authoritative','ref','observedAt']);
+    const decision=dataRecord(root.decision,DECISION_FIELDS,DECISION_FIELDS);
+    if(!recommendation||!decision||recommendation.authoritative!==true||
+       !canonicalId(recommendation.id)||!canonicalId(recommendation.siteId)||!canonicalId(recommendation.tenantId)||
+       !sourceRoleBound('recommendation',recommendation.ref,recommendation.id)||
+       (decision.status!=='accepted'&&decision.status!=='rejected'))return outcomeResult('incomplete','decision_missing');
+
+    const current=instant(has(root,'now')?root.now:reflectApply(dateToISOString,new DateConstructor(),[]));
+    const generated=instant(recommendation.observedAt);
+    const maxAgeMinutes=has(recommendation,'maxAgeMinutes')?recommendation.maxAgeMinutes:43200;
+    if(current===null||generated===null||generated>current||!nonNegativeNumber(maxAgeMinutes))return outcomeResult('incomplete','outcome_time_invalid');
+    if((current-generated)/60000>maxAgeMinutes)return outcomeResult('incomplete','outcome_evidence_stale');
+    if(decision.authoritative!==true||!scopeAndSourceBound(recommendation,decision,'decision'))return outcomeResult('incomplete','decision_scope_mismatch');
+    const decisionTime=evidenceTime(decision,generated,current,maxAgeMinutes);
+    if(decisionTime.error)return outcomeResult('incomplete',decisionTime.error);
+
+    if(decision.status==='rejected')return freeze({
+      status:'recorded',outcomeClass:'rejected_by_human',recommendationId:recommendation.id,
+      evidenceRefs:{recommendation:recommendation.ref,decision:decision.ref}
+    });
+
+    const observed=dataRecord(root.observed,OBSERVED_FIELDS,OBSERVED_FIELDS);
+    const operations=dataRecord(root.operations,OPERATIONS_FIELDS,OPERATIONS_FIELDS);
+    const quality=dataRecord(root.quality,QUALITY_FIELDS,QUALITY_FIELDS);
+    const financial=has(root,'financial')?dataRecord(root.financial,FINANCIAL_FIELDS,FINANCIAL_FIELDS):null;
+    if(!observed||!operations||!quality||(has(root,'financial')&&!financial))return outcomeResult('incomplete','operational_evidence_missing');
+    if(!scopeAndSourceBound(recommendation,observed,'observed')||!scopeAndSourceBound(recommendation,operations,'operations')||
+       !scopeAndSourceBound(recommendation,quality,'quality')||(financial&&!scopeAndSourceBound(recommendation,financial,'financial')))return outcomeResult('incomplete','outcome_scope_mismatch');
+    if(observed.authoritative!==true||operations.authoritative!==true)return outcomeResult('incomplete','operational_evidence_missing');
+    if(quality.authoritative!==true)return outcomeResult('incomplete','quality_evidence_missing');
+    if(financial&&financial.authoritative!==true)return outcomeResult('incomplete','financial_evidence_missing');
+    for(let index=0;index<(financial?4:3);index++){
+      const evidence=index===0?observed:index===1?operations:index===2?quality:financial;
+      const timing=evidenceTime(evidence,decisionTime.value,current,maxAgeMinutes);
+      if(timing.error)return outcomeResult('incomplete',timing.error);
+    }
+    if(!nonNegativeNumber(recommendation.predictedEntries)||!nonNegativeNumber(observed.actualEntries))return outcomeResult('incomplete','entry_values_invalid');
+    if(typeof operations.productionCompleted!=='boolean')return outcomeResult('incomplete','operational_evidence_invalid');
+    if(!nonNegativeInteger(quality.eventCount))return outcomeResult('incomplete','quality_values_invalid');
+    if(financial&&!nonNegativeNumber(financial.realisedControlCost))return outcomeResult('incomplete','financial_values_invalid');
+
+    const predictedEntries=recommendation.predictedEntries,actualEntries=observed.actualEntries;
+    return freeze({
+      status:'reconciled',
+      recommendationId:recommendation.id,
+      predicted:{entries:predictedEntries},
+      realised:{
+        entries:actualEntries,
+        productionCompleted:operations.productionCompleted,
+        qualityEventCount:quality.eventCount,
+        realisedControlCost:financial?.realisedControlCost??null
+      },
+      calibration:{entryError:actualEntries-predictedEntries,absoluteEntryError:reflectApply(mathAbs,Math,[actualEntries-predictedEntries])},
+      evidenceRefs:{
+        recommendation:recommendation.ref,decision:decision.ref,observed:observed.ref,
+        operations:operations.ref,quality:quality.ref,financial:financial?.ref??null
+      },
+      authorityBoundary:'Outcome evidence can calibrate future advice but cannot alter site policy, qualifications, access authority or process rules automatically.'
+    });
+  }catch{return outcomeResult('incomplete','outcome_evidence_invalid');}
 }
