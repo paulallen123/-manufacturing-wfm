@@ -71,10 +71,20 @@ test('stale policy blocks scoring',()=>{
  assert.equal(evaluateWaterResiliencePlan({policy:stale,workers,tasks,plan,now}).reason,'policy_stale');
 });
 
-test('outcome learning preserves predicted vs realised water',()=>{
- const r=reconcileWaterOutcome({recommendation:{id:'R1',predictedFreshWaterM3:11},decision:{status:'accepted'},observed:{authoritative:true,actualFreshWaterM3:12.5},operations:{authoritative:true,productionCompleted:true},financial:{authoritative:true,realisedWaterCost:20}});
+const outcomeFixture=()=>({
+ now:'2026-09-20T22:30:00Z',
+ recommendation:{id:'R1',tenantId:'northstar-demo',siteId:'S1',sourceRef:'recommendation:R1',decisionSourceRef:'decision-approval:R1',observedSourceRef:'meter:R1',operationsSourceRef:'mes:R1',financialSourceRef:'erp:R1',generatedAt:'2026-09-20T22:00:00Z',maxAgeMinutes:120,predictedFreshWaterM3:11},
+ decision:{status:'accepted',recommendationId:'R1',tenantId:'northstar-demo',siteId:'S1',sourceRef:'decision-approval:R1',observedAt:'2026-09-20T22:05:00Z'},
+ observed:{authoritative:true,recommendationId:'R1',tenantId:'northstar-demo',siteId:'S1',sourceRef:'meter:R1',observedAt:'2026-09-20T22:20:00Z',actualFreshWaterM3:12.5},
+ operations:{authoritative:true,recommendationId:'R1',tenantId:'northstar-demo',siteId:'S1',sourceRef:'mes:R1',observedAt:'2026-09-20T22:20:00Z',productionCompleted:true},
+ financial:{authoritative:true,recommendationId:'R1',tenantId:'northstar-demo',siteId:'S1',sourceRef:'erp:R1',observedAt:'2026-09-20T22:20:00Z',realisedWaterCost:20}
+});
+
+test('outcome learning preserves predicted vs realised water with bound provenance',()=>{
+ const r=reconcileWaterOutcome(outcomeFixture());
  assert.equal(r.status,'reconciled');
  assert.equal(r.calibration.waterErrorM3,1.5);
+ assert.deepEqual(r.evidenceRefs,{recommendation:'recommendation:R1',decision:'decision-approval:R1',observed:'meter:R1',operations:'mes:R1',financial:'erp:R1'});
 });
 
 const candidate={id:'candidate',assignments:[{taskId:'T1',workerId:'W1',slot:2},{taskId:'T2',workerId:'W2',slot:1}]};
@@ -286,3 +296,137 @@ test('negative ranking inputs cannot make a water plan look beneficial',()=>{
  overflow.policy.slots[1].scarcityWeight=1e308;
  assertUnsafe(overflow,{status:'blocked',reason:'water_metrics_invalid'});
 });
+
+test('accessor-backed rows fail closed before any validated value can drift',()=>{
+ const input=fixture();
+ let reads=0;
+ Object.defineProperty(input.policy.slots[1],'scarcityWeight',{enumerable:true,get(){reads++;return reads===1?1:-50;}});
+ assert.deepEqual(evaluate(input),{status:'blocked',reason:'water_slots_invalid'});
+ assert.equal(reads,0);
+ const ranked=compareWaterResiliencePlans({...input,plans:[input.plan]});
+ assert.equal(ranked.status,'no_safe_candidate');
+ assert.equal(reads,0);
+});
+
+test('throwing accessors are contained and cannot escape the public entry points',()=>{
+ const input=fixture();
+ Object.defineProperty(input.policy,'authoritative',{enumerable:true,get(){throw new Error('caller getter executed');}});
+ assert.doesNotThrow(()=>evaluate(input));
+ assert.deepEqual(evaluate(input),{status:'blocked',reason:'policy_invalid'});
+ assert.doesNotThrow(()=>compareWaterResiliencePlans({...input,plans:[input.plan]}));
+});
+
+test('caller-owned traversal cannot hide assignments or forge a ranked candidate',()=>{
+ const hidden=fixture();
+ const inherited=Object.create(Array.prototype);
+ inherited[1]=hidden.plan.assignments[1];
+ hidden.plan.assignments.length=2;
+ delete hidden.plan.assignments[1];
+ Object.setPrototypeOf(hidden.plan.assignments,inherited);
+ assert.deepEqual(evaluate(hidden),{status:'rejected',reason:'plan_invalid'});
+
+ const rankedInput=fixture();
+ const forged={status:'safe_candidate',planId:'forged',metrics:{restrictionExposureM3:-1,scarcityWeightedWater:-1,waterCost:-1,latenessPenalty:-1}};
+ const plans=[rankedInput.plan];
+ plans.map=()=>[forged];
+ assert.deepEqual(compareWaterResiliencePlans({...rankedInput,plans}),{status:'no_safe_candidate',preferred:null,safe:[],rejected:[]});
+});
+
+test('inherited sources and string skills cannot satisfy safety constraints',()=>{
+ const inheritedSource=fixture();
+ const allowed=[];allowed.length=1;
+ const sourcePrototype=Object.create(Array.prototype);sourcePrototype[0]='fresh';
+ Object.setPrototypeOf(allowed,sourcePrototype);
+ inheritedSource.tasks[0].allowedWaterSources=allowed;
+ assert.deepEqual(evaluate(inheritedSource),{status:'rejected',reason:'tasks_invalid'});
+
+ const stringSkills=fixture();
+ stringSkills.workers[0].skills='wash';
+ stringSkills.tasks[0].skill='w';
+ assert.deepEqual(evaluate(stringSkills),{status:'rejected',reason:'workers_invalid'});
+});
+
+test('policy freshness accepts only primitive duration and real UTC instants',()=>{
+ const coercible=fixture();coercible.policy.maxAgeMinutes='120';
+ assert.deepEqual(evaluate(coercible),{status:'blocked',reason:'policy_time_invalid'});
+
+ const rolled=fixture();
+ rolled.policy.observedAt='2026-04-31T00:00:00Z';
+ rolled.now='2026-05-01T00:00:00Z';
+ assert.deepEqual(evaluate(rolled),{status:'blocked',reason:'policy_time_invalid'});
+});
+
+test('outcome learning rejects coercible measurements instead of recording zero',()=>{
+ for(const value of [null,false,[], '']){
+  const input=outcomeFixture();input.observed.actualFreshWaterM3=value;
+  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'water_values_invalid'});
+  const predicted=outcomeFixture();predicted.recommendation.predictedFreshWaterM3=value;
+  assert.deepEqual(reconcileWaterOutcome(predicted),{status:'incomplete',reason:'water_values_invalid'});
+  const financial=outcomeFixture();financial.financial.realisedWaterCost=value;
+  assert.deepEqual(reconcileWaterOutcome(financial),{status:'incomplete',reason:'water_values_invalid'});
+ }
+});
+
+test('outcome evidence is bound to recommendation tenant site identity and freshness',()=>{
+ for(const [domain,field,value] of [
+  ['decision','recommendationId','other'],
+  ['observed','tenantId','other-tenant'],
+  ['operations','siteId','other-site'],
+  ['financial','sourceRef',''],
+ ]){
+  const input=outcomeFixture();input[domain][field]=value;
+  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'evidence_identity_invalid'});
+ }
+ const stale=outcomeFixture();stale.observed.observedAt='2026-09-19T00:00:00Z';
+ assert.deepEqual(reconcileWaterOutcome(stale),{status:'incomplete',reason:'evidence_time_invalid'});
+});
+
+test('malformed authoritative slot controls fail closed even on an unused slot',()=>{
+ for(const [field,value] of [
+  ['waterSource',false],['waterSource',null],['waterSource',[]],
+  ['restrictionActive','true'],['restrictionActive',null],
+  ['minimumReserveM3',null],['minimumReserveM3',false],
+ ]){
+  const input=fixture();input.policy.slots[2][field]=value;
+  assert.deepEqual(evaluate(input),{status:'blocked',reason:'water_slots_invalid'});
+ }
+});
+
+test('present optional task ranking values require their exact primitive type',()=>{
+ for(const [field,value] of [
+  ['latePenalty',null],['preferredSlot',null],['preferredSlot','2'],['preferredSlot',false]
+ ]){
+  const input=fixture();input.tasks[0][field]=value;
+  assert.deepEqual(evaluate(input),{status:'rejected',reason:'task_invalid',taskId:'T1'});
+ }
+});
+
+test('outcome sources are role-bound and cannot be swapped or invented',()=>{
+ for(const [domain,value] of [['decision','meter:R1'],['observed','mes:R1'],['operations','unknown:R1'],['financial','meter:R1']]){
+  const input=outcomeFixture();input[domain].sourceRef=value;
+  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'evidence_identity_invalid'});
+ }
+});
+
+test('outcome timestamps preserve causal recommendation decision and evidence order',()=>{
+ const earlyDecision=outcomeFixture();earlyDecision.decision.observedAt='2026-09-20T21:59:00Z';
+ assert.deepEqual(reconcileWaterOutcome(earlyDecision),{status:'incomplete',reason:'evidence_time_invalid'});
+ for(const domain of ['observed','operations','financial']){
+  const input=outcomeFixture();input[domain].observedAt='2026-09-20T22:04:00Z';
+  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'evidence_time_invalid'});
+ }
+});
+
+test('outcome status and production completion use exact admitted primitives',()=>{
+ const padded=outcomeFixture();padded.decision.status=' rejected ';
+ assert.deepEqual(reconcileWaterOutcome(padded),{status:'incomplete',reason:'decision_missing'});
+ for(const value of [null,[],{},'true',1]){
+  const input=outcomeFixture();input.operations.productionCompleted=value;
+  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'operational_evidence_invalid'});
+ }
+ for(const value of [null,[],{},'true',1]){
+  const input=outcomeFixture();input.financial.authoritative=value;
+  assert.deepEqual(reconcileWaterOutcome(input),{status:'incomplete',reason:'financial_evidence_invalid'});
+ }
+});
+

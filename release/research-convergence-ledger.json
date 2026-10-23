@@ -331,7 +331,7 @@
       "theoryStatus": "PASS_ISOLATED_SOURCE_UNPROVEN",
       "implementationStatus": "CANONICAL_SHADOW_SOURCE_WITH_UNADOPTED_FIX",
       "evidence": "docs/evidence/2026-10-13-water-resilience-ranking-inputs.md",
-      "nextLifecycleAction": "Canonical owner to reconcile the isolated negative-input repair, then bind utility/site policy, task demand and outcomes to authenticated source receipts and run exact-candidate hosted Golden Journey proof."
+      "nextLifecycleAction": "After exact-artifact independent review, the canonical owner should reconcile the hardened four-file PR #410 repair, run it in the final Node 22 image and shared suites, then bind utility/site policy, meter, MES and financial outcomes to authenticated fresh receipts for an intended-role hosted Golden Journey."
     },
     {
       "id": "country-policy-packs",
@@ -482,3 +482,4 @@
     "CONVERGED"
   ]
 }
+

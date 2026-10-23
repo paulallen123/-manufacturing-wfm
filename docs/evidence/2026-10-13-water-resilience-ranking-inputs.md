@@ -1,23 +1,50 @@
-# Water resilience ranking input repair — 2026-10-13
+# Water resilience input and outcome repair — 2026-10-23
 
-## Requirement, ownership and base
+## Requirement, ownership and exact base
 
-The accepted `water-resilience-orchestration` research row comes from Frontier PR #218. Its advisory planner ranks already-feasible production and staffing plans by restriction exposure, scarcity-weighted water, tariff cost and lateness. Those ranking inputs must be valid so a negative weight, tariff or penalty cannot make a harmful plan look beneficial. Current candidate source already contains this engine and tests, adopted in `40d3e8f1`; this change reuses them.
+The accepted L13 `water-resilience-orchestration` row originates in Frontier PR #218. It ranks already-feasible production and staffing plans by restriction exposure, scarcity-weighted water, tariff cost and lateness, and reconciles predicted versus observed water outcomes. The four-file repair remains within the accepted PR #410 fence:
 
-At selection, an open-PR search for `water-resilience-orchestration`, historical PR #218, local worktrees and candidate file history showed no active package owner for this narrow input repair. There is no second planner, runner, source writer, controller or release lease. Exact base: `48dce8f697825c8cd5f99b3e5aeea3953647f8c2`. Changed files: `frontier/water-resilience-orchestration/water-resilience-orchestration.mjs`, its adjacent `.test.mjs`, this record and `release/research-convergence-ledger.json`.
+- `frontier/water-resilience-orchestration/water-resilience-orchestration.mjs`
+- `frontier/water-resilience-orchestration/water-resilience-orchestration.test.mjs`
+- this evidence record
+- `release/research-convergence-ledger.json`
 
-## Implementation and test evidence
+The predecessor is PR #410 head `8270d680df281acfa9ea90484d3abc4d064498cf`; the canonical target observed for this repair remains `48dce8f697825c8cd5f99b3e5aeea3953647f8c2`. This does not authorize canonical, deployment, tenant, provider, payment or OT mutation.
 
-The existing evaluator previously accepted `scarcityWeight: -1`, yielding `safe_candidate` with `scarcityWeightedWater: -7` for the synthetic fixture. The new regression first failed **0/1**, showing that result. Independent review then found null/nonnumeric coercions and overflow. The repair rejects a present negative, blank, boolean, array or non-finite scarcity weight or tariff as `water_slot_economics_invalid`; invalid task penalty/demand and required capacity values also fail closed. Omitted scarcity weight remains at the existing default of 1; null now also uses 1 instead of zero. Omitted/null tariff remains zero. Required task water/effluent demand and slot availability/effluent capacity may not be null. Accumulated metrics must remain finite, including when individually finite inputs multiply to infinity. Validation happens inside the existing advisory evaluator before scoring; no execution authority changes.
+## Reproduced failure evidence
 
-- Initial test command from repository root failed because the path was relative to the new worktree. Re-running in `/workspace/vector-water-work` gave baseline **25/25 pass**.
-- Focused new regression before repair: **0/1 pass, 1 fail**, with negative scarcity weight producing a `safe_candidate` and negative weighted score.
-- After repair and review corrections: `node --test frontier/water-resilience-orchestration/water-resilience-orchestration.test.mjs`: **26/26 pass, 0 fail/skip** on local Node v24.19.0.
-- `node --check` on both changed runtime/test files and `git diff --check`: **pass**.
-- Research ledger validation and final independent review are recorded in the PR handoff after execution.
+The committed predecessor passed its existing synthetic suite: `node --check` on runtime and tests passed, and `node --test frontier/water-resilience-orchestration/water-resilience-orchestration.test.mjs` returned **26/26 pass** on local Node v24.19.0. That passing suite did not establish hostile-input safety.
 
-## Boundaries and next action
+Formal exact-head review `5552706867` reported **0/16** held-out cases passing. It demonstrated that caller accessors could change values after validation, caller-owned iterators and `plans.map` could hide rows or forge a candidate, coercible duration/date/measurement values were accepted, and outcome evidence was not bound to recommendation, tenant, site, source or freshness.
 
-The existing source is an advisory, in-memory planner. This local fix is **TESTED** within its scoped synthetic suite and is not yet adopted by the sole canonical owner. Independent read-only review found and verified fixes for null and coercion gaps, required demand/capacity gaps and finite-input overflow; no blocking code issue remains. Exact-candidate integration: pending. Deployment/enablement: none. Hosted or customer proof: none. The existing `policy.authoritative` and source references are caller-provided; this repair does not establish authenticated utility, MES, recipe, effluent or workforce truth, nor measured savings. No customer, production, personnel, payroll, recipe or control-system state was changed.
+Fail-first regressions reproduced those classes through the public exports. The focused command with eight named tests returned **0/8 pass, 8 fail** against the predecessor implementation. A subsequent authoritative-financial-value regression returned **0/1 pass, 1 fail** because `null`, `false`, `[]` and `''` were converted to an accepted null realised cost. Independent review of the first repair then found permissive slot defaults and incomplete source/causal binding; five focused public-entry regressions reproduced those remaining classes at **0/5 pass, 5 fail** before the second repair. One final fail-first assertion also caught malformed financial-authority values being silently downgraded; it returned **0/1 pass, 1 fail** before exact boolean validation was added.
 
-The canonical owner should reconcile this fix with current candidate work, run exact-image and shared regressions, bind authoritative source receipts and valid time ranges, then collect hosted/customer-like Golden Journey and measured outcome evidence before raising readiness.
+## Bounded implementation
+
+Version `water-resilience-orchestration-v0.2.0` now:
+
+- copies only own enumerable data properties from ordinary records and dense ordinary arrays;
+- rejects proxies, accessors, symbols, hidden/extra fields, sparse/inherited elements and caller-supplied traversal methods before scoring;
+- traverses engine-owned snapshots by index and performs deterministic stable merge sorting on an engine-owned result list without invoking caller methods or locale-sensitive collation;
+- rejects malformed authoritative water source, restriction and reserve controls even on unused slots, and requires primitive finite non-negative water, tariff, scarcity, penalty, duration and authoritative outcome values;
+- parses only real canonical UTC instants, rejecting rolled dates and coercible freshness settings;
+- binds accepted/rejected decisions and operational, observed and financial evidence to the recommendation, tenant and site, with exact role-specific source references, bounded freshness and causal recommendation → decision → evidence ordering;
+- freezes returned evidence so downstream code cannot mutate an admitted result.
+
+The compatibility deliberately retained by earlier accepted tests is narrow: raw string identifiers remain distinct; finite numeric worker references and numeric-string slot aliases remain supported; omitted/null scarcity weight still defaults to 1 and omitted/null tariff to 0; absent water source, restriction, reserve, preferred slot and lateness penalty retain their existing defaults, but malformed present values fail closed. The implementation remains advisory and performs no recipe, permit, staffing, payroll, production or control-system action.
+
+## Verification and evidence class
+
+From repository root on local Node v24.19.0:
+
+- `node --check frontier/water-resilience-orchestration/water-resilience-orchestration.mjs`: pass.
+- `node --check frontier/water-resilience-orchestration/water-resilience-orchestration.test.mjs`: pass.
+- `node --test frontier/water-resilience-orchestration/water-resilience-orchestration.test.mjs`: **38/38 pass, 0 fail/skip/todo**.
+- `node -e "JSON.parse(require('fs').readFileSync('release/research-convergence-ledger.json','utf8'))"`: pass.
+- `if rg -n '[[:blank:]]+$' <four-file fence>; then exit 1; fi`: pass (no trailing whitespace). The isolated scratch checkout has no `.git` directory, so `git diff --check` itself was unavailable and is not claimed.
+
+This is **built and tested in isolation**. It is not yet independently verified on the resulting Git object, reconciled into the canonical release, executed in the final Node 22 image, deployed/enabled, or customer-proven. The synthetic suite does not authenticate utility, meter, MES, ERP, water-quality, permit, recipe or workforce evidence and does not prove savings.
+
+## Exact next owner action
+
+After an independent exact-artifact review, the accepted canonical owner should reconcile this four-file candidate against the current release head, execute its unchanged tests in the final Node 22 image and shared mandatory suites, admit only that exact source/artifact, then obtain a fresh intended-role advisory journey backed by authenticated water-policy, meter, MES and applicable financial receipts through durable state, fresh login and audit. No readiness or measured-benefit claim is admissible before that chain completes.
