@@ -1,3 +1,19 @@
+# Current checkpoint — 2026-10-23T21:13:34.361Z
+
+Owner /root, PR501 claim6374743908; workspace /workspace/scratch/cd4e2bcb0821. Same integration branch test/vector-empty-organisation-regression-20261020; parent75310949f6fa965e81f49edbb77837423b7c705e; exact candidate is containing Git commit. Canonical release/vector-customer-ready-candidate-20260925 remains48dce8f697825c8cd5f99b3e5aeea3953647f8c2. No new product/controller/release lane.
+
+Actual isolated build48dba1fe-074c-47af-809e-7c1dfdcddbfa SUCCESS at20:35:28.874Z, source75310949, image sha256:397ef420f6d940294e84e90c14cd3a894b1cb265042b58c2240abd0c75609f73. Identity receipt healthcheck passed; no public domain or customer app startup. Source1598/1598 and final harness15/15 passed. Twelve archive-dependent cases skipped; portable deployment-provenance also SKIP script-missing. Earlier support-route skip later passed1/1 in same build.
+
+This successor harvests only PR429 installed-archive recipe into Dockerfile after hardening. Readonly mounts, gosu node, exact SHA/Node/archive/installed-byte equality and88/88 zero-skip admission. Independent /root/build_route_review ACCEPT exact two source blobs; existing six-file/auth/startup repairs preserved. Local source88/88 with TAR_OPTIONS=--no-same-owner; original76/88 tar ownership failure and blocked local UID switch retained. Local results do not replace required hosted non-root build.
+
+Evidence: evidence/vector-installed-archive-20261023/manifest.json, review.md, selected previous build excerpts and actual local TAP.
+Next: freeze containing exact SHA, stage only existing isolated service source plus matching receipt expected SHA; inspect whole patch; use normal authorized deployment controls for one successor build. Require actual gate PASS and immutable digest. Do not change branch while admission runs. Existing service845b5dcc-9c95-42cf-95fb-5719e96511f2, project9cd73309-0ece-4b9a-891f-7daa13d94f0d, env9e7875b6-e214-4c32-9cee-81235e3d49ff. No build currently running at checkpoint; no staged changes at last read. Existing Codex task cd_6adb8f150c00819191fe5d44822c184e remains completed-blocked, not duplicated.
+
+Approval boundaries: normal low-risk isolated delivery authorized; formal merge/environment controls preserved. COMMENT reviews are not approval; branch-protection read403. No customer/provider write, new resource/subscription or volume. Usage-based build cost unverified, not fixed. Customer-serving/rollback baseline retained below, not reverified this checkpoint. Full backlog and authenticated hosted/recovery/provider/customer proof incomplete.
+If interrupted reconcile current branch/jobs/staged patch/ownership before resuming; no blind repeated mutation. No persistent Work executor implied.
+
+## Retained checkpoint history
+
 # Current checkpoint — 2026-10-23T20:13:05Z
 
 Owner /root resumed PR501; claim6373750129, workspace /workspace/scratch/cd4e2bcb0821. Current canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged. PR501 parent13276a7806ae9994f44ca4a9a0c3b8b1f2bbf3b1; exact current candidate is the containing Git commit (resolve full SHA), same test/vector-empty-organisation-regression-20261020 branch.

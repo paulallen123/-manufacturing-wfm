@@ -364,6 +364,15 @@ RUN printf '%s\n' \
  > /usr/local/bin/vector-entrypoint.sh \
  && chmod 0555 /usr/local/bin/vector-entrypoint.sh
 
+# Required archive-dependent security checks against installed, hardened bytes.
+# BuildKit bind mounts are read-only and are not copied into the runtime image.
+RUN --mount=type=bind,source=operations/runtime,target=/proof/source,readonly \
+    --mount=type=bind,source=artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz,target=/proof/sealed-runtime.tgz,readonly \
+    --mount=type=bind,source=verification/vector-repair-20260921/verify-installed-workflow-archive.sh,target=/proof/verify-installed-workflow-archive.sh,readonly \
+    gosu node env EXPECTED_SOURCE_SHA="$RAILWAY_GIT_COMMIT_SHA" \
+      WFM_EVIDENCE_SEALED_ARCHIVE=/proof/sealed-runtime.tgz \
+      /bin/sh /proof/verify-installed-workflow-archive.sh
+
 USER root
 ENTRYPOINT ["/usr/local/bin/vector-entrypoint.sh"]
 ENV NODE_ENV=staging
