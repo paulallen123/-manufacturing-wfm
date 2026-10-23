@@ -56,3 +56,6 @@ review_vector_actual_staffology_payroll_codes=2026-10-02 parenta3e17ebfbcd3e667e
 2026-10-22 shift-premium-evidence isolated admission: source commit 6c888f7b729e8944fef59cd959b938bbb4e58d19; #202 supplied planned premium pence using shared money helper; operations 376/376, money 16/16 and local FORGE core PASS; request exact non-deploy CircleCI image validation; source unauthenticated, no payroll write, savings claim, tenant mutation, staging deployment, production approval or customer-ready claim.
 
 2026-10-22 shift-premium source-scope correction exact admission: source commit 7763d316d0fefb50a8dc46707690bb678373de8b; added tenant/site binding after red regression; final operations 376/376, focused 3/3, prior local FORGE core PASS; exact CircleCI non-deploy image proof required; no deployment or customer-ready claim.
+
+
+2026-10-22 shift-premium monetary-provenance repair from exact parent 010a726cce4b276fb0f9dcbac4b282033f2cd996; currency plus effective rate/policy digest binding; focused RED3of4 then GREEN4of4 and syntax PASS; exact non-deploy CircleCI source/image admission required; no integration, deployment, payroll write, savings or customer-proof claim.

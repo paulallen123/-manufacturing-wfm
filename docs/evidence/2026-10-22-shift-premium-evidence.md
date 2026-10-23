@@ -10,14 +10,24 @@ Open PR title/body searches for shift premium, premium cost and premium evidence
 
 ## Exact base and changed files
 
-Base `48dce8f697825c8cd5f99b3e5aeea3953647f8c2`. New files: `operations/runtime/shift-premium-evidence.cjs`, its test, and this evidence record. No route, writer, scheduler, payroll ledger, frozen artifact or deployment manifest is modified.
+Base `48dce8f697825c8cd5f99b3e5aeea3953647f8c2`. Product files: `operations/runtime/shift-premium-evidence.cjs` and its test. This evidence record and the existing non-deploy admission trigger are also updated. No route, writer, scheduler, payroll ledger, frozen product artifact or deployment manifest is modified.
+
+## Monetary-provenance repair
+
+Independent review of predecessor `010a726cce4b276fb0f9dcbac4b282033f2cd996` found that pence lacked currency and that rate/multiplier values were not bound to immutable effective evidence. New regressions first failed because currency was absent from output and mixed/missing currency plus unchanged-identity monetary mutations were accepted.
+
+The repaired assessor now requires one uppercase three-letter scope currency, emits it beside all pence, and requires each segment's hourly rate and premium multiplier to match effective-window evidence. Each evidence object carries tenant/site-scoped SHA-256 identity over its reference, validity window, currency and money-driving values. Missing/mixed currency, expired windows, digest mismatch, or reuse of one reference with a different digest fails closed. Outputs preserve each accepted reference and digest for downstream reconciliation.
 
 ## Result and tests
 
-The read-only assessor requires an exact tenant/site and completed period, source tenant/site/name/revision/digest/completeness, policy revision and bounded segments. Each segment binds assignment/evidence references, the policy revision and a premium code. It rejects duplicate refs, overlap within the same assignment, foreign scope, invalid intervals, coercible rates/multipliers, missing or accessor-backed fields and unsafe pence totals. Different assignments may legitimately overlap. It reports aggregate base, gross and premium pence, omits assignment identifiers and keeps `claimedSavingsPence:null`, `sourceAuthenticated:false` and `actionAuthority:false`.
+Fresh local Node execution:
 
-Initial TDD failed on the missing module as expected. Focused tests passed 3/3. The adjacent shared money suite passed 16/16. Full operations runtime passed 376/376 with the declared passkey dependency installed; local FORGE core gate passed; diff check passed. Subsequent source tenant/site regressions failed on the first commit and passed after source binding was added. Exact external image and hosted tests have not run. Synthetic data only.
+- predecessor-compatible RED: 1/4 pass, 3/4 fail for the intended missing currency/provenance behavior;
+- repaired focused suite: 4/4 pass, 0 fail/skip;
+- `node --check` on source and focused test: exit 0.
+
+The adjacent shared money helper is unchanged. Its previously recorded 16/16 suite and the predecessor operations 376/376 cannot be transferred to the successor; exact-head non-deploy admission remains required. Synthetic data only.
 
 ## State and next action
 
-Built and locally tested; independent review, canonical integration, exact image proof, deployment and hosted/customer proof pending. Source completeness, hourly rates, policy revision and premium codes are caller declarations. The canonical owner must authenticate WFM schedule and pay-policy evidence, reconcile PRs #494/#496/#431, verify tenant/site and payroll role controls in the existing FORGE path, then run exact merged-image gates and approved synthetic hosted readback. Production approval and customer-ready claims remain unchanged.
+Built and focused-tested in isolation; independent exact-head review, full operations admission, canonical integration, exact image proof, deployment and hosted/customer proof remain pending. `sourceAuthenticated:false`, `claimedSavingsPence:null` and `actionAuthority:false` remain unchanged. The canonical owner must authenticate WFM schedule/rate/policy evidence, reconcile PRs #494/#496/#431, verify tenant/site and payroll role controls in the existing FORGE path, then run exact merged-image gates and approved synthetic hosted readback. Production approval and customer-ready claims remain unchanged.

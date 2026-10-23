@@ -1,7 +1,10 @@
 'use strict';
 
+const { createHash } = require('node:crypto');
 const money = require('./payroll-money.cjs')();
 const CONTRACT_VERSION = 'VECTOR_SHIFT_PREMIUM_EVIDENCE_V1';
+const RATE_EVIDENCE_VERSION = 'VECTOR_RATE_EVIDENCE_V1';
+const POLICY_EVIDENCE_VERSION = 'VECTOR_PREMIUM_POLICY_EVIDENCE_V1';
 
 function own(row, key) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) throw Error(`${key} needs an evidence object.`);
@@ -25,10 +28,24 @@ function cost(value, field, lower, upper) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < lower || value > upper) throw Error(`${field} is outside the supported numeric range.`);
   return value;
 }
+function currency(value, field) {
+  if (typeof value !== 'string' || !/^[A-Z]{3}$/.test(value)) throw Error(`${field} needs an uppercase three-letter currency.`);
+  return value;
+}
+function digest(value) {
+  return 'sha256:' + createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+function assertedDigest(value, expected, field) {
+  if (typeof value !== 'string' || !/^sha256:[0-9a-f]{64}$/.test(value) || value !== expected) {
+    throw Error(`${field} does not bind the declared monetary evidence.`);
+  }
+  return value;
+}
 
 function assessShiftPremiumEvidence(input) {
   const tenantId = label(own(input, 'tenantId'), 'tenantId');
   const siteId = label(own(input, 'siteId'), 'siteId');
+  const scopeCurrency = currency(own(input, 'currency'), 'currency');
   const asOf = instant(own(input, 'asOf'), 'asOf');
   const period = own(input, 'period');
   const start = instant(own(period, 'start'), 'period.start');
@@ -46,6 +63,12 @@ function assessShiftPremiumEvidence(input) {
   const segments = own(input, 'segments');
   if (!Array.isArray(segments) || segments.length < 1 || segments.length > 1000) throw Error('A bounded segment list is required.');
   const refs = [];
+  const rateEvidenceRefs = [];
+  const policyEvidenceRefs = [];
+  const rateEvidenceOutput = [];
+  const policyEvidenceOutput = [];
+  const rateIdentities = new Map();
+  const policyIdentities = new Map();
   const seenRefs = new Set();
   const assignments = new Map();
   let basePence = 0, grossPence = 0, premiumPence = 0;
@@ -59,7 +82,7 @@ function assessShiftPremiumEvidence(input) {
     if (seenRefs.has(evidenceRef)) throw Error('Duplicate segment evidence.');
     seenRefs.add(evidenceRef);
     if (own(segment, 'policyRevision') !== policyRevision) throw Error('Segment premium policy revision differs.');
-    label(own(segment, 'premiumCode'), 'premiumCode');
+    const premiumCode = label(own(segment, 'premiumCode'), 'premiumCode');
     const segmentStart = instant(own(segment, 'start'), 'segment.start');
     const segmentEnd = instant(own(segment, 'end'), 'segment.end');
     if (segmentStart < start || segmentEnd > end || segmentEnd <= segmentStart || segmentEnd - segmentStart > 24 * 3600000) {
@@ -71,20 +94,63 @@ function assessShiftPremiumEvidence(input) {
     assignments.set(assignmentRef, previous);
     const hourlyRate = cost(own(segment, 'hourlyRate'), 'hourlyRate', 0, 100000);
     const multiplier = cost(own(segment, 'multiplier'), 'multiplier', 1, 10);
+    const rateEvidence = own(segment, 'rateEvidence');
+    const rateRef = label(own(rateEvidence, 'ref'), 'rateEvidence.ref');
+    const rateFromText = own(rateEvidence, 'validFrom');
+    const rateToText = own(rateEvidence, 'validTo');
+    const rateFrom = instant(rateFromText, 'rateEvidence.validFrom');
+    const rateTo = instant(rateToText, 'rateEvidence.validTo');
+    const rateCurrency = currency(own(rateEvidence, 'currency'), 'rateEvidence.currency');
+    const evidencedRate = cost(own(rateEvidence, 'hourlyRate'), 'rateEvidence.hourlyRate', 0, 100000);
+    if (rateCurrency !== scopeCurrency || evidencedRate !== hourlyRate || rateFrom > segmentStart || rateTo < segmentEnd || rateTo <= rateFrom) {
+      throw Error('Rate evidence does not cover the segment monetary input.');
+    }
+    const rateDigest = assertedDigest(own(rateEvidence, 'digest'), digest([
+      RATE_EVIDENCE_VERSION, tenantId, siteId, rateRef, rateFromText, rateToText, rateCurrency, evidencedRate
+    ]), 'rateEvidence.digest');
+    if (rateIdentities.has(rateRef) && rateIdentities.get(rateRef) !== rateDigest) throw Error('Rate evidence identity changed within the snapshot.');
+    rateIdentities.set(rateRef, rateDigest);
+
+    const premiumEvidence = own(segment, 'premiumEvidence');
+    const policyRef = label(own(premiumEvidence, 'ref'), 'premiumEvidence.ref');
+    const policyFromText = own(premiumEvidence, 'validFrom');
+    const policyToText = own(premiumEvidence, 'validTo');
+    const policyFrom = instant(policyFromText, 'premiumEvidence.validFrom');
+    const policyTo = instant(policyToText, 'premiumEvidence.validTo');
+    const policyCurrency = currency(own(premiumEvidence, 'currency'), 'premiumEvidence.currency');
+    const evidencedRevision = label(own(premiumEvidence, 'policyRevision'), 'premiumEvidence.policyRevision');
+    const evidencedCode = label(own(premiumEvidence, 'premiumCode'), 'premiumEvidence.premiumCode');
+    const evidencedMultiplier = cost(own(premiumEvidence, 'multiplier'), 'premiumEvidence.multiplier', 1, 10);
+    if (policyCurrency !== scopeCurrency || evidencedRevision !== policyRevision || evidencedCode !== premiumCode ||
+        evidencedMultiplier !== multiplier || policyFrom > segmentStart || policyTo < segmentEnd || policyTo <= policyFrom) {
+      throw Error('Premium-policy evidence does not cover the segment monetary input.');
+    }
+    const policyDigest = assertedDigest(own(premiumEvidence, 'digest'), digest([
+      POLICY_EVIDENCE_VERSION, tenantId, siteId, policyRef, policyFromText, policyToText, policyCurrency,
+      evidencedRevision, evidencedCode, evidencedMultiplier
+    ]), 'premiumEvidence.digest');
+    if (policyIdentities.has(policyRef) && policyIdentities.get(policyRef) !== policyDigest) throw Error('Premium-policy evidence identity changed within the snapshot.');
+    policyIdentities.set(policyRef, policyDigest);
     const priced = money.components({ durationMs: segmentEnd - segmentStart, rate: hourlyRate, multiplier });
     basePence += priced.basePence;
     grossPence += priced.grossPence;
     premiumPence += priced.otherPremiumPence;
     if (![basePence, grossPence, premiumPence].every(Number.isSafeInteger)) throw Error('Premium aggregate exceeds safe pence.');
     refs.push(evidenceRef);
+    rateEvidenceRefs.push(rateRef);
+    policyEvidenceRefs.push(policyRef);
+    rateEvidenceOutput.push(Object.freeze({ ref: rateRef, digest: rateDigest }));
+    policyEvidenceOutput.push(Object.freeze({ ref: policyRef, digest: policyDigest }));
   }
   return Object.freeze({
     contractVersion: CONTRACT_VERSION, status: premiumPence > 0 ? 'SUPPLIED_PLANNED_PREMIUM' : 'NO_DECLARED_PREMIUM',
     tenantId, siteId, asOf: input.asOf,
     period: Object.freeze({ start: period.start, end: period.end }),
     source: Object.freeze({ tenantId, siteId, name: sourceName, revision: sourceRevision, digest: sourceDigest, observedAt: source.observedAt }),
-    policyRevision, segmentCount: segments.length, basePence, grossPence, premiumPence,
+    currency: scopeCurrency, policyRevision, segmentCount: segments.length, basePence, grossPence, premiumPence,
     evidenceRefs: Object.freeze(refs), claimedSavingsPence: null,
+    rateEvidenceRefs: Object.freeze(rateEvidenceRefs), policyEvidenceRefs: Object.freeze(policyEvidenceRefs),
+    rateEvidence: Object.freeze(rateEvidenceOutput), premiumPolicyEvidence: Object.freeze(policyEvidenceOutput),
     sourceAuthenticated: false, actionAuthority: false
   });
 }
