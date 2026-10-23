@@ -71,6 +71,82 @@ for (const [name, change] of [
   ['non-data getter', f => { Object.defineProperty(f.p.payload, 'resource', { get() { return 'connection-1'; } }); }],
 ]) test(`rejects ${name}`, () => { const f = fixture(); assert.throws(() => { change(f); check(f); }, /Portable autonomy evidence invalid/); });
 
+for (const field of ['resolveKey', 'maxPermitTtlMs', 'maxCalls', 'now', 'nonceSeen']) {
+  test(`rejects accessor-backed context ${field}`, () => {
+    const f = fixture();
+    const value = f.context[field];
+    Object.defineProperty(f.context, field, { enumerable: true, get() { return value; } });
+    assert.throws(() => check(f), /Portable autonomy evidence invalid/);
+  });
+}
+
+test('rejects Set subclasses even when caller-dispatched has lies about revocation', () => {
+  const f = fixture();
+  class LyingRevocations extends Set { has() { return false; } }
+  f.context.revokedKeys = new LyingRevocations(['authority-key', 'executor-key']);
+  assert.throws(() => check(f), /Portable autonomy evidence invalid/);
+});
+
+test('uses the single context snapshot when a registry callback mutates the caller record', () => {
+  const f = fixture();
+  const original = f.context.resolveKey;
+  f.context.resolveKey = (...args) => {
+    f.context.now = Date.parse('2026-10-13T09:06:00.000Z');
+    f.context.maxCalls = 0;
+    return original(...args);
+  };
+  assert.equal(check(f).verified, true);
+});
+
+test('uses captured freeze even if a callback tampers with the global intrinsic', () => {
+  const f = fixture();
+  const originalResolve = f.context.resolveKey;
+  const originalFreeze = Object.freeze;
+  try {
+    f.context.resolveKey = (...args) => {
+      Object.freeze = value => value;
+      return originalResolve(...args);
+    };
+    assert.equal(Object.isFrozen(check(f)), true);
+  } finally {
+    Object.freeze = originalFreeze;
+  }
+});
+
+test('rejects an expired permit even if a registry callback tampers with date and number intrinsics', () => {
+  const f = fixture();
+  f.context.now = Date.parse('2026-10-13T09:06:00.000Z');
+  const originalResolve = f.context.resolveKey;
+  const originalParse = Date.parse;
+  const originalToISOString = Date.prototype.toISOString;
+  const originalIsFinite = Number.isFinite;
+  try {
+    f.context.resolveKey = (...args) => {
+      Date.parse = () => 0;
+      Date.prototype.toISOString = () => '2026-10-13T09:05:00.000Z';
+      Number.isFinite = () => true;
+      return originalResolve(...args);
+    };
+    assert.throws(() => check(f), /Portable autonomy evidence invalid/);
+  } finally {
+    Date.parse = originalParse;
+    Date.prototype.toISOString = originalToISOString;
+    Number.isFinite = originalIsFinite;
+  }
+});
+
+test('rejects accessor-backed key-registry bindings', () => {
+  const f = fixture();
+  const original = f.context.resolveKey;
+  f.context.resolveKey = (...args) => {
+    const binding = original(...args);
+    const role = binding.role;
+    Object.defineProperty(binding, 'role', { enumerable: true, get() { return role; } });
+    return binding;
+  };
+  assert.throws(() => check(f), /Portable autonomy evidence invalid/);
+});
+
 test('1,000 deterministic synthetic adversarial verifications never accept wrong scope or replay', () => {
   for (let i = 0; i < 1000; i++) {
     const f = fixture();
