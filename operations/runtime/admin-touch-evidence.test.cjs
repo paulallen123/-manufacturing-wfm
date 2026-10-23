@@ -45,3 +45,19 @@ test('private, duplicate, foreign, incomplete, overlapping or malformed evidence
   ];
   for(const change of changes){const x=fixture();change(x);assert.equal(assess(x).status,'BLOCKED');}
 });
+test('hidden, Symbol, accessor and proxy inputs block before publication', () => {
+  const hidden=fixture(); Object.defineProperty(hidden.events[0], 'personId', { value:'private', enumerable:false });
+  assert.equal(assess(hidden).status, 'BLOCKED');
+  const symbolic=fixture(); symbolic.events[0][Symbol('private')] = 'private';
+  assert.equal(assess(symbolic).status, 'BLOCKED');
+  const changingHash=fixture(); let reads=0; Object.defineProperty(changingHash.events[0], 'recordSha256', {
+    enumerable:true, configurable:true, get(){ reads++; return (reads < 5 ? 'a' : 'c').repeat(64); }
+  });
+  assert.equal(assess(changingHash).status, 'BLOCKED');
+  const changingAsOf=fixture(); let timeReads=0; Object.defineProperty(changingAsOf, 'asOf', {
+    enumerable:true, configurable:true, get(){ timeReads++; return timeReads === 1 ? '2026-10-22T12:30:00.000Z' : '2099-01-01T00:00:00.000Z'; }
+  });
+  assert.equal(assess(changingAsOf).status, 'BLOCKED');
+  const proxied=fixture(); proxied.events[0] = new Proxy(proxied.events[0], {});
+  assert.equal(assess(proxied).status, 'BLOCKED');
+});
