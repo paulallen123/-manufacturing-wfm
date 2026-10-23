@@ -1,3 +1,22 @@
+# Current checkpoint — 2026-10-23T20:13:05Z
+
+Owner /root resumed PR501; claim6373750129, workspace /workspace/scratch/cd4e2bcb0821. Current canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged. PR501 parent13276a7806ae9994f44ca4a9a0c3b8b1f2bbf3b1; exact current candidate is the containing Git commit (resolve full SHA), same test/vector-empty-organisation-regression-20261020 branch.
+
+## Completed
+- Adopted narrow startup diagnostics: waiting-listener/waiting-health and last status. Runtime deadline remains30000ms; no customer readiness or ownership weakening.
+- Repaired fixture startup assumptions. Current Node22.23.2 harness5/5PASS; original Docker source/composed command7/7PASS; isolated receipt4/4PASS. Full TAP in evidence/vector-startup-repair-20261023.
+- Independent /root/build_route_review current source/negative review: no blocker in exact four blobs; heldouts cover invalid deadline, non-loopback listener, early exit, serialized standalone receipt, mismatched approved SHA and port0 refusal. No formal release approval.
+- Receipt preparation now reads artifact-declared source and requires equality with Railway runtime AND frozen reviewed source. Fixed deployed artifact path; no fabricated sourceTree or customer readiness claim.
+- Previous six-file repair and auth transaction repair preserved; Dockerfile and all runtime deadlines unchanged.
+
+## Current jobs / proof / next
+Railway isolated c66e32ed-e56e-4017-b3c9-fcbdf2e8833c remainsFAILED; no current build at checkpoint. Its30s timeout cause remains unresolved. No canonical merge, final image, provider write or customer proof.
+Next: stage only existing isolated service source and receipt command for this exact candidate; inspect whole staged patch, execute one authorized bounded build through normal controls, read actual source/status/logs. Hold this branch head while build admission occurs; record any source discrepancy. Do not blindly retry the old build or raise deadlines.
+Existing user authorization covers ordinary low-risk isolated delivery under approved controls; tool confirmation/release approvals still apply. No new subscription/resource/volume or customer mutation.
+Serving/rollback remains the last recorded baseline below, not reverified here. Owner remains /root; reviewer complete; no duplicate Codex request. If interrupted read this checkpoint and latest PR501 comments/staged patch/jobs before continuing. No persistent executor implied.
+
+## Prior checkpoint / retained proof and blockers
+
 # Current execution checkpoint — 2026-10-23T20:03:00Z
 
 This section supersedes earlier build-cancellation and pending-approval status below.
