@@ -8,7 +8,43 @@ const SOLVER_VERSION = 'VECTOR_DETERMINISTIC_OPTIMISER_V1';
 const WORKER_TYPES = Object.freeze(['EMPLOYEE','CONTINGENT','AGENCY']);
 const REPAIR_EVENTS = Object.freeze(['ABSENCE','NO_SHOW','PRODUCTION_CHANGE','LINE_DOWNTIME','DEMAND_CHANGE']);
 
-function clone(v){ return v==null?v:JSON.parse(JSON.stringify(v)); }
+function clone(v){ return v==null?v:ownedCopy(v); }
+function ownedCopy(v,ancestors=new WeakSet()){
+  if(v===null||v===undefined||typeof v==='string'||typeof v==='boolean'||typeof v==='number') return v;
+  if(typeof v!=='object'||types.isProxy(v)||ancestors.has(v))
+    throw new Error('Value must be inert enumerable data.');
+  ancestors.add(v);
+  let out;
+  if(Array.isArray(v)){
+    const keys=Object.keys(v);
+    if(keys.length!==v.length||Object.getOwnPropertyNames(v).length!==v.length+1||
+      Object.getOwnPropertySymbols(v).length)
+      throw new Error('Array must contain dense inert enumerable data.');
+    out=[];
+    for(let i=0;i<v.length;i++){
+      const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
+      if(!descriptor||descriptor.enumerable!==true||
+        !Object.prototype.hasOwnProperty.call(descriptor,'value'))
+        throw new Error('Array must contain inert data values.');
+      out[i]=ownedCopy(descriptor.value,ancestors);
+    }
+  }else{
+    const prototype=Object.getPrototypeOf(v),keys=Object.keys(v);
+    if((prototype!==Object.prototype&&prototype!==null)||
+      Object.getOwnPropertyNames(v).length!==keys.length||Object.getOwnPropertySymbols(v).length)
+      throw new Error('Object must contain inert enumerable data only.');
+    out={};
+    for(let i=0;i<keys.length;i++){
+      const key=keys[i],descriptor=Object.getOwnPropertyDescriptor(v,key);
+      if(!descriptor||!Object.prototype.hasOwnProperty.call(descriptor,'value'))
+        throw new Error('Object must contain inert data values.');
+      Object.defineProperty(out,key,{value:ownedCopy(descriptor.value,ancestors),
+        enumerable:true,writable:true,configurable:true});
+    }
+  }
+  ancestors.delete(v);
+  return out;
+}
 function stable(v){
   if(Array.isArray(v)){
     let out='[';
@@ -33,12 +69,27 @@ function stable(v){
   return JSON.stringify(v);
 }
 function digest(v){ return createHash('sha256').update(stable(v)).digest('hex'); }
+function jsonDigest(v){
+  function owned(value){
+    if(value===null||typeof value!=='object') return value;
+    if(Array.isArray(value)){
+      const out=[];
+      Object.setPrototypeOf(out,null);
+      for(let i=0;i<value.length;i++) out[i]=owned(value[i]);
+      return out;
+    }
+    const out=Object.create(null),keys=Object.keys(value);
+    for(let i=0;i<keys.length;i++) out[keys[i]]=owned(value[keys[i]]);
+    return out;
+  }
+  return createHash('sha256').update(JSON.stringify(owned(v))).digest('hex');
+}
 function planIdentity(v){
   const identity=Object.create(null);
   const keys=Object.keys(v);
   for(let i=0;i<keys.length;i++){
     const key=keys[i];
-    if(key!=='createdAt'&&key!=='planId') identity[key]=v[key];
+    if(key!=='createdAt'&&key!=='planId'&&key!=='authorityScope') identity[key]=v[key];
   }
   return digest(identity);
 }
@@ -93,14 +144,52 @@ function verifiedPriorPlan(raw){
   catch { throw new Error('Valid inert prior scheduling plan is required.'); }
   if(!prior||prior.contractVersion!==CONTRACT_VERSION)
     throw new Error('Valid prior scheduling plan is required.');
+  const rawIdentity=planIdentity(prior);
+  const expectedIdentity=prior.authorityScope===undefined
+    ?rawIdentity:jsonDigest([rawIdentity,prior.authorityScope]);
   if(typeof prior.planId!=='string'||!/^[a-f0-9]{64}$/.test(prior.planId)||
-    planIdentity(prior)!==prior.planId)
+    expectedIdentity!==prior.planId)
     throw new Error('Prior scheduling plan identity verification failed.');
   return prior;
 }
 function text(v,max=200){ return String(v??'').trim().slice(0,max); }
 function list(v,max=100,maxLen=160){
-  return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];
+  if(!Array.isArray(v)||types.isProxy(v)) return [];
+  const length=Math.min(v.length,max),out=[],seen=Object.create(null);
+  for(let i=0;i<length;i++){
+    const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
+    if(!descriptor||descriptor.enumerable!==true||
+      !Object.prototype.hasOwnProperty.call(descriptor,'value')) return [];
+    const value=text(descriptor.value,maxLen);
+    if(value&&!Object.prototype.hasOwnProperty.call(seen,value)){
+      seen[value]=true;
+      out[out.length]=value;
+    }
+  }
+  return out;
+}
+function mapDense(v,mapper,label='Array'){
+  if(!Array.isArray(v)||types.isProxy(v)) throw new Error(label+' must be an inert array.');
+  const out=[];
+  for(let i=0;i<v.length;i++){
+    const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
+    if(!descriptor||descriptor.enumerable!==true||
+      !Object.prototype.hasOwnProperty.call(descriptor,'value'))
+      throw new Error(label+' must contain dense inert values.');
+    if(descriptor.value!==null&&typeof descriptor.value==='object'&&types.isProxy(descriptor.value))
+      throw new Error(label+' must contain inert non-proxy values.');
+    out[out.length]=mapper(descriptor.value,i);
+  }
+  return out;
+}
+function immutableLookup(values){
+  const lookup=Object.create(null);
+  for(let i=0;i<values.length;i++) lookup[values[i]]=true;
+  const result={};
+  Object.defineProperty(result,'has',{enumerable:false,value(value){
+    return Object.prototype.hasOwnProperty.call(lookup,value);
+  }});
+  return Object.freeze(result);
 }
 function refLookup(refs){
   const lookup=Object.create(null);
@@ -142,6 +231,12 @@ function strictRefs(v,max=100,maxLen=220){
   const result=strictRefsResult(v,max,maxLen);
   return result.valid?result.refs:[];
 }
+function strictOptionalRefs(v,max,maxLen,label){
+  if(v===undefined||v===null) return [];
+  const result=strictRefsResult(v,max,maxLen);
+  if(!result.valid) throw new Error(label+' must be a dense inert array within its declared limits.');
+  return result.refs;
+}
 function n(v,f=0){ const x=Number(v); return Number.isFinite(x)?x:f; }
 function clamp(v,min,max,f){ const x=Number(v); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }
 function whole(v,min,max,f){ const x=Math.trunc(Number(v)); return Number.isFinite(x)?Math.max(min,Math.min(max,x)):f; }
@@ -159,9 +254,14 @@ function hours(a,b){ return Math.max(0,(ms(b)-ms(a))/3600000); }
 function overlaps(a0,a1,b0,b1){ return ms(a0)<ms(b1)&&ms(b0)<ms(a1); }
 function contains(w,a,b){ return ms(w.start)<=ms(a)&&ms(w.end)>=ms(b); }
 function normaliseAssignments(input=[]){
-  if(!Array.isArray(input)) throw new Error('Assignments must be an array.');
-  const seen=new Set();
-  return input.map(a=>{
+  if(!Array.isArray(input)||types.isProxy(input)) throw new Error('Assignments must be an inert array.');
+  const seen=new Set(),out=[];
+  for(let i=0;i<input.length;i++){
+    const descriptor=Object.getOwnPropertyDescriptor(input,String(i));
+    if(!descriptor||descriptor.enumerable!==true||
+      !Object.prototype.hasOwnProperty.call(descriptor,'value'))
+      throw new Error('Assignments must contain dense inert values.');
+    const a=ownedCopy(descriptor.value);
     if(!a||typeof a.slotId!=='string'||!a.slotId.trim()||
       !(typeof a.workerId==='string'&&a.workerId.trim()||a.workerId===null&&a.shortfall===true))
       throw new Error('Assignment slotId and workerId are required (or explicit shortfall).');
@@ -169,8 +269,9 @@ function normaliseAssignments(input=[]){
     seen.add(a.slotId);
     const start=iso(a.start,'assignment start'),end=iso(a.end,'assignment end');
     if(ms(end)<=ms(start)) throw new Error('Assignment end must be after start.');
-    return {...a,start,end};
-  });
+    out[out.length]={...a,start,end};
+  }
+  return out;
 }
 
 function normalisePolicy(input={},sourceEvidence=[]){
@@ -191,7 +292,10 @@ function normalisePolicy(input={},sourceEvidence=[]){
     maxHours:overtimeAuthorised?maxHours:0,
     evidenceRefs:Object.freeze(overtimeAuthorised?overtimeEvidence:[])
   });
-  return {
+  const requiredRuleRefs=strictOptionalRefs(input.requiredRuleRefs,100,180,'Required rule references');
+  const blockedWorkers=strictOptionalRefs(input.blockedWorkers,1000,120,'Blocked workers');
+  const blockedWorkerSitePairs=strictOptionalRefs(input.blockedWorkerSitePairs,2000,280,'Blocked worker-site pairs');
+  return deepFreeze({
     minRestHours:clamp(input.minRestHours,0,72,11),
     maxWeeklyHours:clamp(input.maxWeeklyHours,1,168,48),
     maxOvertimeHours:overtimeAuthorisation.maxHours,
@@ -205,9 +309,9 @@ function normalisePolicy(input={},sourceEvidence=[]){
     exactCandidateLimit:whole(input.exactCandidateLimit,1,100,45),
     maxSearchNodes:whole(input.maxSearchNodes,100,2000000,150000),
     ruleVersion:text(input.ruleVersion,120)||'unspecified',
-    requiredRuleRefs:list(input.requiredRuleRefs,100,180),
-    blockedWorkers:new Set(list(input.blockedWorkers,1000,120)),
-    blockedWorkerSitePairs:new Set(list(input.blockedWorkerSitePairs,2000,280)),
+    requiredRuleRefs,
+    blockedWorkers:immutableLookup(blockedWorkers),
+    blockedWorkerSitePairs:immutableLookup(blockedWorkerSitePairs),
     weights:{
       labourCost:clamp(w.labourCost,0,1000,1),
       overtime:clamp(w.overtime,0,1000,1.5),
@@ -220,15 +324,22 @@ function normalisePolicy(input={},sourceEvidence=[]){
       stability:clamp(w.stability,0,1000,2),
       shortfall:clamp(w.shortfall,1,1000000,10000)
     }
-  };
+  });
 }
 function availability(v){
+  if(types.isProxy(v)) throw new Error('Availability must be an inert array.');
   if(Array.isArray(v)&&v.length>200) throw new Error('Availability supports at most 200 windows.');
-  const windows=Array.isArray(v)?v.map((x,i)=>{
+  const windows=[];
+  if(Array.isArray(v)) for(let i=0;i<v.length;i++){
+    const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
+    if(!descriptor||descriptor.enumerable!==true||
+      !Object.prototype.hasOwnProperty.call(descriptor,'value'))
+      throw new Error('Availability must contain dense inert values.');
+    const x=ownedCopy(descriptor.value);
     const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
     if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
-    return {start,end};
-  }):[];
+    windows[windows.length]={start,end};
+  }
   windows.sort((a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end));
   const merged=[];
   for(const window of windows){
@@ -239,13 +350,20 @@ function availability(v){
   }
   // Freeze owned copies, not caller data. A normalized window cannot later
   // be widened in place to turn a genuine availability gap into coverage.
-  return Object.freeze(merged.map(Object.freeze));
+  for(let i=0;i<merged.length;i++) Object.freeze(merged[i]);
+  return Object.freeze(merged);
 }
 function certs(v){
-  return Array.isArray(v)?v.slice(0,200).map(x=>({
-    name:text(x.name,120),
-    expiresAt:x.expiresAt?iso(x.expiresAt,'certification expiry'):null
-  })).filter(x=>x.name):[];
+  if(!Array.isArray(v)||types.isProxy(v)) return [];
+  const out=[];
+  for(let i=0;i<Math.min(v.length,200);i++){
+    const descriptor=Object.getOwnPropertyDescriptor(v,String(i));
+    if(!descriptor||descriptor.enumerable!==true||
+      !Object.prototype.hasOwnProperty.call(descriptor,'value')) return [];
+    const x=ownedCopy(descriptor.value),name=text(x.name,120);
+    if(name) out[out.length]={name,expiresAt:x.expiresAt?iso(x.expiresAt,'certification expiry'):null};
+  }
+  return out;
 }
 function normaliseWorker(input={}){
   const id=text(input.id,120);
@@ -254,6 +372,7 @@ function normaliseWorker(input={}){
   if(!WORKER_TYPES.includes(type)) throw new Error('Unsupported worker type for '+id+'.');
   const homeSite=text(input.homeSite||input.site,160);
   const p=input.preferences||{},f=input.fairness||{};
+  const ruleBlocks=strictOptionalRefs(input.ruleBlocks,100,180,'Worker rule blocks');
   const worker={
     id,type,status:text(input.status||'ACTIVE',30).toUpperCase(),homeSite,
     eligibleSites:list(input.eligibleSites?.length?input.eligibleSites:[homeSite],100,160),
@@ -280,7 +399,7 @@ function normaliseWorker(input={}){
       overtimeHours:Math.max(0,n(f.overtimeHours,0)),nightShifts:Math.max(0,n(f.nightShifts,0)),
       weekendShifts:Math.max(0,n(f.weekendShifts,0)),undesirableShifts:Math.max(0,n(f.undesirableShifts,0))
     },
-    ruleBlocks:new Set(list(input.ruleBlocks,100,180)),
+    ruleBlocks:immutableLookup(ruleBlocks),
     evidenceRefs:list(input.evidenceRefs,100,220)
   };
   // The accepted availability snapshot cannot be swapped after validation.
@@ -298,17 +417,20 @@ function normaliseRequirement(input={}){
   const headcount=whole(input.planningHeadcount??(confidence<0.65?p90:p50),0,100000,p50);
   const types=list(input.allowedWorkerTypes?.length?input.allowedWorkerTypes:WORKER_TYPES,10,30)
     .map(x=>x.toUpperCase()).filter(x=>WORKER_TYPES.includes(x));
+  const requiredSkills=strictOptionalRefs(input.requiredSkills,100,120,'Required skills');
+  const requiredCertifications=strictOptionalRefs(input.requiredCertifications,100,120,'Required certifications');
+  const lockedWorkerIds=strictOptionalRefs(input.lockedWorkerIds,1000,120,'Locked worker ids');
+  const tags=strictOptionalRefs(input.tags,100,80,'Requirement tags');
+  const evidenceRefs=strictOptionalRefs(input.evidenceRefs,100,220,'Requirement evidence references');
   return {
     id,site,line:text(input.line,120)||null,role,start,end,headcount,
     forecast:{p50Headcount:p50,p90Headcount:p90,confidence},
-    requiredSkills:list(input.requiredSkills,100,120),
-    requiredCertifications:list(input.requiredCertifications,100,120),
-    allowedWorkerTypes:types,tags:list(input.tags,100,80).map(x=>x.toUpperCase()),
+    requiredSkills,requiredCertifications,
+    allowedWorkerTypes:types,tags:tags.map(x=>x.toUpperCase()),
     productionPriority:clamp(input.productionPriority,0,100,50),
     customerPriority:clamp(input.customerPriority,0,100,50),
     marginAtRisk:Math.max(0,n(input.marginAtRisk,0)),latePenalty:Math.max(0,n(input.latePenalty,0)),
-    lockedWorkerIds:list(input.lockedWorkerIds,1000,120),
-    evidenceRefs:list(input.evidenceRefs,100,220)
+    lockedWorkerIds,evidenceRefs
   };
 }
 function slots(reqs){
@@ -350,28 +472,44 @@ function transferMinutes(worker,fromSite,toSite){
   return typeof value==='number'&&Number.isFinite(value)&&value>=0&&
     value<=Number.MAX_SAFE_INTEGER/60000?value:null;
 }
-function transferFailures(worker,slot,assignments){
-  const current=assignments.filter(a=>a.workerId===worker.id);
+function transferContext(worker,slot,assignments){
   const siteKnown=v=>typeof v==='string'&&v.length>0&&v.length<=160&&v===v.trim();
-  if(current.some(a=>!siteKnown(a.site))) return ['ASSIGNMENT_SITE_UNPROVEN'];
   const start=ms(slot.start),end=ms(slot.end),failures=[];
+  let before=null,after=null,beforeTime=-Infinity,afterTime=Infinity,
+    beforeAmbiguous=false,afterAmbiguous=false;
+  for(let i=0;i<assignments.length;i++){
+    const assignment=assignments[i];
+    if(assignment.workerId!==worker.id) continue;
+    if(!siteKnown(assignment.site))
+      return {failures:['ASSIGNMENT_SITE_UNPROVEN'],minutes:0,hasJourney:false};
+    const assignmentEnd=ms(assignment.end),assignmentStart=ms(assignment.start);
+    if(assignmentEnd<=start){
+      if(assignmentEnd>beforeTime){ before=assignment;beforeTime=assignmentEnd;beforeAmbiguous=false; }
+      else if(assignmentEnd===beforeTime&&before&&assignment.site!==before.site) beforeAmbiguous=true;
+    }
+    if(assignmentStart>=end){
+      if(assignmentStart<afterTime){ after=assignment;afterTime=assignmentStart;afterAmbiguous=false; }
+      else if(assignmentStart===afterTime&&after&&assignment.site!==after.site) afterAmbiguous=true;
+    }
+  }
   // The optimiser inserts in constraint order, not time order. Check both
   // adjacent journeys; a distant assignment is not the transfer origin.
-  const previous=current.filter(a=>ms(a.end)<=start).sort((a,b)=>ms(b.end)-ms(a.end));
-  const following=current.filter(a=>ms(a.start)>=end).sort((a,b)=>ms(a.start)-ms(b.start));
-  const before=previous[0],after=following[0];
-  if((before&&previous.some(a=>ms(a.end)===ms(before.end)&&a.site!==before.site))||
-    (after&&following.some(a=>ms(a.start)===ms(after.start)&&a.site!==after.site)))
-    return ['ASSIGNMENT_SITE_UNPROVEN'];
-  for(const [fromSite,toSite,gap] of [
-    ...(before?[[before.site,slot.site,start-ms(before.end)]]:[]),
-    ...(after?[[slot.site,after.site,ms(after.start)-end]]:[])
-  ]){
-    const minutes=transferMinutes(worker,fromSite,toSite);
-    if(minutes===null) failures.push('CROSS_SITE_TRAVEL_UNPROVEN');
-    else if(gap<minutes*60000) failures.push('INSUFFICIENT_TRANSFER_TIME');
+  if(beforeAmbiguous||afterAmbiguous)
+    return {failures:['ASSIGNMENT_SITE_UNPROVEN'],minutes:0,hasJourney:false};
+  const journeys=[];
+  if(before) journeys[journeys.length]=[before.site,slot.site,start-beforeTime];
+  if(after) journeys[journeys.length]=[slot.site,after.site,afterTime-end];
+  let minutesTotal=0;
+  for(let i=0;i<journeys.length;i++){
+    const [fromSite,toSite,gap]=journeys[i];
+    const requiredMinutes=transferMinutes(worker,fromSite,toSite);
+    if(requiredMinutes===null) failures.push('CROSS_SITE_TRAVEL_UNPROVEN');
+    else {
+      if(gap<requiredMinutes*60000) failures.push('INSUFFICIENT_TRANSFER_TIME');
+      if(fromSite!==toSite) minutesTotal+=requiredMinutes;
+    }
   }
-  return failures;
+  return {failures,minutes:minutesTotal,hasJourney:journeys.length>0};
 }
 function evaluateWorkerForSlot(worker,slot,ctx={}){
   const policy=ctx.policy||normalisePolicy(),assignments=normaliseAssignments(ctx.assignments);
@@ -404,7 +542,8 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
     !overlaps(a.start,a.end,start,end)&&
     (ms(a.end)<=ms(start)?ms(start)-ms(a.end):ms(a.start)-ms(end))<policy.minRestHours*3600000))
     failures.push('MINIMUM_REST_BREACH');
-  failures.push(...transferFailures(worker,slot,assignments));
+  const transfer=transferContext(worker,slot,assignments);
+  failures.push(...transfer.failures);
   for(const ref of policy.requiredRuleRefs) if(worker.ruleBlocks.has(ref)) failures.push('RULE_BLOCK:'+ref);
   if(slot.lockedWorkerIds.length&&!slot.lockedWorkerIds.includes(worker.id)) failures.push('LOCKED_REQUIREMENT_OTHER_WORKER');
 
@@ -414,7 +553,8 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
   const agency=worker.type==='AGENCY'?duration*worker.agencyPremiumPerHour:0;
   const contingent=worker.type==='CONTINGENT'?duration*worker.contingentPremiumPerHour:0;
   const travelCost=sameSite?0:Math.max(0,n(worker.travelCostBySite?.[slot.site],0));
-  const travelMinutes=sameSite?0:Math.max(0,n(worker.travelMinutesBySite?.[slot.site],0));
+  const travelMinutes=transfer.hasJourney?transfer.minutes:
+    (sameSite?0:Math.max(0,n(worker.travelMinutesBySite?.[slot.site],0)));
   let pref=0;
   if(worker.preferences.preferredSites.length&&!worker.preferences.preferredSites.includes(slot.site)) pref+=1;
   if(slot.line&&worker.preferences.preferredLines.length&&!worker.preferences.preferredLines.includes(slot.line)) pref+=0.5;
@@ -451,14 +591,40 @@ function matrix(workers,allSlots,policy,preferred){
   }
   return {m,all};
 }
+function scoreSchedule(assignments,workersById,allSlots,policy,preferred){
+  const slotsById=new Map(allSlots.map(slot=>[slot.slotId,slot]));
+  const chronological=[...assignments].sort((a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end)||
+    a.slotId.localeCompare(b.slotId));
+  const prior=[],rescored=[];
+  let cost=0;
+  for(const assignment of chronological){
+    if(!assignment.workerId){
+      cost+=assignment.score;
+      rescored.push(assignment);
+      continue;
+    }
+    const worker=workersById.get(assignment.workerId),slot=slotsById.get(assignment.slotId);
+    const evaluation=evaluateWorkerForSlot(worker,slot,{policy,assignments:prior,preferredAssignments:preferred});
+    if(!evaluation.eligible) return null;
+    const row={...assignment,score:evaluation.score,cost:evaluation.cost,
+      warnings:evaluation.warnings,experience:evaluation.experience};
+    cost+=evaluation.score;
+    rescored.push(row);
+    prior.push(row);
+  }
+  return {cost,assignments:rescored};
+}
 function solveExact(workersById,allSlots,m,policy,preferred){
   const order=[...allSlots].sort((a,b)=>(m.get(a.slotId)?.length||0)-(m.get(b.slotId)?.length||0)||b.productionPriority-a.productionPriority||a.slotId.localeCompare(b.slotId));
   let best=null,nodes=0,aborted=false;
-  function walk(i,assigned,cost){
+  function walk(i,assigned){
     nodes++;
     if(nodes>policy.maxSearchNodes){ aborted=true; return; }
-    if(best&&cost>=best.cost) return;
-    if(i===order.length){ best={cost,assigned:clone(assigned)}; return; }
+    if(i===order.length){
+      const scored=scoreSchedule(assigned,workersById,allSlots,policy,preferred);
+      if(scored&&(!best||scored.cost<best.cost)) best={cost:scored.cost,assigned:clone(scored.assignments)};
+      return;
+    }
     const slot=order[i];
     for(const staticC of m.get(slot.slotId)||[]){
       const worker=workersById.get(staticC.workerId);
@@ -466,13 +632,13 @@ function solveExact(workersById,allSlots,m,policy,preferred){
       if(!c.eligible) continue;
       assigned.push({slotId:slot.slotId,requirementId:slot.requirementId,workerId:worker.id,workerType:worker.type,
         site:slot.site,line:slot.line,role:slot.role,start:slot.start,end:slot.end,score:c.score,cost:c.cost,warnings:c.warnings,experience:c.experience});
-      walk(i+1,assigned,cost+c.score); assigned.pop();
+      walk(i+1,assigned); assigned.pop();
     }
     const s=shortfall(slot,policy);
     assigned.push({slotId:slot.slotId,requirementId:slot.requirementId,workerId:null,site:slot.site,line:slot.line,role:slot.role,start:slot.start,end:slot.end,score:s,shortfall:true});
-    walk(i+1,assigned,cost+s); assigned.pop();
+    walk(i+1,assigned); assigned.pop();
   }
-  walk(0,[],0);
+  walk(0,[]);
   return {assignments:best?.assigned||[],objectiveScore:best?.cost??null,nodes,optimalityProven:!aborted};
 }
 function solveGreedy(workersById,allSlots,m,policy,preferred){
@@ -494,7 +660,9 @@ function solveGreedy(workersById,allSlots,m,policy,preferred){
       total+=s;
     }
   }
-  return {assignments:assigned,objectiveScore:total,nodes:order.length,optimalityProven:false};
+  const rescored=scoreSchedule(assigned,workersById,allSlots,policy,preferred);
+  return {assignments:rescored?.assignments||assigned,objectiveScore:rescored?.cost??total,
+    nodes:order.length,optimalityProven:false};
 }
 function validateSchedule(assignments,workersById,slotsById,policy,preferred){
   const accepted=[],violations=[];
@@ -538,7 +706,9 @@ function quality(assignments,allSlots){
 function createSchedulingPlan(input={}){
   const tenant=text(input.tenant,120),contextRevision=text(input.contextRevision,180),sourceEvidence=strictRefs(input.sourceEvidence,300,220);
   if(!tenant||!contextRevision||!sourceEvidence.length) throw new Error('tenant, contextRevision and sourceEvidence are required.');
-  const policy=normalisePolicy(input.policy||{},sourceEvidence),workers=(input.workers||[]).map(normaliseWorker),reqs=(input.requirements||[]).map(normaliseRequirement);
+  const policy=normalisePolicy(input.policy||{},sourceEvidence),
+    workers=mapDense(input.workers||[],normaliseWorker,'Workers'),
+    reqs=mapDense(input.requirements||[],normaliseRequirement,'Requirements');
   if(!workers.length||!reqs.length) throw new Error('Workers and requirements are required.');
   if(new Set(workers.map(x=>x.id)).size!==workers.length) throw new Error('Worker ids must be unique.');
   if(new Set(reqs.map(x=>x.id)).size!==reqs.length) throw new Error('Requirement ids must be unique.');
@@ -577,7 +747,8 @@ function evaluateOpenShift(input={}){
   const sourceEvidence=strictRefs(input.sourceEvidence,300,220);
   const policy=normalisePolicy(input.policy||{},sourceEvidence),slot=slots([normaliseRequirement({...input.requirement,headcount:1,planningHeadcount:1})])[0];
   const assignments=normaliseAssignments(input.currentAssignments);
-  const ranked=(input.workers||[]).map(normaliseWorker).map(w=>evaluateWorkerForSlot(w,slot,{policy,assignments}))
+  const workers=mapDense(input.workers||[],normaliseWorker,'Workers');
+  const ranked=workers.map(w=>evaluateWorkerForSlot(w,slot,{policy,assignments}))
     .sort((a,b)=>Number(b.eligible)-Number(a.eligible)||a.score-b.score||a.workerId.localeCompare(b.workerId));
   return {contractVersion:CONTRACT_VERSION,mode:'EVALUATE_ONLY',executionPermitted:false,slot,ranked};
 }
@@ -607,11 +778,15 @@ function evaluateSwap(input={}){
     reasons:eligible?[]:[...new Set([...bToA.failures,...aToB.failures])],legs:{workerBToRequirementA:bToA,workerAToRequirementB:aToB}};
 }
 function repairSchedulingPlan(input={}){
-  const type=text(input.event?.type,40).toUpperCase();
+  let event;
+  try { event=inertSnapshot(input.event); }
+  catch { throw new Error('Repair event must be inert enumerable data.'); }
+  const type=text(event?.type,40).toUpperCase();
   if(!REPAIR_EVENTS.includes(type)) throw new Error('Unsupported scheduling repair event.');
   const prior=verifiedPriorPlan(input.priorPlan);
-  const unavailable=new Set(list(input.event?.unavailableWorkerIds,1000,120));
-  const workers=(input.workers||[]).map(w=>unavailable.has(text(w.id,120))?{...w,status:'UNAVAILABLE'}:w);
+  const unavailable=new Set(strictOptionalRefs(event?.unavailableWorkerIds,1000,120,
+    'Unavailable worker ids'));
+  const workers=mapDense(input.workers||[],w=>unavailable.has(text(w.id,120))?{...w,status:'UNAVAILABLE'}:w,'Workers');
   const preferred={}; for(const a of prior.assignments||[]) if(a.workerId) preferred[a.slotId]=a.workerId;
   const inputSources=input.sourceEvidence===undefined||input.sourceEvidence===null
     ?{valid:true,refs:[]}:strictRefsResult(input.sourceEvidence,300,220);
@@ -621,8 +796,8 @@ function repairSchedulingPlan(input={}){
   const repairSources=[];
   for(let i=0;i<inputSources.refs.length;i++) repairSources[repairSources.length]=inputSources.refs[i];
   for(let i=0;i<priorSources.refs.length;i++) repairSources[repairSources.length]=priorSources.refs[i];
-  if(input.event?.evidenceRef!==undefined&&input.event?.evidenceRef!==null)
-    repairSources[repairSources.length]=input.event.evidenceRef;
+  if(event?.evidenceRef!==undefined&&event?.evidenceRef!==null)
+    repairSources[repairSources.length]=event.evidenceRef;
   const repaired=createSchedulingPlan({
     tenant:prior.tenant,contextRevision:text(input.contextRevision||prior.contextRevision,180),
     createdAt:input.createdAt||new Date().toISOString(),
@@ -632,9 +807,10 @@ function repairSchedulingPlan(input={}){
   });
   const before=new Map((prior.assignments||[]).map(a=>[a.slotId,a.workerId||null]));
   const changes=repaired.assignments.filter(a=>before.get(a.slotId)!==(a.workerId||null)).map(a=>({slotId:a.slotId,fromWorkerId:before.get(a.slotId)||null,toWorkerId:a.workerId||null}));
-  return {contractVersion:CONTRACT_VERSION,repairType:type,repairId:digest({priorPlanId:prior.planId,event:input.event,repairedPlanId:repaired.planId}),
-    priorPlanId:prior.planId,event:clone(input.event),changeCount:changes.length,changes,repairedPlan:repaired,executionPermitted:false,
-    claimBoundary:'SHADOW_REPAIR_ONLY_NO_PRODUCTION_MUTATION'};
+  return deepFreeze({contractVersion:CONTRACT_VERSION,repairType:type,
+    repairId:digest({priorPlanId:prior.planId,event,repairedPlanId:repaired.planId}),
+    priorPlanId:prior.planId,event,changeCount:changes.length,changes,repairedPlan:repaired,executionPermitted:false,
+    claimBoundary:'SHADOW_REPAIR_ONLY_NO_PRODUCTION_MUTATION'});
 }
 function capabilityContract(){
   return {
@@ -661,3 +837,4 @@ module.exports=Object.freeze({
   evaluateWorkerForSlot,validateSchedule,createSchedulingPlan,evaluateOpenShift,evaluateSwap,repairSchedulingPlan,
   capabilityContract,stable,digest
 });
+

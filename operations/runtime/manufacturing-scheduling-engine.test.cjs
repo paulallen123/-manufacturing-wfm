@@ -865,4 +865,170 @@ test('L11 evidence authority: prototype JSON hooks cannot rewrite the owned plan
     else delete Array.prototype.toJSON;
   }
 });
+test('L11 repair lifecycle: authority-bound persisted plans retain verifiable engine identity', () => {
+  const { createSchedulingAuthority } = require('./scheduling-authority.cjs');
+  const authority = createSchedulingAuthority();
+  const requirement = req('authority-bound-repair', 'A', '08:00:00', '10:00:00');
+  const sourceWorker = worker({ id: 'w1' });
+  const raw = plan([requirement], sourceWorker);
+  const persisted = authority.bindPlan(raw, { workers: [sourceWorker], requirements: [requirement] });
+  const result = e.repairSchedulingPlan({
+    priorPlan: JSON.parse(JSON.stringify(persisted)),
+    workers: [sourceWorker], requirements: [requirement],
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'PRODUCTION_CHANGE', unavailableWorkerIds: [], evidenceRef: 'fixture:event' }
+  });
+  assert.equal(result.priorPlanId, persisted.planId);
+  assert.equal(result.repairedPlan.executionPermitted, false);
+});
+test('L11 active input: caller map cannot widen availability after validation', () => {
+  const raw = windows(['08:00:00', '09:00:00']);
+  let calls = 0;
+  Object.defineProperty(raw, 'map', { configurable: true, value() {
+    calls++;
+    return windows(['08:00:00', '12:00:00']);
+  } });
+  const result = check(req('map-availability', 'A', '08:00:00', '12:00:00'), [],
+    worker({ availability: raw }));
+  assert.equal(result.ranked[0].eligible, false);
+  assert.ok(result.ranked[0].failures.includes('NOT_AVAILABLE'));
+  assert.equal(calls, 0);
+});
+test('L11 active input: caller map cannot erase an overlapping assignment', () => {
+  const requirement = req('map-assignment', 'A', '08:00:00', '10:00:00');
+  const current = [assignment(requirement)];
+  let calls = 0;
+  Object.defineProperty(current, 'map', { configurable: true, value() { calls++; return []; } });
+  const result = check(requirement, current, worker());
+  assert.equal(result.ranked[0].eligible, false);
+  assert.ok(result.ranked[0].failures.includes('OVERLAPPING_ASSIGNMENT'));
+  assert.equal(calls, 0);
+});
+test('L11 active input: caller map cannot erase a required skill', () => {
+  const skills = ['skill:required'];
+  let calls = 0;
+  Object.defineProperty(skills, 'map', { configurable: true, value() { calls++; return []; } });
+  const result = check(req('map-skill', 'A', '08:00:00', '10:00:00', { requiredSkills: skills }),
+    [], worker({ skills: [] }));
+  assert.equal(result.ranked[0].eligible, false);
+  assert.ok(result.ranked[0].failures.includes('MISSING_SKILL:skill:required'));
+  assert.equal(calls, 0);
+});
+test('L11 active input: route JSON hooks cannot manufacture a valid directed journey', () => {
+  const routes = { A: { B: -1 } };
+  let calls = 0;
+  Object.defineProperty(routes, 'toJSON', { configurable: true, value() {
+    calls++;
+    return { A: { B: 0 } };
+  } });
+  assert.throws(() => check(second, [assignment(first)],
+    worker({ travelMinutesByRoute: routes })), /inert|enumerable|data/i);
+  assert.equal(calls, 0);
+});
+test('L11 repair receipt: event, changes and identity-bound output are immutable', () => {
+  const requirement = req('immutable-repair', 'A', '08:00:00', '10:00:00');
+  const workers = [worker({ id: 'w1' }), worker({ id: 'w2', hourlyCost: 30 })];
+  const prior = e.createSchedulingPlan({ tenant: 'fixture-alpha', contextRevision: 'fixture-r1',
+    sourceEvidence: ['fixture:staff'], createdAt: at('00:00:00'), workers,
+    requirements: [requirement], policy });
+  const result = e.repairSchedulingPlan({ priorPlan: prior, workers, requirements: [requirement],
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'NO_SHOW', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:event' } });
+  assert.equal(Object.isFrozen(result), true);
+  assert.equal(Object.isFrozen(result.event), true);
+  assert.equal(Object.isFrozen(result.changes), true);
+  assert.equal(Object.isFrozen(result.changes[0]), true);
+  assert.throws(() => { result.event.type = 'DEMAND_CHANGE'; }, TypeError);
+});
+test('L11 repair receipt: event JSON hooks cannot desynchronise the repair type', () => {
+  const requirement = req('event-json-hook', 'A', '08:00:00', '10:00:00');
+  const prior = plan([requirement], worker({ id: 'w1' }));
+  const event = { type: 'NO_SHOW', unavailableWorkerIds: ['w1'], evidenceRef: 'fixture:event' };
+  let calls = 0;
+  Object.defineProperty(event, 'toJSON', { configurable: true, value() {
+    calls++;
+    return { ...event, type: 'DEMAND_CHANGE' };
+  } });
+  assert.throws(() => e.repairSchedulingPlan({ priorPlan: prior,
+    workers: [worker({ id: 'w1' }), worker({ id: 'w2' })], requirements: [requirement],
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2', event }), /inert|enumerable|data/i);
+  assert.equal(calls, 0);
+});
+test('L11 policy: normalized authority and weights cannot be replaced by direct callers', () => {
+  const normalized = e.normalisePolicy(overtimeAuthority, ['policy:overtime:approved']);
+  assert.equal(Object.isFrozen(normalized), true);
+  assert.equal(Object.isFrozen(normalized.weights), true);
+  assert.equal(Object.isFrozen(normalized.overtimeAuthorisation), true);
+  assert.throws(() => { normalized.overtimeAuthorisation = { authorised: false }; }, TypeError);
+  assert.throws(() => { normalized.weights.travel = 0; }, TypeError);
+});
+test('L11 transfer scoring: the actual directed journey differentiates eligible workers', () => {
+  const requirement = req('directed-score', 'C', '12:00:00', '14:00:00');
+  const previous = req('directed-score-prior', 'B', '08:00:00', '10:00:00');
+  const fast = worker({ id: 'z-fast', travelMinutesByRoute: { B: { C: 10 } },
+    travelMinutesBySite: { C: 0 } });
+  const slow = worker({ id: 'a-slow', travelMinutesByRoute: { B: { C: 90 } },
+    travelMinutesBySite: { C: 0 } });
+  const current = [assignment(previous, 'z-fast'),
+    { ...assignment(previous, 'a-slow'), slotId: 'directed-score-prior#2' }];
+  const result = e.evaluateOpenShift({ requirement, currentAssignments: current,
+    workers: [fast, slow], policy });
+  assert.equal(result.ranked[0].workerId, 'z-fast');
+  assert.ok(result.ranked[0].score < result.ranked[1].score);
+});
+test('L11 qualification authority: malformed or oversized required skills fail closed', () => {
+  const cases = [
+    Array(100).fill('skill:decoy').concat('skill:required'),
+    new Proxy(['skill:required'], {}),
+    Object.assign(new Array(2), { 1: 'skill:required' }),
+    Object.defineProperty([], '0', { enumerable: true, get() { return 'skill:required'; } })
+  ];
+  for (const requiredSkills of cases) {
+    assert.throws(() => check(req('invalid-required-skills', 'A', '08:00:00', '10:00:00',
+      { requiredSkills }), [], worker({ skills: ['skill:decoy'] })), /required skills|inert|dense/i);
+  }
+});
+test('L11 repair authority: oversized unavailable-worker declarations fail closed', () => {
+  const requirement = req('oversized-no-show', 'A', '08:00:00', '10:00:00');
+  const prior = plan([requirement], worker({ id: 'w' }));
+  const unavailableWorkerIds = Array(1000).fill('other').concat('w');
+  assert.throws(() => e.repairSchedulingPlan({ priorPlan: prior,
+    workers: [worker({ id: 'w' })], requirements: [requirement],
+    createdAt: at('00:01:00'), contextRevision: 'fixture-r2',
+    event: { type: 'NO_SHOW', unavailableWorkerIds, evidenceRef: 'fixture:no-show' }
+  }), /unavailable worker|inert|limit/i);
+});
+test('L11 active input: proxied worker rows are rejected before field traversal', () => {
+  let reads = 0;
+  const proxied = new Proxy(worker(), { get(target, key, receiver) {
+    reads++;
+    return Reflect.get(target, key, receiver);
+  } });
+  assert.throws(() => check(req('proxy-worker', 'A', '08:00:00', '10:00:00'), [], proxied),
+    /worker|inert|proxy/i);
+  assert.equal(reads, 0);
+});
+test('L11 exact objective: transfer cost is independent of constraint insertion order', () => {
+  const routeWorker = worker({ hourlyCost: 0, contractedHours: 168,
+    travelMinutesBySite: {}, travelMinutesByRoute: { A: { B: 10, C: 100 }, B: { C: 10 } } });
+  const chronological = [
+    req('a', 'A', '08:00:00', '09:00:00'),
+    req('b', 'B', '10:00:00', '11:00:00'),
+    req('c', 'C', '12:00:00', '13:00:00')
+  ];
+  const nonChronologicalIds = [
+    req('a', 'A', '08:00:00', '09:00:00'),
+    req('z', 'B', '10:00:00', '11:00:00'),
+    req('b', 'C', '12:00:00', '13:00:00')
+  ];
+  const weights = { labourCost: 0, overtime: 0, agency: 0, crossSite: 0,
+    travel: 1, preference: 0, fairness: 0, fatigue: 0, stability: 0 };
+  const firstPlan = plan(chronological, routeWorker, { weights });
+  const secondPlan = plan(nonChronologicalIds, routeWorker, { weights });
+  assert.equal(firstPlan.solve.optimalityProven, true);
+  assert.equal(secondPlan.solve.optimalityProven, true);
+  assert.equal(firstPlan.solve.objectiveScore, secondPlan.solve.objectiveScore);
+  assert.equal(firstPlan.solve.objectiveScore, 0.333334);
+});
 }
+
