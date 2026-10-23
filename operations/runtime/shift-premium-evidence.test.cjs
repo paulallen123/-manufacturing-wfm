@@ -100,3 +100,69 @@ test('a non-premium segment yields zero premium without a savings claim', () => 
   assert.equal(result.status, 'NO_DECLARED_PREMIUM');
   assert.equal(result.premiumPence, 0);
 });
+
+test('rejects live and revoked proxies at every accepted evidence boundary', () => {
+  const value = input();
+  const proxied = new Proxy(value, {
+    get(target, key, receiver) {
+      if (key === 'asOf') return '2000-01-01T00:00:00Z';
+      return Reflect.get(target, key, receiver);
+    }
+  });
+  assert.throws(() => assessShiftPremiumEvidence(proxied));
+  const nested = [
+    x => { x.segments = new Proxy(x.segments, {}); },
+    x => { x.segments[0] = new Proxy(x.segments[0], {}); },
+    x => { x.segments[0].rateEvidence = new Proxy(x.segments[0].rateEvidence, {}); },
+    x => { x.segments[0].premiumEvidence = new Proxy(x.segments[0].premiumEvidence, {}); },
+    x => {
+      const revoked = Proxy.revocable(x.source, {});
+      revoked.revoke();
+      x.source = revoked.proxy;
+    }
+  ];
+  for (const mutate of nested) {
+    const candidate = input();
+    mutate(candidate);
+    assert.throws(() => assessShiftPremiumEvidence(candidate));
+  }
+});
+
+test('rejects a period proxy that can publish an end different from the validated value', () => {
+  const value = input();
+  value.period = new Proxy(value.period, {
+    get(target, key, receiver) {
+      if (key === 'end') return '2099-01-01T00:00:00Z';
+      return Reflect.get(target, key, receiver);
+    }
+  });
+  assert.throws(() => assessShiftPremiumEvidence(value));
+});
+
+test('rejects a source proxy that can publish an observedAt different from the validated value', () => {
+  const value = input();
+  value.source = new Proxy(value.source, {
+    get(target, key, receiver) {
+      if (key === 'observedAt') return '2000-01-01T00:00:00Z';
+      return Reflect.get(target, key, receiver);
+    }
+  });
+  assert.throws(() => assessShiftPremiumEvidence(value));
+});
+
+test('rejects unsupported own and inherited evidence at every envelope boundary', () => {
+  const mutations = [
+    x => { Object.defineProperty(x, 'hidden', { value: true }); },
+    x => { x[Symbol('private')] = true; },
+    x => { x.period.extra = true; },
+    x => { Object.setPrototypeOf(x.source, { unsupported: true }); },
+    x => { Object.defineProperty(x.segments[0], 'hidden', { value: true }); },
+    x => { x.segments[0].rateEvidence[Symbol('private')] = true; },
+    x => { x.segments[0].premiumEvidence.extra = true; }
+  ];
+  for (const mutate of mutations) {
+    const value = input();
+    mutate(value);
+    assert.throws(() => assessShiftPremiumEvidence(value));
+  }
+});

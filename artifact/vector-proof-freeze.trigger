@@ -59,3 +59,5 @@ review_vector_actual_staffology_payroll_codes=2026-10-02 parenta3e17ebfbcd3e667e
 
 
 2026-10-22 shift-premium monetary-provenance repair from exact parent 010a726cce4b276fb0f9dcbac4b282033f2cd996; currency plus effective rate/policy digest binding; focused RED3of4 then GREEN4of4 and syntax PASS; exact non-deploy CircleCI source/image admission required; no integration, deployment, payroll write, savings or customer-proof claim.
+
+2026-10-23 shift-premium evidence-snapshot repair from exact parent 8ee4b40b9c836ac0c9b39361bdeecff34cb07358; proxy publication drift and unsupported-field regressions RED4of8 then committed-plus-heldout GREEN13of13 on Node24.19.0; shared payroll-money unchanged; fresh exact-head review and source/image admission required; no integration, deployment, payroll write, savings or customer-proof claim.

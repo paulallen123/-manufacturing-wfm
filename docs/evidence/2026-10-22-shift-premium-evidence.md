@@ -28,6 +28,14 @@ Fresh local Node execution:
 
 The adjacent shared money helper is unchanged. Its previously recorded 16/16 suite and the predecessor operations 376/376 cannot be transferred to the successor; exact-head non-deploy admission remains required. Synthetic data only.
 
+## Evidence-snapshot integrity repair
+
+Formal exact-head review 5628139980 of predecessor 8ee4b40b9c836ac0c9b39361bdeecff34cb07358 reproduced a time-of-check/time-of-use gap: proxy-backed root, period and source envelopes could validate one timestamp and publish another. Hidden, Symbol, extra and custom-inherited evidence also remained outside the claimed receipt boundary.
+
+Four committed regressions were added first and reproduced the blocker (**4/8 pass, 4/8 fail**). The bounded repair now rejects live/revoked proxies, custom prototypes and unsupported fields; requires exact enumerable own-data keys for the root, period, source, segment list, every segment, rate evidence and premium-policy evidence; and validates, calculates and publishes only values copied into one frozen snapshot.
+
+Fresh Node v24.19.0 syntax checks passed. The committed suite and a separate held-out suite then passed **13/13**, covering proxies at every object/list boundary, revoked proxies, non-enumerable/Symbol/extra/inherited/accessor evidence, exact null-prototype envelopes, recursive output freezing and caller-mutation resistance. The held-out file is not part of the four-file package. Shared payroll-money.cjs remains byte-identical.
+
 ## State and next action
 
-Built and focused-tested in isolation; independent exact-head review, full operations admission, canonical integration, exact image proof, deployment and hosted/customer proof remain pending. `sourceAuthenticated:false`, `claimedSavingsPence:null` and `actionAuthority:false` remain unchanged. The canonical owner must authenticate WFM schedule/rate/policy evidence, reconcile PRs #494/#496/#431, verify tenant/site and payroll role controls in the existing FORGE path, then run exact merged-image gates and approved synthetic hosted readback. Production approval and customer-ready claims remain unchanged.
+Built and focused-tested in isolation; fresh independent exact-head review, full operations admission, canonical integration, exact image proof, deployment and hosted/customer proof remain pending. `sourceAuthenticated:false`, `claimedSavingsPence:null` and `actionAuthority:false` remain unchanged. The canonical owner must authenticate WFM schedule/rate/policy evidence, reconcile PRs #494/#496/#431, verify tenant/site and payroll role controls in the existing FORGE path, then run exact merged-image gates and approved synthetic hosted readback. Production approval and customer-ready claims remain unchanged.
