@@ -26,7 +26,7 @@ function provenanceFixture(now = '2026-10-13T07:30:00.000Z') {
       sourceRevision: 'mes-r1', sourceHash: 'a'.repeat(64)
     },
     workforceSnapshot: {
-      tenant: 'alpha', site: 'site-1', workCentre: 'line-1', operationRef: 'weld',
+      tenant: 'alpha', site: 'site-1', workCentre: 'line-1', batchRef: 'lot-42', operationRef: 'weld',
       processEventId: 'event-42', observedAt: at(-120000),
       validFrom: at(-300000), validUntil: at(600000), requiredSkill: 'WELD_L1',
       qualifiedCount: 2, requiredCount: 2, qualificationState: 'VALID',
@@ -609,6 +609,24 @@ test('synthetic process and aggregate skill evidence produce a privacy-limited s
   assert.deepEqual(screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z'), result);
 });
 
+test('shadow provenance requires a workforce lot reference for the process event', () => {
+  const input = provenanceFixture();
+  delete input.workforceSnapshot.batchRef;
+  const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(result.status, 'UNVERIFIABLE');
+  assert.equal(result.executionPermitted, false);
+  assert.equal(result.disclosure, null);
+});
+
+test('shadow provenance rejects another lot even when site, operation and event ID agree', () => {
+  const input = provenanceFixture();
+  input.workforceSnapshot.batchRef = 'lot-43';
+  const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(result.status, 'UNVERIFIABLE');
+  assert.equal(result.reason, 'CROSS_SCOPE_LINK');
+  assert.equal(result.disclosure, null);
+});
+
 test('shadow provenance refuses cross-tenant, stale, expired, incomplete and tampered evidence', () => {
   const changes = [
     x => { x.processEvent.tenant = 'bravo'; },
@@ -650,6 +668,113 @@ test('saved digest detects changed aggregate evidence on replay', () => {
   assert.equal(changed.reason, 'DIGEST_MISMATCH');
 });
 
+test('shadow provenance rejects evidence that changes after validation', () => {
+  const input = provenanceFixture();
+  let reads = 0;
+  Object.defineProperty(input.workforceSnapshot, 'batchRef', {
+    enumerable: true,
+    configurable: true,
+    get() { return ++reads <= 3 ? 'lot-42' : 'lot-43'; }
+  });
+  const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(result.status, 'UNVERIFIABLE');
+  assert.equal(result.executionPermitted, false);
+  assert.equal(result.inputDigest, null);
+  assert.equal(result.disclosure, null);
+  assert.equal(reads, 0);
+});
+
+test('shadow provenance captures expectedDigest once and rejects an accessor', () => {
+  const input = provenanceFixture();
+  let reads = 0;
+  Object.defineProperty(input, 'expectedDigest', {
+    enumerable: true,
+    configurable: true,
+    get() { return reads++ === 0 ? undefined : '0'.repeat(64); }
+  });
+  const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(result.status, 'UNVERIFIABLE');
+  assert.equal(result.executionPermitted, false);
+  assert.equal(result.disclosure, null);
+  assert.equal(reads, 0);
+});
+
+test('shadow provenance rejects private, inherited and proxy evidence fields', () => {
+  const hidden = provenanceFixture();
+  Object.defineProperty(hidden.processEvent, 'privateWorker', { value: 'secret' });
+  const symbol = provenanceFixture();
+  symbol.workforceSnapshot[Symbol('private')] = 'secret';
+  const inherited = provenanceFixture();
+  inherited.processEvent = Object.assign(Object.create({ privateWorker: 'secret' }), inherited.processEvent);
+  const proxied = provenanceFixture();
+  proxied.workforceSnapshot = new Proxy(proxied.workforceSnapshot, {});
+  const revoked = provenanceFixture();
+  const revocable = Proxy.revocable(provenanceFixture().workforceSnapshot, {});
+  revocable.revoke();
+  revoked.workforceSnapshot = revocable.proxy;
+  for (const input of [hidden, symbol, inherited, proxied, revoked]) {
+    const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+    assert.equal(result.status, 'UNVERIFIABLE');
+    assert.equal(result.executionPermitted, false);
+    assert.equal(result.disclosure, null);
+  }
+});
+
+test('shadow provenance rejects excess claims when the ambient array iterator is poisoned', () => {
+  const input = provenanceFixture();
+  input.processEvent.privateWorker = 'secret';
+  const originalIterator = Array.prototype[Symbol.iterator];
+  try {
+    Array.prototype[Symbol.iterator] = function* poisonedIterator() {
+      for (let index = 0; index < this.length; index++) yield this[index];
+      yield 'privateWorker';
+    };
+    const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+    assert.equal(result.status, 'UNVERIFIABLE');
+    assert.equal(result.executionPermitted, false);
+    assert.equal(result.disclosure, null);
+  } finally {
+    Array.prototype[Symbol.iterator] = originalIterator;
+  }
+});
+
+test('shadow provenance does not trust ambient array traversal', () => {
+  const input = provenanceFixture();
+  const sharedObjectId = {};
+  input.processEvent.batchRef = sharedObjectId;
+  input.workforceSnapshot.batchRef = sharedObjectId;
+  const originalEvery = Array.prototype.every;
+  try {
+    Array.prototype.every = () => true;
+    const result = screenWorkforceProvenanceShadow(input, 'alpha', '2026-10-13T07:30:00.000Z');
+    assert.equal(result.status, 'UNVERIFIABLE');
+    assert.equal(result.executionPermitted, false);
+    assert.equal(result.disclosure, null);
+  } finally {
+    Array.prototype.every = originalEvery;
+  }
+});
+
+test('shadow provenance contains reflection failures and freezes accepted receipts', () => {
+  const throwing = provenanceFixture();
+  let reads = 0;
+  Object.defineProperty(throwing, 'processEvent', {
+    enumerable: true,
+    get() { reads++; throw new Error('caller getter must not escape'); }
+  });
+  const denied = screenWorkforceProvenanceShadow(throwing, 'alpha', '2026-10-13T07:30:00.000Z');
+  assert.equal(denied.status, 'UNVERIFIABLE');
+  assert.equal(denied.executionPermitted, false);
+  assert.equal(reads, 0);
+
+  const accepted = screenWorkforceProvenanceShadow(
+    provenanceFixture(), 'alpha', '2026-10-13T07:30:00.000Z'
+  );
+  assert.equal(Object.isFrozen(accepted), true);
+  assert.equal(Object.isFrozen(accepted.disclosure), true);
+  assert.equal(accepted.inputDigest, 'a308304b74d6a1ea751ec3cb03ace7d41003a9ab6a6dca4b9a6a4fbac1bbcc40');
+});
+
 test('manager-only tenant-scoped provenance shadow route does not persist supplied evidence', async () => {
   const f = fixture();
   try {
@@ -663,8 +788,12 @@ test('manager-only tenant-scoped provenance shadow route does not persist suppli
     const crossTenant = structuredClone(body);
     crossTenant.processEvent.tenant = 'bravo';
     assert.equal((await call(f.hub, f.tokens.manager, 'POST', endpoint, crossTenant)).body.status, 'UNVERIFIABLE');
+    const crossLot = structuredClone(body);
+    crossLot.workforceSnapshot.batchRef = 'lot-43';
+    assert.equal((await call(f.hub, f.tokens.manager, 'POST', endpoint, crossLot)).body.status, 'UNVERIFIABLE');
     const db = new DatabaseSync(f.dbPath, { readOnly: true });
     assert.equal(db.prepare('SELECT count(*) AS n FROM integration_events').get().n, 0);
     db.close();
   } finally { f.close(); }
 });
+
