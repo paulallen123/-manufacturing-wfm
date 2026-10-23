@@ -9,8 +9,21 @@ concurrency:
   group: policy-population-source-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  admission:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - name: Fail closed for an unapproved workflow actor
+        shell: bash
+        env:
+          ACTOR: ${{ github.actor }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+        run: |
+          set -euo pipefail
+          test "$ACTOR" = "$REPOSITORY_OWNER"
+
   source-regression:
-    if: github.actor == github.repository_owner
+    needs: admission
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -35,8 +48,8 @@ jobs:
           node --test policy/runtime/*.test.cjs
 
   full-image-policy-regression:
-    if: github.actor == github.repository_owner && (github.ref == 'refs/heads/proof/policy-image-admission-20261013' || github.ref == 'refs/heads/backlog/policy-finite-freshness-20261013' || github.ref == 'refs/heads/backlog/policy-candidate-immutability-20261013' || github.ref == 'refs/heads/backlog/policy-source-metadata-20261013' || github.ref == 'refs/heads/proof/installed-archive-workflow-evidence-20261013')
-    needs: source-regression
+    if: github.ref == 'refs/heads/proof/policy-image-admission-20261013' || github.ref == 'refs/heads/backlog/policy-finite-freshness-20261013' || github.ref == 'refs/heads/backlog/policy-candidate-immutability-20261013' || github.ref == 'refs/heads/backlog/policy-source-metadata-20261013' || github.ref == 'refs/heads/proof/installed-archive-workflow-evidence-20261013'
+    needs: [admission, source-regression]
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
