@@ -13,6 +13,24 @@ authorisation, mapping, completeness and reconciliation. Invalid authenticated
 payloads receive REJECTED_VALIDATION receipts with a digest but no retained bad
 payload. Neither path grants source readiness, payroll authority or savings.
 
+## Inspect deliveries in VECTOR
+
+The existing Integrations screen includes a 3Min delivery receipts panel for the
+current authorised non-employee session. It shows tenant-bound feed configuration
+and up to 50 receipt summaries, including source, site, domain, environment, event,
+receipt ID, received time, record count and rejection reason. Expand the receipt
+list to inspect deliveries; use Refresh deliveries for a new read.
+
+Intake configured means the receiver binding has an authentication token; it does
+not prove the sender webhook is connected. Received — awaiting validation means
+the payload is durably in the inbox, not imported into workforce data. Rejected
+receipts preserve the reason for review. Unknown statuses remain unavailable.
+
+The panel never writes records or configures credentials. It clears previous data
+on refresh failure, account/tenant/role changes, rerender and navigation. Existing
+server session checks remain authoritative. Source-level behavior and served bundle
+inclusion are tested; browser/mobile and hosted customer verification remain open.
+
 ## Configuration
 
 On the existing VECTOR service, configure `WFM_3MIN_FEEDS_JSON` as a JSON array.

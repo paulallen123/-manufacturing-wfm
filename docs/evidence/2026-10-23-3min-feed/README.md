@@ -1,5 +1,40 @@
 # Execution evidence — 23 October 2026
 
+## Current continuation: delivery receipt inspection
+
+The existing Integrations view now reads scoped 3Min feed configuration and recent
+receipt metadata. Received, rejected, missing configuration, unavailable receiver,
+authorisation failure and retry states are distinct. Every status explicitly
+preserves the boundary between intake and workforce import. The panel is GET-only,
+escapes metadata, stores no credentials or payloads, and aborts/clears stale account,
+tenant, role, root, page and rerender contexts. Receipt details are collapsed by
+default; long metadata wraps. Visual/mobile behavior remains unverified.
+
+Corrected-harness missing-UI reproduction: 0/8 pass in receipt-ui-red.tap. An initial
+copied test fixture had a dataset-name typo; it was repaired before this retained
+regression was generated against the UI with the new panel removed. Final affected
+UI tests: 31/31 pass on Node22.23.2, zero failures/skips in receipt-ui-green.tap.
+Independent review and heldouts: receipt-ui-review.md and receipt-ui-independent.tap.
+
+Fresh composed application test: 1/1 pass, exit0, zero skips, receipt-ui-composed.tap.
+It now fetches the served presentation and verifies exact current vector-shell.js
+bytes are included, then exercises real bootstrap authentication, intake, metadata
+readback, restart/replay and tenant isolation. This remains local synthetic runtime
+proof with cached dependencies; it is not browser execution or final-image proof.
+Docker admission includes the new UI tests in the existing UI test group.
+
+Before publishing, inverse-delta Git blob hashes of the three edited existing
+files matched exact PR509 parent17680eb7: vector-shell.js e376385b89dab094beebe8753b74969067ef4806,
+vector-gusto.test.cjs e7a28f6a002445d3c7eed37fcae07116c9a67237, and Dockerfile
+24fff1c812c50c212ff08f5ca0d9db665ee541c1. No stale source or unrelated formatting was
+substituted. Publication preserves the full parent tree and remains in PR509.
+
+Fresh live readback still shows customer deployment d9112b19 FAILED, no staged
+service changes, and no WFM_3MIN binding. The existing 3Min endpoint is active in
+both environments but both webhook URLs and auth values are absent. No live
+configuration, forwarding or account plan was changed by this continuation.
+
+
 ## Current successor: documented webhook envelope
 
 The user's dashboard screenshot exposed a contract gap in the original receiver:

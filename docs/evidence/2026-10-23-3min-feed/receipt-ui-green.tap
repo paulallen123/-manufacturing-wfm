@@ -1,0 +1,204 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing configuration is actionable without exposing server configuration or polling on shell mutations
+ok 1 - missing configuration is actionable without exposing server configuration or polling on shell mutations
+  ---
+  duration_ms: 37.25495
+  type: 'test'
+  ...
+# Subtest: verified access is escaped and existing connections are reused for authorization
+ok 2 - verified access is escaped and existing connections are reused for authorization
+  ---
+  duration_ms: 74.567502
+  type: 'test'
+  ...
+# Subtest: UUID selection is validated before writes and a new connection follows the existing hub workflow
+ok 3 - UUID selection is validated before writes and a new connection follows the existing hub workflow
+  ---
+  duration_ms: 14.357152
+  type: 'test'
+  ...
+# Subtest: authorization redirects reject foreign origins, wrong environments and userinfo URLs
+ok 4 - authorization redirects reject foreign origins, wrong environments and userinfo URLs
+  ---
+  duration_ms: 35.379044
+  type: 'test'
+  ...
+# Subtest: a tenant switch during authorization prevents navigation and clears previous company information
+ok 5 - a tenant switch during authorization prevents navigation and clears previous company information
+  ---
+  duration_ms: 15.213326
+  type: 'test'
+  ...
+# Subtest: leaving the route or rerendering invalidates pending configuration responses
+ok 6 - leaving the route or rerendering invalidates pending configuration responses
+  ---
+  duration_ms: 6.090976
+  type: 'test'
+  ...
+# Subtest: an asynchronous response clears stale company details even before the next tenant render
+ok 7 - an asynchronous response clears stale company details even before the next tenant render
+  ---
+  duration_ms: 12.850145
+  type: 'test'
+  ...
+# Subtest: rerendering the same session discards the previous pending status response
+ok 8 - rerendering the same session discards the previous pending status response
+  ---
+  duration_ms: 45.688332
+  type: 'test'
+  ...
+# Subtest: verify checks actual access and an expired session removes previously verified details
+ok 9 - verify checks actual access and an expired session removes previously verified details
+  ---
+  duration_ms: 17.003772
+  type: 'test'
+  ...
+# Subtest: provider authorization failures keep reconnect available and remove stale company verification
+ok 10 - provider authorization failures keep reconnect available and remove stale company verification
+  ---
+  duration_ms: 18.184832
+  type: 'test'
+  ...
+# Subtest: a saved company connection can be verified when previous provider metadata has been cleared
+ok 11 - a saved company connection can be verified when previous provider metadata has been cleared
+  ---
+  duration_ms: 6.593006
+  type: 'test'
+  ...
+# Subtest: access verification does not deny a completed workforce import
+ok 12 - access verification does not deny a completed workforce import
+  ---
+  duration_ms: 9.260982
+  type: 'test'
+  ...
+# Subtest: repeated connect clicks while authorization is pending do not create extra requests
+ok 13 - repeated connect clicks while authorization is pending do not create extra requests
+  ---
+  duration_ms: 10.464372
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Settings & more survives an authoritative content rerender until explicitly closed and hides unavailable routes
+ok 14 - Settings & more survives an authoritative content rerender until explicitly closed and hides unavailable routes
+  ---
+  duration_ms: 8.374948
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Staffology customer controls use only authenticated canonical routes and server-held scope
+ok 15 - Staffology customer controls use only authenticated canonical routes and server-held scope
+  ---
+  duration_ms: 7.349423
+  type: 'test'
+  ...
+# Subtest: Staffology controls expose dormant, authority, progress and double-submit boundaries
+ok 16 - Staffology controls expose dormant, authority, progress and double-submit boundaries
+  ---
+  duration_ms: 1.293259
+  type: 'test'
+  ...
+# Subtest: mapping controls derive ordinary choices from authenticated bootstrap without inventing payroll values
+ok 17 - mapping controls derive ordinary choices from authenticated bootstrap without inventing payroll values
+  ---
+  duration_ms: 3.963465
+  type: 'test'
+  ...
+# Subtest: mixed lifecycle response exposes held reasons while eligible batch remains applicable
+ok 18 - mixed lifecycle response exposes held reasons while eligible batch remains applicable
+  ---
+  duration_ms: 0.528649
+  type: 'test'
+  ...
+# Subtest: acquisition retry retains one reviewed-intent key and recovery needs no browser digest
+ok 19 - acquisition retry retains one reviewed-intent key and recovery needs no browser digest
+  ---
+  duration_ms: 0.403252
+  type: 'test'
+  ...
+# Subtest: recover action renders only acknowledged outcomes as success and explains held outcomes
+ok 20 - recover action renders only acknowledged outcomes as success and explains held outcomes
+  ---
+  duration_ms: 3.332351
+  type: 'test'
+  ...
+# Subtest: reviewed missing-provider email renders without inventing identity and preserves only the reviewed value
+ok 21 - reviewed missing-provider email renders without inventing identity and preserves only the reviewed value
+  ---
+  duration_ms: 3.132657
+  type: 'test'
+  ...
+# Subtest: acquisition first persists review and sends only its opaque ID to the import consumer
+ok 22 - acquisition first persists review and sends only its opaque ID to the import consumer
+  ---
+  duration_ms: 3.707708
+  type: 'test'
+  ...
+# Subtest: authenticated request checks the panel again after response decoding
+ok 23 - authenticated request checks the panel again after response decoding
+  ---
+  duration_ms: 2.879131
+  type: 'test'
+  ...
+# (node:31) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: unconfigured intake explains setup without claiming an import or polling on renders
+ok 24 - unconfigured intake explains setup without claiming an import or polling on renders
+  ---
+  duration_ms: 48.538188
+  type: 'test'
+  ...
+# Subtest: receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+ok 25 - receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+  ---
+  duration_ms: 14.704183
+  type: 'test'
+  ...
+# Subtest: configured feed with no receipts and missing authentication remain distinct
+ok 26 - configured feed with no receipts and missing authentication remain distinct
+  ---
+  duration_ms: 10.424612
+  type: 'test'
+  ...
+# Subtest: refresh failure clears previous receipt details and permits manual retry
+ok 27 - refresh failure clears previous receipt details and permits manual retry
+  ---
+  duration_ms: 17.520659
+  type: 'test'
+  ...
+# Subtest: authentication, unavailable receiver and malformed data do not become empty successful intake
+ok 28 - authentication, unavailable receiver and malformed data do not become empty successful intake
+  ---
+  duration_ms: 33.137284
+  type: 'test'
+  ...
+# Subtest: tenant and account switches remove pending old receipts even before a new render
+ok 29 - tenant and account switches remove pending old receipts even before a new render
+  ---
+  duration_ms: 70.732228
+  type: 'test'
+  ...
+# Subtest: route departure, rerender and pagehide abort old requests; employees never fetch receipts
+ok 30 - route departure, rerender and pagehide abort old requests; employees never fetch receipts
+  ---
+  duration_ms: 15.001795
+  type: 'test'
+  ...
+# Subtest: concurrent refresh clicks do not duplicate the request
+ok 31 - concurrent refresh clicks do not duplicate the request
+  ---
+  duration_ms: 7.036636
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 751.566262

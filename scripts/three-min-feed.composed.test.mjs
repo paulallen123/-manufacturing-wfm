@@ -30,6 +30,9 @@ test('composed 3Min intake loads through security middleware and retains scoped 
   execFileSync(process.execPath,[path.join(root,'scripts/compose-vector-local-runtime.mjs'),runtime],{cwd:root,stdio:'pipe'});
   assert.ok(fs.existsSync(path.join(runtime,'integration-runtime/three-min-feed.cjs')),'runtime assembly must include the receiver');
   let origin = await harness.start();
+  const ui = await fetch(origin+'/vector-ui.js');
+  assert.equal(ui.status,200);
+  assert.ok((await ui.text()).includes(fs.readFileSync(path.join(root,'ux-overlay/vector-shell.js'),'utf8')),'served presentation must include the exact reviewed receipt UI source');
   const route = '/api/integrations/autonomous/feeds/3min';
   const body = {schemaVersion:'vector-feed-v1',tenant:binding.tenant,site:binding.site,source:binding.source,domain:binding.domain,environment:binding.environment,eventId:'composed-event',occurredAt:new Date().toISOString(),records:[{employeeId:'synthetic-only'}]};
   const delivery = randomUUID();

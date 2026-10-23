@@ -70,7 +70,7 @@ function harness(respond, initial = {}) {
     AbortController, URL, Intl, Date, console,
     fetch: async (url, options = {}) => {
       const path = String(url).replace(PREFIX, '');
-      if (!String(url).startsWith(PREFIX)) return { ok: true, status: 200, json: async () => ({}) };
+      if (!String(url).startsWith(PREFIX) || path === '/feeds/3min') return { ok: true, status: 200, json: async () => ({}) };
       const request = { path, method: options.method || 'GET', body: options.body ? JSON.parse(options.body) : null, options };
       calls.push(request);
       const answer = await respond(request, calls);
