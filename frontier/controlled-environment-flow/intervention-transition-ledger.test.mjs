@@ -78,19 +78,146 @@ test('cross-site or non-authoritative evidence fails closed',()=>{
  assert.equal(buildInterventionTransitionLedger({policy,tasks,presenceEvents:presence,now}).reason,'event_not_authoritative');
 });
 
+const outcomeFixture=()=>({
+ now:'2026-09-20T22:10:00.000Z',
+ recommendation:{id:'R1',siteId:'S1',tenantId:'northstar-demo',predictedEntries:2,authoritative:true,ref:'recommendation:R1',observedAt:'2026-09-20T22:00:00.000Z',maxAgeMinutes:120},
+ decision:{status:'accepted',recommendationId:'R1',siteId:'S1',tenantId:'northstar-demo',authoritative:true,ref:'decision:R1',observedAt:'2026-09-20T22:01:00.000Z'},
+ observed:{authoritative:true,recommendationId:'R1',siteId:'S1',tenantId:'northstar-demo',actualEntries:3,ref:'access:R1',observedAt:'2026-09-20T22:02:00.000Z'},
+ operations:{authoritative:true,recommendationId:'R1',siteId:'S1',tenantId:'northstar-demo',productionCompleted:true,ref:'mes:R1',observedAt:'2026-09-20T22:03:00.000Z'},
+ quality:{authoritative:true,recommendationId:'R1',siteId:'S1',tenantId:'northstar-demo',eventCount:0,ref:'qms:R1',observedAt:'2026-09-20T22:04:00.000Z'},
+ financial:{authoritative:true,recommendationId:'R1',siteId:'S1',tenantId:'northstar-demo',realisedControlCost:42,ref:'finance:R1',observedAt:'2026-09-20T22:05:00.000Z'}
+});
+
 test('outcome reconciliation keeps predicted and realised movement distinct',()=>{
- const r=reconcileSensitiveZoneOutcome({
-  recommendation:{id:'R1',predictedEntries:2},
-  decision:{status:'accepted'},
-  observed:{authoritative:true,actualEntries:3},
-  operations:{authoritative:true,productionCompleted:true},
-  quality:{authoritative:true,eventCount:0},
-  financial:{authoritative:true,realisedControlCost:42}
- });
+ const r=reconcileSensitiveZoneOutcome(outcomeFixture());
  assert.equal(r.status,'reconciled');
  assert.equal(r.predicted.entries,2);
  assert.equal(r.realised.entries,3);
  assert.equal(r.calibration.entryError,1);
+});
+
+test('accepted outcome refuses missing or foreign recommendation and site evidence',()=>{
+ const base=outcomeFixture();
+ for(const part of ['decision','observed','operations','quality','financial'])for(const field of ['recommendationId','siteId']){
+  for(const value of [undefined,field==='siteId'?'S2':'R2']){
+   const input=structuredClone(base);input[part][field]=value;
+   const result=reconcileSensitiveZoneOutcome(input);
+   assert.notEqual(result.status,'reconciled',`${part}.${field}=${value} was reconciled`);
+  }
+ }
+ const rejected=structuredClone(base);rejected.decision.status='rejected';rejected.decision.recommendationId='R2';
+ assert.notEqual(reconcileSensitiveZoneOutcome(rejected).status,'recorded');
+});
+
+test('outcome scope binds tenant and authoritative recommendation decision',()=>{
+ for(const [part,field,value] of [
+  ['recommendation','authoritative',false],['decision','authoritative',false],
+  ['decision','tenantId','other'],['observed','tenantId','other'],['operations','tenantId','other'],
+  ['quality','tenantId','other'],['financial','tenantId','other']
+ ]){
+  const input=outcomeFixture();input[part][field]=value;
+  assert.notEqual(reconcileSensitiveZoneOutcome(input).status,'reconciled',`${part}.${field}`);
+ }
+});
+
+test('outcome provenance is required and emitted in the immutable receipt',()=>{
+ for(const part of ['recommendation','decision','observed','operations','quality','financial']){
+  const input=outcomeFixture();delete input[part].ref;
+  assert.notEqual(reconcileSensitiveZoneOutcome(input).status,'reconciled',part);
+ }
+ const receipt=reconcileSensitiveZoneOutcome(outcomeFixture());
+ assert.deepEqual(receipt.evidenceRefs,{recommendation:'recommendation:R1',decision:'decision:R1',observed:'access:R1',operations:'mes:R1',quality:'qms:R1',financial:'finance:R1'});
+ assert.ok([receipt,receipt.predicted,receipt.realised,receipt.calibration,receipt.evidenceRefs].every(Object.isFrozen));
+});
+
+test('outcome source references are bound to recommendation and evidence role',()=>{
+ for(const [part,ref] of [
+  ['recommendation','recommendation:R2'],['decision','access:R1'],['observed','mes:R1'],
+  ['operations','qms:R1'],['quality','finance:R1'],['financial','decision:R1']
+ ]){
+  const input=outcomeFixture();input[part].ref=ref;
+  assert.notEqual(reconcileSensitiveZoneOutcome(input).status,'reconciled',part);
+ }
+ const swapped=outcomeFixture();
+ [swapped.observed.ref,swapped.operations.ref]=[swapped.operations.ref,swapped.observed.ref];
+ assert.notEqual(reconcileSensitiveZoneOutcome(swapped).status,'reconciled');
+});
+
+test('outcome chronology requires canonical UTC causal fresh evidence',()=>{
+ for(const [part,value,reason] of [
+  ['recommendation','2026-02-30T22:00:00.000Z','outcome_time_invalid'],
+  ['decision','2026-09-20T21:59:00.000Z','outcome_time_invalid'],
+  ['observed','2026-09-20T22:11:00.000Z','outcome_time_invalid'],
+  ['quality','2026-09-20T22:04:00+00:00','outcome_time_invalid']
+ ]){
+  const input=outcomeFixture();input[part].observedAt=value;
+  assert.equal(reconcileSensitiveZoneOutcome(input).reason,reason,part);
+ }
+ const stale=outcomeFixture();stale.recommendation.maxAgeMinutes=5;
+ assert.equal(reconcileSensitiveZoneOutcome(stale).reason,'outcome_evidence_stale');
+});
+
+test('outcome measurements reject coercion negative values and malformed booleans',()=>{
+ for(const [part,field,values] of [
+  ['recommendation','predictedEntries',[null,false,[],-1]],
+  ['observed','actualEntries',[null,false,[],-1]],
+  ['quality','eventCount',[null,false,[],-1,1.5]],
+  ['financial','realisedControlCost',[null,false,[],-1]],
+  ['operations','productionCompleted',[null,'true',1]]
+ ])for(const value of values){
+  const input=outcomeFixture();input[part][field]=value;
+  assert.notEqual(reconcileSensitiveZoneOutcome(input).status,'reconciled',`${part}.${field}=${String(value)}`);
+ }
+});
+
+test('outcome snapshots reject active or throwing properties without escaping',()=>{
+ for(const part of ['recommendation','decision','observed']){
+  const input=outcomeFixture();
+  const field=part==='decision'?'status':part==='recommendation'?'id':'recommendationId';
+  Object.defineProperty(input[part],field,{enumerable:true,get(){throw new Error('hostile getter');}});
+  assert.doesNotThrow(()=>assert.notEqual(reconcileSensitiveZoneOutcome(input).status,'reconciled'),part);
+ }
+});
+
+test('outcome snapshot uses captured reflection when ambient helpers are replaced',()=>{
+ const input=outcomeFixture();let reads=0;
+ Object.defineProperty(input.decision,'status',{enumerable:true,get(){reads+=1;return reads===1?'accepted':'rejected';}});
+ const original=Object.getOwnPropertyDescriptors;
+ Object.getOwnPropertyDescriptors=value=>value===input.decision?{
+  status:{enumerable:true,value:value.status},recommendationId:{enumerable:true,value:value.recommendationId},
+  siteId:{enumerable:true,value:value.siteId},tenantId:{enumerable:true,value:value.tenantId},
+  authoritative:{enumerable:true,value:value.authoritative},ref:{enumerable:true,value:value.ref},
+  observedAt:{enumerable:true,value:value.observedAt}
+ }:original(value);
+ try{
+  const result=reconcileSensitiveZoneOutcome(input);
+  assert.notEqual(result.status,'recorded');assert.notEqual(result.status,'reconciled');
+ }finally{Object.getOwnPropertyDescriptors=original;}
+});
+
+test('outcome reconciliation fails closed when captured runtime intrinsics drift',()=>{
+ const mutations=[
+  [Object,'create',()=>Object.create(null)],
+  [Array.prototype,'includes',()=>true],
+  [Number,'isInteger',()=>true]
+ ];
+ for(const [owner,key,replacement] of mutations){
+  const original=owner[key];owner[key]=replacement;
+  try{
+   assert.deepEqual(reconcileSensitiveZoneOutcome(outcomeFixture()),{status:'incomplete',reason:'outcome_runtime_invalid'},key);
+  }finally{owner[key]=original;}
+ }
+});
+
+test('rejected decisions require the same immutable scope provenance and chronology',()=>{
+ const valid=outcomeFixture();valid.decision.status='rejected';
+ const recorded=reconcileSensitiveZoneOutcome(valid);
+ assert.equal(recorded.status,'recorded');
+ assert.ok(Object.isFrozen(recorded)&&Object.isFrozen(recorded.evidenceRefs));
+ for(const [field,value] of [['tenantId','other'],['ref',''],['observedAt','2026-09-20T21:59:00.000Z']]){
+  const input=outcomeFixture();input.decision.status='rejected';input.decision[field]=value;
+  assert.notEqual(reconcileSensitiveZoneOutcome(input).status,'recorded',field);
+ }
 });
 
 // Source-bound ambiguity regressions. These are structural checks, not safety approval.
