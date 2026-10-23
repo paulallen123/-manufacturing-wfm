@@ -54,3 +54,49 @@ test('rejects scope, period, source and numeric evidence drift', () => {
   ];
   for (const change of mutations) { const value = input(); change(value); assert.throws(() => assessProductionOutputGap(value)); }
 });
+
+test('rejects root and source accessors before validation or publication', () => {
+  const activeAsOf = input();
+  let asOfReads = 0;
+  Object.defineProperty(activeAsOf, 'asOf', { enumerable: true, get() {
+    return asOfReads++ === 0 ? '2026-10-20T11:00:00Z' : '2000-01-01T00:00:00Z';
+  }});
+  assert.throws(() => assessProductionOutputGap(activeAsOf));
+
+  const activeObservedAt = input();
+  let observationReads = 0;
+  Object.defineProperty(activeObservedAt.plan, 'observedAt', { enumerable: true, get() {
+    return observationReads++ === 0 ? '2026-10-20T10:30:00Z' : '2099-01-01T00:00:00Z';
+  }});
+  assert.throws(() => assessProductionOutputGap(activeObservedAt));
+});
+
+test('rejects source substitution after provenance validation', () => {
+  const value = input();
+  const validated = value.plan;
+  const substituted = { ...validated, targetUnits: 9000 };
+  let reads = 0;
+  Object.defineProperty(value, 'plan', { enumerable: true, get() {
+    return reads++ === 0 ? validated : substituted;
+  }});
+  assert.throws(() => assessProductionOutputGap(value));
+});
+
+test('rejects inherited requested scope and proxy envelopes', () => {
+  const value = input();
+  const inherited = Object.assign(Object.create({ tenantId: value.tenantId }), value);
+  delete inherited.tenantId;
+  assert.throws(() => assessProductionOutputGap(inherited));
+  assert.throws(() => assessProductionOutputGap(new Proxy(input(), {})));
+  const proxiedSource = input();
+  proxiedSource.plan = new Proxy(proxiedSource.plan, {});
+  assert.throws(() => assessProductionOutputGap(proxiedSource));
+});
+
+test('requires genuinely distinct plan and production source evidence', () => {
+  const value = input();
+  value.production.sourceName = value.plan.sourceName;
+  value.production.revision = value.plan.revision;
+  value.production.digest = value.plan.digest;
+  assert.throws(() => assessProductionOutputGap(value));
+});
