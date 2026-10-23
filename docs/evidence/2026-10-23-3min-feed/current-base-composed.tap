@@ -1,0 +1,79 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: composed 3Min intake loads through security middleware and retains scoped receipts across restart
+ok 1 - composed 3Min intake loads through security middleware and retains scoped receipts across restart
+  ---
+  duration_ms: 15256.850344
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: owns its listener even when the former fixed port serves a healthy foreign process
+ok 2 - owns its listener even when the former fixed port serves a healthy foreign process
+  ---
+  duration_ms: 605.387632
+  type: 'test'
+  ...
+# Subtest: bounds a stalled health request and preserves startup diagnostics
+ok 3 - bounds a stalled health request and preserves startup diagnostics
+  ---
+  duration_ms: 5027.942878
+  type: 'test'
+  ...
+# Subtest: cleans up a child that exits by signal without waiting for a second exit event
+ok 4 - cleans up a child that exits by signal without waiting for a second exit event
+  ---
+  duration_ms: 207.239448
+  type: 'test'
+  ...
+# Subtest: startup timeout distinguishes a child that never opens its owned listener
+ok 5 - startup timeout distinguishes a child that never opens its owned listener
+  ---
+  duration_ms: 516.259918
+  type: 'test'
+  ...
+# Subtest: startup timeout reports persistent unhealthy responses without accepting the listener as readiness
+ok 6 - startup timeout reports persistent unhealthy responses without accepting the listener as readiness
+  ---
+  duration_ms: 5028.513331
+  type: 'test'
+  ...
+# (node:19) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing or malformed identities refuse synchronously before any listener
+ok 7 - missing or malformed identities refuse synchronously before any listener
+  ---
+  duration_ms: 14.767273
+  type: 'test'
+  ...
+# Subtest: both provider mismatch and unapproved matching image/provider refuse
+ok 8 - both provider mismatch and unapproved matching image/provider refuse
+  ---
+  duration_ms: 3.249385
+  type: 'test'
+  ...
+# Subtest: invalid ports refuse before listening
+ok 9 - invalid ports refuse before listening
+  ---
+  duration_ms: 2.41647
+  type: 'test'
+  ...
+# Subtest: serialized deployed function reports only bound identity and closes on SIGTERM
+ok 10 - serialized deployed function reports only bound identity and closes on SIGTERM
+  ---
+  duration_ms: 99.309043
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15548.796951

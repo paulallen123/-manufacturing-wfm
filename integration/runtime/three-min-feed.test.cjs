@@ -10,7 +10,11 @@ const { DatabaseSync } = require('node:sqlite');
 const { createAutonomousIntegrationHub } = require('./autonomous-integration-hub.cjs');
 const PREFIX = '/api/integrations/autonomous';
 const TOKEN = 'synthetic-feed-secret-'.repeat(3);
-const binding = { id: 'alpha-workday-people', tenant: 'alpha', site: 'factory-1', source: 'workday', domain: 'people', environment: 'sandbox', secretEnv: 'WFM_3MIN_ALPHA_TOKEN' };
+const ENDPOINT_SLUG = 'synthetic-workforce-intake';
+function webhook(body, recordId, overrides = {}) {
+ return {id:recordId,operation:'create',status:'success',endpoint_slug:ENDPOINT_SLUG,payload:body,processed_at:'2026-10-23T12:01:00.000Z',...overrides};
+}
+const binding = { id: 'alpha-workday-people', tenant: 'alpha', site: 'factory-1', source: 'workday', domain: 'people', environment: 'sandbox', endpointSlug:ENDPOINT_SLUG, secretEnv: 'WFM_3MIN_ALPHA_TOKEN' };
 function payload(overrides = {}) {
   return { schemaVersion: 'vector-feed-v1', tenant: 'alpha', site: 'factory-1', source: 'workday', domain: 'people', environment: 'sandbox', eventId: 'source-event-1', occurredAt: '2026-10-23T12:00:00.000Z', records: [{ employeeId: 'synthetic-1', firstName: 'Test' }], ...overrides };
 }
@@ -31,7 +35,7 @@ async function fixture(t, config = [binding]) {
   const origin = 'http://127.0.0.1:'+server.address().port;
   async function send(body=payload(), options={}) {
     const headers = {'content-type':'application/json','x-vector-feed-token':TOKEN,'x-3minapi-record-id':options.recordId||randomUUID(), ...options.headers};
-    const res=await fetch(origin+PREFIX+'/feeds/3min/'+(options.bindingId||binding.id),{method:options.method||'POST',headers,body:options.raw===undefined?JSON.stringify(body):options.raw});
+    const res=await fetch(origin+PREFIX+'/feeds/3min/'+(options.bindingId||binding.id),{method:options.method||'POST',headers,body:options.raw===undefined?JSON.stringify(webhook(body,headers['x-3minapi-record-id'],options.webhook)):options.raw});
     return {status:res.status,body:await res.json()};
   }
   async function status(token='alpha-session') { const r=await fetch(origin+PREFIX+'/feeds/3min',{headers:{cookie:'wfm_session='+token}}); return {status:r.status,body:await r.json()}; }
@@ -47,6 +51,40 @@ test('HTTP delivery persists an unvalidated receipt, tenant readback survives re
   assert.equal((await f.status('bravo-session')).body.receipts.length,0);
   assert.equal((await f.status('employee-session')).status,403);
   assert.notEqual((await f.status('missing-session')).status,200);
+});
+test('documented 3Min webhook wrapper yields an intake receipt for its original payload',async t=>{
+ const f=await fixture(t);const id=randomUUID();
+ const r=await f.send(null,{recordId:id,raw:JSON.stringify(webhook(payload(),id))});
+ assert.equal(r.status,202);assert.equal(r.body.status,'RECEIVED_UNVALIDATED');
+ assert.deepEqual(JSON.parse(f.db.prepare('SELECT payload_json FROM integration_feed_inbox').get().payload_json),payload());
+});
+test('webhook record identity and endpoint must match the authenticated binding',async t=>{
+ const f=await fixture(t);
+ assert.equal((await f.send(payload(),{webhook:{id:randomUUID()}})).body.code,'FEED_DELIVERY_MISMATCH');
+ assert.equal((await f.send(payload(),{webhook:{endpoint_slug:'another-endpoint'}})).body.code,'FEED_ENDPOINT_MISMATCH');
+ assert.equal(f.db.prepare('SELECT count(*) n FROM integration_feed_inbox').get().n,0);
+ const missingSlug={...binding};delete missingSlug.endpointSlug;
+ const unconfigured=await fixture(t,[missingSlug]);assert.equal((await unconfigured.send()).status,503);
+});
+test('failed, update, delete and malformed webhook results are acknowledged but never ingested',async t=>{
+ const f=await fixture(t);
+ for(const overrides of [{operation:'update',target_record_id:randomUUID()},{operation:'delete',payload:null,target_record_id:randomUUID()},{operation:'read'},{status:'failed'},{target_record_id:randomUUID()},{processed_at:'invalid'},{unexpected:true}]){
+  const id=randomUUID();const r=await f.send(payload(),{recordId:id,webhook:overrides});
+  assert.equal(r.status,202);assert.equal(r.body.status,'REJECTED_VALIDATION');
+  const replay=await f.send(payload(),{recordId:id,webhook:overrides});assert.equal(replay.status,200);assert.equal(replay.body.receiptId,r.body.receiptId);
+ }
+ const direct=await f.send(null,{raw:JSON.stringify(payload())});assert.equal(direct.body.status,'REJECTED_VALIDATION');
+ assert.equal(f.db.prepare("SELECT count(*) n FROM integration_feed_inbox WHERE payload_json != '{}'").get().n,0);
+ assert.equal(f.db.prepare('SELECT count(*) n FROM integration_canonical_people').get().n,0);
+});
+test('separate webhook metadata does not duplicate a source event and aliases remain reserved after restart',async t=>{
+ const f=await fixture(t);const first=await f.send();const id=randomUUID();
+ const alias=await f.send(payload(),{recordId:id,webhook:{processed_at:'2026-10-23T12:02:00Z',target_record_id:null}});
+ assert.equal(alias.status,200);assert.equal(alias.body.receiptId,first.body.receiptId);
+ f.reopen();assert.equal((await f.send(payload(),{recordId:id})).status,200);
+ assert.equal((await f.send(payload({eventId:'different-event'}),{recordId:id})).status,409);
+ assert.equal((await f.send(payload({records:[{employeeId:'changed'}]}),{recordId:id})).status,409);
+ assert.equal(f.db.prepare('SELECT count(*) n FROM integration_feed_inbox').get().n,1);
 });
 test('duplicate delivery and same-event retry are idempotent; changed bytes or reused record ids conflict',async t=>{
  const f=await fixture(t);const id=randomUUID();const a=await f.send(payload(),{recordId:id});
@@ -91,7 +129,8 @@ test('authenticated validation failures are durably acknowledged without retaini
  }
  const id=randomUUID(); const r=await f.send(null,{raw:'{bad',recordId:id});assert.equal(r.status,202);assert.equal(r.body.status,'REJECTED_VALIDATION');
  assert.equal((await f.send(null,{raw:'{bad',recordId:id})).status,200);
- assert.equal((await f.send(null,{raw:JSON.stringify(payload()).replace('"Test"','{"__proto__":{"polluted":true}}')})).body.status,'REJECTED_VALIDATION');
+ const unsafeId=randomUUID();
+ assert.equal((await f.send(null,{recordId:unsafeId,raw:JSON.stringify(webhook(payload(),unsafeId)).replace('"Test"','{"__proto__":{"polluted":true}}')})).body.status,'REJECTED_VALIDATION');
  assert.equal(f.db.prepare("SELECT count(*) n FROM integration_feed_inbox WHERE payload_json != '{}'").get().n,0);
  assert.equal((await f.status()).body.receipts.length,10);
  assert.equal(f.db.prepare('SELECT count(*) n FROM integration_canonical_people').get().n,0);

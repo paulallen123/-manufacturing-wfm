@@ -26,6 +26,7 @@ Each binding must contain exactly these fields:
   "source": "<actual-authorised-source>",
   "domain": "people",
   "environment": "sandbox",
+  "endpointSlug": "iy9xlv2w0i5ml2m88pmag",
   "secretEnv": "WFM_3MIN_WORKFORCE_TOKEN"
 }]
 ```
@@ -33,7 +34,7 @@ Each binding must contain exactly these fields:
 Set the named secret separately to a unique cryptographically random value
 (e.g. 32 random bytes encoded as base64url, 43 characters). Never use an existing
 internal worker token. An absent, malformed or weak configuration disables intake.
-Changing a binding's scope requires a new binding ID; existing delivery identities
+Changing a binding's scope or endpoint slug requires a new binding ID; existing delivery identities
 cannot be reinterpreted as another tenant or source.
 
 Supported intake domains: people, organisation, skills, absence, time, production,
@@ -54,6 +55,18 @@ Webhooks signatures should use the official library, never hand-rolled crypto.
 
 ## Envelope and delivery semantics
 
+3Min sends a notification wrapper, not the original request as the top-level body.
+The documented wrapper has `id`, `operation`, `status`, `endpoint_slug`, `payload`,
+and `processed_at`, with `target_record_id` on updates/deletes. The wrapper's `id`
+must equal `X-3minapi-Record-Id`; `endpoint_slug` must equal the configured
+`endpointSlug`. These mismatches fail403 without storing a source payload.
+
+This append-only inbox accepts only `operation: "create"`, `status: "success"`
+and an absent/null `target_record_id`. Other operations, failed results or malformed
+notifications receive durable REJECTED_VALIDATION receipts and2xx; they never
+update/delete workforce records. The VECTOR envelope below is inside `payload`.
+Reference: https://3minapi.com/guide/endpoint-detail#webhook-payload
+
 The endpoint requires exactly `schemaVersion, tenant, site, source, domain,
 environment, eventId, occurredAt, records`. Version is `vector-feed-v1`.
 Tenant/site/source/domain/environment must exactly match the server binding.
@@ -63,8 +76,12 @@ JSON nesting. Credentials and payloads are never included in receipt readback.
 
 3Min delivers `X-3minapi-Record-Id`. Durable SQLite transactions atomically bind
 every delivery ID (including aliases for the same source event) to one receipt,
-store the input digest and append audit metadata. Exact retries return the same
-receipt; conflicting bytes or reused IDs return409. Storage failures roll back and
+store the serialized original payload and its digest, and append audit metadata.
+Accepted event checksums use `JSON.stringify(payload)` so wrapper IDs and processing
+timestamps can vary for duplicate source events. JSON whitespace is normalized;
+payload key order remains significant. Validation-rejection checksums use the raw
+notification bytes and retain no payload. Matching retries return the same receipt;
+changed payloads or conflicting reused IDs return409. Storage failures roll back and
 return503 so the provider can retry. Authenticated validation failures are stored
 and acknowledged202; transport/auth/scope failures remain4xx. The provider contract
 requires response within15 seconds; committed2xx is receipt acknowledgement, not
@@ -80,7 +97,9 @@ capacity must be included in release operations.
 - Endpoint: `01a16a4d-c707-7e24-8a5c-3f0e1fc4d59c`, VECTOR workforce intake v1.
 - API URL: https://api.3minapi.com/api/v1/data/iy9xlv2w0i5ml2m88pmag
 - Dashboard: https://3minapi.com/dashboard/api/01a16a4d-c707-7e24-8a5c-3f0e1fc4d59c
-- Sandbox active; production inactive; neither webhook configured.
+- At creation: sandbox active, production inactive, neither webhook configured.
+- Latest readback after the user's dashboard action: production is also active;
+  neither webhook is configured and the VECTOR receiver remains undeployed.
 - Synthetic record `01a16a4e-af16-74a3-9399-86e3f1b84c7b` accepted202 and subsequently
   read back200 with its exact nine-field envelope.
 - Creation also queued the provider's automatic sample record. That sample does

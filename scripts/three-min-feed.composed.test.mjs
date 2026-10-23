@@ -13,7 +13,7 @@ test('composed 3Min intake loads through security middleware and retains scoped 
   const runtime = path.join(dir, 'runtime');
   const root = path.resolve(import.meta.dirname, '..');
   const token = 'synthetic-composed-feed-secret-'.repeat(3);
-  const binding = {id:'composed-people',tenant:'northstar-demo',site:'test-site',source:'synthetic',domain:'people',environment:'sandbox',secretEnv:'WFM_3MIN_COMPOSED_TOKEN'};
+  const binding = {id:'composed-people',tenant:'northstar-demo',site:'test-site',source:'synthetic',domain:'people',environment:'sandbox',endpointSlug:'synthetic-workforce-intake',secretEnv:'WFM_3MIN_COMPOSED_TOKEN'};
   const previous = Object.fromEntries(['WFM_3MIN_FEEDS_JSON','WFM_3MIN_COMPOSED_TOKEN'].map(key => [key,process.env[key]]));
   process.env.WFM_3MIN_FEEDS_JSON = JSON.stringify([binding]);
   process.env.WFM_3MIN_COMPOSED_TOKEN = token;
@@ -33,8 +33,9 @@ test('composed 3Min intake loads through security middleware and retains scoped 
   const route = '/api/integrations/autonomous/feeds/3min';
   const body = {schemaVersion:'vector-feed-v1',tenant:binding.tenant,site:binding.site,source:binding.source,domain:binding.domain,environment:binding.environment,eventId:'composed-event',occurredAt:new Date().toISOString(),records:[{employeeId:'synthetic-only'}]};
   const delivery = randomUUID();
+  const notification = {id:delivery,operation:'create',status:'success',endpoint_slug:binding.endpointSlug,payload:body,processed_at:new Date().toISOString()};
   async function send(overrides = {}) {
-    const response = await fetch(origin+route+'/'+binding.id,{method:'POST',headers:{'content-type':'application/json','x-vector-feed-token':token,'x-3minapi-record-id':delivery,...overrides},body:JSON.stringify(body)});
+    const response = await fetch(origin+route+'/'+binding.id,{method:'POST',headers:{'content-type':'application/json','x-vector-feed-token':token,'x-3minapi-record-id':delivery,...overrides},body:JSON.stringify(notification)});
     return {status:response.status,body:await response.json()};
   }
   assert.equal((await fetch(origin+route)).status,401,'receipt inspection requires a real session');

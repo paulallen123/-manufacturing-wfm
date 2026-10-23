@@ -23,3 +23,11 @@ CircleCI login/log recovery removed from active next steps per user direction. L
 
 ## 2026-10-23T19:20:21.658Z — current auth repair and isolated build preparation
 The prior lookup-to-issuance race is closed in the containing candidate: owner13/13, independent4/4 and ACCEPT source review. No full authentication assurance claimed. Existing Railway isolated fallback service identified; exact build not yet triggered. Its old source UI failure must not be transferred to this candidate. Specific staged deploy confirmation and existing compute allowance are required before committing the isolated build patch. Customer deployment untouched. QA Wolf workspace absent; optional browser runner not started. No new subscription or resource.
+
+## 2026-10-23T20:03:00Z — actual build completed FAILED; supersedes pending-approval status
+- User's direct Railway action started existing isolated deployment c66e32ed-e56e-4017-b3c9-fcbdf2e8833c; the tool cancellation is historical, not the active blocker.
+- Actual source80e32463a113599a3e29f02fed267fed5ed1b5b7 differs from configured e1ef pin/receipt. Product bytes match by complete tree comparison, but exact-image identity remains unproven.
+- npm ci passed on this attempt; earlier installation failure is not reproduced. Stage14/21 composed evidence runtime startup timed out at30000ms (6pass/1fail). No final image.
+- Unchanged local composed test passed1/1. Diagnostic proposal remains UNADOPTED, validation2pass/3fail; root cause unresolved. /root/build_route_review verdict HOLD.
+- No timeout increase, customer deployment, release or new build. Next: reliable startup-phase diagnostics, coherent source/artifact identity, then current hosted proof and existing review/release gates.
+- See evidence/vector-build-startup-20261023/manifest.json and review.md. Existing isolated compute incurred usage; amount unverified. No new resource/subscription.

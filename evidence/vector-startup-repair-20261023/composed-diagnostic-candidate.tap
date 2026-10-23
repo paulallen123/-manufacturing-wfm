@@ -1,0 +1,60 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: source readers bind the stored principal and current raw state without synthesising observations
+ok 1 - source readers bind the stored principal and current raw state without synthesising observations
+  ---
+  duration_ms: 36.527734
+  type: 'test'
+  ...
+# Subtest: weekly and absence callbacks retain native output with explicit source binding
+ok 2 - weekly and absence callbacks retain native output with explicit source binding
+  ---
+  duration_ms: 26.5429
+  type: 'test'
+  ...
+# Subtest: changed tenant or role cannot borrow an admitted principal
+ok 3 - changed tenant or role cannot borrow an admitted principal
+  ---
+  duration_ms: 10.104044
+  type: 'test'
+  ...
+# Subtest: unknown explicit period is unavailable and never falls back to a fixture period
+ok 4 - unknown explicit period is unavailable and never falls back to a fixture period
+  ---
+  duration_ms: 1.282787
+  type: 'test'
+  ...
+# Subtest: default period uses current canonical tenant calendar only and absent current period stays unavailable
+ok 5 - default period uses current canonical tenant calendar only and absent current period stays unavailable
+  ---
+  duration_ms: 3.823803
+  type: 'test'
+  ...
+# Subtest: source table and embedded state revisions must agree before invoking a reader
+ok 6 - source table and embedded state revisions must agree before invoking a reader
+  ---
+  duration_ms: 1.138308
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: composed workflow evidence reads existing authorised sources without replaying a browser session
+ok 7 - composed workflow evidence reads existing authorised sources without replaying a browser session
+  ---
+  duration_ms: 24315.699036
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 24658.854704

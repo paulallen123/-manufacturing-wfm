@@ -1,5 +1,53 @@
 # Execution evidence — 23 October 2026
 
+## Current successor: documented webhook envelope
+
+The user's dashboard screenshot exposed a contract gap in the original receiver:
+3Min sends a notification containing the original request in `payload`, not the
+original request as the top-level body. Verified against the official endpoint
+manual, Webhook payload section: https://3minapi.com/guide/endpoint-detail.
+The initial wrapper regression fails with REJECTED_VALIDATION where intake was
+expected; see webhook-wrapper-red.tap. Earlier passing tests did not cover that
+provider wrapper and do not prove compatibility.
+
+The correction validates the notification and extracts the original payload.
+Bindings now require endpointSlug, which is part of their immutable fingerprint.
+Body/header record IDs and the bound endpoint must match. Only successful create
+notifications are ingested. Updates, deletes, failed results and malformed wrappers
+receive metadata-only durable rejection receipts; there are no workforce mutations.
+Accepted event digests use JSON.stringify(payload), allowing distinct provider
+record IDs/processing timestamps for one source event while preserving delivery
+alias reservations and detecting conflicting payloads. Raw notifications remain
+the digest input for validation rejections. The accepted stored JSON is the original
+payload, not provider metadata.
+
+Fresh Node22.23.2 source suite:80/80 PASS, exit0, zero skips; focused11/11.
+Actual composed bootstrap/login/HTTP intake/readback/restart:1/1 PASS, exit0,
+using the documented wrapper. See webhook-wrapper-green.tap and
+webhook-wrapper-composed.tap. Independent review is in webhook-wrapper-review.md.
+
+Base reconciliation: latest frozen PR501 source75310949f6fa965e81f49edbb77837423b7c705e
+changes four harness/receipt files plus records since80e324; none overlap the
+3Min donor files. This successor incorporates that base in the same PR509 branch,
+preserving its repaired harness, receipt and evidence. No PR501/canonical branch
+or frozen deployment configuration is changed. Current-base composed/harness/receipt
+verification passes10/10, exit0, zero skips, in current-base-composed.tap.
+
+Latest read-only infrastructure reconciliation: isolated deployment48dba1fe reports
+SUCCESS at source75310949. It does not include the 3Min receiver and is not proof
+of this donor or the customer journey. Customer service's latest deployment remains
+d9112b19 FAILED with no WFM_3MIN variables. 3Min production is now enabled by the
+user's dashboard action; both webhook URLs remain absent. No credentials or webhook
+settings were changed here.
+
+Account readback: Free,1000 calls/month,3 used,7-day retention. The official endpoint
+manual additionally says Free endpoints are automatically removed seven days after
+creation. Persistent production operation therefore requires the account's endpoint
+lifetime to be resolved through the provider's plan settings; no plan change was
+made or authorized by this implementation. No live provider data was sent.
+
+## Earlier implementation evidence
+
 User request: add required VECTOR integrations via 3Min API in the existing live
 tenant; resumed with "Proceed in getting this done".
 

@@ -1,3 +1,56 @@
+# Current checkpoint — 2026-10-23T20:13:05Z
+
+Owner /root resumed PR501; claim6373750129, workspace /workspace/scratch/cd4e2bcb0821. Current canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged. PR501 parent13276a7806ae9994f44ca4a9a0c3b8b1f2bbf3b1; exact current candidate is the containing Git commit (resolve full SHA), same test/vector-empty-organisation-regression-20261020 branch.
+
+## Completed
+- Adopted narrow startup diagnostics: waiting-listener/waiting-health and last status. Runtime deadline remains30000ms; no customer readiness or ownership weakening.
+- Repaired fixture startup assumptions. Current Node22.23.2 harness5/5PASS; original Docker source/composed command7/7PASS; isolated receipt4/4PASS. Full TAP in evidence/vector-startup-repair-20261023.
+- Independent /root/build_route_review current source/negative review: no blocker in exact four blobs; heldouts cover invalid deadline, non-loopback listener, early exit, serialized standalone receipt, mismatched approved SHA and port0 refusal. No formal release approval.
+- Receipt preparation now reads artifact-declared source and requires equality with Railway runtime AND frozen reviewed source. Fixed deployed artifact path; no fabricated sourceTree or customer readiness claim.
+- Previous six-file repair and auth transaction repair preserved; Dockerfile and all runtime deadlines unchanged.
+
+## Current jobs / proof / next
+Railway isolated c66e32ed-e56e-4017-b3c9-fcbdf2e8833c remainsFAILED; no current build at checkpoint. Its30s timeout cause remains unresolved. No canonical merge, final image, provider write or customer proof.
+Next: stage only existing isolated service source and receipt command for this exact candidate; inspect whole staged patch, execute one authorized bounded build through normal controls, read actual source/status/logs. Hold this branch head while build admission occurs; record any source discrepancy. Do not blindly retry the old build or raise deadlines.
+Existing user authorization covers ordinary low-risk isolated delivery under approved controls; tool confirmation/release approvals still apply. No new subscription/resource/volume or customer mutation.
+Serving/rollback remains the last recorded baseline below, not reverified here. Owner remains /root; reviewer complete; no duplicate Codex request. If interrupted read this checkpoint and latest PR501 comments/staged patch/jobs before continuing. No persistent executor implied.
+
+## Prior checkpoint / retained proof and blockers
+
+# Current execution checkpoint — 2026-10-23T20:03:00Z
+
+This section supersedes earlier build-cancellation and pending-approval status below.
+
+## Objective, lineage and ownership
+Continue PR501 through actual build/proof gates; preserve the adopted six-file repair and auth transaction repair. Sole integration owner /root, workspace /workspace/scratch/cd4e2bcb0821; bounded startup diagnosis claim6373445189. No new product, controller or release lane.
+Canonical branch release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2. PR501 branch test/vector-empty-organisation-regression-20261020, observed head80e32463a113599a3e29f02fed267fed5ed1b5b7, treebec9331971d8d443f6bf8064ef2df7a943a84836. This containing successor changes only documentation/evidence; resolve its SHA from Git.
+User's direct Railway action resolved the prior tool cancellation. Do not request the same historical approval again or describe that cancellation as the current blocker.
+
+## Actual build and substantive results
+Existing isolated project9cd73309-0ece-4b9a-891f-7daa13d94f0d / environment9e7875b6-e214-4c32-9cee-81235e3d49ff / service845b5dcc-9c95-42cf-95fb-5719e96511f2.
+Actual deployment c66e32ed-e56e-4017-b3c9-fcbdf2e8833c: created2026-10-23T19:44:26.761Z, FAILED2026-10-23T19:49:43.921Z. Snapshot503cde8d-8f4a-4224-84b7-ea3a0d393d33. No image digest, runtime URL or successful deployment.
+Actual provider source80e32463a113599a3e29f02fed267fed5ed1b5b7, corroborated by expanded Docker build provenance command. Configured e1ef1a45aa8c3d17cfd84f6fcc23a445e19e07dd pin and literal receipt differ and are not authoritative build evidence. Complete comparison: only STATE.md and two evidence records differ; executable/test/dependency/Dockerfile bytes match, but COPY . ./ and provenance mean image equivalence is not established.
+npm ci passed (26 packages /6s), preceding passkey/session group62/62. Docker autonomy-proof14/21 failed: six evidence-source tests passed; composed evidence test failed because attendance runtime was not healthy within30000ms. Child diagnostics blank. Later build/proof gates were not reached.
+Unchanged composed test passed locally on Node22.23.2, 1/1, exit0, about25s total. 1235 non-record source files were Git-blob-verified at actual80e324 before diagnostic edits; local dependencies were cached, not the Railway installation.
+Synthetic local startup measurement: first readiness13.04s, restart1.41s; 14 first-start scrypt calls. This does not establish the hosted timeout cause.
+Unadopted diagnostic proposal records waiting-listener versus waiting-health and last HTTP status, retaining existing readiness and ownership semantics. Validation FAILED2/5pass,3/5fail; short fixture startup deadlines prevented useful discrimination. No product source or timeout changes promoted.
+Independent reviewer /root/build_route_review: HOLD; preserve failed evidence, fix diagnostic reliability before adoption, then require current hosted evidence and security/release gates.
+Evidence: evidence/vector-build-startup-20261023/manifest.json, deployment.json, three build-log JSONL parts, source-comparison.json, local measurements/results/unadopted-proposal.json, review.md and hashes.json.
+
+## Serving / rollback and proof limits
+Customer deployment was not changed by this work. Last recorded customer baseline057e19a2-7d49-4390-8705-63e71ea79a89 / source90ad90fcf60adaca9abacdd4ad14bf392f95e585; not reverified during this isolated build diagnosis.
+Retained image sha256:ea82c0f65b45175f0f8589c50eea5b6e78949167521883a61f82995521334cd3; config sha256:0c4f6867885aca1d0a7a71d946c7c3309d4f2643c0b7674044e0eb83aae6c43b. Restore drill unproven.
+Local results are synthetic. No installed image, authenticated setup wizard, provider mutation/readback, financial outcome or customer acceptance proved by this run. Full backlog remains incomplete.
+
+## Active jobs, next action and boundaries
+Actual Railway job terminal FAILED; no replacement build or persistent executor started. Staged patch was cleared by the direct user deployment. Existing Codex task cd_6adb8f150c00819191fe5d44822c184e remains consumed/completed-blocked; no duplicate request.
+Bounded diagnosis reassessed after two failed diagnostic runs. Proposal retained as evidence only; no adoption/release. Next executable action: reconcile head/ownership, make startup diagnostic tests distinguish child scheduling from actual readiness without weakening assertions; review before another hosted attempt. No blanket timeout increase. A proposed120s single-command investigation was not implemented or accepted as a repair.
+Before any later build, reconcile actual source identity and replace stale literal receipt with artifact-derived identity through reviewed configuration changes. Respect required reviews and release approvals. Do not replay an uncertain mutation or blindly rebuild. No new service, subscription, volume, provider/customer write or production credentials.
+Current incremental Railway charge unknown; existing isolated build compute ran, no fixed-price claim.
+On turn completion local execution is paused; no claim of background progress. Resume: read this STATE.md and latest PR501 comments, reconcile actual branch/jobs/claims, then address the bounded startup diagnostic and identity gaps in the same lane.
+
+## Historical checkpoints (superseded where contradicted above)
+
 # Approved build blocked by tool cancellation — 2026-10-23T19:39:18.736Z
 
 Owner /root. The user explicitly approved the prepared isolated build of e1ef1a45aa8c3d17cfd84f6fcc23a445e19e07dd. Approval need not be requested again in chat. The accept_deploy call returned: “Cancelled — the user did not approve this action. No changes were made.” Error INVALID_ARGUMENT, no workflow ID. This is a tool-level cancellation; the reason for the discrepancy with chat approval is unknown. Do not call it an automatic security-review rejection without evidence.

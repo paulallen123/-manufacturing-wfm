@@ -6,6 +6,7 @@ const ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 const MAX_BYTES = 256 * 1024;
 const fields = ['schemaVersion','tenant','site','source','domain','environment','eventId','occurredAt','records'];
+const webhookFields = ['id','operation','status','endpoint_slug','payload','processed_at'];
 const digest = value => createHash('sha256').update(value).digest('hex');
 const sameSecret = (a,b) => typeof a==='string' && a.length<=512 && timingSafeEqual(createHash('sha256').update(a).digest(),createHash('sha256').update(b).digest());
 function json(res,status,body) {res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.end(JSON.stringify(body));return true;}
@@ -23,11 +24,12 @@ function bindingsFrom(env) {
   if(!Array.isArray(list)||list.length>100)throw Error();
   const result=new Map();
   for(const item of list){
-   if(!item||Array.isArray(item)||Object.keys(item).sort().join('|')!==['id','tenant','site','source','domain','environment','secretEnv'].sort().join('|')||
+   if(!item||Array.isArray(item)||Object.keys(item).sort().join('|')!==['id','tenant','site','source','domain','environment','endpointSlug','secretEnv'].sort().join('|')||
     !['id','tenant','site','source'].every(k=>typeof item[k]==='string'&&ID.test(item[k]))||
+    typeof item.endpointSlug!=='string'||!/^[A-Za-z0-9][A-Za-z0-9_-]{0,119}$/.test(item.endpointSlug)||
     !DOMAINS.includes(item.domain)||!['sandbox','production'].includes(item.environment)||
     typeof item.secretEnv!=='string'||!/^WFM_3MIN_[A-Z0-9_]+_TOKEN$/.test(item.secretEnv)||result.has(item.id))throw Error();
-   const binding=Object.freeze({...item,fingerprint:digest(JSON.stringify([item.id,item.tenant,item.site,item.source,item.domain,item.environment]))});
+   const binding=Object.freeze({...item,fingerprint:digest(JSON.stringify([item.id,item.tenant,item.site,item.source,item.domain,item.environment,item.endpointSlug]))});
    result.set(item.id,binding);
   }
   return result;
@@ -56,7 +58,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
  const recent=db.prepare('SELECT id,binding_id,site,source,domain,environment,event_id,record_count,payload_sha256,occurred_at,received_at,status,validation_error FROM integration_feed_inbox WHERE tenant=? ORDER BY rowid DESC LIMIT 50');
  function receipt(row,replayed){return {receiptId:row.id,status:row.status,replayed,transportAuthenticated:true,sourceAuthenticated:false,executionAuthority:false};}
  function statusForTenant(tenant){return {transport:'3min-api',schemaVersion:'vector-feed-v1',sourceAuthenticated:false,executionAuthority:false,
-  bindings:[...bindings.values()].filter(b=>b.tenant===tenant).map(b=>({id:b.id,site:b.site,source:b.source,domain:b.domain,environment:b.environment,configured:validToken(env[b.secretEnv])})),
+  bindings:[...bindings.values()].filter(b=>b.tenant===tenant).map(b=>({id:b.id,site:b.site,source:b.source,domain:b.domain,environment:b.environment,endpointSlug:b.endpointSlug,configured:validToken(env[b.secretEnv])})),
   receipts:recent.all(tenant).map(r=>({receiptId:r.id,bindingId:r.binding_id,site:r.site,source:r.source,domain:r.domain,environment:r.environment,eventId:r.event_id,recordCount:r.record_count,checksum:r.payload_sha256,occurredAt:r.occurred_at,receivedAt:r.received_at,status:r.status,validationError:r.validation_error}))};}
  function persist(binding,recordId,body,raw,res,validationError=null){
   const checksum=digest(raw); const id=binding.id;
@@ -91,15 +93,26 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
    const chunks=[];let size=0;
    for await(const chunk of req){const b=Buffer.from(chunk);size+=b.length;if(size>MAX_BYTES)throw failure(413,'FEED_TOO_LARGE');chunks.push(b);}
    raw=Buffer.concat(chunks);
-   let body;try{body=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(raw));}catch{throw failure(400,'INVALID_JSON');}
+   let notification;try{notification=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(raw));}catch{throw failure(400,'INVALID_JSON');}
+   if(!notification||Array.isArray(notification)||typeof notification!=='object'||!safeData(notification)||
+    !webhookFields.every(k=>Object.hasOwn(notification,k))||Object.keys(notification).some(k=>!webhookFields.includes(k)&&k!=='target_record_id'))throw failure(400,'INVALID_WEBHOOK');
+   if(notification.id!==recordId)throw failure(403,'FEED_DELIVERY_MISMATCH');
+   if(notification.endpoint_slug!==binding.endpointSlug)throw failure(403,'FEED_ENDPOINT_MISMATCH');
+   // Feed ingestion is append-only. Provider updates/deletes or failed processing
+   // must never be interpreted as new workforce data or operational mutations.
+   if(notification.operation!=='create'||notification.status!=='success'||notification.target_record_id!=null)throw failure(400,'UNSUPPORTED_WEBHOOK_RESULT');
+   if(typeof notification.processed_at!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(notification.processed_at)||!Number.isFinite(Date.parse(notification.processed_at)))throw failure(400,'INVALID_WEBHOOK');
+   const body=notification.payload;
    if(!body||Array.isArray(body)||Object.keys(body).sort().join('|')!==fields.slice().sort().join('|')||body.schemaVersion!=='vector-feed-v1'||!safeData(body))throw failure(400,'INVALID_ENVELOPE');
    for(const key of ['tenant','site','source','domain','environment'])if(body[key]!==binding[key])throw failure(403,'FEED_SCOPE_MISMATCH');
    const occurred=typeof body.occurredAt==='string'?Date.parse(body.occurredAt):NaN;
    if(typeof body.eventId!=='string'||!ID.test(body.eventId)||!Number.isFinite(occurred)||new Date(occurred).toISOString()!==body.occurredAt||occurred>now()+300000||
     !Array.isArray(body.records)||body.records.length<1||body.records.length>500||body.records.some(r=>!r||typeof r!=='object'||Array.isArray(r)))throw failure(400,'INVALID_FEED_RECORDS');
-   return persist(binding,recordId,body,raw,res);
+   // Wrapper IDs and processing timestamps vary between separate deliveries of
+   // one source event. Dedupe accepted events on the serialized original payload.
+   return persist(binding,recordId,body,Buffer.from(JSON.stringify(body)),res);
   }catch(error){
-   if(raw && ['INVALID_JSON','INVALID_ENVELOPE','INVALID_FEED_RECORDS'].includes(error.code)) {
+   if(raw && ['INVALID_JSON','INVALID_WEBHOOK','UNSUPPORTED_WEBHOOK_RESULT','INVALID_ENVELOPE','INVALID_FEED_RECORDS'].includes(error.code)) {
     // Valid transport credentials bind the rejection to this configured scope.
     // Retain metadata/digest only, never invalid or unbounded source payloads.
     try{return persist(binding,recordId,{eventId:'rejected.'+recordId,records:[],occurredAt:new Date(now()).toISOString()},raw,res,error.code);}catch(storageError){error=storageError;}
