@@ -1,3 +1,9 @@
+# Approved build blocked by tool cancellation — 2026-10-23T19:39:18.736Z
+
+Owner /root. The user explicitly approved the prepared isolated build of e1ef1a45aa8c3d17cfd84f6fcc23a445e19e07dd. Approval need not be requested again in chat. The accept_deploy call returned: “Cancelled — the user did not approve this action. No changes were made.” Error INVALID_ARGUMENT, no workflow ID. This is a tool-level cancellation; the reason for the discrepancy with chat approval is unknown. Do not call it an automatic security-review rejection without evidence.
+Readback confirms patch34df9654-9c5c-4130-afad-526cb4ad45d8 remains STAGED with the same seven changes to one existing isolated service; latest deployment is still historical ae8b1c41-5cda-4249-b560-5888df7c2e53. No build started, no customer deployment changed, no retries or alternate mutation route.
+Evidence: evidence/vector-auth-race-20261023/approved-build-attempt.json. Next: resolve the tool-level action confirmation or have the user apply only this reviewed isolated patch in Railway; reconcile source/config/jobs first. No new subscription, service, volume, release lane or duplicate Codex task. Execution pauses at the tool approval boundary; no background job is running.
+
 # Frozen build request checkpoint — 2026-10-23T19:22:22.927Z
 
 Owner /root. Reviewed source candidate and exact frozen build target: e1ef1a45aa8c3d17cfd84f6fcc23a445e19e07dd, tree942f2683d04c5bf2cfbc3cb80c789b5c9b977247. This containing successor changes evidence/checkpoint only; do not silently move the frozen target to its SHA.
