@@ -52,3 +52,12 @@ review_vector_actual_staffology_payroll_codes=2026-10-02 parenta3e17ebfbcd3e667e
 2026-10-02 reconcile idle Agents session against latest durable turn; preserve actual usage_limit_exceeded and stop before duplicate message. Parent42fe08035ae7e2f0033e3029213332bf56402c75; red retained, implementation144of144 zero skips. Exact non-deploy CIRCLE_SHA1 admission required.
 
 2026-10-03 registered existing worker execution repair; exact canonical parent74533ed802fa20ab35b811b316194a2614af009b; selective native c88a78d67b8848f446c9a4a03b3cb58bd639608f delta preserves all unrelated canonical blobs; original74533 RED2 retained; local Node22.23.2 focused55of55 implementation145of145 zero skips; one exact-CIRCLE_SHA1 contained non-deploy build required; hosted execute/evidence/customer-proof UNPROVEN; prior-marker-records-historical.
+
+2026-10-22 shift-premium-evidence isolated admission: source commit 6c888f7b729e8944fef59cd959b938bbb4e58d19; #202 supplied planned premium pence using shared money helper; operations 376/376, money 16/16 and local FORGE core PASS; request exact non-deploy CircleCI image validation; source unauthenticated, no payroll write, savings claim, tenant mutation, staging deployment, production approval or customer-ready claim.
+
+2026-10-22 shift-premium source-scope correction exact admission: source commit 7763d316d0fefb50a8dc46707690bb678373de8b; added tenant/site binding after red regression; final operations 376/376, focused 3/3, prior local FORGE core PASS; exact CircleCI non-deploy image proof required; no deployment or customer-ready claim.
+
+
+2026-10-22 shift-premium monetary-provenance repair from exact parent 010a726cce4b276fb0f9dcbac4b282033f2cd996; currency plus effective rate/policy digest binding; focused RED3of4 then GREEN4of4 and syntax PASS; exact non-deploy CircleCI source/image admission required; no integration, deployment, payroll write, savings or customer-proof claim.
+
+2026-10-23 shift-premium evidence-snapshot repair from exact parent 8ee4b40b9c836ac0c9b39361bdeecff34cb07358; proxy publication drift and unsupported-field regressions RED4of8 then committed-plus-heldout GREEN13of13 on Node24.19.0; shared payroll-money unchanged; fresh exact-head review and source/image admission required; no integration, deployment, payroll write, savings or customer-proof claim.
