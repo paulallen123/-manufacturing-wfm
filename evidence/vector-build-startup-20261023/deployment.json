@@ -1,0 +1,19 @@
+{
+  "id": "c66e32ed-e56e-4017-b3c9-fcbdf2e8833c",
+  "status": "FAILED",
+  "createdAt": "2026-10-23T19:44:26.761Z",
+  "updatedAt": "2026-10-23T19:49:43.921Z",
+  "serviceId": "845b5dcc-9c95-42cf-95fb-5719e96511f2",
+  "environmentId": "9e7875b6-e214-4c32-9cee-81235e3d49ff",
+  "url": null,
+  "snapshotId": "503cde8d-8f4a-4224-84b7-ea3a0d393d33",
+  "canRollback": false,
+  "canRedeploy": false,
+  "regions": [],
+  "meta": {
+    "reason": "deploy",
+    "commitMessage": "docs: record approved build tool cancellation and reconciled unchanged state",
+    "commitHash": "80e32463a113599a3e29f02fed267fed5ed1b5b7",
+    "branch": "test/vector-empty-organisation-regression-20261020"
+  }
+}

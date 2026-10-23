@@ -1,0 +1,400 @@
+{"timestamp":"2026-10-23T19:45:48.916000992Z","message":"ok 54 - setup audit is append-only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.916138462Z","message":"  ---\n  duration_ms: 696.699108\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.918428613Z","message":"# Subtest: a missing owner account cannot be reserved simultaneously for another tenant\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.918458193Z","message":"ok 55 - a missing owner account cannot be reserved simultaneously for another tenant\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.921324105Z","message":"  ---\n  duration_ms: 299.943845\n  type: 'test'\n  ...\n# Subtest: async account adapters are refused before executing any callback\nok 56 - async account adapters are refused before executing any callback\n  ---\n  duration_ms: 317.138641\n  type: 'test'\n  ...\n# Subtest: P1: deletion after initial creation, restart and signing replay cannot resurrect owner access\nok 57 - P1: deletion after initial creation, restart and signing replay cannot resurrect owner access\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.921420035Z","message":"  ---\n  duration_ms: 567.448228\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.921427935Z","message":"# Subtest: existing account bound at reservation cannot be recreated after removal\nok 58 - existing account bound at reservation cannot be recreated after removal\n  ---\n  duration_ms: 435.143617\n  type: 'test'\n  ...\n# Subtest: revoked permission is not elevated and subsequent deletion cannot reopen consumed authority\nok 59 - revoked permission is not elevated and subsequent deletion cannot reopen consumed authority\n  ---\n  duration_ms: 287.133141\n  type: 'test'\n  ...\n# Subtest: deny-only tombstone prevents even unused setup authority from provisioning after revocation\nok 60 - deny-only tombstone prevents even unused setup authority from provisioning after revocation\n  ---\n  duration_ms: 1009.750208\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.922984114Z","message":"# Subtest: revocation and owner deletion share the outer canonical transaction and audit boundary\nok 61 - revocation and owner deletion share the outer canonical transaction and audit boundary\n  ---\n  duration_ms: 527.053293\n  type: 'test'\n  ...\n# Subtest: failed initial-creation audit does not consume authority; safe retry still works\nok 62 - failed initial-creation audit does not consume authority; safe retry still works\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.927727926Z","message":"  ---\n  duration_ms: 275.620865\n  type: 'test'\n  ...\n# Subtest: legacy profile without a creation receipt is closed, never assumed to be unused\nok 63 - legacy profile without a creation receipt is closed, never assumed to be unused\n  ---\n  duration_ms: 359.352898\n  type: 'test'\n  ...\n# Subtest: consumed/revoked lifecycle cannot be reset or deleted; freeze keeps its existing refusal\nok 64 - consumed/revoked lifecycle cannot be reset or deleted; freeze keeps its existing refusal\n  ---\n  duration_ms: 159.686882\n  type: 'test'\n  ...\n# Subtest: cost privilege must be zero on new accounts; excess privilege rolls back account, receipt and audit\nok 65 - cost privilege must be zero on new accounts; excess privilege rolls back account, receipt and audit\n  ---\n  duration_ms: 564.337787\n  type: 'test'\n  ...\n# Subtest: existing cost privileges are neither reduced nor used as permission to recreate an account\nok 66 - existing cost privileges are neither reduced nor used as permission to recreate an account\n  ---\n  duration_ms: 264.858992\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.936668530Z","message":"# (node:21) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.937279081Z","message":"# Subtest: saving four answers produces a review and leaves applied configuration untouched\nok 67 - saving four answers produces a review and leaves applied configuration untouched\n  ---\n  duration_ms: 182.219701\n  type: 'test'\n  ...\n# Subtest: restart preserves a saved draft and reviewed apply is idempotent\nok 68 - restart preserves a saved draft and reviewed apply is idempotent\n  ---\n  duration_ms: 33.826012\n  type: 'test'\n  ...\n# Subtest: stale answers cannot overwrite a newer revision or apply the older review\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.937674364Z","message":"ok 69 - stale answers cannot overwrite a newer revision or apply the older review\n  ---\n  duration_ms: 11.344595\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.937690564Z","message":"# Subtest: changes to applied scope invalidate a saved review\nok 70 - changes to applied scope invalidate a saved review\n  ---\n  duration_ms: 24.089758\n  type: 'test'\n  ...\n# Subtest: review from an earlier deployment cannot apply after restart\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.938951591Z","message":"ok 71 - review from an earlier deployment cannot apply after restart\n  ---\n  duration_ms: 7.672863\n  type: 'test'\n  ...\n# Subtest: review requires a concrete candidate and deployment\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.938963961Z","message":"ok 72 - review requires a concrete candidate and deployment\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.939723171Z","message":"  ---\n  duration_ms: 2.711392\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.939728841Z","message":"# Subtest: missing sites produce clarification without an applicable review\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.939730171Z","message":"ok 73 - missing sites produce clarification without an applicable review\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.939731631Z","message":"  ---\n  duration_ms: 8.956213\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.940569951Z","message":"# Subtest: deferred systems remain requested and never become configured integrations\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.941363132Z","message":"ok 74 - deferred systems remain requested and never become configured integrations\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.942507432Z","message":"  ---\n  duration_ms: 16.993946\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.944545113Z","message":"# Subtest: unknown policy is rejected without saving a draft\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.944708673Z","message":"ok 75 - unknown policy is rejected without saving a draft\n  ---\n  duration_ms: 2.772491\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.945641793Z","message":"# Subtest: access grant is rejected without saving a draft\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.946353643Z","message":"ok 76 - access grant is rejected without saving a draft\n  ---\n  duration_ms: 1.734531\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.946357343Z","message":"# Subtest: invalid timezone is rejected without saving a draft\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.946361553Z","message":"ok 77 - invalid timezone is rejected without saving a draft\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.946362133Z","message":"  ---\n  duration_ms: 1.92258\n  type: 'test'\n  ...\n# Subtest: duplicate site is rejected without saving a draft\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.946677323Z","message":"ok 78 - duplicate site is rejected without saving a draft\n  ---\n  duration_ms: 2.334551\n  type: 'test'\n  ...\n# Subtest: fractional count is rejected without saving a draft\nok 79 - fractional count is rejected without saving a draft\n  ---\n  duration_ms: 5.728602\n  type: 'test'\n  ...\n# Subtest: invalid connection timing is rejected without saving a draft\nok 80 - invalid connection timing is rejected without saving a draft\n  ---\n  duration_ms: 10.002695\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.946686793Z","message":"# Subtest: another tenant or run cannot read or reuse a review\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.948107565Z","message":"ok 81 - another tenant or run cannot read or reuse a review\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.948111635Z","message":"  ---\n  duration_ms: 15.214487\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.948656135Z","message":"# Subtest: draft audit failure rolls back the new revision\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.948658865Z","message":"ok 82 - draft audit failure rolls back the new revision\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.948665065Z","message":"  ---\n  duration_ms: 9.654333\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.950731325Z","message":"# Subtest: failed application preserves the draft and the previous applied state\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.951211265Z","message":"ok 83 - failed application preserves the draft and the previous applied state\n  ---\n  duration_ms: 12.577265\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.951457806Z","message":"# Subtest: successful callback claims require matching persisted readback\nok 84 - successful callback claims require matching persisted readback\n  ---\n  duration_ms: 9.265434\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.952184856Z","message":"# Subtest: apply audit failure undoes configuration and leaves the reviewed draft retryable\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.952972126Z","message":"ok 85 - apply audit failure undoes configuration and leaves the reviewed draft retryable\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.952979566Z","message":"  ---\n  duration_ms: 28.258131\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.953858646Z","message":"# Subtest: outer rollback undoes a saved draft without committing caller work\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.954207308Z","message":"ok 86 - outer rollback undoes a saved draft without committing caller work\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.955325877Z","message":"  ---\n  duration_ms: 4.750852\n  type: 'test'\n  ...\n# Subtest: new draft after application preserves last applied readback until reviewed apply\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.956167517Z","message":"ok 87 - new draft after application preserves last applied readback until reviewed apply\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.956209387Z","message":"  ---\n  duration_ms: 52.24154\n  type: 'test'\n  ...\n# Subtest: initial questionnaire completion survives restart and later settings drafts\nok 88 - initial questionnaire completion survives restart and later settings drafts\n  ---\n  duration_ms: 12.06448\n  type: 'test'\n  ...\n# Subtest: current compiler revalidates a saved draft before review and apply\nok 89 - current compiler revalidates a saved draft before review and apply\n  ---\n  duration_ms: 3.249342\n  type: 'test'\n  ...\n# Subtest: real IANA timezone UTC can be compiled without guessing another timezone\nok 90 - real IANA timezone UTC can be compiled without guessing another timezone\n  ---\n  duration_ms: 2.370152\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.957221218Z","message":"# Subtest: real IANA timezone America/Argentina/Buenos_Aires can be compiled without guessing another timezone\nok 91 - real IANA timezone America/Argentina/Buenos_Aires can be compiled without guessing another timezone\n  ---\n  duration_ms: 4.935405\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.957629198Z","message":"# Subtest: opening setup shows four question groups and restores the saved answers safely\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.959777349Z","message":"ok 92 - opening setup shows four question groups and restores the saved answers safely\n  ---\n  duration_ms: 41.704926\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.959822589Z","message":"# Subtest: save sends a revisioned draft and renders the returned review without applying\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.960571719Z","message":"ok 93 - save sends a revisioned draft and renders the returned review without applying\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.960983139Z","message":"  ---\n  duration_ms: 3.598473\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.961900379Z","message":"# Subtest: background refresh preserves unsaved form values and the revision they were based on\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.962908770Z","message":"ok 94 - background refresh preserves unsaved form values and the revision they were based on\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.962916290Z","message":"  ---\n  duration_ms: 1.384391\n  type: 'test'\n  ...\n# Subtest: save failure 409 preserves typed answers and does not report success\nok 95 - save failure 409 preserves typed answers and does not report success\n  ---\n  duration_ms: 2.985078\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.963882230Z","message":"# Subtest: save failure 500 preserves typed answers and does not report success\nok 96 - save failure 500 preserves typed answers and does not report success\n  ---\n  duration_ms: 0.958001\n  type: 'test'\n  ...\n# Subtest: save failure 401 preserves typed answers and does not report success\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.964433050Z","message":"ok 97 - save failure 401 preserves typed answers and does not report success\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.964823511Z","message":"  ---\n  duration_ms: 0.68484\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.965098641Z","message":"# Subtest: save failure 403 preserves typed answers and does not report success\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.965635101Z","message":"ok 98 - save failure 403 preserves typed answers and does not report success\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.966474791Z","message":"  ---\n  duration_ms: 1.24134\n  type: 'test'\n  ...\n# Subtest: apply submits only the reviewed revision and token and keeps failures visible\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.966480741Z","message":"ok 99 - apply submits only the reviewed revision and token and keeps failures visible\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.967557342Z","message":"  ---\n  duration_ms: 1.875911\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.968306692Z","message":"# Subtest: typing after review prevents applying the earlier answers\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.969466372Z","message":"ok 100 - typing after review prevents applying the earlier answers\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.969469182Z","message":"  ---\n  duration_ms: 0.8587\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.971309933Z","message":"# Subtest: applied workspace setup never presents operational readiness as completed\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.971313013Z","message":"ok 101 - applied workspace setup never presents operational readiness as completed\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.971314503Z","message":"  ---\n  duration_ms: 1.228611\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.971317563Z","message":"# Subtest: completed questionnaire stays hidden on later logins and settings drafts\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.971987793Z","message":"ok 102 - completed questionnaire stays hidden on later logins and settings drafts\n  ---\n  duration_ms: 2.488062\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973450944Z","message":"# Subtest: editing while save is pending preserves newer answers and requires another review\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973454214Z","message":"ok 103 - editing while save is pending preserves newer answers and requires another review\n  ---\n  duration_ms: 1.070901\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973527834Z","message":"# Subtest: navigation away and back restores the dirty model when the host replaces the form\nok 104 - navigation away and back restores the dirty model when the host replaces the form\n  ---\n  duration_ms: 1.421328\n  type: 'test'\n  ...\n# Subtest: row replacement and typing during pending save survive the older response: false\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973529254Z","message":"ok 105 - row replacement and typing during pending save survive the older response: false\n  ---\n  duration_ms: 2.992721\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973588964Z","message":"# Subtest: row replacement and typing during pending save survive the older response: true\nok 106 - row replacement and typing during pending save survive the older response: true\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973591444Z","message":"  ---\n  duration_ms: 1.504091\n  type: 'test'\n  ...\n# Subtest: completed workspace has an explicit reviewed settings editor without reopening initial onboarding\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973594774Z","message":"ok 107 - completed workspace has an explicit reviewed settings editor without reopening initial onboarding\n  ---\n  duration_ms: 2.098762\n  type: 'test'\n  ...\n# Subtest: edits made while apply is pending remain as an amendment to the completed workspace\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973595804Z","message":"ok 108 - edits made while apply is pending remain as an amendment to the completed workspace\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973751534Z","message":"  ---\n  duration_ms: 13.566004\n  type: 'test'\n  ...\n# Subtest: late apply response from an old tenant cannot replace the current workspace\nok 109 - late apply response from an old tenant cannot replace the current workspace\n  ---\n  duration_ms: 3.673622\n  type: 'test'\n  ...\n1..109\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.973756354Z","message":"# tests 109\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:48.974568794Z","message":"# suites 0\n# pass 109\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 12956.571871\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.009295988Z","message":"[autonomy-proof  8/21] RUN node --test implementation/ui/workspace-setup.test.cjs implementation/runtime/workspace-setup.test.cjs implementation/runtime/customer-workspace.test.cjs implementation/runtime/organisation-access-setup.test.cjs","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.017829971Z","message":"[autonomy-proof  9/21] RUN node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/clean-customer-state.test.cjs implementation/runtime/setup-customer-state.test.cjs","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.423591317Z","message":"TAP version 13\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.582665368Z","message":"# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.587828680Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.640800131Z","message":"# Subtest: construction is deterministic, isolated, pure and separate from workforce/authority\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.642926373Z","message":"ok 1 - construction is deterministic, isolated, pure and separate from workforce/authority\n  ---\n  duration_ms: 4.577662\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.643156611Z","message":"# Subtest: wrong tenant/owner, missing context, unknown fields and missing authority fail closed\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.644623904Z","message":"ok 2 - wrong tenant/owner, missing context, unknown fields and missing authority fail closed\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.644655434Z","message":"  ---\n  duration_ms: 1.418441\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.646872703Z","message":"# Subtest: non-enumerable required and optional input properties fail before authority is consulted\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.646969363Z","message":"ok 3 - non-enumerable required and optional input properties fail before authority is consulted\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.647001933Z","message":"  ---\n  duration_ms: 1.04513\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.649425645Z","message":"# Subtest: authority snapshot and returned organisation retain exactly the validated enumerable values\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.658554228Z","message":"ok 4 - authority snapshot and returned organisation retain exactly the validated enumerable values\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.659079007Z","message":"  ---\n  duration_ms: 0.50311\n  type: 'test'\n  ...\n# Subtest: every pinned public decorator preserves clean state twice and after JSON round-trip\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.659557638Z","message":"ok 5 - every pinned public decorator preserves clean state twice and after JSON round-trip\n  ---\n  duration_ms: 7.975443\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661953849Z","message":"# Subtest: actual sealed load, SQLite save/read and bootstrap sanitisation preserve emptiness\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661980729Z","message":"ok 6 - actual sealed load, SQLite save/read and bootstrap sanitisation preserve emptiness\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661984059Z","message":"  ---\n  duration_ms: 4.265461\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661985089Z","message":"# Subtest: actual scoped readers expose empty operational collections without state mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661985699Z","message":"ok 7 - actual scoped readers expose empty operational collections without state mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661986339Z","message":"  ---\n  duration_ms: 6.765142\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661987199Z","message":"# Subtest: pinned onboarding renderers render empty people and batches\nok 8 - pinned onboarding renderers render empty people and batches\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661987819Z","message":"  ---\n  duration_ms: 1.57474\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661989039Z","message":"# Subtest: pinned organisation renderer uses supplied anchor without inventing a role\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.661989719Z","message":"ok 9 - pinned organisation renderer uses supplied anchor without inventing a role\n  ---\n  duration_ms: 4.048842\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.669434202Z","message":"# Subtest: unknown policy/calendar/source facts remain unknown; no approval/readiness flip\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.669448112Z","message":"ok 10 - unknown policy/calendar/source facts remain unknown; no approval/readiness flip\n  ---\n  duration_ms: 2.295221\n  type: 'test'\n  ...\n# Subtest: unsupported empty readers fail without fabricating periods, settings or a first worker\nok 11 - unsupported empty readers fail without fabricating periods, settings or a first worker\n  ---\n  duration_ms: 3.393762\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.682047497Z","message":"# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.683839237Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.686368728Z","message":"# Subtest: setup-only construction has the complete reviewed empty shape without an organisation anchor\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.690570129Z","message":"ok 12 - setup-only construction has the complete reviewed empty shape without an organisation anchor\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692661710Z","message":"  ---\n  duration_ms: 3.553912\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692780420Z","message":"# Subtest: setup construction requires externally verified matching customer and tenant authority\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692786660Z","message":"ok 13 - setup construction requires externally verified matching customer and tenant authority\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692788140Z","message":"  ---\n  duration_ms: 2.314101\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692789910Z","message":"# Subtest: setup constructor rejects extra fields, ambiguous strings and accessor/prototype authority\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692851620Z","message":"ok 14 - setup constructor rejects extra fields, ambiguous strings and accessor/prototype authority\n  ---\n  duration_ms: 1.83802\n  type: 'test'\n  ...\n# Subtest: authority callback sees frozen exact values and cannot mutate caller data or output\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692854960Z","message":"ok 15 - authority callback sees frozen exact values and cannot mutate caller data or output\n  ---\n  duration_ms: 0.582461\n  type: 'test'\n  ...\n# Subtest: setup state survives canonical SQLite round-trip without importing authority or demo rows\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692856660Z","message":"ok 16 - setup state survives canonical SQLite round-trip without importing authority or demo rows\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:49.692858050Z","message":"  ---\n  duration_ms: 2.00288\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.319256661Z","message":"# (node:20) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.319285111Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.333487887Z","message":"# Subtest: source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.333600187Z","message":"ok 17 - source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.333608497Z","message":"  ---\n  duration_ms: 8.333993\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.336548528Z","message":"# Subtest: cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.339074419Z","message":"ok 18 - cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy\n  ---\n  duration_ms: 451.263913\n  type: 'test'\n  ...\n# Subtest: policy has exact internal methods and no activation method\nok 19 - policy has exact internal methods and no activation method\n  ---\n  duration_ms: 3.160891\n  type: 'test'\n  ...\n# Subtest: registered workspace without mode fails closed, while genuinely unmanaged target grants nothing\nok 20 - registered workspace without mode fails closed, while genuinely unmanaged target grants nothing\n  ---\n  duration_ms: 44.347658\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.346049662Z","message":"# Subtest: source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.348721753Z","message":"ok 21 - source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.349704963Z","message":"  ---\n  duration_ms: 8.138342\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.351881004Z","message":"# Subtest: SETUP_VIEW is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.352046854Z","message":"ok 22 - SETUP_VIEW is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.352049234Z","message":"  ---\n  duration_ms: 9.517685\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.355011555Z","message":"# Subtest: SETUP_PROFILE is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.355018885Z","message":"ok 23 - SETUP_PROFILE is a phase decision only\n  ---\n  duration_ms: 3.538252\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.359313527Z","message":"# Subtest: SETUP_QUESTIONNAIRE is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.359318257Z","message":"ok 24 - SETUP_QUESTIONNAIRE is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.359610727Z","message":"  ---\n  duration_ms: 4.721772\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.365092999Z","message":"# Subtest: SETUP_LOCAL_CONFIGURATION is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.366331089Z","message":"ok 25 - SETUP_LOCAL_CONFIGURATION is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.368515310Z","message":"  ---\n  duration_ms: 5.332592\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.371260331Z","message":"# Subtest: INITIAL_CREDENTIAL is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.374462112Z","message":"ok 26 - INITIAL_CREDENTIAL is a phase decision only\n  ---\n  duration_ms: 4.044301\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380129885Z","message":"# Subtest: CURRENT_INVITATION_DELIVERY is a phase decision only\nok 27 - CURRENT_INVITATION_DELIVERY is a phase decision only\n  ---\n  duration_ms: 5.116641\n  type: 'test'\n  ...\n# Subtest: SECURITY_OBSERVATION is a phase decision only\nok 28 - SECURITY_OBSERVATION is a phase decision only\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380136335Z","message":"  ---\n  duration_ms: 7.073584\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380138215Z","message":"# Subtest: OPERATIONAL_READ cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380140035Z","message":"ok 29 - OPERATIONAL_READ cannot pass setup phase\n  ---\n  duration_ms: 11.514284\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380141155Z","message":"# Subtest: REPORT_DELIVERY cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380142725Z","message":"ok 30 - REPORT_DELIVERY cannot pass setup phase\n  ---\n  duration_ms: 8.521873\n  type: 'test'\n  ...\n# Subtest: REGISTER_COMPLETION cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380143915Z","message":"ok 31 - REGISTER_COMPLETION cannot pass setup phase\n  ---\n  duration_ms: 12.600265\n  type: 'test'\n  ...\n# Subtest: setup_view cannot pass setup phase\nok 32 - setup_view cannot pass setup phase\n  ---\n  duration_ms: 14.473436\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380250115Z","message":"# Subtest:  SETUP_VIEW cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380252245Z","message":"ok 33 -  SETUP_VIEW cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380253485Z","message":"  ---\n  duration_ms: 10.071244\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380254555Z","message":"# Subtest: SETUP_VIEW/anything cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380255445Z","message":"ok 34 - SETUP_VIEW/anything cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380259835Z","message":"  ---\n  duration_ms: 10.458904\n  type: 'test'\n  ...\n# Subtest: UNKNOWN cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380260995Z","message":"ok 35 - UNKNOWN cannot pass setup phase\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380262055Z","message":"  ---\n  duration_ms: 10.008765\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380263265Z","message":"# Subtest: registered order before workspace has distinct pending classification and restricted purposes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380265895Z","message":"ok 36 - registered order before workspace has distinct pending classification and restricted purposes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.380876945Z","message":"  ---\n  duration_ms: 13.171594\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.385134757Z","message":"# Subtest: caller mode, unknown writer fields and partial order provenance cannot choose or alter authority\nok 37 - caller mode, unknown writer fields and partial order provenance cannot choose or alter authority\n  ---\n  duration_ms: 5.415392\n  type: 'test'\n  ...\n# Subtest: customer_workspace_runtime_state refuses UPDATE\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.385412837Z","message":"ok 38 - customer_workspace_runtime_state refuses UPDATE\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.387535488Z","message":"  ---\n  duration_ms: 3.962731\n  type: 'test'\n  ...\n# Subtest: customer_workspace_runtime_state refuses DELETE\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.391087089Z","message":"ok 39 - customer_workspace_runtime_state refuses DELETE\n  ---\n  duration_ms: 4.014542\n  type: 'test'\n  ...\n# Subtest: customer_workspace_runtime_state_events refuses UPDATE\nok 40 - customer_workspace_runtime_state_events refuses UPDATE\n  ---\n  duration_ms: 5.392552\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.393129330Z","message":"# Subtest: customer_workspace_runtime_state_events refuses DELETE\nok 41 - customer_workspace_runtime_state_events refuses DELETE\n  ---\n  duration_ms: 4.884803\n  type: 'test'\n  ...\n# Subtest: current read refuses missing-run\nok 42 - current read refuses missing-run\n  ---\n  duration_ms: 5.214721\n  type: 'test'\n  ...\n# Subtest: current read refuses missing-tenant\nok 43 - current read refuses missing-tenant\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.396419241Z","message":"  ---\n  duration_ms: 3.172511\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.398505472Z","message":"# Subtest: current read refuses wrong-run-tenant\nok 44 - current read refuses wrong-run-tenant\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.398512862Z","message":"  ---\n  duration_ms: 4.557733\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.400786813Z","message":"# Subtest: current read refuses wrong-run-contract\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.406035285Z","message":"ok 45 - current read refuses wrong-run-contract\n  ---\n  duration_ms: 7.321062\n  type: 'test'\n  ...\n# Subtest: current read refuses orphan-mode\nok 46 - current read refuses orphan-mode\n  ---\n  duration_ms: 6.558093\n  type: 'test'\n  ...\n# Subtest: current read refuses unknown-version\nok 47 - current read refuses unknown-version\n  ---\n  duration_ms: 7.177832\n  type: 'test'\n  ...\n# Subtest: current read refuses unknown-mode\nok 48 - current read refuses unknown-mode\n  ---\n  duration_ms: 7.928915\n  type: 'test'\n  ...\n# Subtest: current read refuses wrong-journal\nok 49 - current read refuses wrong-journal\n  ---\n  duration_ms: 8.329642\n  type: 'test'\n  ...\n# Subtest: current read refuses missing-journal\nok 50 - current read refuses missing-journal\n  ---\n  duration_ms: 6.202562\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.407127145Z","message":"# Subtest: current read refuses cross-contract\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.410611776Z","message":"ok 51 - current read refuses cross-contract\n  ---\n  duration_ms: 9.040984\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.410624266Z","message":"# Subtest: foreign key prevents alternate customer/tenant/run binding\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411237887Z","message":"ok 52 - foreign key prevents alternate customer/tenant/run binding\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411353177Z","message":"  ---\n  duration_ms: 6.728223\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411355357Z","message":"# Subtest: only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING\nok 53 - only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING\n  ---\n  duration_ms: 10.195554\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411357467Z","message":"# Subtest: legacy migration refuses current run drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411359277Z","message":"ok 54 - legacy migration refuses current run drift with zero mode/journal writes\n  ---\n  duration_ms: 5.999612\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411362337Z","message":"# Subtest: legacy migration refuses current environment drift with zero mode/journal writes\nok 55 - legacy migration refuses current environment drift with zero mode/journal writes\n  ---\n  duration_ms: 5.799203\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411364477Z","message":"# Subtest: legacy migration refuses current namespace drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411366527Z","message":"ok 56 - legacy migration refuses current namespace drift with zero mode/journal writes\n  ---\n  duration_ms: 4.614771\n  type: 'test'\n  ...\n# Subtest: legacy migration refuses current tenant drift with zero mode/journal writes\nok 57 - legacy migration refuses current tenant drift with zero mode/journal writes\n  ---\n  duration_ms: 4.126383\n  type: 'test'\n  ...\n# Subtest: legacy migration refuses current owner-permission drift with zero mode/journal writes\nok 58 - legacy migration refuses current owner-permission drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411379697Z","message":"  ---\n  duration_ms: 4.610221\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411380747Z","message":"# Subtest: legacy migration refuses current revoked-owner drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.411384287Z","message":"ok 59 - legacy migration refuses current revoked-owner drift with zero mode/journal writes\n  ---\n  duration_ms: 3.722333\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.412430437Z","message":"# Subtest: legacy migration refuses current revoked-customer drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.412433047Z","message":"ok 60 - legacy migration refuses current revoked-customer drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.412894567Z","message":"  ---\n  duration_ms: 3.477919\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.412896697Z","message":"# Subtest: legacy migration refuses current frozen drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.412897477Z","message":"ok 61 - legacy migration refuses current frozen drift with zero mode/journal writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.413645497Z","message":"  ---\n  duration_ms: 4.903683\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.417422749Z","message":"# Subtest: imported orphan origin journal cannot downgrade its tenant into unmanaged legacy\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.417427949Z","message":"ok 62 - imported orphan origin journal cannot downgrade its tenant into unmanaged legacy\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.418453719Z","message":"  ---\n  duration_ms: 5.152881\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.419331130Z","message":"# Subtest: initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.420253790Z","message":"ok 63 - initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.421912721Z","message":"  ---\n  duration_ms: 4.919622\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.428165413Z","message":"1..63\n# tests 63\n# suites 0\n# pass 63\n# fail 0\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.429242383Z","message":"# cancelled 0\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.429244593Z","message":"# skipped 0\n# todo 0\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.434029635Z","message":"# duration_ms 1062.845809\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.634782433Z","message":"[autonomy-proof  9/21] RUN node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/clean-customer-state.test.cjs implementation/runtime/setup-customer-state.test.cjs","severity":"info"}
+{"timestamp":"2026-10-23T19:45:50.663148273Z","message":"[autonomy-proof 10/21] RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs verification/first-use-regressions-20261012/deferred-connections.test.cjs","severity":"info"}
+{"timestamp":"2026-10-23T19:45:51.091722359Z","message":"TAP version 13\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:51.189744616Z","message":"# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:51.193141657Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.234293028Z","message":"# Subtest: verified adoption preserves the exact legacy tuple and completion through replay, restart, renewal and upgrade\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.240067180Z","message":"ok 1 - verified adoption preserves the exact legacy tuple and completion through replay, restart, renewal and upgrade\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.242589921Z","message":"  ---\n  duration_ms: 17.700208\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.244887752Z","message":"# Subtest: missing verification adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.247661783Z","message":"ok 2 - missing verification adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.248745184Z","message":"  ---\n  duration_ms: 3.405061\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.250678315Z","message":"# Subtest: missing owner authority adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.261265608Z","message":"ok 3 - missing owner authority adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.261848348Z","message":"  ---\n  duration_ms: 2.755761\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.264029519Z","message":"# Subtest: missing customer authority adoption fails before any mutation\nok 4 - missing customer authority adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.264129979Z","message":"  ---\n  duration_ms: 3.013521\n  type: 'test'\n  ...\n# Subtest: wrong tenant adoption fails before any mutation\nok 5 - wrong tenant adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.264132369Z","message":"  ---\n  duration_ms: 4.949582\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.264133659Z","message":"# Subtest: wrong run adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.264134329Z","message":"ok 6 - wrong run adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.264959680Z","message":"  ---\n  duration_ms: 5.558632\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.265292580Z","message":"# Subtest: wrong environment adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.266033320Z","message":"ok 7 - wrong environment adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.266125970Z","message":"  ---\n  duration_ms: 2.812562\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.266193201Z","message":"# Subtest: wrong namespace adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.270197541Z","message":"ok 8 - wrong namespace adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.270208921Z","message":"  ---\n  duration_ms: 3.754201\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.270397741Z","message":"# Subtest: cross-tenant owner adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.273267572Z","message":"ok 9 - cross-tenant owner adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.274876603Z","message":"  ---\n  duration_ms: 4.212942\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.275679094Z","message":"# Subtest: owner without permission adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.277705724Z","message":"ok 10 - owner without permission adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.278024064Z","message":"  ---\n  duration_ms: 7.560113\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.278026704Z","message":"# Subtest: employee owner adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.278028024Z","message":"ok 11 - employee owner adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.278028824Z","message":"  ---\n  duration_ms: 3.115691\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.280701935Z","message":"# Subtest: frozen tenant adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.280705565Z","message":"ok 12 - frozen tenant adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.280706785Z","message":"  ---\n  duration_ms: 7.847853\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.280707635Z","message":"# Subtest: revoked owner adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.281814846Z","message":"ok 13 - revoked owner adoption fails before any mutation\n  ---\n  duration_ms: 5.085162\n  type: 'test'\n  ...\n# Subtest: ambiguous runs adoption fails before any mutation\nok 14 - ambiguous runs adoption fails before any mutation\n  ---\n  duration_ms: 2.712381\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.282476346Z","message":"# Subtest: environment bound to different run adoption fails before any mutation\nok 15 - environment bound to different run adoption fails before any mutation\n  ---\n  duration_ms: 2.551911\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.283586086Z","message":"# Subtest: raw fields adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.284915587Z","message":"ok 16 - raw fields adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.284947547Z","message":"  ---\n  duration_ms: 2.491191\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.286828638Z","message":"# Subtest: unsupported operation adoption fails before any mutation\nok 17 - unsupported operation adoption fails before any mutation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.286837828Z","message":"  ---\n  duration_ms: 3.012401\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.292428850Z","message":"# Subtest: customer_workspaces insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.295423701Z","message":"ok 18 - customer_workspaces insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.296254551Z","message":"  ---\n  duration_ms: 6.098494\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.297306792Z","message":"# Subtest: customer_workspace_contracts insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.299445383Z","message":"ok 19 - customer_workspace_contracts insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.299450073Z","message":"  ---\n  duration_ms: 4.22342\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.303828434Z","message":"# Subtest: customer_workspace_events insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.304130284Z","message":"ok 20 - customer_workspace_events insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.304894555Z","message":"  ---\n  duration_ms: 6.726723\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.307864455Z","message":"# Subtest: customer_workspace_adoptions insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.309348196Z","message":"ok 21 - customer_workspace_adoptions insertion failure rolls back the full adoption and leaves legacy state unchanged\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.309359106Z","message":"  ---\n  duration_ms: 4.509632\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.319564670Z","message":"# Subtest: conflicting customer, event and tuple cannot rebind adoption; savepoint remains caller owned\nok 22 - conflicting customer, event and tuple cannot rebind adoption; savepoint remains caller owned\n  ---\n  duration_ms: 7.447752\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.646826156Z","message":"# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:52.648405947Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.751855685Z","message":"# Subtest: concurrent identical adoption produces one permanent association and one receipt\nok 23 - concurrent identical adoption produces one permanent association and one receipt\n  ---\n  duration_ms: 1355.304042\n  type: 'test'\n  ...\n# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.751888395Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.915522468Z","message":"# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.915629408Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.935970286Z","message":"# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.955962853Z","message":"# Subtest: concurrent conflicting adoption produces one permanent association and one receipt\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.959162585Z","message":"ok 24 - concurrent conflicting adoption produces one permanent association and one receipt\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:54.961601636Z","message":"  ---\n  duration_ms: 2280.464836\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:55.254866169Z","message":"# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n","severity":"info"}
+{"timestamp":"2026-10-23T19:45:55.256988060Z","message":"# (Use `node --trace-warnings ...` to show where the warning was created)\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:20.376224216Z","message":"# Subtest: legacy activation rejects before all writes when an unassociated run or environment already exists\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:20.490147750Z","message":"ok 25 - legacy activation rejects before all writes when an unassociated run or environment already exists\n  ---\n  duration_ms: 6051.289306\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:22.049084039Z","message":"# Subtest: trusted adoption resolves identity independently of spoofed body and preserves completed setup through fresh-session renewal and upgrade\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:22.252940287Z","message":"ok 26 - trusted adoption resolves identity independently of spoofed body and preserves completed setup through fresh-session renewal and upgrade\n  ---\n  duration_ms: 2059.656102\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:23.479241949Z","message":"# Subtest: initial adoption and replay preserve a pending legacy invitation without acquiring notification authority\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:23.636012149Z","message":"ok 27 - initial adoption and replay preserve a pending legacy invitation without acquiring notification authority\n  ---\n  duration_ms: 1737.582458\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:23.652833305Z","message":"# Subtest: HTTP adoption audit failures roll back associations and successful adoption performs no later legacy audit writes\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:24.942137812Z","message":"ok 28 - HTTP adoption audit failures roll back associations and successful adoption performs no later legacy audit writes\n  ---\n  duration_ms: 2625.397389\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:25.344613316Z","message":"# Subtest: revocation during initial invitation failure prevents later sends and preserves cancellation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:26.886363419Z","message":"ok 29 - revocation during initial invitation failure prevents later sends and preserves cancellation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:26.886623249Z","message":"  ---\n  duration_ms: 1965.263986\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:27.000966773Z","message":"# Subtest: revocation during initial invitation success prevents later sends and preserves cancellation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:27.023528631Z","message":"ok 30 - revocation during initial invitation success prevents later sends and preserves cancellation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:27.027424393Z","message":"  ---\n  duration_ms: 1968.422167\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:27.072974710Z","message":"# Subtest: revocation during background invitation failure prevents later sends and preserves cancellation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:28.666403183Z","message":"ok 31 - revocation during background invitation failure prevents later sends and preserves cancellation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:28.666542783Z","message":"  ---\n  duration_ms: 1371.879457\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:28.799845314Z","message":"# Subtest: revocation during background invitation success prevents later sends and preserves cancellation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:28.825827714Z","message":"ok 32 - revocation during background invitation success prevents later sends and preserves cancellation\n  ---\n  duration_ms: 1354.314321\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:28.860131827Z","message":"# Subtest: setup apply rechecks permission after reading the body inside its transaction\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:31.671674368Z","message":"ok 33 - setup apply rechecks permission after reading the body inside its transaction\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:31.675683420Z","message":"  ---\n  duration_ms: 1741.167629\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:31.865828363Z","message":"# Subtest: setup apply rechecks session after reading the body inside its transaction\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:31.929547187Z","message":"ok 34 - setup apply rechecks session after reading the body inside its transaction\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:31.929560827Z","message":"  ---\n  duration_ms: 923.087476\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:31.999980804Z","message":"# Subtest: setup apply rechecks freeze after reading the body inside its transaction\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:34.483319309Z","message":"ok 35 - setup apply rechecks freeze after reading the body inside its transaction\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:34.487188751Z","message":"  ---\n  duration_ms: 993.830852\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:34.710615866Z","message":"# Subtest: signed input without a real verifier is disabled and creates no workspace\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:34.731767584Z","message":"ok 36 - signed input without a real verifier is disabled and creates no workspace\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:34.731778194Z","message":"  ---\n  duration_ms: 720.280467\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:34.783199864Z","message":"# Subtest: verified signing creates a new owner once and renewal preserves completed questionnaire and namespace\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:37.771538343Z","message":"ok 37 - verified signing creates a new owner once and renewal preserves completed questionnaire and namespace\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:37.771837773Z","message":"  ---\n  duration_ms: 1359.057562\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:37.949371822Z","message":"# Subtest: signing audit interruption rolls back owner, workspace, run and notification reservation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:39.438078544Z","message":"ok 38 - signing audit interruption rolls back owner, workspace, run and notification reservation\n  ---\n  duration_ms: 938.291081\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:39.775705454Z","message":"# Subtest: replayed signing cannot issue fresh invitation authority after expiry\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:39.806359735Z","message":"ok 39 - replayed signing cannot issue fresh invitation authority after expiry\n  ---\n  duration_ms: 1919.672368\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:43.009745267Z","message":"# Subtest: canonical owner revocation atomically closes initial authority: UPDATE users SET permissions='[]' WHERE email=?\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:43.407205020Z","message":"ok 40 - canonical owner revocation atomically closes initial authority: UPDATE users SET permissions='[]' WHERE email=?\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:43.411281091Z","message":"  ---\n  duration_ms: 1586.29332\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:43.554940516Z","message":"# Subtest: canonical owner revocation atomically closes initial authority: DELETE FROM users WHERE email=?\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:43.765139587Z","message":"ok 41 - canonical owner revocation atomically closes initial authority: DELETE FROM users WHERE email=?\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:43.765165697Z","message":"  ---\n  duration_ms: 1763.134267\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:45.864427894Z","message":"# Subtest: permanent workspace rejects legacy scope and activation replay cannot overwrite a reviewed setup\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.041381293Z","message":"ok 42 - permanent workspace rejects legacy scope and activation replay cannot overwrite a reviewed setup\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.042897053Z","message":"  ---\n  duration_ms: 1398.573708\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.171923652Z","message":"# Subtest: setup routes require manager authority and bind drafts to the session tenant/current run\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.269664370Z","message":"ok 43 - setup routes require manager authority and bind drafts to the session tenant/current run\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.272791361Z","message":"  ---\n  duration_ms: 1715.58009\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.278808384Z","message":"# Subtest: reviewed setup applies metadata through the fenced effect and keeps all 21 readiness controls\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.336736186Z","message":"ok 44 - reviewed setup applies metadata through the fenced effect and keeps all 21 readiness controls\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.338057577Z","message":"  ---\n  duration_ms: 1696.192972\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.341758908Z","message":"# Subtest: setup application rolls back scope, environment, jobs and draft when implementation_events audit fails\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.342304388Z","message":"ok 45 - setup application rolls back scope, environment, jobs and draft when implementation_events audit fails\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.345815649Z","message":"  ---\n  duration_ms: 1821.56063\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:46.348644240Z","message":"# Subtest: setup application rolls back scope, environment, jobs and draft when tenant_environment_events audit fails\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:48.501525848Z","message":"ok 46 - setup application rolls back scope, environment, jobs and draft when tenant_environment_events audit fails\n  ---\n  duration_ms: 3235.683574\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:48.694374192Z","message":"# Subtest: setup application rolls back scope, environment, jobs and draft when workspace_setup_events audit fails\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:48.709855328Z","message":"ok 47 - setup application rolls back scope, environment, jobs and draft when workspace_setup_events audit fails\n  ---\n  duration_ms: 2680.141141\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:48.771799132Z","message":"# Subtest: legacy scope write cannot commit when the required scope audit fails\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:48.847873811Z","message":"ok 48 - legacy scope write cannot commit when the required scope audit fails\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:48.847947761Z","message":"  ---\n  duration_ms: 3144.678829\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:48.952425561Z","message":"# Subtest: hosted readiness reopens persisted evidence from a different candidate deployment or invalid policy authority\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:49.000205240Z","message":"ok 49 - hosted readiness reopens persisted evidence from a different candidate deployment or invalid policy authority\n  ---\n  duration_ms: 2006.896181\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:50.401647179Z","message":"# Subtest: deployment change reopens previously satisfied work without deleting evidence\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:51.982532746Z","message":"ok 50 - deployment change reopens previously satisfied work without deleting evidence\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:51.986852128Z","message":"  ---\n  duration_ms: 4241.162021\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:53.825778065Z","message":"# Subtest: hosted evidence admission refuses another candidate without recording a PASS\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:54.063302666Z","message":"ok 51 - hosted evidence admission refuses another candidate without recording a PASS\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:54.072228340Z","message":"  ---\n  duration_ms: 2163.462183\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:55.625679807Z","message":"# Subtest: stored order HTTP completion uses its nominee and permanent workspace through setup, duplicate and renewal\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:55.625717237Z","message":"ok 52 - stored order HTTP completion uses its nominee and permanent workspace through setup, duplicate and renewal\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:55.647455135Z","message":"  ---\n  duration_ms: 2676.663759\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:55.888072888Z","message":"# Subtest: stored order nomination while verifier awaits rejects old completion before owner or workspace effects\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:55.893553380Z","message":"ok 53 - stored order nomination while verifier awaits rejects old completion before owner or workspace effects\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:55.893776280Z","message":"  ---\n  duration_ms: 1363.595395\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:57.396143717Z","message":"# Subtest: stored order revocation while verifier awaits rejects old completion before owner or workspace effects\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:57.402801410Z","message":"ok 54 - stored order revocation while verifier awaits rejects old completion before owner or workspace effects\n  ---\n  duration_ms: 1635.141438\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:57.735198128Z","message":"# Subtest: stored order nomination change during invitation claim cancels old link and cannot restart questionnaire\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:57.740918260Z","message":"ok 55 - stored order nomination change during invitation claim cancels old link and cannot restart questionnaire\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:57.742430981Z","message":"  ---\n  duration_ms: 2029.09371\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:58.832173960Z","message":"# Subtest: stored order invitation stays bound through a same-nominee revision and fails atomically if its receipt cannot persist\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:58.833446660Z","message":"ok 56 - stored order invitation stays bound through a same-nominee revision and fails atomically if its receipt cannot persist\n  ---\n  duration_ms: 1866.889788\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:59.491324853Z","message":"# Subtest: stored order explicitly adopts a verified legacy tuple without mail authority and revocation cannot reuse its existing owner\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:59.600357455Z","message":"ok 57 - stored order explicitly adopts a verified legacy tuple without mail authority and revocation cannot reuse its existing owner\n","severity":"info"}
+{"timestamp":"2026-10-23T19:46:59.605270037Z","message":"  ---\n  duration_ms: 1792.735379\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:00.466822868Z","message":"# Subtest: stored order invitation rechecks role after the awaited claim body\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:00.472471510Z","message":"ok 58 - stored order invitation rechecks role after the awaited claim body\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:00.473796581Z","message":"  ---\n  duration_ms: 1092.95037\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:00.560176904Z","message":"# Subtest: stored order invitation rechecks permission after the awaited claim body\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:01.414412722Z","message":"ok 59 - stored order invitation rechecks permission after the awaited claim body\n  ---\n  duration_ms: 769.280166\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:01.530418257Z","message":"# Subtest: stored order invitation rechecks session after the awaited claim body\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:01.531283618Z","message":"ok 60 - stored order invitation rechecks session after the awaited claim body\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:01.532794058Z","message":"  ---\n  duration_ms: 963.19755\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:02.759096589Z","message":"# Subtest: stored order invitation rechecks revocation after the awaited claim body\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:02.768740193Z","message":"ok 61 - stored order invitation rechecks revocation after the awaited claim body\n  ---\n  duration_ms: 975.337444\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:05.980685567Z","message":"# Subtest: verified signed contract starts implementation immediately and sends one invitation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:05.981568278Z","message":"ok 62 - verified signed contract starts implementation immediately and sends one invitation\n  ---\n  duration_ms: 1360.034852\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:06.158487726Z","message":"# Subtest: trusted activation auto-starts a legacy pending invitation without reporting a missing run\nok 63 - trusted activation auto-starts a legacy pending invitation without reporting a missing run\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:06.158545276Z","message":"  ---\n  duration_ms: 930.245108\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:06.358315683Z","message":"# Subtest: employee cannot inspect enterprise implementation control plane\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:06.370416397Z","message":"ok 64 - employee cannot inspect enterprise implementation control plane\n  ---\n  duration_ms: 998.353414\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:08.250631480Z","message":"# Subtest: eight-hour target is assessed by parallel critical path, not serial task sum\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:09.369944800Z","message":"ok 65 - eight-hour target is assessed by parallel critical path, not serial task sum\n  ---\n  duration_ms: 1983.881992\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:09.555557102Z","message":"# Subtest: notification transport failure cannot block trusted zero-touch implementation start\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:11.114252771Z","message":"ok 66 - notification transport failure cannot block trusted zero-touch implementation start\n  ---\n  duration_ms: 1621.906664\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:12.173156908Z","message":"# Subtest: legacy activation replay is blocked while the authorised recovery worker retries the same invitation\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:12.313143752Z","message":"ok 67 - legacy activation replay is blocked while the authorised recovery worker retries the same invitation\n  ---\n  duration_ms: 1185.033516\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:13.785659368Z","message":"# Subtest: one trusted contract event automatically recovers a transient invitation failure\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:13.946684460Z","message":"ok 68 - one trusted contract event automatically recovers a transient invitation failure\n  ---\n  duration_ms: 1636.566828\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:13.975270401Z","message":"# Subtest: automatic retry preserves an ambiguously accepted invitation and delivery identity\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:15.250931221Z","message":"ok 69 - automatic retry preserves an ambiguously accepted invitation and delivery identity\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:15.251118771Z","message":"  ---\n  duration_ms: 1057.298587\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:15.414684074Z","message":"# Subtest: signed contract webhook replay uses the same bounded notification recovery\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:15.414747294Z","message":"ok 70 - signed contract webhook replay uses the same bounded notification recovery\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:15.414757354Z","message":"  ---\n  duration_ms: 1751.168653\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:16.656509602Z","message":"# Subtest: failed invitation retries stop at a durable three-attempt budget\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:16.766316254Z","message":"ok 71 - failed invitation retries stop at a durable three-attempt budget\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:16.766333134Z","message":"  ---\n  duration_ms: 1458.795931\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:17.972356727Z","message":"# Subtest: simultaneous delayed retry and trusted replay cannot duplicate delivery or falsely exhaust recovery\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:18.080427889Z","message":"ok 72 - simultaneous delayed retry and trusted replay cannot duplicate delivery or falsely exhaust recovery\n  ---\n  duration_ms: 1266.370278\n  type: 'test'\n  ...\n","severity":"info"}
+{"timestamp":"2026-10-23T19:47:19.030336924Z","message":"# Subtest: implementation status explains pending and exhausted invitation recovery without exposing secrets\n","severity":"info"}
