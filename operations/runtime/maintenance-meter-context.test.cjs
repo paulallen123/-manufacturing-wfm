@@ -54,3 +54,132 @@ test('instantaneous condition keeps a source value without treating it as usage 
   assert.equal(result.observedChange, undefined);
   assert.equal(result.conditionState, undefined);
 });
+
+test('rejects caller-controlled reading iteration and ambient validation overrides', () => {
+  const iteratorInput = fixture();
+  const benign = iteratorInput.readings.map(row => ({ ...row }));
+  iteratorInput.readings[1].tenant = 'foreign-tenant';
+  Object.defineProperty(iteratorInput.readings, Symbol.iterator, {
+    configurable: true,
+    value: function * () { yield benign[0]; yield benign[1]; }
+  });
+  assert.throws(() => evaluateMeterContext(iteratorInput), /Invalid meter reading or scope/);
+
+  const originalEvery = Array.prototype.every;
+  const originalIncludes = Array.prototype.includes;
+  try {
+    const scopeInput = fixture();
+    scopeInput.scope.tenant = 123;
+    scopeInput.source.tenant = 'foreign-source';
+    scopeInput.readings[0].tenant = 'foreign-a';
+    scopeInput.readings[1].tenant = 'foreign-b';
+    Array.prototype.every = function () { return true; };
+    assert.throws(() => evaluateMeterContext(scopeInput), /Exact scoped complete meter source required/);
+
+    const kindInput = fixture();
+    for (const value of [kindInput.scope, kindInput.source, ...kindInput.readings]) value.kind = 'UNSUPPORTED';
+    Array.prototype.includes = function () { return true; };
+    assert.throws(() => evaluateMeterContext(kindInput), /Exact scoped complete meter source required/);
+  } finally {
+    Array.prototype.every = originalEvery;
+    Array.prototype.includes = originalIncludes;
+  }
+});
+
+test('rejects accessors instead of publishing values different from those validated', () => {
+  for (const [target, field] of [
+    ['scope', 'tenant'], ['source', 'sourceRef'], ['source', 'sourceRevision'],
+    ['reading0', 'at'], ['reading1', 'value']
+  ]) {
+    const input = fixture();
+    const object = target === 'scope' ? input.scope : target === 'source' ? input.source :
+      target === 'reading0' ? input.readings[0] : input.readings[1];
+    const original = object[field];
+    Object.defineProperty(object, field, {
+      enumerable: true,
+      configurable: true,
+      get() { return original; }
+    });
+    assert.throws(() => evaluateMeterContext(input));
+  }
+});
+
+test('makes caller provenance and advisory authority explicit in an immutable receipt', () => {
+  const result = evaluateMeterContext(fixture());
+  assert.equal(result.sourceAuthenticated, false);
+  assert.equal(result.currentRevisionVerified, false);
+  assert.equal(result.executionAuthority, false);
+  assert.equal(result.maintenanceDue, undefined);
+  assert.equal(result.conditionState, undefined);
+  assert.equal(Object.isFrozen(result), true);
+  assert.equal(Object.isFrozen(result.scope), true);
+  assert.throws(() => { result.scope.tenant = 'foreign'; }, TypeError);
+});
+
+test('captures validation intrinsics before post-load ambient poisoning', () => {
+  const util = require('node:util');
+  const originalIsProxy = util.types.isProxy;
+  const originalCreate = Object.create;
+  const originalTest = RegExp.prototype.test;
+  let createCalls = 0;
+  try {
+    util.types.isProxy = () => false;
+    Object.create = () => { createCalls += 1; throw new Error('poisoned create'); };
+    RegExp.prototype.test = () => true;
+
+    const proxied = fixture();
+    proxied.scope = new Proxy(proxied.scope, {});
+    assert.throws(() => evaluateMeterContext(proxied));
+
+    const invalid = fixture();
+    invalid.scope.tenant = '';
+    invalid.source.tenant = '';
+    invalid.readings[0].tenant = '';
+    invalid.readings[1].tenant = '';
+    assert.throws(() => evaluateMeterContext(invalid));
+
+    const result = evaluateMeterContext(fixture());
+    assert.equal(result.latestValue, 109);
+    assert.equal(createCalls, 0);
+  } finally {
+    util.types.isProxy = originalIsProxy;
+    Object.create = originalCreate;
+    RegExp.prototype.test = originalTest;
+  }
+});
+
+test('receipt cannot inherit fabricated due or condition claims after publication', () => {
+  const result = evaluateMeterContext(fixture());
+  Object.defineProperty(Object.prototype, 'maintenanceDue', { value: true, configurable: true });
+  Object.defineProperty(Object.prototype, 'conditionState', { value: 'FAILED', configurable: true });
+  try {
+    assert.equal(result.maintenanceDue, undefined);
+    assert.equal(result.conditionState, undefined);
+    assert.equal(Object.getPrototypeOf(result), null);
+  } finally {
+    delete Object.prototype.maintenanceDue;
+    delete Object.prototype.conditionState;
+  }
+});
+
+test('exact two-reading snapshots do not consult global String or Array prototype slots', () => {
+  const input = fixture();
+  const forged = { ...input.readings[1], value: 777 };
+  input.readings[1].tenant = 'foreign';
+  input.readings[1].value = -999;
+  const originalString = globalThis.String;
+  let stringCalls = 0;
+  Object.defineProperty(Array.prototype, '1', { value: forged, configurable: true });
+  globalThis.String = value => { stringCalls += 1; return originalString(value); };
+  let error;
+  try {
+    evaluateMeterContext(input);
+  } catch (caught) {
+    error = caught;
+  } finally {
+    globalThis.String = originalString;
+    delete Array.prototype[1];
+  }
+  assert(error);
+  assert.equal(stringCalls, 0);
+});
