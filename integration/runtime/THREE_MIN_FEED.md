@@ -3,8 +3,9 @@
 The existing autonomous integration hub now accepts authenticated JSON feeds at
 `POST /api/integrations/autonomous/feeds/3min/<binding-id>` and exposes tenant-scoped
 receipt metadata at `GET /api/integrations/autonomous/feeds/3min` through the existing
-manager session check. The Dockerfile copies the receiver and includes its HTTP
-tests in the existing image admission command.
+manager session check. Both the Dockerfile and local runtime assembler copy the
+receiver. Docker admission includes its HTTP tests and a composed bootstrap,
+authentication, receipt-readback and restart regression.
 
 This is transport intake, not a completed provider connector or operational
 import. Data remains RECEIVED_UNVALIDATED until a source-specific consumer proves

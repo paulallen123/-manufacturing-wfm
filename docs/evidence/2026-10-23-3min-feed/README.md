@@ -37,6 +37,45 @@ PR501's existing source/build owner and frozen build target remain unchanged.
   This is static reachability evidence, not installed-runtime execution.
 - 3Min resource creation and synthetic write/readback succeeded; see THREE_MIN_FEED.md.
 
+## Continuation: Node 22 and composed runtime
+
+The same 76 integration tests pass on Node22.23.2, zero failures/skips, in
+source-tests-node22.tap. This closes the previously unverified supported-Node
+source-test gate.
+
+The explicit integration file list in scripts/compose-vector-local-runtime.mjs
+omitted three-min-feed.cjs. The modified hub required that file, so the local
+assembled application could not load the receiver. A composed regression first
+failed its receiver-presence assertion (composed-red-node22.tap). Adding the
+receiver to that list fixes the packaging gap. Docker admission now includes the
+new composed regression in a separate RUN after dependency installation.
+
+The first post-fix run passed startup, HTTP intake, login, receipt inspection and
+restart/replay, then failed the test fixture's tenant change because its target
+tenant did not exist. That result is retained in composed-fixture-failure-node22.tap.
+The fixture now inserts the synthetic tenant before changing its synthetic user.
+The final composed regression passes1/1 on Node22.23.2, exit0, zero skips, in
+composed-green-node22.tap. It exercises the actual composed bootstrap and security
+middleware, rejected credentials, session-required receipt reads, real fixture
+login, payload/secret exclusion, durable replay after process restart, and tenant
+change isolation. No canonical employee records are created.
+
+The composed input snapshot copied1233 Git-blob-verified files from the existing
+PR501 source cache. Two locally modified harness files were excluded and fetched
+from the exact parent commit instead. The original harness/deadlines were used;
+this work did not adopt the separate release owner's diagnostic proposal. Cached
+security dependencies were copied into the isolated test snapshot. This is local
+composed-runtime evidence, not a Docker build, exact installed image, fresh npm
+installation or hosted/provider proof.
+
+Read-only release reconciliation found PR501's build failed at its existing
+attendance-runtime readiness check. The latest customer build d9112b19 also reports
+FAILED; the previous customer deployment057e19a2 remains listed SUCCESS. No deployment
+or configuration was changed. 3Min endpoint readback still shows sandbox active,
+production inactive and no webhook/auth value. Its connected tool cannot set the
+dashboard-only webhook auth header. Provider source authorisation and a source-specific
+mapping consumer remain necessary before operational use.
+
 ## Honest boundaries and next gates
 
 The receiver has not been merged, built into an admitted image, deployed, or enabled
@@ -46,14 +85,14 @@ or real provider authorisation was implemented. No completion claim for "all
 integrations" is made.
 
 Next: current integrator adopts this exact bounded delta after review, runs supported
-Node22/full-image and installed middleware admission, binds the authorised actual
+full-image and hosted admission, binds the authorised actual
 tenant/site/source and unique secret in the existing service, configures dashboard
 webhook authentication, tests sandbox-to-hosted delivery/readback/restart, implements
 the source-specific consumer with reconciliation and customer UI, then promotes
 production through the existing release process. Real ERP/HCM/payroll/MES/access
 connections additionally need their own authorised provider identities and scopes.
 
-The existing Railway build cancellation and frozen candidate are owned by the
+The existing Railway failed-build diagnosis and candidate are owned by the
 current integration execution; this session did not replay or bypass that action,
 alter Railway configuration, create a new service, or weaken release gates.
 
