@@ -20,3 +20,6 @@ PR364 ambiguity-at-lookup repair adopted with current independent review; princi
 
 ## 2026-10-23T18:47:58.594Z — avoid unavailable CircleCI
 CircleCI login/log recovery removed from active next steps per user direction. Local shell recovered, but no container engine. No GitHub Actions PR runs/check runs for current candidate. Existing Railway connection provides older deployment build logs and digest; current candidate image remains missing. Use existing authorized proof infrastructure after admission, preserving release gates. See non-circleci-build-route.json.
+
+## 2026-10-23T19:20:21.658Z — current auth repair and isolated build preparation
+The prior lookup-to-issuance race is closed in the containing candidate: owner13/13, independent4/4 and ACCEPT source review. No full authentication assurance claimed. Existing Railway isolated fallback service identified; exact build not yet triggered. Its old source UI failure must not be transferred to this candidate. Specific staged deploy confirmation and existing compute allowance are required before committing the isolated build patch. Customer deployment untouched. QA Wolf workspace absent; optional browser runner not started. No new subscription or resource.

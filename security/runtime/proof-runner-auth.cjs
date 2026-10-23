@@ -267,22 +267,26 @@ function createProofRunnerAuth(options = {}) {
       return reject(res, 401, 'signature-verification-failed', {}, email);
     }
 
-    const users = userStmt.all(email);
-    if (users.length === 0) {
-      return reject(res, 403, 'allowlisted-user-missing', {}, email);
-    }
-    if (users.length > 1) {
-      return reject(res, 409, 'ambiguous-normalized-email', { matches: users.length }, email);
-    }
-    const user = users[0];
-
     const nonceHash = sha256(nonce);
     const sessionExpires = now + sessionTtlMs;
     const token = randomBytes(32).toString('hex');
     const tokenHash = sha256(token);
 
+    let user;
     try {
       db.exec('BEGIN IMMEDIATE');
+      // Bind identity selection to issuance: another connection must not change
+      // normalized-email uniqueness, tenant or role between lookup and commit.
+      const users = userStmt.all(email);
+      if (users.length === 0) {
+        db.exec('ROLLBACK');
+        return reject(res, 403, 'allowlisted-user-missing', {}, email);
+      }
+      if (users.length > 1) {
+        db.exec('ROLLBACK');
+        return reject(res, 409, 'ambiguous-normalized-email', { matches: users.length }, email);
+      }
+      user = users[0];
       cleanupNonceStmt.run(now);
       cleanupProofSessionStmt.run(now);
       nonceStmt.run(nonceHash, expiresAt + CLOCK_SKEW_MS, new Date(now).toISOString());
@@ -303,7 +307,7 @@ function createProofRunnerAuth(options = {}) {
       const replay = String(error?.message || '').toLowerCase().includes('proof_runner_nonces');
       return reject(res, replay ? 409 : 503, replay ? 'assertion-replay-refused' : 'session-mint-failed', {
         replay,
-      }, user.email, user.tenant);
+      }, user?.email || email, user?.tenant);
     }
 
     const maxAge = Math.floor(sessionTtlMs / 1000);

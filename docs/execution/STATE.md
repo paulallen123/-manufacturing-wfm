@@ -1,3 +1,34 @@
+# Current execution checkpoint — 2026-10-23T19:20:21.658Z
+
+Existing integration owner: /root; workspace /workspace/scratch/cd4e2bcb0821. Claim6372732421. No new product/controller/release lane.
+Canonical: release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
+PR501: test/vector-empty-organisation-regression-20261020, parent4b799ddab9800ea97254fdab665f2aa191270e3e. Exact candidate is the containing commit (resolve Git commit); reviewed source-only tree48ed1c90ae8663a70a0ba8091111622b62aaeff6. Prior six-file adoption1e8330c6d0c67811d47b5c17b44daf75649f9099 preserved byte-for-byte.
+
+## Completed substantive work
+- Closed the previously retained principal-lookup/issuance race by selecting and validating the principal inside BEGIN IMMEDIATE; rollback/refusal remains fail-closed.
+- Actual Node22.23.2 regression: RED9pass/4fail; GREEN13pass/0fail. Independent /root/auth_race_review ACCEPT; fresh heldouts4/4. Two exact source/test changes; previous repairs preserved.
+- Evidence: evidence/vector-auth-race-20261023/manifest.json, review/REVIEW.md, red.tap, green.tap, review/heldout.tap. This is synthetic ISOLATED_TESTED evidence, not exact-image, hosted, provider or customer proof.
+- Read-only /root/build_route_review found existing isolated Railway service wfm-hosted-ci-fallback, project9cd73309-0ece-4b9a-891f-7daa13d94f0d, env9e7875b6-e214-4c32-9cee-81235e3d49ff, service845b5dcc-9c95-42cf-95fb-5719e96511f2. No volumes/public domains/customer application start. Last old-source buildae8b1c41 failed actual leave-balance UI test; not current-source evidence.
+- Codex request6369979465/result6370021320 task https://chatgpt.com/s/cd_6adb8f150c00819191fe5d44822c184e remains completed-blocked, no build attempted. Not duplicated.
+- QA Wolf connector reachable but no workspace; no runner started, no new paid service. Optional path blocked on workspace setup.
+
+## Serving / rollback
+Customer service unchanged: deployment057e19a2-7d49-4390-8705-63e71ea79a89, source90ad90fcf60adaca9abacdd4ad14bf392f95e585.
+Retained image sha256:ea82c0f65b45175f0f8589c50eea5b6e78949167521883a61f82995521334cd3; config digest sha256:0c4f6867885aca1d0a7a71d946c7c3309d4f2643c0b7674044e0eb83aae6c43b. Not a verified restore drill.
+URL https://vector-customer-ready-candidate-production.up.railway.app/ historically sign-in only; authenticated setup wizard unverified.
+
+## Next executable action / dependencies
+Publish reviewed source/evidence, stage exact-commit source and root / on existing isolated build service, inspect complete staged patch, obtain required specific deploy confirmation before accept_deploy. Freeze only that one service; preserve Dockerfile and full build tests. No build is currently running.
+Then retrieve actual build logs and immutable image digest; failure becomes bounded repair, success permits next installed-runtime gate only. This receipt service does not prove customer application startup.
+CircleCI unavailable: do not pursue login or logs. Do not weaken required release checks. Do not accept the unrelated customer environment global patch b453aa80.
+Required formal review, installed-image/hosted authentication/recovery, provider authority/readback and customer acceptance remain blocked. Full accepted backlog remains in scope.
+
+## Ownership / continuity
+/root auth implementation completed and checkpointed. /root/auth_race_review independent review completed. /root/build_route_review read-only route assessment completed. No persistent executor or duplicate Codex task.
+On interruption reconcile head, latest PR501 comments, ownership, staged Railway patch and actual jobs before resuming. Reconcile uncertain side effects before any retry. If the Work turn ends, local execution pauses; pending staging does not mean a running build.
+Resume instruction: Read STATE.md and PR501 latest comments, reconcile the exact frozen source and isolated Railway staged patch, then perform the authorized next proof gate.
+
+## Earlier checkpoint history (superseded where contradicted above)
 # Latest execution direction — 2026-10-23T18:47:58.594Z
 
 User instruction: avoid CircleCI while login is unavailable. Stop CircleCI login attempts, polling and requests for the user to retrieve its logs. This supersedes older CircleCI-access next steps below. Record CircleCI as PROVIDER_DEGRADED; it is not a prerequisite for continued source work. Preserve mandatory release evidence and existing protection.
