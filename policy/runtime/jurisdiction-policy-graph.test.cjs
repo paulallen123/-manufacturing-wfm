@@ -14,4 +14,16 @@ test('direct graph resolution rejects malformed country even for unscoped verifi
   for(const workLocationCountry of ['GBX',['GB'],0])assert.throws(()=>graph.resolve({legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'GB',workLocationCountry}}),/country/);
   assert.equal(graph.resolve({legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'gb'}}).verifiedCoverage,true);
 });
+test('country scopes are normalised at registration and empty optional work location remains absent',()=>{
+  const graph=createJurisdictionPolicyGraph([baseNode({scope:{country:['gb','de'],workLocationCountry:['gb','de']}})]);
+  assert.deepEqual(graph.all()[0].scope.country,['GB','DE']);
+  assert.deepEqual(graph.all()[0].scope.workLocationCountry,['GB','DE']);
+  assert.equal(graph.resolve({legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'gb',workLocationCountry:'gb'}}).verifiedCoverage,true);
+  assert.equal(createJurisdictionPolicyGraph([baseNode()]).resolve({legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'GB',workLocationCountry:''}}).verifiedCoverage,true);
+  assert.throws(()=>createJurisdictionPolicyGraph([baseNode({scope:{country:'GBX'}})]),/ISO alpha-2/);
+});
+test('country normalization does not add absent scope keys',()=>{
+  const node=createJurisdictionPolicyGraph([baseNode({scope:{siteId:'site-1'}})]).all()[0];
+  assert.deepEqual(node.scope,{siteId:'site-1'});
+});
 

@@ -15,14 +15,16 @@ test('malformed site and worker country cannot inherit verified GB coverage',()=
   assert.ok(site.customerQuestions.some(q=>q.code==='SITE_COUNTRY_REQUIRED'));
   assert.equal(site.coverage.covered,0);
   const worker=preflight.assess({tenant:'t1',legalAt:'2026-09-01T00:00:00Z',knownAt:'2026-09-01T00:00:00Z',site:{id:'s1',country:'GB',legalEntityId:'le1'},workers:[{id:'w1',employmentCategory:'employee',workLocationCountry:'GBX'}]});
-  assert.equal(worker.status,'BLOCKED_POLICY_COVERAGE');
+  assert.equal(worker.status,'REQUIRES_CUSTOMER_INPUT');
+  assert.deepEqual(worker.customerQuestions,[{code:'WORK_LOCATION_COUNTRY_REQUIRED',scope:'worker',workerId:'w1'}]);
   assert.deepEqual(worker.coverage.missing,['w1']);
   for(const invalid of [['GB'],0]){
     const malformedSite=preflight.assess({tenant:'t1',site:{id:'s1',country:invalid,legalEntityId:'le1'},workers:[{id:'w1',employmentCategory:'employee'}]});
     assert.equal(malformedSite.status,'REQUIRES_CUSTOMER_INPUT');
     assert.equal(malformedSite.coverage.covered,0);
     const malformedWorker=preflight.assess({tenant:'t1',site:{id:'s1',country:'GB',legalEntityId:'le1'},workers:[{id:'w1',employmentCategory:'employee',workLocationCountry:invalid}]});
-    assert.equal(malformedWorker.status,'BLOCKED_POLICY_COVERAGE');
+    assert.equal(malformedWorker.status,'REQUIRES_CUSTOMER_INPUT');
+    assert.deepEqual(malformedWorker.customerQuestions,[{code:'WORK_LOCATION_COUNTRY_REQUIRED',scope:'worker',workerId:'w1'}]);
   }
 });
 

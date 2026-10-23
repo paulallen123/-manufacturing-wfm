@@ -16,9 +16,11 @@ function createGlobalSitePolicyPreflight({graph}={}){
     const results=[];
     for(const worker of workers){
       const workerId=text(worker.id,160); if(!workerId) continue;
-      const workCountry=countryCode(worker.workLocationCountry==null||worker.workLocationCountry===''?country:worker.workLocationCountry);
+      const explicitWorkCountry=worker.workLocationCountry!=null&&worker.workLocationCountry!=='';
+      const workCountry=countryCode(explicitWorkCountry?worker.workLocationCountry:country);
       const context={country:workCountry,subdivision:text(worker.workLocationSubdivision||site.subdivision,80)||null,sector:text(worker.sector||site.sector,120)||null,legalEntityId:text(worker.legalEntityId||site.legalEntityId,160)||null,siteId:text(site.id,120),employmentCategory:text(worker.employmentCategory,120)||null,workerClass:text(worker.workerClass,120)||null,collectiveAgreements:list(worker.collectiveAgreements||site.collectiveAgreements,20,160),workLocationCountry:workCountry,workLocationSubdivision:text(worker.workLocationSubdivision,80)||null};
       if(!context.employmentCategory) baseQuestions.push({code:'EMPLOYMENT_CATEGORY_REQUIRED',scope:'worker',workerId});
+      if(explicitWorkCountry&&!/^[A-Z]{2}$/.test(workCountry)) baseQuestions.push({code:'WORK_LOCATION_COUNTRY_REQUIRED',scope:'worker',workerId});
       const resolved=/^[A-Z]{2}$/.test(workCountry)?graph.resolve({legalAt:input.legalAt,knownAt:input.knownAt,context}):null;
       results.push({workerId,context,policyContext:resolved,ready:Boolean(resolved?.verifiedCoverage),requiresReview:Boolean(resolved?.review?.length)});
     }
