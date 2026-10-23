@@ -1,0 +1,815 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: mass assignment configures thousands of employees into cohorts without per-person setup
+ok 1 - mass assignment configures thousands of employees into cohorts without per-person setup
+  ---
+  duration_ms: 151.543824
+  type: 'test'
+  ...
+# Subtest: organisation inference refuses to hide duplicate or orphan manager data
+ok 2 - organisation inference refuses to hide duplicate or orphan manager data
+  ---
+  duration_ms: 18.238395
+  type: 'test'
+  ...
+# Subtest: shift templates are inferred from repeated historical punches across sites
+ok 3 - shift templates are inferred from repeated historical punches across sites
+  ---
+  duration_ms: 2.942849
+  type: 'test'
+  ...
+# Subtest: stable break patterns can be proposed while ambiguous patterns remain customer decisions
+ok 4 - stable break patterns can be proposed while ambiguous patterns remain customer decisions
+  ---
+  duration_ms: 2.804093
+  type: 'test'
+  ...
+# Subtest: payroll-sensitive overtime inference is never silently auto-applied even at perfect consistency
+ok 5 - payroll-sensitive overtime inference is never silently auto-applied even at perfect consistency
+  ---
+  duration_ms: 1.304311
+  type: 'test'
+  ...
+# Subtest: one proposal combines structure, mass onboarding, schedules and policy exceptions
+ok 6 - one proposal combines structure, mass onboarding, schedules and policy exceptions
+  ---
+  duration_ms: 32.016055
+  type: 'test'
+  ...
+# Subtest: organisation inference reports zero people for omitted source
+ok 7 - organisation inference reports zero people for omitted source
+  ---
+  duration_ms: 3.335977
+  type: 'test'
+  ...
+# Subtest: omitted workforce evidence cannot yield a confident automatic organisation proposal
+ok 8 - omitted workforce evidence cannot yield a confident automatic organisation proposal
+  ---
+  duration_ms: 0.244296
+  type: 'test'
+  ...
+# Subtest: combined onboarding retains organisation review for omitted source
+ok 9 - combined onboarding retains organisation review for omitted source
+  ---
+  duration_ms: 5.877242
+  type: 'test'
+  ...
+# Subtest: organisation inference reports zero people for null source
+ok 10 - organisation inference reports zero people for null source
+  ---
+  duration_ms: 1.763539
+  type: 'test'
+  ...
+# Subtest: null workforce evidence cannot yield a confident automatic organisation proposal
+ok 11 - null workforce evidence cannot yield a confident automatic organisation proposal
+  ---
+  duration_ms: 0.312423
+  type: 'test'
+  ...
+# Subtest: combined onboarding retains organisation review for null source
+ok 12 - combined onboarding retains organisation review for null source
+  ---
+  duration_ms: 1.461906
+  type: 'test'
+  ...
+# Subtest: organisation inference reports zero people for empty array source
+ok 13 - organisation inference reports zero people for empty array source
+  ---
+  duration_ms: 0.925467
+  type: 'test'
+  ...
+# Subtest: empty array workforce evidence cannot yield a confident automatic organisation proposal
+ok 14 - empty array workforce evidence cannot yield a confident automatic organisation proposal
+  ---
+  duration_ms: 0.163895
+  type: 'test'
+  ...
+# Subtest: combined onboarding retains organisation review for empty array source
+ok 15 - combined onboarding retains organisation review for empty array source
+  ---
+  duration_ms: 2.047959
+  type: 'test'
+  ...
+# Subtest: organisation inference reports zero people for missing identity source
+ok 16 - organisation inference reports zero people for missing identity source
+  ---
+  duration_ms: 0.594595
+  type: 'test'
+  ...
+# Subtest: missing identity workforce evidence cannot yield a confident automatic organisation proposal
+ok 17 - missing identity workforce evidence cannot yield a confident automatic organisation proposal
+  ---
+  duration_ms: 3.581846
+  type: 'test'
+  ...
+# Subtest: combined onboarding retains organisation review for missing identity source
+ok 18 - combined onboarding retains organisation review for missing identity source
+  ---
+  duration_ms: 0.672097
+  type: 'test'
+  ...
+# Subtest: organisation inference reports zero people for blank identity source
+ok 19 - organisation inference reports zero people for blank identity source
+  ---
+  duration_ms: 1.338709
+  type: 'test'
+  ...
+# Subtest: blank identity workforce evidence cannot yield a confident automatic organisation proposal
+ok 20 - blank identity workforce evidence cannot yield a confident automatic organisation proposal
+  ---
+  duration_ms: 8.296539
+  type: 'test'
+  ...
+# Subtest: combined onboarding retains organisation review for blank identity source
+ok 21 - combined onboarding retains organisation review for blank identity source
+  ---
+  duration_ms: 0.892852
+  type: 'test'
+  ...
+# Subtest: one evidenced synthetic employee retains existing proposed structure and source immutability
+ok 22 - one evidenced synthetic employee retains existing proposed structure and source immutability
+  ---
+  duration_ms: 3.663837
+  type: 'test'
+  ...
+# Subtest: incomplete organisation evidence requires review: missing structure
+ok 23 - incomplete organisation evidence requires review: missing structure
+  ---
+  duration_ms: 0.928815
+  type: 'test'
+  ...
+# Subtest: incomplete organisation evidence requires review: blank structure
+ok 24 - incomplete organisation evidence requires review: blank structure
+  ---
+  duration_ms: 1.447105
+  type: 'test'
+  ...
+# Subtest: incomplete organisation evidence requires review: partial identity
+ok 25 - incomplete organisation evidence requires review: partial identity
+  ---
+  duration_ms: 2.507894
+  type: 'test'
+  ...
+# Subtest: object-valued employeeId requires review without coercion
+ok 26 - object-valued employeeId requires review without coercion
+  ---
+  duration_ms: 2.085535
+  type: 'test'
+  ...
+# Subtest: object-valued location requires review without coercion
+ok 27 - object-valued location requires review without coercion
+  ---
+  duration_ms: 1.125844
+  type: 'test'
+  ...
+# Subtest: object-valued department requires review without coercion
+ok 28 - object-valued department requires review without coercion
+  ---
+  duration_ms: 0.351678
+  type: 'test'
+  ...
+# Subtest: prototype, accessor, proxy and custom traversal workforce evidence is inert and requires review
+ok 29 - prototype, accessor, proxy and custom traversal workforce evidence is inert and requires review
+  ---
+  duration_ms: 6.004992
+  type: 'test'
+  ...
+# Subtest: proposal people accessor is rejected without invocation
+ok 30 - proposal people accessor is rejected without invocation
+  ---
+  duration_ms: 1.633096
+  type: 'test'
+  ...
+# Subtest: invalid workforce source preserves supplied row count but never partial assignments
+ok 31 - invalid workforce source preserves supplied row count but never partial assignments
+  ---
+  duration_ms: 1.340204
+  type: 'test'
+  ...
+# Subtest: frozen and null-prototype own-data people retain valid inference
+ok 32 - frozen and null-prototype own-data people retain valid inference
+  ---
+  duration_ms: 1.012311
+  type: 'test'
+  ...
+# Subtest: ambient descriptor-map getters never become workforce evidence
+ok 33 - ambient descriptor-map getters never become workforce evidence
+  ---
+  duration_ms: 3.525806
+  type: 'test'
+  ...
+# Subtest: numeric employeeId retains primitive inference behavior
+ok 34 - numeric employeeId retains primitive inference behavior
+  ---
+  duration_ms: 1.233194
+  type: 'test'
+  ...
+# Subtest: numeric managerId retains primitive inference behavior
+ok 35 - numeric managerId retains primitive inference behavior
+  ---
+  duration_ms: 1.204139
+  type: 'test'
+  ...
+# Subtest: numeric location retains primitive inference behavior
+ok 36 - numeric location retains primitive inference behavior
+  ---
+  duration_ms: 0.231578
+  type: 'test'
+  ...
+# Subtest: numeric department retains primitive inference behavior
+ok 37 - numeric department retains primitive inference behavior
+  ---
+  duration_ms: 0.925757
+  type: 'test'
+  ...
+# Subtest: numeric wfmRole retains primitive inference behavior
+ok 38 - numeric wfmRole retains primitive inference behavior
+  ---
+  duration_ms: 0.400908
+  type: 'test'
+  ...
+# Subtest: numeric jobTitle retains primitive inference behavior
+ok 39 - numeric jobTitle retains primitive inference behavior
+  ---
+  duration_ms: 0.348816
+  type: 'test'
+  ...
+# Subtest: numeric employmentType retains primitive inference behavior
+ok 40 - numeric employmentType retains primitive inference behavior
+  ---
+  duration_ms: 0.39904
+  type: 'test'
+  ...
+# Subtest: numeric email retains primitive inference behavior
+ok 41 - numeric email retains primitive inference behavior
+  ---
+  duration_ms: 0.899437
+  type: 'test'
+  ...
+# Subtest: numeric firstName retains primitive inference behavior
+ok 42 - numeric firstName retains primitive inference behavior
+  ---
+  duration_ms: 0.481427
+  type: 'test'
+  ...
+# Subtest: unused diagnostic fields cannot invalidate valid workforce evidence
+ok 43 - unused diagnostic fields cannot invalidate valid workforce evidence
+  ---
+  duration_ms: 1.100073
+  type: 'test'
+  ...
+# Subtest: 100001 valid people have no newly invented capacity rejection
+ok 44 - 100001 valid people have no newly invented capacity rejection
+  ---
+  duration_ms: 2546.780919
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: rejects nonstring operational identifiers and rollback reason before issuing a permit
+ok 45 - rejects nonstring operational identifiers and rollback reason before issuing a permit
+  ---
+  duration_ms: 153.374698
+  type: 'test'
+  ...
+# Subtest: cold-starts on a fresh database without pre-created decision tables
+ok 46 - cold-starts on a fresh database without pre-created decision tables
+  ---
+  duration_ms: 105.624445
+  type: 'test'
+  ...
+# Subtest: requires current context and reversible plan
+ok 47 - requires current context and reversible plan
+  ---
+  duration_ms: 106.80989
+  type: 'test'
+  ...
+# Subtest: executes verifies and is idempotent
+ok 48 - executes verifies and is idempotent
+  ---
+  duration_ms: 219.446959
+  type: 'test'
+  ...
+# Subtest: failed verification requires reconciliation without compensation
+ok 49 - failed verification requires reconciliation without compensation
+  ---
+  duration_ms: 241.744449
+  type: 'test'
+  ...
+# Subtest: failed apply requires reconciliation when trusted readback is unavailable and stays idempotent
+ok 50 - failed apply requires reconciliation when trusted readback is unavailable and stays idempotent
+  ---
+  duration_ms: 101.004904
+  type: 'test'
+  ...
+# Subtest: unconfirmed readback never dispatches the proposed compensating rollback
+ok 51 - unconfirmed readback never dispatches the proposed compensating rollback
+  ---
+  duration_ms: 504.486963
+  type: 'test'
+  ...
+# Subtest: post-write throw reads authoritative action and preserves readback evidence without claiming action success
+ok 52 - post-write throw reads authoritative action and preserves readback evidence without claiming action success
+  ---
+  duration_ms: 701.256758
+  type: 'test'
+  ...
+# Subtest: non-Error apply throw null persists unknown outcome and cannot replay
+ok 53 - non-Error apply throw null persists unknown outcome and cannot replay
+  ---
+  duration_ms: 108.215503
+  type: 'test'
+  ...
+# Subtest: non-Error apply throw undefined persists unknown outcome and cannot replay
+ok 54 - non-Error apply throw undefined persists unknown outcome and cannot replay
+  ---
+  duration_ms: 250.958918
+  type: 'test'
+  ...
+# Subtest: unconfirmed readback cannot invoke even a failing rollback adapter
+ok 55 - unconfirmed readback cannot invoke even a failing rollback adapter
+  ---
+  duration_ms: 91.146006
+  type: 'test'
+  ...
+# Subtest: worker death at PREPARED cannot repeat a possibly applied write
+ok 56 - worker death at PREPARED cannot repeat a possibly applied write
+  ---
+  duration_ms: 289.57879
+  type: 'test'
+  ...
+# Subtest: worker death at APPLIED cannot repeat a possibly applied write
+ok 57 - worker death at APPLIED cannot repeat a possibly applied write
+  ---
+  duration_ms: 325.818331
+  type: 'test'
+  ...
+# Subtest: concurrent processes claim a permit once without holding a database lock over adapter I/O
+ok 58 - concurrent processes claim a permit once without holding a database lock over adapter I/O
+  ---
+  duration_ms: 904.979276
+  type: 'test'
+  ...
+# Subtest: failed claim commit rolls back without dispatch and permits a safe retry
+ok 59 - failed claim commit rolls back without dispatch and permits a safe retry
+  ---
+  duration_ms: 1588.386895
+  type: 'test'
+  ...
+# {"result":"RECONCILIATION_REQUIRED","states":["PREPARED","RECONCILIATION_REQUIRED","VERIFIED"],"calls":0}
+# Subtest: concurrent distinct permits cannot bypass affected employee quarantine
+ok 60 - concurrent distinct permits cannot bypass affected employee quarantine
+  ---
+  duration_ms: 668.565428
+  type: 'test'
+  ...
+# Subtest: affected scope blocks renewed fresh permit
+ok 61 - affected scope blocks renewed fresh permit
+  ---
+  duration_ms: 89.296923
+  type: 'test'
+  ...
+# Subtest: affected scope blocks new-key fresh permit
+ok 62 - affected scope blocks new-key fresh permit
+  ---
+  duration_ms: 77.568167
+  type: 'test'
+  ...
+# Subtest: affected scope blocks expired fresh permit
+ok 63 - affected scope blocks expired fresh permit
+  ---
+  duration_ms: 88.984895
+  type: 'test'
+  ...
+# Subtest: affected scope blocks other-kind fresh permit
+ok 64 - affected scope blocks other-kind fresh permit
+  ---
+  duration_ms: 71.481678
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior CONTAINED conservatively
+ok 65 - fresh permit treats prior CONTAINED conservatively
+  ---
+  duration_ms: 76.674622
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior ROLLED_BACK conservatively
+ok 66 - fresh permit treats prior ROLLED_BACK conservatively
+  ---
+  duration_ms: 80.167658
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior UNRECOGNIZED conservatively
+ok 67 - fresh permit treats prior UNRECOGNIZED conservatively
+  ---
+  duration_ms: 73.433749
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior PREPARED conservatively
+ok 68 - fresh permit treats prior PREPARED conservatively
+  ---
+  duration_ms: 105.887399
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior APPLIED conservatively
+ok 69 - fresh permit treats prior APPLIED conservatively
+  ---
+  duration_ms: 90.180306
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior VERIFIED conservatively
+ok 70 - fresh permit treats prior VERIFIED conservatively
+  ---
+  duration_ms: 122.997892
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {bad-json
+ok 71 - malformed historical scope fails closed: {bad-json
+  ---
+  duration_ms: 147.268152
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {}
+ok 72 - malformed historical scope fails closed: {}
+  ---
+  duration_ms: 78.356283
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"unknown","action":{"employeeId":"synthetic-worker"}}
+ok 73 - malformed historical scope fails closed: {"adapter":"unknown","action":{"employeeId":"synthetic-worker"}}
+  ---
+  duration_ms: 75.328259
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":" synthetic-worker "}}
+ok 74 - malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":" synthetic-worker "}}
+  ---
+  duration_ms: 93.310021
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}}
+ok 75 - malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}}
+  ---
+  duration_ms: 98.252798
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":42}}
+ok 76 - malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":42}}
+  ---
+  duration_ms: 89.225478
+  type: 'test'
+  ...
+# Subtest: quarantine preserves employee and tenant isolation
+ok 77 - quarantine preserves employee and tenant isolation
+  ---
+  duration_ms: 126.681685
+  type: 'test'
+  ...
+# Subtest: latest BLOCKED cannot hide an earlier dispatch intent
+ok 78 - latest BLOCKED cannot hide an earlier dispatch intent
+  ---
+  duration_ms: 108.692957
+  type: 'test'
+  ...
+# Subtest: missing historical permit fails closed
+ok 79 - missing historical permit fails closed
+  ---
+  duration_ms: 172.610414
+  type: 'test'
+  ...
+# Subtest: blocked-only receipts do not poison scope once prior latest state is verified
+ok 80 - blocked-only receipts do not poison scope once prior latest state is verified
+  ---
+  duration_ms: 173.527736
+  type: 'test'
+  ...
+# Subtest: readback id cannot verify or authorize compensation
+ok 81 - readback id cannot verify or authorize compensation
+  ---
+  duration_ms: 63.144209
+  type: 'test'
+  ...
+# Subtest: readback eventKey cannot verify or authorize compensation
+ok 82 - readback eventKey cannot verify or authorize compensation
+  ---
+  duration_ms: 82.081416
+  type: 'test'
+  ...
+# Subtest: readback kind cannot verify or authorize compensation
+ok 83 - readback kind cannot verify or authorize compensation
+  ---
+  duration_ms: 89.486852
+  type: 'test'
+  ...
+# Subtest: readback tenant cannot verify or authorize compensation
+ok 84 - readback tenant cannot verify or authorize compensation
+  ---
+  duration_ms: 74.91893
+  type: 'test'
+  ...
+# Subtest: readback employeeId cannot verify or authorize compensation
+ok 85 - readback employeeId cannot verify or authorize compensation
+  ---
+  duration_ms: 59.548084
+  type: 'test'
+  ...
+# Subtest: readback effectiveAt cannot verify or authorize compensation
+ok 86 - readback effectiveAt cannot verify or authorize compensation
+  ---
+  duration_ms: 76.25853
+  type: 'test'
+  ...
+# Subtest: readback payload cannot verify or authorize compensation
+ok 87 - readback payload cannot verify or authorize compensation
+  ---
+  duration_ms: 73.178587
+  type: 'test'
+  ...
+# Subtest: readback missing-payload cannot verify or authorize compensation
+ok 88 - readback missing-payload cannot verify or authorize compensation
+  ---
+  duration_ms: 67.402004
+  type: 'test'
+  ...
+# Subtest: readback absent cannot verify or authorize compensation
+ok 89 - readback absent cannot verify or authorize compensation
+  ---
+  duration_ms: 61.291249
+  type: 'test'
+  ...
+# Subtest: readback throws cannot verify or authorize compensation
+ok 90 - readback throws cannot verify or authorize compensation
+  ---
+  duration_ms: 88.88609
+  type: 'test'
+  ...
+# Subtest: readback string cannot verify or authorize compensation
+ok 91 - readback string cannot verify or authorize compensation
+  ---
+  duration_ms: 83.235338
+  type: 'test'
+  ...
+# Subtest: readback array cannot verify or authorize compensation
+ok 92 - readback array cannot verify or authorize compensation
+  ---
+  duration_ms: 86.85306
+  type: 'test'
+  ...
+# Subtest: invalid applied ID "" cannot verify
+ok 93 - invalid applied ID "" cannot verify
+  ---
+  duration_ms: 114.172193
+  type: 'test'
+  ...
+# Subtest: invalid applied ID "   " cannot verify
+ok 94 - invalid applied ID "   " cannot verify
+  ---
+  duration_ms: 82.330616
+  type: 'test'
+  ...
+# Subtest: invalid applied ID null cannot verify
+ok 95 - invalid applied ID null cannot verify
+  ---
+  duration_ms: 79.314888
+  type: 'test'
+  ...
+# Subtest: invalid applied ID 42 cannot verify
+ok 96 - invalid applied ID 42 cannot verify
+  ---
+  duration_ms: 81.116875
+  type: 'test'
+  ...
+# Subtest: fully bound readback accepts payload key reordering and server approval augmentation
+ok 97 - fully bound readback accepts payload key reordering and server approval augmentation
+  ---
+  duration_ms: 68.853476
+  type: 'test'
+  ...
+# Subtest: adapter mutation cannot redefine the approved action used for readback
+ok 98 - adapter mutation cannot redefine the approved action used for readback
+  ---
+  duration_ms: 75.777674
+  type: 'test'
+  ...
+# Subtest: readback cannot mutate the snapshotted applied event identifier
+ok 99 - readback cannot mutate the snapshotted applied event identifier
+  ---
+  duration_ms: 82.125543
+  type: 'test'
+  ...
+# Subtest: stale retry must not supersede a verified receipt committed after inspection
+ok 100 - stale retry must not supersede a verified receipt committed after inspection
+  ---
+  duration_ms: 80.657218
+  type: 'test'
+  ...
+# Subtest: retry reconciliation is committed before publishing and remains idempotent
+ok 101 - retry reconciliation is committed before publishing and remains idempotent
+  ---
+  duration_ms: 57.417425
+  type: 'test'
+  ...
+# Subtest: retry append failure rolls back and releases writer lock
+ok 102 - retry append failure rolls back and releases writer lock
+  ---
+  duration_ms: 99.735588
+  type: 'test'
+  ...
+# Subtest: retry commit failure rolls back and releases writer lock
+ok 103 - retry commit failure rolls back and releases writer lock
+  ---
+  duration_ms: 168.385456
+  type: 'test'
+  ...
+# Subtest: retry holds writer lock through reconciliation append
+ok 104 - retry holds writer lock through reconciliation append
+  ---
+  duration_ms: 113.029843
+  type: 'test'
+  ...
+# Subtest: retry preserves committed VERIFIED without appending
+ok 105 - retry preserves committed VERIFIED without appending
+  ---
+  duration_ms: 87.65598
+  type: 'test'
+  ...
+# Subtest: retry preserves committed ROLLED_BACK without appending
+ok 106 - retry preserves committed ROLLED_BACK without appending
+  ---
+  duration_ms: 69.282998
+  type: 'test'
+  ...
+# Subtest: retry preserves committed CONTAINED without appending
+ok 107 - retry preserves committed CONTAINED without appending
+  ---
+  duration_ms: 86.257816
+  type: 'test'
+  ...
+# Subtest: retry preserves committed RECONCILIATION_REQUIRED without appending
+ok 108 - retry preserves committed RECONCILIATION_REQUIRED without appending
+  ---
+  duration_ms: 58.716863
+  type: 'test'
+  ...
+# Subtest: retry preserves committed BLOCKED without appending
+ok 109 - retry preserves committed BLOCKED without appending
+  ---
+  duration_ms: 68.881676
+  type: 'test'
+  ...
+# (node:19) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:19) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: cross-origin
+ok 110 - cross-origin
+  ---
+  duration_ms: 277.141504
+  type: 'test'
+  ...
+# Subtest: missing origin
+ok 111 - missing origin
+  ---
+  duration_ms: 228.83751
+  type: 'test'
+  ...
+# Subtest: non-JSON simple request
+ok 112 - non-JSON simple request
+  ---
+  duration_ms: 285.389506
+  type: 'test'
+  ...
+# Subtest: authorised origin retains permit validation
+ok 113 - authorised origin retains permit validation
+  ---
+  duration_ms: 101.268406
+  type: 'test'
+  ...
+# Subtest: unknown roles fail closed
+ok 114 - unknown roles fail closed
+  ---
+  duration_ms: 555.377535
+  type: 'test'
+  ...
+# (node:20) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:20) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: a reused event key cannot turn a different event into verified Autopilot execution
+ok 115 - a reused event key cannot turn a different event into verified Autopilot execution
+  ---
+  duration_ms: 218.907331
+  type: 'test'
+  ...
+# Subtest: idempotency accepts equivalent payload ordering but rejects changed content
+ok 116 - idempotency accepts equivalent payload ordering but rejects changed content
+  ---
+  duration_ms: 60.031155
+  type: 'test'
+  ...
+# Subtest: HTTP retry with changed content returns 409 and preserves the first persisted event
+ok 117 - HTTP retry with changed content returns 409 and preserves the first persisted event
+  ---
+  duration_ms: 269.557561
+  type: 'test'
+  ...
+# Subtest: caller-supplied expected outcome cannot become authoritative measured savings
+ok 118 - caller-supplied expected outcome cannot become authoritative measured savings
+  ---
+  duration_ms: 271.594458
+  type: 'test'
+  ...
+# (node:26) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: episode is deterministic regardless of option order
+ok 119 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 20.688278
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 120 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 1.829722
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 121 - do-nothing option is mandatory
+  ---
+  duration_ms: 0.564957
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 122 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 0.741895
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 123 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 1.728678
+  type: 'test'
+  ...
+# (node:37) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:37) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: clocking handles overnight shift evidence and rejects duplicate or post-leaver clocks
+ok 124 - clocking handles overnight shift evidence and rejects duplicate or post-leaver clocks
+  ---
+  duration_ms: 7.922944
+  type: 'test'
+  ...
+# Subtest: absence windows cannot silently extend beyond employment
+ok 125 - absence windows cannot silently extend beyond employment
+  ---
+  duration_ms: 0.504996
+  type: 'test'
+  ...
+# Subtest: overtime override requires explicit approval and never directly mutates payroll
+ok 126 - overtime override requires explicit approval and never directly mutates payroll
+  ---
+  duration_ms: 0.85864
+  type: 'test'
+  ...
+# Subtest: agency assignments require bounded valid windows and reject overlaps
+ok 127 - agency assignments require bounded valid windows and reject overlaps
+  ---
+  duration_ms: 0.429009
+  type: 'test'
+  ...
+# Subtest: starter transfer leaver are effective-dated and fail closed outside employment
+ok 128 - starter transfer leaver are effective-dated and fail closed outside employment
+  ---
+  duration_ms: 1.182659
+  type: 'test'
+  ...
+# Subtest: retro changes preserve the original event and require evidence
+ok 129 - retro changes preserve the original event and require evidence
+  ---
+  duration_ms: 1.168233
+  type: 'test'
+  ...
+# Subtest: integration outage cannot delete source data and recovery requires a checkpoint
+ok 130 - integration outage cannot delete source data and recovery requires a checkpoint
+  ---
+  duration_ms: 2.734417
+  type: 'test'
+  ...
+# Subtest: HTTP lifecycle ingestion is idempotent, append-only and tenant isolated
+ok 131 - HTTP lifecycle ingestion is idempotent, append-only and tenant isolated
+  ---
+  duration_ms: 105.851078
+  type: 'test'
+  ...
+1..131
+# tests 131
+# suites 0
+# pass 131
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11160.905445

@@ -1,4 +1,40 @@
 # VECTOR execution checkpoint
+Updated 2026-10-23T18:34:30.277Z
+
+## Current objective and exact source
+Adopt the reviewed six-file critical repair into existing PR #501, obtain actual exact-image evidence and current review, then advance approved hosted proof. Full accepted backlog remains in scope.
+Canonical branch release/vector-customer-ready-candidate-20260925 remains 48dce8f697825c8cd5f99b3e5aeea3953647f8c2. Candidate branch test/vector-empty-organisation-regression-20261020 resumes from 4b79aeec360d64a54b732ac38dc38763163b7e0a. The containing commit is the successor candidate; do not invent a self-referential SHA. Source-only composition tree: 5dc68b8eb2f1645442de45494860aed8b411c0fe. Exactly six source/test/binding paths changed; all unrelated work preserved.
+Donors: inference42d757a5a2bab7af2684fbdd55b5f02c48c645cb; Autopilot2bd1a0addc88ed61e6fcd06c4b3c1369425c11bc. Full source blobs and evidence are in evidence/vector-integration-20261023/manifest.json.
+
+## Ownership and actual execution identities
+Existing integration owner /root resumed by explicit user instruction. Workspace /workspace/scratch/cd4e2bcb0821. Claim receipt PR501 comment6371944102. Independent current reviewer /root/review_six_file, read-only source/security/composition fence. These are session agent identities, not persistent external job IDs. No new product, controller, tenant, service, schedule or release lane.
+Existing isolated Codex build request6369979465 actually executed as https://chatgpt.com/s/cd_6adb8f150c00819191fe5d44822c184e and returned6370021320: BLOCKED, no build attempt. Its task is not duplicated. No equivalent active build worker is evidenced.
+
+## Actual evidence and proof boundary
+Reused original Node22.23.2 exact-byte131/131 source TAP and independent10/10 held-outs from6367751855, with exact hashes rechecked and full artifacts now retained in repo. These were not rerun or reattributed to this execution. Source-only adoption and security review do not establish image/hosted/provider/customer proof.
+CircleCI1050/1051 terminal SUCCESS metadata on parent4b79aeec. Actual validation-body execution and image digest remain UNKNOWN because logs/artifacts are inaccessible. Static changed-marker condition is not execution proof. Prior npm ci Exit handler never called failure remains unresolved; separate SELF_SIGNED_CERT_IN_CHAIN diagnostic is not proven original root cause.
+Freeze marker and CI recipe deliberately unchanged during this adoption, coordinating with existing isolated task. Automatic successor CI may be halted by require_frozen_candidate; no successor green status may be counted as an executed build without actual steps/artifacts. No manual rerun, new build attempt or trust/network weakening.
+
+## Serving and rollback
+Railway project43367a88-2233-4c6b-9018-0ce234dd73ca / environment eed9f097-610a-416e-83b9-6bc7bdb3eeef / service cded4ff7-24b1-4aaa-a7e2-67f143583bc2 still reports deployment057e19a2-7d49-4390-8705-63e71ea79a89 SUCCESS. Earlier serving source90ad90fcf60adaca9abacdd4ad14bf392f95e585 remains last source observation; current source identity not independently re-proven here. Existing deployment/artifact is rollback lead, image digest and restore drill unverified. URL https://vector-customer-ready-candidate-production.up.railway.app/; authenticated setup wizard/customer journey unverified.
+Global staged patchb453aa80-4763-4a08-a4f5-d5d27534b2c8 remains untouched. Existing50GB /data volume is attached only to customer-ready; no new volume or spending authorized/performed. Database presence/capacity does not prove backup, restore, or safe proof isolation.
+
+## Access and approval boundaries
+CircleCI plugin skills available, no callable authenticated CircleCI API/CLI token found. Browser reached expired CircleCI session; secure GitHub method selected, subsequent credential request declined. No repeat/bypass. Need authorized read access or supplied immutable1050/1051 logs/artifacts; no secret in chat. Existing task can consume recovered evidence once available. Current formal GitHub review requirement is not satisfied by an agent report or COMMENT review.
+No canonical merge, deploy, provider/customer mutation or production readiness claim. Required current reviews, exact-image admission, hosted authentication/durability/recovery, and provider action authority remain mandatory. Earlier cost estimate was storage-only, not a guaranteed cap on total proof compute/network/API usage.
+
+## Next executable actions
+1. Verify resulting candidate ref and exact six-file source composition; current independent review accepted exact source tree with no new adoption blocker; report is retained, not formal release approval.
+2. Reconcile actual CircleCI1050/1051 step output/artifacts with existing task6370021320 when authorized access is restored; only then decide justified bounded exact-image admission. Do not blindly retry prior npm failure.
+3. Continue eligible source integration (e.g. reviewed PR364/365 after ownership/current-source reconciliation) without competing release lineage or treating source evidence as deployment proof.
+4. After all applicable reviews/build/rollback/auth gates, promote through existing approved process, then verify real hosted journey and provider readback.
+Unresolved: source freshness/provenance; non-workforce punch/timecard hardening; historical VERIFIED and expired-permit reconciliation; separate compensation authority/provider semantics; hosted identity/access; full backlog convergence. All remain open and no scope is deleted.
+
+## Continuity
+Checkpoint is remote only after guarded branch update succeeds. On interruption reconcile current PR head, current jobs, owners and external effects; never blindly replay writes. No persistent Work executor established. If the turn ends, local Work pauses. Resume: read this file and latest PR501 comments, reconcile head/CI before next action.
+
+## Historical checkpoint (preserved, superseded where contradicted above)
+# VECTOR execution checkpoint
 Updated 2026-10-22T20:41:07.568Z
 ## Objective and source
 Finish critical repairs, then prove the integrated customer journey. Full accepted backlog remains in scope.

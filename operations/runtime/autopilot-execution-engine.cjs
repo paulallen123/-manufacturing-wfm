@@ -73,7 +73,7 @@ function createAutopilotExecutionEngine(options={}){
  async function executePermit({tenant,permitId,currentContextRevision}){
   const p=permitQ.get(tenant,permitId);if(!p)throw Object.assign(new Error('Autopilot permit not found.'),{statusCode:404});if(Date.parse(p.expires_at)<=Date.now())throw Object.assign(new Error('Autopilot permit expired. Re-approve current evidence.'),{statusCode:409});
   const selected=JSON.parse(p.selected_episode_json);if(compact(currentContextRevision,180)!==selected.contextRevision)throw Object.assign(new Error('Decision context changed. Execution refused.'),{statusCode:409});
-  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40);let prior,blocked=null;
+  const plan=JSON.parse(p.plan_json),executionId='exec-'+digest({permitId,tenant,contextRevision:selected.contextRevision}).slice(0,40);let prior,blocked=null,reconciliation=null;
   // Serialize history inspection and durable intent creation across connections.
   // Commit before invoking either the adapter or the event publisher.
   db.exec('BEGIN IMMEDIATE');
@@ -94,6 +94,12 @@ function createAutopilotExecutionEngine(options={}){
     eventI.run(executionId,permitId,tenant,'PREPARED',JSON.stringify({episodeId:selected.episodeId,optionId:selected.selection.optionId,planDigest:digest(plan)}),new Date().toISOString());
     }
    }
+   if(prior&&!['VERIFIED','ROLLED_BACK','CONTAINED','RECONCILIATION_REQUIRED','BLOCKED'].includes(prior.state)){
+    // Keep the unresolved-history decision and append under the same lock.
+    // A concurrent terminal receipt must never be followed by this stale retry.
+    reconciliation={reason:'PRIOR_EXECUTION_UNRESOLVED',externalState:'UNKNOWN',interruptedState:prior.state,requiresReconciliation:true};
+    eventI.run(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',JSON.stringify(reconciliation),new Date().toISOString());
+   }
    db.exec('COMMIT');
   }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
   if(blocked)return {executionId,idempotent:false,state:'BLOCKED',detail:blocked};
@@ -101,9 +107,8 @@ function createAutopilotExecutionEngine(options={}){
   if(prior){
    // A durable intent without a terminal receipt may have crossed the adapter
    // boundary before the worker stopped. Do not dispatch the same permit again.
-   const detail={reason:'PRIOR_EXECUTION_UNRESOLVED',externalState:'UNKNOWN',interruptedState:prior.state,requiresReconciliation:true};
-   log(executionId,permitId,tenant,'RECONCILIATION_REQUIRED',detail);
-   return {executionId,idempotent:true,state:'RECONCILIATION_REQUIRED',detail};
+   try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state:'RECONCILIATION_REQUIRED'}});}catch{}
+   return {executionId,idempotent:true,state:'RECONCILIATION_REQUIRED',detail:reconciliation};
   }
   try{publish?.({tenant,topic:'autopilot.execution.updated',audience:'manager',payload:{executionId,state:'PREPARED'}});}catch{}
   let applied=null,appliedEventId=null;

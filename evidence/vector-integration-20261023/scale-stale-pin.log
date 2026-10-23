@@ -1,0 +1,15 @@
+/workspace/scratch/d82275fe8578/combined-review/implementation/proof/cloud-scale-proof-runner.cjs:20
+  throw new Error(`Configuration engine identity mismatch: ${engineBlobSha} != ${EXPECTED_ENGINE_BLOB}`);
+  ^
+
+Error: Configuration engine identity mismatch: baa120a0c16872c9b08c3b621a63e5efcd56c4c9 != b47687d87b56a41240e731cf4e2046edf5acfa68
+    at Object.<anonymous> (/workspace/scratch/d82275fe8578/combined-review/implementation/proof/cloud-scale-proof-runner.cjs:20:9)
+    at Module._compile (node:internal/modules/cjs/loader:1781:14)
+    at Object..js (node:internal/modules/cjs/loader:1913:10)
+    at Module.load (node:internal/modules/cjs/loader:1505:32)
+    at Function._load (node:internal/modules/cjs/loader:1309:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.23.2

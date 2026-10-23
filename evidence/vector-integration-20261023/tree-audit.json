@@ -1,0 +1,1318 @@
+Warning: truncated output (original token count: 111642)
+Total output lines: 10474
+
+{
+  "candidate": "5dc68b8eb2f1645442de45494860aed8b411c0fe",
+  "base": "4c3c7a025d64e9d0d667ff797a91c7acae868d38",
+  "entries": [
+    {
+      "path": ".circleci/config.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "907c145dca590eb8b7c2552a2588df20db69e5c4",
+      "size": 13816,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/907c145dca590eb8b7c2552a2588df20db69e5c4"
+    },
+    {
+      "path": ".github/workflows/24h-sell-readiness-candidate.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d31e95544bc0f4e16a8a2141c7e620e47506fafd",
+      "size": 16005,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d31e95544bc0f4e16a8a2141c7e620e47506fafd"
+    },
+    {
+      "path": ".github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "size": 16565,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d9e4099141bb3feafe82369892e51c1c60125dc5"
+    },
+    {
+      "path": ".github/workflows/canonical-staging-release.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "105d35b9cb22f0d30835ddb578d79bcd05faf7b6",
+      "size": 4302,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/105d35b9cb22f0d30835ddb578d79bcd05faf7b6"
+    },
+    {
+      "path": ".github/workflows/customer-proof-gate.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8048cd7788cbadf46cdc1584e473dbbe47d5c736",
+      "size": 4561,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/8048cd7788cbadf46cdc1584e473dbbe47d5c736"
+    },
+    {
+      "path": ".github/workflows/identity-runtime-guard.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "100494cdbdd8d44c8f844ec88bc354943e276c74",
+      "size": 8327,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/100494cdbdd8d44c8f844ec88bc354943e276c74"
+    },
+    {
+      "path": ".github/workflows/integration-proof-exact-gated-release.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91e128eb65119ae7a00024a8fb6007caaafba638",
+      "size": 5348,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/91e128eb65119ae7a00024a8fb6007caaafba638"
+    },
+    {
+      "path": ".github/workflows/live-browser-readonly-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6896b697e4ee0a8952e2b912e8c0b5365b1c3e34",
+      "size": 4942,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6896b697e4ee0a8952e2b912e8c0b5365b1c3e34"
+    },
+    {
+      "path": ".github/workflows/live-host-tenant-isolation-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9df04c6a7c8268b4eb847129d06235fddb8d953f",
+      "size": 845,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9df04c6a7c8268b4eb847129d06235fddb8d953f"
+    },
+    {
+      "path": ".github/workflows/live-public-browser-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c6c54c4ce2c885ccc4bb51752679b397a16cd51",
+      "size": 4405,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/0c6c54c4ce2c885ccc4bb51752679b397a16cd51"
+    },
+    {
+      "path": ".github/workflows/login-contract-inspect.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "220d6dceb31fc4b4b3ad2f0cc78f62a9fa7414e8",
+      "size": 1802,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/220d6dceb31fc4b4b3ad2f0cc78f62a9fa7414e8"
+    },
+    {
+      "path": ".github/workflows/one-day-enterprise-implementation.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91b57fba7860ec5f7852f4cc72cf7c39b1a5947c",
+      "size": 1650,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/91b57fba7860ec5f7852f4cc72cf7c39b1a5947c"
+    },
+    {
+      "path": ".github/workflows/railway-first-deploy.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c125c87fb0009653eea734d46baf9aa8b4ac5fde",
+      "size": 4264,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c125c87fb0009653eea734d46baf9aa8b4ac5fde"
+    },
+    {
+      "path": ".github/workflows/sanitize-sealed-runtime.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ff6d602e629a9b91d4ca101b404f9b2930f8eac",
+      "size": 2418,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9ff6d602e629a9b91d4ca101b404f9b2930f8eac"
+    },
+    {
+      "path": ".github/workflows/ux-public-structure-audit.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a620dbde43af41367046ac28e1ecedf19ec1e7b3",
+      "size": 2916,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a620dbde43af41367046ac28e1ecedf19ec1e7b3"
+    },
+    {
+      "path": ".github/workflows/ux-runtime-inspect.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd322c37b150d5146173e2ea38c9fc70a6f274f5",
+      "size": 2515,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/cd322c37b150d5146173e2ea38c9fc70a6f274f5"
+    },
+    {
+      "path": ".github/workflows/vector-only-ui-guard.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc9d57f7e3f6f1a4ec08f986f3d3b447e1250403",
+      "size": 4232,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/fc9d57f7e3f6f1a4ec08f986f3d3b447e1250403"
+    },
+    {
+      "path": ".github/workflows/wfm-autonomous-recovery-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ecced59405e0bc0682d36856c38b4cc7b816fc92",
+      "size": 6146,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ecced59405e0bc0682d36856c38b4cc7b816fc92"
+    },
+    {
+      "path": ".github/workflows/wfm-autonomous-repair-pipeline.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "01f8b2b8871a909206a8230918486efd3dfe3bdb",
+      "size": 2296,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/01f8b2b8871a909206a8230918486efd3dfe3bdb"
+    },
+    {
+      "path": ".github/workflows/wfm-every-push-security.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "49723a101f06465f850637f5db528d1a1c10f4da",
+      "size": 12583,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/49723a101f06465f850637f5db528d1a1c10f4da"
+    },
+    {
+      "path": ".github/workflows/wfm-external-intelligence.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "095e9fa9d5119ea915ebb873d5823384a1188b8f",
+      "size": 9957,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/095e9fa9d5119ea915ebb873d5823384a1188b8f"
+    },
+    {
+      "path": ".github/workflows/wfm-onedrive-resilience.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f65cdd13d6b1124fefc76794a38218fd9e06ae3",
+      "size": 887,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9f65cdd13d6b1124fefc76794a38218fd9e06ae3"
+    },
+    {
+      "path": ".github/workflows/wfm-runtime-integrity.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bf9eb8ae5d8cbbf62eb772beeb79d7b46d2b3180",
+      "size": 10694,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/bf9eb8ae5d8cbbf62eb772beeb79d7b46d2b3180"
+    },
+    {
+      "path": ".github/workflows/wfm-staging-browser-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f49e5ab9aa7d340feb8edbdcd698c4a9f5cd7620",
+      "size": 1159,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f49e5ab9aa7d340feb8edbdcd698c4a9f5cd7620"
+    },
+    {
+      "path": ".github/workflows/wfm-zero-engineer-support-contract.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e2512475099215289f8dcc53be6c967a1901fb1",
+      "size": 2913,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/2e2512475099215289f8dcc53be6c967a1901fb1"
+    },
+    {
+      "path": "CUSTOMER_DEMO_RUNBOOK.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "290e3205e13e16b5294cfd3b58b0d56391428ae4",
+      "size": 5811,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/290e3205e13e16b5294cfd3b58b0d56391428ae4"
+    },
+    {
+      "path": "CUSTOMER_PROOF_STATUS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2c253dc07e04e2587c05ffcb2e671ea081ce6c64",
+      "size": 8819,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/2c253dc07e04e2587c05ffcb2e671ea081ce6c64"
+    },
+    {
+      "path": "DEPLOYMENT_MANIFEST.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85636f8523d31db854f3cdb1653919a92ace7730",
+      "size": 2103,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/85636f8523d31db854f3cdb1653919a92ace7730"
+    },
+    {
+      "path": "DEPLOY_TRIGGER_0_6_76.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1e45b561428069f64a01bfbb3553b2e129aec22",
+      "size": 842,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a1e45b561428069f64a01bfbb3553b2e129aec22"
+    },
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2daf4e6a681a87f18d2165b9653a55cff11fcdb",
+      "size": 46514,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a2daf4e6a681a87f18d2165b9653a55cff11fcdb"
+    },
+    {
+      "path": "Dockerfile.current-candidate-role-browser-proof",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "577b6686dda20558b4051829baa7badd9f83d941",
+      "size": 667,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/577b6686dda20558b4051829baa7badd9f83d941"
+    },
+    {
+      "path": "Dockerfile.current-vector-browser-proof",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "839f203420543f2ead25b62973c4151177ed2a48",
+      "size": 726,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/839f203420543f2ead25b62973c4151177ed2a48"
+    },
+    {
+      "path": "Dockerfile.implementation-source-handoff-proof",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df69fab14e4e865f657c8f65f2d83126516ef75e",
+      "size": 765,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/df69fab14e4e865f657c8f65f2d83126516ef75e"
+    },
+    {
+      "path": "Dockerfile.login-inspect",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "166dc45d67e35be9d74945637128da9937aeeaf6",
+      "size": 1682,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/166dc45d67e35be9d74945637128da9937aeeaf6"
+    },
+    {
+      "path": "Dockerfile.proof-runner",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7aa865a89941261ae10edacf9d5aaed5a3cbdb42",
+      "size": 699,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/7aa865a89941261ae10edacf9d5aaed5a3cbdb42"
+    },
+    {
+      "path": "Dockerfile.training-video",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "973702f97926d2cfaa2fecbc49b28d4891b09e4f",
+      "size": 615,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/973702f97926d2cfaa2fecbc49b28d4891b09e4f"
+    },
+    {
+      "path": "Dockerfile.vector-browser-proof",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dd5c59098c76ccee1fe04c3c54e05d93af01b354",
+      "size": 279,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/dd5c59098c76ccee1fe04c3c54e05d93af01b354"
+    },
+    {
+      "path": "OPERATIONAL_PERIOD_INGESTION_HANDOFF.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c054c358e5673f82ea426b18c2295c8cd87cdd9c",
+      "size": 22576,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c054c358e5673f82ea426b18c2295c8cd87cdd9c"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "45695a24746988769ccf442ead1bc1c514fccc83",
+      "size": 658,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/45695a24746988769ccf442ead1bc1c514fccc83"
+    },
+    {
+      "path": "STAGING_FREEZE.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ee36135c4709af3e3f35f460109ed280008b7733",
+      "size": 1145,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ee36135c4709af3e3f35f460109ed280008b7733"
+    },
+    {
+      "path": "SUPPORT_TIER_CONTRACT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c1978da461e256fc7c0e7bf6a15c7ab7c3c4f96",
+      "size": 3815,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/3c1978da461e256fc7c0e7bf6a15c7ab7c3c4f96"
+    },
+    {
+      "path": "VECTOR_UX_SCORECARD.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "edea108389b5e12523cbf91df926128375c90386",
+      "size": 13576,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/edea108389b5e12523cbf91df926128375c90386"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/24h-sell-readiness-candidate.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7dec42fa3b20e4d9195b511abfb2d21be546bfea",
+      "size": 9899,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/7dec42fa3b20e4d9195b511abfb2d21be546bfea"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/autonomous-integration-fabric.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9e4099141bb3feafe82369892e51c1c60125dc5",
+      "size": 16565,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d9e4099141bb3feafe82369892e51c1c60125dc5"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/canonical-staging-release.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "105d35b9cb22f0d30835ddb578d79bcd05faf7b6",
+      "size": 4302,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/105d35b9cb22f0d30835ddb578d79bcd05faf7b6"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/customer-proof-gate.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38492c79491f2abc238e6ad189ff45f8d6df1f23",
+      "size": 3268,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/38492c79491f2abc238e6ad189ff45f8d6df1f23"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/identity-runtime-guard.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c415d7bfd121d9aefc38964abde68d63df8ea62",
+      "size": 8133,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/4c415d7bfd121d9aefc38964abde68d63df8ea62"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/integration-proof-exact-gated-release.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91e128eb65119ae7a00024a8fb6007caaafba638",
+      "size": 5348,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/91e128eb65119ae7a00024a8fb6007caaafba638"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/live-browser-readonly-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6896b697e4ee0a8952e2b912e8c0b5365b1c3e34",
+      "size": 4942,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6896b697e4ee0a8952e2b912e8c0b5365b1c3e34"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/live-host-tenant-isolation-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9df04c6a7c8268b4eb847129d06235fddb8d953f",
+      "size": 845,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9df04c6a7c8268b4eb847129d06235fddb8d953f"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/live-public-browser-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c6c54c4ce2c885ccc4bb51752679b397a16cd51",
+      "size": 4405,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/0c6c54c4ce2c885ccc4bb51752679b397a16cd51"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/login-contract-inspect.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "220d6dceb31fc4b4b3ad2f0cc78f62a9fa7414e8",
+      "size": 1802,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/220d6dceb31fc4b4b3ad2f0cc78f62a9fa7414e8"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/one-day-enterprise-implementation.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91b57fba7860ec5f7852f4cc72cf7c39b1a5947c",
+      "size": 1650,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/91b57fba7860ec5f7852f4cc72cf7c39b1a5947c"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/railway-first-deploy.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c125c87fb0009653eea734d46baf9aa8b4ac5fde",
+      "size": 4264,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c125c87fb0009653eea734d46baf9aa8b4ac5fde"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/sanitize-sealed-runtime.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ff6d602e629a9b91d4ca101b404f9b2930f8eac",
+      "size": 2418,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9ff6d602e629a9b91d4ca101b404f9b2930f8eac"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/ux-public-structure-audit.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a620dbde43af41367046ac28e1ecedf19ec1e7b3",
+      "size": 2916,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a620dbde43af41367046ac28e1ecedf19ec1e7b3"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/ux-runtime-inspect.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd322c37b150d5146173e2ea38c9fc70a6f274f5",
+      "size": 2515,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/cd322c37b150d5146173e2ea38c9fc70a6f274f5"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/vector-only-ui-guard.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e4453cf0e5de510967d5df5d1fab18f72b850303",
+      "size": 3574,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/e4453cf0e5de510967d5df5d1fab18f72b850303"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-autonomous-recovery-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ecced59405e0bc0682d36856c38b4cc7b816fc92",
+      "size": 6146,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ecced59405e0bc0682d36856c38b4cc7b816fc92"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-autonomous-repair-pipeline.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "01f8b2b8871a909206a8230918486efd3dfe3bdb",
+      "size": 2296,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/01f8b2b8871a909206a8230918486efd3dfe3bdb"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-every-push-security.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab62fbb806e24a61ab893ab72e8616167a514396",
+      "size": 12505,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ab62fbb806e24a61ab893ab72e8616167a514396"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-external-intelligence.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "095e9fa9d5119ea915ebb873d5823384a1188b8f",
+      "size": 9957,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/095e9fa9d5119ea915ebb873d5823384a1188b8f"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-onedrive-resilience.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f65cdd13d6b1124fefc76794a38218fd9e06ae3",
+      "size": 887,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9f65cdd13d6b1124fefc76794a38218fd9e06ae3"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-runtime-integrity.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c2632849a9eaa915e026621b915fd27aaaa181b7",
+      "size": 10565,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c2632849a9eaa915e026621b915fd27aaaa181b7"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-staging-browser-proof.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f49e5ab9aa7d340feb8edbdcd698c4a9f5cd7620",
+      "size": 1159,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f49e5ab9aa7d340feb8edbdcd698c4a9f5cd7620"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/.github/workflows/wfm-zero-engineer-support-contract.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e2512475099215289f8dcc53be6c967a1901fb1",
+      "size": 2913,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/2e2512475099215289f8dcc53be6c967a1901fb1"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/CUSTOMER_DEMO_RUNBOOK.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "290e3205e13e16b5294cfd3b58b0d56391428ae4",
+      "size": 5811,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/290e3205e13e16b5294cfd3b58b0d56391428ae4"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/CUSTOMER_PROOF_STATUS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2c253dc07e04e2587c05ffcb2e671ea081ce6c64",
+      "size": 8819,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/2c253dc07e04e2587c05ffcb2e671ea081ce6c64"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/DEPLOYMENT_MANIFEST.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85636f8523d31db854f3cdb1653919a92ace7730",
+      "size": 2103,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/85636f8523d31db854f3cdb1653919a92ace7730"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/DEPLOY_TRIGGER_0_6_76.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1e45b561428069f64a01bfbb3553b2e129aec22",
+      "size": 842,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a1e45b561428069f64a01bfbb3553b2e129aec22"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0e30bdf77f7225d47bf854d654f08483d0792973",
+      "size": 13772,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/0e30bdf77f7225d47bf854d654f08483d0792973"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/Dockerfile.current-candidate-role-browser-proof",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1699e22c0708203be50fa68dff675813e8d0fa8b",
+      "size": 487,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/1699e22c0708203be50fa68dff675813e8d0fa8b"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/Dockerfile.login-inspect",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "166dc45d67e35be9d74945637128da9937aeeaf6",
+      "size": 1682,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/166dc45d67e35be9d74945637128da9937aeeaf6"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/Dockerfile.proof-runner",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7aa865a89941261ae10edacf9d5aaed5a3cbdb42",
+      "size": 699,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/7aa865a89941261ae10edacf9d5aaed5a3cbdb42"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/Dockerfile.vector-browser-proof",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dd5c59098c76ccee1fe04c3c54e05d93af01b354",
+      "size": 279,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/dd5c59098c76ccee1fe04c3c54e05d93af01b354"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "45695a24746988769ccf442ead1bc1c514fccc83",
+      "size": 658,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/45695a24746988769ccf442ead1bc1c514fccc83"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/STAGING_FREEZE.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ee36135c4709af3e3f35f460109ed280008b7733",
+      "size": 1145,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ee36135c4709af3e3f35f460109ed280008b7733"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/SUPPORT_TIER_CONTRACT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c1978da461e256fc7c0e7bf6a15c7ab7c3c4f96",
+      "size": 3815,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/3c1978da461e256fc7c0e7bf6a15c7ab7c3c4f96"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/VECTOR_UX_SCORECARD.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f22ffde05311821dd272ad93892775ac511ba83",
+      "size": 12204,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6f22ffde05311821dd272ad93892775ac511ba83"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/artifact/customer-proof-0676-railway.trigger",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e51914ba9c2b936a7a43cb7fcd44417c3987b772",
+      "size": 985,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/e51914ba9c2b936a7a43cb7fcd44417c3987b772"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/artifact/customer-proof-hosting-automation.branch-plan",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ece58274ef29d6220d5a4d1802e9ff4b5c9a3d50",
+      "size": 182,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ece58274ef29d6220d5a4d1802e9ff4b5c9a3d50"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/artifact/customer-proof-hosting-automation.branch-ready",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d1dd686d9d3f3ec09fd4d6413b8c6ef1ed100827",
+      "size": 96,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d1dd686d9d3f3ec09fd4d6413b8c6ef1ed100827"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/artifact/customer-proof-hosting-automation.plan",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b240c75030be962e58f5f130bc3339439668f3ca",
+      "size": 286,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/b240c75030be962e58f5f130bc3339439668f3ca"
+    },
+    {
+      "path": "__security_hold_7b6f9d22e1__/artifact/implementation-journey-source-refresh-20260…97642 tokens truncated…  {
+      "path": "verification/provider-recovery-correction/tests/independent-mixed-version-fencing.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "73e1ff17a6967ed33d1589c0e53e4c02a9e75a74",
+      "size": 2438,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/73e1ff17a6967ed33d1589c0e53e4c02a9e75a74"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/independent-requeue-durability.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ab250fff592abec36cc054465c64ad76d221662",
+      "size": 5433,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/1ab250fff592abec36cc054465c64ad76d221662"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/isolated-rollback-correction.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c0b13ca1ae803a9a9397eb9cf4823634f5d2ed3",
+      "size": 5493,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9c0b13ca1ae803a9a9397eb9cf4823634f5d2ed3"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/load-sealed-provider-store.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1e8eb6dbf15c91e3d33eb1e2afca7032fcd10da",
+      "size": 1085,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/e1e8eb6dbf15c91e3d33eb1e2afca7032fcd10da"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/provider-adapter-generation.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "76b6d653ad5781c009884a3f1df8ede2b8d17a9e",
+      "size": 2737,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/76b6d653ad5781c009884a3f1df8ede2b8d17a9e"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/provider-degraded-correction.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "18c68ea67783dac6d2fd71e5cb2d1d0ec3534c52",
+      "size": 1793,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/18c68ea67783dac6d2fd71e5cb2d1d0ec3534c52"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/provider-lease-correction.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "04721173bff560b38e67ec7b499a36c123a1f1d7",
+      "size": 6316,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/04721173bff560b38e67ec7b499a36c123a1f1d7"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/provider-recovery-audit-correction.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5496e37e085cb4de7900fa8326f8e917bcce327",
+      "size": 3073,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c5496e37e085cb4de7900fa8326f8e917bcce327"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/provider-schema-write-fence.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d05f9bbec008c7b255adc348d5ea439e5056334f",
+      "size": 3708,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d05f9bbec008c7b255adc348d5ea439e5056334f"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/provider-stage-commit.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3caf870707e374d1c211301f100b219838fe7495",
+      "size": 6337,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/3caf870707e374d1c211301f100b219838fe7495"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/recovery-fault-child.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3beb59a68ce6cf04a46bf44f4a5d512bb1871dd9",
+      "size": 15150,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/3beb59a68ce6cf04a46bf44f4a5d512bb1871dd9"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/support-recovery-crash-child.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c34839e9b6cc8a87f9ce9ae41442e362d06c92da",
+      "size": 1613,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c34839e9b6cc8a87f9ce9ae41442e362d06c92da"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/support-recovery-fixture.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff0ff157deddbc1d4d4de37e5f8a230b340eb2fa",
+      "size": 6500,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ff0ff157deddbc1d4d4de37e5f8a230b340eb2fa"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/support-recovery-http.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "deea60a2ed1c04dbfd854818f8b9fca172fe9b49",
+      "size": 4272,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/deea60a2ed1c04dbfd854818f8b9fca172fe9b49"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/support-recovery-lifecycle.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6946b980228ad15ea528c0cfc063acd89edd24b9",
+      "size": 20156,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6946b980228ad15ea528c0cfc063acd89edd24b9"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/support-recovery-ui.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35aff0c6dfe6c1a79650e383ec250c6fac773632",
+      "size": 10042,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/35aff0c6dfe6c1a79650e383ec250c6fac773632"
+    },
+    {
+      "path": "verification/provider-recovery-correction/tests/support-ui-composition.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3f50be4ac70bedadde58c7e8730c0dc160f45a44",
+      "size": 1845,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/3f50be4ac70bedadde58c7e8730c0dc160f45a44"
+    },
+    {
+      "path": "verification/provider-recovery-correction/ui/support-ui.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "242a9888fe322e94a82050b96543f34f70c0cd87",
+      "size": 7408,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/242a9888fe322e94a82050b96543f34f70c0cd87"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/api-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "61c1c8b11ff197aa2667df2b4c7580c9b8d433fc",
+      "size": 2589,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/61c1c8b11ff197aa2667df2b4c7580c9b8d433fc"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/api-journey.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f8086744729e5ba6a2ffaf485278ba3a3066be1",
+      "size": 392,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6f8086744729e5ba6a2ffaf485278ba3a3066be1"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/attendance-overlap-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6ffbd4239eeff45be4d7fb74db34b2ba02464129",
+      "size": 533,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6ffbd4239eeff45be4d7fb74db34b2ba02464129"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/attendance-overlap.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6ffbd4239eeff45be4d7fb74db34b2ba02464129",
+      "size": 533,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/6ffbd4239eeff45be4d7fb74db34b2ba02464129"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/attendance-payroll-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a05a8de106cb040df3bc80ff63452d3333069e57",
+      "size": 775,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a05a8de106cb040df3bc80ff63452d3333069e57"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/attendance-payroll.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a05a8de106cb040df3bc80ff63452d3333069e57",
+      "size": 775,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a05a8de106cb040df3bc80ff63452d3333069e57"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/composition.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "98f76d84d0d84dc9f34fbe15c64bd4d0e546244a",
+      "size": 582,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/98f76d84d0d84dc9f34fbe15c64bd4d0e546244a"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/focused-tests.tap",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "93343d9f564e1471c768dd64e5d4c769b8cc3eb2",
+      "size": 18136,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/93343d9f564e1471c768dd64e5d4c769b8cc3eb2"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/payroll-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bebe979eb867d059ae4f117b9326ecdff4c33fe",
+      "size": 1992,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/8bebe979eb867d059ae4f117b9326ecdff4c33fe"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/payroll-journey.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bebe979eb867d059ae4f117b9326ecdff4c33fe",
+      "size": 1992,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/8bebe979eb867d059ae4f117b9326ecdff4c33fe"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/runtime-provenance.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "162774a1e90e9942f71a402b6bac0732ea48215a",
+      "size": 25965,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/162774a1e90e9942f71a402b6bac0732ea48215a"
+    },
+    {
+      "path": "verification/vector-attendance-proof-final5-20260921/summary.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "efeafa938573d10c47526be10e77d5cde5ea243c",
+      "size": 1218,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/efeafa938573d10c47526be10e77d5cde5ea243c"
+    },
+    {
+      "path": "verification/vector-consolidation-20260921/RECEIPT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "307dd55610202563683a7be842504c5122a6c15b",
+      "size": 2688,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/307dd55610202563683a7be842504c5122a6c15b"
+    },
+    {
+      "path": "verification/vector-consolidation-20260921/cloud-build.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a320aa6c21bcbd5c5d176745f15a9e41d2353bef",
+      "size": 1536,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a320aa6c21bcbd5c5d176745f15a9e41d2353bef"
+    },
+    {
+      "path": "verification/vector-integration-20260920/CHECKPOINT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dce03b3625886e305641e394a65b256d33d3bb75",
+      "size": 26505,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/dce03b3625886e305641e394a65b256d33d3bb75"
+    },
+    {
+      "path": "verification/vector-integration-20260920/EXECUTION_BRIEF.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b51e62fde3517140744942fd814e35f9913ad8e",
+      "size": 13158,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9b51e62fde3517140744942fd814e35f9913ad8e"
+    },
+    {
+      "path": "verification/vector-integration-20260920/api-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c8976b8154830046eccb84928c4ae34dc0a7d05",
+      "size": 2589,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/5c8976b8154830046eccb84928c4ae34dc0a7d05"
+    },
+    {
+      "path": "verification/vector-integration-20260920/astra-ui-proof-20260921.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a393f0276967c9ae74360c5076306f75031769ac",
+      "size": 1761,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a393f0276967c9ae74360c5076306f75031769ac"
+    },
+    {
+      "path": "verification/vector-integration-20260920/candidate-source-manifest.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f49fcc57ffb203d8c9d1a3bb3a4ae8b0fb19b405",
+      "size": 14535,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f49fcc57ffb203d8c9d1a3bb3a4ae8b0fb19b405"
+    },
+    {
+      "path": "verification/vector-integration-20260920/initial-focused-tests.tap",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cee7d8e9c9578650d2fa7180707ab24761feb089",
+      "size": 10897,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/cee7d8e9c9578650d2fa7180707ab24761feb089"
+    },
+    {
+      "path": "verification/vector-integration-20260920/initial-source-integration.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d68b32159a7e6100185648638585b6d4dd2d136",
+      "size": 20025,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/3d68b32159a7e6100185648638585b6d4dd2d136"
+    },
+    {
+      "path": "verification/vector-integration-20260920/payroll-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "be65ddc27be9f11c86e429e12e3d7381fd52d4eb",
+      "size": 1992,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/be65ddc27be9f11c86e429e12e3d7381fd52d4eb"
+    },
+    {
+      "path": "verification/vector-integration-20260920/provenance-closure-20260921.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e00dc73894c8a914b53b121c62a422e17ed468e4",
+      "size": 2022,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/e00dc73894c8a914b53b121c62a422e17ed468e4"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/api-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c855c5ecf5aa5fe8c00e1551241c72bf867d1d34",
+      "size": 2589,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c855c5ecf5aa5fe8c00e1551241c72bf867d1d34"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/api-journey.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2ba90f13e65431db52d97a6847a5da7c49068cd1",
+      "size": 392,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/2ba90f13e65431db52d97a6847a5da7c49068cd1"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/composition.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0522890b101a88e7039823e7e39072dd5deeb6f",
+      "size": 363,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/e0522890b101a88e7039823e7e39072dd5deeb6f"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/focused-tests.tap",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4134526845ae1aa2cac7fec9ed60852923a9c874",
+      "size": 11298,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/4134526845ae1aa2cac7fec9ed60852923a9c874"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/payroll-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da1893ca849fd2c334fe8a6cd1b050a4374db421",
+      "size": 1992,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/da1893ca849fd2c334fe8a6cd1b050a4374db421"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/payroll-journey.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da1893ca849fd2c334fe8a6cd1b050a4374db421",
+      "size": 1992,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/da1893ca849fd2c334fe8a6cd1b050a4374db421"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/runtime-provenance.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "822a3ad8ffab02fe3f3e939de22ffcfe7428e3c3",
+      "size": 25812,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/822a3ad8ffab02fe3f3e939de22ffcfe7428e3c3"
+    },
+    {
+      "path": "verification/vector-integration-20260920/repeatability-run/summary.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "907960fae8baf3b879394f609d1bbdc804ca47e8",
+      "size": 1183,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/907960fae8baf3b879394f609d1bbdc804ca47e8"
+    },
+    {
+      "path": "verification/vector-repair-20260920/STATUS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a5681f1b191f83fef76f01718eafa9a657587f92",
+      "size": 7045,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a5681f1b191f83fef76f01718eafa9a657587f92"
+    },
+    {
+      "path": "verification/vector-repair-20260920/api-journey-proof.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef6f647be06209f5ba52ba172c5482e82710cf4f",
+      "size": 7916,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/ef6f647be06209f5ba52ba172c5482e82710cf4f"
+    },
+    {
+      "path": "verification/vector-repair-20260920/api-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "be51560d7d6f723814873044d4de96d8280545a5",
+      "size": 1814,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/be51560d7d6f723814873044d4de96d8280545a5"
+    },
+    {
+      "path": "verification/vector-repair-20260920/payroll-decimal-red.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c06e1b1dad8fefefdaf29b18f16c83b477db76c2",
+      "size": 4840,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c06e1b1dad8fefefdaf29b18f16c83b477db76c2"
+    },
+    {
+      "path": "verification/vector-repair-20260920/payroll-journey-proof.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e87cfaa0c77a6059de0f690e764fdf545902697a",
+      "size": 7187,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/e87cfaa0c77a6059de0f690e764fdf545902697a"
+    },
+    {
+      "path": "verification/vector-repair-20260920/payroll-journey-results.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ef89afea67f1e7573d9767eb4f09001b2b10b4c",
+      "size": 1274,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/5ef89afea67f1e7573d9767eb4f09001b2b10b4c"
+    },
+    {
+      "path": "verification/vector-repair-20260920/runtime-provenance.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8386a0e0d58b84b6fce2040f906d5a7fea2cc609",
+      "size": 2656,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/8386a0e0d58b84b6fce2040f906d5a7fea2cc609"
+    },
+    {
+      "path": "verification/vector-repair-20260920/runtime-provenance.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b1518862c6e4515d583adac38f285eea9e01011",
+      "size": 3141,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/9b1518862c6e4515d583adac38f285eea9e01011"
+    },
+    {
+      "path": "verification/vector-repair-20260920/security-independent.tap",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4db6dff9bc5ed3e24e3cd4ae7abbb279569023b5",
+      "size": 1905,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/4db6dff9bc5ed3e24e3cd4ae7abbb279569023b5"
+    },
+    {
+      "path": "verification/vector-repair-20260920/source-sha256.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f0441281ca13198474f6d7d793be639afd07f5af",
+      "size": 1201,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f0441281ca13198474f6d7d793be639afd07f5af"
+    },
+    {
+      "path": "verification/vector-repair-20260920/workflow-provenance.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5f394c40260c9bbad7beb1137fe5527a9f1e284",
+      "size": 2247,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/c5f394c40260c9bbad7beb1137fe5527a9f1e284"
+    },
+    {
+      "path": "verification/vector-repair-20260920/workflows-independent.tap",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b516f83fc7d141e24fbe1b9f69ceb509173adf7a",
+      "size": 1281,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/b516f83fc7d141e24fbe1b9f69ceb509173adf7a"
+    },
+    {
+      "path": "verification/vector-repair-20260921/attendance-guardrails.test.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "754000ac96979941fb3b8dbe509b98dd29bbebdd",
+      "size": 7319,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/754000ac96979941fb3b8dbe509b98dd29bbebdd"
+    },
+    {
+      "path": "verification/vector-repair-20260921/attendance-overlap-regression.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "873943f2810efcd269b9de8690824ee9159c1d06",
+      "size": 6206,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/873943f2810efcd269b9de8690824ee9159c1d06"
+    },
+    {
+      "path": "verification/vector-repair-20260921/attendance-payroll-acceptance.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41ddfe3ad6dff44b9a4c5e25e148f6415936bcfb",
+      "size": 6933,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/41ddfe3ad6dff44b9a4c5e25e148f6415936bcfb"
+    },
+    {
+      "path": "verification/vector-repair-20260921/attendance-runtime-harness.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "375e948a09e22b608266c0e5600e7cdfc9ec8347",
+      "size": 4063,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/375e948a09e22b608266c0e5600e7cdfc9ec8347"
+    },
+    {
+      "path": "verification/vector-repair-20260921/attendance-runtime-harness.test.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "19f365e8035302058a2d48ab93c2fd03e02b7aaa",
+      "size": 3546,
+      "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/19f365e8035302058a2d48ab93c2fd03e02b7aaa"
+    }
+  ],
+  "diffs": [
+    {
+      "path": "Dockerfile",
+      "before": {
+        "path": "Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "afb49eacbbcb8c1f0f9eba5daf276194badb400a",
+        "size": 46514,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/afb49eacbbcb8c1f0f9eba5daf276194badb400a"
+      },
+      "after": {
+        "path": "Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "a2daf4e6a681a87f18d2165b9653a55cff11fcdb",
+        "size": 46514,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/a2daf4e6a681a87f18d2165b9653a55cff11fcdb"
+      }
+    },
+    {
+      "path": "implementation/proof/cloud-scale-proof-runner.cjs",
+      "before": {
+        "path": "implementation/proof/cloud-scale-proof-runner.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f4c6b2e54d1aa2da3ad5a57914cb3223ccb2115a",
+        "size": 10230,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f4c6b2e54d1aa2da3ad5a57914cb3223ccb2115a"
+      },
+      "after": {
+        "path": "implementation/proof/cloud-scale-proof-runner.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "74c4cfa22ba7275fadcc2d2aac18f2d1a5fbc453",
+        "size": 10230,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/74c4cfa22ba7275fadcc2d2aac18f2d1a5fbc453"
+      }
+    },
+    {
+      "path": "implementation/runtime/configuration-inference-engine.cjs",
+      "before": {
+        "path": "implementation/runtime/configuration-inference-engine.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b47687d87b56a41240e731cf4e2046edf5acfa68",
+        "size": 12097,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/b47687d87b56a41240e731cf4e2046edf5acfa68"
+      },
+      "after": {
+        "path": "implementation/runtime/configuration-inference-engine.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "baa120a0c16872c9b08c3b621a63e5efcd56c4c9",
+        "size": 14929,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/baa120a0c16872c9b08c3b621a63e5efcd56c4c9"
+      }
+    },
+    {
+      "path": "implementation/runtime/configuration-inference-engine.test.cjs",
+      "before": {
+        "path": "implementation/runtime/configuration-inference-engine.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d60956237669bbb2ea14d852fe247e67d2c007cc",
+        "size": 8977,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d60956237669bbb2ea14d852fe247e67d2c007cc"
+      },
+      "after": {
+        "path": "implementation/runtime/configuration-inference-engine.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f4fdb8c188f052c84a1a1904c9d3c14e17092cf3",
+        "size": 13951,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/f4fdb8c188f052c84a1a1904c9d3c14e17092cf3"
+      }
+    },
+    {
+      "path": "operations/runtime/autopilot-execution-engine.cjs",
+      "before": {
+        "path": "operations/runtime/autopilot-execution-engine.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d40ecfc818081cf25854435f9574d9cead87f934",
+        "size": 18778,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/d40ecfc818081cf25854435f9574d9cead87f934"
+      },
+      "after": {
+        "path": "operations/runtime/autopilot-execution-engine.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8f011b0fe0d1780c76b2b3c25d7f89c15f74c1e9",
+        "size": 19293,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/8f011b0fe0d1780c76b2b3c25d7f89c15f74c1e9"
+      }
+    },
+    {
+      "path": "operations/runtime/autopilot-execution-engine.test.cjs",
+      "before": {
+        "path": "operations/runtime/autopilot-execution-engine.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "1c4a7da17b443715279cdc3148d35d0bd52db6a1",
+        "size": 38198,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/1c4a7da17b443715279cdc3148d35d0bd52db6a1"
+      },
+      "after": {
+        "path": "operations/runtime/autopilot-execution-engine.test.cjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0801ea360bf86f53115c290980492f6fdec26ec6",
+        "size": 43998,
+        "url": "https://api.github.com/repos/paulallen123/-manufacturing-wfm/git/blobs/0801ea360bf86f53115c290980492f6fdec26ec6"
+      }
+    }
+  ]
+}

@@ -1,7 +1,60 @@
 'use strict';
 
+const { types: { isProxy } } = require('node:util');
 const HIGH_RISK_CONFIDENCE = 0.995;
 const STRUCTURAL_CONFIDENCE = 0.98;
+const PERSON_FIELDS = ['employeeId', 'managerId', 'location', 'department', 'wfmRole', 'jobTitle', 'employmentType', 'email', 'firstName'];
+
+function dataFields(value) {
+  if (!value || typeof value !== 'object' || isProxy(value)) return null;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return null;
+  return Object.getOwnPropertyDescriptors(value);
+}
+
+function ownDescriptor(fields, key) {
+  return fields && Object.hasOwn(fields, key) ? fields[key] : undefined;
+}
+
+function ownDataValue(fields, key) {
+  const field = ownDescriptor(fields, key);
+  return field && Object.hasOwn(field, 'value') ? field.value : undefined;
+}
+
+// Snapshot only inert own-data workforce fields. Never traverse a caller's
+// iterator, read an accessor, or coerce an object into source evidence.
+function snapshotPeople(value) {
+  if (value == null) return { rows: [], sourceCount: 0, invalid: false };
+  const invalid = sourceCount => ({ rows: [], sourceCount, invalid: true });
+  if (isProxy(value) || !Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype) return invalid(null);
+  const fields = Object.getOwnPropertyDescriptors(value), length = fields.length.value;
+  if (Reflect.ownKeys(fields).length !== length + 1) return invalid(length);
+  const rows = [];
+  for (let index = 0; index < length; index++) {
+    const item = ownDescriptor(fields, index);
+    if (!item || !Object.hasOwn(item, 'value')) return invalid(length);
+    const source = dataFields(item.value);
+    if (!source) return invalid(length);
+    const row = Object.create(null);
+    for (const key of PERSON_FIELDS) {
+      const field = ownDescriptor(source, key);
+      if (!field) continue;
+      const diagnostic = key === 'email' || key === 'firstName';
+      if (!Object.hasOwn(field, 'value')) {
+        if (diagnostic) continue;
+        return invalid(length);
+      }
+      const value = field.value;
+      if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+        if (diagnostic) continue;
+        return invalid(length);
+      }
+      row[key] = value;
+    }
+    rows.push(row);
+  }
+  return { rows, sourceCount: length, invalid: false };
+}
 
 function compact(value, max = 160) {
   return String(value ?? '').trim().slice(0, max);
@@ -50,6 +103,11 @@ function hhmm(minutes) {
 }
 
 function inferOrganisationModel(people) {
+  return inferOrganisationSnapshot(snapshotPeople(people));
+}
+
+function inferOrganisationSnapshot(source) {
+  const people = source.rows;
   const sites = new Map();
   const employeeIds = new Set();
   const orphanManagers = [];
@@ -82,9 +140,9 @@ function inferOrganisationModel(people) {
 
   const total = (people || []).filter(p => compact(p.employeeId)).length;
   const valid = total - orphanManagers.length - duplicateEmployeeIds.length - missingStructure.length;
-  const sourceCount = (people || []).length;
+  const sourceCount = source.sourceCount;
   const confidence = sourceCount > 0 ? Math.max(0, valid / sourceCount) : 0;
-  const incomplete = missingIdentityCount > 0 || missingStructure.length > 0;
+  const incomplete = source.invalid || missingIdentityCount > 0 || missingStructure.length > 0;
 
   return {
     sites: [...sites.entries()]
@@ -95,6 +153,7 @@ function inferOrganisationModel(people) {
       })),
     peopleCount: total,
     sourceCount,
+    ...(source.invalid ? { invalidSource: true } : {}),
     missingIdentityCount,
     missingStructure,
     orphanManagers,
@@ -127,9 +186,14 @@ function cohortKey(person) {
 }
 
 function buildMassEmployeeAssignments(people) {
+  return buildWorkforceSnapshot(snapshotPeople(people));
+}
+
+function buildWorkforceSnapshot(source) {
+  const people = source.rows;
   const assignments = [];
   const cohorts = new Map();
-  const exceptions = [];
+  const exceptions = source.invalid ? [{ reason: 'INVALID_WORKFORCE_SOURCE' }] : [];
 
   for (const person of people || []) {
     const employeeId = compact(person.employeeId);
@@ -292,12 +356,15 @@ function inferOvertimePolicy(timecards) {
 }
 
 function buildConfigurationProposal(input = {}) {
-  const people = Array.isArray(input.people) ? input.people : [];
-  const punches = Array.isArray(input.punches) ? input.punches : [];
-  const timecards = Array.isArray(input.timecards) ? input.timecards : [];
+  const fields = dataFields(input);
+  const source = snapshotPeople(fields ? ownDataValue(fields, 'people') : false);
+  const punchData = ownDataValue(fields, 'punches');
+  const timecardData = ownDataValue(fields, 'timecards');
+  const punches = Array.isArray(punchData) ? punchData : [];
+  const timecards = Array.isArray(timecardData) ? timecardData : [];
 
-  const organisation = inferOrganisationModel(people);
-  const workforce = buildMassEmployeeAssignments(people);
+  const organisation = inferOrganisationSnapshot(source);
+  const workforce = buildWorkforceSnapshot(source);
   const shifts = inferShiftTemplates(punches);
   const breaks = inferBreakPolicy(timecards);
   const overtime = inferOvertimePolicy(timecards);
@@ -322,7 +389,7 @@ function buildConfigurationProposal(input = {}) {
     policies: { breaks, overtime },
     decisions,
     metrics: {
-      people: people.length,
+      people: source.sourceCount,
       massAssignmentCoverage: workforce.coverage,
       cohortCount: workforce.cohorts.length,
       shiftTemplateCoverage: shifts.representedCoverage,
