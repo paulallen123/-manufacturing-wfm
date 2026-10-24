@@ -78,7 +78,7 @@ FROM scratch AS staffology-proof-evidence
 COPY --from=autonomy-proof /proof/staffology-private-artifacts/ /
 
 # Customer-proof staging build: sealed 0.6.76 runtime
-FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
+FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS runtime-hardened
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /app
 
@@ -365,13 +365,23 @@ RUN printf '%s\n' \
  && chmod 0555 /usr/local/bin/vector-entrypoint.sh
 
 # Required archive-dependent security checks against installed, hardened bytes.
-# BuildKit bind mounts are read-only and are not copied into the runtime image.
-RUN --mount=type=bind,source=operations/runtime,target=/proof/source,readonly \
-    --mount=type=bind,source=artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz,target=/proof/sealed-runtime.tgz,readonly \
-    --mount=type=bind,source=verification/vector-repair-20260921/verify-installed-workflow-archive.sh,target=/proof/verify-installed-workflow-archive.sh,readonly \
-    gosu node env EXPECTED_SOURCE_SHA="$RAILWAY_GIT_COMMIT_SHA" \
+# Railway does not support bind mounts, so proof inputs are COPY'd into a build-only stage.
+FROM runtime-hardened AS installed-archive-proof
+ARG RAILWAY_GIT_COMMIT_SHA
+COPY operations/runtime/ /proof/source/
+COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /proof/sealed-runtime.tgz
+COPY verification/vector-repair-20260921/verify-installed-workflow-archive.sh /proof/verify-installed-workflow-archive.sh
+RUN gosu node env EXPECTED_SOURCE_SHA="$RAILWAY_GIT_COMMIT_SHA" \
       WFM_EVIDENCE_SEALED_ARCHIVE=/proof/sealed-runtime.tgz \
-      /bin/sh /proof/verify-installed-workflow-archive.sh
+      /bin/sh /proof/verify-installed-workflow-archive.sh \
+ && touch /tmp/installed-archive-proof.ok
+
+# Final runtime stage. Depending on the proof marker forces the verification stage to run
+# on every build; the marker is removed and no proof inputs are present in this stage.
+FROM runtime-hardened
+COPY --from=installed-archive-proof /tmp/installed-archive-proof.ok /tmp/installed-archive-proof.ok
+RUN rm -f /tmp/installed-archive-proof.ok
+
 
 USER root
 ENTRYPOINT ["/usr/local/bin/vector-entrypoint.sh"]
