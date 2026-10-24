@@ -1,4 +1,9 @@
 'use strict';
+const { types: { isProxy } } = require('node:util');
+const { create, freeze, fromEntries, getOwnPropertyDescriptor, getPrototypeOf, hasOwn } = Object;
+const objectPrototype = Object.prototype;
+const isArray = Array.isArray;
+const ownKeys = Reflect.ownKeys;
 const ID = /^[A-Za-z0-9][A-Za-z0-9:._/-]{0,127}$/;
 const id = value => typeof value === 'string' && ID.test(value);
 const time = value => {
@@ -13,36 +18,36 @@ const common = [...scope, 'windowStart', 'windowEnd', 'sourceKind', 'sourceId', 
 const safeMoney = value => Number.isSafeInteger(value) && value >= 0;
 
 function inertRecord(value, fields, nestedFields = new Set()) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (!value || typeof value !== 'object' || isProxy(value) || isArray(value)) return null;
   let keys;
   try {
-    const prototype = Object.getPrototypeOf(value);
-    if (prototype !== Object.prototype && prototype !== null) return null;
-    keys = Reflect.ownKeys(value);
+    const prototype = getPrototypeOf(value);
+    if (prototype !== objectPrototype && prototype !== null) return null;
+    keys = ownKeys(value);
   } catch {
     return null;
   }
   if (keys.length !== fields.length ||
       keys.some(key => typeof key !== 'string' || !fields.includes(key))) return null;
-  const snapshot = Object.create(null);
+  const snapshot = create(null);
   for (const field of fields) {
     let descriptor;
     try {
-      descriptor = Object.getOwnPropertyDescriptor(value, field);
+      descriptor = getOwnPropertyDescriptor(value, field);
     } catch {
       return null;
     }
-    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return null;
+    if (!descriptor || !hasOwn(descriptor, 'value')) return null;
     if (!nestedFields.has(field) && descriptor.value !== null && typeof descriptor.value === 'object') return null;
     snapshot[field] = descriptor.value;
   }
-  return Object.freeze(snapshot);
+  return freeze(snapshot);
 }
 
 // Read-only comparison of three independently supplied scoped receipts. The
 // declared difference excludes retained absent-worker pay and is not savings.
 module.exports = function assessAbsenceCoverVariance(input) {
-  const blocked = reason => Object.freeze({ status: 'BLOCKED', reason, sourceAuthenticated: false,
+  const blocked = reason => freeze({ status: 'BLOCKED', reason, sourceAuthenticated: false,
     payrollAuthority: false, executionAuthority: false, claimedSavingsPence: null });
   const root = inertRecord(input, rootFields, new Set(['planned', 'absence', 'cover']));
   if (!root || !scope.every(key => id(root[key]))) return blocked('SCOPE_INVALID');
@@ -84,9 +89,9 @@ module.exports = function assessAbsenceCoverVariance(input) {
       !['INTERNAL','OVERTIME','AGENCY'].includes(cover.coverType)) return blocked('COST_OR_COVER_INVALID');
   const difference = cover.costPence - planned.costPence;
   if (!Number.isSafeInteger(difference)) return blocked('COST_OVERFLOW');
-  const hashes = Object.freeze(receipts.map(row => row.recordSha256));
-  return Object.freeze({ status: 'REVIEW_DECLARED_COVER_VARIANCE',
-    ...Object.fromEntries(scope.map(key => [key, root[key]])),
+  const hashes = freeze(receipts.map(row => row.recordSha256));
+  return freeze({ status: 'REVIEW_DECLARED_COVER_VARIANCE',
+    ...fromEntries(scope.map(key => [key, root[key]])),
     windowStart: root.windowStart, windowEnd: root.windowEnd, asOf: root.asOf,
     minutes: shiftMinutes, coverType: cover.coverType,
     declaredPlannedCostPence: planned.costPence, declaredCoverCostPence: cover.costPence,

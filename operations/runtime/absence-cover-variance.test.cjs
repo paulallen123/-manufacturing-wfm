@@ -81,3 +81,38 @@ test('returns immutable blocked and successful evidence including nested hashes'
   assert.throws(()=>{blocked.payrollAuthority=true;},TypeError);
   assert.equal(blocked.payrollAuthority,false);
 });
+test('rejects root and nested proxies without invoking their traps', () => {
+  for(const nested of [false,true]){
+    const x=fixture();let traps=0;
+    const proxy=new Proxy(nested?x.cover:x,{
+      getPrototypeOf(target){traps++;return Reflect.getPrototypeOf(target);},
+      ownKeys(target){traps++;return Reflect.ownKeys(target);},
+      getOwnPropertyDescriptor(target,key){traps++;return Reflect.getOwnPropertyDescriptor(target,key);}
+    });
+    if(nested)x.cover=proxy;
+    assert.equal(assess(nested?x:proxy).status,'BLOCKED');
+    assert.equal(traps,0);
+  }
+});
+test('retains immutable authority receipts after ambient Object.freeze substitution', () => {
+  const original=Object.freeze;
+  try{
+    Object.freeze=value=>value;
+    const out=assess(fixture());
+    assert.equal(Object.isFrozen(out),true);
+    assert.equal(Object.isFrozen(out.recordSha256),true);
+    assert.throws(()=>{out.executionAuthority=true;},TypeError);
+  }finally{Object.freeze=original;}
+});
+test('blocks revoked root and nested proxies without throwing', () => {
+  for(const nested of [null,'planned','absence','cover']){
+    const x=fixture();
+    const target=nested?x[nested]:x;
+    const {proxy,revoke}=Proxy.revocable(target,{});
+    if(nested)x[nested]=proxy;
+    revoke();
+    let out;
+    assert.doesNotThrow(()=>{out=assess(nested?x:proxy);});
+    assert.equal(out.status,'BLOCKED');
+  }
+});
