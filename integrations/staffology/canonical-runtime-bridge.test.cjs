@@ -19,6 +19,25 @@ test('people acquisition crosses only with complete reviewed onboarding mappings
 
 test('mixed lifecycle acquisition durably holds Former and stages eligible Current records separately',()=>{const formerId='3a7e7298-b414-4b87-9cf9-ab9c75bded62',ids=['current-1','current-2','current-3','current-4',formerId],calls=[],runtime=Bridge.createRuntime({loadState:()=>state(),stagePeople:(_actor,envelope,receipt)=>{calls.push({envelope,receipt});for(const record of envelope.records)if(record.operation==='delete')assert.throws(()=>Bridge.assertPeopleApplicationRecord(record),{code:'STAFFOLOGY_EMPLOYEE_LIFECYCLE_REQUIRED'});return {id:`stage-${calls.length}`,status:envelope.records.some(row=>row.operation==='delete')?'review_required':'staged',valid:envelope.records.filter(row=>row.operation!=='delete').length,held:envelope.records.filter(row=>row.operation==='delete').length};}}),acquisition={objectType:'people',cursor:'pageNum:0',sourceVersion:'retained-five-person-revision',paginationComplete:true,atomicProviderSnapshot:false,records:ids.map((externalId,index)=>({externalId,revision:`revision-${index}`,operation:'upsert',data:{identity:{employeeId:externalId,payrollCode:`PAY${index}`},person:{firstName:index===4?'Ian':`Current${index}`,lastName:index===4?'Jones':'Worker'},employment:{status:index===4?'Former':'Current',effectiveFrom:'2018-01-01',...(index===4?{effectiveTo:'2019-07-21'}:{})}}}))},receipt={approved:true,idempotencyKey:'retained-five-person',mappings:ids.map((externalId,index)=>({externalId,payrollId:`PAY${index}`,managerId:'m1',site:'Leeds',job:'Operator',contractType:'full_time',weeklyHours:'37.5'}))},result=runtime.stageEmployeeAcquisition({tenant:'northstar-demo'},acquisition,receipt);assert.equal(calls.length,2);assert.deepEqual(calls[0].envelope.records.map(row=>row.externalId),ids);assert.equal(calls[0].envelope.records[4].operation,'delete');assert.equal(calls[0].envelope.records[4].data.employment_end_date,'2019-07-21');assert.deepEqual(calls[1].envelope.records.map(row=>row.externalId),ids.slice(0,4));assert.notEqual(calls[1].receipt.idempotencyKey,receipt.idempotencyKey);assert.equal(result.status,'staged');assert.deepEqual(result.lifecycleHold,{batchId:'stage-1',held:1,employeeIds:[formerId]});});
 
+test('explicit current leaver evidence cannot be converted to Former solely by an end date',()=>{
+ const record={externalId:'employee-future-leaver',revision:'r1',operation:'upsert',data:{identity:{provider:'staffology',employeeId:'employee-future-leaver',payrollCode:'PAY001'},person:{firstName:'Future',lastName:'Leaver',email:'future@example.invalid'},employment:{status:'Current',hasLeft:false,effectiveFrom:'2026-01-01',effectiveTo:'2026-12-31'}}};
+ const acquisition={objectType:'people',cursor:'pageNum:0',sourceVersion:'v1',paginationComplete:true,atomicProviderSnapshot:false,records:[record]};
+ const receipt={approved:true,mappings:[{externalId:record.externalId,payrollId:'PAY001',managerId:'m1',site:'Leeds',job:'Operator',contractType:'full_time',weeklyHours:'40'}]};
+ const mapped=Bridge.peopleEnvelope(acquisition,receipt).records[0];
+ assert.equal(mapped.operation,'upsert');
+ assert.equal(mapped.data.employment_status,undefined);
+ assert.equal(mapped.data.employment_end_date,undefined);
+ assert.equal(Bridge.assertPeopleApplicationRecord(mapped),mapped);
+ const contradictory={...record,data:{...record.data,employment:{...record.data.employment,hasLeft:true}}};
+ assert.throws(()=>Bridge.peopleEnvelope({...acquisition,records:[contradictory]},receipt),{code:'STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED'});
+ const unbound={...record,data:{...record.data,employment:{status:'Current',effectiveFrom:'2026-01-01',effectiveTo:'2026-12-31'}}};
+ assert.throws(()=>Bridge.peopleEnvelope({...acquisition,records:[unbound]},receipt),{code:'STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED'});
+ const former={...record,data:{...record.data,employment:{...record.data.employment,status:'Former',hasLeft:true}}};
+ const held=Bridge.peopleEnvelope({...acquisition,records:[former]},receipt).records[0];
+ assert.equal(held.operation,'delete');
+ assert.throws(()=>Bridge.assertPeopleApplicationRecord(held),{code:'STAFFOLOGY_EMPLOYEE_LIFECYCLE_REQUIRED'});
+});
+
 
 test('missing provider email uses only an explicit reviewed VECTOR mapping',()=>{
  const acquisition={objectType:'people',cursor:'pageNum:1',sourceVersion:'source-email-absent',paginationComplete:true,atomicProviderSnapshot:false,records:[{externalId:'employee-1',revision:'r1',operation:'upsert',data:{identity:{employeeId:'employee-1',payrollCode:'1'},person:{firstName:'Demo',lastName:'Worker',email:''},employment:{status:'Current',effectiveFrom:'2017-01-01'}}}]};

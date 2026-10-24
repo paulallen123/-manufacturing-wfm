@@ -131,10 +131,20 @@ function mapEmployee(record,context) {
   if(!personal||!employment||Array.isArray(personal)||Array.isArray(employment))throw failure('STAFFOLOGY_RESPONSE_INVALID','Complete nested employee details are required.',502);
   const effectiveFrom=dateOnly(employment.starterDetails?.startDate);
   const payrollCode=exactText(employment.payrollCode,'Payroll code');
-  const effectiveTo=employment.leaverDetails?.leaveDate?dateOnly(employment.leaverDetails.leaveDate):null;
+  const leaver=employment.leaverDetails;
+  if(leaver!==undefined&&leaver!==null&&(typeof leaver!=='object'||Array.isArray(leaver)))
+    throw failure('STAFFOLOGY_RESPONSE_INVALID','Employee leaver details are invalid.',502);
+  const hasLeft=leaver?.hasLeft??null;
+  if(hasLeft!==null&&typeof hasLeft!=='boolean')
+    throw failure('STAFFOLOGY_RESPONSE_INVALID','Employee leaver status is invalid.',502);
+  const effectiveTo=leaver?.leaveDate?dateOnly(leaver.leaveDate):null;
   if(effectiveTo&&effectiveTo<effectiveFrom)throw failure('STAFFOLOGY_EFFECTIVE_DATE_INVALID','Employment ends before it starts.');
-  if((employment.leaverDetails?.hasLeft===true||record.status==='Former')&&!effectiveTo)throw failure('STAFFOLOGY_EFFECTIVE_DATE_INVALID','A leaver date is required.');
   if(record.status!==undefined&&!['Current','Former','Upcoming'].includes(record.status))throw failure('STAFFOLOGY_RESPONSE_INVALID','Employee status is not recognized.',502);
+  if((['Current','Upcoming'].includes(record.status)&&hasLeft===true)||(record.status==='Former'&&hasLeft===false))
+    throw failure('STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED','Employee status contradicts the provider leaver status.');
+  if(effectiveTo&&['Current','Upcoming'].includes(record.status)&&hasLeft===null)
+    throw failure('STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED','An employee end date requires explicit provider leaver status.');
+  if((hasLeft===true||record.status==='Former')&&!effectiveTo)throw failure('STAFFOLOGY_EFFECTIVE_DATE_INVALID','A leaver date is required.');
   const person={firstName:clean(personal.firstName,120),lastName:clean(personal.lastName,120),email:clean(personal.email,254)};
   if(!person.firstName||!person.lastName)throw failure('STAFFOLOGY_RESPONSE_INVALID','Required Person name fields are missing.',502);
   const canonicalPerson={employeeId,...person,startDate:effectiveFrom};
@@ -143,7 +153,7 @@ function mapEmployee(record,context) {
   if(employment.jobTitle)canonicalPerson.jobTitle=clean(employment.jobTitle,120);
   if(employment.department?.title)canonicalPerson.department=clean(employment.department.title,120);
   const identity={provider:'staffology',employerId,employeeId,payrollCode};
-  const employmentData={effectiveFrom,effectiveTo,status:record.status??null};
+  const employmentData={effectiveFrom,effectiveTo,status:record.status??null,hasLeft};
   const revision='sha256:'+sha256({identity,canonicalPerson,employment:employmentData});
   return {externalId:employeeId,revision,operation:'upsert',canonicalPerson,
     data:{identity,person,employment:employmentData,provenance:{provider:'staffology',acquiredAt:context.acquiredAt??null,sourcePath:context.sourcePath??null,sourceRevision:record.revision??record.updatedAt??null,revisionKind:'derived-mapped-content-sha256'}}};
