@@ -53,3 +53,31 @@ test('foreign, incomplete, duplicate, private, wrong chronology and mismatched m
   ];
   for(const [index,change] of changes.entries()){const x=fixture();change(x);assert.equal(assess(x).status,'BLOCKED',`change ${index}`);}
 });
+test('rejects accessor-backed evidence without invoking getters', () => {
+  const receiptInput=fixture();
+  let receiptGetterCalls=0;
+  Object.defineProperty(receiptInput.cover,'costPence',{enumerable:true,get(){receiptGetterCalls++;throw Error('getter ran');}});
+  assert.equal(assess(receiptInput).status,'BLOCKED');
+  assert.equal(receiptGetterCalls,0);
+
+  const rootInput=fixture();
+  let rootGetterCalls=0;
+  Object.defineProperty(rootInput,'tenantId',{enumerable:true,get(){rootGetterCalls++;return 't1';}});
+  assert.equal(assess(rootInput).status,'BLOCKED');
+  assert.equal(rootGetterCalls,0);
+});
+test('returns immutable blocked and successful evidence including nested hashes', () => {
+  const success=assess(fixture());
+  assert.equal(Object.isFrozen(success),true);
+  assert.equal(Object.isFrozen(success.recordSha256),true);
+  assert.throws(()=>{success.executionAuthority=true;},TypeError);
+  assert.throws(()=>{success.recordSha256.push('d'.repeat(64));},TypeError);
+  assert.equal(success.executionAuthority,false);
+  assert.equal(success.recordSha256.length,3);
+
+  const invalid=fixture();invalid.cover.costPence=-1;
+  const blocked=assess(invalid);
+  assert.equal(Object.isFrozen(blocked),true);
+  assert.throws(()=>{blocked.payrollAuthority=true;},TypeError);
+  assert.equal(blocked.payrollAuthority,false);
+});
