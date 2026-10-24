@@ -12,19 +12,7 @@ const root = path.resolve(__dirname, '..');
 const bootstrap = fs.readFileSync(path.join(root, 'security/runtime/bootstrap.cjs'), 'utf8');
 const relativeRequires = Array.from(bootstrap.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
 function copyMappings(docker) {const mappings=new Set();for(const line of docker.split('\n')){if(!line.startsWith('COPY '))continue;const words=line.trim().split(/\s+/).slice(1);while(words[0]?.startsWith('--'))words.shift();const destination=words.pop();for(const source of words){const target=destination.endsWith('/')&&!source.endsWith('/')?destination+path.posix.basename(source):destination;mappings.add(`${source} ${target}`);}}return mappings;}
-// Follow only FROM ancestry; sibling verification stages do not enter the image.
-function runtimeStageAncestry(docker) {
-  const stages = [];
-  const aliases = new Map();
-  for (const match of docker.matchAll(/^FROM[ \t]+([^\r\n]+)\r?\n([\s\S]*?)(?=^FROM[ \t]+|(?![\s\S]))/gm)) {
-    const words = match[1].trim().split(/\s+/);
-    const parent = aliases.get(words[0]);
-    const stage = (parent === undefined ? '' : stages[parent] + '\n') + match[0];
-    stages.push(stage);
-    if (words.length === 3 && words[1] === 'AS') aliases.set(words[2], stages.length - 1);
-  }
-  return stages.at(-1) || '';
-}
+const {runtimeStageAncestry} = require('../scripts/docker-runtime-ancestry.cjs');
 test('runtime packaging follows inherited stages without accepting sibling fixtures', () => {
   const fixture = 'FROM node AS base\nCOPY runtime /app/\nFROM base AS proof\nCOPY fixtures /proof/\nFROM base\nCOPY --from=proof /receipt /tmp/receipt\n';
   const final = runtimeStageAncestry(fixture);

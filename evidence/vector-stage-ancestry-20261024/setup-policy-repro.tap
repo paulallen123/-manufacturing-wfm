@@ -1,0 +1,418 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: construction is deterministic, isolated, pure and separate from workforce/authority
+ok 1 - construction is deterministic, isolated, pure and separate from workforce/authority
+  ---
+  duration_ms: 17.464297
+  type: 'test'
+  ...
+# Subtest: wrong tenant/owner, missing context, unknown fields and missing authority fail closed
+ok 2 - wrong tenant/owner, missing context, unknown fields and missing authority fail closed
+  ---
+  duration_ms: 7.536889
+  type: 'test'
+  ...
+# Subtest: non-enumerable required and optional input properties fail before authority is consulted
+ok 3 - non-enumerable required and optional input properties fail before authority is consulted
+  ---
+  duration_ms: 8.075834
+  type: 'test'
+  ...
+# Subtest: authority snapshot and returned organisation retain exactly the validated enumerable values
+ok 4 - authority snapshot and returned organisation retain exactly the validated enumerable values
+  ---
+  duration_ms: 2.134463
+  type: 'test'
+  ...
+# Subtest: every pinned public decorator preserves clean state twice and after JSON round-trip
+ok 5 - every pinned public decorator preserves clean state twice and after JSON round-trip
+  ---
+  duration_ms: 39.142196
+  type: 'test'
+  ...
+# Subtest: actual sealed load, SQLite save/read and bootstrap sanitisation preserve emptiness
+ok 6 - actual sealed load, SQLite save/read and bootstrap sanitisation preserve emptiness
+  ---
+  duration_ms: 6.831332
+  type: 'test'
+  ...
+# Subtest: actual scoped readers expose empty operational collections without state mutation
+ok 7 - actual scoped readers expose empty operational collections without state mutation
+  ---
+  duration_ms: 13.725632
+  type: 'test'
+  ...
+# Subtest: pinned onboarding renderers render empty people and batches
+ok 8 - pinned onboarding renderers render empty people and batches
+  ---
+  duration_ms: 13.767228
+  type: 'test'
+  ...
+# Subtest: pinned organisation renderer uses supplied anchor without inventing a role
+ok 9 - pinned organisation renderer uses supplied anchor without inventing a role
+  ---
+  duration_ms: 20.697059
+  type: 'test'
+  ...
+# Subtest: unknown policy/calendar/source facts remain unknown; no approval/readiness flip
+ok 10 - unknown policy/calendar/source facts remain unknown; no approval/readiness flip
+  ---
+  duration_ms: 0.978477
+  type: 'test'
+  ...
+# Subtest: unsupported empty readers fail without fabricating periods, settings or a first worker
+ok 11 - unsupported empty readers fail without fabricating periods, settings or a first worker
+  ---
+  duration_ms: 11.435776
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: setup-only construction has the complete reviewed empty shape without an organisation anchor
+ok 12 - setup-only construction has the complete reviewed empty shape without an organisation anchor
+  ---
+  duration_ms: 9.208389
+  type: 'test'
+  ...
+# Subtest: setup construction requires externally verified matching customer and tenant authority
+ok 13 - setup construction requires externally verified matching customer and tenant authority
+  ---
+  duration_ms: 1.461227
+  type: 'test'
+  ...
+# Subtest: setup constructor rejects extra fields, ambiguous strings and accessor/prototype authority
+ok 14 - setup constructor rejects extra fields, ambiguous strings and accessor/prototype authority
+  ---
+  duration_ms: 0.923548
+  type: 'test'
+  ...
+# Subtest: authority callback sees frozen exact values and cannot mutate caller data or output
+ok 15 - authority callback sees frozen exact values and cannot mutate caller data or output
+  ---
+  duration_ms: 0.930472
+  type: 'test'
+  ...
+# Subtest: setup state survives canonical SQLite round-trip without importing authority or demo rows
+ok 16 - setup state survives canonical SQLite round-trip without importing authority or demo rows
+  ---
+  duration_ms: 3.138692
+  type: 'test'
+  ...
+# (node:17) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:17) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure
+not ok 17 - source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure
+  ---
+  duration_ms: 9.132955
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/build-failure/source/implementation/runtime/setup-only-policy.test.cjs:36:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Exact policy COPY missing: /app/implementation-runtime/
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/build-failure/source/implementation/runtime/setup-only-policy.test.cjs:41:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+  ...
+# Subtest: cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy
+ok 18 - cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy
+  ---
+  duration_ms: 384.117774
+  type: 'test'
+  ...
+# Subtest: policy has exact internal methods and no activation method
+ok 19 - policy has exact internal methods and no activation method
+  ---
+  duration_ms: 2.052914
+  type: 'test'
+  ...
+# Subtest: registered workspace without mode fails closed, while genuinely unmanaged target grants nothing
+ok 20 - registered workspace without mode fails closed, while genuinely unmanaged target grants nothing
+  ---
+  duration_ms: 18.351479
+  type: 'test'
+  ...
+# Subtest: source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views
+ok 21 - source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views
+  ---
+  duration_ms: 10.062371
+  type: 'test'
+  ...
+# Subtest: SETUP_VIEW is a phase decision only
+ok 22 - SETUP_VIEW is a phase decision only
+  ---
+  duration_ms: 7.623292
+  type: 'test'
+  ...
+# Subtest: SETUP_PROFILE is a phase decision only
+ok 23 - SETUP_PROFILE is a phase decision only
+  ---
+  duration_ms: 9.060655
+  type: 'test'
+  ...
+# Subtest: SETUP_QUESTIONNAIRE is a phase decision only
+ok 24 - SETUP_QUESTIONNAIRE is a phase decision only
+  ---
+  duration_ms: 8.291958
+  type: 'test'
+  ...
+# Subtest: SETUP_LOCAL_CONFIGURATION is a phase decision only
+ok 25 - SETUP_LOCAL_CONFIGURATION is a phase decision only
+  ---
+  duration_ms: 6.622295
+  type: 'test'
+  ...
+# Subtest: INITIAL_CREDENTIAL is a phase decision only
+ok 26 - INITIAL_CREDENTIAL is a phase decision only
+  ---
+  duration_ms: 4.577966
+  type: 'test'
+  ...
+# Subtest: CURRENT_INVITATION_DELIVERY is a phase decision only
+ok 27 - CURRENT_INVITATION_DELIVERY is a phase decision only
+  ---
+  duration_ms: 4.552427
+  type: 'test'
+  ...
+# Subtest: SECURITY_OBSERVATION is a phase decision only
+ok 28 - SECURITY_OBSERVATION is a phase decision only
+  ---
+  duration_ms: 5.844362
+  type: 'test'
+  ...
+# Subtest: OPERATIONAL_READ cannot pass setup phase
+ok 29 - OPERATIONAL_READ cannot pass setup phase
+  ---
+  duration_ms: 5.924219
+  type: 'test'
+  ...
+# Subtest: REPORT_DELIVERY cannot pass setup phase
+ok 30 - REPORT_DELIVERY cannot pass setup phase
+  ---
+  duration_ms: 7.015141
+  type: 'test'
+  ...
+# Subtest: REGISTER_COMPLETION cannot pass setup phase
+ok 31 - REGISTER_COMPLETION cannot pass setup phase
+  ---
+  duration_ms: 5.38325
+  type: 'test'
+  ...
+# Subtest: setup_view cannot pass setup phase
+ok 32 - setup_view cannot pass setup phase
+  ---
+  duration_ms: 7.987006
+  type: 'test'
+  ...
+# Subtest:  SETUP_VIEW cannot pass setup phase
+ok 33 -  SETUP_VIEW cannot pass setup phase
+  ---
+  duration_ms: 6.309601
+  type: 'test'
+  ...
+# Subtest: SETUP_VIEW/anything cannot pass setup phase
+ok 34 - SETUP_VIEW/anything cannot pass setup phase
+  ---
+  duration_ms: 7.071874
+  type: 'test'
+  ...
+# Subtest: UNKNOWN cannot pass setup phase
+ok 35 - UNKNOWN cannot pass setup phase
+  ---
+  duration_ms: 7.077964
+  type: 'test'
+  ...
+# Subtest: registered order before workspace has distinct pending classification and restricted purposes
+ok 36 - registered order before workspace has distinct pending classification and restricted purposes
+  ---
+  duration_ms: 8.687243
+  type: 'test'
+  ...
+# Subtest: caller mode, unknown writer fields and partial order provenance cannot choose or alter authority
+ok 37 - caller mode, unknown writer fields and partial order provenance cannot choose or alter authority
+  ---
+  duration_ms: 7.735026
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state refuses UPDATE
+ok 38 - customer_workspace_runtime_state refuses UPDATE
+  ---
+  duration_ms: 6.196322
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state refuses DELETE
+ok 39 - customer_workspace_runtime_state refuses DELETE
+  ---
+  duration_ms: 6.141194
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state_events refuses UPDATE
+ok 40 - customer_workspace_runtime_state_events refuses UPDATE
+  ---
+  duration_ms: 10.317188
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state_events refuses DELETE
+ok 41 - customer_workspace_runtime_state_events refuses DELETE
+  ---
+  duration_ms: 5.163195
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-run
+ok 42 - current read refuses missing-run
+  ---
+  duration_ms: 5.588768
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-tenant
+ok 43 - current read refuses missing-tenant
+  ---
+  duration_ms: 5.434686
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-run-tenant
+ok 44 - current read refuses wrong-run-tenant
+  ---
+  duration_ms: 5.592281
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-run-contract
+ok 45 - current read refuses wrong-run-contract
+  ---
+  duration_ms: 6.602585
+  type: 'test'
+  ...
+# Subtest: current read refuses orphan-mode
+ok 46 - current read refuses orphan-mode
+  ---
+  duration_ms: 7.154636
+  type: 'test'
+  ...
+# Subtest: current read refuses unknown-version
+ok 47 - current read refuses unknown-version
+  ---
+  duration_ms: 6.105054
+  type: 'test'
+  ...
+# Subtest: current read refuses unknown-mode
+ok 48 - current read refuses unknown-mode
+  ---
+  duration_ms: 7.373002
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-journal
+ok 49 - current read refuses wrong-journal
+  ---
+  duration_ms: 5.124202
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-journal
+ok 50 - current read refuses missing-journal
+  ---
+  duration_ms: 5.564325
+  type: 'test'
+  ...
+# Subtest: current read refuses cross-contract
+ok 51 - current read refuses cross-contract
+  ---
+  duration_ms: 6.340975
+  type: 'test'
+  ...
+# Subtest: foreign key prevents alternate customer/tenant/run binding
+ok 52 - foreign key prevents alternate customer/tenant/run binding
+  ---
+  duration_ms: 6.085189
+  type: 'test'
+  ...
+# Subtest: only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING
+ok 53 - only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING
+  ---
+  duration_ms: 12.075378
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current run drift with zero mode/journal writes
+ok 54 - legacy migration refuses current run drift with zero mode/journal writes
+  ---
+  duration_ms: 5.511913
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current environment drift with zero mode/journal writes
+ok 55 - legacy migration refuses current environment drift with zero mode/journal writes
+  ---
+  duration_ms: 8.354878
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current namespace drift with zero mode/journal writes
+ok 56 - legacy migration refuses current namespace drift with zero mode/journal writes
+  ---
+  duration_ms: 5.016609
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current tenant drift with zero mode/journal writes
+ok 57 - legacy migration refuses current tenant drift with zero mode/journal writes
+  ---
+  duration_ms: 4.863158
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current owner-permission drift with zero mode/journal writes
+ok 58 - legacy migration refuses current owner-permission drift with zero mode/journal writes
+  ---
+  duration_ms: 5.468747
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current revoked-owner drift with zero mode/journal writes
+ok 59 - legacy migration refuses current revoked-owner drift with zero mode/journal writes
+  ---
+  duration_ms: 6.195737
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current revoked-customer drift with zero mode/journal writes
+ok 60 - legacy migration refuses current revoked-customer drift with zero mode/journal writes
+  ---
+  duration_ms: 7.343975
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current frozen drift with zero mode/journal writes
+ok 61 - legacy migration refuses current frozen drift with zero mode/journal writes
+  ---
+  duration_ms: 6.227112
+  type: 'test'
+  ...
+# Subtest: imported orphan origin journal cannot downgrade its tenant into unmanaged legacy
+ok 62 - imported orphan origin journal cannot downgrade its tenant into unmanaged legacy
+  ---
+  duration_ms: 5.658792
+  type: 'test'
+  ...
+# Subtest: initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant
+ok 63 - initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant
+  ---
+  duration_ms: 6.012861
+  type: 'test'
+  ...
+1..63
+# tests 63
+# suites 0
+# pass 62
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1030.744434
