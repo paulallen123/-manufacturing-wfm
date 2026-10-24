@@ -54,3 +54,68 @@ test('foreign, same-source, malformed, unfinalised and private receipts block', 
   ];
   for (const change of changes) { const x = fixture(); change(x); assert.equal(compare(x).status, 'BLOCKED'); }
 });
+
+test('coercive currency and export hashes fail closed without conversion', () => {
+  for (const apply of [
+    x => { x.currency = { toString() { throw new Error('currency coercion'); } }; },
+    x => { x.released.exportSha256 = { employeeId: 'private', toString() { throw new Error('hash coercion'); } }; }
+  ]) {
+    const x = fixture();
+    apply(x);
+    assert.doesNotThrow(() => assert.equal(compare(x).status, 'BLOCKED'));
+  }
+});
+
+test('accessors, hidden fields, symbols and custom prototypes fail closed without executing caller code', () => {
+  let reads = 0;
+  const accessor = fixture();
+  Object.defineProperty(accessor.released, 'totalPence', { enumerable: true, get() { reads++; return 11200; } });
+  assert.equal(compare(accessor).status, 'BLOCKED');
+  assert.equal(reads, 0);
+
+  const hidden = fixture();
+  Object.defineProperty(hidden.released, 'employeeId', { value: 'private', enumerable: false });
+  assert.equal(compare(hidden).status, 'BLOCKED');
+
+  const symbol = fixture();
+  symbol.approved[Symbol('private')] = 'employee';
+  assert.equal(compare(symbol).status, 'BLOCKED');
+
+  const inherited = fixture();
+  Object.setPrototypeOf(inherited.released, { employeeId: 'private' });
+  assert.equal(compare(inherited).status, 'BLOCKED');
+});
+
+test('active and revoked proxies fail closed without invoking traps', () => {
+  let traps = 0;
+  const root = fixture();
+  root.approved = new Proxy(root.approved, { ownKeys() { traps++; throw new Error('trap'); } });
+  assert.doesNotThrow(() => assert.equal(compare(root).status, 'BLOCKED'));
+  assert.equal(traps, 0);
+
+  const nested = fixture();
+  const revoked = Proxy.revocable(nested.released, {});
+  revoked.revoke();
+  nested.released = revoked.proxy;
+  assert.doesNotThrow(() => assert.equal(compare(nested).status, 'BLOCKED'));
+});
+
+test('published matched and blocked receipts are detached and recursively immutable', () => {
+  const input = fixture();
+  const result = compare(input);
+  input.tenantId = 'foreign';
+  input.released.exportSha256 = 'b'.repeat(64);
+  assert.equal(result.tenantId, 't1');
+  assert.equal(result.exportSha256, 'a'.repeat(64));
+  assert.ok(Object.isFrozen(result));
+  assert.ok(Object.isFrozen(result.variancePence));
+  assert.ok(Object.isFrozen(result.evidenceRefs));
+  assert.throws(() => { result.status = 'APPROVED'; }, TypeError);
+  assert.throws(() => { result.variancePence.total = 1; }, TypeError);
+  assert.throws(() => { result.evidenceRefs.push('forged'); }, TypeError);
+
+  const blocked = compare({});
+  assert.equal(blocked.status, 'BLOCKED');
+  assert.ok(Object.isFrozen(blocked));
+  assert.throws(() => { blocked.executionAuthority = true; }, TypeError);
+});
