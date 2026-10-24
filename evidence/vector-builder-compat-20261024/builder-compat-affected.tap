@@ -1,0 +1,186 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: release Dockerfile permanently includes critical attendance simulations
+ok 1 - release Dockerfile permanently includes critical attendance simulations
+  ---
+  duration_ms: 2.583152
+  type: 'test'
+  ...
+# Subtest: browser proof image blocks syntactically invalid harnesses before deploy
+ok 2 - browser proof image blocks syntactically invalid harnesses before deploy
+  ---
+  duration_ms: 0.743501
+  type: 'test'
+  ...
+# Subtest: hosted runtime retains durable-state admission control
+ok 3 - hosted runtime retains durable-state admission control
+  ---
+  duration_ms: 7.342742
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: retains exactly the approved five primary sections
+ok 4 - retains exactly the approved five primary sections
+  ---
+  duration_ms: 21.46339
+  type: 'test'
+  ...
+# Subtest: consolidation retains the engine repair: absent or invalid cost is not zero
+ok 5 - consolidation retains the engine repair: absent or invalid cost is not zero
+  ---
+  duration_ms: 62.663075
+  type: 'test'
+  ...
+# Subtest: zero attendance is preserved when the authoritative tenant calendar is current and overtime is not borrowed from other DOM figures
+ok 6 - zero attendance is preserved when the authoritative tenant calendar is current and overtime is not borrowed from other DOM figures
+  ---
+  duration_ms: 3.419729
+  type: 'test'
+  ...
+# Subtest: attendance renders em dash only when current authority is genuinely unavailable
+ok 7 - attendance renders em dash only when current authority is genuinely unavailable
+  ---
+  duration_ms: 2.379788
+  type: 'test'
+  ...
+# Subtest: zero workforce values remain explicit zeroes in rendered Today KPI summaries
+ok 8 - zero workforce values remain explicit zeroes in rendered Today KPI summaries
+  ---
+  duration_ms: 6.405625
+  type: 'test'
+  ...
+# Subtest: five-section navigation keeps every registered workflow reachable exactly once
+ok 9 - five-section navigation keeps every registered workflow reachable exactly once
+  ---
+  duration_ms: 7.170102
+  type: 'test'
+  ...
+# Subtest: employee Today renders the authenticated current personal home instead of the legacy sample overview
+ok 10 - employee Today renders the authenticated current personal home instead of the legacy sample overview
+  ---
+  duration_ms: 6.306102
+  type: 'test'
+  ...
+# Subtest: an unregistered payroll page cannot be opened by an employee
+ok 11 - an unregistered payroll page cannot be opened by an employee
+  ---
+  duration_ms: 8.344436
+  type: 'test'
+  ...
+# Subtest: late action evidence updates the queue and notification and preserves accessible authority detail
+ok 12 - late action evidence updates the queue and notification and preserves accessible authority detail
+  ---
+  duration_ms: 12.920658
+  type: 'test'
+  ...
+# Subtest: stale Time Review evidence cannot become a current Today priority
+ok 13 - stale Time Review evidence cannot become a current Today priority
+  ---
+  duration_ms: 9.017418
+  type: 'test'
+  ...
+# Subtest: a completed older request cannot overwrite refreshed action evidence after a screen render
+ok 14 - a completed older request cannot overwrite refreshed action evidence after a screen render
+  ---
+  duration_ms: 4.031586
+  type: 'test'
+  ...
+# Subtest: an in-flight manager response is discarded after the role becomes employee
+ok 15 - an in-flight manager response is discarded after the role becomes employee
+  ---
+  duration_ms: 3.201695
+  type: 'test'
+  ...
+# Subtest: missing owner scope cannot create a Today action or notification
+ok 16 - missing owner scope cannot create a Today action or notification
+  ---
+  duration_ms: 4.777902
+  type: 'test'
+  ...
+# Subtest: cross-tenant scope cannot create a Today action or notification
+ok 17 - cross-tenant scope cannot create a Today action or notification
+  ---
+  duration_ms: 3.733915
+  type: 'test'
+  ...
+# Subtest: different owner cannot create a Today action or notification
+ok 18 - different owner cannot create a Today action or notification
+  ---
+  duration_ms: 3.339256
+  type: 'test'
+  ...
+# Subtest: invalid period cannot create a Today action or notification
+ok 19 - invalid period cannot create a Today action or notification
+  ---
+  duration_ms: 6.615768
+  type: 'test'
+  ...
+# Subtest: filtered team scope cannot create a Today action or notification
+ok 20 - filtered team scope cannot create a Today action or notification
+  ---
+  duration_ms: 6.21604
+  type: 'test'
+  ...
+# Subtest: filtered source scope cannot create a Today action or notification
+ok 21 - filtered source scope cannot create a Today action or notification
+  ---
+  duration_ms: 3.994443
+  type: 'test'
+  ...
+# Subtest: missing context identity cannot create a Today action or notification
+ok 22 - missing context identity cannot create a Today action or notification
+  ---
+  duration_ms: 5.515032
+  type: 'test'
+  ...
+# Subtest: invalid context identity cannot create a Today action or notification
+ok 23 - invalid context identity cannot create a Today action or notification
+  ---
+  duration_ms: 14.235581
+  type: 'test'
+  ...
+# Subtest: missing unavailable rows cannot create a Today action or notification
+ok 24 - missing unavailable rows cannot create a Today action or notification
+  ---
+  duration_ms: 13.020835
+  type: 'test'
+  ...
+# Subtest: missing availability cannot create a Today action or notification
+ok 25 - missing availability cannot create a Today action or notification
+  ---
+  duration_ms: 155.91692
+  type: 'test'
+  ...
+# (node:19) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: archived checker dictionaries do not count as active retired presentation
+ok 26 - archived checker dictionaries do not count as active retired presentation
+  ---
+  duration_ms: 2704.826662
+  type: 'test'
+  ...
+# Subtest: retired tokens in archived presentation files are still rejected
+ok 27 - retired tokens in archived presentation files are still rejected
+  ---
+  duration_ms: 3075.420546
+  type: 'test'
+  ...
+# Subtest: active retired presentation is still rejected
+ok 28 - active retired presentation is still rejected
+  ---
+  duration_ms: 1430.400172
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10320.061922

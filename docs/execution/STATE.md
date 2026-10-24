@@ -1,3 +1,17 @@
+# Current checkpoint — 2026-10-24T21:01:26.318Z
+
+Existing integration owner /root; claim6389452655; workspace/workspace/scratch/cd4e2bcb0821. Same PR501 branch test/vector-empty-organisation-regression-20261020. Parent975d813e0666b5f6be6770afd2ebfbce077e929c; exact successor is containing Git commit. Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.
+
+The prior patch was applied externally: actual deployment260ff9b9-2419-4027-8093-bc81f776b30a at975d813e FAILED2026-10-24T20:55:39Z before tests. Railway rejects bind mounts, supporting cache mounts only. Prior cancellation is no longer the active cause. No image admitted. No pending patch or active build at reconciliation.
+This successor replaces unsupported mounts with proof-only descendant stage and final-image dependency on successful source receipt. Fixtures root-owned readonly; same non-root verifier88/88 zero-skip required. Final image inherits same hardened application and no fixture layers. Runtime-base validator binds named hardened stage and final ancestry; packaging tests follow only actual FROM ancestors. No product semantics, existing six-file/auth/startup fixes, archive or verifier changed.
+Actual Node22.23.2 local packaging RED24/26 then GREEN27/27; affected28/28; deploymentvalidatorPASS; wrong-runtime-image/wrong-final-parent negativesPASS. Independent /root/build_route_review ACCEPT exact three-file tree82518a013fe22b0e036980a5f5779d94416960dd with five independent validator checks. Evidence at evidence/vector-builder-compat-20261024/manifest.json. No actual successor image proof yet.
+
+Next executable action: stage only containing exactSHA and matching receipt on existing isolated project9cd73309-0ece-4b9a-891f-7daa13d94f0d / env9e7875b6-e214-4c32-9cee-81235e3d49ff / service845b5dcc-9c95-42cf-95fb-5719e96511f2; inspect whole patch; use authorized normal deployment controls; require actual build/log88/88 admission and immutable digest. Hold source during build. Previous isolated successful image397ef420... at75310949 is retained rollback lead, not successor/customer proof. Customer-serving baseline below not reverified here.
+No new product/controller/release lane/resources/subscriptions/volumes. Existing Codex build request not duplicated; PR512 review remains separately owned and must be consumed before adoption. Formal merge/protection/hosted authenticated/recovery/provider/customer gates remain unmet. No customer/provider writes. Full backlog remains incomplete.
+On interruption reconcile remote source, latest PR501 comments, jobs/patches and owners before resuming. No persistent Work runner implied; no build running at checkpoint.
+
+## Retained prior checkpoint
+
 # Current checkpoint — 2026-10-23T21:13:34.361Z
 
 Owner /root, PR501 claim6374743908; workspace /workspace/scratch/cd4e2bcb0821. Same integration branch test/vector-empty-organisation-regression-20261020; parent75310949f6fa965e81f49edbb77837423b7c705e; exact candidate is containing Git commit. Canonical release/vector-customer-ready-candidate-20260925 remains48dce8f697825c8cd5f99b3e5aeea3953647f8c2. No new product/controller/release lane.

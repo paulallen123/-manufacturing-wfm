@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "schemaVersion": 4,
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "runtimeSizeBytes": 562434,
+  "runtimeManifestSha256": "8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce",
+  "canonicalSourceSha256": "52e6f77d39fd71bc3240f05a763e77c790f6937b2614638db4bda51d43328219",
+  "hostedSourceSha256": "0eff86d3034c6493aba130ec052bce8ee98e2205c37baae7c89ac6bd01ea84d9",
+  "nodeImage": "node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96",
+  "runtimeUser": "node",
+  "nodeSecurityFloor": "22.23.2",
+  "packageManagersPresent": false,
+  "productionApproved": false,
+  "stagingOnly": true
+}
