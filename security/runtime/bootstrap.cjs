@@ -7,6 +7,7 @@ const { DatabaseSync } = require('node:sqlite');
 const { createIdentitySurvivalGuard } = require('./identity-survival-guard.cjs');
 const { createProofRunnerAuth } = require('./proof-runner-auth.cjs');
 const { createPasskeyAuth } = require('./passkey-auth.cjs');
+const { createFederatedAuth } = require('./federated-auth.cjs');
 const { installHostedListenGuard } = require('./hosted-listen-guard.cjs');
 const { createOwnerAccessRecovery } = require('./owner-access-recovery.cjs');
 const { enforceDurableState } = require('./durable-state-guard.cjs');
@@ -57,6 +58,7 @@ globalThis.__WFM_STAFFOLOGY_RESOLUTION=Object.freeze({profile:resolvedStaffology
 let guard = null;
 let proofRunnerAuth = null;
 let passkeyAuth = null;
+let federatedAuth = null;
 let integrationHub = null;
 let integrationHubInitError = null;
 let learningEngine = null;
@@ -351,7 +353,7 @@ http.createServer = function guardedCreateServer(listener) {
   // Initialise synchronously here so no request can arrive before the additive
   // security/integration/implementation/learning overlays are ready or fail closed.
   if (enabled && !guard && process.env.WFM_DB) {
-    guard = createIdentitySurvivalGuard({ dbPath: process.env.WFM_DB });
+    guard = createIdentitySurvivalGuard({ dbPath: process.env.WFM_DB, getFederatedAuth: () => federatedAuth });
   }
   if (hosted && !guard) {
     throw new Error('Hosted staging refuses to start without the identity survival guard.');
@@ -359,8 +361,11 @@ http.createServer = function guardedCreateServer(listener) {
   if (proofRunnerEnabled && !proofRunnerAuth) {
     proofRunnerAuth = createProofRunnerAuth({ dbPath: process.env.WFM_DB });
   }
+  if (hosted && !federatedAuth) {
+    federatedAuth = createFederatedAuth({ dbPath: process.env.WFM_DB });
+  }
   if (hosted && !passkeyAuth) {
-    passkeyAuth = createPasskeyAuth({ dbPath: process.env.WFM_DB });
+    passkeyAuth = createPasskeyAuth({ dbPath: process.env.WFM_DB, federatedAuth });
   }
 
   if (!integrationHub && !integrationHubInitError && process.env.WFM_DB) {
@@ -482,6 +487,7 @@ http.createServer = function guardedCreateServer(listener) {
     forceVectorUiFreshness(req, res);
     if (serveCanonicalVectorAsset(req, res)) return;
     if (runtimeIdentity.handleRequest(req, res)) return;
+    if (federatedAuth && await federatedAuth.handleRequest(req, res)) return;
     if (passkeyAuth && passkeyAuth.serveEntry(req, res)) return;
     // A fresh passkey assertion authenticates independently of a stale session.
     // Enrolment and device removal still pass the resource identity guard below.

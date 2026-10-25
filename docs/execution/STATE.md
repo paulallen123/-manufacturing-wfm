@@ -1,3 +1,17 @@
+# Current checkpoint — 2026-10-25T03:26:25.475Z
+
+Owner /root, same PR501/integration branch test/vector-empty-organisation-regression-20261020. User explicitly requested Google/Apple login and easy bounded assistant access. Claim6392880472. Parent f0b14c3dc05ac5869780a78e445123e72a1b0ea9; exact successor is containing commit. Source-only tree c5bc1f2eaa2d9563ad1b45e2c34c67ba750f9221. Preserve canonical release branch48dce8f697825c8cd5f99b3e5aeea3953647f8c2 and admitted5d image below; neither contains this new feature.
+
+Implemented disabled Google/Apple code flow in existing auth overlay, explicit provider subject mapping (no email auto-link), state/nonce/browser binding, provider token validation, atomic session/audit, existing tenant role/epoch/policy/freeze enforcement and current-session revocation. Google PKCE; Apple form_post; successful callback is protected200 first-party completion with fixed Continue link, retainingStrict cookies. Buttons hidden until configured; invitations/recovery do not expose provider flow. Composer and Docker include modules/tests. Existing proof signer reused via no-secret offline preflight; no new backdoor/controller/account/resource.
+
+Actual Node22.23.2 combined148/148 zero skips; workspace4/4; independent /root/build_route_review36/36. Local runtime compositionPASS. Initial concurrent TAP incomplete despite exit0 preserved and not counted; complete sequential evidence admitted. Independent review accepts disabled source increment only. Synthetic browser check could not run: browser executable absent. No live provider/callback/mobile proof or new image. Evidence at evidence/vector-federated-auth-20261025/manifest.json with exact reviewed file hashes. Setup requirements at docs/execution/SIGN-IN-AND-PROOF-ACCESS.md.
+
+Fresh Railway customer variable-name inventory has no WFM_GOOGLE/WFM_APPLE/WFM_FEDERATED keys. Activation requires approved Google Web OAuth registration, Apple Services ID/unexpired developer secret, verified subject-to-existing-user/tenant bindings and existing tenant control row. Do not buy new subscriptions or expose keys in chat. Existing proof servicef84fe27d has signer variable but needs approved current actor/auth-profile/context map for canonical client; do not widen allowlist or invent identities. Existing volume remains present; no database creation required.
+
+All local implementation/review jobs terminal. No new Railway build, staged patch, customer deployment, merge or provider write. Next executable action: obtain provider registrations and secure configuration/identity bindings, run new exact-image build through established controls, independently prove callbacks and phone login, then release only after required review/approval. Keep feature disabled meanwhile. Full backlog incomplete. On resume reconcile head/current comments/owners/jobs before mutation. No persistent Work executor implied.
+
+## Retained prior checkpoint
+
 # Current checkpoint — 2026-10-25T02:25:05.619Z
 
 Existing integration owner /root; workspace /workspace/scratch/cd4e2bcb0821; PR501, same test/vector-empty-organisation-regression-20261020 branch. Frozen admitted source 5d8b3f11fe04a09b63f258c34bbb8b9568942859, tree967f4c02b5869bb52313a089e79aeb5c79a95dde. This successor records evidence only; resolve its identity from Git and never transfer image proof to its SHA. Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.
