@@ -1,3 +1,15 @@
+# Current checkpoint — 2026-10-25T16:46:45.522Z
+
+Owner /root, existing PR501. Concurrent work discovered during guarded checkpoint: current source8931ab2abaa725aa60a8d97bb959110765ffb99f includes two-file malformed-request URL containment after aea2460. Preserved both commits8a256714/8931ab2. First guarded update returned GitHub UNKNOWN; readback found advanced head, no blind retry or overwrite. Unreferenced evidence commitb14fa67ee8445a7afdeac78499c9d2dc0fafeb3f is not the integration head. This containing successor records evidence only on8931ab2.
+
+Independent exact predecessor image admission: f61925bc-3718-48f6-89d6-137786b09afb SUCCESS foraea2460194d824a9bfe1325298b96b4894478d2c only; image sha256:68562ed3b8d9e1c024bb0db019212b38fb7aed065eebef1a55830b0dfca1d153, OCI config149ddd56b7c62c3753d49b68577fa6ab88729f2fb9c782b833716761f5799aac. Actual auth98/98, source1599/1599, installed88/88 zero skips; broad679pass/12skip retained separately. Receipt-only health, no customer bootstrap. Independent/root/build_route_review verified logs/digests. Evidence evidence/vector-federated-image-20261025. This image predates containment repair, not releaseable as current candidate proof.
+
+Fresh source8931 auth/boundary/UI suite passed, exact TAP retained beside image evidence; no successor image yet. Code Review6321348143 now completed/no findings for8931ab2. Security request6400143316 already posted by concurrent work, not duplicated; summary stillold06b9de9. Canonical release48dce8f unchanged; no customer deployment/provider activation. User reports neither/unsure of provider accounts. Google requires Cloud project/OAuth client; Apple requires developer ServicesID/primary AppID configuration. Need owner authentication and approved stable-subject mappings/secret setup; no paid enrollment authorized. Existing signed proof runner reused only with approved identities/context, no bypass.
+
+Next: reconcile latest ownership/source/comments and current security response, then one approved exact-successor image admission (existing isolated service remainspinnedaea; do not transfer its proof). Resolve Google account setup first while Apple remainsblocked. Provider callbacks/mobile/customer journey/rollback/formal release approvals remain. Local jobs and independent build reviewer terminal; no persistent worker. Preserve full backlog and all earlier work.
+
+## Retained history
+
 # Current checkpoint — 2026-10-25T03:26:25.475Z
 
 Owner /root, same PR501/integration branch test/vector-empty-organisation-regression-20261020. User explicitly requested Google/Apple login and easy bounded assistant access. Claim6392880472. Parent f0b14c3dc05ac5869780a78e445123e72a1b0ea9; exact successor is containing commit. Source-only tree c5bc1f2eaa2d9563ad1b45e2c34c67ba750f9221. Preserve canonical release branch48dce8f697825c8cd5f99b3e5aeea3953647f8c2 and admitted5d image below; neither contains this new feature.
