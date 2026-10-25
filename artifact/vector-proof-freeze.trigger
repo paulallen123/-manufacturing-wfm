@@ -52,3 +52,5 @@ review_vector_actual_staffology_payroll_codes=2026-10-02 parenta3e17ebfbcd3e667e
 2026-10-02 reconcile idle Agents session against latest durable turn; preserve actual usage_limit_exceeded and stop before duplicate message. Parent42fe08035ae7e2f0033e3029213332bf56402c75; red retained, implementation144of144 zero skips. Exact non-deploy CIRCLE_SHA1 admission required.
 
 2026-10-03 registered existing worker execution repair; exact canonical parent74533ed802fa20ab35b811b316194a2614af009b; selective native c88a78d67b8848f446c9a4a03b3cb58bd639608f delta preserves all unrelated canonical blobs; original74533 RED2 retained; local Node22.23.2 focused55of55 implementation145of145 zero skips; one exact-CIRCLE_SHA1 contained non-deploy build required; hosted execute/evidence/customer-proof UNPROVEN; prior-marker-records-historical.
+
+review_vector_overdue_mastery_readiness=2026-10-25 base48dce8f; existing-learning-runtime-fix; local-learning115of115-forge-core-PASS; exact-image-and-hosted-proof-PENDING; no-deploy-authority
