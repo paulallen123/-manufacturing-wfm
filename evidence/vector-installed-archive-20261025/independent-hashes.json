@@ -1,0 +1,22 @@
+{
+  "independent-installed-archive.tap": {
+    "sha256": "f4121e31ee7d2fe9a9a42e39ea02ad3cc238a9706e25ac19f192ee09b33b99ca",
+    "bytes": 20216
+  },
+  "independent-build-gate-logs.jsonl": {
+    "sha256": "d0da71456225993b26eae9c32c8e00277cd8f0076b78a201595f9094ae5dc1be",
+    "bytes": 57623
+  },
+  "independent-regression-logs.jsonl": {
+    "sha256": "3c2620bc980d5be75970c43788f7b05d79c6292366b2672a80a37ad7aee3db2b",
+    "bytes": 802
+  },
+  "independent-deployment.json": {
+    "sha256": "2ff5f6708fa647567a532a7519db4c0bcf2dfd3161eea9714f1de2fb4e51c100",
+    "bytes": 1018
+  },
+  "independent-review.md": {
+    "sha256": "630cd37b5c848fec0fef054231b5a06a91141680933719ba7ea6ace65cb50aed",
+    "bytes": 2884
+  }
+}

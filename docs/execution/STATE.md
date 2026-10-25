@@ -1,3 +1,19 @@
+# Current checkpoint — 2026-10-25T02:25:05.619Z
+
+Existing integration owner /root; workspace /workspace/scratch/cd4e2bcb0821; PR501, same test/vector-empty-organisation-regression-20261020 branch. Frozen admitted source 5d8b3f11fe04a09b63f258c34bbb8b9568942859, tree967f4c02b5869bb52313a089e79aeb5c79a95dde. This successor records evidence only; resolve its identity from Git and never transfer image proof to its SHA. Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.
+
+Actual isolated Railway job1e1dafcd-176d-4aea-a76d-6833fd02df35 SUCCESS2026-10-25T02:23:20.517Z. Project9cd73309-0ece-4b9a-891f-7daa13d94f0d, environment9e7875b6-e214-4c32-9cee-81235e3d49ff, service845b5dcc-9c95-42cf-95fb-5719e96511f2. Patch consumed, no pending staged changes. Image sha256:b75a2110ecc558946f237705cd6150b2086a4eed2f8bbe93275d44a89c44336d; image config sha256:4528bb2d29a5dbdfd54a52563342d081fae43c0a9a44129cd743b679e80f3207. Provider config remains pinned to5d8b3f11 with matching expected receipt SHA, watch pattern artifact/vector-proof-freeze.trigger unchanged.
+
+Actual source suite1599/1599 zero skips; installed broad suite679pass/12skip retained. DISTINCT post-hardening non-root installed archive88/88 zero fail/skip, all12 required cases executed. Marker02:22:49.768074590Z. Final image source comparisons and proof-fixture exclusion passed. Independent verifier/root/build_route_review PASS exact gate; exact TAP and hashes committed in evidence/vector-installed-archive-20261025. Receipt-only healthcheck passed02:23:18.691843606Z; no public domain, no customer application startup or authenticated journey proved.
+
+Code Review summary6321348143 COMPLETED no findings for5d8b3f11; security review remains older06b9de906c69ddb768fac07ef6a0a1e3f7ca6435 and must be refreshed, not treated as current. Formal reviews COMMENTED, no APPROVED observed. PR512 review6383147924 still RUNNING; preserve completed329/329 synthetic evidence and do not duplicate or adopt prematurely.
+
+Next executable action: obtain current security review on this evidence successor with admitted source5d8b3f11 explicitly identified; reconcile applicable formal release controls and prepared hosted authenticated proof access. No merge/customer promotion until required authorization and proof. Existing isolated image is a reproducible build artifact, not customer readiness. Customer latest attempted deploymentd9112b19 FAILED; previous057e19a2 SUCCESS at90ad90fcf60adaca9abacdd4ad14bf392f95e585 retained; customer restore drill unproven. Earlier isolated image397ef420 retained as rollback lead.
+
+All bounded build/reviewer jobs terminal. No persistent Work executor implied. No new product/controller/release lane/resources/volume/subscription or provider/customer write. Full accepted backlog remains incomplete. On interruption read this state and latest PR501 comments, reconcile branch/jobs/ownership and resume next action; do not rebuild or replay completed writes blindly.
+
+## Retained history
+
 # Current checkpoint — 2026-10-24T22:19:19.948Z
 
 Owner/root, same integration branch test/vector-empty-organisation-regression-20261020 / PR501; claim6390230597; workspace/workspace/scratch/cd4e2bcb0821. Parentda4577cc0d538df26c7ca293a1c25018045e6028; current successor is containing Git commit. Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.
