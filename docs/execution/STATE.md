@@ -1,3 +1,15 @@
+# Current checkpoint — 2026-10-25T17:04:28.094Z
+
+Existing integration owner/root, PR501/branch unchanged. Parent d94bafcb3b3fcf397a1900b2fce743d48631e112; exact successor is containing commit. Claim6400516726. Actual isolated successor build6c3f7237-6165-4fe4-ba4e-e74c6dd27e1b at8931ab2 FAILED;322/323 Staffology tests, first fullHTTP startup timeout with blankdiagnostics. No staged patch/active build at lastread. Config pinned8931ab2. Prioraea buildf61925bc remainsSUCCESS but predates crash containment, never successor proof.
+
+Bounded diagnosis: exact original testblob6ad680f203df00b538a3b730393e2f8e158d148c matched remote. Fresh original isolated1/1 and fullgroup323/323 passed. Rootcause UNKNOWN, notfixed. This successor only enhances teststartup diagnostics (healthstatus, errorcode, attempts/elapsed, exit/signal, boundedoutput), retains400x25ms/successrule/env and all productlogic. New negative diagnostic probes RED thenGREEN4/4; independent root4/4 and modified real simulatedjourney1/1 pass. Evidence evidence/vector-staffology-startup-20261025. Author/root/build_route_review, reviewer/root. No provider/customer proof.
+
+Next: freeze containingSHA and matchingreceipt on same existing isolated service845b5dcc/project9cd73309/env9e7875b6, inspectpatch and use normal authorized controls for one instrumentedbuild; require actualsuccess/digest. If startup fails again consume new diagnostics, do not increase budget blindly. Current code reviewd94 completed/no findings; cloudsecurityold06b, request6400143316 remains existing. Formalrelease/hosted/provider gates unmet.
+
+GoogleCloud browser twice shows SiteUnavailable; cannot configure owner OAuth registration here. User neither/unsure of accounts, no registrations/credentials/subscriptions created. Providers disabled. Existing customer unchanged. All local jobs terminal; no persistentworker. Preserve previouswork/fullbacklog and reconcile remoteowners/jobs before resume.
+
+## Retained history
+
 # Current checkpoint — 2026-10-25T16:46:45.522Z
 
 Owner /root, existing PR501. Concurrent work discovered during guarded checkpoint: current source8931ab2abaa725aa60a8d97bb959110765ffb99f includes two-file malformed-request URL containment after aea2460. Preserved both commits8a256714/8931ab2. First guarded update returned GitHub UNKNOWN; readback found advanced head, no blind retry or overwrite. Unreferenced evidence commitb14fa67ee8445a7afdeac78499c9d2dc0fafeb3f is not the integration head. This containing successor records evidence only on8931ab2.
