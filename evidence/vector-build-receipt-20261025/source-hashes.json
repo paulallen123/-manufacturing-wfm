@@ -1,0 +1,5 @@
+{
+  "Dockerfile": "9ca21393593ef254fa067e262eb98bb02fc1439d16a338c9621d7cf3a68c620d",
+  "scripts/staffology-test-receipt.cjs": "6b512ea7b702c7394161a978290c149c6086d71b2c56104d199ed6262d0cf224",
+  "scripts/staffology-test-receipt.test.cjs": "56cc78bfed5032b7c063e5e646ea1734d8b97410604c7f66dc9a4d2b7b0b099d"
+}
