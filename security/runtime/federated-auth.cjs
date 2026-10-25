@@ -122,7 +122,9 @@ function createFederatedAuth(options = {}) {
   });}
   function clearCookie(provider){return cookieName(provider)+'=; Path=/; Secure; HttpOnly; SameSite='+(provider==='apple'?'None':'Lax')+'; Max-Age=0';}
   async function handleRequest(req,res){
-    const url=new URL(req.url||'/',origin||'https://invalid.example');
+    let url;
+    try{url=new URL(req.url||'/',origin||'https://invalid.example');}
+    catch{return respond(res,400,{error:'Invalid request URL.'});}
     if(!url.pathname.startsWith(PREFIX+'/')) return false;
     if(url.pathname===PREFIX+'/providers') return respond(res,req.method==='GET'?200:405,{providers:Object.keys(PROVIDERS).filter(configured)});
     const match=url.pathname.match(/^\/api\/auth\/federated\/(google|apple)\/(start|callback)$/);
@@ -201,3 +203,4 @@ function createFederatedAuth(options = {}) {
   return {handleRequest,getSession,validateSession,providers:()=>Object.keys(PROVIDERS).filter(configured),close:()=>db.close()};
 }
 module.exports={createFederatedAuth,validateIdToken,PROVIDERS,FEDERATED_ISSUER:ISSUER};
+
