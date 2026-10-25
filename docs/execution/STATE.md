@@ -1,3 +1,14 @@
+# Final serving-image reconciliation — 2026-10-25T21:08:34.418Z
+
+Owner/root, PR501 unchanged. Source admitted b4a2582c59ccf1c2618274b16e569870fd9b3517; containing commit evidence-only, parent61cb52a86ddbe880357678377bb5350c0da63115.
+Current isolated serving deployment is b39f0232-0a2e-44e4-a50b-2a32203924c2 SUCCESS2026-10-25T21:06:40.991Z, image sha256:fb43ff18357726b80f7b62ad660cbf417cd50c3b313fa7f6df9e67649936c154, config2d46b999ea6b2a4f51876e66c6b4fa6c7765ae74e81f43a52d9aaeca5a84c10c. Independent/root/build_route_review separately verified this exact deployment/source/image and its installed88/88/all12 zero skips at21:05:51.230888068Z; three-way SHA receipt-only health21:06:37.449576244Z. e906 and bc3b REMOVED after supersession; their results remain historical and their digests are not attributed to b39. No current jobs or staged changes. No persistent executor.
+
+Evidence/vector-b4-image-20261025 now contains separate b39-current and e906-historical independent receipts. e906 auth99/99, Staffology327/327 andsource1599/1599 stay bound to that exact successful build. b39source1599/1599 was also directly observed by root earlier; do not assume every gate from one image proves another merely because sourceSHA matches. Prepared logging patch remains unadopted, no further rebuild started.
+
+Current GitHub Actions exact-b4 query returned0runs, so second-provider promotion proof is not established. Canonical branch protection readenabledfalse; resolve required release controls before integration/promotion. Next gate is hosted authenticated app/login/restart/recovery proof with approved durable isolated storage, scoped identity/context and actual image promotion; existing proof service has no persistentvolume and customer volume remains excluded. Google/Apple remain disabled until provider registrations/bindings. No new customer-facing URL or complete Golden Journey proved. Customer application unchanged, fullbacklog incomplete. Review previous checkpoint for identifiers/authority and on resume reconcile source/current jobs before acting.
+
+## Retained checkpoint
+
 # Current checkpoint — 2026-10-25T21:06:36.320Z
 
 Owner /root, existing workspace /workspace/scratch/cd4e2bcb0821, same PR501 integration branch test/vector-empty-organisation-regression-20261020. Parent f056f5341367ed8750e954b898e2fa2e2255227b; containing successor is evidence-only. Exact admitted SOURCE remains b4a2582c59ccf1c2618274b16e569870fd9b3517; do not transfer identity to this documentation successor. Canonical release48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.

@@ -8,7 +8,7 @@
   "environmentId": "9e7875b6-e214-4c32-9cee-81235e3d49ff",
   "serviceId": "845b5dcc-9c95-42cf-95fb-5719e96511f2",
   "deploymentId": "e906c10b-1f64-43cd-b487-da16264a5f53",
-  "status": "SUCCESS",
+  "status": "REMOVED_AFTER_SUCCESS",
   "successAt": "2026-10-25T21:02:59.783Z",
   "scope": "isolated image admission; receipt-only health",
   "verifiedUrl": null,
@@ -41,7 +41,7 @@
   "verifier": "/root/build_route_review",
   "evidenceHashes": "e906-independent-hashes.json",
   "policyRevision": null,
-  "configurationRevision": null,
+  "configurationRevision": "Exact service source/receipt binding verified in b39-independent-evidence.json",
   "schemaRevision": null,
   "customerAcceptance": null,
   "providerActionIds": [],
@@ -57,17 +57,17 @@
     "Google/Apple registrations and bindings absent",
     "No production promotion"
   ],
-  "activeJobs": [
-    {
-      "id": "b39f0232-0a2e-44e4-a50b-2a32203924c2",
-      "sha": "b4a2582c59ccf1c2618274b16e569870fd9b3517",
-      "status": "BUILDING"
-    },
-    {
-      "id": "bc3b835a-bccf-44a2-ac10-c474405e6081",
-      "sha": "b4a2582c59ccf1c2618274b16e569870fd9b3517",
-      "status": "BUILDING"
-    }
-  ],
-  "rollback": "previous isolated aea image retained as historical artifact, not current candidate; customer unchanged"
+  "activeJobs": [],
+  "rollback": "previous isolated aea image retained as historical artifact, not current candidate; customer unchanged",
+  "servingReconciliation": {
+    "at": "2026-10-25T21:08:34.418Z",
+    "sourceSha": "b4a2582c59ccf1c2618274b16e569870fd9b3517",
+    "deploymentId": "b39f0232-0a2e-44e4-a50b-2a32203924c2",
+    "status": "SUCCESS",
+    "imageDigest": "sha256:fb43ff18357726b80f7b62ad660cbf417cd50c3b313fa7f6df9e67649936c154",
+    "configDigest": "sha256:2d46b999ea6b2a4f51876e66c6b4fa6c7765ae74e81f43a52d9aaeca5a84c10c",
+    "evidenceHashes": "b39-independent-hashes.json",
+    "proof": "exact current installed88/88/all12 plus receipt-only health",
+    "customerProven": false
+  }
 }
