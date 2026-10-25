@@ -185,7 +185,15 @@ function createIdentitySurvivalGuard(options = {}) {
       containSession(row,tokenHash,'passkey-session-scope-mismatch-contained',{path:requestPath(req)});
       return writeJson(res,401,{error:'Passkey security context changed. Sign in again.'});
     }
-    const expectedIssuer = passkeySession ? 'wfm-passkey' : proofRunnerSession ? PROOF_RUNNER_ISSUER : issuer;
+    const federatedAuth = options.getFederatedAuth?.();
+    const federatedSession = federatedAuth?.getSession(tokenHash);
+    const priorBinding = bindingStmt.get(tokenHash);
+    if ((federatedSession || priorBinding?.issuer === 'wfm-federated') &&
+        (!federatedAuth || !federatedAuth.validateSession(tokenHash, row) || passkeySession || proofRunnerSession)) {
+      containSession(row, tokenHash, 'federated-session-scope-mismatch-contained', {path: requestPath(req)});
+      return writeJson(res, 401, {error: 'Sign-in security context changed. Sign in again.'});
+    }
+    const expectedIssuer = federatedSession ? 'wfm-federated' : passkeySession ? 'wfm-passkey' : proofRunnerSession ? PROOF_RUNNER_ISSUER : issuer;
 
     ensureControlStmt.run(row.tenant, new Date().toISOString());
     const control = controlStmt.get(row.tenant);

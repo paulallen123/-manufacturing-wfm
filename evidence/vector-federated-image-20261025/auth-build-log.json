@@ -1,0 +1,918 @@
+[
+  {
+    "timestamp": "2026-10-25T13:00:07.831284499Z",
+    "message": "npm notice\nnpm notice New major version of npm available! 10.9.8 -> 12.2.1\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1\nnpm notice To update run: npm install -g npm@12.2.1\nnpm notice\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:07.832706580Z",
+    "message": "\nadded 26 packages in 3s\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.035512866Z",
+    "message": "TAP version 13\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.077723818Z",
+    "message": "# Subtest: the deployed bootstrap serves the session recovery script with JavaScript MIME and no cache\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.079783660Z",
+    "message": "ok 1 - the deployed bootstrap serves the session recovery script with JavaScript MIME and no cache\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.080404180Z",
+    "message": "  ---\n  duration_ms: 1.644901\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.081552781Z",
+    "message": "# Subtest: session asset supports HEAD and rejects writes or unrecognised paths\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.083480033Z",
+    "message": "ok 2 - session asset supports HEAD and rejects writes or unrecognised paths\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.083507523Z",
+    "message": "  ---\n  duration_ms: 1.942262\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.248905119Z",
+    "message": "# (node:26) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:08.248958589Z",
+    "message": "# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622475024Z",
+    "message": "# Subtest: google code login mints only mapped local authority with secure cookies and atomic binding\nok 3 - google code login mints only mapped local authority with secure cookies and atomic binding\n  ---\n  duration_ms: 248.845812\n  type: 'test'\n  ...\n# Subtest: apple code login mints only mapped local authority with secure cookies and atomic binding\nok 4 - apple code login mints only mapped local authority with secure cookies and atomic binding\n  ---\n  duration_ms: 164.002836\n  type: 'test'\n  ...\n# Subtest: refuses issuer without issuing a session\nok 5 - refuses issuer without issuing a session\n  ---\n  duration_ms: 117.43244\n  type: 'test'\n  ...\n# Subtest: refuses audience without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622507304Z",
+    "message": "ok 6 - refuses audience without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622594334Z",
+    "message": "  ---\n  duration_ms: 121.121264\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622597224Z",
+    "message": "# Subtest: refuses authorizedParty without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622598204Z",
+    "message": "ok 7 - refuses authorizedParty without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622925004Z",
+    "message": "  ---\n  duration_ms: 143.18069\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622926254Z",
+    "message": "# Subtest: refuses expired without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622926854Z",
+    "message": "ok 8 - refuses expired without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622927344Z",
+    "message": "  ---\n  duration_ms: 184.287361\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.622927854Z",
+    "message": "# Subtest: refuses future without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.632800772Z",
+    "message": "ok 9 - refuses future without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.634428013Z",
+    "message": "  ---\n  duration_ms: 134.519704\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.634977494Z",
+    "message": "# Subtest: refuses nonce without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.635506353Z",
+    "message": "ok 10 - refuses nonce without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.635671534Z",
+    "message": "  ---\n  duration_ms: 146.308803\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.635674024Z",
+    "message": "# Subtest: refuses unlinked without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.636111174Z",
+    "message": "ok 11 - refuses unlinked without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.637370945Z",
+    "message": "  ---\n  duration_ms: 129.632289\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.639274507Z",
+    "message": "# Subtest: refuses missingSubject without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.639276437Z",
+    "message": "ok 12 - refuses missingSubject without issuing a session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.639431167Z",
+    "message": "  ---\n  duration_ms: 114.626468\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.641082958Z",
+    "message": "# Subtest: state binding prevents login CSRF and durable consumption prevents duplicate exchanges\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.641092198Z",
+    "message": "ok 13 - state binding prevents login CSRF and durable consumption prevents duplicate exchanges\n  ---\n  duration_ms: 160.692154\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.642030889Z",
+    "message": "# Subtest: pending login survives process-local module restart and refuses expired state\nok 14 - pending login survives process-local module restart and refuses expired state\n  ---\n  duration_ms: 182.689431\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.642034199Z",
+    "message": "# Subtest: issuance fails atomically for ambiguous\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.642034969Z",
+    "message": "ok 15 - issuance fails atomically for ambiguous\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.642973209Z",
+    "message": "  ---\n  duration_ms: 140.366228\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.643986811Z",
+    "message": "# Subtest: issuance fails atomically for wrongTenant\nok 16 - issuance fails atomically for wrongTenant\n  ---\n  duration_ms: 144.333111\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.643990221Z",
+    "message": "# Subtest: issuance fails atomically for missing\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.644379881Z",
+    "message": "ok 17 - issuance fails atomically for missing\n  ---\n  duration_ms: 124.707126\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.644968301Z",
+    "message": "# Subtest: issuance fails atomically for freeze\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.646575492Z",
+    "message": "ok 18 - issuance fails atomically for freeze\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.647528623Z",
+    "message": "  ---\n  duration_ms: 128.103628\n  type: 'test'\n  ...\n# Subtest: issuance fails atomically for controlMissing\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.649175675Z",
+    "message": "ok 19 - issuance fails atomically for controlMissing\n  ---\n  duration_ms: 147.257694\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.650251945Z",
+    "message": "# Subtest: issuance fails atomically for auditFailure\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.650580126Z",
+    "message": "ok 20 - issuance fails atomically for auditFailure\n  ---\n  duration_ms: 121.366933\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.652101907Z",
+    "message": "# Subtest: sessions reject current role, epoch, policy, freeze, subject-map and metadata changes\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.652242807Z",
+    "message": "ok 21 - sessions reject current role, epoch, policy, freeze, subject-map and metadata changes\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.653667878Z",
+    "message": "  ---\n  duration_ms: 263.498073\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.654427558Z",
+    "message": "# Subtest: provider outage consumes state and cannot trigger blind retry or session mint\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.654786629Z",
+    "message": "ok 22 - provider outage consumes state and cannot trigger blind retry or session mint\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.654790959Z",
+    "message": "  ---\n  duration_ms: 140.459109\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.654792429Z",
+    "message": "# Subtest: unconfigured providers and expired Apple client secret fail closed without network\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.654793329Z",
+    "message": "ok 23 - unconfigured providers and expired Apple client secret fail closed without network\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.655102759Z",
+    "message": "  ---\n  duration_ms: 82.729983\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.655105729Z",
+    "message": "# Subtest: durable rate limit survives restart and refuses additional sign-in work\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.655106579Z",
+    "message": "ok 24 - durable rate limit survives restart and refuses additional sign-in work\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.655916670Z",
+    "message": "  ---\n  duration_ms: 1027.43705\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.657314821Z",
+    "message": "# Subtest: JWT signature, algorithm and duplicate key negatives cannot authenticate\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.657317611Z",
+    "message": "ok 25 - JWT signature, algorithm and duplicate key negatives cannot authenticate\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.657807651Z",
+    "message": "  ---\n  duration_ms: 2.531263\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.658739882Z",
+    "message": "# Subtest: cross-site starts, existing sessions and duplicate callback parameters are refused\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.658893662Z",
+    "message": "ok 26 - cross-site starts, existing sessions and duplicate callback parameters are refused\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.658896102Z",
+    "message": "  ---\n  duration_ms: 87.076256\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.662460704Z",
+    "message": "# Subtest: Apple callback body is bounded by size and time before any provider exchange\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.664018586Z",
+    "message": "ok 27 - Apple callback body is bounded by size and time before any provider exchange\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.664181556Z",
+    "message": "  ---\n  duration_ms: 144.509212\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.689203715Z",
+    "message": "# (node:27) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.690880747Z",
+    "message": "# Subtest: valid bound federated session reaches existing customer UI and identity guard\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.690925287Z",
+    "message": "ok 28 - valid bound federated session reaches existing customer UI and identity guard\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.690928597Z",
+    "message": "  ---\n  duration_ms: 200.164034\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.691781917Z",
+    "message": "# Subtest: federated session refuses role rather than legacy rebinding\nok 29 - federated session refuses role rather than legacy rebinding\n  ---\n  duration_ms: 285.434669\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.692543387Z",
+    "message": "# Subtest: federated session refuses epoch rather than legacy rebinding\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.693728999Z",
+    "message": "ok 30 - federated session refuses epoch rather than legacy rebinding\n  ---\n  duration_ms: 251.517373\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.693731909Z",
+    "message": "# Subtest: federated session refuses freeze rather than legacy rebinding\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.696807000Z",
+    "message": "ok 31 - federated session refuses freeze rather than legacy rebinding\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.696812390Z",
+    "message": "  ---\n  duration_ms: 321.786647\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.698451852Z",
+    "message": "# Subtest: federated session refuses missing-metadata rather than legacy rebinding\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.699091183Z",
+    "message": "ok 32 - federated session refuses missing-metadata rather than legacy rebinding\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.702226695Z",
+    "message": "  ---\n  duration_ms: 264.161483\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.702592126Z",
+    "message": "# Subtest: federated session refuses missing-binding rather than legacy rebinding\nok 33 - federated session refuses missing-binding rather than legacy rebinding\n  ---\n  duration_ms: 222.165531\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.708889050Z",
+    "message": "# Subtest: federated session refuses expired rather than legacy rebinding\nok 34 - federated session refuses expired rather than legacy rebinding\n  ---\n  duration_ms: 264.026743\n  type: 'test'\n  ...\n# Subtest: missing federated verifier refuses a federated binding\nok 35 - missing federated verifier refuses a federated binding\n  ---\n  duration_ms: 228.670646\n  type: 'test'\n  ...\n# Subtest: only configured providers become visible and redirect to fixed same-origin routes\nok 36 - only configured providers become visible and redirect to fixed same-origin routes\n  ---\n  duration_ms: 5.884645\n  type: 'test'\n  ...\n# Subtest: unavailable configuration retains passkey-only entry\nok 37 - unavailable configuration retains passkey-only entry\n  ---\n  duration_ms: 1.492941\n  type: 'test'\n  ...\n# Subtest: recovery and invitations never start federation\nok 38 - recovery and invitations never start federation\n  ---\n  duration_ms: 2.104552\n  type: 'test'\n  ...\n# (node:53) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.708927820Z",
+    "message": "# Subtest: customer enrolment and discoverable passkey sign-in issue identity-bound secure sessions\nok 39 - customer enrolment and discoverable passkey sign-in issue identity-bound secure sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.708932040Z",
+    "message": "  ---\n  duration_ms: 336.82547\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.711118762Z",
+    "message": "# Subtest: bare email and password-only sessions cannot bootstrap a passkey\nok 40 - bare email and password-only sessions cannot bootstrap a passkey\n  ---\n  duration_ms: 171.560842\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.712350103Z",
+    "message": "# Subtest: fixture proof enrolment is refused outside staging\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.714648925Z",
+    "message": "ok 41 - fixture proof enrolment is refused outside staging\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.715350455Z",
+    "message": "  ---\n  duration_ms: 175.538035\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.715353075Z",
+    "message": "# Subtest: registration rejects invalid origin, challenge, UV or RP {\"origin\":\"https://attacker.test\"}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716249056Z",
+    "message": "ok 42 - registration rejects invalid origin, challenge, UV or RP {\"origin\":\"https://attacker.test\"}\n  ---\n  duration_ms: 267.559806\n  type: 'test'\n  ...\n# Subtest: registration rejects invalid origin, challenge, UV or RP {\"challenge\":\"forged\"}\nok 43 - registration rejects invalid origin, challenge, UV or RP {\"challenge\":\"forged\"}\n  ---\n  duration_ms: 210.864972\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716271986Z",
+    "message": "# Subtest: registration rejects invalid origin, challenge, UV or RP {\"flags\":65}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716458876Z",
+    "message": "ok 44 - registration rejects invalid origin, challenge, UV or RP {\"flags\":65}\n  ---\n  duration_ms: 214.082374\n  type: 'test'\n  ...\n# Subtest: registration rejects invalid origin, challenge, UV or RP {\"rp\":\"attacker.test\"}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716766627Z",
+    "message": "ok 45 - registration rejects invalid origin, challenge, UV or RP {\"rp\":\"attacker.test\"}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716769997Z",
+    "message": "  ---\n  duration_ms: 218.172058\n  type: 'test'\n  ...\n# Subtest: registration challenge is browser bound, one use, and expires\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716772917Z",
+    "message": "ok 46 - registration challenge is browser bound, one use, and expires\n  ---\n  duration_ms: 282.158528\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716773827Z",
+    "message": "# Subtest: account scope changes during enrolment are contained\nok 47 - account scope changes during enrolment are contained\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.716774787Z",
+    "message": "  ---\n  duration_ms: 214.433295\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.717920037Z",
+    "message": "# Subtest: authentication rejects invalid signed assertion {\"origin\":\"https://attacker.test\"}\nok 48 - authentication rejects invalid signed assertion {\"origin\":\"https://attacker.test\"}\n  ---\n  duration_ms: 301.340162\n  type: 'test'\n  ...\n# Subtest: authentication rejects invalid signed assertion {\"challenge\":\"forged\"}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.719974828Z",
+    "message": "ok 49 - authentication rejects invalid signed assertion {\"challenge\":\"forged\"}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.720160149Z",
+    "message": "  ---\n  duration_ms: 320.075056\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.720163809Z",
+    "message": "# Subtest: authentication rejects invalid signed assertion {\"flags\":1}\nok 50 - authentication rejects invalid signed assertion {\"flags\":1}\n  ---\n  duration_ms: 315.667353\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.722448231Z",
+    "message": "# Subtest: authentication rejects invalid signed assertion {\"userHandle\":\"wrong\"}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.722516471Z",
+    "message": "ok 51 - authentication rejects invalid signed assertion {\"userHandle\":\"wrong\"}\n  ---\n  duration_ms: 321.496597\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.730178277Z",
+    "message": "# Subtest: authentication rejects invalid signed assertion {\"counter\":0}\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.730814887Z",
+    "message": "ok 52 - authentication rejects invalid signed assertion {\"counter\":0}\n  ---\n  duration_ms: 281.360016\n  type: 'test'\n  ...\n# Subtest: concurrent replay issues exactly one session and tampered signatures fail\nok 53 - concurrent replay issues exactly one session and tampered signatures fail\n  ---\n  duration_ms: 323.10353\n  type: 'test'\n  ...\n# Subtest: passkey session is contained on role drift and credential revocation\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.859265906Z",
+    "message": "ok 54 - passkey session is contained on role drift and credential revocation\n  ---\n  duration_ms: 216.151546\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.880304212Z",
+    "message": "# Subtest: origin, transport and body authority injection are denied before enrolment\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:12.891857051Z",
+    "message": "ok 55 - origin, transport and body authority injection are denied before enrolment\n  ---\n  duration_ms: 157.928701\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.073060741Z",
+    "message": "# Subtest: revoked historical passkey cannot be replaced through a fresh contract invitation\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.198335287Z",
+    "message": "ok 56 - revoked historical passkey cannot be replaced through a fresh contract invitation\n  ---\n  duration_ms: 229.354547\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.210659266Z",
+    "message": "# Subtest: revoked initial owner cannot enrol through a pending invitation\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.215682650Z",
+    "message": "ok 57 - revoked initial owner cannot enrol through a pending invitation\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.216290830Z",
+    "message": "  ---\n  duration_ms: 150.012215\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.377049124Z",
+    "message": "# Subtest: secure invitation enrols only its existing recipient once\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.391661746Z",
+    "message": "ok 58 - secure invitation enrols only its existing recipient once\n  ---\n  duration_ms: 151.587327\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.524714698Z",
+    "message": "# Subtest: last remaining passkey cannot be removed\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.566392069Z",
+    "message": "ok 59 - last remaining passkey cannot be removed\n  ---\n  duration_ms: 179.049168\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.753654804Z",
+    "message": "# Subtest: fresh authentication replaces a stale cookie and entry removes invalid session authority\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.785469859Z",
+    "message": "ok 60 - fresh authentication replaces a stale cookie and entry removes invalid session authority\n  ---\n  duration_ms: 225.334703\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.940160668Z",
+    "message": "# Subtest: audit failure cannot leave a credential or a granted session\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:13.959827123Z",
+    "message": "ok 61 - audit failure cannot leave a credential or a granted session\n  ---\n  duration_ms: 160.444034\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:14.270359121Z",
+    "message": "# Subtest: second device can be enrolled and a revoked key loses its sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:14.319883080Z",
+    "message": "ok 62 - second device can be enrolled and a revoked key loses its sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:14.321386470Z",
+    "message": "  ---\n  duration_ms: 265.374793\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:14.607727951Z",
+    "message": "# Subtest: first owner passkey setup produces a real verified credential and fresh sign-in without changing existing authority\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:14.645039350Z",
+    "message": "ok 63 - first owner passkey setup produces a real verified credential and fresh sign-in without changing existing authority\n  ---\n  duration_ms: 342.818394\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:14.870593143Z",
+    "message": "# Subtest: first-passkey grant is not consumed by cancellation or invalid attestation\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:15.034221639Z",
+    "message": "ok 64 - first-passkey grant is not consumed by cancellation or invalid attestation\n  ---\n  duration_ms: 303.138362\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:15.185485715Z",
+    "message": "# Subtest: first-passkey setup refuses disabled without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:15.317806427Z",
+    "message": "ok 65 - first-passkey setup refuses disabled without creating credentials or sessions\n  ---\n  duration_ms: 166.474849\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:15.476413119Z",
+    "message": "# Subtest: first-passkey setup refuses expired without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:15.636908592Z",
+    "message": "ok 66 - first-passkey setup refuses expired without creating credentials or sessions\n  ---\n  duration_ms: 163.790066\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:15.781447184Z",
+    "message": "# Subtest: first-passkey setup refuses wrong-token without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:15.921205001Z",
+    "message": "ok 67 - first-passkey setup refuses wrong-token without creating credentials or sessions\n  ---\n  duration_ms: 150.640526\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.072460197Z",
+    "message": "# Subtest: first-passkey setup refuses wrong-person without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.218160149Z",
+    "message": "ok 68 - first-passkey setup refuses wrong-person without creating credentials or sessions\n  ---\n  duration_ms: 146.385152\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.327479093Z",
+    "message": "# Subtest: first-passkey setup refuses wrong-tenant without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.470567384Z",
+    "message": "ok 69 - first-passkey setup refuses wrong-tenant without creating credentials or sessions\n  ---\n  duration_ms: 161.932035\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.497130184Z",
+    "message": "# Subtest: first-passkey setup refuses wrong-role without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.655575046Z",
+    "message": "ok 70 - first-passkey setup refuses wrong-role without creating credentials or sessions\n  ---\n  duration_ms: 155.283219\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.685804489Z",
+    "message": "# Subtest: first-passkey setup refuses freeze without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.895264110Z",
+    "message": "ok 71 - first-passkey setup refuses freeze without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.897266622Z",
+    "message": "  ---\n  duration_ms: 143.750541\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:16.940969146Z",
+    "message": "# Subtest: first-passkey setup refuses epoch without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.111433907Z",
+    "message": "ok 72 - first-passkey setup refuses epoch without creating credentials or sessions\n  ---\n  duration_ms: 148.151234\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.164899467Z",
+    "message": "# Subtest: first-passkey setup refuses policy without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.337202760Z",
+    "message": "ok 73 - first-passkey setup refuses policy without creating credentials or sessions\n  ---\n  duration_ms: 150.483646\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.374205549Z",
+    "message": "# Subtest: first-passkey setup refuses password-purpose without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.594702438Z",
+    "message": "ok 74 - first-passkey setup refuses password-purpose without creating credentials or sessions\n  ---\n  duration_ms: 124.389956\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.635169399Z",
+    "message": "# Subtest: first-passkey setup refuses origin without creating credentials or sessions\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.743793923Z",
+    "message": "ok 75 - first-passkey setup refuses origin without creating credentials or sessions\n  ---\n  duration_ms: 111.642065\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.765639400Z",
+    "message": "# Subtest: first-passkey authority is rechecked at final verification after revoked\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.880565588Z",
+    "message": "ok 76 - first-passkey authority is rechecked at final verification after revoked\n  ---\n  duration_ms: 175.339255\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.909515761Z",
+    "message": "# Subtest: first-passkey authority is rechecked at final verification after expired\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.917874427Z",
+    "message": "ok 77 - first-passkey authority is rechecked at final verification after expired\n  ---\n  duration_ms: 188.983926\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.923646941Z",
+    "message": "# Subtest: first-passkey authority is rechecked at final verification after epoch\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.923654941Z",
+    "message": "ok 78 - first-passkey authority is rechecked at final verification after epoch\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.923656781Z",
+    "message": "  ---\n  duration_ms: 256.586707\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.923657641Z",
+    "message": "# Subtest: first-passkey authority is rechecked at final verification after policy\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.924222732Z",
+    "message": "ok 79 - first-passkey authority is rechecked at final verification after policy\n  ---\n  duration_ms: 224.286863\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.926021743Z",
+    "message": "# Subtest: first-passkey authority is rechecked at final verification after freeze\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.926026243Z",
+    "message": "ok 80 - first-passkey authority is rechecked at final verification after freeze\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.927861705Z",
+    "message": "  ---\n  duration_ms: 208.423591\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.927931085Z",
+    "message": "# Subtest: first-passkey authority is rechecked at final verification after account\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.930338026Z",
+    "message": "ok 81 - first-passkey authority is rechecked at final verification after account\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.930855087Z",
+    "message": "  ---\n  duration_ms: 257.922168\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.931684897Z",
+    "message": "# Subtest: first-passkey authority is rechecked at final verification after grant-renewed\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.932978188Z",
+    "message": "ok 82 - first-passkey authority is rechecked at final verification after grant-renewed\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:17.934145849Z",
+    "message": "  ---\n  duration_ms: 128.990808\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.043252083Z",
+    "message": "# Subtest: two real owner setup challenges allow only one credential and one consumed grant\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.070676074Z",
+    "message": "ok 83 - two real owner setup challenges allow only one credential and one consumed grant\n  ---\n  duration_ms: 171.726362\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.211934233Z",
+    "message": "# Subtest: owner setup audit failure rolls back credential, grant consumption and session together\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.220893140Z",
+    "message": "ok 84 - owner setup audit failure rolls back credential, grant consumption and session together\n  ---\n  duration_ms: 141.884709\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.225325983Z",
+    "message": "# Subtest: shared owner setup UI sends the privately typed code only to same-origin enrolment and clears it on success\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.230623047Z",
+    "message": "ok 85 - shared owner setup UI sends the privately typed code only to same-origin enrolment and clears it on success\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.231257237Z",
+    "message": "  ---\n  duration_ms: 9.948507\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.249582742Z",
+    "message": "# Subtest: shared owner setup UI contains cancellation without a verification request or false success\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.249926992Z",
+    "message": "ok 86 - shared owner setup UI contains cancellation without a verification request or false success\n  ---\n  duration_ms: 3.191983\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.252899735Z",
+    "message": "# Subtest: shared owner setup UI rejects missing setup code before any request\nok 87 - shared owner setup UI rejects missing setup code before any request\n  ---\n  duration_ms: 1.499971\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.527812616Z",
+    "message": "# (node:53) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.527910566Z",
+    "message": "# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.531236588Z",
+    "message": "# (node:53) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.531332238Z",
+    "message": "# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.533777350Z",
+    "message": "# (node:53) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.534617590Z",
+    "message": "# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.547980401Z",
+    "message": "# (node:53) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.552569195Z",
+    "message": "# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.688628699Z",
+    "message": "# Subtest: four independent SQLite workers can redeem first-passkey authority only once\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.716504291Z",
+    "message": "ok 88 - four independent SQLite workers can redeem first-passkey authority only once\n  ---\n  duration_ms: 479.111138\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.760023664Z",
+    "message": "# Subtest: first-passkey purpose refuses replacement credentials and durably revoked authority\nok 89 - first-passkey purpose refuses replacement credentials and durably revoked authority\n  ---\n  duration_ms: 178.420047\n  type: 'test'\n  ...\n# Subtest: editing setup code cannot enable a duplicate ceremony while a request is pending\nok 90 - editing setup code cannot enable a duplicate ceremony while a request is pending\n  ---\n  duration_ms: 1.06408\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.769622062Z",
+    "message": "# Subtest: expired in-app API sessions return to passwordless entry\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.770676953Z",
+    "message": "ok 91 - expired in-app API sessions return to passwordless entry\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.772666964Z",
+    "message": "  ---\n  duration_ms: 11.595079\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.774554276Z",
+    "message": "# Subtest: URL objects preserve the expired-session redirect\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.775167186Z",
+    "message": "ok 92 - URL objects preserve the expired-session redirect\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.775849087Z",
+    "message": "  ---\n  duration_ms: 4.218644\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.776743128Z",
+    "message": "# Subtest: successful logout returns to passwordless entry\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.777730328Z",
+    "message": "ok 93 - successful logout returns to passwordless entry\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.781757261Z",
+    "message": "  ---\n  duration_ms: 5.222605\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.781761051Z",
+    "message": "# Subtest: role denials and external response failures preserve the current screen\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.783094672Z",
+    "message": "ok 94 - role denials and external response failures preserve the current screen\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.783531812Z",
+    "message": "  ---\n  duration_ms: 15.051511\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.784205243Z",
+    "message": "# (node:72) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.785064684Z",
+    "message": "# Subtest: new signed owner enrols, signs in and resumes the one permanent reviewed workspace\nok 95 - new signed owner enrols, signs in and resumes the one permanent reviewed workspace\n  ---\n  duration_ms: 1341.393342\n  type: 'test'\n  ...\n# Subtest: stored order nominee enrols with real passkey and resumes the permanent reviewed workspace\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.785729834Z",
+    "message": "ok 96 - stored order nominee enrols with real passkey and resumes the permanent reviewed workspace\n  ---\n  duration_ms: 1073.433195\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.786346984Z",
+    "message": "# Subtest: stored order nomination invalidates an outstanding real passkey challenge\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.786870074Z",
+    "message": "ok 97 - stored order nomination invalidates an outstanding real passkey challenge\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.787719736Z",
+    "message": "  ---\n  duration_ms: 594.548367\n  type: 'test'\n  ...\n# Subtest: stored order revocation invalidates an outstanding real passkey challenge\nok 98 - stored order revocation invalidates an outstanding real passkey challenge\n  ---\n  duration_ms: 731.646983\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.788315816Z",
+    "message": "1..98\n# tests 98\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.789094217Z",
+    "message": "# suites 0\n# pass 98\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.789926188Z",
+    "message": "# fail 0\n# cancelled 0\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.789929418Z",
+    "message": "# skipped 0\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.789930818Z",
+    "message": "# todo 0\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.791429869Z",
+    "message": "# duration_ms 10762.480497\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.897807271Z",
+    "message": "[autonomy-proof 13/21] RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund  && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:18.902920025Z",
+    "message": "[autonomy-proof 14/21] RUN node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.092728920Z",
+    "message": "TAP version 13\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.128510378Z",
+    "message": "# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.129143979Z",
+    "message": "# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.146241771Z",
+    "message": "# Subtest: source readers bind the stored principal and current raw state without synthesising observations\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.147749512Z",
+    "message": "ok 1 - source readers bind the stored principal and current raw state without synthesising observations\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.148784844Z",
+    "message": "  ---\n  duration_ms: 3.859683\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.151549885Z",
+    "message": "# Subtest: weekly and absence callbacks retain native output with explicit source binding\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.151947166Z",
+    "message": "ok 2 - weekly and absence callbacks retain native output with explicit source binding\n  ---\n  duration_ms: 0.72257\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.154046647Z",
+    "message": "# Subtest: changed tenant or role cannot borrow an admitted principal\nok 3 - changed tenant or role cannot borrow an admitted principal\n  ---\n  duration_ms: 0.901521\n  type: 'test'\n  ...\n# Subtest: unknown explicit period is unavailable and never falls back to a fixture period\nok 4 - unknown explicit period is unavailable and never falls back to a fixture period\n  ---\n  duration_ms: 1.153921\n  type: 'test'\n  ...\n# Subtest: default period uses current canonical tenant calendar only and absent current period stays unavailable\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.154841118Z",
+    "message": "ok 5 - default period uses current canonical tenant calendar only and absent current period stays unavailable\n  ---\n  duration_ms: 0.951781\n  type: 'test'\n  ...\n# Subtest: source table and embedded state revisions must agree before invoking a reader\nok 6 - source table and embedded state revisions must agree before invoking a reader\n  ---\n  duration_ms: 0.954391\n  type: 'test'\n  ...\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.895518377Z",
+    "message": "# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+  },
+  {
+    "timestamp": "2026-10-25T13:00:19.896682909Z",
+    "message": "# (Use `node --trace-warnings ...` to show where the warning was created)\n"
+  }
+]

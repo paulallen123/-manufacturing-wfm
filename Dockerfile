@@ -14,7 +14,7 @@ RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs impl
 RUN node --test scripts/patch-payroll-money.test.mjs
 RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
- && node --test security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
+ && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 RUN node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs
 RUN node --test scripts/three-min-feed.composed.test.mjs
 RUN node --test integrations/staffology/configured-site-authority.test.cjs integrations/staffology/configured-site-source-writer.test.cjs integrations/staffology/employee-import-previews.test.cjs integrations/staffology/employee-preview-consumer.test.cjs scripts/staffology-preview-route.test.mjs scripts/staffology-preview-active-route.test.mjs
@@ -118,7 +118,7 @@ RUN node /tmp/retire-legacy-presentation.mjs /app/public \
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/package.json security/runtime/package-lock.json /app/security-runtime/
 RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
-COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs /app/security-runtime/
+COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs security/runtime/federated-auth.cjs security/runtime/federated-ui.js /app/security-runtime/
 COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
 COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs /app/security-runtime/

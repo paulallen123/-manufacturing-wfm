@@ -1,0 +1,4 @@
+{"timestamp":"2026-10-25T02:11:37.188127366Z","severity":"info","message":"# Subtest: source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure\n"}
+{"timestamp":"2026-10-25T02:11:37.189064888Z","severity":"info","message":"ok 17 - source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure\n  ---\n  duration_ms: 7.265755\n  type: 'test'\n  ...\n"}
+{"timestamp":"2026-10-25T02:15:32.251386072Z","severity":"info","message":"# Subtest: Docker extracted-runtime composition has its full compiler patch dependency available\n"}
+{"timestamp":"2026-10-25T02:15:32.253268703Z","severity":"info","message":"ok 3 - Docker extracted-runtime composition has its full compiler patch dependency available\n"}
