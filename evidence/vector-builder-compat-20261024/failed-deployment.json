@@ -1,0 +1,39 @@
+{
+  "deployment": {
+    "id": "260ff9b9-2419-4027-8093-bc81f776b30a",
+    "status": "FAILED",
+    "createdAt": "2026-10-24T20:55:29.703Z",
+    "updatedAt": "2026-10-24T20:56:56.343Z",
+    "serviceId": "845b5dcc-9c95-42cf-95fb-5719e96511f2",
+    "environmentId": "9e7875b6-e214-4c32-9cee-81235e3d49ff",
+    "url": null,
+    "snapshotId": "b11e9841-720b-4c14-af83-145af589a6eb",
+    "canRollback": false,
+    "canRedeploy": true,
+    "regions": [],
+    "meta": {
+      "reason": "deploy",
+      "commitMessage": "test(proof): require installed archive security checks after runtime hardening",
+      "commitHash": "975d813e0666b5f6be6770afd2ebfbce077e929c",
+      "branch": "test/vector-empty-organisation-regression-20261020"
+    }
+  },
+  "logs": [
+    {
+      "timestamp": "2026-10-24T20:55:34.819032818Z",
+      "message": "🚂 All aboard, next stop: builder v4"
+    },
+    {
+      "timestamp": "2026-10-24T20:55:39.387288189Z",
+      "message": "uploading snapshot"
+    },
+    {
+      "timestamp": "2026-10-24T20:55:39.470487616Z",
+      "message": "unpacking archive"
+    },
+    {
+      "timestamp": "2026-10-24T20:55:39.483436720Z",
+      "message": "dockerfile invalid: flag '--mount=type=bind,source=operations/runtime,target=/proof/source,readonly' is missing a type=cache argument (other mount types are not supported) at Line 369"
+    }
+  ]
+}

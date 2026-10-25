@@ -1,3 +1,48 @@
+# Current checkpoint — 2026-10-24T22:19:19.948Z
+
+Owner/root, same integration branch test/vector-empty-organisation-regression-20261020 / PR501; claim6390230597; workspace/workspace/scratch/cd4e2bcb0821. Parentda4577cc0d538df26c7ca293a1c25018045e6028; current successor is containing Git commit. Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.
+
+Actual Railway da4577cc deployment0dc151c9-d736-42a4-b8c5-6814a71145e8 FAILED at2026-10-24T22:15:47Z. Prior staged patch consumed; parser/bind-mount issue resolved. Setup-policy source-packaging test failed62/63 because its last-FROM-only parser ignores inherited runtime COPY. No image admitted; no job/patch active at latestread.
+Successor repairs test infrastructure only: reuse reviewed FROM-ancestry helper across setup-policy, workspace-compiler and runtime-packaging tests. All original mapping/negative assertions retained; installed setup test lazy-loads helper only with sourceDockerfile. Docker/runtime policy/archive/88-test archive verifier unchanged. Actual sourceNode22.23.2 RED62/63 thenGREEN88/88 zero skip; reviewer/root/build_route_review ACCEPT exactfour-file treeafa3e4d8b32106d119224a39b2d94940fff23f7b. The source88 checks are NOT the distinct installed-archive88 gate.
+Evidence: evidence/vector-stage-ancestry-20261024/manifest.json, review.md, actualTAP and failedbuild excerpts.
+
+Independent eligible work completed: PR512 donor2e04efe62388c9fb0b107d4dcf5c853be6526cb8 source/composedruntime329/329 Node22.23.2, no skips. Includes mocked provider HTTP/restart, not customer/provider proof.1238 sourceblobs matched, zero differences;110 historical docs/evidence/inventory omitted. Initial326/328 missingruntimebindings preserved. Existing Code Review remainsRUNNING; not duplicated, donor not adopted. Durable receipt6390223225 on PR512 plus retained derivedresults here.
+
+Next: stage containingSHA and matching receipt on existing isolated project9cd73309-0ece-4b9a-891f-7daa13d94f0d/env9e7875b6-e214-4c32-9cee-81235e3d49ff/service845b5dcc-9c95-42cf-95fb-5719e96511f2, inspectwholepatch and perform authorized normal build. Require actual new installed88/88 zero-skip gate and digest. Do not move source during admission. Old75310949 isolatedimage sha256:397ef420f6d940294e84e90c14cd3a894b1cb265042b58c2240abd0c75609f73 remains rollbacklead, not successor/customer proof. Customerbaseline below not reverified.
+No new product/controller/resources/subscriptions/volume or customer/provider writes. Formal review/protection/hosted auth/recovery/customer acceptance remain. Existing Codex request notduplicated. Full backlog incomplete. Oninterrupt readcurrentcomments/STATE and reconcile source/jobs/patches/owners before any mutation. No persistent Work runner implied.
+
+## Retained history
+
+# Current checkpoint — 2026-10-24T21:01:26.318Z
+
+Existing integration owner /root; claim6389452655; workspace/workspace/scratch/cd4e2bcb0821. Same PR501 branch test/vector-empty-organisation-regression-20261020. Parent975d813e0666b5f6be6770afd2ebfbce077e929c; exact successor is containing Git commit. Canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.
+
+The prior patch was applied externally: actual deployment260ff9b9-2419-4027-8093-bc81f776b30a at975d813e FAILED2026-10-24T20:55:39Z before tests. Railway rejects bind mounts, supporting cache mounts only. Prior cancellation is no longer the active cause. No image admitted. No pending patch or active build at reconciliation.
+This successor replaces unsupported mounts with proof-only descendant stage and final-image dependency on successful source receipt. Fixtures root-owned readonly; same non-root verifier88/88 zero-skip required. Final image inherits same hardened application and no fixture layers. Runtime-base validator binds named hardened stage and final ancestry; packaging tests follow only actual FROM ancestors. No product semantics, existing six-file/auth/startup fixes, archive or verifier changed.
+Actual Node22.23.2 local packaging RED24/26 then GREEN27/27; affected28/28; deploymentvalidatorPASS; wrong-runtime-image/wrong-final-parent negativesPASS. Independent /root/build_route_review ACCEPT exact three-file tree82518a013fe22b0e036980a5f5779d94416960dd with five independent validator checks. Evidence at evidence/vector-builder-compat-20261024/manifest.json. No actual successor image proof yet.
+
+Next executable action: stage only containing exactSHA and matching receipt on existing isolated project9cd73309-0ece-4b9a-891f-7daa13d94f0d / env9e7875b6-e214-4c32-9cee-81235e3d49ff / service845b5dcc-9c95-42cf-95fb-5719e96511f2; inspect whole patch; use authorized normal deployment controls; require actual build/log88/88 admission and immutable digest. Hold source during build. Previous isolated successful image397ef420... at75310949 is retained rollback lead, not successor/customer proof. Customer-serving baseline below not reverified here.
+No new product/controller/release lane/resources/subscriptions/volumes. Existing Codex build request not duplicated; PR512 review remains separately owned and must be consumed before adoption. Formal merge/protection/hosted authenticated/recovery/provider/customer gates remain unmet. No customer/provider writes. Full backlog remains incomplete.
+On interruption reconcile remote source, latest PR501 comments, jobs/patches and owners before resuming. No persistent Work runner implied; no build running at checkpoint.
+
+## Retained prior checkpoint
+
+# Current checkpoint — 2026-10-23T21:13:34.361Z
+
+Owner /root, PR501 claim6374743908; workspace /workspace/scratch/cd4e2bcb0821. Same integration branch test/vector-empty-organisation-regression-20261020; parent75310949f6fa965e81f49edbb77837423b7c705e; exact candidate is containing Git commit. Canonical release/vector-customer-ready-candidate-20260925 remains48dce8f697825c8cd5f99b3e5aeea3953647f8c2. No new product/controller/release lane.
+
+Actual isolated build48dba1fe-074c-47af-809e-7c1dfdcddbfa SUCCESS at20:35:28.874Z, source75310949, image sha256:397ef420f6d940294e84e90c14cd3a894b1cb265042b58c2240abd0c75609f73. Identity receipt healthcheck passed; no public domain or customer app startup. Source1598/1598 and final harness15/15 passed. Twelve archive-dependent cases skipped; portable deployment-provenance also SKIP script-missing. Earlier support-route skip later passed1/1 in same build.
+
+This successor harvests only PR429 installed-archive recipe into Dockerfile after hardening. Readonly mounts, gosu node, exact SHA/Node/archive/installed-byte equality and88/88 zero-skip admission. Independent /root/build_route_review ACCEPT exact two source blobs; existing six-file/auth/startup repairs preserved. Local source88/88 with TAR_OPTIONS=--no-same-owner; original76/88 tar ownership failure and blocked local UID switch retained. Local results do not replace required hosted non-root build.
+
+Evidence: evidence/vector-installed-archive-20261023/manifest.json, review.md, selected previous build excerpts and actual local TAP.
+Next: freeze containing exact SHA, stage only existing isolated service source plus matching receipt expected SHA; inspect whole patch; use normal authorized deployment controls for one successor build. Require actual gate PASS and immutable digest. Do not change branch while admission runs. Existing service845b5dcc-9c95-42cf-95fb-5719e96511f2, project9cd73309-0ece-4b9a-891f-7daa13d94f0d, env9e7875b6-e214-4c32-9cee-81235e3d49ff. No build currently running at checkpoint; no staged changes at last read. Existing Codex task cd_6adb8f150c00819191fe5d44822c184e remains completed-blocked, not duplicated.
+
+Approval boundaries: normal low-risk isolated delivery authorized; formal merge/environment controls preserved. COMMENT reviews are not approval; branch-protection read403. No customer/provider write, new resource/subscription or volume. Usage-based build cost unverified, not fixed. Customer-serving/rollback baseline retained below, not reverified this checkpoint. Full backlog and authenticated hosted/recovery/provider/customer proof incomplete.
+If interrupted reconcile current branch/jobs/staged patch/ownership before resuming; no blind repeated mutation. No persistent Work executor implied.
+
+## Retained checkpoint history
+
 # Current checkpoint — 2026-10-23T20:13:05Z
 
 Owner /root resumed PR501; claim6373750129, workspace /workspace/scratch/cd4e2bcb0821. Current canonical release/vector-customer-ready-candidate-20260925 @48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged. PR501 parent13276a7806ae9994f44ca4a9a0c3b8b1f2bbf3b1; exact current candidate is the containing Git commit (resolve full SHA), same test/vector-empty-organisation-regression-20261020 branch.

@@ -36,7 +36,8 @@ function copyHas(docker,target){return docker.split(/\r?\n/).filter(line=>line.s
 test('source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure',()=>{
   const root=path.resolve(__dirname,'../..'),dockerPath=path.join(root,'Dockerfile');
   if(fs.existsSync(dockerPath)){
-    const docker=fs.readFileSync(dockerPath,'utf8'),final=docker.slice(docker.lastIndexOf('\nFROM ')),composer=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8');
+    const {runtimeStageAncestry}=require(path.join(root,'scripts/docker-runtime-ancestry.cjs'));
+    const docker=fs.readFileSync(dockerPath,'utf8'),final=runtimeStageAncestry(docker),composer=fs.readFileSync(path.join(root,'scripts/compose-vector-local-runtime.mjs'),'utf8');
     for(const destination of ['/app/implementation-runtime/','/tmp/wfm-tests/implementation/runtime/']){
       assert.equal(copyHas(final,destination),true,'Exact policy COPY missing: '+destination);
       for(const changed of [final.replaceAll('implementation/runtime/setup-only-policy.cjs',''),final.replaceAll(destination,destination+'wrong/')])assert.equal(copyHas(changed,destination),false,'Missing/wrong-target control must fail');

@@ -79,7 +79,7 @@ FROM scratch AS staffology-proof-evidence
 COPY --from=autonomy-proof /proof/staffology-private-artifacts/ /
 
 # Customer-proof staging build: sealed 0.6.76 runtime
-FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96
+FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS hardened-runtime
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /app
 
@@ -374,3 +374,26 @@ EXPOSE 3000
 CMD ["node","security-runtime/bootstrap.cjs"]
 
 # VECTOR_CANONICAL_REDEPLOY_20260920
+
+# Proof-only descendant: fixtures never enter the final runtime lineage.
+FROM hardened-runtime AS installed-archive-proof
+ARG RAILWAY_GIT_COMMIT_SHA
+COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/workflow-action-evidence-bridge.test.cjs /proof/source/
+COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /proof/sealed-runtime.tgz
+COPY verification/vector-repair-20260921/verify-installed-workflow-archive.sh /proof/verify-installed-workflow-archive.sh
+RUN chown -R root:root /proof \
+ && find /proof -type d -exec chmod 0555 {} + \
+ && find /proof -type f -exec chmod 0444 {} + \
+ && gosu node env EXPECTED_SOURCE_SHA="$RAILWAY_GIT_COMMIT_SHA" \
+      WFM_EVIDENCE_SEALED_ARCHIVE=/proof/sealed-runtime.tgz \
+      /bin/sh /proof/verify-installed-workflow-archive.sh \
+ && printf '%s\n' "$RAILWAY_GIT_COMMIT_SHA" > /installed-archive-admitted-source-sha
+
+# Inherit the same hardened application, not the proof fixture layers.
+FROM hardened-runtime
+ARG RAILWAY_GIT_COMMIT_SHA
+COPY --from=installed-archive-proof /installed-archive-admitted-source-sha /tmp/installed-archive-admitted-source-sha
+RUN test "$(cat /tmp/installed-archive-admitted-source-sha)" = "$RAILWAY_GIT_COMMIT_SHA" \
+ && test "$(cat /app/.wfm-build-source-sha)" = "$RAILWAY_GIT_COMMIT_SHA" \
+ && test ! -e /proof \
+ && rm /tmp/installed-archive-admitted-source-sha

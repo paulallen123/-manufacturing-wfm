@@ -1,0 +1,561 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: construction is deterministic, isolated, pure and separate from workforce/authority
+ok 1 - construction is deterministic, isolated, pure and separate from workforce/authority
+  ---
+  duration_ms: 10.38927
+  type: 'test'
+  ...
+# Subtest: wrong tenant/owner, missing context, unknown fields and missing authority fail closed
+ok 2 - wrong tenant/owner, missing context, unknown fields and missing authority fail closed
+  ---
+  duration_ms: 2.066253
+  type: 'test'
+  ...
+# Subtest: non-enumerable required and optional input properties fail before authority is consulted
+ok 3 - non-enumerable required and optional input properties fail before authority is consulted
+  ---
+  duration_ms: 2.038346
+  type: 'test'
+  ...
+# Subtest: authority snapshot and returned organisation retain exactly the validated enumerable values
+ok 4 - authority snapshot and returned organisation retain exactly the validated enumerable values
+  ---
+  duration_ms: 1.817569
+  type: 'test'
+  ...
+# Subtest: every pinned public decorator preserves clean state twice and after JSON round-trip
+ok 5 - every pinned public decorator preserves clean state twice and after JSON round-trip
+  ---
+  duration_ms: 20.934057
+  type: 'test'
+  ...
+# Subtest: actual sealed load, SQLite save/read and bootstrap sanitisation preserve emptiness
+ok 6 - actual sealed load, SQLite save/read and bootstrap sanitisation preserve emptiness
+  ---
+  duration_ms: 8.739486
+  type: 'test'
+  ...
+# Subtest: actual scoped readers expose empty operational collections without state mutation
+ok 7 - actual scoped readers expose empty operational collections without state mutation
+  ---
+  duration_ms: 14.849982
+  type: 'test'
+  ...
+# Subtest: pinned onboarding renderers render empty people and batches
+ok 8 - pinned onboarding renderers render empty people and batches
+  ---
+  duration_ms: 5.305677
+  type: 'test'
+  ...
+# Subtest: pinned organisation renderer uses supplied anchor without inventing a role
+ok 9 - pinned organisation renderer uses supplied anchor without inventing a role
+  ---
+  duration_ms: 10.721777
+  type: 'test'
+  ...
+# Subtest: unknown policy/calendar/source facts remain unknown; no approval/readiness flip
+ok 10 - unknown policy/calendar/source facts remain unknown; no approval/readiness flip
+  ---
+  duration_ms: 2.54532
+  type: 'test'
+  ...
+# Subtest: unsupported empty readers fail without fabricating periods, settings or a first worker
+ok 11 - unsupported empty readers fail without fabricating periods, settings or a first worker
+  ---
+  duration_ms: 6.529097
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: setup-only construction has the complete reviewed empty shape without an organisation anchor
+ok 12 - setup-only construction has the complete reviewed empty shape without an organisation anchor
+  ---
+  duration_ms: 9.437464
+  type: 'test'
+  ...
+# Subtest: setup construction requires externally verified matching customer and tenant authority
+ok 13 - setup construction requires externally verified matching customer and tenant authority
+  ---
+  duration_ms: 1.568274
+  type: 'test'
+  ...
+# Subtest: setup constructor rejects extra fields, ambiguous strings and accessor/prototype authority
+ok 14 - setup constructor rejects extra fields, ambiguous strings and accessor/prototype authority
+  ---
+  duration_ms: 0.74706
+  type: 'test'
+  ...
+# Subtest: authority callback sees frozen exact values and cannot mutate caller data or output
+ok 15 - authority callback sees frozen exact values and cannot mutate caller data or output
+  ---
+  duration_ms: 1.207116
+  type: 'test'
+  ...
+# Subtest: setup state survives canonical SQLite round-trip without importing authority or demo rows
+ok 16 - setup state survives canonical SQLite round-trip without importing authority or demo rows
+  ---
+  duration_ms: 5.698798
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:15) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure
+ok 17 - source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure
+  ---
+  duration_ms: 9.066057
+  type: 'test'
+  ...
+# Subtest: cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy
+ok 18 - cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy
+  ---
+  duration_ms: 396.619084
+  type: 'test'
+  ...
+# Subtest: policy has exact internal methods and no activation method
+ok 19 - policy has exact internal methods and no activation method
+  ---
+  duration_ms: 2.015537
+  type: 'test'
+  ...
+# Subtest: registered workspace without mode fails closed, while genuinely unmanaged target grants nothing
+ok 20 - registered workspace without mode fails closed, while genuinely unmanaged target grants nothing
+  ---
+  duration_ms: 14.824386
+  type: 'test'
+  ...
+# Subtest: source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views
+ok 21 - source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views
+  ---
+  duration_ms: 10.72544
+  type: 'test'
+  ...
+# Subtest: SETUP_VIEW is a phase decision only
+ok 22 - SETUP_VIEW is a phase decision only
+  ---
+  duration_ms: 7.356213
+  type: 'test'
+  ...
+# Subtest: SETUP_PROFILE is a phase decision only
+ok 23 - SETUP_PROFILE is a phase decision only
+  ---
+  duration_ms: 4.734445
+  type: 'test'
+  ...
+# Subtest: SETUP_QUESTIONNAIRE is a phase decision only
+ok 24 - SETUP_QUESTIONNAIRE is a phase decision only
+  ---
+  duration_ms: 5.16821
+  type: 'test'
+  ...
+# Subtest: SETUP_LOCAL_CONFIGURATION is a phase decision only
+ok 25 - SETUP_LOCAL_CONFIGURATION is a phase decision only
+  ---
+  duration_ms: 4.891392
+  type: 'test'
+  ...
+# Subtest: INITIAL_CREDENTIAL is a phase decision only
+ok 26 - INITIAL_CREDENTIAL is a phase decision only
+  ---
+  duration_ms: 6.544935
+  type: 'test'
+  ...
+# Subtest: CURRENT_INVITATION_DELIVERY is a phase decision only
+ok 27 - CURRENT_INVITATION_DELIVERY is a phase decision only
+  ---
+  duration_ms: 6.07221
+  type: 'test'
+  ...
+# Subtest: SECURITY_OBSERVATION is a phase decision only
+ok 28 - SECURITY_OBSERVATION is a phase decision only
+  ---
+  duration_ms: 6.24452
+  type: 'test'
+  ...
+# Subtest: OPERATIONAL_READ cannot pass setup phase
+ok 29 - OPERATIONAL_READ cannot pass setup phase
+  ---
+  duration_ms: 5.846972
+  type: 'test'
+  ...
+# Subtest: REPORT_DELIVERY cannot pass setup phase
+ok 30 - REPORT_DELIVERY cannot pass setup phase
+  ---
+  duration_ms: 4.678974
+  type: 'test'
+  ...
+# Subtest: REGISTER_COMPLETION cannot pass setup phase
+ok 31 - REGISTER_COMPLETION cannot pass setup phase
+  ---
+  duration_ms: 5.879576
+  type: 'test'
+  ...
+# Subtest: setup_view cannot pass setup phase
+ok 32 - setup_view cannot pass setup phase
+  ---
+  duration_ms: 5.841608
+  type: 'test'
+  ...
+# Subtest:  SETUP_VIEW cannot pass setup phase
+ok 33 -  SETUP_VIEW cannot pass setup phase
+  ---
+  duration_ms: 5.494924
+  type: 'test'
+  ...
+# Subtest: SETUP_VIEW/anything cannot pass setup phase
+ok 34 - SETUP_VIEW/anything cannot pass setup phase
+  ---
+  duration_ms: 5.613963
+  type: 'test'
+  ...
+# Subtest: UNKNOWN cannot pass setup phase
+ok 35 - UNKNOWN cannot pass setup phase
+  ---
+  duration_ms: 4.935912
+  type: 'test'
+  ...
+# Subtest: registered order before workspace has distinct pending classification and restricted purposes
+ok 36 - registered order before workspace has distinct pending classification and restricted purposes
+  ---
+  duration_ms: 6.879498
+  type: 'test'
+  ...
+# Subtest: caller mode, unknown writer fields and partial order provenance cannot choose or alter authority
+ok 37 - caller mode, unknown writer fields and partial order provenance cannot choose or alter authority
+  ---
+  duration_ms: 4.460237
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state refuses UPDATE
+ok 38 - customer_workspace_runtime_state refuses UPDATE
+  ---
+  duration_ms: 3.939208
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state refuses DELETE
+ok 39 - customer_workspace_runtime_state refuses DELETE
+  ---
+  duration_ms: 3.706871
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state_events refuses UPDATE
+ok 40 - customer_workspace_runtime_state_events refuses UPDATE
+  ---
+  duration_ms: 3.564478
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state_events refuses DELETE
+ok 41 - customer_workspace_runtime_state_events refuses DELETE
+  ---
+  duration_ms: 3.744366
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-run
+ok 42 - current read refuses missing-run
+  ---
+  duration_ms: 4.119769
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-tenant
+ok 43 - current read refuses missing-tenant
+  ---
+  duration_ms: 3.7776
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-run-tenant
+ok 44 - current read refuses wrong-run-tenant
+  ---
+  duration_ms: 5.390832
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-run-contract
+ok 45 - current read refuses wrong-run-contract
+  ---
+  duration_ms: 5.455494
+  type: 'test'
+  ...
+# Subtest: current read refuses orphan-mode
+ok 46 - current read refuses orphan-mode
+  ---
+  duration_ms: 5.361637
+  type: 'test'
+  ...
+# Subtest: current read refuses unknown-version
+ok 47 - current read refuses unknown-version
+  ---
+  duration_ms: 3.892917
+  type: 'test'
+  ...
+# Subtest: current read refuses unknown-mode
+ok 48 - current read refuses unknown-mode
+  ---
+  duration_ms: 3.373678
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-journal
+ok 49 - current read refuses wrong-journal
+  ---
+  duration_ms: 4.0323
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-journal
+ok 50 - current read refuses missing-journal
+  ---
+  duration_ms: 4.559567
+  type: 'test'
+  ...
+# Subtest: current read refuses cross-contract
+ok 51 - current read refuses cross-contract
+  ---
+  duration_ms: 4.111451
+  type: 'test'
+  ...
+# Subtest: foreign key prevents alternate customer/tenant/run binding
+ok 52 - foreign key prevents alternate customer/tenant/run binding
+  ---
+  duration_ms: 3.91798
+  type: 'test'
+  ...
+# Subtest: only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING
+ok 53 - only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING
+  ---
+  duration_ms: 8.586898
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current run drift with zero mode/journal writes
+ok 54 - legacy migration refuses current run drift with zero mode/journal writes
+  ---
+  duration_ms: 7.053756
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current environment drift with zero mode/journal writes
+ok 55 - legacy migration refuses current environment drift with zero mode/journal writes
+  ---
+  duration_ms: 7.051849
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current namespace drift with zero mode/journal writes
+ok 56 - legacy migration refuses current namespace drift with zero mode/journal writes
+  ---
+  duration_ms: 5.194601
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current tenant drift with zero mode/journal writes
+ok 57 - legacy migration refuses current tenant drift with zero mode/journal writes
+  ---
+  duration_ms: 4.090413
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current owner-permission drift with zero mode/journal writes
+ok 58 - legacy migration refuses current owner-permission drift with zero mode/journal writes
+  ---
+  duration_ms: 4.209066
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current revoked-owner drift with zero mode/journal writes
+ok 59 - legacy migration refuses current revoked-owner drift with zero mode/journal writes
+  ---
+  duration_ms: 3.84203
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current revoked-customer drift with zero mode/journal writes
+ok 60 - legacy migration refuses current revoked-customer drift with zero mode/journal writes
+  ---
+  duration_ms: 4.789609
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current frozen drift with zero mode/journal writes
+ok 61 - legacy migration refuses current frozen drift with zero mode/journal writes
+  ---
+  duration_ms: 4.558858
+  type: 'test'
+  ...
+# Subtest: imported orphan origin journal cannot downgrade its tenant into unmanaged legacy
+ok 62 - imported orphan origin journal cannot downgrade its tenant into unmanaged legacy
+  ---
+  duration_ms: 8.315662
+  type: 'test'
+  ...
+# Subtest: initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant
+ok 63 - initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant
+  ---
+  duration_ms: 6.927903
+  type: 'test'
+  ...
+# (node:21) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:119) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:129) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:137) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Docker extracted-runtime composition has its full compiler patch dependency available
+ok 64 - Docker extracted-runtime composition has its full compiler patch dependency available
+  ---
+  duration_ms: 882.964931
+  type: 'test'
+  ...
+# Subtest: patched sealed compiler accepts real IANA timezones while retaining strict input validation
+ok 65 - patched sealed compiler accepts real IANA timezones while retaining strict input validation
+  ---
+  duration_ms: 276.342737
+  type: 'test'
+  ...
+# (node:23) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:66) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: runtime packaging follows inherited stages without accepting sibling fixtures
+ok 66 - runtime packaging follows inherited stages without accepting sibling fixtures
+  ---
+  duration_ms: 3.120259
+  type: 'test'
+  ...
+# Subtest: the final Docker stage includes every relative bootstrap dependency
+ok 67 - the final Docker stage includes every relative bootstrap dependency
+  ---
+  duration_ms: 3.038289
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes the same required bootstrap dependencies
+ok 68 - local proof assembly includes the same required bootstrap dependencies
+  ---
+  duration_ms: 1.624604
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes absolute bootstrap runtime dependencies and training closure
+ok 69 - local proof assembly includes absolute bootstrap runtime dependencies and training closure
+  ---
+  duration_ms: 391.242838
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing manifest entry: public/engine.js
+ok 70 - native helper packaging refuses missing manifest entry: public/engine.js
+  ---
+  duration_ms: 3.004831
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing archive member: public/engine.js
+ok 71 - native helper packaging refuses missing archive member: public/engine.js
+  ---
+  duration_ms: 3.278276
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses changed archive member bytes: public/engine.js
+ok 72 - native helper packaging refuses changed archive member bytes: public/engine.js
+  ---
+  duration_ms: 2.619834
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing manifest entry: public/operations-engine.js
+ok 73 - native helper packaging refuses missing manifest entry: public/operations-engine.js
+  ---
+  duration_ms: 1.380322
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing archive member: public/operations-engine.js
+ok 74 - native helper packaging refuses missing archive member: public/operations-engine.js
+  ---
+  duration_ms: 1.144654
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses changed archive member bytes: public/operations-engine.js
+ok 75 - native helper packaging refuses changed archive member bytes: public/operations-engine.js
+  ---
+  duration_ms: 0.954573
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing export: public/engine.js\#allowedPeople
+ok 76 - native helper packaging refuses missing export: public/engine.js\#allowedPeople
+  ---
+  duration_ms: 1.151715
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing export: public/engine.js\#descendants
+ok 77 - native helper packaging refuses missing export: public/engine.js\#descendants
+  ---
+  duration_ms: 4.217095
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing export: public/operations-engine.js\#approvedSite
+ok 78 - native helper packaging refuses missing export: public/operations-engine.js\#approvedSite
+  ---
+  duration_ms: 1.966808
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect composer archive pin
+ok 79 - native helper packaging refuses incorrect composer archive pin
+  ---
+  duration_ms: 1.447578
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect composer extraction destination
+ok 80 - native helper packaging refuses incorrect composer extraction destination
+  ---
+  duration_ms: 0.711122
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect Docker archive source
+ok 81 - native helper packaging refuses incorrect Docker archive source
+  ---
+  duration_ms: 1.934927
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect Docker extraction destination
+ok 82 - native helper packaging refuses incorrect Docker extraction destination
+  ---
+  duration_ms: 1.387709
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses an unknown public dependency
+ok 83 - native helper packaging refuses an unknown public dependency
+  ---
+  duration_ms: 0.599753
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes scheduling runtime dependency closure
+ok 84 - local proof assembly includes scheduling runtime dependency closure
+  ---
+  duration_ms: 0.628001
+  type: 'test'
+  ...
+# Subtest: retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+ok 85 - retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+  ---
+  duration_ms: 120.783082
+  type: 'test'
+  ...
+# Subtest: legacy local-data writes are redirected outside immutable app root
+ok 86 - legacy local-data writes are redirected outside immutable app root
+  ---
+  duration_ms: 0.509629
+  type: 'test'
+  ...
+# Subtest: integration fabric runtime retains its source-relative loader layout
+ok 87 - integration fabric runtime retains its source-relative loader layout
+  ---
+  duration_ms: 1.837035
+  type: 'test'
+  ...
+# Subtest: packaged lifecycle router preserves the trusted Autopilot execution adapter
+ok 88 - packaged lifecycle router preserves the trusted Autopilot execution adapter
+  ---
+  duration_ms: 0.801121
+  type: 'test'
+  ...
+1..88
+# tests 88
+# suites 0
+# pass 88
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1381.952548

@@ -1,3 +1,14 @@
+# Current blockers — 2026-10-23T21:13:34.361Z
+
+- Prior753109 isolated build nowSUCCESS, actual digest recorded; missing-image/startup failure below is superseded for that build only.
+- Successor archive gate is reviewed and locally source-tested; exact non-root post-hardening hosted execution PENDING. Twelve previous archive skips cannot be waived. Portable deployment-provenance script-missing gap remains.
+- Formal required review/protection not established; only COMMENT reviews and admin protection read403. No merge.
+- Customer bootstrap, authenticated wizard, restart/restore, provider readback and customer acceptance remain unproven. Receipt health is not customer readiness.
+- Existing Codex request remains consumed/completed-blocked; CircleCI login excluded. No duplicate runner.
+- Current next executable action is same-service bounded successor build; no new infrastructure required.
+
+## Retained historical findings
+
 # Remaining release blockers
 - Combined exact-image candidate, hosted authenticated journey and recovery gates pending.
 - Compensation and reconciliation require separate authority; automatic compensation now disabled on unknown readback.
