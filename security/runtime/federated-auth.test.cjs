@@ -80,6 +80,11 @@ test('provider outage consumes state and cannot trigger blind retry or session m
 test('unconfigured providers and expired Apple client secret fail closed without network',async t=>{
   const f=fixture(t,{google:{},apple:{clientId:'apple-client',clientSecret:appleSecret(now()-1)}});assert.deepEqual(f.auth.providers(),[]);const res=response();await f.auth.handleRequest(request('/api/auth/federated/google/start'),res);assert.equal(res.statusCode,503);assert.equal(f.calls.length,0);
 });
+test('malformed request targets are contained before route dispatch',async t=>{
+  const f=fixture(t,{google:{},apple:{}}),res=response();
+  assert.equal(await f.auth.handleRequest(request('//['),res),true);
+  assert.equal(res.statusCode,400);assert.deepEqual(res.body,{error:'Invalid request URL.'});assert.equal(f.calls.length,0);
+});
 test('durable rate limit survives restart and refuses additional sign-in work',async t=>{
   const f=fixture(t);for(let i=0;i<60;i++)await f.begin();f.auth.close();f.auth=createFederatedAuth(f.options);const res=response();await f.auth.handleRequest(request('/api/auth/federated/google/start'),res);assert.equal(res.statusCode,429);assert.equal(f.db.prepare('SELECT count(*) n FROM federated_auth_states').get().n,60);assert.equal(f.calls.length,0);
 });
@@ -100,3 +105,4 @@ test('Apple callback body is bounded by size and time before any provider exchan
   const stalled=new Readable({read(){}});stalled.url='/api/auth/federated/apple/callback';stalled.method='POST';stalled.headers={cookie:flow.cookie,'content-type':'application/x-www-form-urlencoded'};stalled.socket={encrypted:true};
   const b=response();await f.auth.handleRequest(stalled,b);assert.equal(b.statusCode,401);assert.equal(stalled.destroyed,true);assert.equal(f.calls.length,0);
 });
+
