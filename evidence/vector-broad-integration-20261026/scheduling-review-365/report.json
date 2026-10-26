@@ -1,0 +1,64 @@
+{
+  "candidate": "aa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6",
+  "donor": "dc0862ae1b0f587acab981d2507ae71cb1302d1d",
+  "verdict": "ADOPT exact two-file delta; no blocking source finding",
+  "ownerObservation": "PR365 open, no issue comments, last update2026-10-13; current integration-owner claim required; external chats not visible",
+  "reviewState": "Existing review5498793112 COMMENTED READY, not formal APPROVED",
+  "baseEquality": {
+    "source": "84dbe408de681c9cd282b0f0ed4cf5dd10a03afc",
+    "test": "741eff09008e20bb1cbc6f71e87fef343cb9240f",
+    "result": "candidate source and test byte-identical to donor base90ad90fc"
+  },
+  "adopt": {
+    "source": "3e63b51d640849e58de279083f24027ff67e1950",
+    "test": "6a8680ca5b5c23bb636e2fc1b755fe3eeb93abfb"
+  },
+  "dependencies": {
+    "operations/runtime/scheduling-intelligence-service.cjs": "5966d783375e9e197f58d0b17831a77e6605f515",
+    "operations/runtime/manufacturing-scheduling-engine.cjs": "97cbbc3405abfc010a6513aa67ab58d56e1079f8",
+    "operations/runtime/manufacturing-demand-forecast.cjs": "c2a2700245e55155538dd06e86abe6c04444e058",
+    "operations/runtime/schedule-attendance-reconciliation.cjs": "a56bdb106b90d01d323e3297ceb17fdb9c0a7772",
+    "operations/runtime/scheduling-authority.cjs": "3e63b51d640849e58de279083f24027ff67e1950",
+    "operations/runtime/scheduling-authority.test.cjs": "6a8680ca5b5c23bb636e2fc1b755fe3eeb93abfb"
+  },
+  "archive": {
+    "path": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+    "gitBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+    "verified": true
+  },
+  "red": {
+    "pass": 48,
+    "fail": 4,
+    "skip": 0
+  },
+  "green": {
+    "pass": 52,
+    "fail": 0,
+    "skip": 0
+  },
+  "testCommand": "node22 --test operations/runtime/scheduling-authority.test.cjs",
+  "proofScope": "real local service API handler + SQLite + verified sealed native helpers, synthetic data; no hosted/provider/customer proof",
+  "knownLimitations": [
+    "No formal release approval",
+    "Container/build proof not rerun",
+    "No authenticated browser/durability/audit customer journey",
+    "Other malformed plan container shapes may still yield TypeError rather than403, but public list filters assertPlan exceptions; outside exact donor scope"
+  ],
+  "backlog": [
+    {
+      "id": "F2.1",
+      "module": "operations/runtime/manufacturing-scheduling-engine.cjs + scheduling-intelligence-service.cjs",
+      "source": "PR2335d129fa757d0959c81242be08f6674e5a8eccf05 open",
+      "next": "Adopt safety boundary365 first; characterize PR233 unique delta before larger scheduling changes"
+    },
+    {
+      "id": "F6.1",
+      "next": "Authentic external qualification sources/expiry/revocation authority remain prerequisites; no AI-awarded competence"
+    },
+    {
+      "id": "F6.10",
+      "source": "PR211fc3d130263303825c73616ab15da31151a479730 open",
+      "next": "Advisory/simulation only; independent retest and required source gates before connection to real skills"
+    }
+  ]
+}

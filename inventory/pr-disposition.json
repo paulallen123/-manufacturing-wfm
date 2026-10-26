@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-22T20:57:39.517Z",
+  "observedAt": "2026-10-26T20:55:48.739Z",
   "complete": false,
-  "totalOpen": 275,
-  "draftsAtInventory": 259,
+  "totalOpen": 286,
+  "draftsAtInventory": 267,
   "reviewed": [
     {
       "pr": 501,
@@ -66,15 +66,55 @@
       "pr": 365,
       "head": "dc0862ae1b0f587acab981d2507ae71cb1302d1d",
       "disposition": "ADOPT",
-      "reason": "Small coherent source/test change binds stored assignments to their current requirement and rejects malformed/orphan identities. Canonical source only checks assignments matching each requirement and does not perform the new orphan/site/time checks.",
+      "reason": "Exact current dependencies and independent52/52; four current defects reproduced.",
       "gaps": [
         "Source-level READY review is COMMENTED by same GitHub account as PR author, not a distinct formal APPROVED review.",
         "Reconcile against current combined candidate and run approved Node 22.23.2/final-image admission; source reviewer lacked packaged legacy artifact.",
         "Verify authenticated hosted plan filtering, durable/fresh-login behavior and audit reconciliation on exact deployed artifact."
       ],
       "releaseReady": false,
-      "evidence": "inventory/pr-313-364-365-disposition.json"
+      "evidence": "inventory/pr-313-364-365-disposition.json",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 461,
+      "disposition": "ADOPT",
+      "head": "6f9e0324b0eb3b190e3f30c262b152ebd998d8aa",
+      "reason": "Exact reviewed two-file readiness label correction; supported Node22 and independent review.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 494,
+      "disposition": "ADOPT",
+      "head": "5b09019aa684f0f06c077335e118b854cf3b89fa",
+      "reason": "Exact helper/test source, current-base equality, supported Node22 pricing and factor admission.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 481,
+      "disposition": "BLOCKED",
+      "reason": "Explicit independent REQUEST CHANGES: actor getters/nonprimitive roles/mutable catalogue.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 442,
+      "disposition": "BLOCKED",
+      "reason": "Explicit independent REQUEST CHANGES: provenance mutation, ambient dispatch and causal-order gaps.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 445,
+      "disposition": "HARVEST",
+      "reason": "Bounded support catalogue candidate; current integration verification not yet run.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 475,
+      "disposition": "ORACLE",
+      "reason": "Savings prototype absent from current canonical modules; needs integration design and real financial outcome proof.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
     }
   ],
-  "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption."
+  "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption.",
+  "currentInventory": "inventory/open-pr-snapshot-20261026.json"
 }

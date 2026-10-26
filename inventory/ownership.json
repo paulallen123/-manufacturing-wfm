@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-23T19:20:21.658Z",
+  "updatedAt": "2026-10-26T20:56:52.931Z",
   "integrationOwner": "/root (existing Work integration owner, explicit user resume)",
   "visibility": "Visible agents and checked PRs only; external chats not exhaustively observable.",
   "leases": [
@@ -88,15 +88,42 @@
       "scope": "read-only service/config/logs",
       "status": "completed; no build launched",
       "expiresAt": "2026-10-23T19:20:21.658Z"
+    },
+    {
+      "task": "Three-domain adoption PR461/365/494",
+      "owner": "/root",
+      "status": "completed",
+      "scope": [
+        "implementation/ui/implementation-journey.js",
+        "implementation/ui/implementation-observer.test.cjs",
+        "operations/runtime/scheduling-authority.cjs",
+        "operations/runtime/scheduling-authority.test.cjs",
+        "operations/runtime/payroll-money.cjs",
+        "tests/payroll-money-factor-admission.test.cjs"
+      ],
+      "reviewers": [
+        "/root/build_route_review",
+        "/root/scheduling_inventory"
+      ],
+      "claimComments": [
+        6427048931,
+        6427081057
+      ],
+      "expiresAt": "2026-10-26T20:56:52.931Z"
+    },
+    {
+      "task": "Full-domain backlog and PR reconciliation",
+      "owner": "/root/backlog_reconcile",
+      "status": "completed read-only",
+      "scope": "59 accepted rows plus overlapping intake14/held6/research16 and286 open PR metadata",
+      "expiresAt": "2026-10-26T20:56:52.931Z"
     }
   ],
   "currentExecution": {
     "identity": "/root",
     "workspace": "/workspace/scratch/cd4e2bcb0821",
-    "claimComment": 6372732421,
-    "sourceParent": "4b799ddab9800ea97254fdab665f2aa191270e3e",
-    "sourceCompositionTree": "48ed1c90ae8663a70a0ba8091111622b62aaeff6",
-    "status": "auth race fixed and independently verified; build preparation pending; no persistent worker",
+    "sourceParent": "aa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6",
+    "status": "Three-domain source adoption complete; no customer release",
     "persistentRunner": false
   },
   "externalVerification": {

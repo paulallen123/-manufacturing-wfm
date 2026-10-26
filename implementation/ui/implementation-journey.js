@@ -44,7 +44,7 @@ function trainingProgress(){
 }
 function learningCounts(){
   const l=S.status?.learningSummary||S.learning||{};
-  return {mastered:Number(l.mastered||0),total:Number(l.assignments||0),users:Number(l.users||0),requiredPopulation:Number(l.requiredPopulation||0),populationReady:l.populationAndRoleCoverageReady===true,privileged:l.privilegedCoverageReady===true&&requirementComplete('privileged-competency'),certified:Boolean(l.fullyCertified)};
+  return {mastered:Number(l.mastered||0),total:Number(l.assignments||0),users:Number(l.users||0),requiredPopulation:Number(l.requiredPopulation||0),populationReady:l.roleLearningPopulationReady===true,combinedReady:l.populationAndRoleCoverageReady===true,privileged:l.privilegedCoverageReady===true&&requirementComplete('privileged-competency'),certified:Boolean(l.fullyCertified)};
 }
 function connectionRows(){
   const currentStates=new Set(['ACTIVE','VALIDATING','DEGRADED','AUTHORIZATION_REQUIRED','REAUTH_REQUIRED']);
@@ -77,7 +77,7 @@ function stageMarkup(){
   return stages.map((stage,index)=>{
     let st=stage[0]==='Go live'?(S.status?.operationalReady?'complete':'pending'):groupState(stage[1],stage[2]);
     if(stage[0]==='Integrations'&&st==='complete'&&(S.status?.integrationTruth?.unifiedReady!==true||(S.status?.providerJourney?.required&&S.status?.providerJourney?.proven!==true)))st='progress';
-    if(stage[0]==='Training'&&st==='complete'&&!learningCounts().populationReady)st='progress';
+    if(stage[0]==='Training'&&st==='complete'&&!(learningCounts().populationReady&&learningCounts().combinedReady))st='progress';
     const caption=stage[0]==='Training'&&st!=='complete'?'From day one':stateLabel(st);
     return '<div class="wfm-ij-stage '+st+'"><span class="wfm-ij-stage-dot">'+stateIcon(st)+'</span><div><b>'+safe(stage[0])+'</b><small>'+safe(caption)+'</small></div></div>'+(index<stages.length-1?'<span class="wfm-ij-stage-line"></span>':'');
   }).join('');
@@ -319,7 +319,7 @@ function welcomeMarkup(){
 }
 function trainingPanel(prestart){
   const l=learningCounts(),progress=trainingProgress();
-  const ready=!prestart&&l.populationReady&&['role-learning','privileged-competency','frontline-readiness'].every(requirementComplete);
+  const ready=!prestart&&l.populationReady&&l.combinedReady&&['role-learning','privileged-competency','frontline-readiness'].every(requirementComplete);
   const readiness=prestart?'':('<p class="wfm-ij-note">'+(ready?'Team ready':(l.populationReady?'Training readiness evidence incomplete':'Population coverage incomplete'))+(l.requiredPopulation?' · '+l.requiredPopulation+' people required':'')+'</p>');
   return '<section class="wfm-ij-panel wfm-ij-training"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">TRAINING · RUNS THROUGHOUT</span><h2>Learn in the test environment from the beginning</h2><p>Role-based learning, guided practice and competency proof continue alongside configuration and testing.</p></div><div class="wfm-ij-training-score"><strong>'+progress+'%</strong><span>'+safe(prestart?'Available now':'learning completion')+'</span></div></div><div class="wfm-ij-progress"><span style="width:'+progress+'%"></span></div><div class="wfm-ij-training-meta"><span><b>'+l.mastered+'</b> skills proven</span><span><b>'+l.total+'</b> assignments</span><span><b>'+l.users+'</b> people in learning</span><span><b>'+(l.privileged?'Yes':'Not yet')+'</b> privileged roles ready</span></div>'+readiness+'<button class="btn small" type="button" data-ij-training>Open my training guide</button></section>';
 }
@@ -555,3 +555,4 @@ setTimeout(()=>{
 setTimeout(apply,600);
 window.WFMImplementationJourney=Object.freeze({refresh:()=>load(true),version:VERSION});
 })();
+

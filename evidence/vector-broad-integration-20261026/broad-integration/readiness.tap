@@ -1,0 +1,196 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: repeated implementation observer delivery settles without rewriting an unchanged navigation label
+ok 1 - repeated implementation observer delivery settles without rewriting an unchanged navigation label
+  ---
+  duration_ms: 2.687628
+  type: 'test'
+  ...
+# Subtest: implementation integrations separate current readiness from discovery and history
+ok 2 - implementation integrations separate current readiness from discovery and history
+  ---
+  duration_ms: 0.233103
+  type: 'test'
+  ...
+# Subtest: connected source alone does not present blocked unified integrations as complete
+ok 3 - connected source alone does not present blocked unified integrations as complete
+  ---
+  duration_ms: 3.129785
+  type: 'test'
+  ...
+# Subtest: missing unified integration evidence does not present integrations as complete
+ok 4 - missing unified integration evidence does not present integrations as complete
+  ---
+  duration_ms: 1.913202
+  type: 'test'
+  ...
+# Subtest: mandatory unproven provider prevents a contradictory complete integration stage
+ok 5 - mandatory unproven provider prevents a contradictory complete integration stage
+  ---
+  duration_ms: 1.659373
+  type: 'test'
+  ...
+# Subtest: current unified integration and provider evidence can present complete
+ok 6 - current unified integration and provider evidence can present complete
+  ---
+  duration_ms: 1.447642
+  type: 'test'
+  ...
+# Subtest: full learning completion does not claim readiness for an unreconciled population
+ok 7 - full learning completion does not claim readiness for an unreconciled population
+  ---
+  duration_ms: 1.948174
+  type: 'test'
+  ...
+# Subtest: population coverage alone cannot replace missing training-control evidence
+ok 8 - population coverage alone cannot replace missing training-control evidence
+  ---
+  duration_ms: 2.038931
+  type: 'test'
+  ...
+# Subtest: all current training controls and population coverage can present team readiness
+ok 9 - all current training controls and population coverage can present team readiness
+  ---
+  duration_ms: 2.030479
+  type: 'test'
+  ...
+# Subtest: training remediation labels distinguish population coverage from the combined readiness gate
+ok 10 - training remediation labels distinguish population coverage from the combined readiness gate
+  ---
+  duration_ms: 10.347914
+  type: 'test'
+  ...
+# Subtest: missing population coverage cannot present team readiness even with satisfied controls
+ok 11 - missing population coverage cannot present team readiness even with satisfied controls
+  ---
+  duration_ms: 1.819235
+  type: 'test'
+  ...
+# Subtest: false population coverage prevents a complete Training stage even when controls are satisfied
+ok 12 - false population coverage prevents a complete Training stage even when controls are satisfied
+  ---
+  duration_ms: 1.798871
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: opening setup shows four question groups and restores the saved answers safely
+ok 13 - opening setup shows four question groups and restores the saved answers safely
+  ---
+  duration_ms: 6.336069
+  type: 'test'
+  ...
+# Subtest: save sends a revisioned draft and renders the returned review without applying
+ok 14 - save sends a revisioned draft and renders the returned review without applying
+  ---
+  duration_ms: 6.239145
+  type: 'test'
+  ...
+# Subtest: background refresh preserves unsaved form values and the revision they were based on
+ok 15 - background refresh preserves unsaved form values and the revision they were based on
+  ---
+  duration_ms: 3.046873
+  type: 'test'
+  ...
+# Subtest: save failure 409 preserves typed answers and does not report success
+ok 16 - save failure 409 preserves typed answers and does not report success
+  ---
+  duration_ms: 7.378055
+  type: 'test'
+  ...
+# Subtest: save failure 500 preserves typed answers and does not report success
+ok 17 - save failure 500 preserves typed answers and does not report success
+  ---
+  duration_ms: 2.818901
+  type: 'test'
+  ...
+# Subtest: save failure 401 preserves typed answers and does not report success
+ok 18 - save failure 401 preserves typed answers and does not report success
+  ---
+  duration_ms: 3.700865
+  type: 'test'
+  ...
+# Subtest: save failure 403 preserves typed answers and does not report success
+ok 19 - save failure 403 preserves typed answers and does not report success
+  ---
+  duration_ms: 3.72891
+  type: 'test'
+  ...
+# Subtest: apply submits only the reviewed revision and token and keeps failures visible
+ok 20 - apply submits only the reviewed revision and token and keeps failures visible
+  ---
+  duration_ms: 4.445136
+  type: 'test'
+  ...
+# Subtest: typing after review prevents applying the earlier answers
+ok 21 - typing after review prevents applying the earlier answers
+  ---
+  duration_ms: 4.650203
+  type: 'test'
+  ...
+# Subtest: applied workspace setup never presents operational readiness as completed
+ok 22 - applied workspace setup never presents operational readiness as completed
+  ---
+  duration_ms: 5.57796
+  type: 'test'
+  ...
+# Subtest: completed questionnaire stays hidden on later logins and settings drafts
+ok 23 - completed questionnaire stays hidden on later logins and settings drafts
+  ---
+  duration_ms: 2.539012
+  type: 'test'
+  ...
+# Subtest: editing while save is pending preserves newer answers and requires another review
+ok 24 - editing while save is pending preserves newer answers and requires another review
+  ---
+  duration_ms: 3.008127
+  type: 'test'
+  ...
+# Subtest: navigation away and back restores the dirty model when the host replaces the form
+ok 25 - navigation away and back restores the dirty model when the host replaces the form
+  ---
+  duration_ms: 3.247073
+  type: 'test'
+  ...
+# Subtest: row replacement and typing during pending save survive the older response: false
+ok 26 - row replacement and typing during pending save survive the older response: false
+  ---
+  duration_ms: 5.317526
+  type: 'test'
+  ...
+# Subtest: row replacement and typing during pending save survive the older response: true
+ok 27 - row replacement and typing during pending save survive the older response: true
+  ---
+  duration_ms: 3.519412
+  type: 'test'
+  ...
+# Subtest: completed workspace has an explicit reviewed settings editor without reopening initial onboarding
+ok 28 - completed workspace has an explicit reviewed settings editor without reopening initial onboarding
+  ---
+  duration_ms: 3.85982
+  type: 'test'
+  ...
+# Subtest: edits made while apply is pending remain as an amendment to the completed workspace
+ok 29 - edits made while apply is pending remain as an amendment to the completed workspace
+  ---
+  duration_ms: 3.50316
+  type: 'test'
+  ...
+# Subtest: late apply response from an old tenant cannot replace the current workspace
+ok 30 - late apply response from an old tenant cannot replace the current workspace
+  ---
+  duration_ms: 3.08627
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 225.888775

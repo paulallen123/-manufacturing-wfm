@@ -1,0 +1,659 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: repeated implementation observer delivery settles without rewriting an unchanged navigation label
+ok 1 - repeated implementation observer delivery settles without rewriting an unchanged navigation label
+  ---
+  duration_ms: 1.939938
+  type: 'test'
+  ...
+# Subtest: implementation integrations separate current readiness from discovery and history
+ok 2 - implementation integrations separate current readiness from discovery and history
+  ---
+  duration_ms: 0.191083
+  type: 'test'
+  ...
+# Subtest: connected source alone does not present blocked unified integrations as complete
+ok 3 - connected source alone does not present blocked unified integrations as complete
+  ---
+  duration_ms: 1.576227
+  type: 'test'
+  ...
+# Subtest: missing unified integration evidence does not present integrations as complete
+ok 4 - missing unified integration evidence does not present integrations as complete
+  ---
+  duration_ms: 0.714523
+  type: 'test'
+  ...
+# Subtest: mandatory unproven provider prevents a contradictory complete integration stage
+ok 5 - mandatory unproven provider prevents a contradictory complete integration stage
+  ---
+  duration_ms: 0.893319
+  type: 'test'
+  ...
+# Subtest: current unified integration and provider evidence can present complete
+ok 6 - current unified integration and provider evidence can present complete
+  ---
+  duration_ms: 0.998021
+  type: 'test'
+  ...
+# Subtest: full learning completion does not claim readiness for an unreconciled population
+ok 7 - full learning completion does not claim readiness for an unreconciled population
+  ---
+  duration_ms: 0.993153
+  type: 'test'
+  ...
+# Subtest: population coverage alone cannot replace missing training-control evidence
+ok 8 - population coverage alone cannot replace missing training-control evidence
+  ---
+  duration_ms: 1.044952
+  type: 'test'
+  ...
+# Subtest: all current training controls and population coverage can present team readiness
+ok 9 - all current training controls and population coverage can present team readiness
+  ---
+  duration_ms: 1.258606
+  type: 'test'
+  ...
+# Subtest: training remediation labels distinguish population coverage from the combined readiness gate
+ok 10 - training remediation labels distinguish population coverage from the combined readiness gate
+  ---
+  duration_ms: 5.917567
+  type: 'test'
+  ...
+# Subtest: missing population coverage cannot present team readiness even with satisfied controls
+ok 11 - missing population coverage cannot present team readiness even with satisfied controls
+  ---
+  duration_ms: 1.113915
+  type: 'test'
+  ...
+# Subtest: false population coverage prevents a complete Training stage even when controls are satisfied
+ok 12 - false population coverage prevents a complete Training stage even when controls are satisfied
+  ---
+  duration_ms: 1.046568
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: opening setup shows four question groups and restores the saved answers safely
+ok 13 - opening setup shows four question groups and restores the saved answers safely
+  ---
+  duration_ms: 4.834584
+  type: 'test'
+  ...
+# Subtest: save sends a revisioned draft and renders the returned review without applying
+ok 14 - save sends a revisioned draft and renders the returned review without applying
+  ---
+  duration_ms: 3.43588
+  type: 'test'
+  ...
+# Subtest: background refresh preserves unsaved form values and the revision they were based on
+ok 15 - background refresh preserves unsaved form values and the revision they were based on
+  ---
+  duration_ms: 2.330545
+  type: 'test'
+  ...
+# Subtest: save failure 409 preserves typed answers and does not report success
+ok 16 - save failure 409 preserves typed answers and does not report success
+  ---
+  duration_ms: 3.245386
+  type: 'test'
+  ...
+# Subtest: save failure 500 preserves typed answers and does not report success
+ok 17 - save failure 500 preserves typed answers and does not report success
+  ---
+  duration_ms: 1.559475
+  type: 'test'
+  ...
+# Subtest: save failure 401 preserves typed answers and does not report success
+ok 18 - save failure 401 preserves typed answers and does not report success
+  ---
+  duration_ms: 1.253875
+  type: 'test'
+  ...
+# Subtest: save failure 403 preserves typed answers and does not report success
+ok 19 - save failure 403 preserves typed answers and does not report success
+  ---
+  duration_ms: 1.268258
+  type: 'test'
+  ...
+# Subtest: apply submits only the reviewed revision and token and keeps failures visible
+ok 20 - apply submits only the reviewed revision and token and keeps failures visible
+  ---
+  duration_ms: 2.656983
+  type: 'test'
+  ...
+# Subtest: typing after review prevents applying the earlier answers
+ok 21 - typing after review prevents applying the earlier answers
+  ---
+  duration_ms: 1.651207
+  type: 'test'
+  ...
+# Subtest: applied workspace setup never presents operational readiness as completed
+ok 22 - applied workspace setup never presents operational readiness as completed
+  ---
+  duration_ms: 2.079026
+  type: 'test'
+  ...
+# Subtest: completed questionnaire stays hidden on later logins and settings drafts
+ok 23 - completed questionnaire stays hidden on later logins and settings drafts
+  ---
+  duration_ms: 1.283758
+  type: 'test'
+  ...
+# Subtest: editing while save is pending preserves newer answers and requires another review
+ok 24 - editing while save is pending preserves newer answers and requires another review
+  ---
+  duration_ms: 1.835375
+  type: 'test'
+  ...
+# Subtest: navigation away and back restores the dirty model when the host replaces the form
+ok 25 - navigation away and back restores the dirty model when the host replaces the form
+  ---
+  duration_ms: 1.776273
+  type: 'test'
+  ...
+# Subtest: row replacement and typing during pending save survive the older response: false
+ok 26 - row replacement and typing during pending save survive the older response: false
+  ---
+  duration_ms: 2.893554
+  type: 'test'
+  ...
+# Subtest: row replacement and typing during pending save survive the older response: true
+ok 27 - row replacement and typing during pending save survive the older response: true
+  ---
+  duration_ms: 1.530352
+  type: 'test'
+  ...
+# Subtest: completed workspace has an explicit reviewed settings editor without reopening initial onboarding
+ok 28 - completed workspace has an explicit reviewed settings editor without reopening initial onboarding
+  ---
+  duration_ms: 1.688439
+  type: 'test'
+  ...
+# Subtest: edits made while apply is pending remain as an amendment to the completed workspace
+ok 29 - edits made while apply is pending remain as an amendment to the completed workspace
+  ---
+  duration_ms: 2.063444
+  type: 'test'
+  ...
+# Subtest: late apply response from an old tenant cannot replace the current workspace
+ok 30 - late apply response from an old tenant cannot replace the current workspace
+  ---
+  duration_ms: 1.994331
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:15) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: stored plans reject orphan assignments outside the current requirement set
+ok 31 - stored plans reject orphan assignments outside the current requirement set
+  ---
+  duration_ms: 16.522776
+  type: 'test'
+  ...
+# Subtest: stored assignments retain the exact site and time of their requirement
+ok 32 - stored assignments retain the exact site and time of their requirement
+  ---
+  duration_ms: 10.326386
+  type: 'test'
+  ...
+# Subtest: stored assignment scope requires canonical requirement identifiers
+ok 33 - stored assignment scope requires canonical requirement identifiers
+  ---
+  duration_ms: 11.396722
+  type: 'test'
+  ...
+# Subtest: public plans filter malformed stored requirement identifiers
+ok 34 - public plans filter malformed stored requirement identifiers
+  ---
+  duration_ms: 55.423447
+  type: 'test'
+  ...
+# Subtest: person_id subtree controls plans; unrelated personnel link is not authority
+ok 35 - person_id subtree controls plans; unrelated personnel link is not authority
+  ---
+  duration_ms: 135.586109
+  type: 'test'
+  ...
+# Subtest: cost flag hides financial values and narratives independently of operational role
+ok 36 - cost flag hides financial values and narratives independently of operational role
+  ---
+  duration_ms: 58.728593
+  type: 'test'
+  ...
+# Subtest: other worker is denied before scenario calculation
+ok 37 - other worker is denied before scenario calculation
+  ---
+  duration_ms: 47.942165
+  type: 'test'
+  ...
+# Subtest: destination outside subtree is denied before scenario calculation
+ok 38 - destination outside subtree is denied before scenario calculation
+  ---
+  duration_ms: 53.358858
+  type: 'test'
+  ...
+# Subtest: unapproved cross-site is denied before scenario calculation
+ok 39 - unapproved cross-site is denied before scenario calculation
+  ---
+  duration_ms: 59.059331
+  type: 'test'
+  ...
+# Subtest: malformed hierarchy missing root fails closed
+ok 40 - malformed hierarchy missing root fails closed
+  ---
+  duration_ms: 35.821303
+  type: 'test'
+  ...
+# Subtest: malformed hierarchy duplicate id fails closed
+ok 41 - malformed hierarchy duplicate id fails closed
+  ---
+  duration_ms: 34.751891
+  type: 'test'
+  ...
+# Subtest: malformed hierarchy cycle fails closed
+ok 42 - malformed hierarchy cycle fails closed
+  ---
+  duration_ms: 36.85035
+  type: 'test'
+  ...
+# Subtest: malformed hierarchy orphan fails closed
+ok 43 - malformed hierarchy orphan fails closed
+  ---
+  duration_ms: 38.437266
+  type: 'test'
+  ...
+# Subtest: body await rechecks costs and source revision, not just role
+ok 44 - body await rechecks costs and source revision, not just role
+  ---
+  duration_ms: 35.373308
+  type: 'test'
+  ...
+# Subtest: non-string branch and sibling scope cannot broaden access
+ok 45 - non-string branch and sibling scope cannot broaden access
+  ---
+  duration_ms: 49.262538
+  type: 'test'
+  ...
+# Subtest: post-await hierarchy revision change is denied without calculation or persistence
+ok 46 - post-await hierarchy revision change is denied without calculation or persistence
+  ---
+  duration_ms: 44.438945
+  type: 'test'
+  ...
+# Subtest: post-await same-version hierarchy edit change is denied without calculation or persistence
+ok 47 - post-await same-version hierarchy edit change is denied without calculation or persistence
+  ---
+  duration_ms: 37.971676
+  type: 'test'
+  ...
+# Subtest: post-await personnel root change is denied without calculation or persistence
+ok 48 - post-await personnel root change is denied without calculation or persistence
+  ---
+  duration_ms: 40.88115
+  type: 'test'
+  ...
+# Subtest: post-await cost revocation change is denied without calculation or persistence
+ok 49 - post-await cost revocation change is denied without calculation or persistence
+  ---
+  duration_ms: 41.957726
+  type: 'test'
+  ...
+# Subtest: post-await permissions change is denied without calculation or persistence
+ok 50 - post-await permissions change is denied without calculation or persistence
+  ---
+  duration_ms: 44.518272
+  type: 'test'
+  ...
+# Subtest: cross-site grants require explicit persisted approval, validity and fresh unchanged state
+ok 51 - cross-site grants require explicit persisted approval, validity and fresh unchanged state
+  ---
+  duration_ms: 72.741356
+  type: 'test'
+  ...
+# Subtest: null person fails closed for operational callers
+ok 52 - null person fails closed for operational callers
+  ---
+  duration_ms: 33.954341
+  type: 'test'
+  ...
+# Subtest: unknown person fails closed for operational callers
+ok 53 - unknown person fails closed for operational callers
+  ---
+  duration_ms: 34.247619
+  type: 'test'
+  ...
+# Subtest: invalid costs fails closed for operational callers
+ok 54 - invalid costs fails closed for operational callers
+  ---
+  duration_ms: 43.333676
+  type: 'test'
+  ...
+# Subtest: revision mismatch fails closed for operational callers
+ok 55 - revision mismatch fails closed for operational callers
+  ---
+  duration_ms: 44.58049
+  type: 'test'
+  ...
+# Subtest: non-string parent fails closed for operational callers
+ok 56 - non-string parent fails closed for operational callers
+  ---
+  duration_ms: 50.672178
+  type: 'test'
+  ...
+# Subtest: mixed plan, candidate pool and legacy destination ambiguity are wholly withheld
+ok 57 - mixed plan, candidate pool and legacy destination ambiguity are wholly withheld
+  ---
+  duration_ms: 45.962464
+  type: 'test'
+  ...
+# Subtest: director can read and model a native-authorized multi-site subtree without fabricated cross-site grants
+ok 58 - director can read and model a native-authorized multi-site subtree without fabricated cross-site grants
+  ---
+  duration_ms: 44.455288
+  type: 'test'
+  ...
+# Subtest: financial redaction covers embedded repaired plans and untyped evidence narratives
+ok 59 - financial redaction covers embedded repaired plans and untyped evidence narratives
+  ---
+  duration_ms: 0.210471
+  type: 'test'
+  ...
+# Subtest: open-shift and swap fence every referenced worker and redact financial evaluations
+ok 60 - open-shift and swap fence every referenced worker and redact financial evaluations
+  ---
+  duration_ms: 52.703953
+  type: 'test'
+  ...
+# Subtest: reconciliation provenance and unexpected personnel obey plan and current hierarchy
+ok 61 - reconciliation provenance and unexpected personnel obey plan and current hierarchy
+  ---
+  duration_ms: 52.002968
+  type: 'test'
+  ...
+# Subtest: event visibility binds exact stored artifact, whole scope and canonical aggregate payload
+ok 62 - event visibility binds exact stored artifact, whole scope and canonical aggregate payload
+  ---
+  duration_ms: 41.658861
+  type: 'test'
+  ...
+# Subtest: /what-if rechecks the source hierarchy across the real awaited body iterator
+ok 63 - /what-if rechecks the source hierarchy across the real awaited body iterator
+  ---
+  duration_ms: 41.49445
+  type: 'test'
+  ...
+# Subtest: /forecast/what-if rechecks the source hierarchy across the real awaited body iterator
+ok 64 - /forecast/what-if rechecks the source hierarchy across the real awaited body iterator
+  ---
+  duration_ms: 39.626063
+  type: 'test'
+  ...
+# Subtest: /open-shift/evaluate rechecks the source hierarchy across the real awaited body iterator
+ok 65 - /open-shift/evaluate rechecks the source hierarchy across the real awaited body iterator
+  ---
+  duration_ms: 43.141168
+  type: 'test'
+  ...
+# Subtest: /swap/evaluate rechecks the source hierarchy across the real awaited body iterator
+ok 66 - /swap/evaluate rechecks the source hierarchy across the real awaited body iterator
+  ---
+  duration_ms: 44.062348
+  type: 'test'
+  ...
+# Subtest: plans public projection hides all nested internal authorityScope when costs=0
+ok 67 - plans public projection hides all nested internal authorityScope when costs=0
+  ---
+  duration_ms: 38.796808
+  type: 'test'
+  ...
+# Subtest: whatIf public projection hides all nested internal authorityScope when costs=0
+ok 68 - whatIf public projection hides all nested internal authorityScope when costs=0
+  ---
+  duration_ms: 35.54081
+  type: 'test'
+  ...
+# Subtest: openShift public projection hides all nested internal authorityScope when costs=0
+ok 69 - openShift public projection hides all nested internal authorityScope when costs=0
+  ---
+  duration_ms: 43.078704
+  type: 'test'
+  ...
+# Subtest: swap public projection hides all nested internal authorityScope when costs=0
+ok 70 - swap public projection hides all nested internal authorityScope when costs=0
+  ---
+  duration_ms: 36.147015
+  type: 'test'
+  ...
+# Subtest: nestedRepair public projection hides all nested internal authorityScope when costs=0
+ok 71 - nestedRepair public projection hides all nested internal authorityScope when costs=0
+  ---
+  duration_ms: 45.787683
+  type: 'test'
+  ...
+# Subtest: reconciliations public projection hides all nested internal authorityScope when costs=0
+ok 72 - reconciliations public projection hides all nested internal authorityScope when costs=0
+  ---
+  duration_ms: 31.125675
+  type: 'test'
+  ...
+# Subtest: forecast public projection hides all nested internal authorityScope when costs=0
+ok 73 - forecast public projection hides all nested internal authorityScope when costs=0
+  ---
+  duration_ms: 37.043546
+  type: 'test'
+  ...
+# Subtest: plans public projection hides all nested internal authorityScope when costs=1
+ok 74 - plans public projection hides all nested internal authorityScope when costs=1
+  ---
+  duration_ms: 39.997633
+  type: 'test'
+  ...
+# Subtest: whatIf public projection hides all nested internal authorityScope when costs=1
+ok 75 - whatIf public projection hides all nested internal authorityScope when costs=1
+  ---
+  duration_ms: 53.116931
+  type: 'test'
+  ...
+# Subtest: openShift public projection hides all nested internal authorityScope when costs=1
+ok 76 - openShift public projection hides all nested internal authorityScope when costs=1
+  ---
+  duration_ms: 50.296068
+  type: 'test'
+  ...
+# Subtest: swap public projection hides all nested internal authorityScope when costs=1
+ok 77 - swap public projection hides all nested internal authorityScope when costs=1
+  ---
+  duration_ms: 33.336218
+  type: 'test'
+  ...
+# Subtest: nestedRepair public projection hides all nested internal authorityScope when costs=1
+ok 78 - nestedRepair public projection hides all nested internal authorityScope when costs=1
+  ---
+  duration_ms: 42.765643
+  type: 'test'
+  ...
+# Subtest: reconciliations public projection hides all nested internal authorityScope when costs=1
+ok 79 - reconciliations public projection hides all nested internal authorityScope when costs=1
+  ---
+  duration_ms: 37.048441
+  type: 'test'
+  ...
+# Subtest: forecast public projection hides all nested internal authorityScope when costs=1
+ok 80 - forecast public projection hides all nested internal authorityScope when costs=1
+  ---
+  duration_ms: 36.598348
+  type: 'test'
+  ...
+# Subtest: actual public plans/scenarios/provenance omit scope with costs=0 while trusted artifacts retain it
+ok 81 - actual public plans/scenarios/provenance omit scope with costs=0 while trusted artifacts retain it
+  ---
+  duration_ms: 59.659122
+  type: 'test'
+  ...
+# Subtest: actual public plans/scenarios/provenance omit scope with costs=1 while trusted artifacts retain it
+ok 82 - actual public plans/scenarios/provenance omit scope with costs=1 while trusted artifacts retain it
+  ---
+  duration_ms: 48.107728
+  type: 'test'
+  ...
+# (node:21) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: server contract payroll preserves decimal half-penny rounding
+ok 83 - server contract payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 62.240701
+  type: 'test'
+  ...
+# Subtest: server legacy payroll preserves decimal half-penny rounding
+ok 84 - server legacy payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 12.653981
+  type: 'test'
+  ...
+# Subtest: browser contract payroll preserves decimal half-penny rounding
+ok 85 - browser contract payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 15.369819
+  type: 'test'
+  ...
+# Subtest: browser legacy payroll preserves decimal half-penny rounding
+ok 86 - browser legacy payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 4.45545
+  type: 'test'
+  ...
+# Subtest: independent exact rate/minute matrix covers both real pricing paths
+ok 87 - independent exact rate/minute matrix covers both real pricing paths
+  ---
+  duration_ms: 153.640678
+  type: 'test'
+  ...
+# Subtest: paid and unpaid breaks retain their observed durations and component rounding
+ok 88 - paid and unpaid breaks retain their observed durations and component rounding
+  ---
+  duration_ms: 9.472721
+  type: 'test'
+  ...
+# Subtest: effective rate changes at midnight use separately rounded original decimal rates
+ok 89 - effective rate changes at midnight use separately rounded original decimal rates
+  ---
+  duration_ms: 7.605989
+  type: 'test'
+  ...
+# Subtest: overtime and allowance decimal factors preserve exact gross and allocated premiums
+ok 90 - overtime and allowance decimal factors preserve exact gross and allocated premiums
+  ---
+  duration_ms: 9.650672
+  type: 'test'
+  ...
+# Subtest: additive premium calculation and allowance sums use decimal operands
+ok 91 - additive premium calculation and allowance sums use decimal operands
+  ---
+  duration_ms: 1.378884
+  type: 'test'
+  ...
+# Subtest: server contract keeps original long-decimal allowance operands until pence rounding
+ok 92 - server contract keeps original long-decimal allowance operands until pence rounding
+  ---
+  duration_ms: 6.537139
+  type: 'test'
+  ...
+# Subtest: browser contract keeps original long-decimal allowance operands until pence rounding
+ok 93 - browser contract keeps original long-decimal allowance operands until pence rounding
+  ---
+  duration_ms: 6.285145
+  type: 'test'
+  ...
+# Subtest: exact additive factors stay unrounded when multiplied into gross pay
+ok 94 - exact additive factors stay unrounded when multiplied into gross pay
+  ---
+  duration_ms: 0.260277
+  type: 'test'
+  ...
+# Subtest: equivalent allowance sums retain one continuous rounding component
+ok 95 - equivalent allowance sums retain one continuous rounding component
+  ---
+  duration_ms: 10.145508
+  type: 'test'
+  ...
+# Subtest: oncosts use the rounded gross plus exact hourly allowance at the existing boundary
+ok 96 - oncosts use the rounded gross plus exact hourly allowance at the existing boundary
+  ---
+  duration_ms: 0.336662
+  type: 'test'
+  ...
+# Subtest: invalid and unsafe monetary values fail closed
+ok 97 - invalid and unsafe monetary values fail closed
+  ---
+  duration_ms: 0.582946
+  type: 'test'
+  ...
+# Subtest: patching fails closed on source drift or duplicate application
+ok 98 - patching fails closed on source drift or duplicate application
+  ---
+  duration_ms: 1.548516
+  type: 'test'
+  ...
+# (node:22) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: server: incomplete allowance arrays cannot silently reduce pay
+ok 99 - server: incomplete allowance arrays cannot silently reduce pay
+  ---
+  duration_ms: 2.925628
+  type: 'test'
+  ...
+# Subtest: server: inherited or accessor factors are not authoritative operands
+ok 100 - server: inherited or accessor factors are not authoritative operands
+  ---
+  duration_ms: 1.156819
+  type: 'test'
+  ...
+# Subtest: server: custom array traversal cannot substitute pay factors
+ok 101 - server: custom array traversal cannot substitute pay factors
+  ---
+  duration_ms: 0.549253
+  type: 'test'
+  ...
+# Subtest: server: valid decimal rounding and explicit zero remain unchanged
+ok 102 - server: valid decimal rounding and explicit zero remain unchanged
+  ---
+  duration_ms: 0.554562
+  type: 'test'
+  ...
+# Subtest: embedded browser: incomplete allowance arrays cannot silently reduce pay
+ok 103 - embedded browser: incomplete allowance arrays cannot silently reduce pay
+  ---
+  duration_ms: 0.613901
+  type: 'test'
+  ...
+# Subtest: embedded browser: inherited or accessor factors are not authoritative operands
+ok 104 - embedded browser: inherited or accessor factors are not authoritative operands
+  ---
+  duration_ms: 0.185107
+  type: 'test'
+  ...
+# Subtest: embedded browser: custom array traversal cannot substitute pay factors
+ok 105 - embedded browser: custom array traversal cannot substitute pay factors
+  ---
+  duration_ms: 0.225567
+  type: 'test'
+  ...
+# Subtest: embedded browser: valid decimal rounding and explicit zero remain unchanged
+ok 106 - embedded browser: valid decimal rounding and explicit zero remain unchanged
+  ---
+  duration_ms: 0.327597
+  type: 'test'
+  ...
+1..106
+# tests 106
+# suites 0
+# pass 106
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2374.850058

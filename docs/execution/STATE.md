@@ -1,3 +1,17 @@
+# Broader product integration checkpoint — 2026-10-26T20:56:52.931Z
+
+Existing integration owner /root, PR501/canonical base unchanged. Parentaa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6; containing successor adopts exactly six source/test files from reviewed PR461/365/494, preserving all previous work. No new product/controller/release lane.
+
+Onboarding/training F1.6: distinguish reconciled population from competency gaps without weakening combined gates; root30/30, independent33/33 ACCEPT. Scheduling F2.1/H05: reject orphan/malformed/stale site-time assignments and filter unsafe plans; independent currentRED48/52 versus donor52/52 ACCEPT. Payroll F1.8: dense own-data factor validation/no caller traversal, rational rounding retained; root24/24, independent14/14 ACCEPT. Final exact-six-blob combined Node22.23.2 replay106/106 zero skips. Evidence evidence/vector-broad-integration-20261026/manifest.json. These are candidate source integrations, not merged canonical release, image or customer proof.
+
+Full-domain reconciliation now retained at inventory/domain-queue-20261026.json, open-pr-snapshot-20261026.json. Current286 open PRs/267drafts. All59 accepted outcomes,14intake,6held,16research retained as overlapping dimensions. Most current proof remains unreconciled; module presence is not readiness. PR481/442 explicitly BLOCKED by REQUEST CHANGES, PR475 savings prototype ORACLE, PR504/445 eligible bounded candidates pending current consumer/integration proof. Existing historical dispositions preserved with explicit newer updates. Do not call three fixes the complete product.
+
+Next eligible source queue: repair reporting access boundary481 against failed independent oracles; validate connector identity504 consumer; replay support445; review overdue-training516. Deployment path remains approved Railway patch391d2e38 STAGED and pinned priorb4. Tool-level cancellation not bypassed; user approval is already established. Before changing that pin reconcile required review/build gates and exact artifact; no transferred b39 proof. Customer latestsuccessful057e at90ad, newestattemptd911failed; passkey-only browser observation from prior turn. No hosted mutation/customer/provider action this turn.
+
+Actual tasks /root/build_route_review, /root/scheduling_inventory, /root/backlog_reconcile completed bounded work. No persistent Work executor/new deployment job. On resume reconcile new remote head, ownership, jobs and staged patch first; continue full backlog, not only auth/hosting.
+
+## Prior checkpoint
+
 # Proof-server repair checkpoint — 2026-10-26T20:41:07.343Z
 
 Existing owner /root; same PR501 branch/base. Parent c60b2d97d566d3af2168335c1c3af00bd8ac9cf4; this successor changes only two proof-wrapper source/test files plus evidence/state. Reviewed malformed request-target crash repair: original4/5 ECONNRESET, repaired5/5, independent /root/build_route_review6/6 zero skips, ACCEPT. Generic400/no reflection; process survives; PARTIAL200 and /ready503 retained. Evidence evidence/vector-proof-wrapper-20261026/manifest.json. This is local synthetic HTTP-wrapper proof, not a customer/browser/provider journey or formal release approval.
