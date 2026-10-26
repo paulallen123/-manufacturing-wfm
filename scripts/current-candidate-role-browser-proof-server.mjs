@@ -19,7 +19,16 @@ const body = () => JSON.stringify({
 
 const server = http.createServer((req, res) => {
   // Serving a running proof process is liveness, never product readiness.
-  const readinessRequest = new URL(req.url || '/', 'http://localhost').pathname === '/ready';
+  let readinessRequest;
+  try {
+    readinessRequest = new URL(req.url || '/', 'http://localhost').pathname === '/ready';
+  } catch {
+    res.statusCode = 400;
+    res.setHeader('content-type', 'application/json');
+    res.setHeader('cache-control', 'no-store');
+    res.end(JSON.stringify({ error: 'Invalid request target' }));
+    return;
+  }
   res.statusCode = state === 'FAIL' || (readinessRequest && outcome.productReady !== true) ? 503 : 200;
   res.setHeader('content-type', 'application/json');
   res.setHeader('cache-control', 'no-store');
@@ -100,3 +109,4 @@ try {
   console.error(`BROWSER_PROOF_SERVER=FAIL\n${detail}`);
   setTimeout(() => process.exit(1), 1000).unref();
 }
+

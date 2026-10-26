@@ -1,3 +1,15 @@
+# Proof-server repair checkpoint — 2026-10-26T20:41:07.343Z
+
+Existing owner /root; same PR501 branch/base. Parent c60b2d97d566d3af2168335c1c3af00bd8ac9cf4; this successor changes only two proof-wrapper source/test files plus evidence/state. Reviewed malformed request-target crash repair: original4/5 ECONNRESET, repaired5/5, independent /root/build_route_review6/6 zero skips, ACCEPT. Generic400/no reflection; process survives; PARTIAL200 and /ready503 retained. Evidence evidence/vector-proof-wrapper-20261026/manifest.json. This is local synthetic HTTP-wrapper proof, not a customer/browser/provider journey or formal release approval.
+
+Latest real customer browser check shows passkey-only Secure sign in at https://vector-customer-ready-candidate-production.up.railway.app/ . Customer Railway latest attemptd9112b19 FAILED, retained successful057e19a2 metadata90ad90fc. No candidate customer release. PR512 still reports code reviewRUNNING at2e04efe; no duplicate task.
+
+Railway approved patch391d2e38 remains STAGED16 changes, only hardening service48ee and500MB volume165dc893. Prior tool cancellation remains technical blocker; user approval is established. No retry through alternative route, new deployment, subscription or customer mutation. Pending patch pins admittedb4 source; new wrapper successor is not in that artifact. Before proof-runner rollout bind its exact new source separately; do not transfer b39 image proof to this commit. Existing source/backlog and all release gates preserved. Plugin discovery confirmed Railway enabled; cloud browser and existing independent coding agent used. No additional product/controller.
+
+Next: apply pending patch via normal approved Railway control, collect new image/bootstrap/durable-state proof, configure existing scoped proof runner and run authenticated journey. Continue eligible bounded source work when hosting is blocked. Local reviewer completed; no persistent execution task or active build established this turn. Resume by reconciling remote head, ownership, staged patch and jobs first.
+
+## Prior checkpoint
+
 # Approved hosted activation — 2026-10-26T02:00:36.215Z
 
 Owner /root, same PR501. User explicitly reaffirmed prior authorization: "Approved it ages ago, get on with it". Isolated500MB storage and synthetic proof identities are authorized; do not ask again or list user approval as missing. Existing budgets/limited scope remain binding; no open-ended spend.

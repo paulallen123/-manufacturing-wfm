@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/build_route_review",
+  "verdict": "ACCEPT",
+  "baselineRef": "c60b2d97",
+  "source": {
+    "current-candidate-role-browser-proof-server.mjs": {
+      "git_blob": "17304e46922293a92394938de25972a2148bfc8c",
+      "sha256": "9f945ad2e768ad0645b493015f03fd85022e79b5c1f51038dcb485d6191b9e06"
+    },
+    "current-candidate-role-browser-proof-server.test.mjs": {
+      "git_blob": "48361fd225debdd865c28fe128b940c38ccdbc40",
+      "sha256": "1646dd54a53677bed50b6070e501e34e115b3a59ac4575bc66737271763a13c6"
+    }
+  },
+  "evidence": {
+    "review.md": "47c7121e97840658ef0db7adb19f82671cb26266e2150ebe7d51c61e5a7c21d0",
+    "independent.tap": "31a3a13d6ac3ce61bddcd7ffd54f48b3c1bf9014f84be8fdbf189ea995b2bd31",
+    "heldout.test.mjs": "b215ff35fe50268bbf99346b8cdc95988266c6abdbec834637330535b74eeb9c"
+  }
+}
