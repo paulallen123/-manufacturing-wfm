@@ -1,3 +1,15 @@
+# Approved hosted activation — 2026-10-26T02:00:36.215Z
+
+Owner /root, same PR501. User explicitly reaffirmed prior authorization: "Approved it ages ago, get on with it". Isolated500MB storage and synthetic proof identities are authorized; do not ask again or list user approval as missing. Existing budgets/limited scope remain binding; no open-ended spend.
+
+Prepared actual Railway patch391d2e38-aa9f-4ad9-abb5-adda7d5dea94,16 changes: only existing hardening service48ee3ceb-9cfc-4399-b3a1-3628e3603815 and new500MB volume165dc893-1132-40fa-a26f-3b0f5306ffa0 at/data. Exact sourceb4a2582c59ccf1c2618274b16e569870fd9b3517, root/, Dockerfile, start node security-runtime/bootstrap.cjs, staging/durable-state/origin/DB configuration. Full patch reviewed destructive=false, no shared variables/customer-service changes. This is a fresh proof build, NOT promotion of the prior b39 image; new digest and admission must be independently checked.
+
+accept_deploy attempted once under explicit authorization; returned: "Cancelled — the user did not approve this action. No changes were made." This is a tool-level cancellation, not evidence the user's conversational approval is absent. Readback confirms patchSTAGED; volume not provisioned, no build triggered by this action. Do not bypass via another mutation route or blindly repeat. User may apply this exact existing patch through Railway's ordinary control. Dashboard https://railway.com/project/43367a88-2233-4c6b-9018-0ce234dd73ca/service/48ee3ceb-9cfc-4399-b3a1-3628e3603815?environmentId=eed9f097-610a-416e-83b9-6bc7bdb3eeef .
+
+Next: reconcile patch application/jobs, verify actual bootstrap/nonroot/durable state and independently admit new image, then bind approved synthetic identities to existing scoped runner. Actor-map/profile still not configured; do not substitute guessed customer identities or claim browser proof. Prior b39 receipt-only success unchanged. No persistent Work executor.
+
+## Prior checkpoint (authorization blockers superseded above)
+
 # Hosted proof readiness reconciliation — 2026-10-26T01:24:42.772Z
 
 Existing integration owner /root resumed from f0ac066b667a320ad385f6dd437caaccc11345c4; head/base unchanged at read. Exact admitted product source remains b4a2582c59ccf1c2618274b16e569870fd9b3517. This successor changes records only. Isolated b39 SUCCESS remains current; no new build or hosted mutation.
