@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-10-26T01:24:42.772Z",
+  "owner": "/root",
+  "sourceSha": "b4a2582c59ccf1c2618274b16e569870fd9b3517",
+  "sourceBlob": "80668b6f9c1e10d97501ca41e50ca59c684778ee",
+  "runnerId": "f84fe27d-af17-451c-b164-54dfef6b6a4b",
+  "requiredVariableNames": [
+    "VECTOR_PROOF_AUTH_PROFILE",
+    "VECTOR_PROOF_URL",
+    "WFM_EXPECTED_CANDIDATE_SHA",
+    "EXPECTED_DEPLOYMENT_ID",
+    "EXPECTED_IMPLEMENTATION_TENANT",
+    "EXPECTED_IMPLEMENTATION_RUN_ID",
+    "EXPECTED_CONFIGURATION_DIGEST",
+    "VECTOR_PROOF_ACTORS_JSON",
+    "PROOF_PRIVATE_KEY_B64"
+  ],
+  "missingVariableNames": [
+    "VECTOR_PROOF_AUTH_PROFILE",
+    "VECTOR_PROOF_ACTORS_JSON"
+  ],
+  "method": "Static required-name comparison against Railway describe_service; no values accessed and preflight not executed in runner",
+  "valuesValidated": false,
+  "serverAuthorizationVerified": false,
+  "customerProven": false,
+  "proofTarget": {
+    "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+    "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+    "serviceId": "48ee3ceb-9cfc-4399-b3a1-3628e3603815",
+    "volumeCount": 0,
+    "latestDeployment": {
+      "id": "36ce7d6b-5801-412e-a924-8dbd7a33dce9",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-17T15:13:09.244Z",
+      "url": null
+    },
+    "staged": null
+  }
+}
