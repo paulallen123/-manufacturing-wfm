@@ -58,13 +58,73 @@ test('models explicit CCL-style per-kWh and maximum-demand charges without hardc
 
 test('refuses exact spend when half-hourly coverage is incomplete',()=>{
   const invoice={tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',billingPeriod:{start:'2026-09-18',end:'2026-09-19'},totalBeforeTaxGBP:4,unpricedCharges:[]};
-  const r=reconcileEnergyBill({tariff,intervals:[read('2026-09-18T08:00:00Z',10)],invoice,meterCoverage:{complete:false,expectedIntervals:48}});
+  const r=reconcileEnergyBill({tariff,intervals:[read('2026-09-18T08:00:00Z',10)],invoice,meterCoverage:{tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',complete:false,expectedIntervals:48}});
   assert.equal(r.status,'needs_review'); assert.equal(r.exactSpendClaimAllowed,false);
 });
 
 test('allows exact spend only when meter, tariff, invoice and ledger reconcile',()=>{
   const invoice={tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',billingPeriod:{start:'2026-09-18',end:'2026-09-19'},totalBeforeTaxGBP:4,unpricedCharges:[]};
-  const ledger={tenantId:'t1',siteId:'s1',postedAmountGBP:4};
-  const r=reconcileEnergyBill({tariff,intervals:[read('2026-09-18T08:00:00Z',10)],invoice,ledgerEntry:ledger,meterCoverage:{complete:true,expectedIntervals:1}});
+  const ledger={tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',postedAmountGBP:4};
+  const r=reconcileEnergyBill({tariff,intervals:[read('2026-09-18T08:00:00Z',10)],invoice,ledgerEntry:ledger,meterCoverage:{tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',complete:true,expectedIntervals:1}});
   assert.equal(r.status,'reconciled'); assert.equal(r.exactSpendClaimAllowed,true); assert.equal(r.financeReconciled,true);
+});
+
+function reconciliation(overrides={}) {
+  return reconcileEnergyBill({
+    tariff, intervals:[read('2026-09-18T08:00:00Z',10)],
+    invoice:{tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',billingPeriod:{start:'2026-09-18',end:'2026-09-19'},totalBeforeTaxGBP:4,unpricedCharges:[]},
+    ledgerEntry:{tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',postedAmountGBP:4},
+    meterCoverage:{tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',complete:true,expectedIntervals:1}, ...overrides
+  });
+}
+
+test('foreign or unbound ledger cannot finance-reconcile an exact meter bill',()=>{
+  for (const change of [
+    {tenantId:'foreign'}, {siteId:'foreign'}, {meterPointId:'foreign'}, {meterPointId:undefined}
+  ]) {
+    const result=reconciliation({ledgerEntry:{tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',postedAmountGBP:4,...change}});
+    assert.equal(result.status,'unreconciled');
+    assert.equal(result.reason,'ledger_identity_mismatch');
+    assert.notEqual(result.financeReconciled,true);
+  }
+});
+
+test('malformed invoice, ledger and tolerance values cannot produce exact spend',()=>{
+  const invoice={tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',billingPeriod:{start:'2026-09-18',end:'2026-09-19'},totalBeforeTaxGBP:4,unpricedCharges:[]};
+  const ledger={tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',postedAmountGBP:4};
+  for (const amount of [null,'4',NaN,Infinity,-1]) {
+    const invalidInvoice=reconciliation({invoice:{...invoice,totalBeforeTaxGBP:amount}});
+    assert.equal(invalidInvoice.status,'unreconciled');
+    assert.equal(invalidInvoice.reason,'invalid_invoice_total');
+    const invalidLedger=reconciliation({ledgerEntry:{...ledger,postedAmountGBP:amount}});
+    assert.equal(invalidLedger.status,'unreconciled');
+    assert.equal(invalidLedger.reason,'invalid_ledger_amount');
+  }
+  for (const toleranceGBP of [null,'0.01',NaN,Infinity,-0.01,1]) {
+    const result=reconciliation({toleranceGBP});
+    assert.equal(result.status,'unreconciled');
+    assert.equal(result.reason,'invalid_tolerance');
+  }
+});
+
+test('missing and rolled invoice billing periods cannot omit standing charges from exact spend',()=>{
+  for (const billingPeriod of [undefined,{start:'2026-02-30',end:'2026-03-02'},
+    {start:'2026-09-19',end:'2026-09-18'}]) {
+    const invoice={tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',billingPeriod,totalBeforeTaxGBP:3,unpricedCharges:[]};
+    const result=reconciliation({invoice,ledgerEntry:undefined});
+    assert.equal(result.status,'unreconciled');
+    assert.equal(result.reason,'invalid_billing_period');
+    assert.notEqual(result.exactSpendClaimAllowed,true);
+  }
+});
+
+test('foreign and coerced meter coverage cannot establish an exact bill',()=>{
+  const coverage={tenantId:'t1',siteId:'s1',meterPointId:'MPAN-1',complete:true,expectedIntervals:1};
+  for (const change of [{tenantId:'foreign'},{siteId:'foreign'},{meterPointId:'foreign'},
+    {expectedIntervals:'1'},{expectedIntervals:1.5},{expectedIntervals:null}]) {
+    const result=reconciliation({meterCoverage:{...coverage,...change}});
+    assert.equal(result.status,'unreconciled');
+    assert.equal(result.reason,'meter_coverage_invalid');
+    assert.notEqual(result.exactSpendClaimAllowed,true);
+  }
 });
