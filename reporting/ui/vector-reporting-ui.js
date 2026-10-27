@@ -7,12 +7,12 @@
 
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
-const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],calculations:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],loading:false,scheduleOpen:false};
+const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],calculations:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],deliveriesAvailable:false,loading:false,scheduleOpen:false};
 let authorityEpoch=0,returnFocus=null;
 function clearReporting(){
   state.catalog=null;state.selectedTemplate=null;state.selectedSource=null;state.selectedReportId=null;
   state.baseRows=[];state.rows=[];state.raw=null;state.columns=[];state.calculations=[];state.filters=[];state.sorts=[];
-  state.saved=[];state.dashboards=[];state.schedules=[];state.deliveries=[];state.loading=false;state.scheduleOpen=false;
+  state.saved=[];state.dashboards=[];state.schedules=[];state.deliveries=[];state.deliveriesAvailable=false;state.loading=false;state.scheduleOpen=false;
   for(const selector of ['[data-report-templates]','[data-report-saved]','[data-report-dashboard]','[data-report-schedules]','[data-report-deliveries]','[data-report-main]'])modal().querySelector(selector).innerHTML='';
 }
 function announce(message){const host=modal().querySelector('[data-report-status]');if(host)host.textContent=message;}
@@ -127,17 +127,18 @@ async function loadCatalog(){
       json('/api/reporting/reports').catch(()=>({reports:[]})),
       json('/api/reporting/dashboards').catch(()=>({dashboards:[]})),
       json('/api/reporting/schedules').catch(()=>({schedules:[]})),
-      json('/api/reporting/deliveries').catch(()=>({deliveries:[]}))
+      json('/api/reporting/deliveries').catch(error=>{if([401,403].includes(error.status))throw error;return null;})
     ]);
     if(epoch!==authorityEpoch)return;
     state.catalog=catalog;
     state.saved=Array.isArray(saved?.reports)?saved.reports:[];
     state.dashboards=Array.isArray(dashboards?.dashboards)?dashboards.dashboards:[];
     state.schedules=Array.isArray(schedules?.schedules)?schedules.schedules:[];
-    state.deliveries=Array.isArray(deliveries?.deliveries)?deliveries.deliveries:[];
+    state.deliveriesAvailable=Array.isArray(deliveries?.deliveries);
+    state.deliveries=state.deliveriesAvailable?deliveries.deliveries:[];
     renderTemplates('');renderSaved();renderDashboard();renderDeliveries();renderSchedules();
     main.innerHTML='<div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div>';
-    announce('Reporting controls updated. Only currently available reports are shown.');
+    announce(state.deliveriesAvailable?'Reporting controls updated. Only currently available reports are shown.':'Reporting controls updated. Delivery history is unavailable; delivery outcomes could not be checked.');
   }catch(e){
     if(epoch!==authorityEpoch)return;
     clearReporting();
@@ -168,9 +169,25 @@ function renderDashboard(){
 function renderDeliveries(){
   const host=modal().querySelector('[data-report-deliveries]');if(!host)return;
   const byId=new Map(state.saved.map(r=>[r.id,r]));
-  const rows=state.deliveries.filter(d=>d.status==='READY').slice(0,5);
-  host.innerHTML='<div class="vector-reporting-section-label">Scheduled for you</div>'+
-    (rows.length?rows.map(d=>{const r=byId.get(d.reportId);return `<button type="button" class="vector-reporting-saved-row delivery" data-report-saved-id="${esc(d.reportId)}"><b>${esc(r?.title||'Scheduled report')}</b><span>Ready · ${esc(new Date(d.createdAt).toLocaleString())}</span></button>`;}).join(''):'<div class="vector-reporting-none">No scheduled deliveries yet.</div>');
+  // Keep every outcome returned by the authorized endpoint visible, including
+  // unknown and blocked writes. A receipt/dispatch response is not readback.
+  if(!state.deliveriesAvailable){host.innerHTML='<div class="vector-reporting-section-label">Delivery outcomes</div><div class="vector-reporting-none">Delivery history is unavailable. Outcomes could not be checked. Reopen reporting to refresh.</div>';return;}
+  const rows=state.deliveries;
+  const labels={
+    UNKNOWN:'Outcome unknown — reconciliation required. Do not repeat the delivery.',
+    BLOCKED_RECONCILIATION_REQUIRED:'Blocked — an earlier delivery needs reconciliation.',
+    BLOCKED_READBACK_REQUIRED:'Blocked — independent confirmation is unavailable.',
+    BLOCKED_NO_ADAPTER:'Blocked — delivery connection is unavailable.',
+    BLOCKED_AUTHORITY_DRIFT:'Blocked — current authorization is unavailable.',
+    BLOCKED_SCHEDULE_PAUSED:'Blocked — schedule was paused.'
+  };
+  host.innerHTML='<div class="vector-reporting-section-label">Delivery outcomes</div>'+
+    (rows.length?rows.map(d=>{
+      const r=byId.get(d.reportId),date=new Date(d.createdAt);
+      const label=d.status==='READY'&&d.mode==='in_app'?'In-product report ready.':Object.hasOwn(labels,d.status)?labels[d.status]:'Outcome unverified — reconciliation required.';
+      const when=Number.isFinite(date.getTime())?date.toLocaleString():'Time unavailable';
+      return `<button type="button" class="vector-reporting-saved-row delivery" data-report-saved-id="${esc(d.reportId)}"><b>${esc(r?.title||'Scheduled report')}</b><span>${esc(label)}</span><span>${esc(when)} · Open current report</span></button>`;
+    }).join(''):'<div class="vector-reporting-none">No scheduled deliveries yet.</div>');
 }
 function renderSchedules(){
   const host=modal().querySelector('[data-report-schedules]');if(!host)return;

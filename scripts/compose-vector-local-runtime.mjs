@@ -234,6 +234,8 @@ const groups = {
   trust: ['vector-trust-spine.cjs']
 };
 for (const [group, files] of Object.entries(groups)) for (const file of files) {const sourceRoot=group==='integrations'?'integrations':`${group}/runtime`,targetRoot=group==='integrations'?'integrations':`${group}-runtime`;copy(`${sourceRoot}/${file}`,`${targetRoot}/${file}`);}
+copy('resilience/support-selfhelp.cjs', 'support-runtime/support-selfhelp.cjs');
+copy('resilience/support-selfhelp-service.cjs', 'support-runtime/support-selfhelp-service.cjs');
 composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);

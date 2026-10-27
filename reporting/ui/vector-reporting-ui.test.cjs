@@ -2,8 +2,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 // Execute the shipped IIFE and parse its emitted DOM, preserving parent/order,
 // attributes, collapsed details and focus. CSS/rendering proof belongs to Chrome.
-function fixture(width=1280){
-  const listeners={},calls=[],requests=[],notifications=[],windowEvents={};let authorised=true,pending=null,pendingMutation=null,sourceReply=null,mutationStatus=200,refreshStatus=200;
+function fixture(width=1280,deliveryRows=null){
+  const listeners={},calls=[],requests=[],notifications=[],windowEvents={};let authorised=true,pending=null,pendingMutation=null,sourceReply=null,mutationStatus=200,refreshStatus=200,deliveryReply=null;
   const document={readyState:'complete',addEventListener(k,f){listeners[k]=f;},activeElement:null};
   const voidTags=new Set(['INPUT','BR','HR','IMG','META','LINK']);
   class Element {
@@ -56,25 +56,47 @@ function fixture(width=1280){
   const fetch=async (url,options)=>{
     if(url==='/api/payroll-run'&&sourceReply)return sourceReply.stage==='fetch'?await sourceReply.promise:{ok:true,status:200,json:async()=>await sourceReply.promise};
     calls.push(url);requests.push({url,method:options?.method||'GET'});if(options?.method==='POST'){if(pendingMutation)await pendingMutation;return {ok:mutationStatus<400,status:mutationStatus,json:async()=>({error:'Artifact not found.'})};}
-    if(pending)await pending;return {ok:refreshStatus<400,status:refreshStatus,json:async()=>{
+    if(pending)await pending;
+    if(url.endsWith('/deliveries')&&deliveryReply)return {ok:deliveryReply.status<400,status:deliveryReply.status,json:async()=>{if(deliveryReply.rejectJson)throw Error('Invalid JSON');return deliveryReply.body;}};
+    return {ok:refreshStatus<400,status:refreshStatus,json:async()=>{
       if(refreshStatus>=400)return {error:'Session denied.'};
       if(url.endsWith('/catalog'))return {role:authorised?'payroll_admin':'manager',sources:authorised?[{id:'payroll-control',label:'Payroll secret',description:'Restricted fixture source',fields:['team','period'],endpoint:'/api/payroll-run'}]:[],templates:authorised?[{id:'payroll',sourceId:'payroll-control',label:'Private payroll question',columns:['team']}]:[]};
       if(url.endsWith('/reports'))return {reports:authorised?[report]:[]};
       if(url.endsWith('/dashboards'))return {dashboards:authorised?[{dashboard:{reportIds:['private']}}]:[]};
       if(url.endsWith('/schedules'))return {schedules:authorised?[{id:'schedule',schedule:{reportId:'private',delivery:'email_link',destination:'secret@example.test',hour:8,minute:0,timeZone:'UTC',cadence:'daily'},enabled:true}]:[]};
-      if(url.endsWith('/deliveries'))return {deliveries:authorised?[{reportId:'private',status:'READY',receipt:{externalReceipt:'secret-receipt'}}]:[]};
+      if(url.endsWith('/deliveries'))return {deliveries:authorised?(deliveryRows||[{reportId:'private',status:'READY',mode:'in_app',receipt:{externalReceipt:'secret-receipt'}}]):[]};
       if(url.endsWith('/private'))return {report};throw Error('Unexpected request '+url);
     }};
   };
   const source=fs.readFileSync(path.join(__dirname,'vector-reporting-ui.js'),'utf8');
   vm.runInNewContext(source,{window,document,fetch,MutationObserver:class{observe(){}},setTimeout:f=>{f();return 0;},clearTimeout(){},Intl,Date,Map,Set,alert(){}});
-  return {api:window.VectorReporting,nodes,calls,requests,notifications,launcher,document,key:e=>listeners.keydown(e),focus:()=>windowEvents.focus?.(),revoke(){authorised=false;},deny(status){mutationStatus=status;},failRefresh(status){refreshStatus=status;},hold(){pending=new Promise(resolve=>this.release=()=>{pending=null;resolve();});},holdMutation(){pendingMutation=new Promise(resolve=>this.releaseMutation=()=>{pendingMutation=null;resolve();});},deferSource(stage){sourceReply={stage,promise:new Promise((_,reject)=>this.rejectSource=()=>reject(Error('Obsolete source failure')))};},markup(){return document.body.innerHTML;},async click(selector){const target=nodes.get(selector);assert.ok(target,'shipped markup contains '+selector);await nodes.get('vector-reporting-modal').listeners.click({target});}};
+  return {api:window.VectorReporting,nodes,calls,requests,notifications,launcher,document,key:e=>listeners.keydown(e),focus:()=>windowEvents.focus?.(),revoke(){authorised=false;},setDeliveryReply(value){deliveryReply=value;},deny(status){mutationStatus=status;},failRefresh(status){refreshStatus=status;},hold(){pending=new Promise(resolve=>this.release=()=>{pending=null;resolve();});},holdMutation(){pendingMutation=new Promise(resolve=>this.releaseMutation=()=>{pendingMutation=null;resolve();});},deferSource(stage){sourceReply={stage,promise:new Promise((_,reject)=>this.rejectSource=()=>reject(Error('Obsolete source failure')))};},markup(){return document.body.innerHTML;},async click(selector){const target=nodes.get(selector);assert.ok(target,'shipped markup contains '+selector);await nodes.get('vector-reporting-modal').listeners.click({target});}};
 }
 for(const [name,width] of [['desktop',1280],['tablet',820],['mobile',390]])test(name+' fresh open reconciles catalog/saved/dashboard/schedules without restricted cached metadata',async()=>{
   const x=fixture(width);await x.api.open();assert.match(x.markup(),/Restricted payroll title/);x.key({key:'Escape'});x.revoke();x.hold();const opening=x.api.open();
   assert.doesNotMatch(x.markup(),/Restricted payroll title|Payroll secret|Private payroll question|secret@example|secret-receipt/,'clear restricted DOM before refresh completes');x.release();await opening;
   assert.doesNotMatch(x.markup(),/Restricted payroll title|Payroll secret|Private payroll question|secret@example|secret-receipt/);assert.match(x.nodes.get('[data-report-main]').innerHTML,/Choose a question|No reports available/);
   assert.equal(x.calls.filter(url=>url.endsWith('/catalog')).length,2);for(const endpoint of ['reports','dashboards','schedules','deliveries'])assert.equal(x.requests.filter(r=>r.method==='GET'&&r.url.endsWith('/'+endpoint)).length,2);
+});
+test('delivery history exposes unknown and blocked outcomes beyond the old five-row cutoff without external receipts',async()=>{
+  const statuses=['READY','READY','READY','READY','READY','UNKNOWN','BLOCKED_RECONCILIATION_REQUIRED','BLOCKED_READBACK_REQUIRED','BLOCKED_NO_ADAPTER','BLOCKED_AUTHORITY_DRIFT','BLOCKED_SCHEDULE_PAUSED'];
+  const rows=statuses.map((status,i)=>({reportId:'private',status,mode:i<5?'in_app':'email_link',createdAt:'2026-10-27T12:00:00Z',receipt:{externalReceipt:'secret-receipt',destination:'secret@example.test'},observations:[{private:'provider-secret'}]}));
+  const x=fixture(390,rows);await x.api.open();const host=x.nodes.get('[data-report-deliveries]');
+  assert.equal(host.querySelectorAll('button').length,statuses.length);
+  for(const text of ['In-product report ready','Outcome unknown','earlier delivery needs reconciliation','independent confirmation is unavailable','delivery connection is unavailable','current authorization is unavailable','schedule was paused'])assert.ok(host.textContent.includes(text),text);
+  assert.doesNotMatch(host.innerHTML,/secret-receipt|secret@example|provider-secret|data-report-retry|data-report-schedule-state/);
+  const before=x.requests.filter(r=>r.method==='POST').length;await x.click('.delivery');
+  assert.equal(x.requests.filter(r=>r.method==='POST').length,before,'opening a current report never dispatches or retries');
+  x.revoke();await x.focus();assert.doesNotMatch(x.markup(),/Outcome unknown|earlier delivery needs reconciliation|Restricted payroll title/);
+});
+for(const status of ['SENT','FAILED','READY','VERIFIED','FUTURE_STATUS','toString','__proto__','<img src=x onerror=alert(1)>'])test('external '+status+' remains unverified and escaped',async()=>{
+  const x=fixture(1280,[{reportId:'<img src=x onerror=alert(1)>',status,mode:'email_link',createdAt:'not-a-time'}]);await x.api.open();
+  const host=x.nodes.get('[data-report-deliveries]');assert.match(host.textContent,/Outcome unverified — reconciliation required/);assert.match(host.textContent,/Time unavailable/);
+  assert.doesNotMatch(host.innerHTML,/<img|In-product report ready|Invalid Date|\[native code\]/);assert.match(host.innerHTML,/&lt;img/);
+});
+test('all authorized unresolved receipts remain visible, including the endpoint hundredth row',async()=>{
+  const rows=Array.from({length:100},(_,i)=>({reportId:'private',status:i===99?'UNKNOWN':'READY',mode:'in_app'}));
+  const x=fixture(820,rows);await x.api.open();const host=x.nodes.get('[data-report-deliveries]');assert.equal(host.querySelectorAll('button').length,100);assert.match(host.textContent,/Outcome unknown/);
 });
 test('dialog Escape returns focus and announces current controls',async()=>{
   const x=fixture();await x.api.open();assert.equal(x.document.activeElement,x.nodes.get('[data-report-search]'));x.key({key:'Escape'});assert.equal(x.document.activeElement,x.launcher);
@@ -117,4 +139,14 @@ for(const expanded of [false,true])test('shipped editor Tab trap uses actual '+(
   assert.ok(details.querySelectorAll('input,select,button').length>10,'fixture parses real emitted builder descendants');last.focus();assert.equal(x.document.activeElement,last);let prevented=false;
   x.key({key:'Tab',shiftKey:false,preventDefault(){prevented=true;}});assert.equal(prevented,true);assert.equal(x.document.activeElement,first);
   first.focus();prevented=false;x.key({key:'Tab',shiftKey:true,preventDefault(){prevented=true;}});assert.equal(prevented,true);assert.equal(x.document.activeElement,last);
+});
+
+for(const reply of [{status:503},{status:404},{status:200,body:{}},{status:200,body:{deliveries:null}},{status:200,rejectJson:true}])test('unavailable delivery history never claims no deliveries: '+JSON.stringify(reply),async()=>{
+ const x=fixture();x.setDeliveryReply(reply);await x.api.open();const host=x.nodes.get('[data-report-deliveries]');assert.match(host.textContent,/Delivery history is unavailable/);assert.doesNotMatch(host.textContent,/No scheduled deliveries yet/);assert.match(x.nodes.get('[data-report-status]').textContent,/outcomes could not be checked/);assert.match(x.markup(),/Restricted payroll title/);
+});
+for(const status of [401,403])test('delivery-only authority denial '+status+' clears the entire reporting surface',async()=>{
+ const x=fixture();await x.api.open();x.setDeliveryReply({status});await x.focus();assert.doesNotMatch(x.markup(),/Restricted payroll title|Payroll secret|In-product report ready/);assert.match(x.nodes.get('[data-report-main]').textContent,/No reports available/);
+});
+test('confirmed empty delivery history remains distinct from unavailable and can recover on refresh',async()=>{
+ const x=fixture();x.setDeliveryReply({status:503});await x.api.open();x.setDeliveryReply({status:200,body:{deliveries:[]}});await x.focus();assert.match(x.nodes.get('[data-report-deliveries]').textContent,/No scheduled deliveries yet/);assert.doesNotMatch(x.nodes.get('[data-report-status]').textContent,/unavailable/);
 });

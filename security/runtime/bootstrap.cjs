@@ -28,6 +28,8 @@ const { createSchedulingIntelligenceService } = require('/app/operations-runtime
 const { createT9CustomerGuardian } = require('/app/operations-runtime/t9-customer-guardian.cjs');
 const { createVectorReportingService } = require('/app/reporting-runtime/vector-reporting-service.cjs');
 
+const { createSupportSelfHelpService } = require('/app/support-runtime/support-selfhelp-service.cjs');
+
 const hosted = process.env.WFM_HOSTED_STAGING === 'true';
 enforceHostedApplicationUser({ hosted });
 const STAGING_ACCESS_GRANTS = Object.freeze([
@@ -79,6 +81,8 @@ let schedulingIntelligenceService = null;
 let schedulingIntelligenceServiceInitError = null;
 let t9CustomerGuardian = null;
 let t9CustomerGuardianInitError = null;
+let supportSelfHelpService = null;
+let supportSelfHelpInitError = null;
 let reportingService = null;
 let reportingServiceInitError = null;
 
@@ -471,6 +475,14 @@ http.createServer = function guardedCreateServer(listener) {
     catch (error) { reportingServiceInitError = error; }
   }
 
+  if (!supportSelfHelpService && !supportSelfHelpInitError && process.env.WFM_DB) {
+    try { supportSelfHelpService = createSupportSelfHelpService({
+      dbPath: process.env.WFM_DB, publicOrigin: process.env.WFM_PUBLIC_ORIGIN,
+      authorizeRequest: (req, res) => Boolean(guard) && !guard.beforeRequest(req, res),
+      fixtureOnly: hosted && process.env.NODE_ENV === 'staging' && runtimeIdentity.snapshot().fixtureOnly === true && runtimeIdentity.snapshot().sourceBinding === 'build-file-matched'
+    }); } catch (error) { supportSelfHelpInitError = error; }
+  }
+
   return originalCreateServer.call(http, async (req, res) => {
     // Bind every asset/API response to the exact process source so browser proof
     // detects mixed revisions during rolling or multi-replica deployments.
@@ -569,6 +581,10 @@ http.createServer = function guardedCreateServer(listener) {
 
     if (demandDecisionPath(req)) {
       if (await routeOverlay(demandDecisionService, demandDecisionServiceInitError, res, 'Decision intelligence', req)) return;
+    }
+
+    if (String(req.url || '').split('?')[0] === '/api/support/self-help') {
+      if (await routeOverlay(supportSelfHelpService, supportSelfHelpInitError, res, 'Help', req)) return;
     }
 
     if (reportingPath(req)) {
