@@ -1,0 +1,107 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: delivery oracle: accepted response lost must remain UNKNOWN, not FAILED
+not ok 1 - delivery oracle: accepted response lost must remain UNKNOWN, not FAILED
+  ---
+  duration_ms: 131.97091
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:463:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'FAILED'
+    - 'UNKNOWN'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'UNKNOWN'
+  actual: 'FAILED'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:469:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: delivery oracle: successful adapter response alone must not claim SENT
+not ok 2 - delivery oracle: successful adapter response alone must not claim SENT
+  ---
+  duration_ms: 116.299677
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:473:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'SENT'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'SENT'
+  actual: 'SENT'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:477:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: delivery oracle: two service instances must claim durable intent before provider call
+not ok 3 - delivery oracle: two service instances must claim durable intent before provider call
+  ---
+  duration_ms: 140.659289
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:481:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:488:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: delivery oracle: unresolved accepted response loss must contain later affected writes
+not ok 4 - delivery oracle: unresolved accepted response loss must contain later affected writes
+  ---
+  duration_ms: 114.235267
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:492:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    unresolved external outcome must block affected future writes
+    
+    2 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-delivery-assessment/oracle.test.cjs:500:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 0
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 592.900585

@@ -1,3 +1,17 @@
+# Exact-source proof and build admission — 2026-10-27T01:40:07.504Z
+
+Existing /root owner, same PR501/branch. Tested source0dd1dd9064e6d6940d76d0577e06cdcbf481a779; Codex review6431395393 no major issues. Containing successor changes one Docker test command plus evidence/state: include existing payroll-factor and support-catalogue regressions. Independent Docker blob18376e80dc7e2fd4398298ade648788de4af9745 ACCEPT; exact command29/29. All product sources unchanged. Canonical base48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
+
+Independent task /root/build_route_review hash-reconciled1249 source blobs. Composition succeeded with cached dependencies matching package/lock (not fresh npm ci). Broad Node22 initial1613/1614: tar ownership restore fails in local namespace. Explicit local TAR_OPTIONS=--no-same-owner rerun1614/1614, zero skips, no source/test edits. Additional sequential100/100, gate29/29; counts overlap. Full compressed original/final TAP and provenance retained at evidence/vector-build-admission-20261027/. Not a full Docker build or image admission; no new digest/browser/provider/customer proof. CircleCI0dd status success2 contexts, no actual logs admitted.
+
+/root/backlog_reconcile found4 RED external reporting delivery safety oracles: response loss mislabeledFAILED, response-onlySENT, duplicate multiworker sends, no next-slot containment. Actual bootstrap supplies no adapter. Preserve disabled path; durable atomic intent/UNKNOWN/readback/reconciliation required before enabling. Full59-capability map retained with explicit F2.6 gap.
+
+Railway patch391d2e38 remains STAGED16,destructivefalse, priorb4 pin and isolated500MB. Renewed Proceed followed by fresh review and normal accept-deploy again returned cancellation 'user did not approve'; no changes. Readback unchanged. User consent is already established; tool control is unresolved. No alternate-route bypass. Customer prior successful057e19a2/90ad; latestd911failedBUILD_IMAGE. Logs locate failing compose/Staffology command but not root cause. Existing rollback baseline unchanged; no new production mutation.
+
+Tasks completed at this checkpoint; no persistent executor or active deployment. Next: reconcile remote successor review/build jobs; run exact immutable image build via existing approved runner when control permits, then isolated bootstrap/auth/durable-state/browser proof. Source-independent eligible queue: implement and verify durable reporting delivery before any adapter activation; persist importer scope/replay contract. No new release lane. Resume from containing commit; do not replay external mutations.
+
+## Prior checkpoint
+
 # Domain safety integration checkpoint — 2026-10-27T01:22:01.473Z
 
 Existing owner /root, same PR501 and branch test/vector-empty-organisation-regression-20261020. Exact parent 9fb494e040bf2c2641571a1bc8718623012caa2d; successor is containing commit, with eight source blobs in evidence/vector-domain-safety-20261027/manifest.json. Canonical release base remains48dce8f697825c8cd5f99b3e5aeea3953647f8c2. No separate product/controller/release lane.

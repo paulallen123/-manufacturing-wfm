@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-27T01:22:01.473Z",
+  "updatedAt": "2026-10-27T01:40:18.374Z",
   "integrationOwner": "/root (existing Work integration owner, explicit user resume)",
   "visibility": "Visible agents and checked PRs only; external chats not exhaustively observable.",
   "leases": [
@@ -137,6 +137,20 @@
         "learning/runtime/adaptive-learning-engine.test.cjs",
         "integration-fabric/runtime/batch-reconciliation.mjs",
         "integration-fabric/runtime/batch-reconciliation.test.mjs"
+      ]
+    },
+    {
+      "task": "Exact0dd source build proof and Docker admission coverage",
+      "owner": "/root",
+      "verifier": "/root/build_route_review",
+      "assessment": "/root/backlog_reconcile",
+      "status": "completed; no active local or cloud jobs; hosted blocked by tool cancellation",
+      "branch": "test/vector-empty-organisation-regression-20261020",
+      "scope": [
+        "Dockerfile",
+        "evidence/vector-build-admission-20261027/",
+        "docs/execution/STATE.md",
+        "inventory/capability-map.yaml"
       ]
     }
   ],

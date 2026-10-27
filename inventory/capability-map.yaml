@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-27T01:22:01.473Z",
+  "updatedAt": "2026-10-27T01:40:07.504Z",
   "scope": "59 accepted F0-F7 outcomes; research16/intake14/held6 retained as separate pending reconciliation dimensions, not counted as distinct added outcomes.",
   "canonicalSHA": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
   "sourceVersion": "45",
@@ -687,7 +687,8 @@
       "released": null,
       "nextTask": "Build typed interchange helper/tests, then owner wires existing UI/service",
       "remainingGaps": [
-        "Current implementation and proof must be reconciled; historical state is not live verification."
+        "Current implementation and proof must be reconciled; historical state is not live verification.",
+        "Current external reporting delivery has four failing synthetic safety oracles (response loss, response-only SENT, multiworker duplicate, next-slot containment). Bootstrap adapter absent; keep disabled until durable intent/readback/reconciliation proven. See evidence/vector-build-admission-20261027/reporting-delivery-assessment/manifest.json"
       ],
       "boundedCandidateProgress": {
         "previous": null,
