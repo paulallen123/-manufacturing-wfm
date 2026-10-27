@@ -1,0 +1,112 @@
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -24,10 +24,11 @@
+ RUN VECTOR_SEALED_PROOF_ROOT=/proof node --test verification/provider-recovery-correction/tests/*.test.cjs \
+  && node scripts/validate-canary-rollback-controller.mjs
+ RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime \
+- && VECTOR_SETUP_POLICY_RUNTIME_ROOT=/proof/staffology-full-runtime/implementation-runtime node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/customer-workspace.test.cjs \
++ && VECTOR_SETUP_POLICY_RUNTIME_ROOT=/proof/staffology-full-runtime/implementation-runtime node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/customer-workspace.test.cjs scripts/staffology-test-receipt.test.cjs \
+  && mkdir -p /proof/staffology-private-artifacts \
+  && cp /proof/staffology-full-runtime/STAFFOLOGY_ASSEMBLY.json /proof/staffology-full-runtime/LOCAL_PROOF_PROVENANCE.json /proof/staffology-private-artifacts/ \
+  && printf '%s\n' "$RAILWAY_GIT_COMMIT_SHA" > /proof/staffology-private-artifacts/source-sha.txt \
++ && printf '%s\n' 'VECTOR_STAFFOLOGY_BEGIN' >&2 \
+  && (set +e; CANONICAL_SOURCE_DIR=/proof \
+     WFM_RUNTIME=/proof/staffology-full-runtime \
+     STAFFOLOGY_RUNTIME_MODE=full \
+@@ -41,6 +42,8 @@
+       integrations/staffology/independent/generated-provider-preload.test.cjs \
+       integrations/staffology/independent/full-http-employee-journey.test.cjs \
+       > /proof/staffology-private-artifacts/staffology-full.tap 2>&1; status=$?; \
++    printf 'VECTOR_STAFFOLOGY_EXIT status=%s\n' "$status" >&2; \
++    node scripts/staffology-test-receipt.cjs /proof/staffology-private-artifacts/staffology-full.tap "$status"; \
+     cat /proof/staffology-private-artifacts/staffology-full.tap; exit $status) \
+  && node --test scripts/compose-vector-local-runtime.contract.test.cjs scripts/workspace-compiler-composition.test.cjs verification/first-use-regressions-20261012/existing-output-compiler.test.cjs
+ RUN WFM_SUPPORT_HTTP_RUNTIME=/proof/staffology-full-runtime \
+--- /dev/null
++++ b/scripts/staffology-test-receipt.cjs
+@@ -0,0 +1,39 @@
++'use strict';
++// Build diagnostics only. Full TAP remains in the private artifact and is replayed separately.
++const fs = require('node:fs');
++
++function receipt(tap, exitStatus, bytes = Buffer.byteLength(tap)) {
++  if (!/^(0|[1-9][0-9]{0,2})$/.test(String(exitStatus)) || Number(exitStatus) > 255) throw Error('INVALID_TEST_EXIT');
++  const result = { scope: 'STAFFOLOGY_TEST_PROCESS', exitStatus: Number(exitStatus), bytes, totals: {}, failedTestNumbers: [], startup: [] };
++  for (const line of tap.split(/\r?\n/)) {
++    const total = /^# (tests|pass|fail|cancelled|skipped) (\d{1,9})$/.exec(line);
++    if (total) result.totals[total[1]] = Number(total[2]);
++    const failed = /^\s*not ok (\d{1,9})(?:\s|$)/.exec(line);
++    if (failed && result.failedTestNumbers.length < 32) result.failedTestNumbers.push(Number(failed[1]));
++    // Never replay arbitrary error messages, test names, child output, paths or credentials.
++    if (line.includes('canonical server did not become healthy:') && result.startup.length < 8) {
++      const item = {};
++      const phase = /\bphase=(no-health-response|unhealthy-response)(?:;|$)/.exec(line);
++      if (phase) item.phase = phase[1];
++      for (const key of ['attempts', 'elapsedMs', 'lastHealthStatus']) {
++        const value = new RegExp('\\b' + key + '=(none|[0-9]{1,12})(?:;|$)').exec(line);
++        if (value) item[key] = value[1] === 'none' ? null : Number(value[1]);
++      }
++      const code = /\blastProbeError=(none|ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOTFOUND|UND_ERR_CONNECT_TIMEOUT|AbortError|TypeError|PROBE_ERROR)(?:;|$)/.exec(line);
++      if (code) item.lastProbeError = code[1];
++      result.startup.push(item);
++    }
++  }
++  return result;
++}
++
++if (require.main === module) {
++  try {
++    const tap = fs.readFileSync(process.argv[2], 'utf8');
++    fs.writeSync(2, 'VECTOR_STAFFOLOGY_RECEIPT ' + JSON.stringify(receipt(tap, process.argv[3])) + '\n');
++  } catch {
++    fs.writeSync(2, 'VECTOR_STAFFOLOGY_RECEIPT_UNAVAILABLE\n');
++    process.exitCode = 1;
++  }
++}
++module.exports = { receipt };
+--- /dev/null
++++ b/scripts/staffology-test-receipt.test.cjs
+@@ -0,0 +1,43 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const os = require('node:os');
++const path = require('node:path');
++const { spawnSync } = require('node:child_process');
++const { receipt } = require('./staffology-test-receipt.cjs');
++
++test('receipt reports failure and allowlisted startup facts without copying secrets', () => {
++  const tap = 'not ok 7 - SECRET_TEST_NAME\n  error: canonical server did not become healthy: phase=no-health-response; attempts=400; elapsedMs=12000; lastHealthStatus=none; lastProbeError=ECONNREFUSED; output=SECRET_OUTPUT\n# tests 327\n# pass 326\n# fail 1\n# skipped 0\n';
++  const r = receipt(tap, '1');
++  assert.deepEqual(r.failedTestNumbers, [7]);
++  assert.deepEqual(r.totals, { tests: 327, pass: 326, fail: 1, skipped: 0 });
++  assert.deepEqual(r.startup, [{phase:'no-health-response',attempts:400,elapsedMs:12000,lastHealthStatus:null,lastProbeError:'ECONNREFUSED'}]);
++  assert.equal(JSON.stringify(r).includes('SECRET'), false);
++});
++
++test('receipt does not invent a pass from missing or incomplete TAP', () => {
++  const r = receipt('', 0); assert.deepEqual(r.totals, {}); assert.equal(r.exitStatus, 0);
++  assert.deepEqual(receipt('ok 1 - incomplete\n', 137).totals, {});
++  for (const value of ['x', '-1', '256', '01', '1; echo secret']) assert.throws(() => receipt('', value), /INVALID_TEST_EXIT/);
++});
++
++test('receipt limits output and rejects arbitrary diagnostic fields', () => {
++  const r = receipt(('not ok 1 - SECRET\nerror: canonical server did not become healthy: phase=SECRET; lastProbeError=SECRET; output=SECRET\n').repeat(10000), 1);
++  assert.equal(r.failedTestNumbers.length, 32); assert.equal(r.startup.length, 8);
++  assert.equal(JSON.stringify(r).includes('SECRET'), false); assert.ok(JSON.stringify(r).length < 4096);
++});
++
++test('actual shell preserves original exits, private TAP and replay even if receipt fails', t => {
++  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'staffology-receipt-'));
++  t.after(() => fs.rmSync(dir, {recursive:true,force:true}));
++  const file = path.join(dir, 'private.tap'), script = path.join(__dirname, 'staffology-test-receipt.cjs');
++  for (const status of [0,1,137]) for (const missing of [false,true]) {
++    const tap = '# tests 1\n# pass ' + (status === 0 ? '1' : '0') + '\n';
++    fs.writeFileSync(file,tap);
++    const run = spawnSync('/bin/sh',['-c','set +e; status="$1"; "$2" "$3" "$4" "$status"; cat "$5"; exit "$status"','sh',String(status),process.execPath,script,missing?path.join(dir,'missing'):file,file],{encoding:'utf8'});
++    assert.equal(run.status,status); assert.equal(run.stdout,tap); assert.equal(fs.readFileSync(file,'utf8'),tap);
++    assert.match(run.stderr, missing?/VECTOR_STAFFOLOGY_RECEIPT_UNAVAILABLE/:/VECTOR_STAFFOLOGY_RECEIPT /);
++    assert.equal(run.stderr.includes(dir),false);
++  }
++});

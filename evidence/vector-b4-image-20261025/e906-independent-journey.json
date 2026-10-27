@@ -1,0 +1,6 @@
+[
+  {
+    "timestamp": "2026-10-25T20:57:06.818520163Z",
+    "message": "# Subtest: strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart\nok 250 - strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart\n  ---\n  duration_ms: 16410.522205\n  type: 'test'\n  ...\n"
+  }
+]

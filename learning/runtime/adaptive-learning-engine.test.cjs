@@ -501,3 +501,40 @@ test('training reads preserve an explicit refresh until fresh independent succes
   assert.ok(Date.parse(renewed.body.assignment.dueAt)>Date.now());
  } finally {twin?.close();f.close();}
 });
+
+test('expired mastery leaves readiness totals until fresh independent success', async () => {
+  const f = fixture(), db = new DatabaseSync(f.dbPath);
+  try {
+    const user = { tenant: 'alpha', email: 'employee@alpha', role: 'employee' };
+    const other = { tenant: 'bravo', email: 'manager@bravo', role: 'manager' };
+    await call(f.engine, f.tokens.employee, 'POST', '/api/learning/adaptive/practice',
+      { competencyKey: 'time.clock', answer: 0 });
+    const evidence = { tenant: user.tenant, email: user.email, competencyKey: 'time.clock',
+      evidenceType: 'INDEPENDENT_TASK', result: 'PASS' };
+    const earned = await call(f.engine, null, 'POST', '/api/learning/adaptive/evidence', evidence, f.internal);
+    assert.equal(earned.body.assignment.status, 'MASTERED');
+    const before = f.engine.summaryForTenant(user.tenant);
+    const otherBefore = f.engine.summaryForTenant(other.tenant);
+    const assignment = db.prepare('SELECT id,mastered_at_ms FROM learning_assignments WHERE tenant=? AND email=? AND competency_key=?')
+      .get(user.tenant, user.email, 'time.clock');
+    db.prepare('UPDATE learning_assignments SET due_at_ms=? WHERE id=?').run(Date.now() - 1000, assignment.id);
+
+    const expired = f.engine.summaryForTenant(user.tenant);
+    assert.equal(expired.mastered, before.mastered - 1);
+    assert.equal(expired.criticalMastered, before.criticalMastered - 1);
+    assert.equal(expired.fullyCertified, false);
+    const plan = f.engine.planForUser(user);
+    const clock = plan.all.find(item => item.competencyKey === 'time.clock');
+    assert.equal(clock.status, 'REFRESH_DUE');
+    assert.equal(plan.progress.mastered, 0);
+    assert.ok(plan.next.some(item => item.competencyKey === 'time.clock'));
+    assert.equal(db.prepare('SELECT mastered_at_ms FROM learning_assignments WHERE id=?').get(assignment.id).mastered_at_ms,
+      assignment.mastered_at_ms);
+    assert.deepEqual(f.engine.summaryForTenant(other.tenant), otherBefore);
+
+    const renewed = await call(f.engine, null, 'POST', '/api/learning/adaptive/evidence', evidence, f.internal);
+    assert.equal(renewed.body.assignment.status, 'MASTERED');
+    assert.ok(Date.parse(renewed.body.assignment.dueAt) > Date.now());
+    assert.equal(f.engine.summaryForTenant(user.tenant).mastered, before.mastered);
+  } finally { db.close(); f.close(); }
+});

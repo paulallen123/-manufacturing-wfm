@@ -1,0 +1,154 @@
+TAP version 13
+# Subtest: HTTP delivery persists an unvalidated receipt, tenant readback survives reopen, and no workforce state is manufactured
+ok 1 - HTTP delivery persists an unvalidated receipt, tenant readback survives reopen, and no workforce state is manufactured
+  ---
+  duration_ms: 74.255329
+  type: 'test'
+  ...
+# Subtest: documented 3Min webhook wrapper yields an intake receipt for its original payload
+ok 2 - documented 3Min webhook wrapper yields an intake receipt for its original payload
+  ---
+  duration_ms: 44.223898
+  type: 'test'
+  ...
+# Subtest: webhook record identity and endpoint must match the authenticated binding
+ok 3 - webhook record identity and endpoint must match the authenticated binding
+  ---
+  duration_ms: 63.093443
+  type: 'test'
+  ...
+# Subtest: failed, update, delete and malformed webhook results are acknowledged but never ingested
+ok 4 - failed, update, delete and malformed webhook results are acknowledged but never ingested
+  ---
+  duration_ms: 64.26801
+  type: 'test'
+  ...
+# Subtest: separate webhook metadata does not duplicate a source event and aliases remain reserved after restart
+ok 5 - separate webhook metadata does not duplicate a source event and aliases remain reserved after restart
+  ---
+  duration_ms: 45.542953
+  type: 'test'
+  ...
+# Subtest: duplicate delivery and same-event retry are idempotent; changed bytes or reused record ids conflict
+ok 6 - duplicate delivery and same-event retry are idempotent; changed bytes or reused record ids conflict
+  ---
+  duration_ms: 48.608959
+  type: 'test'
+  ...
+# Subtest: authentication, scope, content and schema failures store nothing
+ok 7 - authentication, scope, content and schema failures store nothing
+  ---
+  duration_ms: 44.743531
+  type: 'test'
+  ...
+# Subtest: unconfigured, duplicate, weak and reserved-secret bindings fail closed
+ok 8 - unconfigured, duplicate, weak and reserved-secret bindings fail closed
+  ---
+  duration_ms: 140.377369
+  type: 'test'
+  ...
+# Subtest: concurrent delivery stores one durable receipt; rotated token rejects its predecessor
+ok 9 - concurrent delivery stores one durable receipt; rotated token rejects its predecessor
+  ---
+  duration_ms: 45.871298
+  type: 'test'
+  ...
+# Subtest: receipt, payload and audit insert roll back together on storage failure
+ok 10 - receipt, payload and audit insert roll back together on storage failure
+  ---
+  duration_ms: 35.850801
+  type: 'test'
+  ...
+# Subtest: authenticated validation failures are durably acknowledged without retaining bad payloads
+ok 11 - authenticated validation failures are durably acknowledged without retaining bad payloads
+  ---
+  duration_ms: 55.361794
+  type: 'test'
+  ...
+# Subtest: composer preserves the absent-directory canonical caller contract
+ok 12 - composer preserves the absent-directory canonical caller contract
+  ---
+  duration_ms: 543.276435
+  type: 'test'
+  ...
+# Subtest: composer preserves the extracted-runtime container caller contract
+ok 13 - composer preserves the extracted-runtime container caller contract
+  ---
+  duration_ms: 146.294607
+  type: 'test'
+  ...
+# Subtest: composed 3Min intake loads through security middleware and retains scoped receipts across restart
+ok 14 - composed 3Min intake loads through security middleware and retains scoped receipts across restart
+  ---
+  duration_ms: 3434.389858
+  type: 'test'
+  ...
+# Subtest: Docker extracted-runtime composition has its full compiler patch dependency available
+ok 15 - Docker extracted-runtime composition has its full compiler patch dependency available
+  ---
+  duration_ms: 385.739382
+  type: 'test'
+  ...
+# Subtest: patched sealed compiler accepts real IANA timezones while retaining strict input validation
+ok 16 - patched sealed compiler accepts real IANA timezones while retaining strict input validation
+  ---
+  duration_ms: 164.142202
+  type: 'test'
+  ...
+# Subtest: unconfigured intake explains setup without claiming an import or polling on renders
+ok 17 - unconfigured intake explains setup without claiming an import or polling on renders
+  ---
+  duration_ms: 14.444889
+  type: 'test'
+  ...
+# Subtest: receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+ok 18 - receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+  ---
+  duration_ms: 3.239326
+  type: 'test'
+  ...
+# Subtest: configured feed with no receipts and missing authentication remain distinct
+ok 19 - configured feed with no receipts and missing authentication remain distinct
+  ---
+  duration_ms: 2.618399
+  type: 'test'
+  ...
+# Subtest: refresh failure clears previous receipt details and permits manual retry
+ok 20 - refresh failure clears previous receipt details and permits manual retry
+  ---
+  duration_ms: 4.756799
+  type: 'test'
+  ...
+# Subtest: authentication, unavailable receiver and malformed data do not become empty successful intake
+ok 21 - authentication, unavailable receiver and malformed data do not become empty successful intake
+  ---
+  duration_ms: 7.561743
+  type: 'test'
+  ...
+# Subtest: tenant and account switches remove pending old receipts even before a new render
+ok 22 - tenant and account switches remove pending old receipts even before a new render
+  ---
+  duration_ms: 5.173014
+  type: 'test'
+  ...
+# Subtest: route departure, rerender and pagehide abort old requests; employees never fetch receipts
+ok 23 - route departure, rerender and pagehide abort old requests; employees never fetch receipts
+  ---
+  duration_ms: 6.298166
+  type: 'test'
+  ...
+# Subtest: concurrent refresh clicks do not duplicate the request
+ok 24 - concurrent refresh clicks do not duplicate the request
+  ---
+  duration_ms: 2.073895
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5824.614839

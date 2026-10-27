@@ -1,0 +1,66 @@
+{
+  "task_identity": "/root/build_route_review",
+  "integration_owner": "/root",
+  "observed_at": "2026-10-27T01:39:48.096523+00:00",
+  "source_sha": "0dd1dd9064e6d6940d76d0577e06cdcbf481a779",
+  "tree_entry_count": 1671,
+  "tree_truncated": false,
+  "source_blobs_verified_before_and_after": 1249,
+  "excluded_doc_evidence_inventory_blobs": 238,
+  "source_mutations": [],
+  "composition": {
+    "initial": "FAILED: PASSKEY_DEPENDENCIES_MISSING",
+    "final": "PASS",
+    "dependency_method": "Copied existing installed cache after package.json and lockfile byte equality; cache file hashes recorded. Not fresh npm ci."
+  },
+  "broad_gate": {
+    "canonical_command": "broad-command.sh",
+    "initial": {
+      "tests": 1614,
+      "pass": 1613,
+      "fail": 1,
+      "skip": 0,
+      "exit": 1,
+      "cause": "tar cannot restore gid1001 in namespace gid_map0 0 1"
+    },
+    "local_tar_override": {
+      "tests": 1614,
+      "pass": 1614,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0,
+      "env": {
+        "TAR_OPTIONS": "--no-same-owner"
+      }
+    }
+  },
+  "additional_adopted_tests": {
+    "initial_concurrent": "Exit0 with incomplete TAP (28 named cases, no totals); not admitted",
+    "sequential": {
+      "tests": 100,
+      "pass": 100,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    }
+  },
+  "docker_gate_proposal": {
+    "verdict": "ACCEPT",
+    "git_blob": "18376e80dc7e2fd4398298ade648788de4af9745",
+    "sha256": "ef61edc83113f95e68b292583713ee3f973e792e80f98f9365f9070a8361b04f",
+    "tests": 29,
+    "pass": 29,
+    "fail": 0,
+    "skip": 0,
+    "exit": 0,
+    "scope": "One line adds payroll factor and support mutation regression tests to existing source-stage gate; all other bytes unchanged"
+  },
+  "docker_image_built": false,
+  "installed_nonroot_gate_run": false,
+  "hosted_verified": false,
+  "provider_proven": false,
+  "customer_proven": false,
+  "remote_mutation": false,
+  "cloud_job_created": false,
+  "local_jobs_active": false
+}

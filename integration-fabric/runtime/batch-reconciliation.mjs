@@ -68,6 +68,7 @@ function requiredBoolean(value,name){
 }
 
 export function makeScopedExternalIdentity({provider,connector,scope={},recordId,dimensions={}}){
+  if(recordId===null||recordId===undefined) throw new Error('recordId is required');
   const material={
     provider:requiredString(provider,'provider'),
     connector:requiredString(connector,'connector'),

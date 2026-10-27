@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-22T20:57:39.517Z",
+  "observedAt": "2026-10-27T01:22:01.473Z",
   "complete": false,
-  "totalOpen": 275,
-  "draftsAtInventory": 259,
+  "totalOpen": 286,
+  "draftsAtInventory": 267,
   "reviewed": [
     {
       "pr": 501,
@@ -31,8 +31,9 @@
       "disposition": "ADOPT",
       "head": "e8fe808a01d073cc38681dcc11c48580ba6afc91",
       "scope": "null/undefined external record identity guard plus existing regression",
-      "reason": "Exact three-file diff read; rejects absent IDs before coercion, retains valid string/numeric semantics. Receipt reports author and independent28/28 Node22; not rerun by this integration owner.",
-      "releaseStatus": "Queued behind current safety/image gates; no source adoption yet. Actual production consumer absent in checked owner evidence, must establish before runtime claim."
+      "reason": "Exact two-file missing-ID guard adopted;28/28; production importer wiring remains unproven.",
+      "releaseStatus": "Integrated into candidate source only; no hosted/provider/customer proof",
+      "evidence": "evidence/vector-domain-safety-20261027/manifest.json"
     },
     {
       "pr": 313,
@@ -66,15 +67,64 @@
       "pr": 365,
       "head": "dc0862ae1b0f587acab981d2507ae71cb1302d1d",
       "disposition": "ADOPT",
-      "reason": "Small coherent source/test change binds stored assignments to their current requirement and rejects malformed/orphan identities. Canonical source only checks assignments matching each requirement and does not perform the new orphan/site/time checks.",
+      "reason": "Exact current dependencies and independent52/52; four current defects reproduced.",
       "gaps": [
         "Source-level READY review is COMMENTED by same GitHub account as PR author, not a distinct formal APPROVED review.",
         "Reconcile against current combined candidate and run approved Node 22.23.2/final-image admission; source reviewer lacked packaged legacy artifact.",
         "Verify authenticated hosted plan filtering, durable/fresh-login behavior and audit reconciliation on exact deployed artifact."
       ],
       "releaseReady": false,
-      "evidence": "inventory/pr-313-364-365-disposition.json"
+      "evidence": "inventory/pr-313-364-365-disposition.json",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 461,
+      "disposition": "ADOPT",
+      "head": "6f9e0324b0eb3b190e3f30c262b152ebd998d8aa",
+      "reason": "Exact reviewed two-file readiness label correction; supported Node22 and independent review.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 494,
+      "disposition": "ADOPT",
+      "head": "5b09019aa684f0f06c077335e118b854cf3b89fa",
+      "reason": "Exact helper/test source, current-base equality, supported Node22 pricing and factor admission.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 481,
+      "disposition": "ORACLE",
+      "reason": "Unsafe donor not adopted. Its failed-review findings repaired on current501;29 author/34 independent pass. Original historical heldout unavailable; reconstructed tests labeled.",
+      "releaseStatus": "Integrated into candidate source only; no hosted/provider/customer proof",
+      "evidence": "evidence/vector-domain-safety-20261027/manifest.json"
+    },
+    {
+      "pr": 442,
+      "disposition": "BLOCKED",
+      "reason": "Explicit independent REQUEST CHANGES: provenance mutation, ambient dispatch and causal-order gaps.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 445,
+      "disposition": "ADOPT",
+      "reason": "Exact two-file detached catalogue correction adopted; independent7/7; no serving consumer.",
+      "releaseStatus": "Integrated into candidate source only; no hosted/provider/customer proof",
+      "evidence": "evidence/vector-domain-safety-20261027/manifest.json"
+    },
+    {
+      "pr": 475,
+      "disposition": "ORACLE",
+      "reason": "Savings prototype absent from current canonical modules; needs integration design and real financial outcome proof.",
+      "releaseStatus": "Not released/customer-proven; see current full-domain queue and source manifest"
+    },
+    {
+      "pr": 516,
+      "disposition": "ADOPT",
+      "reason": "Exact two-file expired mastery correction adopted;124/124 Node22; actual readiness consumer traced.",
+      "releaseStatus": "Integrated into candidate source only; no hosted/provider/customer proof",
+      "evidence": "evidence/vector-domain-safety-20261027/manifest.json"
     }
   ],
-  "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption."
+  "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption.",
+  "currentInventory": "inventory/open-pr-snapshot-20261026.json"
 }

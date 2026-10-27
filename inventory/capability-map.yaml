@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-21T20:21:08.741Z",
+  "updatedAt": "2026-10-27T01:40:07.504Z",
   "scope": "59 accepted F0-F7 outcomes; research16/intake14/held6 retained as separate pending reconciliation dimensions, not counted as distinct added outcomes.",
   "canonicalSHA": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
   "sourceVersion": "45",
@@ -255,11 +255,13 @@
       "sources": "[#265](https://github.com/paulallen123/-manufacturing-wfm/issues/265#issuecomment-6114032589)",
       "priority": "P1",
       "dependencies": "Shared implementation UI ownership; naturally occurring or authorised test state",
-      "canonicalModule": null,
+      "canonicalModule": "implementation/ui/implementation-journey.js",
       "owner": null,
-      "supportingPRs": [],
+      "supportingPRs": [
+        461
+      ],
       "acceptanceScenarios": "Six-case label matrix; no Team ready false green; exact browser refresh/new-login evidence",
-      "implementationState": "DISCOVERED",
+      "implementationState": "ISOLATED_TESTED",
       "reportedHistoricalState": "Confirmed current-source defect; PR303 partially fixed other labels",
       "proofLevels": {
         "isolated": null,
@@ -272,8 +274,25 @@
       "released": null,
       "nextTask": "Use roleLearningPopulationReady for population label; retain combined final gate",
       "remainingGaps": [
-        "Current implementation and proof must be reconciled; historical state is not live verification."
-      ]
+        "Exact successor image admission, authenticated hosted status/refresh/new-login verification and canonical release remain outstanding."
+      ],
+      "boundedCandidateProgress": {
+        "previous": {
+          "module": "implementation/ui/implementation-journey.js",
+          "donorPR": 461,
+          "state": "ISOLATED_TESTED",
+          "result": "Population-specific remediation separated from combined readiness; Node22 focused30/30, independent33/33",
+          "evidence": "evidence/vector-broad-integration-20261026/manifest.json",
+          "canonicalReleaseMerged": false,
+          "hosted": false,
+          "customerProven": false
+        },
+        "observedAt": "2026-10-27T01:22:01.473Z",
+        "note": "PR516 expired mastery now blocks readiness;124/124 synthetic Node22.",
+        "evidence": "evidence/vector-domain-safety-20261027/manifest.json",
+        "proof": "ISOLATED_TESTED",
+        "wholeCapabilityPromoted": false
+      }
     },
     {
       "id": "F1.7",
@@ -317,7 +336,9 @@
       "dependencies": "F0, identity/policies/competency, period, correction, provider prerequisites",
       "canonicalModule": null,
       "owner": null,
-      "supportingPRs": [],
+      "supportingPRs": [
+        494
+      ],
       "acceptanceScenarios": "Employee leave/time → approvals → every team sign-off → payroll/export checksum → provider → audit → fresh-session readback",
       "implementationState": "DISCOVERED",
       "reportedHistoricalState": "Latest relay 3/21; operationalReady=false; whole journey unproven",
@@ -333,7 +354,17 @@
       "nextTask": "Execute first genuinely incomplete eligible gate and retain exact receipts",
       "remainingGaps": [
         "Current implementation and proof must be reconciled; historical state is not live verification."
-      ]
+      ],
+      "boundedCandidateProgress": {
+        "module": "operations/runtime/payroll-money.cjs",
+        "donorPR": 494,
+        "state": "ISOLATED_TESTED",
+        "result": "Dense own-data payroll-factor validation; supported Node22 pricing/regression24/24; not full Golden Journey",
+        "evidence": "evidence/vector-broad-integration-20261026/manifest.json",
+        "canonicalReleaseMerged": false,
+        "hosted": false,
+        "customerProven": false
+      }
     },
     {
       "id": "F1.9",
@@ -468,7 +499,8 @@
       "canonicalModule": null,
       "owner": null,
       "supportingPRs": [
-        233
+        233,
+        365
       ],
       "acceptanceScenarios": "Independent feasibility; shifts/swaps/rotations/fairness/disruption; stale concurrent inputs; explainable shortfalls; real role journey",
       "implementationState": "DISCOVERED",
@@ -485,7 +517,17 @@
       "nextTask": "Reconcile existing scheduler and integrate only unique safe delta",
       "remainingGaps": [
         "Current implementation and proof must be reconciled; historical state is not live verification."
-      ]
+      ],
+      "boundedCandidateProgress": {
+        "module": "operations/runtime/scheduling-authority.cjs",
+        "donorPR": 365,
+        "state": "ISOLATED_TESTED",
+        "result": "Stored assignment/requirement identity/site/time validation; current RED48/52, donor52/52",
+        "evidence": "evidence/vector-broad-integration-20261026/manifest.json",
+        "canonicalReleaseMerged": false,
+        "hosted": false,
+        "customerProven": false
+      }
     },
     {
       "id": "F2.2",
@@ -645,8 +687,17 @@
       "released": null,
       "nextTask": "Build typed interchange helper/tests, then owner wires existing UI/service",
       "remainingGaps": [
-        "Current implementation and proof must be reconciled; historical state is not live verification."
-      ]
+        "Current implementation and proof must be reconciled; historical state is not live verification.",
+        "Current external reporting delivery has four failing synthetic safety oracles (response loss, response-only SENT, multiworker duplicate, next-slot containment). Bootstrap adapter absent; keep disabled until durable intent/readback/reconciliation proven. See evidence/vector-build-admission-20261027/reporting-delivery-assessment/manifest.json"
+      ],
+      "boundedCandidateProgress": {
+        "previous": null,
+        "observedAt": "2026-10-27T01:22:01.473Z",
+        "note": "Reporting identity snapshot and exact payroll membership correction;34/34 independent.",
+        "evidence": "evidence/vector-domain-safety-20261027/manifest.json",
+        "proof": "ISOLATED_TESTED",
+        "wholeCapabilityPromoted": false
+      }
     },
     {
       "id": "F2.7",
@@ -947,7 +998,15 @@
       "nextTask": "Reuse catalog/registry and shared authority primitives; close exact durable runtime seams",
       "remainingGaps": [
         "Current implementation and proof must be reconciled; historical state is not live verification."
-      ]
+      ],
+      "boundedCandidateProgress": {
+        "previous": null,
+        "observedAt": "2026-10-27T01:22:01.473Z",
+        "note": "PR504 source-helper missing-ID fix28/28; actual persisted importer wiring still missing.",
+        "evidence": "evidence/vector-domain-safety-20261027/manifest.json",
+        "proof": "ISOLATED_TESTED",
+        "wholeCapabilityPromoted": false
+      }
     },
     {
       "id": "F3.7",
@@ -1334,7 +1393,15 @@
       "nextTask": "Execute current supported detect→diagnose→repair/contain→verify→recover",
       "remainingGaps": [
         "Current implementation and proof must be reconciled; historical state is not live verification."
-      ]
+      ],
+      "boundedCandidateProgress": {
+        "previous": null,
+        "observedAt": "2026-10-27T01:22:01.473Z",
+        "note": "PR445 detached support catalogue7/7 independent; no customer runtime consumer.",
+        "evidence": "evidence/vector-domain-safety-20261027/manifest.json",
+        "proof": "ISOLATED_TESTED",
+        "wholeCapabilityPromoted": false
+      }
     },
     {
       "id": "F5.2",
@@ -1875,5 +1942,7 @@
       ]
     }
   ],
-  "stateMeaning": "Current independently reconciled lifecycle; DISCOVERED does not assert no historical implementation. See reportedHistoricalState."
+  "stateMeaning": "Current independently reconciled lifecycle; DISCOVERED does not assert no historical implementation. See reportedHistoricalState.",
+  "currentCandidateParent": "aa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6",
+  "fullBacklogComplete": false
 }

@@ -1,0 +1,68 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: hosted runtime refuses to start without an exact commit SHA
+ok 1 - hosted runtime refuses to start without an exact commit SHA
+  ---
+  duration_ms: 1.354532
+  type: 'test'
+  ...
+# Subtest: hosted runtime refuses missing, invalid, or mismatched build-derived identity
+ok 2 - hosted runtime refuses missing, invalid, or mismatched build-derived identity
+  ---
+  duration_ms: 0.308095
+  type: 'test'
+  ...
+# Subtest: public identity endpoint reports exact deployed source and fixture boundary
+ok 3 - public identity endpoint reports exact deployed source and fixture boundary
+  ---
+  duration_ms: 0.700796
+  type: 'test'
+  ...
+# Subtest: hosted runtime reads the sealed source identity from disk
+ok 4 - hosted runtime reads the sealed source identity from disk
+  ---
+  duration_ms: 1.063763
+  type: 'test'
+  ...
+# Subtest: hosted runtime ignores environment attempts to redirect sealed identity
+ok 5 - hosted runtime ignores environment attempts to redirect sealed identity
+  ---
+  duration_ms: 0.267726
+  type: 'test'
+  ...
+# Subtest: identity endpoint is read-only and leaves unrelated routes alone
+ok 6 - identity endpoint is read-only and leaves unrelated routes alone
+  ---
+  duration_ms: 0.173757
+  type: 'test'
+  ...
+# Subtest: every hosted response can be bound to the exact serving source
+ok 7 - every hosted response can be bound to the exact serving source
+  ---
+  duration_ms: 0.301646
+  type: 'test'
+  ...
+# Subtest: downstream handlers cannot replace or remove source proof headers
+ok 8 - downstream handlers cannot replace or remove source proof headers
+  ---
+  duration_ms: 17.790418
+  type: 'test'
+  ...
+# Subtest: raw writeHead arrays emit each source proof header exactly once
+ok 9 - raw writeHead arrays emit each source proof header exactly once
+  ---
+  duration_ms: 4.727878
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 116.876483

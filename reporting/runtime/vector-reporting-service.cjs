@@ -2,6 +2,9 @@
 
 const { createHash, randomUUID } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { isProxy } = require('node:util').types;
+const ownDescriptor = Object.getOwnPropertyDescriptor;
+const freeze = Object.freeze;
 
 const PREFIX = '/api/reporting';
 const MAX_BODY_BYTES = 96 * 1024;
@@ -114,6 +117,16 @@ const TEMPLATES = Object.freeze([
   {id:'audit-pack',label:'Show me the evidence trail',sourceId:'audit-evidence',visualisation:'table',columns:['observedAt','actor','authority','action','status','buildId','evidenceRef'],comparison:'none',narrative:false}
 ]);
 
+// Public catalog metadata cannot mutate the private authorization inputs.
+for(let i=0;i<SOURCES.length;i++){
+  freeze(SOURCES[i].fields);
+  freeze(SOURCES[i]);
+}
+for(let i=0;i<TEMPLATES.length;i++){
+  freeze(TEMPLATES[i].columns);
+  freeze(TEMPLATES[i]);
+}
+
 function stable(value){
   if(Array.isArray(value)) return '['+value.map(stable).join(',')+']';
   if(value&&typeof value==='object') return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';
@@ -129,12 +142,40 @@ function cookieToken(req){
   }
   return '';
 }
-function roleLevel(role){ return ROLE_LEVEL[compact(role,40).toLowerCase()] ?? -1; }
-function permitted(role,minRole){ return roleLevel(role)>=roleLevel(minRole); }
-function sourceById(id){ return SOURCES.find(s=>s.id===id)||null; }
+// Membership is explicit and private: rank never grants payroll authority.
+function roleLevel(role){
+  switch(role){
+    case 'employee': return 0;
+    case 'manager': return 1;
+    case 'payroll_admin': return 2;
+    case 'director': return 3;
+    case 'admin': case 'superuser': return 4;
+    default: return -1;
+  }
+}
+function permitted(role,minRole){
+  if(roleLevel(role)<0)return false;
+  switch(minRole){
+    case 'manager': return role!=='employee';
+    case 'payroll_admin': return role==='payroll_admin'||role==='admin'||role==='superuser';
+    case 'director': return role==='director'||role==='admin'||role==='superuser';
+    default: return false;
+  }
+}
+function sourceById(id){
+  for(let i=0;i<SOURCES.length;i++)if(SOURCES[i].id===id)return SOURCES[i];
+  return null;
+}
 function visibleCatalog(role){
-  const sources=SOURCES.filter(s=>permitted(role,s.minRole));
-  const ids=new Set(sources.map(s=>s.id));
+  const sources=[],templates=[];
+  for(let i=0;i<SOURCES.length;i++){
+    const source=SOURCES[i];
+    if(permitted(role,source.minRole))sources[sources.length]=source;
+  }
+  for(let i=0;i<TEMPLATES.length;i++){
+    const template=TEMPLATES[i],source=sourceById(template.sourceId);
+    if(source&&permitted(role,source.minRole))templates[templates.length]=template;
+  }
   return {
     schemaVersion:'VECTOR_REPORTING_V1',
     principles:[
@@ -145,9 +186,22 @@ function visibleCatalog(role){
       'evidence-visible-at-point-of-decision'
     ],
     sources,
-    templates:TEMPLATES.filter(t=>ids.has(t.sourceId)),
+    templates,
     limits:{maxColumns:MAX_COLUMNS,maxCalculations:MAX_CALCULATIONS,maxFilters:MAX_FILTERS,maxSorts:MAX_SORTS,maxRows:MAX_LIMIT}
   };
+}
+// Reject identity capabilities (getters, proxies and inherited values). Only
+// immutable primitive snapshots may cross an await or enter policy evaluation.
+function identitySnapshot(value,requireRole=true){
+  if(!value||typeof value!=='object'||isProxy(value))return null;
+  const snapshot={};
+  for(const key of requireRole?['email','tenant','role']:['email','tenant']){
+    const descriptor=ownDescriptor(value,key);
+    if(!descriptor||!('value' in descriptor)||typeof descriptor.value!=='string'||descriptor.value.length===0)return null;
+    snapshot[key]=descriptor.value;
+  }
+  if(requireRole&&roleLevel(snapshot.role)<0)return null;
+  return freeze(snapshot);
 }
 function cleanFilter(filter,allowed){
   if(!filter||typeof filter!=='object'||Array.isArray(filter)) throw new Error('Invalid filter.');
@@ -376,9 +430,15 @@ function createVectorReportingService(options={}){
   const hasTable=name=>Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name));
   async function currentIdentity(c){
     try{
-      const actor=options.currentUserReader?await options.currentUserReader({tenant:c.tenant,email:c.email}):currentUser.get(c.tenant,c.email);
-      if(!actor||actor.email!==c.email||actor.tenant!==c.tenant)return null;
-      if(hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(c.tenant)?.privileged_freeze)===1)return null;
+      const principal=identitySnapshot(c,false);
+      if(!principal)return null;
+      const pending=options.currentUserReader?options.currentUserReader(principal):currentUser.get(principal.tenant,principal.email);
+      // Reject synchronous proxy results before await can inspect their then trap.
+      if(pending&&isProxy(pending))return null;
+      const candidate=await pending;
+      const actor=identitySnapshot(candidate);
+      if(!actor||actor.email!==principal.email||actor.tenant!==principal.tenant)return null;
+      if(hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(principal.tenant)?.privileged_freeze)===1)return null;
       return actor;
     }catch{return null;}
   }

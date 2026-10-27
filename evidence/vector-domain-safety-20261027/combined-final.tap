@@ -1,0 +1,436 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: delta batch can advance only after transfer/schema/checksum integrity and never grants deletion authority
+ok 1 - delta batch can advance only after transfer/schema/checksum integrity and never grants deletion authority
+  ---
+  duration_ms: 1.666503
+  type: 'test'
+  ...
+# Subtest: clean but incomplete batch is quarantined and cannot advance its watermark
+ok 2 - clean but incomplete batch is quarantined and cannot advance its watermark
+  ---
+  duration_ms: 0.270339
+  type: 'test'
+  ...
+# Subtest: partial or corrupt batch is quarantined and watermark does not move
+ok 3 - partial or corrupt batch is quarantined and watermark does not move
+  ---
+  duration_ms: 0.316818
+  type: 'test'
+  ...
+# Subtest: timestamp watermark comparison uses instants rather than unsafe string ordering
+ok 4 - timestamp watermark comparison uses instants rather than unsafe string ordering
+  ---
+  duration_ms: 0.409946
+  type: 'test'
+  ...
+# Subtest: integer watermarks compare numerically and support values beyond Number precision
+ok 5 - integer watermarks compare numerically and support values beyond Number precision
+  ---
+  duration_ms: 0.665739
+  type: 'test'
+  ...
+# Subtest: opaque cursors are not falsely ordered but still require a complete verified batch
+ok 6 - opaque cursors are not falsely ordered but still require a complete verified batch
+  ---
+  duration_ms: 0.366732
+  type: 'test'
+  ...
+# Subtest: invalid or undeclared comparable watermark formats fail closed
+ok 7 - invalid or undeclared comparable watermark formats fail closed
+  ---
+  duration_ms: 1.248867
+  type: 'test'
+  ...
+# Subtest: string-valued safety flags are rejected instead of being treated as truthy evidence
+ok 8 - string-valued safety flags are rejected instead of being treated as truthy evidence
+  ---
+  duration_ms: 0.291821
+  type: 'test'
+  ...
+# Subtest: complete transfer alone cannot grant deletion authority
+ok 9 - complete transfer alone cannot grant deletion authority
+  ---
+  duration_ms: 0.404879
+  type: 'test'
+  ...
+# Subtest: only reconciled authoritative complete snapshot yields tombstone-candidate authority
+ok 10 - only reconciled authoritative complete snapshot yields tombstone-candidate authority
+  ---
+  duration_ms: 0.580178
+  type: 'test'
+  ...
+# Subtest: checkpoint scope mismatch is rejected before watermark admission
+ok 11 - checkpoint scope mismatch is rejected before watermark admission
+  ---
+  duration_ms: 0.369436
+  type: 'test'
+  ...
+# Subtest: dataset deletion evidence cannot be borrowed across source scopes
+ok 12 - dataset deletion evidence cannot be borrowed across source scopes
+  ---
+  duration_ms: 0.337549
+  type: 'test'
+  ...
+# Subtest: scoped identity preserves legitimate multi-row worker records
+ok 13 - scoped identity preserves legitimate multi-row worker records
+  ---
+  duration_ms: 0.33803
+  type: 'test'
+  ...
+# Subtest: scoped identity rejects omitted record ID before hashing
+ok 14 - scoped identity rejects omitted record ID before hashing
+  ---
+  duration_ms: 0.137313
+  type: 'test'
+  ...
+# Subtest: scoped identity rejects undefined record ID before hashing
+ok 15 - scoped identity rejects undefined record ID before hashing
+  ---
+  duration_ms: 0.067079
+  type: 'test'
+  ...
+# Subtest: scoped identity rejects null record ID before hashing
+ok 16 - scoped identity rejects null record ID before hashing
+  ---
+  duration_ms: 0.051837
+  type: 'test'
+  ...
+# Subtest: literal sentinel IDs and numeric zero retain canonical identity semantics
+ok 17 - literal sentinel IDs and numeric zero retain canonical identity semantics
+  ---
+  duration_ms: 0.339623
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: role curriculum protects least privilege while still teaching each role deeply
+ok 18 - role curriculum protects least privilege while still teaching each role deeply
+  ---
+  duration_ms: 0.961572
+  type: 'test'
+  ...
+# Subtest: plan is generated automatically for the signed-in role
+ok 19 - plan is generated automatically for the signed-in role
+  ---
+  duration_ms: 101.578104
+  type: 'test'
+  ...
+# Subtest: malformed practice answers cannot earn credit or create evidence
+ok 20 - malformed practice answers cannot earn credit or create evidence
+  ---
+  duration_ms: 553.570739
+  type: 'test'
+  ...
+# Subtest: guidance and retrieval cannot certify without independently observed task success
+ok 21 - guidance and retrieval cannot certify without independently observed task success
+  ---
+  duration_ms: 48.796519
+  type: 'test'
+  ...
+# Subtest: legacy practice without a validated answer is retained but cannot contribute credit
+ok 22 - legacy practice without a validated answer is retained but cannot contribute credit
+  ---
+  duration_ms: 51.213372
+  type: 'test'
+  ...
+# Subtest: guided practice teaches but cannot alone certify durable competence
+ok 23 - guided practice teaches but cannot alone certify durable competence
+  ---
+  duration_ms: 50.918161
+  type: 'test'
+  ...
+# Subtest: coach and trainer competencies require explicit teach-back evidence
+ok 24 - coach and trainer competencies require explicit teach-back evidence
+  ---
+  duration_ms: 64.253271
+  type: 'test'
+  ...
+# Subtest: browser cannot self-certify independent competence
+ok 25 - browser cannot self-certify independent competence
+  ---
+  duration_ms: 48.711343
+  type: 'test'
+  ...
+# Subtest: repeated help use schedules a contextual refresher instead of interrupting every user
+ok 26 - repeated help use schedules a contextual refresher instead of interrupting every user
+  ---
+  duration_ms: 57.159904
+  type: 'test'
+  ...
+# Subtest: new feature can automatically assign delta learning to only affected roles
+ok 27 - new feature can automatically assign delta learning to only affected roles
+  ---
+  duration_ms: 238.987331
+  type: 'test'
+  ...
+# Subtest: learning summary is tenant isolated and employee cannot view aggregate analytics
+ok 28 - learning summary is tenant isolated and employee cannot view aggregate analytics
+  ---
+  duration_ms: 379.580742
+  type: 'test'
+  ...
+# Subtest: director receives privileged curriculum after earlier employee assignments
+ok 29 - director receives privileged curriculum after earlier employee assignments
+  ---
+  duration_ms: 314.276557
+  type: 'test'
+  ...
+# Subtest: role demotion hides retired privileged assignments and rejects their practice and help
+ok 30 - role demotion hides retired privileged assignments and rejects their practice and help
+  ---
+  duration_ms: 78.12618
+  type: 'test'
+  ...
+# Subtest: learning event evidence is append only
+ok 31 - learning event evidence is append only
+  ---
+  duration_ms: 40.898042
+  type: 'test'
+  ...
+# Subtest: training-first read reconciles director role and reopens stale unsupported mastery
+ok 32 - training-first read reconciles director role and reopens stale unsupported mastery
+  ---
+  duration_ms: 86.188263
+  type: 'test'
+  ...
+# Subtest: feature assignments survive only while their recorded feature authorizes the current role
+ok 33 - feature assignments survive only while their recorded feature authorizes the current role
+  ---
+  duration_ms: 143.217589
+  type: 'test'
+  ...
+# Subtest: training reads preserve an explicit refresh until fresh independent success
+ok 34 - training reads preserve an explicit refresh until fresh independent success
+  ---
+  duration_ms: 76.046785
+  type: 'test'
+  ...
+# Subtest: expired mastery leaves readiness totals until fresh independent success
+ok 35 - expired mastery leaves readiness totals until fresh independent success
+  ---
+  duration_ms: 245.220217
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: catalog is role governed and keeps payroll/audit restricted
+ok 36 - catalog is role governed and keeps payroll/audit restricted
+  ---
+  duration_ms: 1.221746
+  type: 'test'
+  ...
+# Subtest: director has audit access but cannot create or read payroll reports after role drift
+ok 37 - director has audit access but cannot create or read payroll reports after role drift
+  ---
+  duration_ms: 66.725734
+  type: 'test'
+  ...
+# Subtest: nonprimitive and unknown roles cannot grant any reporting catalog authority
+ok 38 - nonprimitive and unknown roles cannot grant any reporting catalog authority
+  ---
+  duration_ms: 0.660196
+  type: 'test'
+  ...
+# Subtest: accessor and inherited actor identities are rejected without evaluating getters
+ok 39 - accessor and inherited actor identities are rejected without evaluating getters
+  ---
+  duration_ms: 195.839343
+  type: 'test'
+  ...
+# Subtest: proxy actors are denied and plain current identity snapshots retain isolation
+ok 40 - proxy actors are denied and plain current identity snapshots retain isolation
+  ---
+  duration_ms: 81.588934
+  type: 'test'
+  ...
+# Subtest: public policy records cannot mutate payroll membership or templates
+ok 41 - public policy records cannot mutate payroll membership or templates
+  ---
+  duration_ms: 0.380933
+  type: 'test'
+  ...
+# Subtest: ambient includes and filter changes cannot widen catalog or payroll creation
+ok 42 - ambient includes and filter changes cannot widen catalog or payroll creation
+  ---
+  duration_ms: 0.182169
+  type: 'test'
+  ...
+# Subtest: accessor identity drift blocks due external delivery without evaluating the accessor
+ok 43 - accessor identity drift blocks due external delivery without evaluating the accessor
+  ---
+  duration_ms: 80.48717
+  type: 'test'
+  ...
+# Subtest: payroll actor cannot list or fetch director audit report
+ok 44 - payroll actor cannot list or fetch director audit report
+  ---
+  duration_ms: 53.337828
+  type: 'test'
+  ...
+# Subtest: manager cannot pin, unpin, version, schedule, pause or resume another actor artifacts
+ok 45 - manager cannot pin, unpin, version, schedule, pause or resume another actor artifacts
+  ---
+  duration_ms: 83.526223
+  type: 'test'
+  ...
+# Subtest: role revoked after schedule creation blocks due delivery and appends bounded authority-drift evidence
+ok 46 - role revoked after schedule creation blocks due delivery and appends bounded authority-drift evidence
+  ---
+  duration_ms: 68.462533
+  type: 'test'
+  ...
+# Subtest: delivery list hides another actor external destination and receipt metadata
+ok 47 - delivery list hides another actor external destination and receipt metadata
+  ---
+  duration_ms: 58.900928
+  type: 'test'
+  ...
+# Subtest: unchanged creator authority survives restart and fresh login with immutable artifacts
+ok 48 - unchanged creator authority survives restart and fresh login with immutable artifacts
+  ---
+  duration_ms: 64.356723
+  type: 'test'
+  ...
+# Subtest: cross-tenant 404 and append-only triggers preserve every persisted artifact
+ok 49 - cross-tenant 404 and append-only triggers preserve every persisted artifact
+  ---
+  duration_ms: 69.003537
+  type: 'test'
+  ...
+# Subtest: DST spring-forward and repeated fall-back local slots deliver only once
+ok 50 - DST spring-forward and repeated fall-back local slots deliver only once
+  ---
+  duration_ms: 59.643856
+  type: 'test'
+  ...
+# Subtest: current connector authority is required again when due
+ok 51 - current connector authority is required again when due
+  ---
+  duration_ms: 64.637858
+  type: 'test'
+  ...
+# Subtest: role change while reading a save request cannot create a newly restricted report
+ok 52 - role change while reading a save request cannot create a newly restricted report
+  ---
+  duration_ms: 40.863502
+  type: 'test'
+  ...
+# Subtest: delivery rechecks creator role after awaiting connector authorization
+ok 53 - delivery rechecks creator role after awaiting connector authorization
+  ---
+  duration_ms: 61.058587
+  type: 'test'
+  ...
+# Subtest: connector role drift blocks delivery even when the source remains permitted
+ok 54 - connector role drift blocks delivery even when the source remains permitted
+  ---
+  duration_ms: 63.696752
+  type: 'test'
+  ...
+# Subtest: tenant security freeze blocks due delivery with unchanged creator role
+ok 55 - tenant security freeze blocks due delivery with unchanged creator role
+  ---
+  duration_ms: 63.735635
+  type: 'test'
+  ...
+# Subtest: same-tenant manager cannot list or fetch payroll report created by payroll
+ok 56 - same-tenant manager cannot list or fetch payroll report created by payroll
+  ---
+  duration_ms: 72.453593
+  type: 'test'
+  ...
+# Subtest: definition validation refuses arbitrary fields, sources and privilege escalation
+ok 57 - definition validation refuses arbitrary fields, sources and privilege escalation
+  ---
+  duration_ms: 1.000229
+  type: 'test'
+  ...
+# Subtest: saved reports are tenant isolated, immutable and audited
+ok 58 - saved reports are tenant isolated, immutable and audited
+  ---
+  duration_ms: 58.181213
+  type: 'test'
+  ...
+# Subtest: dashboard pinning creates immutable tenant-bound versions
+ok 59 - dashboard pinning creates immutable tenant-bound versions
+  ---
+  duration_ms: 71.779297
+  type: 'test'
+  ...
+# Subtest: daily in-app schedules generate one governed delivery per local minute and external delivery fails closed
+ok 60 - daily in-app schedules generate one governed delivery per local minute and external delivery fails closed
+  ---
+  duration_ms: 173.415082
+  type: 'test'
+  ...
+# Subtest: exact role matrix preserves operational access and explicit privileged memberships
+ok 61 - exact role matrix preserves operational access and explicit privileged memberships
+  ---
+  duration_ms: 0.311781
+  type: 'test'
+  ...
+# Subtest: mutation of retained actor object during adapter authorization cannot erase authority drift
+ok 62 - mutation of retained actor object during adapter authorization cannot erase authority drift
+  ---
+  duration_ms: 166.639135
+  type: 'test'
+  ...
+# Subtest: synchronous proxy identity is rejected before await can invoke its then trap
+ok 63 - synchronous proxy identity is rejected before await can invoke its then trap
+  ---
+  duration_ms: 76.612973
+  type: 'test'
+  ...
+# Subtest: async current identity readers retain ordinary manager catalog access
+ok 64 - async current identity readers retain ordinary manager catalog access
+  ---
+  duration_ms: 67.283961
+  type: 'test'
+  ...
+# (node:20) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: public catalogue edits cannot replace approved advice or sources
+ok 65 - public catalogue edits cannot replace approved advice or sources
+  ---
+  duration_ms: 2.251468
+  type: 'test'
+  ...
+# Subtest: public role edits cannot widen or disable the support role boundary
+ok 66 - public role edits cannot widen or disable the support role boundary
+  ---
+  duration_ms: 1.50156
+  type: 'test'
+  ...
+# Subtest: public pattern edits cannot manufacture an approved support procedure
+ok 67 - public pattern edits cannot manufacture an approved support procedure
+  ---
+  duration_ms: 0.472639
+  type: 'test'
+  ...
+# Subtest: public RegExp internal edits cannot change private intent matching
+ok 68 - public RegExp internal edits cannot change private intent matching
+  ---
+  duration_ms: 0.397277
+  type: 'test'
+  ...
+# Subtest: returned source edits cannot change later support answers
+ok 69 - returned source edits cannot change later support answers
+  ---
+  duration_ms: 0.33163
+  type: 'test'
+  ...
+1..69
+# tests 69
+# suites 0
+# pass 69
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2655.599485

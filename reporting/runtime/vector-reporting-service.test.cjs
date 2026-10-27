@@ -67,6 +67,90 @@ async function makeSchedule(x,reportId,token='payroll-a',extra={}){
 }
 function changeRole(x,email,role){const db=new DatabaseSync(x.dbPath);try{db.prepare('UPDATE users SET role=? WHERE email=?').run(role,email);}finally{db.close();}}
 
+test('director has audit access but cannot create or read payroll reports after role drift',async()=>{
+  assert.equal(Reporting.visibleCatalog('director').sources.some(s=>s.id==='payroll-control'),false);
+  assert.equal(Reporting.visibleCatalog('director').sources.some(s=>s.id==='audit-evidence'),true);
+  const x=setup();try{
+    const report=await makeReport(x);changeRole(x,'payroll@a.example','director');
+    assert.equal((await call(x.service,'POST','/api/reporting/reports','payroll-a',{definition:{sourceId:'payroll-control'}})).status,400);
+    assert.deepEqual((await call(x.service,'GET','/api/reporting/reports','payroll-a')).body.reports,[]);
+    assert.equal((await call(x.service,'GET','/api/reporting/reports/'+report.id,'payroll-a')).status,404);
+  }finally{x.close();}
+});
+
+test('nonprimitive and unknown roles cannot grant any reporting catalog authority',()=>{
+  for(const role of [['payroll_admin'],new String('payroll_admin'),{toString:()=> 'payroll_admin'},new Proxy({}, {get:()=>()=> 'payroll_admin'}),'toString','constructor','PAYROLL_ADMIN',' payroll_admin ']){
+    assert.equal(Reporting.visibleCatalog(role).sources.length,0);
+    assert.throws(()=>Reporting.normaliseDefinition({sourceId:'payroll-control'},role),/not permitted/);
+  }
+});
+
+test('accessor and inherited actor identities are rejected without evaluating getters',async()=>{
+  for(const field of ['email','tenant','role']){
+    let reads=0;
+    const x=setup({currentUserReader:({email,tenant})=>{
+      const actor={email,tenant,role:'manager'};
+      Object.defineProperty(actor,field,{get(){reads++;return field==='role'?'payroll_admin':field==='email'?email:tenant;}});
+      return actor;
+    }});try{
+      for(const [method,url,body] of [['GET','/api/reporting/catalog'],['POST','/api/reporting/reports',{definition:{sourceId:'payroll-control'}}]]){
+        assert.equal((await call(x.service,method,url,'manager-a',body)).status,401);
+      }
+      assert.equal(reads,0);
+    }finally{x.close();}
+  }
+  const x=setup({currentUserReader:({email,tenant})=>Object.create({email,tenant,role:'payroll_admin'})});try{
+    assert.equal((await call(x.service,'GET','/api/reporting/catalog','manager-a')).status,401);
+  }finally{x.close();}
+});
+
+test('proxy actors are denied and plain current identity snapshots retain isolation',async()=>{
+  for(const proxy of [true,false]){
+    const x=setup({currentUserReader:({email,tenant})=>proxy?new Proxy({email,tenant,role:'payroll_admin'},{}):{email:'manager@b.example',tenant:'tenant-b',role:'payroll_admin'}});try{
+      assert.equal((await call(x.service,'GET','/api/reporting/catalog','manager-a')).status,401);
+    }finally{x.close();}
+  }
+});
+
+test('public policy records cannot mutate payroll membership or templates',()=>{
+  const source=Reporting.SOURCES.find(s=>s.id==='payroll-control');
+  const original=source.minRole;
+  try{try{source.minRole='manager';}catch{}
+    assert.equal(Reporting.visibleCatalog('manager').sources.some(s=>s.id==='payroll-control'),false);
+    assert.throws(()=>Reporting.normaliseDefinition({sourceId:'payroll-control'},'manager'),/not permitted/);
+    assert.equal(Object.isFrozen(source),true);assert.equal(Object.isFrozen(source.fields),true);
+    assert.equal(Object.isFrozen(Reporting.TEMPLATES[0]),true);assert.equal(Object.isFrozen(Reporting.TEMPLATES[0].columns),true);
+  }finally{try{source.minRole=original;}catch{}}
+});
+
+test('ambient includes and filter changes cannot widen catalog or payroll creation',()=>{
+  const includes=Array.prototype.includes,filter=Array.prototype.filter;
+  let catalog,denied=false;
+  try{
+    Array.prototype.includes=()=>true;
+    Array.prototype.filter=function(){return this;};
+    catalog=Reporting.visibleCatalog('manager');
+    try{Reporting.normaliseDefinition({sourceId:'payroll-control'},'manager');}catch{denied=true;}
+  }finally{Array.prototype.includes=includes;Array.prototype.filter=filter;}
+  assert.equal(catalog.sources.some(s=>s.id==='payroll-control'),false);
+  assert.equal(catalog.templates.some(t=>t.sourceId==='payroll-control'),false);
+  assert.equal(denied,true);
+});
+
+test('accessor identity drift blocks due external delivery without evaluating the accessor',async()=>{
+  let poisoned=false,reads=0,sent=0;
+  const x=setup({currentUserReader:({email,tenant})=>{
+    const actor={email,tenant,role:'payroll_admin'};
+    if(poisoned)Object.defineProperty(actor,'role',{get(){reads++;return reads===1?'director':'payroll_admin';}});
+    return actor;
+  },deliveryAdapter:{authorize:()=>true,deliver:async()=>{sent++;return {};}}});try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    poisoned=true;
+    assert.equal((await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z')))[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(sent,0);assert.equal(reads,0);
+  }finally{x.close();}
+});
+
 test('payroll actor cannot list or fetch director audit report',async()=>{
   const x=setup();try{
     const report=await makeReport(x,'director-a','audit-evidence');
@@ -330,5 +414,47 @@ test('daily in-app schedules generate one governed delivery per local minute and
     const blocked=await call(x.service,'POST','/api/reporting/schedules','manager-a',{reportId,cadence:'daily',hour:16,minute:5,timeZone:'UTC',delivery:'email_link',destination:'user@example.com'});
     assert.equal(blocked.status,400);
     assert.match(blocked.body.error,/adapter is not configured/i);
+  }finally{x.close();}
+});
+
+
+test('exact role matrix preserves operational access and explicit privileged memberships',()=>{
+  for(const role of ['employee','manager','payroll_admin','director','admin','superuser']){
+    const ids=Reporting.visibleCatalog(role).sources.map(source=>source.id);
+    assert.equal(ids.includes('factory-readiness'),role!=='employee');
+    assert.equal(ids.includes('payroll-control'),['payroll_admin','admin','superuser'].includes(role));
+    assert.equal(ids.includes('audit-evidence'),['director','admin','superuser'].includes(role));
+  }
+});
+
+test('mutation of retained actor object during adapter authorization cannot erase authority drift',async()=>{
+  const actor={email:'payroll@a.example',tenant:'tenant-a',role:'payroll_admin'};
+  let mutate=false,sent=0;
+  const x=setup({currentUserReader:()=>actor,deliveryAdapter:{authorize:async()=>{
+    if(mutate)actor.role='admin';
+    return true;
+  },deliver:async()=>{sent++;return {};}}});try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    mutate=true;
+    assert.equal((await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z')))[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(sent,0);
+  }finally{x.close();}
+});
+
+
+test('synchronous proxy identity is rejected before await can invoke its then trap',async()=>{
+  let traps=0;
+  const x=setup({currentUserReader:({email,tenant})=>new Proxy({email,tenant,role:'manager'},{get(target,key){traps++;return target[key];}})});try{
+    assert.equal((await call(x.service,'GET','/api/reporting/catalog','manager-a')).status,401);
+    assert.equal(traps,0);
+  }finally{x.close();}
+});
+
+test('async current identity readers retain ordinary manager catalog access',async()=>{
+  const x=setup({currentUserReader:async({email,tenant})=>({email,tenant,role:'manager'})});try{
+    const result=await call(x.service,'GET','/api/reporting/catalog','manager-a');
+    assert.equal(result.status,200);
+    assert.equal(result.body.sources.some(source=>source.id==='factory-readiness'),true);
+    assert.equal(result.body.sources.some(source=>source.id==='payroll-control'),false);
   }finally{x.close();}
 });

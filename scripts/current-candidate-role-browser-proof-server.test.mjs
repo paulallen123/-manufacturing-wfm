@@ -122,7 +122,7 @@ async function withWrapper(evidence, check) {
     const readiness = await read(port, '/ready');
     assert.equal(readiness.status, 503);
     assert.equal(readiness.body.productReady, false);
-    await check(result.body);
+    await check(result.body, port);
   } finally {
     if (child && child.exitCode === null && child.signalCode === null) {
       const exited = new Promise(resolve => child.once('close', resolve));
@@ -150,6 +150,21 @@ test('absent payroll evidence stays unverified through the wrapper', async () =>
   });
 });
 
+test('malformed request target returns generic400 and preserves partial proof and readiness denial', async () => {
+  await withWrapper({}, async (_result, port) => {
+    const rejected = await read(port, 'http://[invalid-target');
+    assert.equal(rejected.status, 400);
+    assert.deepEqual(rejected.body, { error: 'Invalid request target' });
+    const after = await read(port, '/');
+    assert.equal(after.status, 200);
+    assert.equal(after.body.status, 'PARTIAL');
+    assert.equal(after.body.productReady, false);
+    const readiness = await read(port, '/ready');
+    assert.equal(readiness.status, 503);
+    assert.equal(readiness.body.endToEndVerified, false);
+  });
+});
+
 test('a persisted payroll batch mismatch remains unverified through the wrapper', async () => {
   const evidence = payroll();
   evidence.release.persistedBatchId = 'different-synthetic-batch';
@@ -167,3 +182,4 @@ test('duplicate team signatures cannot substitute for distinct scoped team sign 
     assert.ok(result.missingEvidence.includes('all-team-weekly-sign-off'));
   });
 });
+

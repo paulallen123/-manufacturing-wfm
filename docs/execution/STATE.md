@@ -1,3 +1,154 @@
+# Runner preparation and startup binding checkpoint — 2026-10-27T12:44:15.562Z
+
+Existing owner /root, same PR501/branch test/vector-empty-organisation-regression-20261020. Canonical base48dce8f697825c8cd5f99b3e5aeea3953647f8c2. Application/build target remains4ed5eb3668452a0229469b8e1d426e84eea18187; this containing successor adds only deployment preparation and evidence/state. Do not transfer build proof to a different source or automatically move Railway's explicit target pin.
+
+Actual earlier Railway deployment ebb9774c-2f8f-4de7-b364-06ca99e798f9 built exact4ed5: source1614/1614, installed archive final SHA equality checks, image sha256:5a003fca272253391ef383725f5f6992a5e113dab0735b3bc72424421fc035e1. Both ebb and retry40846eea-eaf4-45fb-bbbe-90f49ce48c4a FAILED startup ROOT_FORBIDDEN. Official Redeploy reuses original configuration; retry did not test saved wrapper command. Saved command now /usr/local/bin/vector-entrypoint.sh node security-runtime/bootstrap.cjs;500MB/data volume165dc893 live. No healthy target or current browser/customer proof.
+
+Fresh preflight found WFM_CANDIDATE_SHA absent from rendered variable names (values redacted); exact runtime guard throws SHA_REQUIRED without it. Runtime identity suite9/9. Added only non-secret exact4ed5 binding to existing staged patch564dacd1-ce0f-46f0-bc4c-bb5fd2629422. Patch now STAGED5, destructivefalse, only service48ee3ceb-9cfc-4399-b3a1-3628e3603815. No deployment triggered; prior apply cancellation not retried unchanged or bypassed. Normal platform apply remains blocked. Existing user authority established; no renewed consent request.
+
+Prepared compatible canonical signed-browser launcher for EXISTING runner f84fe27d-af17-451c-b164-54dfef6b6a4b, unchanged Playwright1.63.0 image. Exactly four pinned source files, gzip/hash checked, private unique materialization, strict target/source/profile gates, bounded npm installation, original PARTIAL/ready503 behavior. Independent /root/runner_package_review ACCEPT after forced-timeout hardening; final17/17 author+heldouts. Canonical auth/wrapper replay49/49 overlaps; root separate37/37 overlaps. No registry install, hosted browser, target auth activation or secret reads. Prepared command58624 bytes, SHA256b0de6370ab3cc2186a0043f7ad85890909d0358f85d792ec831871b919f0083f. Package docs/execution/proof-runner-activation/; evidence/vector-runner-preparation-20261027/.
+
+Active task claim6442073653; /root preparation and independent reviewer completed at checkpoint. These are real session identities, not persistent job IDs. Existing Codex request6369979465 completed-blocked remains coordinated; no duplicate build. No active deployment; customer service latest known successful057e19a2/90ad retained, laterd911failed. That baseline is a rollback lead, not a tested restore. No new release lane or customer deployment.
+
+Next executable action: reconcile patch/deployments, then normally apply approved target patch when platform control permits. Verify actual UID/volume/startup/source/health before configuring existing signed runner. Missing dependencies: secure signer/public-key match, persisted5actors, tenant/run/applied configuration, independently bound asset digests, actual runner dependency/browser compatibility, retained redacted screenshots/traces. Full customer journey/provider-readback/financial/customer-acceptance and full59-capability backlog remain incomplete. Formal release approvals still required. Do not enable reporting delivery adapter before durable intent/UNKNOWN/readback/containment repair.
+
+Checkpoint must be pushed through guarded existing branch update; containing commit is documentation/preparation only, no change to frozen application4ed5. On interruption read this state plus latest PR501 comments, reconcile leases/jobs/external effects, resume without replaying mutations. If this Work turn ends, execution pauses; no background worker is implied.
+
+## Prior checkpoint
+
+# Exact-source proof and build admission — 2026-10-27T01:40:07.504Z
+
+Existing /root owner, same PR501/branch. Tested source0dd1dd9064e6d6940d76d0577e06cdcbf481a779; Codex review6431395393 no major issues. Containing successor changes one Docker test command plus evidence/state: include existing payroll-factor and support-catalogue regressions. Independent Docker blob18376e80dc7e2fd4398298ade648788de4af9745 ACCEPT; exact command29/29. All product sources unchanged. Canonical base48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
+
+Independent task /root/build_route_review hash-reconciled1249 source blobs. Composition succeeded with cached dependencies matching package/lock (not fresh npm ci). Broad Node22 initial1613/1614: tar ownership restore fails in local namespace. Explicit local TAR_OPTIONS=--no-same-owner rerun1614/1614, zero skips, no source/test edits. Additional sequential100/100, gate29/29; counts overlap. Full compressed original/final TAP and provenance retained at evidence/vector-build-admission-20261027/. Not a full Docker build or image admission; no new digest/browser/provider/customer proof. CircleCI0dd status success2 contexts, no actual logs admitted.
+
+/root/backlog_reconcile found4 RED external reporting delivery safety oracles: response loss mislabeledFAILED, response-onlySENT, duplicate multiworker sends, no next-slot containment. Actual bootstrap supplies no adapter. Preserve disabled path; durable atomic intent/UNKNOWN/readback/reconciliation required before enabling. Full59-capability map retained with explicit F2.6 gap.
+
+Railway patch391d2e38 remains STAGED16,destructivefalse, priorb4 pin and isolated500MB. Renewed Proceed followed by fresh review and normal accept-deploy again returned cancellation 'user did not approve'; no changes. Readback unchanged. User consent is already established; tool control is unresolved. No alternate-route bypass. Customer prior successful057e19a2/90ad; latestd911failedBUILD_IMAGE. Logs locate failing compose/Staffology command but not root cause. Existing rollback baseline unchanged; no new production mutation.
+
+Tasks completed at this checkpoint; no persistent executor or active deployment. Next: reconcile remote successor review/build jobs; run exact immutable image build via existing approved runner when control permits, then isolated bootstrap/auth/durable-state/browser proof. Source-independent eligible queue: implement and verify durable reporting delivery before any adapter activation; persist importer scope/replay contract. No new release lane. Resume from containing commit; do not replay external mutations.
+
+## Prior checkpoint
+
+# Domain safety integration checkpoint — 2026-10-27T01:22:01.473Z
+
+Existing owner /root, same PR501 and branch test/vector-empty-organisation-regression-20261020. Exact parent 9fb494e040bf2c2641571a1bc8718623012caa2d; successor is containing commit, with eight source blobs in evidence/vector-domain-safety-20261027/manifest.json. Canonical release base remains48dce8f697825c8cd5f99b3e5aeea3953647f8c2. No separate product/controller/release lane.
+
+Reporting correction: explicit payroll membership, immutable primitive actor snapshots, frozen catalog policy. Reviewer caught pre-await Proxy then trap; repaired and same heldouts pass34/34. Author final29/29 versus baseline19/29; original18 preserved. Original historical heldout blob404 recorded. Training516 expiry correction124/124, actual readiness consumer traced. Support4457/7 independent; connector50428/28, both source-helper only with runtime wiring gaps retained. Combined exact eight source/test files69/69 Node22, zero skips. Counts overlap. This is source integration, not full build/image/hosted/provider/customer proof. Prior9fb Codex review comment6427174220 no major issues; successor needs its own formal gates. GitHub Actions query at9fb returned0 runs.
+
+Railway readback: approved patch391d2e38-aa9f-4ad9-abb5-adda7d5dea94 remains STAGED16; no mutation this turn. Previous tool cancellation remains blocker, not missing user approval. Patch pins olderb4a2582c59ccf1c2618274b16e569870fd9b3517, whose b39 isolated receipt-image evidence cannot transfer to new source. Customer latest known successful057e19a2 at90ad90fcf60adaca9abacdd4ad14bf392f95e585, latestattemptd911failed; authenticated wizard/Google/Apple still unverified. Rollback candidate remains previous known artifact, subject to compatible DB/config verification; no new rollout.
+
+Tasks /root/backlog_reconcile, /root/build_route_review, /root/scheduling_inventory complete. No persistent runner/deployment active. Next executable action: reconcile successor head/reviews/builds; complete exact candidate build and approved isolated hosted bootstrap proof when access permits. Independently continue reporting delivery/readback and persisted importer scope/replay integration assessment. Full backlog remains in inventory/domain-queue-20261026.json; no whole capability promoted by these bounded corrections. Resume from this checkpoint without replaying mutations.
+
+## Prior checkpoint
+
+# Broader product integration checkpoint — 2026-10-26T20:56:52.931Z
+
+Existing integration owner /root, PR501/canonical base unchanged. Parentaa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6; containing successor adopts exactly six source/test files from reviewed PR461/365/494, preserving all previous work. No new product/controller/release lane.
+
+Onboarding/training F1.6: distinguish reconciled population from competency gaps without weakening combined gates; root30/30, independent33/33 ACCEPT. Scheduling F2.1/H05: reject orphan/malformed/stale site-time assignments and filter unsafe plans; independent currentRED48/52 versus donor52/52 ACCEPT. Payroll F1.8: dense own-data factor validation/no caller traversal, rational rounding retained; root24/24, independent14/14 ACCEPT. Final exact-six-blob combined Node22.23.2 replay106/106 zero skips. Evidence evidence/vector-broad-integration-20261026/manifest.json. These are candidate source integrations, not merged canonical release, image or customer proof.
+
+Full-domain reconciliation now retained at inventory/domain-queue-20261026.json, open-pr-snapshot-20261026.json. Current286 open PRs/267drafts. All59 accepted outcomes,14intake,6held,16research retained as overlapping dimensions. Most current proof remains unreconciled; module presence is not readiness. PR481/442 explicitly BLOCKED by REQUEST CHANGES, PR475 savings prototype ORACLE, PR504/445 eligible bounded candidates pending current consumer/integration proof. Existing historical dispositions preserved with explicit newer updates. Do not call three fixes the complete product.
+
+Next eligible source queue: repair reporting access boundary481 against failed independent oracles; validate connector identity504 consumer; replay support445; review overdue-training516. Deployment path remains approved Railway patch391d2e38 STAGED and pinned priorb4. Tool-level cancellation not bypassed; user approval is already established. Before changing that pin reconcile required review/build gates and exact artifact; no transferred b39 proof. Customer latestsuccessful057e at90ad, newestattemptd911failed; passkey-only browser observation from prior turn. No hosted mutation/customer/provider action this turn.
+
+Actual tasks /root/build_route_review, /root/scheduling_inventory, /root/backlog_reconcile completed bounded work. No persistent Work executor/new deployment job. On resume reconcile new remote head, ownership, jobs and staged patch first; continue full backlog, not only auth/hosting.
+
+## Prior checkpoint
+
+# Proof-server repair checkpoint — 2026-10-26T20:41:07.343Z
+
+Existing owner /root; same PR501 branch/base. Parent c60b2d97d566d3af2168335c1c3af00bd8ac9cf4; this successor changes only two proof-wrapper source/test files plus evidence/state. Reviewed malformed request-target crash repair: original4/5 ECONNRESET, repaired5/5, independent /root/build_route_review6/6 zero skips, ACCEPT. Generic400/no reflection; process survives; PARTIAL200 and /ready503 retained. Evidence evidence/vector-proof-wrapper-20261026/manifest.json. This is local synthetic HTTP-wrapper proof, not a customer/browser/provider journey or formal release approval.
+
+Latest real customer browser check shows passkey-only Secure sign in at https://vector-customer-ready-candidate-production.up.railway.app/ . Customer Railway latest attemptd9112b19 FAILED, retained successful057e19a2 metadata90ad90fc. No candidate customer release. PR512 still reports code reviewRUNNING at2e04efe; no duplicate task.
+
+Railway approved patch391d2e38 remains STAGED16 changes, only hardening service48ee and500MB volume165dc893. Prior tool cancellation remains technical blocker; user approval is established. No retry through alternative route, new deployment, subscription or customer mutation. Pending patch pins admittedb4 source; new wrapper successor is not in that artifact. Before proof-runner rollout bind its exact new source separately; do not transfer b39 image proof to this commit. Existing source/backlog and all release gates preserved. Plugin discovery confirmed Railway enabled; cloud browser and existing independent coding agent used. No additional product/controller.
+
+Next: apply pending patch via normal approved Railway control, collect new image/bootstrap/durable-state proof, configure existing scoped proof runner and run authenticated journey. Continue eligible bounded source work when hosting is blocked. Local reviewer completed; no persistent execution task or active build established this turn. Resume by reconciling remote head, ownership, staged patch and jobs first.
+
+## Prior checkpoint
+
+# Approved hosted activation — 2026-10-26T02:00:36.215Z
+
+Owner /root, same PR501. User explicitly reaffirmed prior authorization: "Approved it ages ago, get on with it". Isolated500MB storage and synthetic proof identities are authorized; do not ask again or list user approval as missing. Existing budgets/limited scope remain binding; no open-ended spend.
+
+Prepared actual Railway patch391d2e38-aa9f-4ad9-abb5-adda7d5dea94,16 changes: only existing hardening service48ee3ceb-9cfc-4399-b3a1-3628e3603815 and new500MB volume165dc893-1132-40fa-a26f-3b0f5306ffa0 at/data. Exact sourceb4a2582c59ccf1c2618274b16e569870fd9b3517, root/, Dockerfile, start node security-runtime/bootstrap.cjs, staging/durable-state/origin/DB configuration. Full patch reviewed destructive=false, no shared variables/customer-service changes. This is a fresh proof build, NOT promotion of the prior b39 image; new digest and admission must be independently checked.
+
+accept_deploy attempted once under explicit authorization; returned: "Cancelled — the user did not approve this action. No changes were made." This is a tool-level cancellation, not evidence the user's conversational approval is absent. Readback confirms patchSTAGED; volume not provisioned, no build triggered by this action. Do not bypass via another mutation route or blindly repeat. User may apply this exact existing patch through Railway's ordinary control. Dashboard https://railway.com/project/43367a88-2233-4c6b-9018-0ce234dd73ca/service/48ee3ceb-9cfc-4399-b3a1-3628e3603815?environmentId=eed9f097-610a-416e-83b9-6bc7bdb3eeef .
+
+Next: reconcile patch application/jobs, verify actual bootstrap/nonroot/durable state and independently admit new image, then bind approved synthetic identities to existing scoped runner. Actor-map/profile still not configured; do not substitute guessed customer identities or claim browser proof. Prior b39 receipt-only success unchanged. No persistent Work executor.
+
+## Prior checkpoint (authorization blockers superseded above)
+
+# Hosted proof readiness reconciliation — 2026-10-26T01:24:42.772Z
+
+Existing integration owner /root resumed from f0ac066b667a320ad385f6dd437caaccc11345c4; head/base unchanged at read. Exact admitted product source remains b4a2582c59ccf1c2618274b16e569870fd9b3517. This successor changes records only. Isolated b39 SUCCESS remains current; no new build or hosted mutation.
+
+Concrete fresh finding: existing signed runner lacks VECTOR_PROOF_AUTH_PROFILE and VECTOR_PROOF_ACTORS_JSON. Names-only audit against exact preflight blob; other values unvalidated. Hardening proof service still has zero volumes. Current runner wrapper PROVEN gate requires reconciliation with documented PARTIAL client semantics before activation. Full packet: docs/execution/HOSTED_PROOF_ACTIVATION.md; evidence/vector-hosted-readiness-20261026/manifest.json.
+
+Next: owner handoff/budget for isolated500MB storage and synthetic identity cohort, secure actual bindings, actual artifact promotion and application proof. Customer volume excluded. No new spend/subscription/resource or provider mutation. No active build in latest build-service inventory; no persistent Work executor. On resume reconcile this containing commit, ownership, provider jobs and pending patch before action.
+
+## Prior checkpoint
+
+# Final serving-image reconciliation — 2026-10-25T21:08:34.418Z
+
+Owner/root, PR501 unchanged. Source admitted b4a2582c59ccf1c2618274b16e569870fd9b3517; containing commit evidence-only, parent61cb52a86ddbe880357678377bb5350c0da63115.
+Current isolated serving deployment is b39f0232-0a2e-44e4-a50b-2a32203924c2 SUCCESS2026-10-25T21:06:40.991Z, image sha256:fb43ff18357726b80f7b62ad660cbf417cd50c3b313fa7f6df9e67649936c154, config2d46b999ea6b2a4f51876e66c6b4fa6c7765ae74e81f43a52d9aaeca5a84c10c. Independent/root/build_route_review separately verified this exact deployment/source/image and its installed88/88/all12 zero skips at21:05:51.230888068Z; three-way SHA receipt-only health21:06:37.449576244Z. e906 and bc3b REMOVED after supersession; their results remain historical and their digests are not attributed to b39. No current jobs or staged changes. No persistent executor.
+
+Evidence/vector-b4-image-20261025 now contains separate b39-current and e906-historical independent receipts. e906 auth99/99, Staffology327/327 andsource1599/1599 stay bound to that exact successful build. b39source1599/1599 was also directly observed by root earlier; do not assume every gate from one image proves another merely because sourceSHA matches. Prepared logging patch remains unadopted, no further rebuild started.
+
+Current GitHub Actions exact-b4 query returned0runs, so second-provider promotion proof is not established. Canonical branch protection readenabledfalse; resolve required release controls before integration/promotion. Next gate is hosted authenticated app/login/restart/recovery proof with approved durable isolated storage, scoped identity/context and actual image promotion; existing proof service has no persistentvolume and customer volume remains excluded. Google/Apple remain disabled until provider registrations/bindings. No new customer-facing URL or complete Golden Journey proved. Customer application unchanged, fullbacklog incomplete. Review previous checkpoint for identifiers/authority and on resume reconcile source/current jobs before acting.
+
+## Retained checkpoint
+
+# Current checkpoint — 2026-10-25T21:06:36.320Z
+
+Owner /root, existing workspace /workspace/scratch/cd4e2bcb0821, same PR501 integration branch test/vector-empty-organisation-regression-20261020. Parent f056f5341367ed8750e954b898e2fa2e2255227b; containing successor is evidence-only. Exact admitted SOURCE remains b4a2582c59ccf1c2618274b16e569870fd9b3517; do not transfer identity to this documentation successor. Canonical release48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged.
+
+ACTUAL BUILD SUCCESS: externally initiated existing isolated deployment e906c10b-1f64-43cd-b487-da16264a5f53 terminalSUCCESS2026-10-25T21:02:59.783Z. Project9cd73309-0ece-4b9a-891f-7daa13d94f0d/env9e7875b6-e214-4c32-9cee-81235e3d49ff/service845b5dcc-9c95-42cf-95fb-5719e96511f2. Image sha256:e00d867daf78ef512d306867333850a5d8c559dad0bbc263388b6e8bc247e36d; config87787213eab88cb8958e6a5a5c84af8e82962509f89fb07477c81534f35684f1. Independent /root/build_route_review verified exact b4 metadata/logs/digest: auth99/99, Staffology327/327 (fullHTTP simulated-provider journey PASS16.4105s), source1599/1599, distinct installed archive88/88/all12 zero skips. Separate broad679pass/12skip retained. Receipt-only three-way SHA health21:02:57.632554713Z, NOT customer bootstrap. Evidence evidence/vector-b4-image-20261025/manifest.json.
+
+Two other externally initiated same-b4 redeploys remain BUILDING at latest read: b39f0232-0a2e-44e4-a50b-2a32203924c2 and bc3b835a-bccf-44a2-ac10-c474405e6081. No new build, deploy, cancellation or release launched by root this turn. Reconcile their terminal state before any further deployment operation. Never mistake Work for a persistent runner; these are real provider jobs.
+
+Earlier cdc12c32/6c3f/dd9 failures remain in evidence; successful rerun does not establish their root cause or repair. Root prepared three-file logging-only patch, author19/19 independent23/23 ACCEPT, underclaim6403188166. Since exact existing b4 now succeeds, patch remains UNADOPTED under evidence/vector-build-receipt-20261025/prepared.patch and source hashes. Product source, runtime guards and timeouts unchanged. Do not rebuild merely to integrate optional diagnostics. New helper's output bounded/redacted; existing fullTAP replay preserved, no memory-bound guarantee claimed.
+
+Current release inspection: branch API now confirms canonical branch protected=false/requiredstatus enforcementoff; prior admin403 is not proof of protection. Existing release/proof-lane-policy.json still requires productionApproved/nonfixture/nonstaging exact-image and independent providers2; isolated receipt SUCCESS does not satisfy production promotion. Current P1 review thread for malformed URL is resolved/outdated; fix included in b4. Security bounded39/39 report retained; formal cloudsecurity summaryold06b must not be called current. PR512 remains same2e04 donor, code review stillRUNNING; no duplicate/adoption.
+
+Hosted proof prerequisite refreshed: existing vector-hardening-proof48ee3ceb service in customerproject43367a88/env eed9f097 still has NO volume, latest36ce7d6b historicalSUCCESS. Prepared docs/execution/PROOF_ENVIRONMENT_REQUEST.md documents durable test storage and scoped identity/budget dependency; do not reuse customer volume or silently widen credentials. This is not another database purchase request. Existing signed proofrunner access needs approved identities/context. Browser handoff is now GitHub password-sign-in rejection for Railway App; no automated retry/bypass. Plugin read access works; browser authentication unverified. Google/Apple remain disabled pending registrations and verified subject bindings.
+
+Next executable actions: reconcile remaining two build outcomes; use admitted exact image for approved isolated hosted application/login/restart/recovery proof after durable environment and scoped identity are resolved. Review customer release against existing policy; do not claim customer/provider/full-backlog completion. Preserve previous isolatedaea artifact and customer057e19a2 rollback leads; customer serving state not changed/reverified in this checkpoint. Local reviewer/diagnostic tasks complete. Resume from this state plus latestPR501 comments and real provider jobs, never blindly replay mutations.
+
+## Retained history
+
+# Current checkpoint — 2026-10-25T20:50:19.759Z
+
+Existing integration owner /root, workspace /workspace/scratch/cd4e2bcb0821, same PR501 and test/vector-empty-organisation-regression-20261020. Reviewed/tested source b4a2582c59ccf1c2618274b16e569870fd9b3517 (tree aca3177fe69cb1fc705b7ee325b82a59d3f5f7ef). This containing successor is evidence-only; do not transfer image proof to it. Canonical release48dce8f697825c8cd5f99b3e5aeea3953647f8c2 unchanged. Current remote execution receipt6402813427.
+
+Staged patch86a7bbbd was consumed; approval cancellation is no longer the active blocker. Actual isolated b4 build cdc12c32-33a7-4d57-bbb7-26a2ed63f675 FAILED at2026-10-25T20:29:04.713Z. Autonomy-proof19 shell exit1 after setup78/78; Staffology TAP/new diagnostic output missing from retrieved logs. Exact failing assertion/root cause UNKNOWN. Do not infer recurrence of prior fullHTTP timeout. No completed b4 image. External older redeploy dd9c50cb-22f1-4137-9192-c6253bc6ff46 for8931ab2 also FAILED at20:42:57.852Z: workflow-action-evidence composed test6/7, attendance runtime waiting-listener/healthnone at30000ms. No build remains active in latest inventory. No duplicate retry started.
+
+Bounded diagnosis by /root/build_route_review (diagnostic author): exact current group through same shell wrapper327/327 zero skip, buffered/emitted TAP byte-equal78024bytes; restricted layout4/4; controlled exits0/1/137 preserve output/status. These synthetic local results do not explain or override hosted failures. No timeouts, product logic or acceptance weakened. Next diagnostic option is small stage/status/bytecount/failure summary before full retained TAP, only if missing provider logs cannot be recovered. This is observability work, not a claimed repair.
+
+Independent bounded security review by /root/build_route_review excludes its own Staffology diagnostic increment:39/39 zero skips, raw malformed TCP targets400/server survives; unconfigured Google/Apple503, no external calls/sessions; current session guards rechecked. No blocking defect in inspected scope; not formal release approval/full security certification. Full hosted bootstrap untested locally because only root UID is mapped; guard respected. Current code reviewb4 no findings; cloudsecurity summary remainsold06b, request6400143316 not duplicated. Evidence evidence/vector-build-blocker-20261025/manifest.json.
+
+Railway dashboard fallback for missing logs reached email verification; browserAuth returned submission_failed but visible page shows verification code requested. Authentication remains incomplete/unknown; no codes/credentials read. User handoff required to complete this browser verification. Connector remains available for reads. Google/Apple registrations and stable subject bindings still missing; providers disabled. Existing customer and signed proof runner unchanged. No new resources/database/subscriptions; no customer/provider mutation.
+
+Isolated project9cd73309-0ece-4b9a-891f-7daa13d94f0d/env9e7875b6-e214-4c32-9cee-81235e3d49ff/service845b5dcc-9c95-42cf-95fb-5719e96511f2 remains pinned b4 with matching receipt; no public customer app proof. Last successful isolated predecessor f61925bc ataea image sha256:68562ed3b8d9e1c024bb0db019212b38fb7aed065eebef1a55830b0dfca1d153 predates malformed-target fix and is not current admission. Customer last known successful057e19a2 at90ad90fc unchanged/not reverified here; restore/rollback/customer readiness remain unproven.
+
+Next executable action: reconcile browser verification and recover exact cdc12c32 failing TAP from dashboard; preserve both failed jobs and current source. If unavailable, implement/test/review bounded logging diagnostic on same lane before a single authorized instrumented build. Require current exact-image proof and release controls before customer promotion. Full backlog remains incomplete. Local reviewer/diagnoser jobs terminal; no persistent Work runner. On interruption reconcile head/comments/jobs/leases/side effects before resuming, no blind writes.
+
+## Retained history
+
+# Current checkpoint — 2026-10-25T17:04:28.094Z
+
+Existing integration owner/root, PR501/branch unchanged. Parent d94bafcb3b3fcf397a1900b2fce743d48631e112; exact successor is containing commit. Claim6400516726. Actual isolated successor build6c3f7237-6165-4fe4-ba4e-e74c6dd27e1b at8931ab2 FAILED;322/323 Staffology tests, first fullHTTP startup timeout with blankdiagnostics. No staged patch/active build at lastread. Config pinned8931ab2. Prioraea buildf61925bc remainsSUCCESS but predates crash containment, never successor proof.
+
+Bounded diagnosis: exact original testblob6ad680f203df00b538a3b730393e2f8e158d148c matched remote. Fresh original isolated1/1 and fullgroup323/323 passed. Rootcause UNKNOWN, notfixed. This successor only enhances teststartup diagnostics (healthstatus, errorcode, attempts/elapsed, exit/signal, boundedoutput), retains400x25ms/successrule/env and all productlogic. New negative diagnostic probes RED thenGREEN4/4; independent root4/4 and modified real simulatedjourney1/1 pass. Evidence evidence/vector-staffology-startup-20261025. Author/root/build_route_review, reviewer/root. No provider/customer proof.
+
+Next: freeze containingSHA and matchingreceipt on same existing isolated service845b5dcc/project9cd73309/env9e7875b6, inspectpatch and use normal authorized controls for one instrumentedbuild; require actualsuccess/digest. If startup fails again consume new diagnostics, do not increase budget blindly. Current code reviewd94 completed/no findings; cloudsecurityold06b, request6400143316 remains existing. Formalrelease/hosted/provider gates unmet.
+
+GoogleCloud browser twice shows SiteUnavailable; cannot configure owner OAuth registration here. User neither/unsure of accounts, no registrations/credentials/subscriptions created. Providers disabled. Existing customer unchanged. All local jobs terminal; no persistentworker. Preserve previouswork/fullbacklog and reconcile remoteowners/jobs before resume.
+
+## Retained history
+
 # Current checkpoint — 2026-10-25T16:46:45.522Z
 
 Owner /root, existing PR501. Concurrent work discovered during guarded checkpoint: current source8931ab2abaa725aa60a8d97bb959110765ffb99f includes two-file malformed-request URL containment after aea2460. Preserved both commits8a256714/8931ab2. First guarded update returned GitHub UNKNOWN; readback found advanced head, no blind retry or overwrite. Unreferenced evidence commitb14fa67ee8445a7afdeac78499c9d2dc0fafeb3f is not the integration head. This containing successor records evidence only on8931ab2.
@@ -294,3 +445,4 @@ Next gate: let1049 finish, publish reviewed recovery successor once, obtain exac
 
 ## Recovery successor checkpoint
 Updated 2026-10-22T20:57:39.517Z. This commit adopts the reviewed one-line rootless recovery validator correction from abfcabad8e329990f5ae50ab15b11a8e752dc97c onto12903305db3b0f5fde0debcab8dfc5f314eeb1a2. Resolve containing commit for exact successor SHA. Parent core1048/runtime1049 SUCCESS; successor CI not yet observed and parent proof not transferred. Installed-layout original68/72 and adjusted-fixture4/4 plus separate smoke2/2 retained separately. PR inventory now8 reviewed of275;267 await review. PR313 blocked,364/365 eligible adoption candidates pending integration. Next: observe successor exact-source CI, then resolve documented isolated hosted proof access/budget. No deployment or provider writes performed.
+

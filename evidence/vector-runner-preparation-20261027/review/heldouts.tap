@@ -1,0 +1,44 @@
+(node:7) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: independent exact Git blobs and all source digests match canonical manifest
+ok 1 - independent exact Git blobs and all source digests match canonical manifest
+  ---
+  duration_ms: 3.231566
+  type: 'test'
+  ...
+# Subtest: generated package reproduces deterministically from canonical source
+ok 2 - generated package reproduces deterministically from canonical source
+  ---
+  duration_ms: 37.648238
+  type: 'test'
+  ...
+# Subtest: actual canonical wrapper failure propagates with cleanup and no network/browser execution
+ok 3 - actual canonical wrapper failure propagates with cleanup and no network/browser execution
+  ---
+  duration_ms: 1122.132337
+  type: 'test'
+  ...
+# Subtest: SIGTERM is propagated to running canonical child and materialized files are cleaned
+ok 4 - SIGTERM is propagated to running canonical child and materialized files are cleaned
+  ---
+  duration_ms: 112.08226
+  type: 'test'
+  ...
+# Subtest: changed environment and source reject before mock npm creates any artifacts
+ok 5 - changed environment and source reject before mock npm creates any artifacts
+  ---
+  duration_ms: 103.228675
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1452.673303

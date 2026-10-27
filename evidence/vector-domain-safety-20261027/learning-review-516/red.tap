@@ -1,0 +1,155 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: role curriculum protects least privilege while still teaching each role deeply
+ok 1 - role curriculum protects least privilege while still teaching each role deeply
+  ---
+  duration_ms: 1.310386
+  type: 'test'
+  ...
+# Subtest: plan is generated automatically for the signed-in role
+ok 2 - plan is generated automatically for the signed-in role
+  ---
+  duration_ms: 103.717103
+  type: 'test'
+  ...
+# Subtest: malformed practice answers cannot earn credit or create evidence
+ok 3 - malformed practice answers cannot earn credit or create evidence
+  ---
+  duration_ms: 516.733757
+  type: 'test'
+  ...
+# Subtest: guidance and retrieval cannot certify without independently observed task success
+ok 4 - guidance and retrieval cannot certify without independently observed task success
+  ---
+  duration_ms: 65.948964
+  type: 'test'
+  ...
+# Subtest: legacy practice without a validated answer is retained but cannot contribute credit
+ok 5 - legacy practice without a validated answer is retained but cannot contribute credit
+  ---
+  duration_ms: 70.003273
+  type: 'test'
+  ...
+# Subtest: guided practice teaches but cannot alone certify durable competence
+ok 6 - guided practice teaches but cannot alone certify durable competence
+  ---
+  duration_ms: 63.597862
+  type: 'test'
+  ...
+# Subtest: coach and trainer competencies require explicit teach-back evidence
+ok 7 - coach and trainer competencies require explicit teach-back evidence
+  ---
+  duration_ms: 95.662214
+  type: 'test'
+  ...
+# Subtest: browser cannot self-certify independent competence
+ok 8 - browser cannot self-certify independent competence
+  ---
+  duration_ms: 48.332924
+  type: 'test'
+  ...
+# Subtest: repeated help use schedules a contextual refresher instead of interrupting every user
+ok 9 - repeated help use schedules a contextual refresher instead of interrupting every user
+  ---
+  duration_ms: 56.469865
+  type: 'test'
+  ...
+# Subtest: new feature can automatically assign delta learning to only affected roles
+ok 10 - new feature can automatically assign delta learning to only affected roles
+  ---
+  duration_ms: 223.444539
+  type: 'test'
+  ...
+# Subtest: learning summary is tenant isolated and employee cannot view aggregate analytics
+ok 11 - learning summary is tenant isolated and employee cannot view aggregate analytics
+  ---
+  duration_ms: 255.79353
+  type: 'test'
+  ...
+# Subtest: director receives privileged curriculum after earlier employee assignments
+ok 12 - director receives privileged curriculum after earlier employee assignments
+  ---
+  duration_ms: 141.049103
+  type: 'test'
+  ...
+# Subtest: role demotion hides retired privileged assignments and rejects their practice and help
+ok 13 - role demotion hides retired privileged assignments and rejects their practice and help
+  ---
+  duration_ms: 71.154416
+  type: 'test'
+  ...
+# Subtest: learning event evidence is append only
+ok 14 - learning event evidence is append only
+  ---
+  duration_ms: 42.536837
+  type: 'test'
+  ...
+# Subtest: training-first read reconciles director role and reopens stale unsupported mastery
+ok 15 - training-first read reconciles director role and reopens stale unsupported mastery
+  ---
+  duration_ms: 85.659922
+  type: 'test'
+  ...
+# Subtest: feature assignments survive only while their recorded feature authorizes the current role
+ok 16 - feature assignments survive only while their recorded feature authorizes the current role
+  ---
+  duration_ms: 125.681279
+  type: 'test'
+  ...
+# Subtest: training reads preserve an explicit refresh until fresh independent success
+ok 17 - training reads preserve an explicit refresh until fresh independent success
+  ---
+  duration_ms: 64.475642
+  type: 'test'
+  ...
+# Subtest: expired mastery leaves readiness totals until fresh independent success
+not ok 18 - expired mastery leaves readiness totals until fresh independent success
+  ---
+  duration_ms: 165.590441
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/learning-review-516/learning/runtime/adaptive-learning-engine.test.cjs:505:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/learning-review-516/learning/runtime/adaptive-learning-engine.test.cjs:523:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: training twin recommends exposure first and never infers mastery
+ok 19 - training twin recommends exposure first and never infers mastery
+  ---
+  duration_ms: 47.120853
+  type: 'test'
+  ...
+# Subtest: explicit skip explanation routes knowledgeable user toward proving competence, not auto-mastery
+ok 20 - explicit skip explanation routes knowledgeable user toward proving competence, not auto-mastery
+  ---
+  duration_ms: 0.336707
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 19
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2278.374199

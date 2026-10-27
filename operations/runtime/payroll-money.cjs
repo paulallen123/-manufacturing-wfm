@@ -3,6 +3,24 @@
 // Embedded unchanged in the shared browser/server cost module by the composer.
 // Decimal inputs remain rational until the existing pay-component rounding point.
 module.exports = function createPayrollMoney() {
+  // Keep the factory self-contained: the composer embeds it in browser code.
+  const isArray = Array.isArray, descriptor = Object.getOwnPropertyDescriptor;
+  const hasOwn = Function.prototype.call.bind(Object.prototype.hasOwnProperty);
+  function factors(values, minimum, nonempty) {
+    if (!isArray(values)) throw Error('Invalid pay-factor collection.');
+    const length = descriptor(values, 'length').value;
+    if (length > 1000 || (nonempty && !length)) throw Error('Invalid pay-factor collection.');
+    const result = Object.create(null);
+    result.length = length;
+    for (let i = 0; i < length; i++) {
+      const field = descriptor(values, String(i));
+      if (!field || !hasOwn(field, 'value')) throw Error('Pay factors require dense own data entries.');
+      const value = field.value;
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < minimum) throw Error('Invalid pay factor.');
+      result[i] = value;
+    }
+    return result;
+  }
   const add = (a, b) => [a[0] * b[1] + b[0] * a[1], a[1] * b[1]];
   const multiply = (a, b) => [a[0] * b[0], a[1] * b[1]];
   function decimal(value) {
@@ -30,15 +48,22 @@ module.exports = function createPayrollMoney() {
     return result;
   }
   function sumRatio(values) {
-    if (!Array.isArray(values) || values.length > 1000) throw Error('Invalid pay-factor collection.');
-    return values.reduce((total, value) => add(total, decimal(value)), [0n, 1n]);
+    const entries = factors(values, 0, false);
+    let total = [0n, 1n];
+    for (let i = 0; i < entries.length; i++) total = add(total, decimal(entries[i]));
+    return total;
   }
   function stackRatio(values, mode) {
-    if (!Array.isArray(values) || !values.length || values.length > 1000 || values.some(v => typeof v !== 'number' || !Number.isFinite(v) || v < 1)) throw Error('Invalid pay multipliers.');
-    if (mode === 'highest') return decimal(Math.max(...values));
+    const entries = factors(values, 1, true);
+    if (mode === 'highest') {
+      let highest = entries[0];
+      for (let i = 1; i < entries.length; i++) if (entries[i] > highest) highest = entries[i];
+      return decimal(highest);
+    }
     if (mode !== 'additive') throw Error('Unknown pay multiplier stacking rule.');
-    const total = values.reduce((out, value) => add(out, decimal(value)), [0n, 1n]);
-    total[0] -= BigInt(values.length - 1) * total[1];
+    let total = [0n, 1n];
+    for (let i = 0; i < entries.length; i++) total = add(total, decimal(entries[i]));
+    total[0] -= BigInt(entries.length - 1) * total[1];
     return total;
   }
   // Numeric aggregates are for row labels only; pricing receives original operands.
@@ -68,3 +93,4 @@ module.exports = function createPayrollMoney() {
   }
   return Object.freeze({ components, sum, stack, factorKey });
 };
+
