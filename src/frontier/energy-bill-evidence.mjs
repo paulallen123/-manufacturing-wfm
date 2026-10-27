@@ -4,6 +4,7 @@ export const ENERGY_BILL_EVIDENCE_VERSION = 'energy-bill-evidence-v0.1.0';
 
 const n = (v) => Number(v);
 const ok = (v) => Number.isFinite(n(v)) && n(v) >= 0;
+const exactAmount = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
 const stable = (v) => Array.isArray(v) ? v.map(stable) : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, stable(v[k])])) : v);
 const digest = (v) => crypto.createHash('sha256').update(JSON.stringify(stable(v))).digest('hex');
 
@@ -56,7 +57,9 @@ function dayCount(period) {
   if (!period?.start || !period?.end) return null;
   const parse = (s) => {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-    return m ? Date.UTC(n(m[1]), n(m[2]) - 1, n(m[3])) : NaN;
+    if (!m) return NaN;
+    const time = Date.UTC(n(m[1]), n(m[2]) - 1, n(m[3]));
+    return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === s ? time : NaN;
   };
   const a = parse(period.start), b = parse(period.end);
   return Number.isFinite(a) && Number.isFinite(b) && b > a ? Math.round((b-a)/86400000) : null;
@@ -106,28 +109,37 @@ export function priceIndustrialElectricity({ tariff, intervals, billingPeriod })
 }
 
 export function reconcileEnergyBill({ tariff, intervals, invoice, ledgerEntry, meterCoverage, toleranceGBP = 0.01 }) {
+  if (dayCount(invoice?.billingPeriod) === null) return { status: 'unreconciled', reason: 'invalid_billing_period' };
   const priced = priceIndustrialElectricity({ tariff, intervals, billingPeriod: invoice?.billingPeriod });
   if (!['priced','partially_priced'].includes(priced.status)) return { status: 'unreconciled', reason: 'unpriced', details: priced };
   if (!invoice || invoice.tenantId !== tariff.tenantId || invoice.siteId !== tariff.siteId || invoice.meterPointId !== tariff.meterPointId) {
     return { status: 'unreconciled', reason: 'invoice_identity_mismatch' };
   }
-  const coverageComplete = meterCoverage?.complete === true &&
-    Number.isFinite(n(meterCoverage.expectedIntervals)) &&
-    n(meterCoverage.expectedIntervals) === priced.intervalCount;
+  if (!exactAmount(invoice.totalBeforeTaxGBP)) return { status: 'unreconciled', reason: 'invalid_invoice_total' };
+  const hasLedger = ledgerEntry !== undefined;
+  if (hasLedger && (!ledgerEntry || ledgerEntry.tenantId !== tariff.tenantId || ledgerEntry.siteId !== tariff.siteId ||
+      ledgerEntry.meterPointId !== tariff.meterPointId)) return { status: 'unreconciled', reason: 'ledger_identity_mismatch' };
+  if (hasLedger && !exactAmount(ledgerEntry.postedAmountGBP)) return { status: 'unreconciled', reason: 'invalid_ledger_amount' };
+  if (!exactAmount(toleranceGBP) || toleranceGBP > 0.01) return { status: 'unreconciled', reason: 'invalid_tolerance' };
+  if (!meterCoverage || meterCoverage.tenantId !== tariff.tenantId || meterCoverage.siteId !== tariff.siteId ||
+      meterCoverage.meterPointId !== tariff.meterPointId || typeof meterCoverage.complete !== 'boolean' ||
+      !Number.isSafeInteger(meterCoverage.expectedIntervals) || meterCoverage.expectedIntervals < 1 ||
+      meterCoverage.expectedIntervals > 1000000) return { status: 'unreconciled', reason: 'meter_coverage_invalid' };
+  const coverageComplete = meterCoverage.complete === true && meterCoverage.expectedIntervals === priced.intervalCount;
   const unknown = [...priced.unmodelledCharges, ...(invoice.unpricedCharges ?? [])];
-  const invoiceVarianceGBP = n(invoice.totalBeforeTaxGBP) - priced.knownCostGBP;
+  const invoiceVarianceGBP = invoice.totalBeforeTaxGBP - priced.knownCostGBP;
   let ledgerVarianceGBP = null;
-  if (ledgerEntry) ledgerVarianceGBP = n(ledgerEntry.postedAmountGBP) - n(invoice.totalBeforeTaxGBP);
+  if (hasLedger) ledgerVarianceGBP = ledgerEntry.postedAmountGBP - invoice.totalBeforeTaxGBP;
   const invoiceMatched = coverageComplete && unknown.length === 0 && Math.abs(invoiceVarianceGBP) <= toleranceGBP;
   const ledgerMatched = ledgerVarianceGBP === null || Math.abs(ledgerVarianceGBP) <= toleranceGBP;
   return {
     status: invoiceMatched && ledgerMatched ? 'reconciled' : 'needs_review',
     meteredKWh: priced.totalKWh, calculatedKnownCostGBP: priced.knownCostGBP,
-    invoiceBeforeTaxGBP: n(invoice.totalBeforeTaxGBP), invoiceVarianceGBP,
-    ledgerPostedGBP: ledgerEntry ? n(ledgerEntry.postedAmountGBP) : null, ledgerVarianceGBP,
+    invoiceBeforeTaxGBP: invoice.totalBeforeTaxGBP, invoiceVarianceGBP,
+    ledgerPostedGBP: hasLedger ? ledgerEntry.postedAmountGBP : null, ledgerVarianceGBP,
     meterCoverageComplete: coverageComplete, unpricedCharges: unknown,
     exactSpendClaimAllowed: invoiceMatched && ledgerMatched,
-    financeReconciled: invoiceMatched && ledgerEntry !== undefined && ledgerMatched,
+    financeReconciled: invoiceMatched && hasLedger && ledgerMatched,
     evidenceHash: digest({ priced: priced.evidenceHash, invoice, ledgerEntry, meterCoverage })
   };
 }
