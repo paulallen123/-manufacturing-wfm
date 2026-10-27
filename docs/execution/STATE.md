@@ -1,3 +1,19 @@
+# Bounded build scheduling repair — 2026-10-27T14:46:54.978Z
+
+Existing integration owner/root, PR501 branch test/vector-empty-organisation-regression-20261020; canonicalbase48dce8f697825c8cd5f99b3e5aeea3953647f8c2. Parent91371e3052dfe839b6487193ad02e20a896c17fd; resolve containing commit for exact successor. One Docker flag change only: fullStaffology node --test --test-concurrency=1. All application/test bytes, startupdeadline,327testpaths, internal concurrency scenarios, source/provider bindings and failure exitstatus retained. No new release lane.
+
+ActualRailwayd82422cb-a806-4e85-b11a-ced0cba937b8 at91371FAILED:327tests326pass1fail. FullHTTP child initial health failed400attempts/12006ms/ECONNREFUSED/nooutput/noexit. Complete failedTAP recovered. Resource contention is hypothesis, not proven rootcause. Previousc0225 opaque failure remains separately recorded; do not assume identicalcause.
+
+Rootlocalserial327/327 zero skips19.61sec; uses existing local composition and Node22.23.2, not Docker. Independent/root/build_failure_review ACCEPT exactDockerblobfa29a950bed34a690e8cac9e704c45fbd5b83c60; actualunchangedadmissioncontract15/15. Prior uncovered setup78/78,trailingcomposition5/5 and receiptcopy passed locally, reusedcomposition. Evidence/vector-serial-build-20261027 includes actualhostedfailure, localserialTAP, review and manifest. No higherprooflevel inferred.
+
+Railwaypatch7ecc applied normally befored824; no longerstaged. Savedsource91371 and runtimeidentitybinding aligned, correctentrypointcommand and500MB/data retained. Latestd824terminalFAILED, nohealthyapp. Need fresh candidate source/runtimeidentity pin to containing successor and normalreviewedapply for one boundedbuild; no blindRedeploy(oldconfig). Do not transfer4ed5successfulimage5a003fca... proof to successor. Customer service untouched; historical057e19a2/90ad rollbacklead remains subject to compatibility/restorecheck.
+
+Existingrunner preparation remains exact4ed5 target in docs; before activation rebind its targetSHA to whichever artifact is actually admitted and review regeneratedcommand. Its fourcanonicalfiles unchanged. Signer/publickey/persisted5actors/tenant-run-config/digests remain prerequisites; retainedscreenshots/traces and fulljourney still unproven. GitLabexistingprivateVector-project87068959 empty/0pipelines, no mirror/newproductcreated.
+
+Rootclaim6445033792; reviewer taskcompleted. ExistingCodexbuildrequest6369979465 coordinated/no duplicate. Noactivebuildatcheckpoint, no persistentWorkexecutor. Next: reconcile containinghead/currentjobs/approvals, stage exactsuccessor pin plus matchingWFM_CANDIDATE_SHA on existing48eeservice, apply throughnormalcontrols, observeallgates/startup/identity/health. Ifsamehealthtimeoutrecurs, keepgatefailed and diagnoseactualchildstartup/resourceevidence; do notincrease deadlines or disabletests without justification. Fullbacklog remainsin scope; no provider/customerproof or mergeclaimed. Checkpointdurableonlyafterguardedbranchpush. LatestPRcomments supersede changingjobstatus.
+
+## Prior checkpoint
+
 # Runner preparation and startup binding checkpoint — 2026-10-27T12:44:15.562Z
 
 Existing owner /root, same PR501/branch test/vector-empty-organisation-regression-20261020. Canonical base48dce8f697825c8cd5f99b3e5aeea3953647f8c2. Application/build target remains4ed5eb3668452a0229469b8e1d426e84eea18187; this containing successor adds only deployment preparation and evidence/state. Do not transfer build proof to a different source or automatically move Railway's explicit target pin.
@@ -445,4 +461,5 @@ Next gate: let1049 finish, publish reviewed recovery successor once, obtain exac
 
 ## Recovery successor checkpoint
 Updated 2026-10-22T20:57:39.517Z. This commit adopts the reviewed one-line rootless recovery validator correction from abfcabad8e329990f5ae50ab15b11a8e752dc97c onto12903305db3b0f5fde0debcab8dfc5f314eeb1a2. Resolve containing commit for exact successor SHA. Parent core1048/runtime1049 SUCCESS; successor CI not yet observed and parent proof not transferred. Installed-layout original68/72 and adjusted-fixture4/4 plus separate smoke2/2 retained separately. PR inventory now8 reviewed of275;267 await review. PR313 blocked,364/365 eligible adoption candidates pending integration. Next: observe successor exact-source CI, then resolve documented isolated hosted proof access/budget. No deployment or provider writes performed.
+
 
