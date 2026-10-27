@@ -1,3 +1,21 @@
+# Runner preparation and startup binding checkpoint — 2026-10-27T12:44:15.562Z
+
+Existing owner /root, same PR501/branch test/vector-empty-organisation-regression-20261020. Canonical base48dce8f697825c8cd5f99b3e5aeea3953647f8c2. Application/build target remains4ed5eb3668452a0229469b8e1d426e84eea18187; this containing successor adds only deployment preparation and evidence/state. Do not transfer build proof to a different source or automatically move Railway's explicit target pin.
+
+Actual earlier Railway deployment ebb9774c-2f8f-4de7-b364-06ca99e798f9 built exact4ed5: source1614/1614, installed archive final SHA equality checks, image sha256:5a003fca272253391ef383725f5f6992a5e113dab0735b3bc72424421fc035e1. Both ebb and retry40846eea-eaf4-45fb-bbbe-90f49ce48c4a FAILED startup ROOT_FORBIDDEN. Official Redeploy reuses original configuration; retry did not test saved wrapper command. Saved command now /usr/local/bin/vector-entrypoint.sh node security-runtime/bootstrap.cjs;500MB/data volume165dc893 live. No healthy target or current browser/customer proof.
+
+Fresh preflight found WFM_CANDIDATE_SHA absent from rendered variable names (values redacted); exact runtime guard throws SHA_REQUIRED without it. Runtime identity suite9/9. Added only non-secret exact4ed5 binding to existing staged patch564dacd1-ce0f-46f0-bc4c-bb5fd2629422. Patch now STAGED5, destructivefalse, only service48ee3ceb-9cfc-4399-b3a1-3628e3603815. No deployment triggered; prior apply cancellation not retried unchanged or bypassed. Normal platform apply remains blocked. Existing user authority established; no renewed consent request.
+
+Prepared compatible canonical signed-browser launcher for EXISTING runner f84fe27d-af17-451c-b164-54dfef6b6a4b, unchanged Playwright1.63.0 image. Exactly four pinned source files, gzip/hash checked, private unique materialization, strict target/source/profile gates, bounded npm installation, original PARTIAL/ready503 behavior. Independent /root/runner_package_review ACCEPT after forced-timeout hardening; final17/17 author+heldouts. Canonical auth/wrapper replay49/49 overlaps; root separate37/37 overlaps. No registry install, hosted browser, target auth activation or secret reads. Prepared command58624 bytes, SHA256b0de6370ab3cc2186a0043f7ad85890909d0358f85d792ec831871b919f0083f. Package docs/execution/proof-runner-activation/; evidence/vector-runner-preparation-20261027/.
+
+Active task claim6442073653; /root preparation and independent reviewer completed at checkpoint. These are real session identities, not persistent job IDs. Existing Codex request6369979465 completed-blocked remains coordinated; no duplicate build. No active deployment; customer service latest known successful057e19a2/90ad retained, laterd911failed. That baseline is a rollback lead, not a tested restore. No new release lane or customer deployment.
+
+Next executable action: reconcile patch/deployments, then normally apply approved target patch when platform control permits. Verify actual UID/volume/startup/source/health before configuring existing signed runner. Missing dependencies: secure signer/public-key match, persisted5actors, tenant/run/applied configuration, independently bound asset digests, actual runner dependency/browser compatibility, retained redacted screenshots/traces. Full customer journey/provider-readback/financial/customer-acceptance and full59-capability backlog remain incomplete. Formal release approvals still required. Do not enable reporting delivery adapter before durable intent/UNKNOWN/readback/containment repair.
+
+Checkpoint must be pushed through guarded existing branch update; containing commit is documentation/preparation only, no change to frozen application4ed5. On interruption read this state plus latest PR501 comments, reconcile leases/jobs/external effects, resume without replaying mutations. If this Work turn ends, execution pauses; no background worker is implied.
+
+## Prior checkpoint
+
 # Exact-source proof and build admission — 2026-10-27T01:40:07.504Z
 
 Existing /root owner, same PR501/branch. Tested source0dd1dd9064e6d6940d76d0577e06cdcbf481a779; Codex review6431395393 no major issues. Containing successor changes one Docker test command plus evidence/state: include existing payroll-factor and support-catalogue regressions. Independent Docker blob18376e80dc7e2fd4398298ade648788de4af9745 ACCEPT; exact command29/29. All product sources unchanged. Canonical base48dce8f697825c8cd5f99b3e5aeea3953647f8c2.
@@ -427,3 +445,4 @@ Next gate: let1049 finish, publish reviewed recovery successor once, obtain exac
 
 ## Recovery successor checkpoint
 Updated 2026-10-22T20:57:39.517Z. This commit adopts the reviewed one-line rootless recovery validator correction from abfcabad8e329990f5ae50ab15b11a8e752dc97c onto12903305db3b0f5fde0debcab8dfc5f314eeb1a2. Resolve containing commit for exact successor SHA. Parent core1048/runtime1049 SUCCESS; successor CI not yet observed and parent proof not transferred. Installed-layout original68/72 and adjusted-fixture4/4 plus separate smoke2/2 retained separately. PR inventory now8 reviewed of275;267 await review. PR313 blocked,364/365 eligible adoption candidates pending integration. Next: observe successor exact-source CI, then resolve documented isolated hosted proof access/budget. No deployment or provider writes performed.
+
