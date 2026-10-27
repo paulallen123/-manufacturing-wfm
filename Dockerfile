@@ -33,7 +33,7 @@ RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime
     STAFFOLOGY_RUNTIME_MODE=full \
     WFM_BUILD_SOURCE_SHA="$RAILWAY_GIT_COMMIT_SHA" \
     STAFFOLOGY_PRIVATE_EVIDENCE_DIR=/proof/staffology-private-artifacts \
-    node --test \
+    node --test --test-concurrency=1 \
       integrations/staffology/*.test.cjs \
       integrations/staffology/independent/succession-regressions.test.cjs \
       integrations/staffology/independent/current-authority-recovery-held-out.test.cjs \
