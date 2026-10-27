@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-27T01:22:01.473Z",
+  "observedAt": "2026-10-27T19:08:22.057Z",
   "complete": false,
-  "totalOpen": 286,
-  "draftsAtInventory": 267,
+  "totalOpen": 288,
+  "draftsAtInventory": 269,
   "reviewed": [
     {
       "pr": 501,
       "disposition": "ADOPT",
-      "scope": "Canonical-based combined inference and Autopilot repair candidate12903305db3b0f5fde0debcab8dfc5f314eeb1a2",
-      "releaseStatus": "Exact129033 core1048 and runtime1049 SUCCESS; reviewed recovery successor requires fresh CI; no canonical merge/hosted proof"
+      "scope": "Current single integration stream; source377f693 combines prior safety repairs with Help and reporting outcome visibility",
+      "releaseStatus": "195/195 integrated local tests; assembled HTTP proof synthetic. Latest serving7fa8, deployment apply cancelled; no canonical merge/customer release."
     },
     {
       "pr": 274,
@@ -107,9 +107,9 @@
     {
       "pr": 445,
       "disposition": "ADOPT",
-      "reason": "Exact two-file detached catalogue correction adopted; independent7/7; no serving consumer.",
+      "reason": "Detached catalog repair adopted earlier; authenticated read-only runtime and Help UI now connected in377f693 after current-authority review and real local HTTP proof. No external action or current hosted proof.",
       "releaseStatus": "Integrated into candidate source only; no hosted/provider/customer proof",
-      "evidence": "evidence/vector-domain-safety-20261027/manifest.json"
+      "evidence": "evidence/vector-customer-readiness-20261027/manifest.json"
     },
     {
       "pr": 475,
@@ -126,5 +126,17 @@
     }
   ],
   "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption.",
-  "currentInventory": "inventory/open-pr-snapshot-20261026.json"
+  "currentInventory": "inventory/open-pr-snapshot-20261027.json",
+  "newlyObserved": [
+    {
+      "pr": 518,
+      "classification": "UNREVIEWED",
+      "reason": "New since previous snapshot; exact-order material availability evidence needs diff/dependency/security review. No adoption."
+    },
+    {
+      "pr": 519,
+      "classification": "UNREVIEWED",
+      "reason": "New since previous snapshot; maintenance cost estimate needs diff/dependency/financial claims review. No adoption."
+    }
+  ]
 }

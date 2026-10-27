@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "kind": "isolated-composed-runtime-http",
+  "source": "Exact source commit; all12 changed blobs matched local tested bytes",
+  "simulated": true,
+  "checks": [
+    "unauthenticated 401",
+    "actual fixture login",
+    "authenticated Help route returns mapped role and no action authority",
+    "unbound environment answer abstains",
+    "served shell contains Help and Operations Bot plus reporting unavailable/unknown outcomes"
+  ],
+  "limitations": [
+    "not hosted",
+    "not customer proven",
+    "no native browser pass"
+  ],
+  "timestamp": "2026-10-27T19:06:59.571Z",
+  "sourceSha": "377f69314b2e5de5d30078f36cb15760916806db"
+}

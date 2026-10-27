@@ -1,0 +1,156 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: independent all returned delivery rows 390
+ok 1 - independent all returned delivery rows 390
+  ---
+  duration_ms: 66.808234
+  type: 'test'
+  ...
+# Subtest: independent all returned delivery rows 820
+ok 2 - independent all returned delivery rows 820
+  ---
+  duration_ms: 41.510874
+  type: 'test'
+  ...
+# Subtest: independent all returned delivery rows 1280
+ok 3 - independent all returned delivery rows 1280
+  ---
+  duration_ms: 37.296291
+  type: 'test'
+  ...
+# Subtest: independent fail-closed READY/undefined
+ok 4 - independent fail-closed READY/undefined
+  ---
+  duration_ms: 5.002091
+  type: 'test'
+  ...
+# Subtest: independent fail-closed READY/email_link
+ok 5 - independent fail-closed READY/email_link
+  ---
+  duration_ms: 7.408768
+  type: 'test'
+  ...
+# Subtest: independent fail-closed READY/sftp
+ok 6 - independent fail-closed READY/sftp
+  ---
+  duration_ms: 6.897512
+  type: 'test'
+  ...
+# Subtest: independent fail-closed VERIFIED/in_app
+ok 7 - independent fail-closed VERIFIED/in_app
+  ---
+  duration_ms: 5.757908
+  type: 'test'
+  ...
+# Subtest: independent fail-closed constructor/in_app
+ok 8 - independent fail-closed constructor/in_app
+  ---
+  duration_ms: 5.639734
+  type: 'test'
+  ...
+# Subtest: independent fail-closed null/in_app
+ok 9 - independent fail-closed null/in_app
+  ---
+  duration_ms: 4.978867
+  type: 'test'
+  ...
+# Subtest: independent fail-closed UNKNOWN/in_app
+ok 10 - independent fail-closed UNKNOWN/in_app
+  ---
+  duration_ms: 7.142064
+  type: 'test'
+  ...
+# Subtest: independent empty delivery list remains honest
+ok 11 - independent empty delivery list remains honest
+  ---
+  duration_ms: 3.676273
+  type: 'test'
+  ...
+# Subtest: independent unavailability and recovery {"status":404}
+ok 12 - independent unavailability and recovery {"status":404}
+  ---
+  duration_ms: 12.056836
+  type: 'test'
+  ...
+# Subtest: independent unavailability and recovery {"status":429}
+ok 13 - independent unavailability and recovery {"status":429}
+  ---
+  duration_ms: 12.097967
+  type: 'test'
+  ...
+# Subtest: independent unavailability and recovery {"status":502}
+ok 14 - independent unavailability and recovery {"status":502}
+  ---
+  duration_ms: 8.336539
+  type: 'test'
+  ...
+# Subtest: independent unavailability and recovery {"status":200,"body":null}
+ok 15 - independent unavailability and recovery {"status":200,"body":null}
+  ---
+  duration_ms: 8.672015
+  type: 'test'
+  ...
+# Subtest: independent unavailability and recovery {"status":200,"body":{"deliveries":"[]"}}
+ok 16 - independent unavailability and recovery {"status":200,"body":{"deliveries":"[]"}}
+  ---
+  duration_ms: 9.450385
+  type: 'test'
+  ...
+# Subtest: independent unavailability and recovery {"status":200,"body":{"deliveries":{"length":0}}}
+ok 17 - independent unavailability and recovery {"status":200,"body":{"deliveries":{"length":0}}}
+  ---
+  duration_ms: 10.440307
+  type: 'test'
+  ...
+# Subtest: independent unavailability and recovery {"status":200,"rejectJson":true}
+ok 18 - independent unavailability and recovery {"status":200,"rejectJson":true}
+  ---
+  duration_ms: 10.508618
+  type: 'test'
+  ...
+# Subtest: independent delayed delivery denial 401
+ok 19 - independent delayed delivery denial 401
+  ---
+  duration_ms: 7.717394
+  type: 'test'
+  ...
+# Subtest: independent delayed delivery denial 403
+ok 20 - independent delayed delivery denial 403
+  ---
+  duration_ms: 5.95602
+  type: 'test'
+  ...
+# Subtest: independent stale delivery failure after close 404
+ok 21 - independent stale delivery failure after close 404
+  ---
+  duration_ms: 8.776448
+  type: 'test'
+  ...
+# Subtest: independent stale delivery failure after close 503
+ok 22 - independent stale delivery failure after close 503
+  ---
+  duration_ms: 5.63742
+  type: 'test'
+  ...
+# Subtest: independent stale delivery failure after close 401
+ok 23 - independent stale delivery failure after close 401
+  ---
+  duration_ms: 5.597331
+  type: 'test'
+  ...
+# Subtest: independent malformed member fails closed without false empty history
+ok 24 - independent malformed member fails closed without false empty history
+  ---
+  duration_ms: 3.61442
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 419.55902

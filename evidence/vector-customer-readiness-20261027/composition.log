@@ -1,0 +1,8 @@
+SEALED_RUNTIME_PRESENTATION_REPAIR=PASS
+RETIRED_PRESENTATION_PURGE=PASS
+{"status":"PASS","transform":"attendance-integrity-v5-action-evidence","inputSha256":"ec5fa3cd5cb2bc4d2e66694b6211ad3dc8c24ea279bd48b0bc0fa01260eb1200","outputSha256":"3740eb76938b6e58d56669fea5f4a6ff232878ca950e94213e506e7b822ccbdb"}
+VECTOR_EXACT_PAY_COMPONENTS=PASS
+VECTOR_INDEX_COMPOSITION=PASS
+VECTOR_RETIRED_ENTRYPOINT_PURGE=PASS
+VECTOR_LOCAL_RUNTIME=/workspace/scratch/cd4e2bcb0821/customer-readiness-integration/runtime
+Start with: WFM_DB=<isolated sqlite path> PORT=4100 node --require /workspace/scratch/cd4e2bcb0821/customer-readiness-integration/runtime/local-paths.cjs /workspace/scratch/cd4e2bcb0821/customer-readiness-integration/runtime/security-runtime/bootstrap.cjs

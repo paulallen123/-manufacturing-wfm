@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-27T01:40:18.374Z",
+  "updatedAt": "2026-10-27T19:08:22.057Z",
   "integrationOwner": "/root (existing Work integration owner, explicit user resume)",
   "visibility": "Visible agents and checked PRs only; external chats not exhaustively observable.",
   "leases": [
@@ -152,13 +152,52 @@
         "docs/execution/STATE.md",
         "inventory/capability-map.yaml"
       ]
+    },
+    {
+      "task": "Read-only Help runtime integration",
+      "owner": "/root/help_runtime",
+      "reviewer": "/root",
+      "branch": "test/vector-empty-organisation-regression-20261020",
+      "scope": [
+        "resilience/support-selfhelp-service.cjs",
+        "resilience/support-selfhelp-service.test.cjs",
+        "resilience/support-selfhelp-root.test.cjs",
+        "ux-overlay/vector-help.test.cjs",
+        "ux-overlay/vector-help-root.test.cjs",
+        "ux-overlay/vector-shell.js",
+        "security/runtime/bootstrap.cjs",
+        "scripts/compose-vector-local-runtime.mjs",
+        "Dockerfile",
+        "tests/vector-runtime-packaging.test.cjs"
+      ],
+      "status": "completed implementation; independently reviewed; source377f693; hosted pending",
+      "claimComment": 6450906725,
+      "expiresAt": "2026-10-27T20:00:00Z"
+    },
+    {
+      "task": "Reporting unresolved outcome UI",
+      "owner": "/root",
+      "reviewer": "/root/readiness_reconcile",
+      "scope": [
+        "reporting/ui/vector-reporting-ui.js",
+        "reporting/ui/vector-reporting-ui.test.cjs"
+      ],
+      "status": "completed with47/47 author and24/24 independent; source377f693; hosted pending",
+      "claimComment": 6450995417,
+      "expiresAt": "2026-10-27T20:00:00Z"
+    },
+    {
+      "task": "Full capability readiness reconciliation",
+      "owner": "/root/readiness_reconcile",
+      "status": "completed read-only;59 IDs preserved; no customer-proof upgrades"
     }
   ],
   "currentExecution": {
     "identity": "/root",
     "workspace": "/workspace/scratch/cd4e2bcb0821",
-    "sourceParent": "aa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6",
-    "status": "Three-domain source adoption complete; no customer release",
+    "sourceParent": "160529e88f5f34a69c402cf76b9ff9401c24f7f3",
+    "sourceCommit": "377f69314b2e5de5d30078f36cb15760916806db",
+    "status": "Reviewed source and195/195 integrated tests plus isolated composed HTTP passed; no customer release",
     "persistentRunner": false
   },
   "externalVerification": {

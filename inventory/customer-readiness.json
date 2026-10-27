@@ -1,0 +1,1038 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-27T19:09:53.669896+00:00",
+  "taskIdentity": "/root/readiness_reconcile",
+  "integrationOwner": "/root",
+  "mode": "read-only reconciliation; no source or external mutation",
+  "candidate": {
+    "repository": "paulallen123/-manufacturing-wfm",
+    "pr": 501,
+    "branch": "test/vector-empty-organisation-regression-20261020",
+    "sha": "377f69314b2e5de5d30078f36cb15760916806db",
+    "releaseBase": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2"
+  },
+  "scope": {
+    "acceptedCapabilities": 59,
+    "newIntakeRecords": 14,
+    "heldRecords": 6,
+    "researchRecords": 16,
+    "dimensionsOverlap": true,
+    "fullBacklogComplete": false,
+    "warning": "95 records must not be represented as95 distinct capabilities. No customer-readiness percentage is inferred."
+  },
+  "serving": {
+    "sha": "7fa8e4f370c5b3f8d19f862f07b67f11b4fa3ad8",
+    "deployment": "a312e44e-57f1-4672-99e5-d0089be97433",
+    "artifactDigest": "sha256:79df3e7b207ed8ef1e8b6a1af9ad67880c3af809b1751f54c1f76fd4e3fcf69b",
+    "url": "https://vector-hardening-proof-production.up.railway.app/",
+    "identitySource": "parent current Railway/browser reconciliation",
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "pilotReady": false,
+    "candidateHosted": false,
+    "candidateApply": "staged; latest normal apply cancelled; no active build"
+  },
+  "sourceManifestObservations": {
+    "capabilityMap": "59 rows retained; last update2026-10-27T01:40; many whole-capability DISCOVERED/current-proof-null fields lag newer bounded source evidence",
+    "ownership": "integrationOwner root; old leases completed; not proof that invisible work is idle",
+    "historicalOpenPRInventory": {
+      "observedAt": "2026-10-26T20:53:52.148Z",
+      "open": 286,
+      "drafts": 267,
+      "nonDrafts": 19,
+      "freshlyRecountedThisTask": false
+    }
+  },
+  "domains": [
+    {
+      "domain": "onboarding",
+      "acceptedIds": [
+        "F0.1",
+        "F0.2",
+        "F0.3",
+        "F3.1",
+        "F3.2",
+        "F3.3",
+        "F3.4",
+        "F3.5"
+      ],
+      "implementedEvidence": "Missing-source inference and PR461 readiness-label corrections integrated; cookie-clearing recovery repair is source-only after hosted baseline.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Fresh tenant/signing-event binding, questionnaire resume and authenticated configuration must be demonstrated in the same persisted customer environment.",
+        "Google/Apple provider configuration and signed proof principal activation are not evidenced in target."
+      ],
+      "nextEligibleAction": "Use current importer/customer-workspace ingress and reproduce a bounded persistence or source-identity failure; root owns this selection."
+    },
+    {
+      "domain": "workforce_operations",
+      "acceptedIds": [
+        "F1.1",
+        "F1.2",
+        "F1.3",
+        "F1.4",
+        "F1.5",
+        "F1.6",
+        "F1.7",
+        "F1.8",
+        "F1.9",
+        "F1.10",
+        "F1.11",
+        "F1.12",
+        "F2.2",
+        "F2.3",
+        "F7.1"
+      ],
+      "implementedEvidence": "Domain modules and source tests exist; PR494 payroll-factor correction integrated.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Canonical population identity-level reconciliation and current operating readback are not yet customer-proven.",
+        "Genuine customer policy/skill inputs and distinct-actor time review proof remain required."
+      ],
+      "nextEligibleAction": "Prove one authorized importer record survives reconciliation, refresh and restart with canonical entity identity; preserve source IDs."
+    },
+    {
+      "domain": "scheduling_production",
+      "acceptedIds": [
+        "F2.1",
+        "F4.1",
+        "F4.2",
+        "F4.3",
+        "F4.4"
+      ],
+      "implementedEvidence": "PR365 stored assignment authority correction integrated with focused source evidence.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Real workforce/production linkage and zero-hard-constraint schedule need hosted/customer evidence.",
+        "Absence, affected-order risk, authorized corrective action and independent result remain a joined journey gap."
+      ],
+      "nextEligibleAction": "Run existing scheduling/decision path against bound workforce and production inputs; retain scope-invalid assignment negatives."
+    },
+    {
+      "domain": "integrations",
+      "acceptedIds": [
+        "F3.6",
+        "F3.7",
+        "F3.8",
+        "F3.9"
+      ],
+      "implementedEvidence": "PR504 missing-ID guard adopted in generic batch helper; no production consumer found in reviewed source.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Helper adoption does not fix real importer ingress by itself.",
+        "Existing Staffology import previews and canonical-runtime bridge use their own identity/authority contracts.",
+        "Provider write/readback/reconciliation proof remains action-specific and incomplete."
+      ],
+      "nextEligibleAction": "Define real ingress scope contract before wiring validation; test absent ID, zero, literal sentinels, cross-scope separation and persistent duplicate replay without changing canonical provider IDs."
+    },
+    {
+      "domain": "finance_outcomes",
+      "acceptedIds": [
+        "F4.5",
+        "F4.6",
+        "F4.7",
+        "F4.8"
+      ],
+      "implementedEvidence": "Payroll money numerical guard adopted; outcome-proof modules present.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Forecast, avoided cost, realized operational savings and cash-confirmed value are not equivalent.",
+        "Current customer baseline, measurement window, attribution and no-double-counting closure absent from this reconciliation."
+      ],
+      "nextEligibleAction": "Connect an existing decision episode to observed result and reconciled value through existing ledger; label unobserved value forecast/pending."
+    },
+    {
+      "domain": "support_recovery_trust",
+      "acceptedIds": [
+        "F5.1",
+        "F5.2",
+        "F5.3",
+        "F5.4",
+        "F5.5",
+        "F5.6"
+      ],
+      "implementedEvidence": "PR445 helper now has authenticated read-only Help route/UI in377f693; integrated HTTP and role/tenant/revocation tests pass. No autonomous recovery or customer proof.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Self-support requires declared detect/diagnose/contain/recover classes; helper responses are not operational recovery.",
+        "Current exact-candidate dedicated security scan is not evidenced.",
+        "New Help surface requires current artifact and native hosted browser verification."
+      ],
+      "nextEligibleAction": "Prove the new Help route/UI in the admitted hosted candidate; preserve actionAuthorityfalse."
+    },
+    {
+      "domain": "training_voice_mobile",
+      "acceptedIds": [
+        "F2.4",
+        "F2.5",
+        "F2.6",
+        "F2.7",
+        "F2.8",
+        "F2.9"
+      ],
+      "implementedEvidence": "PR516 expired mastery correction integrated. Reporting backend160529 durably holds UNKNOWN outcomes;377f693 UI exposes unknown/blocked/unavailable history.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Reporting UNKNOWN and blocked states are invisible in current customer UI.",
+        "Training source correctness does not prove real assessment/provider media delivery.",
+        "Bot PR241 is absent from current candidate and lacks full HTTP/SQLite/image/browser proof; mobile PR242 has newer activity requiring owner recheck.",
+        "Current reporting status UI requires hosted browser verification; external dispatch remains disabled."
+      ],
+      "nextEligibleAction": "Verify current reporting outcome rendering under authorized roles in hosted artifact; do not enable external writes."
+    },
+    {
+      "domain": "frontier",
+      "acceptedIds": [
+        "F6.1",
+        "F6.2",
+        "F6.3",
+        "F6.4",
+        "F6.5",
+        "F6.6",
+        "F6.7",
+        "F6.8",
+        "F6.9",
+        "F6.10",
+        "F7.2"
+      ],
+      "implementedEvidence": "Existing prototype/source paths and research convergence records retained.",
+      "proof": {
+        "source": "partial bounded evidence; not full-domain completion",
+        "hosted": "baseline7fa8 exists; complete domain journey not established",
+        "provider": "not established for full domain",
+        "customer": "not established"
+      },
+      "remainingGaps": [
+        "Current customer proof is not established by source presence or historical PASS_ISOLATED labels.",
+        "16 research rows overlap accepted capabilities; no mass promotion or abandonment justified."
+      ],
+      "nextEligibleAction": "After dependent journey prerequisites, select one existing read-only planner/bridge and prove canonical source binding and decision-surface use; retain remaining queue."
+    }
+  ],
+  "recommendedBoundedTasks": [
+    {
+      "rank": 1,
+      "id": "REPORTING_UNKNOWN_VISIBILITY",
+      "capabilityIds": [
+        "F2.6",
+        "F5.4"
+      ],
+      "scope": [
+        "reporting/ui/vector-reporting-ui.js",
+        "reporting/ui/vector-reporting-ui.test.cjs"
+      ],
+      "sourceBlob": "fb6b846d65e5119533df90321d706c45cb94a3a5",
+      "finding": "renderDeliveries filters status===READY, so new backend UNKNOWN and BLOCKED_RECONCILIATION_REQUIRED receipts disappear into No scheduled deliveries yet.",
+      "action": "Render status-aware delivery history with explicit unresolved/reconciliation-required labels. Do not add retry, release or success controls.",
+      "acceptance": [
+        "UNKNOWN and blocked rows visible on desktop/tablet/mobile",
+        "Unknown status never displayed as successful",
+        "No destination/external receipt sensitive content shown",
+        "Server-filtered access and revoked-session clearing remain effective",
+        "No adapter enablement or external mutation added"
+      ],
+      "eligibility": "source-reproduced UI defect; root must serialize claim with ongoing reporting work"
+    },
+    {
+      "rank": 2,
+      "id": "READ_ONLY_SUPPORT_SURFACE",
+      "capabilityIds": [
+        "F5.1",
+        "F5.4"
+      ],
+      "scope": [
+        "existing support/help customer surface",
+        "authenticated bootstrap route",
+        "resilience/support-selfhelp.cjs consumer only"
+      ],
+      "donorPR": 445,
+      "donorHead": "6f23af7eaee11ccee0b40e8b8f305cd57930c98b",
+      "finding": "Reviewed helper is adopted but no production runtime consumer; discarded-stage Docker validation is not customer functionality.",
+      "action": "Expose bounded read-only answers in existing authenticated help surface; derive role from server authority and bind deployment truth.",
+      "acceptance": [
+        "No client role authority",
+        "Canonical roles explicitly mapped to helper roles",
+        "Unknown/injection-shaped query abstains",
+        "actionAuthority remains false",
+        "No hardcoded environment claim contradicts current environment",
+        "No secrets or production repair infrastructure added"
+      ],
+      "eligibility": "bounded seam candidate; inspect existing help ownership/routes before implementation"
+    }
+  ],
+  "checkedDonors": [
+    {
+      "pr": 445,
+      "head": "6f23af7eaee11ccee0b40e8b8f305cd57930c98b",
+      "assignees": [],
+      "disposition": "helper already adopted; runtime consumer absent"
+    },
+    {
+      "pr": 504,
+      "head": "e8fe808a01d073cc38681dcc11c48580ba6afc91",
+      "assignees": [],
+      "disposition": "helper already adopted; actual importer wiring requires identity contract, root-owned"
+    },
+    {
+      "pr": 516,
+      "head": "9da811e6dc6733500db7720ebeb99214bf2f6d97",
+      "assignees": [],
+      "disposition": "expiry correction already adopted; do not repeat"
+    },
+    {
+      "pr": 241,
+      "head": "00202a4801a4369a9803b3b7fed0fec44e44d208",
+      "assignees": [],
+      "disposition": "bot absent current candidate; broad donor without complete HTTP/image/browser proof, later bounded harvest only"
+    },
+    {
+      "pr": 242,
+      "head": "fb491e2f4271a4563d04c0c0d10b44a89e62598d",
+      "assignees": [],
+      "disposition": "recent mobile work; recheck ownership/comments before claim"
+    },
+    {
+      "pr": 232,
+      "head": "015d236d3cfdffc2bf352c7003298047fb602bd6",
+      "assignees": [],
+      "disposition": "stacked learning/voice donor; many current modules already present, avoid duplicate rebuild"
+    }
+  ],
+  "acceptedBacklogPreserved": [
+    {
+      "id": "F0.1",
+      "outcome": "One persistent workspace from verified signing",
+      "priority": "P4",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Separate accessible workspace from operational readiness; one durable idempotent tenant/run binding"
+    },
+    {
+      "id": "F0.2",
+      "outcome": "Organisation profile and secure access",
+      "priority": "P4",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Adopt exact reviewed bytes and rerun integrated regression; do not duplicate profile module"
+    },
+    {
+      "id": "F0.3",
+      "outcome": "One-time questionnaire, adaptive configuration and later updates",
+      "priority": "P4",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Implement autosave/resume/completion/version persistence in same workspace; renewals/daily use must not restart interview"
+    },
+    {
+      "id": "F1.1",
+      "outcome": "Exclusive writer and proof-worker activation",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Bind existing owner/worker and reconcile jobs before claim; no new competing executor"
+    },
+    {
+      "id": "F1.2",
+      "outcome": "Source, onboarding and operating population reconciliation",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Produce ID-level missing/extra/conflicting/unbound report; resolve only with authoritative bindings"
+    },
+    {
+      "id": "F1.3",
+      "outcome": "Customer time/absence/entitlement/payroll policies",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Inventory exact missing policy fields and approval sources; compile approved values"
+    },
+    {
+      "id": "F1.4",
+      "outcome": "Genuine role competency",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Separate roster coverage from learning/privileged/frontline completion; obtain genuine evidence"
+    },
+    {
+      "id": "F1.5",
+      "outcome": "CORE-01 rejection and non-zero applied correction",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Build independent two-scenario oracle and rebind existing signed-session/UI adapter"
+    },
+    {
+      "id": "F1.6",
+      "outcome": "Truthful readiness remediation labels",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Use roleLearningPopulationReady for population label; retain combined final gate"
+    },
+    {
+      "id": "F1.7",
+      "outcome": "Staffology protected-profile and downstream proof",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Diagnose exact profile validation failure without secrets or provider writes; satisfy approved inputs"
+    },
+    {
+      "id": "F1.8",
+      "outcome": "Complete operational Golden Journey",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Execute first genuinely incomplete eligible gate and retain exact receipts"
+    },
+    {
+      "id": "F1.9",
+      "outcome": "Role/mobile/accessibility proof",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Run task scenarios, not just page rendering; preserve role-first FORGE"
+    },
+    {
+      "id": "F1.10",
+      "outcome": "Fresh hosted security and tenant proof",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Run full required negative suite on final candidate"
+    },
+    {
+      "id": "F1.11",
+      "outcome": "Durability, recovery and rollback",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Prove persisted acknowledged effects and recovery on exact build"
+    },
+    {
+      "id": "F1.12",
+      "outcome": "Whole-product final sign-off and scale",
+      "priority": "P1",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Freeze tested exact artifact, execute final uninterrupted combined journey and observation"
+    },
+    {
+      "id": "F2.1",
+      "outcome": "Advanced manufacturing scheduling",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile existing scheduler and integrate only unique safe delta"
+    },
+    {
+      "id": "F2.2",
+      "outcome": "Universal manager action queue",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile current queue, preserve one-click owning-workflow actions"
+    },
+    {
+      "id": "F2.3",
+      "outcome": "Invisible/no-new-hardware attendance",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Close genuine source ingress and production-path persistence instead of duplicate engine"
+    },
+    {
+      "id": "F2.4",
+      "outcome": "Agency labour and Agency OS",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile existing labour/unknown-delivery/OS layers; implement only missing lifecycle seam"
+    },
+    {
+      "id": "F2.5",
+      "outcome": "Adaptive training/coaching/video/voice",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Wire existing Show/Guide/Practise/Test and quality-controlled delivery"
+    },
+    {
+      "id": "F2.6",
+      "outcome": "Governed enterprise reporting and exports",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Build typed interchange helper/tests, then owner wires existing UI/service"
+    },
+    {
+      "id": "F2.7",
+      "outcome": "Vecta voice/text authorised operations",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Complete requested actual registered actions while preserving confirmation and verification"
+    },
+    {
+      "id": "F2.8",
+      "outcome": "Native iOS/Android and secure connections",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile native branch, exercise device-level journey and supported release path"
+    },
+    {
+      "id": "F2.9",
+      "outcome": "Coherent FORGE desktop/mobile/tablet experience",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Integrate into approved role-first routes; do not replace UI"
+    },
+    {
+      "id": "F3.1",
+      "outcome": "Adaptive implementation and Launch Autopilot",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile all stacked deltas into existing owner path; ask unresolved exceptions only"
+    },
+    {
+      "id": "F3.2",
+      "outcome": "Implementation Digital Twin and impact revalidation",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reuse deterministic revision barrier; connect later customer updates"
+    },
+    {
+      "id": "F3.3",
+      "outcome": "Genuine provisioning/key binding/crash recovery",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Prove actual effect not precreated fixture; retain F0 access/readiness distinction"
+    },
+    {
+      "id": "F3.4",
+      "outcome": "Source-data handoff into implementation",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Use existing import path and independent population diagnoser"
+    },
+    {
+      "id": "F3.5",
+      "outcome": "Passkey/passwordless account lifecycle",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Identify already-incorporated bytes before adopting remaining passkey/startup deltas"
+    },
+    {
+      "id": "F3.6",
+      "outcome": "Integration fabric setup and lifecycle",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reuse catalog/registry and shared authority primitives; close exact durable runtime seams"
+    },
+    {
+      "id": "F3.7",
+      "outcome": "Staffology end-to-end operational path",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Repair approved profile/configuration seam then existing provider path"
+    },
+    {
+      "id": "F3.8",
+      "outcome": "Broader provider-specific certification",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Use each exact catalog next-evidence step; prioritise required customer systems"
+    },
+    {
+      "id": "F3.9",
+      "outcome": "Global/multi-site/effective-date implementation",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile effective-dated global facts and site scope; no inferred legal rules"
+    },
+    {
+      "id": "F4.1",
+      "outcome": "Factory Graph/capability model",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile graph models into existing deterministic Decision Episode"
+    },
+    {
+      "id": "F4.2",
+      "outcome": "Engineering document/drawing/BOM/routing intelligence",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Map actual current document pipeline and complete smallest missing grounded stage"
+    },
+    {
+      "id": "F4.3",
+      "outcome": "Maintenance operations",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Complete current asset/work-order/inspection/parts/eligibility workflow before new screens"
+    },
+    {
+      "id": "F4.4",
+      "outcome": "Decision Twin, Capacity Rescue, late-material recovery",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Wire existing consequence engine to authorised action and independent result"
+    },
+    {
+      "id": "F4.5",
+      "outcome": "Savings and Outcome Ledger",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Close predicted\u2192observed\u2192reconciled ledger with no double counting"
+    },
+    {
+      "id": "F4.6",
+      "outcome": "Cash-to-Capacity",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Complete canonical decision surface and exact evidence\u2192decision\u2192outcome route"
+    },
+    {
+      "id": "F4.7",
+      "outcome": "Energy-aware workforce/production planning",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Wire existing engine to real permitted inputs and FORGE decision task"
+    },
+    {
+      "id": "F4.8",
+      "outcome": "Engineering memory/outcome learning",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Consume verified result history; prove calibration and safe change process"
+    },
+    {
+      "id": "F5.1",
+      "outcome": "Zero-engineer support",
+      "priority": "P8",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Execute current supported detect\u2192diagnose\u2192repair/contain\u2192verify\u2192recover"
+    },
+    {
+      "id": "F5.2",
+      "outcome": "Incident memory and recurrence prevention",
+      "priority": "P8",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Connect reusable prevention only after certified resolution receipts"
+    },
+    {
+      "id": "F5.3",
+      "outcome": "Blocker continuity and result consumption",
+      "priority": "P8",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Consume terminal work, advance independent package, resume existing job without duplicate"
+    },
+    {
+      "id": "F5.4",
+      "outcome": "Trust/evidence/authority controls",
+      "priority": "P8",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reconcile exact artifact reconstruction, proof-carrying state and stale/duplicate runner gates"
+    },
+    {
+      "id": "F5.5",
+      "outcome": "Enforced release protection",
+      "priority": "P8",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Read current protection/rulesets; close or supersede each incident with evidence"
+    },
+    {
+      "id": "F5.6",
+      "outcome": "Post-implementation customer-proof enforcement",
+      "priority": "P8",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Keep complete()/AWAITING_EVIDENCE distinct from proof closure; invalidate affected evidence"
+    },
+    {
+      "id": "F6.1",
+      "outcome": "Portable Skills Trust",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reuse existing eligibility evidence, implement smallest reviewed trust boundary"
+    },
+    {
+      "id": "F6.2",
+      "outcome": "Quality-to-workforce feedback",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Falsify worker-blame assumptions and build advisory source-bound feedback"
+    },
+    {
+      "id": "F6.3",
+      "outcome": "Hybrid human/robot capacity",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reuse read-only resource model to compare feasible capacity options"
+    },
+    {
+      "id": "F6.4",
+      "outcome": "Portable autonomy evidence",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Export existing verifiable evidence without inventing new authority system"
+    },
+    {
+      "id": "F6.5",
+      "outcome": "Privacy-preserving manufacturing provenance",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Retest exact prototype then compose canonical capability attestation"
+    },
+    {
+      "id": "F6.6",
+      "outcome": "Industrial semantic read-only bridge",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Reuse current observation\u2192workforce-context bridge and prove exact inputs"
+    },
+    {
+      "id": "F6.7",
+      "outcome": "Water-constrained planning",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Retest and compose existing planner into approved decision surface"
+    },
+    {
+      "id": "F6.8",
+      "outcome": "Sensitive-zone planning",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Retest existing controlled-environment planner; source integration before UI"
+    },
+    {
+      "id": "F6.9",
+      "outcome": "Degraded-mode and loss-prevention workforce recovery",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Compose existing two planners; keep distinct diagnosis and authority"
+    },
+    {
+      "id": "F6.10",
+      "outcome": "SkillChain resilience",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Retest existing value-aware skill planner against independent baseline"
+    },
+    {
+      "id": "F7.1",
+      "outcome": "Authoritative operational-period ingestion/rollover",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Replace side-table/client-tenant/date implementation through real period owner"
+    },
+    {
+      "id": "F7.2",
+      "outcome": "No-loss backlog reconciliation and exact claims",
+      "priority": "P9",
+      "ledgerState": "DISCOVERED",
+      "currentProofReconciled": false,
+      "nextTask": "Map each record to retained unique delta or proven successor; no mass merge/close"
+    }
+  ],
+  "intakeAndHeldPreserved": [
+    {
+      "id": "INTAKE-01",
+      "title": "Typed report V3",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-02",
+      "title": "Reporting UI final cumulative patch",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-03",
+      "title": "Training stale-session correction",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-04",
+      "title": "Population assembler and adapter V1",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-05",
+      "title": "Empty-cost engine and compatible UI",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-06",
+      "title": "Capacity wrapper store",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-07",
+      "title": "Water numeric and overflow successor",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-08",
+      "title": "Scheduling task-input rejection",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-09",
+      "title": "Retirement guard and signature reconciliation",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-10",
+      "title": "PR340 delivery-service correction",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-11",
+      "title": "Adaptive intelligence finite-score and outcome-evidence replay",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-12",
+      "title": "Energy donor-base source union and retained execution evidence",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-13",
+      "title": "Time Review oracle",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "INTAKE-14",
+      "title": "Attendance and clockout HTTP proof",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "H01",
+      "title": "Staffology future-effective leaver deletion",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "H02",
+      "title": "SAP equal-time conflict reconciliation",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "H03",
+      "title": "Oracle warning-status acknowledgement overlay",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "H04",
+      "title": "PR364 normalized-email proof identity",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "H05",
+      "title": "PR365 stored assignment validity",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "H06",
+      "title": "Agency current-base two-file package",
+      "currentProofReconciled": false
+    }
+  ],
+  "researchPreserved": [
+    {
+      "id": "RESEARCH-energy-intelligence",
+      "outcome": "Use tariff, consumption, production and workforce evidence to identify safe lower-cost energy/production options.",
+      "canonicalMapping": "energy-intelligence",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-manufacturing-event-disruption-cost",
+      "outcome": "Translate manufacturing events and delivery disruption into operational and financial impact for better intervention decisions.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-agency-labour",
+      "outcome": "Automate compliant agency labour sourcing, assurance, response, work-start and outcome reconciliation.",
+      "canonicalMapping": "agency-labour",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-factory-capability-graph",
+      "outcome": "Model what a factory, line, asset and workforce can actually do using capability/ISA-88/AAS evidence rather than static labels.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-cash-to-capacity",
+      "outcome": "Connect workforce and production choices to cash timing and realised economic outcomes.",
+      "canonicalMapping": "cash-to-capacity",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-skill-chain-resilience",
+      "outcome": "Identify production exposure to scarce skills/certifications and pre-emptively build or move capability before a constraint stops output.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-degraded-mode-readiness",
+      "outcome": "Keep manufacturing safely operable when automation, integrations or infrastructure degrade.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-loss-prevention-workforce",
+      "outcome": "Adjust workforce decisions using evidence of scrap, loss, quality and yield risk rather than labour cost alone.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-privacy-preserving-capability-provenance",
+      "outcome": "Prove worker/factory capability without unnecessarily exposing sensitive underlying evidence.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-controlled-environment-flow",
+      "outcome": "Ensure staffing/intervention decisions respect controlled-zone access, contamination, safety and transition constraints.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-water-resilience-orchestration",
+      "outcome": "Coordinate people and production when water availability, quality or usage constraints threaten manufacturing output.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-country-policy-packs",
+      "outcome": "One global VECTOR deployment can apply effective-dated local working-time, payroll, absence, compliance, privacy and workforce rules per employee/site/country.",
+      "canonicalMapping": "country-policy-packs",
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-skills-demand-intelligence",
+      "outcome": "Predict which skills will constrain future production and target training before shortages become operational failures.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-asset-intelligence-projection",
+      "outcome": "Expose manufacturing asset intelligence to workforce decisions without creating a second source of truth.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-factory-playback",
+      "outcome": "Replay factory state and decisions to understand incidents, test alternatives and improve future decisions.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    },
+    {
+      "id": "RESEARCH-frontier-t9-earned-autonomy",
+      "outcome": "Earn greater autonomy only from evidence, independent verification and bounded recovery while preserving zero-human ambitions.",
+      "canonicalMapping": null,
+      "currentProofReconciled": false
+    }
+  ],
+  "limitations": [
+    "No fresh recount of every open PR or full diff review in this bounded task.",
+    "Source presence and local tests are not hosted/provider/customer proof.",
+    "No customer data, provider write, invitation, deployment or release performed.",
+    "Dedicated current-candidate security scan remains unproven; code review is distinct.",
+    "Recent root work supersedes this snapshot; reconcile remote SHA and active claims before mutation."
+  ],
+  "currentOpenPRInventory": {
+    "open": 288,
+    "drafts": 269,
+    "nonDrafts": 19,
+    "source": "inventory/open-pr-snapshot-20261027.json"
+  },
+  "latestBoundedEvidence": {
+    "sourceSha": "377f69314b2e5de5d30078f36cb15760916806db",
+    "manifest": "evidence/vector-customer-readiness-20261027/manifest.json",
+    "implemented": [
+      "authenticated read-only Help connected to existing helper and UI",
+      "UNKNOWN/blocked/unavailable reporting outcomes visible"
+    ],
+    "integrationTests": {
+      "passed": 195,
+      "failed": 0,
+      "skipped": 0
+    },
+    "hosted": false,
+    "customerProven": false
+  }
+}
