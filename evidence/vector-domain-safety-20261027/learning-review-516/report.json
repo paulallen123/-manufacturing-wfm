@@ -1,0 +1,67 @@
+{
+  "candidate": "9fb494e040bf2c2641571a1bc8718623012caa2d",
+  "donor": "9da811e6dc6733500db7720ebeb99214bf2f6d97",
+  "verdict": "ADOPT exact two-file source/test delta; no blocking finding in bounded expiry/readiness scope",
+  "adopt": [
+    "learning/runtime/adaptive-learning-engine.cjs",
+    "learning/runtime/adaptive-learning-engine.test.cjs"
+  ],
+  "exclude": "artifact/vector-proof-freeze.trigger; no need to adopt donor CI marker",
+  "currentBlobs": {
+    "engine": "1f55403d15397e1f057cdc86a5d943f5eaf12a10",
+    "test": "89d2a54ab3cb945ba53f25a235b47d0e02737213"
+  },
+  "donorBlobs": {
+    "engine": "7d3dfecc5be19e418bb2e8611ea65218936b6621",
+    "test": "a503e03d5a800d4f41de91f29b3f7918cd27f547"
+  },
+  "node": "22.23.2",
+  "red": {
+    "pass": 19,
+    "fail": 1,
+    "skip": 0,
+    "suite": "adaptive + training twin; expiry regression fails"
+  },
+  "initialFullSetup": {
+    "pass": 111,
+    "fail": 2,
+    "skip": 0,
+    "reason": "missing operations/runtime/decision-episode.cjs in isolated reconstruction, corrected by exact current blob a8a118ed8fc90a80272077213e1e6ad3956ac4c4; no source/test weakening"
+  },
+  "final": {
+    "pass": 124,
+    "fail": 0,
+    "skip": 0,
+    "includes": "115 full committed learning tests + 9 prior-review heldout scenarios replayed on supported Node22"
+  },
+  "heldoutProvenance": {
+    "review": 5659959556,
+    "author": "Prior independent reviewer; replayed here, not newly authored by this agent",
+    "roles": [
+      "manager",
+      "company-admin",
+      "payroll"
+    ],
+    "firstReaders": [
+      "summary",
+      "plan",
+      "twin"
+    ],
+    "checks": [
+      "expired readiness denial",
+      "clock rollback retains REFRESH_DUE",
+      "close/reopen persistence",
+      "unchanged original mastery timestamp/evidence on reads",
+      "other tenant unchanged",
+      "failed evidence cannot renew",
+      "fresh observed success restores"
+    ]
+  },
+  "currentConsumers": [
+    "security/runtime/bootstrap.cjs:409 supplies learningEngine.summaryForTenant to implementation engine",
+    "implementation/runtime/one-day-enterprise-engine-core.cjs:1570 checks privilegedReady and :1578 checks fullyCertified with trainingPopulationReady",
+    "learning/runtime/training-twin.cjs invokes same adaptive engine"
+  ],
+  "review": "Expiry <=now marks REFRESH_DUE; freshIndependentSuccess stricttrue can renew only through existing evidence logic. Original mastery timestamp/evidence maintained; no new qualification or permissions. Due ordering uses deterministic time then competency key.",
+  "proofScope": "Synthetic local SQLite/runtime only; no exact image, hosted role journey, actual training/competency certification, provider or customer proof. Existing GitHub reviews COMMENTED not formal APPROVED."
+}

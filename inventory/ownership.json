@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-26T20:56:52.931Z",
+  "updatedAt": "2026-10-27T01:22:01.473Z",
   "integrationOwner": "/root (existing Work integration owner, explicit user resume)",
   "visibility": "Visible agents and checked PRs only; external chats not exhaustively observable.",
   "leases": [
@@ -117,6 +117,27 @@
       "status": "completed read-only",
       "scope": "59 accepted rows plus overlapping intake14/held6/research16 and286 open PR metadata",
       "expiresAt": "2026-10-26T20:56:52.931Z"
+    },
+    {
+      "task": "20261027 reporting/training/support/connector bounded convergence",
+      "owner": "/root",
+      "reviewers": [
+        "/root/build_route_review",
+        "/root/scheduling_inventory"
+      ],
+      "author": "/root/backlog_reconcile",
+      "branch": "test/vector-empty-organisation-regression-20261020",
+      "status": "completed source/tests/reviews; remote checkpoint in containing commit; no persistent executor",
+      "scope": [
+        "resilience/support-selfhelp.cjs",
+        "resilience/support-selfhelp.test.cjs",
+        "reporting/runtime/vector-reporting-service.cjs",
+        "reporting/runtime/vector-reporting-service.test.cjs",
+        "learning/runtime/adaptive-learning-engine.cjs",
+        "learning/runtime/adaptive-learning-engine.test.cjs",
+        "integration-fabric/runtime/batch-reconciliation.mjs",
+        "integration-fabric/runtime/batch-reconciliation.test.mjs"
+      ]
     }
   ],
   "currentExecution": {

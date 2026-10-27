@@ -1,3 +1,15 @@
+# Domain safety integration checkpoint — 2026-10-27T01:22:01.473Z
+
+Existing owner /root, same PR501 and branch test/vector-empty-organisation-regression-20261020. Exact parent 9fb494e040bf2c2641571a1bc8718623012caa2d; successor is containing commit, with eight source blobs in evidence/vector-domain-safety-20261027/manifest.json. Canonical release base remains48dce8f697825c8cd5f99b3e5aeea3953647f8c2. No separate product/controller/release lane.
+
+Reporting correction: explicit payroll membership, immutable primitive actor snapshots, frozen catalog policy. Reviewer caught pre-await Proxy then trap; repaired and same heldouts pass34/34. Author final29/29 versus baseline19/29; original18 preserved. Original historical heldout blob404 recorded. Training516 expiry correction124/124, actual readiness consumer traced. Support4457/7 independent; connector50428/28, both source-helper only with runtime wiring gaps retained. Combined exact eight source/test files69/69 Node22, zero skips. Counts overlap. This is source integration, not full build/image/hosted/provider/customer proof. Prior9fb Codex review comment6427174220 no major issues; successor needs its own formal gates. GitHub Actions query at9fb returned0 runs.
+
+Railway readback: approved patch391d2e38-aa9f-4ad9-abb5-adda7d5dea94 remains STAGED16; no mutation this turn. Previous tool cancellation remains blocker, not missing user approval. Patch pins olderb4a2582c59ccf1c2618274b16e569870fd9b3517, whose b39 isolated receipt-image evidence cannot transfer to new source. Customer latest known successful057e19a2 at90ad90fcf60adaca9abacdd4ad14bf392f95e585, latestattemptd911failed; authenticated wizard/Google/Apple still unverified. Rollback candidate remains previous known artifact, subject to compatible DB/config verification; no new rollout.
+
+Tasks /root/backlog_reconcile, /root/build_route_review, /root/scheduling_inventory complete. No persistent runner/deployment active. Next executable action: reconcile successor head/reviews/builds; complete exact candidate build and approved isolated hosted bootstrap proof when access permits. Independently continue reporting delivery/readback and persisted importer scope/replay integration assessment. Full backlog remains in inventory/domain-queue-20261026.json; no whole capability promoted by these bounded corrections. Resume from this checkpoint without replaying mutations.
+
+## Prior checkpoint
+
 # Broader product integration checkpoint — 2026-10-26T20:56:52.931Z
 
 Existing integration owner /root, PR501/canonical base unchanged. Parentaa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6; containing successor adopts exactly six source/test files from reviewed PR461/365/494, preserving all previous work. No new product/controller/release lane.
