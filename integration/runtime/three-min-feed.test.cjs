@@ -135,3 +135,28 @@ test('authenticated validation failures are durably acknowledged without retaini
  assert.equal((await f.status()).body.receipts.length,10);
  assert.equal(f.db.prepare('SELECT count(*) n FROM integration_canonical_people').get().n,0);
 });
+
+test('credential revocation or rotation while reading a body cannot persist accepted or rejected intake',async t=>{
+ const {createThreeMinFeed}=require('./three-min-feed.cjs');
+ for(const change of ['revoke','rotate'])for(const malformed of [false,true]){
+  const db=new DatabaseSync(':memory:');
+  try{
+   db.exec('CREATE TABLE integration_events(tenant TEXT,connection_id TEXT,event TEXT,detail_json TEXT,created_at TEXT)');
+   const env={WFM_3MIN_FEEDS_JSON:JSON.stringify([binding]),WFM_3MIN_ALPHA_TOKEN:TOKEN};
+   const feed=createThreeMinFeed({db,env}),id=randomUUID();
+   const raw=malformed?'{bad':JSON.stringify(webhook(payload(),id));
+   const req={url:PREFIX+'/feeds/3min/'+binding.id,method:'POST',headers:{'content-type':'application/json','x-vector-feed-token':TOKEN,'x-3minapi-record-id':id},async *[Symbol.asyncIterator](){
+    yield raw.slice(0,1);
+    if(change==='revoke')delete env.WFM_3MIN_ALPHA_TOKEN;
+    else env.WFM_3MIN_ALPHA_TOKEN='replacement-synthetic-secret-'.repeat(3);
+    yield raw.slice(1);
+   }};
+   const res={setHeader(){},end(value){this.body=JSON.parse(value);}};
+   await feed.handleRequest(req,res);
+   assert.equal(res.statusCode,change==='revoke'?503:401);
+   assert.equal(db.prepare('SELECT count(*) n FROM integration_feed_inbox').get().n,0);
+   assert.equal(db.prepare('SELECT count(*) n FROM integration_feed_deliveries').get().n,0);
+   assert.equal(db.prepare('SELECT count(*) n FROM integration_events').get().n,0);
+  }finally{db.close();}
+ }
+});

@@ -60,7 +60,15 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
  function statusForTenant(tenant){return {transport:'3min-api',schemaVersion:'vector-feed-v1',sourceAuthenticated:false,executionAuthority:false,
   bindings:[...bindings.values()].filter(b=>b.tenant===tenant).map(b=>({id:b.id,site:b.site,source:b.source,domain:b.domain,environment:b.environment,endpointSlug:b.endpointSlug,configured:validToken(env[b.secretEnv])})),
   receipts:recent.all(tenant).map(r=>({receiptId:r.id,bindingId:r.binding_id,site:r.site,source:r.source,domain:r.domain,environment:r.environment,eventId:r.event_id,recordCount:r.record_count,checksum:r.payload_sha256,occurredAt:r.occurred_at,receivedAt:r.received_at,status:r.status,validationError:r.validation_error}))};}
- function persist(binding,recordId,body,raw,res,validationError=null){
+ function requireCurrentToken(binding,providedToken){
+  const currentToken=env[binding.secretEnv];
+  if(!validToken(currentToken))throw failure(503,'FEED_NOT_CONFIGURED');
+  if(!sameSecret(providedToken,currentToken))throw failure(401,'FEED_AUTH_REQUIRED');
+ }
+ function persist(binding,recordId,body,raw,res,providedToken,validationError=null){
+  // Body reads yield control. Revoked or superseded transport credentials cannot
+  // create receipts, reserve replay aliases or retain validation-rejection data.
+  requireCurrentToken(binding,providedToken);
   const checksum=digest(raw); const id=binding.id;
    db.exec('BEGIN IMMEDIATE');
    try{
@@ -84,7 +92,8 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
   if(req.method!=='POST')return json(res,405,{code:'METHOD_NOT_ALLOWED'});
   const id=route.slice(PREFIX.length+1); const binding=bindings.get(id);
   if(!binding||!validToken(env[binding.secretEnv]))return json(res,503,{code:'FEED_NOT_CONFIGURED'});
-  if(!sameSecret(req.headers['x-vector-feed-token'],env[binding.secretEnv]))return json(res,401,{code:'FEED_AUTH_REQUIRED'});
+  const providedToken=req.headers['x-vector-feed-token'];
+  if(!sameSecret(providedToken,env[binding.secretEnv]))return json(res,401,{code:'FEED_AUTH_REQUIRED'});
   if(!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type']||'')||req.headers['content-encoding'])return json(res,415,{code:'JSON_REQUIRED'});
   const recordId=req.headers['x-3minapi-record-id'];
   if(typeof recordId!=='string'||!UUID.test(recordId))return json(res,400,{code:'INVALID_DELIVERY_ID'});
@@ -92,6 +101,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
   try{
    const chunks=[];let size=0;
    for await(const chunk of req){const b=Buffer.from(chunk);size+=b.length;if(size>MAX_BYTES)throw failure(413,'FEED_TOO_LARGE');chunks.push(b);}
+   requireCurrentToken(binding,providedToken);
    raw=Buffer.concat(chunks);
    let notification;try{notification=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(raw));}catch{throw failure(400,'INVALID_JSON');}
    if(!notification||Array.isArray(notification)||typeof notification!=='object'||!safeData(notification)||
@@ -110,12 +120,12 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
     !Array.isArray(body.records)||body.records.length<1||body.records.length>500||body.records.some(r=>!r||typeof r!=='object'||Array.isArray(r)))throw failure(400,'INVALID_FEED_RECORDS');
    // Wrapper IDs and processing timestamps vary between separate deliveries of
    // one source event. Dedupe accepted events on the serialized original payload.
-   return persist(binding,recordId,body,Buffer.from(JSON.stringify(body)),res);
+   return persist(binding,recordId,body,Buffer.from(JSON.stringify(body)),res,providedToken);
   }catch(error){
    if(raw && ['INVALID_JSON','INVALID_WEBHOOK','UNSUPPORTED_WEBHOOK_RESULT','INVALID_ENVELOPE','INVALID_FEED_RECORDS'].includes(error.code)) {
     // Valid transport credentials bind the rejection to this configured scope.
     // Retain metadata/digest only, never invalid or unbounded source payloads.
-    try{return persist(binding,recordId,{eventId:'rejected.'+recordId,records:[],occurredAt:new Date(now()).toISOString()},raw,res,error.code);}catch(storageError){error=storageError;}
+    try{return persist(binding,recordId,{eventId:'rejected.'+recordId,records:[],occurredAt:new Date(now()).toISOString()},raw,res,providedToken,error.code);}catch(storageError){error=storageError;}
    }
    return json(res,error.status||503,{code:error.code&&error.status?error.code:'FEED_STORAGE_UNAVAILABLE'});
   }
