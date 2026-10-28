@@ -1,0 +1,32 @@
+✔ composed 3Min intake loads through security middleware and retains scoped receipts across restart (3560.649134ms)
+✔ runtime packaging follows inherited stages without accepting sibling fixtures (1.4069ms)
+✔ the final Docker stage includes every relative bootstrap dependency (1.281501ms)
+✔ local proof assembly includes the same required bootstrap dependencies (1.211286ms)
+✔ local proof assembly includes absolute bootstrap runtime dependencies and training closure (171.138985ms)
+✔ native helper packaging refuses missing manifest entry: public/engine.js (1.602584ms)
+✔ native helper packaging refuses missing archive member: public/engine.js (0.437489ms)
+✔ native helper packaging refuses changed archive member bytes: public/engine.js (0.742548ms)
+✔ native helper packaging refuses missing manifest entry: public/operations-engine.js (0.385041ms)
+✔ native helper packaging refuses missing archive member: public/operations-engine.js (1.934234ms)
+✔ native helper packaging refuses changed archive member bytes: public/operations-engine.js (0.790311ms)
+✔ native helper packaging refuses missing export: public/engine.js#allowedPeople (0.593835ms)
+✔ native helper packaging refuses missing export: public/engine.js#descendants (0.370388ms)
+✔ native helper packaging refuses missing export: public/operations-engine.js#approvedSite (0.371259ms)
+✔ native helper packaging refuses incorrect composer archive pin (0.947547ms)
+✔ native helper packaging refuses incorrect composer extraction destination (0.326061ms)
+✔ native helper packaging refuses incorrect Docker archive source (0.821999ms)
+✔ native helper packaging refuses incorrect Docker extraction destination (0.619063ms)
+✔ native helper packaging refuses an unknown public dependency (0.277788ms)
+✔ local proof assembly includes scheduling runtime dependency closure (0.46471ms)
+✔ retired presentation serves 410 for direct and encoded paths, and never intercepts the real API (65.786351ms)
+✔ legacy local-data writes are redirected outside immutable app root (0.511701ms)
+✔ integration fabric runtime retains its source-relative loader layout (0.746715ms)
+✔ packaged lifecycle router preserves the trusted Autopilot execution adapter (0.240843ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3662.661008

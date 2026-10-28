@@ -1,0 +1,1078 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure
+ok 1 - source packaging names policy in actual app, test tree and composition; installed runtime proves exact closure
+  ---
+  duration_ms: 4.168724
+  type: 'test'
+  ...
+# Subtest: cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy
+ok 2 - cold runtime registry load requires its sibling policy and cannot resolve a wrong-directory copy
+  ---
+  duration_ms: 191.310631
+  type: 'test'
+  ...
+# Subtest: policy has exact internal methods and no activation method
+ok 3 - policy has exact internal methods and no activation method
+  ---
+  duration_ms: 0.948341
+  type: 'test'
+  ...
+# Subtest: registered workspace without mode fails closed, while genuinely unmanaged target grants nothing
+ok 4 - registered workspace without mode fails closed, while genuinely unmanaged target grants nothing
+  ---
+  duration_ms: 10.285659
+  type: 'test'
+  ...
+# Subtest: source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views
+ok 5 - source-produced initial receipt records SETUP_ONLY and fresh frozen canonical views
+  ---
+  duration_ms: 4.703481
+  type: 'test'
+  ...
+# Subtest: SETUP_VIEW is a phase decision only
+ok 6 - SETUP_VIEW is a phase decision only
+  ---
+  duration_ms: 4.314143
+  type: 'test'
+  ...
+# Subtest: SETUP_PROFILE is a phase decision only
+ok 7 - SETUP_PROFILE is a phase decision only
+  ---
+  duration_ms: 4.299372
+  type: 'test'
+  ...
+# Subtest: SETUP_QUESTIONNAIRE is a phase decision only
+ok 8 - SETUP_QUESTIONNAIRE is a phase decision only
+  ---
+  duration_ms: 3.924205
+  type: 'test'
+  ...
+# Subtest: SETUP_LOCAL_CONFIGURATION is a phase decision only
+ok 9 - SETUP_LOCAL_CONFIGURATION is a phase decision only
+  ---
+  duration_ms: 3.949833
+  type: 'test'
+  ...
+# Subtest: INITIAL_CREDENTIAL is a phase decision only
+ok 10 - INITIAL_CREDENTIAL is a phase decision only
+  ---
+  duration_ms: 3.676661
+  type: 'test'
+  ...
+# Subtest: CURRENT_INVITATION_DELIVERY is a phase decision only
+ok 11 - CURRENT_INVITATION_DELIVERY is a phase decision only
+  ---
+  duration_ms: 3.222636
+  type: 'test'
+  ...
+# Subtest: SECURITY_OBSERVATION is a phase decision only
+ok 12 - SECURITY_OBSERVATION is a phase decision only
+  ---
+  duration_ms: 2.604322
+  type: 'test'
+  ...
+# Subtest: OPERATIONAL_READ cannot pass setup phase
+ok 13 - OPERATIONAL_READ cannot pass setup phase
+  ---
+  duration_ms: 2.508888
+  type: 'test'
+  ...
+# Subtest: REPORT_DELIVERY cannot pass setup phase
+ok 14 - REPORT_DELIVERY cannot pass setup phase
+  ---
+  duration_ms: 2.591953
+  type: 'test'
+  ...
+# Subtest: REGISTER_COMPLETION cannot pass setup phase
+ok 15 - REGISTER_COMPLETION cannot pass setup phase
+  ---
+  duration_ms: 2.35824
+  type: 'test'
+  ...
+# Subtest: setup_view cannot pass setup phase
+ok 16 - setup_view cannot pass setup phase
+  ---
+  duration_ms: 2.262596
+  type: 'test'
+  ...
+# Subtest:  SETUP_VIEW cannot pass setup phase
+ok 17 -  SETUP_VIEW cannot pass setup phase
+  ---
+  duration_ms: 2.548177
+  type: 'test'
+  ...
+# Subtest: SETUP_VIEW/anything cannot pass setup phase
+ok 18 - SETUP_VIEW/anything cannot pass setup phase
+  ---
+  duration_ms: 2.361025
+  type: 'test'
+  ...
+# Subtest: UNKNOWN cannot pass setup phase
+ok 19 - UNKNOWN cannot pass setup phase
+  ---
+  duration_ms: 8.927473
+  type: 'test'
+  ...
+# Subtest: registered order before workspace has distinct pending classification and restricted purposes
+ok 20 - registered order before workspace has distinct pending classification and restricted purposes
+  ---
+  duration_ms: 4.765625
+  type: 'test'
+  ...
+# Subtest: caller mode, unknown writer fields and partial order provenance cannot choose or alter authority
+ok 21 - caller mode, unknown writer fields and partial order provenance cannot choose or alter authority
+  ---
+  duration_ms: 4.276487
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state refuses UPDATE
+ok 22 - customer_workspace_runtime_state refuses UPDATE
+  ---
+  duration_ms: 3.69584
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state refuses DELETE
+ok 23 - customer_workspace_runtime_state refuses DELETE
+  ---
+  duration_ms: 3.559253
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state_events refuses UPDATE
+ok 24 - customer_workspace_runtime_state_events refuses UPDATE
+  ---
+  duration_ms: 3.367404
+  type: 'test'
+  ...
+# Subtest: customer_workspace_runtime_state_events refuses DELETE
+ok 25 - customer_workspace_runtime_state_events refuses DELETE
+  ---
+  duration_ms: 3.018878
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-run
+ok 26 - current read refuses missing-run
+  ---
+  duration_ms: 4.002794
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-tenant
+ok 27 - current read refuses missing-tenant
+  ---
+  duration_ms: 3.867819
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-run-tenant
+ok 28 - current read refuses wrong-run-tenant
+  ---
+  duration_ms: 3.097216
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-run-contract
+ok 29 - current read refuses wrong-run-contract
+  ---
+  duration_ms: 3.248906
+  type: 'test'
+  ...
+# Subtest: current read refuses orphan-mode
+ok 30 - current read refuses orphan-mode
+  ---
+  duration_ms: 3.758395
+  type: 'test'
+  ...
+# Subtest: current read refuses unknown-version
+ok 31 - current read refuses unknown-version
+  ---
+  duration_ms: 2.753297
+  type: 'test'
+  ...
+# Subtest: current read refuses unknown-mode
+ok 32 - current read refuses unknown-mode
+  ---
+  duration_ms: 3.371951
+  type: 'test'
+  ...
+# Subtest: current read refuses wrong-journal
+ok 33 - current read refuses wrong-journal
+  ---
+  duration_ms: 2.588178
+  type: 'test'
+  ...
+# Subtest: current read refuses missing-journal
+ok 34 - current read refuses missing-journal
+  ---
+  duration_ms: 2.366283
+  type: 'test'
+  ...
+# Subtest: current read refuses cross-contract
+ok 35 - current read refuses cross-contract
+  ---
+  duration_ms: 3.410059
+  type: 'test'
+  ...
+# Subtest: foreign key prevents alternate customer/tenant/run binding
+ok 36 - foreign key prevents alternate customer/tenant/run binding
+  ---
+  duration_ms: 2.486254
+  type: 'test'
+  ...
+# Subtest: only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING
+ok 37 - only source-produced exact verified adoption can atomically migrate to LEGACY_EXISTING
+  ---
+  duration_ms: 3.836362
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current run drift with zero mode/journal writes
+ok 38 - legacy migration refuses current run drift with zero mode/journal writes
+  ---
+  duration_ms: 2.694198
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current environment drift with zero mode/journal writes
+ok 39 - legacy migration refuses current environment drift with zero mode/journal writes
+  ---
+  duration_ms: 2.476228
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current namespace drift with zero mode/journal writes
+ok 40 - legacy migration refuses current namespace drift with zero mode/journal writes
+  ---
+  duration_ms: 2.672035
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current tenant drift with zero mode/journal writes
+ok 41 - legacy migration refuses current tenant drift with zero mode/journal writes
+  ---
+  duration_ms: 2.62282
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current owner-permission drift with zero mode/journal writes
+ok 42 - legacy migration refuses current owner-permission drift with zero mode/journal writes
+  ---
+  duration_ms: 2.891065
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current revoked-owner drift with zero mode/journal writes
+ok 43 - legacy migration refuses current revoked-owner drift with zero mode/journal writes
+  ---
+  duration_ms: 2.709951
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current revoked-customer drift with zero mode/journal writes
+ok 44 - legacy migration refuses current revoked-customer drift with zero mode/journal writes
+  ---
+  duration_ms: 2.713867
+  type: 'test'
+  ...
+# Subtest: legacy migration refuses current frozen drift with zero mode/journal writes
+ok 45 - legacy migration refuses current frozen drift with zero mode/journal writes
+  ---
+  duration_ms: 2.804905
+  type: 'test'
+  ...
+# Subtest: imported orphan origin journal cannot downgrade its tenant into unmanaged legacy
+ok 46 - imported orphan origin journal cannot downgrade its tenant into unmanaged legacy
+  ---
+  duration_ms: 2.577291
+  type: 'test'
+  ...
+# Subtest: initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant
+ok 47 - initial mode cannot be rewritten as legacy by adoption writer and missing mode never backfills from populated tenant
+  ---
+  duration_ms: 2.909322
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: deterministic product discovery recognises common enterprise systems
+ok 48 - deterministic product discovery recognises common enterprise systems
+  ---
+  duration_ms: 1.759807
+  type: 'test'
+  ...
+# Subtest: mapping suggestions are deterministic and fail unresolved fields closed
+ok 49 - mapping suggestions are deterministic and fail unresolved fields closed
+  ---
+  duration_ms: 0.482008
+  type: 'test'
+  ...
+# Subtest: credential references accept managed pointers and reject raw credentials
+ok 50 - credential references accept managed pointers and reject raw credentials
+  ---
+  duration_ms: 0.289237
+  type: 'test'
+  ...
+# Subtest: employee role cannot inspect or configure integration control plane
+ok 51 - employee role cannot inspect or configure integration control plane
+  ---
+  duration_ms: 68.426109
+  type: 'test'
+  ...
+# Subtest: discovery evidence is tenant-isolated
+ok 52 - discovery evidence is tenant-isolated
+  ---
+  duration_ms: 81.697567
+  type: 'test'
+  ...
+# Subtest: trusted directory worker is bound to a short-lived server-side discovery session
+ok 53 - trusted directory worker is bound to a short-lived server-side discovery session
+  ---
+  duration_ms: 79.979607
+  type: 'test'
+  ...
+# Subtest: concurrent worker callbacks can claim a discovery session only once
+ok 54 - concurrent worker callbacks can claim a discovery session only once
+  ---
+  duration_ms: 61.164146
+  type: 'test'
+  ...
+# Subtest: discovery session rejects provider substitution and expired sessions
+ok 55 - discovery session rejects provider substitution and expired sessions
+  ---
+  duration_ms: 56.306847
+  type: 'test'
+  ...
+# Subtest: browser/admin cannot attest provider authorization without trusted worker
+ok 56 - browser/admin cannot attest provider authorization without trusted worker
+  ---
+  duration_ms: 63.083713
+  type: 'test'
+  ...
+# Subtest: people sync cannot activate from a connector capability without a people grant
+ok 57 - people sync cannot activate from a connector capability without a people grant
+  ---
+  duration_ms: 70.164855
+  type: 'test'
+  ...
+# Subtest: healthy report cannot bypass authorization or an unvalidated mapping version
+ok 58 - healthy report cannot bypass authorization or an unvalidated mapping version
+  ---
+  duration_ms: 83.669814
+  type: 'test'
+  ...
+# Subtest: trusted worker can attest authorization, activate mapping, validate sync and reach ACTIVE
+ok 59 - trusted worker can attest authorization, activate mapping, validate sync and reach ACTIVE
+  ---
+  duration_ms: 78.059324
+  type: 'test'
+  ...
+# Subtest: validation with duplicate identifiers degrades safely instead of silently activating
+ok 60 - validation with duplicate identifiers degrades safely instead of silently activating
+  ---
+  duration_ms: 81.299987
+  type: 'test'
+  ...
+# Subtest: schema drift produces targeted repair guidance while preserving mapping version
+ok 61 - schema drift produces targeted repair guidance while preserving mapping version
+  ---
+  duration_ms: 63.557729
+  type: 'test'
+  ...
+# Subtest: reconciliation stores only counts and digests, not raw employee payloads
+ok 62 - reconciliation stores only counts and digests, not raw employee payloads
+  ---
+  duration_ms: 52.534226
+  type: 'test'
+  ...
+# Subtest: synthetic process and aggregate skill evidence produce a privacy-limited shadow receipt
+ok 63 - synthetic process and aggregate skill evidence produce a privacy-limited shadow receipt
+  ---
+  duration_ms: 1.1059
+  type: 'test'
+  ...
+# Subtest: shadow provenance refuses cross-tenant, stale, expired, incomplete and tampered evidence
+ok 64 - shadow provenance refuses cross-tenant, stale, expired, incomplete and tampered evidence
+  ---
+  duration_ms: 21.945674
+  type: 'test'
+  ...
+# Subtest: saved digest detects changed aggregate evidence on replay
+ok 65 - saved digest detects changed aggregate evidence on replay
+  ---
+  duration_ms: 0.285662
+  type: 'test'
+  ...
+# Subtest: manager-only tenant-scoped provenance shadow route does not persist supplied evidence
+ok 66 - manager-only tenant-scoped provenance shadow route does not persist supplied evidence
+  ---
+  duration_ms: 32.339381
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: public origin must be a clean HTTPS origin
+ok 67 - public origin must be a clean HTTPS origin
+  ---
+  duration_ms: 1.515719
+  type: 'test'
+  ...
+# Subtest: Entra authorization URL uses PKCE, signed state and least-privilege read scope
+ok 68 - Entra authorization URL uses PKCE, signed state and least-privilege read scope
+  ---
+  duration_ms: 2.084598
+  type: 'test'
+  ...
+# Subtest: signed OAuth state rejects tampering and expiry
+ok 69 - signed OAuth state rejects tampering and expiry
+  ---
+  duration_ms: 0.242596
+  type: 'test'
+  ...
+# Subtest: PKCE verifier is deterministic per session and challenge is S256
+ok 70 - PKCE verifier is deterministic per session and challenge is S256
+  ---
+  duration_ms: 0.249016
+  type: 'test'
+  ...
+# Subtest: token exchange keeps client secret server-side and binds code to same redirect and verifier
+ok 71 - token exchange keeps client secret server-side and binds code to same redirect and verifier
+  ---
+  duration_ms: 1.15922
+  type: 'test'
+  ...
+# Subtest: provider token failures do not leak client secrets or access tokens
+ok 72 - provider token failures do not leak client secrets or access tokens
+  ---
+  duration_ms: 0.842713
+  type: 'test'
+  ...
+# Subtest: unconfigured or over-privileged discovery providers remain gated
+ok 73 - unconfigured or over-privileged discovery providers remain gated
+  ---
+  duration_ms: 0.334616
+  type: 'test'
+  ...
+# Subtest: short state secret or missing origin disables automatic Entra authorization
+ok 74 - short state secret or missing origin disables automatic Entra authorization
+  ---
+  duration_ms: 0.170888
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:15) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: missing or invalid configuration cannot initiate authorization and reveals only configuration names
+ok 75 - missing or invalid configuration cannot initiate authorization and reveals only configuration names
+  ---
+  duration_ms: 10.49183
+  type: 'test'
+  ...
+# Subtest: authorization uses the selected Gusto host, exact callback, and opaque one-use state stored without its bearer value
+ok 76 - authorization uses the selected Gusto host, exact callback, and opaque one-use state stored without its bearer value
+  ---
+  duration_ms: 2.387365
+  type: 'test'
+  ...
+# Subtest: authorization requires a company UUID and nonempty tenant, connection, and browser binding
+ok 77 - authorization requires a company UUID and nonempty tenant, connection, and browser binding
+  ---
+  duration_ms: 0.640457
+  type: 'test'
+  ...
+# Subtest: callback exchanges only at Gusto and verifies company identity plus actual read grants before storing credentials
+ok 78 - callback exchanges only at Gusto and verifies company identity plus actual read grants before storing credentials
+  ---
+  duration_ms: 5.324219
+  type: 'test'
+  ...
+# Subtest: state rejects another tenant or browser without consuming the legitimate callback, then rejects replay
+ok 79 - state rejects another tenant or browser without consuming the legitimate callback, then rejects replay
+  ---
+  duration_ms: 2.475698
+  type: 'test'
+  ...
+# Subtest: expired state and declined consent never exchange a code and declined consent consumes its state
+ok 80 - expired state and declined consent never exchange a code and declined consent consumes its state
+  ---
+  duration_ms: 1.163146
+  type: 'test'
+  ...
+# Subtest: callback rejects a non-company subject, a different company, and a mismatching company response without persisting a connection
+ok 81 - callback rejects a non-company subject, a different company, and a mismatching company response without persisting a connection
+  ---
+  duration_ms: 5.946899
+  type: 'test'
+  ...
+# Subtest: state and encrypted credentials survive restart while tenant, environment, and encryption-key boundaries remain enforced
+ok 82 - state and encrypted credentials survive restart while tenant, environment, and encryption-key boundaries remain enforced
+  ---
+  duration_ms: 14.453452
+  type: 'test'
+  ...
+# Subtest: provider rejection and network failures expose safe codes without provider bodies or request secrets
+ok 83 - provider rejection and network failures expose safe codes without provider bodies or request secrets
+  ---
+  duration_ms: 5.979969
+  type: 'test'
+  ...
+# Subtest: redirects, malformed token responses, and oversized provider bodies fail closed
+ok 84 - redirects, malformed token responses, and oversized provider bodies fail closed
+  ---
+  duration_ms: 9.853416
+  type: 'test'
+  ...
+# Subtest: a stalled external request is aborted and cannot leave an indefinitely pending callback
+ok 85 - a stalled external request is aborted and cannot leave an indefinitely pending callback
+  ---
+  duration_ms: 10001.100871
+  type: 'test'
+  ...
+# Subtest: expired credentials rotate as one encrypted pair and subsequent refreshes use the persisted replacement
+ok 86 - expired credentials rotate as one encrypted pair and subsequent refreshes use the persisted replacement
+  ---
+  duration_ms: 5.081228
+  type: 'test'
+  ...
+# Subtest: an early access-token 401 refreshes once and then rechecks the company with the replacement
+ok 87 - an early access-token 401 refreshes once and then rechecks the company with the replacement
+  ---
+  duration_ms: 2.317888
+  type: 'test'
+  ...
+# Subtest: transient refresh failure preserves the previous credential pair and releases its lease for retry
+ok 88 - transient refresh failure preserves the previous credential pair and releases its lease for retry
+  ---
+  duration_ms: 2.881839
+  type: 'test'
+  ...
+# Subtest: rotated credentials survive a later provider outage but are not reported verified until a successful company check
+ok 89 - rotated credentials survive a later provider outage but are not reported verified until a successful company check
+  ---
+  duration_ms: 3.311046
+  type: 'test'
+  ...
+# Subtest: refresh revocation and repeated 401/403 responses clear verified status without loops or raw provider details
+ok 90 - refresh revocation and repeated 401/403 responses clear verified status without loops or raw provider details
+  ---
+  duration_ms: 5.91098
+  type: 'test'
+  ...
+# Subtest: two SQLite connections cannot simultaneously consume a single-use refresh token
+ok 91 - two SQLite connections cannot simultaneously consume a single-use refresh token
+  ---
+  duration_ms: 12.658197
+  type: 'test'
+  ...
+# Subtest: a late refresh response cannot overwrite a newer completed authorization for the same connection
+ok 92 - a late refresh response cannot overwrite a newer completed authorization for the same connection
+  ---
+  duration_ms: 2.476467
+  type: 'test'
+  ...
+# Subtest: an expired refresh lease left by a stopped worker is reclaimed safely
+ok 93 - an expired refresh lease left by a stopped worker is reclaimed safely
+  ---
+  duration_ms: 1.726586
+  type: 'test'
+  ...
+# Subtest: encrypted credentials are authenticated against tenant, connection, company, and environment
+ok 94 - encrypted credentials are authenticated against tenant, connection, company, and environment
+  ---
+  duration_ms: 4.803448
+  type: 'test'
+  ...
+# Subtest: concurrent authorizations cannot retarget an already verified connection to a different company
+ok 95 - concurrent authorizations cannot retarget an already verified connection to a different company
+  ---
+  duration_ms: 3.79695
+  type: 'test'
+  ...
+# Subtest: a pending authorization cannot move a verified connection into another Gusto environment
+ok 96 - a pending authorization cannot move a verified connection into another Gusto environment
+  ---
+  duration_ms: 2.062833
+  type: 'test'
+  ...
+# Subtest: changing the registered OAuth client invalidates stored status and pending state until explicit reauthorization
+ok 97 - changing the registered OAuth client invalidates stored status and pending state until explicit reauthorization
+  ---
+  duration_ms: 2.089834
+  type: 'test'
+  ...
+# Subtest: a changed tenant company binding rejects a pending callback before token exchange and preserves stored credentials
+ok 98 - a changed tenant company binding rejects a pending callback before token exchange and preserves stored credentials
+  ---
+  duration_ms: 1.270727
+  type: 'test'
+  ...
+# Subtest: temporary SQLite write contention after a successful refresh retries persistence without consuming the token twice
+ok 99 - temporary SQLite write contention after a successful refresh retries persistence without consuming the token twice
+  ---
+  duration_ms: 112.572261
+  type: 'test'
+  ...
+# Subtest: storage failures have safe connector errors and cannot produce a successful authorization result
+ok 100 - storage failures have safe connector errors and cannot produce a successful authorization result
+  ---
+  duration_ms: 1.485812
+  type: 'test'
+  ...
+# Subtest: an old verification denial becomes a retryable conflict after a newer authorization succeeds
+ok 101 - an old verification denial becomes a retryable conflict after a newer authorization succeeds
+  ---
+  duration_ms: 2.504219
+  type: 'test'
+  ...
+# (node:26) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:26) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: Gusto appears in the existing catalog and missing setup never reports a connection
+ok 102 - Gusto appears in the existing catalog and missing setup never reports a connection
+  ---
+  duration_ms: 84.861013
+  type: 'test'
+  ...
+# Subtest: authorization verifies the exact company, survives restart, and does not certify a data sync
+ok 103 - authorization verifies the exact company, survives restart, and does not certify a data sync
+  ---
+  duration_ms: 110.719504
+  type: 'test'
+  ...
+# Subtest: Gusto setup requires an administrator, the original tenant, and same-origin authorization
+ok 104 - Gusto setup requires an administrator, the original tenant, and same-origin authorization
+  ---
+  duration_ms: 64.344847
+  type: 'test'
+  ...
+# Subtest: a configured company selection is tenant-scoped and cannot be overridden by the browser
+ok 105 - a configured company selection is tenant-scoped and cannot be overridden by the browser
+  ---
+  duration_ms: 63.22361
+  type: 'test'
+  ...
+# Subtest: invalid tenant configuration blocks callback completion and verification before contacting Gusto
+ok 106 - invalid tenant configuration blocks callback completion and verification before contacting Gusto
+  ---
+  duration_ms: 79.019197
+  type: 'test'
+  ...
+# Subtest: a changed tenant company selection invalidates historical sync readiness and cannot activate through health attestation
+ok 107 - a changed tenant company selection invalidates historical sync readiness and cannot activate through health attestation
+  ---
+  duration_ms: 105.931185
+  type: 'test'
+  ...
+# Subtest: changing the company selection while authorization is pending rejects it before credential exchange
+ok 108 - changing the company selection while authorization is pending rejects it before credential exchange
+  ---
+  duration_ms: 58.633319
+  type: 'test'
+  ...
+# Subtest: an OAuth callback from a different session or tenant cannot consume the original state
+ok 109 - an OAuth callback from a different session or tenant cannot consume the original state
+  ---
+  duration_ms: 65.624685
+  type: 'test'
+  ...
+# Subtest: a wrong Gusto company and worker attestation cannot mark Gusto authorized
+ok 110 - a wrong Gusto company and worker attestation cannot mark Gusto authorized
+  ---
+  duration_ms: 57.553649
+  type: 'test'
+  ...
+# Subtest: callback completion requires the original session and origin and errors remain secret-free
+ok 111 - callback completion requires the original session and origin and errors remain secret-free
+  ---
+  duration_ms: 58.98068
+  type: 'test'
+  ...
+# (node:32) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: callback landing contains no reflected query values and uses a fresh restrictive CSP nonce
+ok 112 - callback landing contains no reflected query values and uses a fresh restrictive CSP nonce
+  ---
+  duration_ms: 1.379382
+  type: 'test'
+  ...
+# Subtest: landing clears the callback query before completing through an authenticated same-origin POST
+ok 113 - landing clears the callback query before completing through an authenticated same-origin POST
+  ---
+  duration_ms: 1.984816
+  type: 'test'
+  ...
+# Subtest: invalid or ambiguous callback parameters are scrubbed without any network request
+ok 114 - invalid or ambiguous callback parameters are scrubbed without any network request
+  ---
+  duration_ms: 8.098728
+  type: 'test'
+  ...
+# Subtest: provider denial passes only its error code and renders the sanitized application error as text
+ok 115 - provider denial passes only its error code and renders the sanitized application error as text
+  ---
+  duration_ms: 0.825607
+  type: 'test'
+  ...
+# Subtest: network failures and unverified responses keep the user on a safe failure page
+ok 116 - network failures and unverified responses keep the user on a safe failure page
+  ---
+  duration_ms: 4.39829
+  type: 'test'
+  ...
+# (node:38) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:156) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:174) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:190) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Docker extracted-runtime composition has its full compiler patch dependency available
+ok 117 - Docker extracted-runtime composition has its full compiler patch dependency available
+  ---
+  duration_ms: 326.499358
+  type: 'test'
+  ...
+# Subtest: patched sealed compiler accepts real IANA timezones while retaining strict input validation
+ok 118 - patched sealed compiler accepts real IANA timezones while retaining strict input validation
+  ---
+  duration_ms: 145.313193
+  type: 'test'
+  ...
+# (node:76) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:112) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: runtime packaging follows inherited stages without accepting sibling fixtures
+ok 119 - runtime packaging follows inherited stages without accepting sibling fixtures
+  ---
+  duration_ms: 1.929523
+  type: 'test'
+  ...
+# Subtest: the final Docker stage includes every relative bootstrap dependency
+ok 120 - the final Docker stage includes every relative bootstrap dependency
+  ---
+  duration_ms: 1.612664
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes the same required bootstrap dependencies
+ok 121 - local proof assembly includes the same required bootstrap dependencies
+  ---
+  duration_ms: 0.421036
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes absolute bootstrap runtime dependencies and training closure
+ok 122 - local proof assembly includes absolute bootstrap runtime dependencies and training closure
+  ---
+  duration_ms: 150.490866
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing manifest entry: public/engine.js
+ok 123 - native helper packaging refuses missing manifest entry: public/engine.js
+  ---
+  duration_ms: 1.455949
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing archive member: public/engine.js
+ok 124 - native helper packaging refuses missing archive member: public/engine.js
+  ---
+  duration_ms: 0.520917
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses changed archive member bytes: public/engine.js
+ok 125 - native helper packaging refuses changed archive member bytes: public/engine.js
+  ---
+  duration_ms: 1.70888
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing manifest entry: public/operations-engine.js
+ok 126 - native helper packaging refuses missing manifest entry: public/operations-engine.js
+  ---
+  duration_ms: 0.551071
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing archive member: public/operations-engine.js
+ok 127 - native helper packaging refuses missing archive member: public/operations-engine.js
+  ---
+  duration_ms: 0.539655
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses changed archive member bytes: public/operations-engine.js
+ok 128 - native helper packaging refuses changed archive member bytes: public/operations-engine.js
+  ---
+  duration_ms: 0.569811
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing export: public/engine.js\#allowedPeople
+ok 129 - native helper packaging refuses missing export: public/engine.js\#allowedPeople
+  ---
+  duration_ms: 0.495177
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing export: public/engine.js\#descendants
+ok 130 - native helper packaging refuses missing export: public/engine.js\#descendants
+  ---
+  duration_ms: 0.307134
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses missing export: public/operations-engine.js\#approvedSite
+ok 131 - native helper packaging refuses missing export: public/operations-engine.js\#approvedSite
+  ---
+  duration_ms: 0.436649
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect composer archive pin
+ok 132 - native helper packaging refuses incorrect composer archive pin
+  ---
+  duration_ms: 1.081522
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect composer extraction destination
+ok 133 - native helper packaging refuses incorrect composer extraction destination
+  ---
+  duration_ms: 0.331641
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect Docker archive source
+ok 134 - native helper packaging refuses incorrect Docker archive source
+  ---
+  duration_ms: 0.576781
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses incorrect Docker extraction destination
+ok 135 - native helper packaging refuses incorrect Docker extraction destination
+  ---
+  duration_ms: 0.501016
+  type: 'test'
+  ...
+# Subtest: native helper packaging refuses an unknown public dependency
+ok 136 - native helper packaging refuses an unknown public dependency
+  ---
+  duration_ms: 0.248415
+  type: 'test'
+  ...
+# Subtest: local proof assembly includes scheduling runtime dependency closure
+ok 137 - local proof assembly includes scheduling runtime dependency closure
+  ---
+  duration_ms: 0.287374
+  type: 'test'
+  ...
+# Subtest: retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+ok 138 - retired presentation serves 410 for direct and encoded paths, and never intercepts the real API
+  ---
+  duration_ms: 66.878177
+  type: 'test'
+  ...
+# Subtest: legacy local-data writes are redirected outside immutable app root
+ok 139 - legacy local-data writes are redirected outside immutable app root
+  ---
+  duration_ms: 0.552935
+  type: 'test'
+  ...
+# Subtest: integration fabric runtime retains its source-relative loader layout
+ok 140 - integration fabric runtime retains its source-relative loader layout
+  ---
+  duration_ms: 1.211389
+  type: 'test'
+  ...
+# Subtest: packaged lifecycle router preserves the trusted Autopilot execution adapter
+ok 141 - packaged lifecycle router preserves the trusted Autopilot execution adapter
+  ---
+  duration_ms: 0.379713
+  type: 'test'
+  ...
+# (node:77) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing configuration is actionable without exposing server configuration or polling on shell mutations
+ok 142 - missing configuration is actionable without exposing server configuration or polling on shell mutations
+  ---
+  duration_ms: 18.653192
+  type: 'test'
+  ...
+# Subtest: verified access is escaped and existing connections are reused for authorization
+ok 143 - verified access is escaped and existing connections are reused for authorization
+  ---
+  duration_ms: 22.26811
+  type: 'test'
+  ...
+# Subtest: UUID selection is validated before writes and a new connection follows the existing hub workflow
+ok 144 - UUID selection is validated before writes and a new connection follows the existing hub workflow
+  ---
+  duration_ms: 8.032508
+  type: 'test'
+  ...
+# Subtest: authorization redirects reject foreign origins, wrong environments and userinfo URLs
+ok 145 - authorization redirects reject foreign origins, wrong environments and userinfo URLs
+  ---
+  duration_ms: 14.69732
+  type: 'test'
+  ...
+# Subtest: a tenant switch during authorization prevents navigation and clears previous company information
+ok 146 - a tenant switch during authorization prevents navigation and clears previous company information
+  ---
+  duration_ms: 7.596534
+  type: 'test'
+  ...
+# Subtest: leaving the route or rerendering invalidates pending configuration responses
+ok 147 - leaving the route or rerendering invalidates pending configuration responses
+  ---
+  duration_ms: 3.520836
+  type: 'test'
+  ...
+# Subtest: an asynchronous response clears stale company details even before the next tenant render
+ok 148 - an asynchronous response clears stale company details even before the next tenant render
+  ---
+  duration_ms: 2.535819
+  type: 'test'
+  ...
+# Subtest: rerendering the same session discards the previous pending status response
+ok 149 - rerendering the same session discards the previous pending status response
+  ---
+  duration_ms: 3.096514
+  type: 'test'
+  ...
+# Subtest: verify checks actual access and an expired session removes previously verified details
+ok 150 - verify checks actual access and an expired session removes previously verified details
+  ---
+  duration_ms: 4.977485
+  type: 'test'
+  ...
+# Subtest: provider authorization failures keep reconnect available and remove stale company verification
+ok 151 - provider authorization failures keep reconnect available and remove stale company verification
+  ---
+  duration_ms: 7.452903
+  type: 'test'
+  ...
+# Subtest: a saved company connection can be verified when previous provider metadata has been cleared
+ok 152 - a saved company connection can be verified when previous provider metadata has been cleared
+  ---
+  duration_ms: 3.070176
+  type: 'test'
+  ...
+# Subtest: access verification does not deny a completed workforce import
+ok 153 - access verification does not deny a completed workforce import
+  ---
+  duration_ms: 2.613436
+  type: 'test'
+  ...
+# Subtest: repeated connect clicks while authorization is pending do not create extra requests
+ok 154 - repeated connect clicks while authorization is pending do not create extra requests
+  ---
+  duration_ms: 2.944857
+  type: 'test'
+  ...
+# (node:147) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Settings & more survives an authoritative content rerender until explicitly closed and hides unavailable routes
+ok 155 - Settings & more survives an authoritative content rerender until explicitly closed and hides unavailable routes
+  ---
+  duration_ms: 1.60965
+  type: 'test'
+  ...
+# (node:162) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Staffology customer controls use only authenticated canonical routes and server-held scope
+ok 156 - Staffology customer controls use only authenticated canonical routes and server-held scope
+  ---
+  duration_ms: 1.624153
+  type: 'test'
+  ...
+# Subtest: Staffology controls expose dormant, authority, progress and double-submit boundaries
+ok 157 - Staffology controls expose dormant, authority, progress and double-submit boundaries
+  ---
+  duration_ms: 1.3841
+  type: 'test'
+  ...
+# Subtest: mapping controls derive ordinary choices from authenticated bootstrap without inventing payroll values
+ok 158 - mapping controls derive ordinary choices from authenticated bootstrap without inventing payroll values
+  ---
+  duration_ms: 1.44372
+  type: 'test'
+  ...
+# Subtest: mixed lifecycle response exposes held reasons while eligible batch remains applicable
+ok 159 - mixed lifecycle response exposes held reasons while eligible batch remains applicable
+  ---
+  duration_ms: 0.15241
+  type: 'test'
+  ...
+# Subtest: acquisition retry retains one reviewed-intent key and recovery needs no browser digest
+ok 160 - acquisition retry retains one reviewed-intent key and recovery needs no browser digest
+  ---
+  duration_ms: 0.2915
+  type: 'test'
+  ...
+# Subtest: recover action renders only acknowledged outcomes as success and explains held outcomes
+ok 161 - recover action renders only acknowledged outcomes as success and explains held outcomes
+  ---
+  duration_ms: 1.422197
+  type: 'test'
+  ...
+# Subtest: reviewed missing-provider email renders without inventing identity and preserves only the reviewed value
+ok 162 - reviewed missing-provider email renders without inventing identity and preserves only the reviewed value
+  ---
+  duration_ms: 0.878647
+  type: 'test'
+  ...
+# Subtest: acquisition first persists review and sends only its opaque ID to the import consumer
+ok 163 - acquisition first persists review and sends only its opaque ID to the import consumer
+  ---
+  duration_ms: 1.281235
+  type: 'test'
+  ...
+# Subtest: authenticated request checks the panel again after response decoding
+ok 164 - authenticated request checks the panel again after response decoding
+  ---
+  duration_ms: 1.219602
+  type: 'test'
+  ...
+# (node:180) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: unconfigured intake explains setup without claiming an import or polling on renders
+ok 165 - unconfigured intake explains setup without claiming an import or polling on renders
+  ---
+  duration_ms: 15.491429
+  type: 'test'
+  ...
+# Subtest: receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+ok 166 - receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+  ---
+  duration_ms: 3.188123
+  type: 'test'
+  ...
+# Subtest: configured feed with no receipts and missing authentication remain distinct
+ok 167 - configured feed with no receipts and missing authentication remain distinct
+  ---
+  duration_ms: 2.92778
+  type: 'test'
+  ...
+# Subtest: refresh failure clears previous receipt details and permits manual retry
+ok 168 - refresh failure clears previous receipt details and permits manual retry
+  ---
+  duration_ms: 5.281504
+  type: 'test'
+  ...
+# Subtest: authentication, unavailable receiver and malformed data do not become empty successful intake
+ok 169 - authentication, unavailable receiver and malformed data do not become empty successful intake
+  ---
+  duration_ms: 9.54436
+  type: 'test'
+  ...
+# Subtest: tenant and account switches remove pending old receipts even before a new render
+ok 170 - tenant and account switches remove pending old receipts even before a new render
+  ---
+  duration_ms: 7.423819
+  type: 'test'
+  ...
+# Subtest: route departure, rerender and pagehide abort old requests; employees never fetch receipts
+ok 171 - route departure, rerender and pagehide abort old requests; employees never fetch receipts
+  ---
+  duration_ms: 6.308935
+  type: 'test'
+  ...
+# Subtest: concurrent refresh clicks do not duplicate the request
+ok 172 - concurrent refresh clicks do not duplicate the request
+  ---
+  duration_ms: 3.02969
+  type: 'test'
+  ...
+1..172
+# tests 172
+# suites 0
+# pass 172
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10324.032265

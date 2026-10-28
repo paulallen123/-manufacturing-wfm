@@ -1,0 +1,679 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: preflight identifies missing setup without printing credentials or implying authorization
+ok 1 - preflight identifies missing setup without printing credentials or implying authorization
+  ---
+  duration_ms: 4.201472
+  type: 'test'
+  ...
+# Subtest: valid offline configuration is not a hosted-proof claim
+ok 2 - valid offline configuration is not a hosted-proof claim
+  ---
+  duration_ms: 0.853338
+  type: 'test'
+  ...
+# Subtest: wrong isolation tenant and password mode fail closed
+ok 3 - wrong isolation tenant and password mode fail closed
+  ---
+  duration_ms: 1.484931
+  type: 'test'
+  ...
+# (node:20) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: the deployed bootstrap serves the session recovery script with JavaScript MIME and no cache
+ok 4 - the deployed bootstrap serves the session recovery script with JavaScript MIME and no cache
+  ---
+  duration_ms: 1.672644
+  type: 'test'
+  ...
+# Subtest: session asset supports HEAD and rejects writes or unrecognised paths
+ok 5 - session asset supports HEAD and rejects writes or unrecognised paths
+  ---
+  duration_ms: 2.082473
+  type: 'test'
+  ...
+# (node:28) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:28) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: google code login mints only mapped local authority with secure cookies and atomic binding
+ok 6 - google code login mints only mapped local authority with secure cookies and atomic binding
+  ---
+  duration_ms: 28.009671
+  type: 'test'
+  ...
+# Subtest: apple code login mints only mapped local authority with secure cookies and atomic binding
+ok 7 - apple code login mints only mapped local authority with secure cookies and atomic binding
+  ---
+  duration_ms: 20.824451
+  type: 'test'
+  ...
+# Subtest: refuses issuer without issuing a session
+ok 8 - refuses issuer without issuing a session
+  ---
+  duration_ms: 17.713546
+  type: 'test'
+  ...
+# Subtest: refuses audience without issuing a session
+ok 9 - refuses audience without issuing a session
+  ---
+  duration_ms: 17.719084
+  type: 'test'
+  ...
+# Subtest: refuses authorizedParty without issuing a session
+ok 10 - refuses authorizedParty without issuing a session
+  ---
+  duration_ms: 22.688981
+  type: 'test'
+  ...
+# Subtest: refuses expired without issuing a session
+ok 11 - refuses expired without issuing a session
+  ---
+  duration_ms: 20.15119
+  type: 'test'
+  ...
+# Subtest: refuses future without issuing a session
+ok 12 - refuses future without issuing a session
+  ---
+  duration_ms: 17.867889
+  type: 'test'
+  ...
+# Subtest: refuses nonce without issuing a session
+ok 13 - refuses nonce without issuing a session
+  ---
+  duration_ms: 28.693658
+  type: 'test'
+  ...
+# Subtest: refuses unlinked without issuing a session
+ok 14 - refuses unlinked without issuing a session
+  ---
+  duration_ms: 17.830463
+  type: 'test'
+  ...
+# Subtest: refuses missingSubject without issuing a session
+ok 15 - refuses missingSubject without issuing a session
+  ---
+  duration_ms: 16.409638
+  type: 'test'
+  ...
+# Subtest: state binding prevents login CSRF and durable consumption prevents duplicate exchanges
+ok 16 - state binding prevents login CSRF and durable consumption prevents duplicate exchanges
+  ---
+  duration_ms: 20.268502
+  type: 'test'
+  ...
+# Subtest: pending login survives process-local module restart and refuses expired state
+ok 17 - pending login survives process-local module restart and refuses expired state
+  ---
+  duration_ms: 22.117373
+  type: 'test'
+  ...
+# Subtest: issuance fails atomically for ambiguous
+ok 18 - issuance fails atomically for ambiguous
+  ---
+  duration_ms: 20.646392
+  type: 'test'
+  ...
+# Subtest: issuance fails atomically for wrongTenant
+ok 19 - issuance fails atomically for wrongTenant
+  ---
+  duration_ms: 24.06292
+  type: 'test'
+  ...
+# Subtest: issuance fails atomically for missing
+ok 20 - issuance fails atomically for missing
+  ---
+  duration_ms: 19.139208
+  type: 'test'
+  ...
+# Subtest: issuance fails atomically for freeze
+ok 21 - issuance fails atomically for freeze
+  ---
+  duration_ms: 17.636339
+  type: 'test'
+  ...
+# Subtest: issuance fails atomically for controlMissing
+ok 22 - issuance fails atomically for controlMissing
+  ---
+  duration_ms: 17.148583
+  type: 'test'
+  ...
+# Subtest: issuance fails atomically for auditFailure
+ok 23 - issuance fails atomically for auditFailure
+  ---
+  duration_ms: 21.303504
+  type: 'test'
+  ...
+# Subtest: sessions reject current role, epoch, policy, freeze, subject-map and metadata changes
+ok 24 - sessions reject current role, epoch, policy, freeze, subject-map and metadata changes
+  ---
+  duration_ms: 28.259434
+  type: 'test'
+  ...
+# Subtest: provider outage consumes state and cannot trigger blind retry or session mint
+ok 25 - provider outage consumes state and cannot trigger blind retry or session mint
+  ---
+  duration_ms: 18.094962
+  type: 'test'
+  ...
+# Subtest: unconfigured providers and expired Apple client secret fail closed without network
+ok 26 - unconfigured providers and expired Apple client secret fail closed without network
+  ---
+  duration_ms: 11.578796
+  type: 'test'
+  ...
+# Subtest: malformed request targets are contained before route dispatch
+ok 27 - malformed request targets are contained before route dispatch
+  ---
+  duration_ms: 11.381789
+  type: 'test'
+  ...
+# Subtest: durable rate limit survives restart and refuses additional sign-in work
+ok 28 - durable rate limit survives restart and refuses additional sign-in work
+  ---
+  duration_ms: 144.588465
+  type: 'test'
+  ...
+# Subtest: JWT signature, algorithm and duplicate key negatives cannot authenticate
+ok 29 - JWT signature, algorithm and duplicate key negatives cannot authenticate
+  ---
+  duration_ms: 1.180162
+  type: 'test'
+  ...
+# Subtest: cross-site starts, existing sessions and duplicate callback parameters are refused
+ok 30 - cross-site starts, existing sessions and duplicate callback parameters are refused
+  ---
+  duration_ms: 24.301269
+  type: 'test'
+  ...
+# Subtest: Apple callback body is bounded by size and time before any provider exchange
+ok 31 - Apple callback body is bounded by size and time before any provider exchange
+  ---
+  duration_ms: 43.16438
+  type: 'test'
+  ...
+# (node:36) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:36) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: valid bound federated session reaches existing customer UI and identity guard
+ok 32 - valid bound federated session reaches existing customer UI and identity guard
+  ---
+  duration_ms: 35.344853
+  type: 'test'
+  ...
+# Subtest: federated session refuses role rather than legacy rebinding
+ok 33 - federated session refuses role rather than legacy rebinding
+  ---
+  duration_ms: 34.068956
+  type: 'test'
+  ...
+# Subtest: federated session refuses epoch rather than legacy rebinding
+ok 34 - federated session refuses epoch rather than legacy rebinding
+  ---
+  duration_ms: 31.927871
+  type: 'test'
+  ...
+# Subtest: federated session refuses freeze rather than legacy rebinding
+ok 35 - federated session refuses freeze rather than legacy rebinding
+  ---
+  duration_ms: 41.106369
+  type: 'test'
+  ...
+# Subtest: federated session refuses missing-metadata rather than legacy rebinding
+ok 36 - federated session refuses missing-metadata rather than legacy rebinding
+  ---
+  duration_ms: 32.805545
+  type: 'test'
+  ...
+# Subtest: federated session refuses missing-binding rather than legacy rebinding
+ok 37 - federated session refuses missing-binding rather than legacy rebinding
+  ---
+  duration_ms: 31.327124
+  type: 'test'
+  ...
+# Subtest: federated session refuses expired rather than legacy rebinding
+ok 38 - federated session refuses expired rather than legacy rebinding
+  ---
+  duration_ms: 31.694769
+  type: 'test'
+  ...
+# Subtest: missing federated verifier refuses a federated binding
+ok 39 - missing federated verifier refuses a federated binding
+  ---
+  duration_ms: 32.410769
+  type: 'test'
+  ...
+# (node:44) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: only configured providers become visible and redirect to fixed same-origin routes
+ok 40 - only configured providers become visible and redirect to fixed same-origin routes
+  ---
+  duration_ms: 6.014578
+  type: 'test'
+  ...
+# Subtest: unavailable configuration retains passkey-only entry
+ok 41 - unavailable configuration retains passkey-only entry
+  ---
+  duration_ms: 1.408135
+  type: 'test'
+  ...
+# Subtest: recovery and invitations never start federation
+ok 42 - recovery and invitations never start federation
+  ---
+  duration_ms: 1.307534
+  type: 'test'
+  ...
+# (node:52) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:52) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: customer enrolment and discoverable passkey sign-in issue identity-bound secure sessions
+ok 43 - customer enrolment and discoverable passkey sign-in issue identity-bound secure sessions
+  ---
+  duration_ms: 60.919258
+  type: 'test'
+  ...
+# Subtest: bare email and password-only sessions cannot bootstrap a passkey
+ok 44 - bare email and password-only sessions cannot bootstrap a passkey
+  ---
+  duration_ms: 33.02754
+  type: 'test'
+  ...
+# Subtest: fixture proof enrolment is refused outside staging
+ok 45 - fixture proof enrolment is refused outside staging
+  ---
+  duration_ms: 25.504326
+  type: 'test'
+  ...
+# Subtest: registration rejects invalid origin, challenge, UV or RP {"origin":"https://attacker.test"}
+ok 46 - registration rejects invalid origin, challenge, UV or RP {"origin":"https://attacker.test"}
+  ---
+  duration_ms: 39.914835
+  type: 'test'
+  ...
+# Subtest: registration rejects invalid origin, challenge, UV or RP {"challenge":"forged"}
+ok 47 - registration rejects invalid origin, challenge, UV or RP {"challenge":"forged"}
+  ---
+  duration_ms: 34.800156
+  type: 'test'
+  ...
+# Subtest: registration rejects invalid origin, challenge, UV or RP {"flags":65}
+ok 48 - registration rejects invalid origin, challenge, UV or RP {"flags":65}
+  ---
+  duration_ms: 36.358958
+  type: 'test'
+  ...
+# Subtest: registration rejects invalid origin, challenge, UV or RP {"rp":"attacker.test"}
+ok 49 - registration rejects invalid origin, challenge, UV or RP {"rp":"attacker.test"}
+  ---
+  duration_ms: 39.445928
+  type: 'test'
+  ...
+# Subtest: registration challenge is browser bound, one use, and expires
+ok 50 - registration challenge is browser bound, one use, and expires
+  ---
+  duration_ms: 52.965364
+  type: 'test'
+  ...
+# Subtest: account scope changes during enrolment are contained
+ok 51 - account scope changes during enrolment are contained
+  ---
+  duration_ms: 34.912465
+  type: 'test'
+  ...
+# Subtest: authentication rejects invalid signed assertion {"origin":"https://attacker.test"}
+ok 52 - authentication rejects invalid signed assertion {"origin":"https://attacker.test"}
+  ---
+  duration_ms: 52.353003
+  type: 'test'
+  ...
+# Subtest: authentication rejects invalid signed assertion {"challenge":"forged"}
+ok 53 - authentication rejects invalid signed assertion {"challenge":"forged"}
+  ---
+  duration_ms: 58.803057
+  type: 'test'
+  ...
+# Subtest: authentication rejects invalid signed assertion {"flags":1}
+ok 54 - authentication rejects invalid signed assertion {"flags":1}
+  ---
+  duration_ms: 39.859092
+  type: 'test'
+  ...
+# Subtest: authentication rejects invalid signed assertion {"userHandle":"wrong"}
+ok 55 - authentication rejects invalid signed assertion {"userHandle":"wrong"}
+  ---
+  duration_ms: 40.781959
+  type: 'test'
+  ...
+# Subtest: authentication rejects invalid signed assertion {"counter":0}
+ok 56 - authentication rejects invalid signed assertion {"counter":0}
+  ---
+  duration_ms: 42.81043
+  type: 'test'
+  ...
+# Subtest: concurrent replay issues exactly one session and tampered signatures fail
+ok 57 - concurrent replay issues exactly one session and tampered signatures fail
+  ---
+  duration_ms: 45.799581
+  type: 'test'
+  ...
+# Subtest: passkey session is contained on role drift and credential revocation
+ok 58 - passkey session is contained on role drift and credential revocation
+  ---
+  duration_ms: 41.158297
+  type: 'test'
+  ...
+# Subtest: origin, transport and body authority injection are denied before enrolment
+ok 59 - origin, transport and body authority injection are denied before enrolment
+  ---
+  duration_ms: 22.847066
+  type: 'test'
+  ...
+# Subtest: revoked historical passkey cannot be replaced through a fresh contract invitation
+ok 60 - revoked historical passkey cannot be replaced through a fresh contract invitation
+  ---
+  duration_ms: 36.558246
+  type: 'test'
+  ...
+# Subtest: revoked initial owner cannot enrol through a pending invitation
+ok 61 - revoked initial owner cannot enrol through a pending invitation
+  ---
+  duration_ms: 32.414834
+  type: 'test'
+  ...
+# Subtest: secure invitation enrols only its existing recipient once
+ok 62 - secure invitation enrols only its existing recipient once
+  ---
+  duration_ms: 43.627658
+  type: 'test'
+  ...
+# Subtest: last remaining passkey cannot be removed
+ok 63 - last remaining passkey cannot be removed
+  ---
+  duration_ms: 39.834269
+  type: 'test'
+  ...
+# Subtest: fresh authentication replaces a stale cookie and entry removes invalid session authority
+ok 64 - fresh authentication replaces a stale cookie and entry removes invalid session authority
+  ---
+  duration_ms: 49.527797
+  type: 'test'
+  ...
+# Subtest: audit failure cannot leave a credential or a granted session
+ok 65 - audit failure cannot leave a credential or a granted session
+  ---
+  duration_ms: 30.692735
+  type: 'test'
+  ...
+# Subtest: second device can be enrolled and a revoked key loses its sessions
+ok 66 - second device can be enrolled and a revoked key loses its sessions
+  ---
+  duration_ms: 43.263424
+  type: 'test'
+  ...
+# Subtest: first owner passkey setup produces a real verified credential and fresh sign-in without changing existing authority
+ok 67 - first owner passkey setup produces a real verified credential and fresh sign-in without changing existing authority
+  ---
+  duration_ms: 47.711987
+  type: 'test'
+  ...
+# Subtest: first-passkey grant is not consumed by cancellation or invalid attestation
+ok 68 - first-passkey grant is not consumed by cancellation or invalid attestation
+  ---
+  duration_ms: 52.476285
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses disabled without creating credentials or sessions
+ok 69 - first-passkey setup refuses disabled without creating credentials or sessions
+  ---
+  duration_ms: 39.39056
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses expired without creating credentials or sessions
+ok 70 - first-passkey setup refuses expired without creating credentials or sessions
+  ---
+  duration_ms: 34.120346
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses wrong-token without creating credentials or sessions
+ok 71 - first-passkey setup refuses wrong-token without creating credentials or sessions
+  ---
+  duration_ms: 35.987976
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses wrong-person without creating credentials or sessions
+ok 72 - first-passkey setup refuses wrong-person without creating credentials or sessions
+  ---
+  duration_ms: 40.215314
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses wrong-tenant without creating credentials or sessions
+ok 73 - first-passkey setup refuses wrong-tenant without creating credentials or sessions
+  ---
+  duration_ms: 34.368661
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses wrong-role without creating credentials or sessions
+ok 74 - first-passkey setup refuses wrong-role without creating credentials or sessions
+  ---
+  duration_ms: 33.985534
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses freeze without creating credentials or sessions
+ok 75 - first-passkey setup refuses freeze without creating credentials or sessions
+  ---
+  duration_ms: 29.055334
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses epoch without creating credentials or sessions
+ok 76 - first-passkey setup refuses epoch without creating credentials or sessions
+  ---
+  duration_ms: 30.12613
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses policy without creating credentials or sessions
+ok 77 - first-passkey setup refuses policy without creating credentials or sessions
+  ---
+  duration_ms: 30.233212
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses password-purpose without creating credentials or sessions
+ok 78 - first-passkey setup refuses password-purpose without creating credentials or sessions
+  ---
+  duration_ms: 31.715433
+  type: 'test'
+  ...
+# Subtest: first-passkey setup refuses origin without creating credentials or sessions
+ok 79 - first-passkey setup refuses origin without creating credentials or sessions
+  ---
+  duration_ms: 30.2383
+  type: 'test'
+  ...
+# Subtest: first-passkey authority is rechecked at final verification after revoked
+ok 80 - first-passkey authority is rechecked at final verification after revoked
+  ---
+  duration_ms: 42.320926
+  type: 'test'
+  ...
+# Subtest: first-passkey authority is rechecked at final verification after expired
+ok 81 - first-passkey authority is rechecked at final verification after expired
+  ---
+  duration_ms: 40.479834
+  type: 'test'
+  ...
+# Subtest: first-passkey authority is rechecked at final verification after epoch
+ok 82 - first-passkey authority is rechecked at final verification after epoch
+  ---
+  duration_ms: 40.328485
+  type: 'test'
+  ...
+# Subtest: first-passkey authority is rechecked at final verification after policy
+ok 83 - first-passkey authority is rechecked at final verification after policy
+  ---
+  duration_ms: 41.718292
+  type: 'test'
+  ...
+# Subtest: first-passkey authority is rechecked at final verification after freeze
+ok 84 - first-passkey authority is rechecked at final verification after freeze
+  ---
+  duration_ms: 36.889175
+  type: 'test'
+  ...
+# Subtest: first-passkey authority is rechecked at final verification after account
+ok 85 - first-passkey authority is rechecked at final verification after account
+  ---
+  duration_ms: 37.802293
+  type: 'test'
+  ...
+# Subtest: first-passkey authority is rechecked at final verification after grant-renewed
+ok 86 - first-passkey authority is rechecked at final verification after grant-renewed
+  ---
+  duration_ms: 37.00446
+  type: 'test'
+  ...
+# Subtest: two real owner setup challenges allow only one credential and one consumed grant
+ok 87 - two real owner setup challenges allow only one credential and one consumed grant
+  ---
+  duration_ms: 47.254822
+  type: 'test'
+  ...
+# Subtest: owner setup audit failure rolls back credential, grant consumption and session together
+ok 88 - owner setup audit failure rolls back credential, grant consumption and session together
+  ---
+  duration_ms: 39.483059
+  type: 'test'
+  ...
+# Subtest: shared owner setup UI sends the privately typed code only to same-origin enrolment and clears it on success
+ok 89 - shared owner setup UI sends the privately typed code only to same-origin enrolment and clears it on success
+  ---
+  duration_ms: 1.955521
+  type: 'test'
+  ...
+# Subtest: shared owner setup UI contains cancellation without a verification request or false success
+ok 90 - shared owner setup UI contains cancellation without a verification request or false success
+  ---
+  duration_ms: 0.681949
+  type: 'test'
+  ...
+# Subtest: shared owner setup UI rejects missing setup code before any request
+ok 91 - shared owner setup UI rejects missing setup code before any request
+  ---
+  duration_ms: 0.532674
+  type: 'test'
+  ...
+# (node:52) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:52) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:52) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:52) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:52) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:52) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:52) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:52) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: four independent SQLite workers can redeem first-passkey authority only once
+ok 92 - four independent SQLite workers can redeem first-passkey authority only once
+  ---
+  duration_ms: 346.716485
+  type: 'test'
+  ...
+# Subtest: first-passkey purpose refuses replacement credentials and durably revoked authority
+ok 93 - first-passkey purpose refuses replacement credentials and durably revoked authority
+  ---
+  duration_ms: 54.439177
+  type: 'test'
+  ...
+# Subtest: editing setup code cannot enable a duplicate ceremony while a request is pending
+ok 94 - editing setup code cannot enable a duplicate ceremony while a request is pending
+  ---
+  duration_ms: 1.038057
+  type: 'test'
+  ...
+# (node:68) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: expired in-app API sessions return to passwordless entry
+ok 95 - expired in-app API sessions return to passwordless entry
+  ---
+  duration_ms: 1.865535
+  type: 'test'
+  ...
+# Subtest: URL objects preserve the expired-session redirect
+ok 96 - URL objects preserve the expired-session redirect
+  ---
+  duration_ms: 1.228715
+  type: 'test'
+  ...
+# Subtest: successful logout returns to passwordless entry
+ok 97 - successful logout returns to passwordless entry
+  ---
+  duration_ms: 0.500185
+  type: 'test'
+  ...
+# Subtest: role denials and external response failures preserve the current screen
+ok 98 - role denials and external response failures preserve the current screen
+  ---
+  duration_ms: 0.997986
+  type: 'test'
+  ...
+# (node:76) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: unconfigured intake explains setup without claiming an import or polling on renders
+ok 99 - unconfigured intake explains setup without claiming an import or polling on renders
+  ---
+  duration_ms: 11.458972
+  type: 'test'
+  ...
+# Subtest: receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+ok 100 - receipts distinguish awaiting validation, rejected and unknown status, escaping metadata
+  ---
+  duration_ms: 2.627665
+  type: 'test'
+  ...
+# Subtest: configured feed with no receipts and missing authentication remain distinct
+ok 101 - configured feed with no receipts and missing authentication remain distinct
+  ---
+  duration_ms: 2.32005
+  type: 'test'
+  ...
+# Subtest: refresh failure clears previous receipt details and permits manual retry
+ok 102 - refresh failure clears previous receipt details and permits manual retry
+  ---
+  duration_ms: 4.098734
+  type: 'test'
+  ...
+# Subtest: authentication, unavailable receiver and malformed data do not become empty successful intake
+ok 103 - authentication, unavailable receiver and malformed data do not become empty successful intake
+  ---
+  duration_ms: 7.672789
+  type: 'test'
+  ...
+# Subtest: tenant and account switches remove pending old receipts even before a new render
+ok 104 - tenant and account switches remove pending old receipts even before a new render
+  ---
+  duration_ms: 7.002937
+  type: 'test'
+  ...
+# Subtest: route departure, rerender and pagehide abort old requests; employees never fetch receipts
+ok 105 - route departure, rerender and pagehide abort old requests; employees never fetch receipts
+  ---
+  duration_ms: 5.504417
+  type: 'test'
+  ...
+# Subtest: concurrent refresh clicks do not duplicate the request
+ok 106 - concurrent refresh clicks do not duplicate the request
+  ---
+  duration_ms: 2.123604
+  type: 'test'
+  ...
+1..106
+# tests 106
+# suites 0
+# pass 106
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3979.059652

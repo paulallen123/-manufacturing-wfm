@@ -5,6 +5,8 @@ const { DatabaseSync } = require('node:sqlite');
 const { createGustoCompanyConnector } = require('./gusto-company-connector.cjs');
 const { serveGustoOAuthLanding } = require('./gusto-oauth-landing.cjs');
 
+const { createThreeMinFeed } = require('./three-min-feed.cjs');
+
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
 const INTERNAL_HEADER = 'x-wfm-integration-internal';
@@ -363,6 +365,8 @@ function createAutonomousIntegrationHub(options = {}) {
     'CREATE TRIGGER IF NOT EXISTS no_integration_event_delete BEFORE DELETE ON integration_events ' +
       'BEGIN SELECT RAISE(ABORT,\'Integration events are append only.\'); END;'
   );
+
+  const feed = createThreeMinFeed({ db, env: options.env || process.env, now: options.now || Date.now });
 
   const gustoEnv = options.env || process.env;
   const gusto = createGustoCompanyConnector({ db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now });
@@ -1160,6 +1164,7 @@ function createAutonomousIntegrationHub(options = {}) {
     if (gustoRoute) res.setHeader('Referrer-Policy', 'no-referrer');
 
     try {
+      if (await feed.handleRequest(req, res)) return true;
       // Gusto returns through a cross-site navigation. A minimal local document
       // establishes this site's origin before the session-bound POST, preserving
       // the application's existing SameSite=Strict session cookie.
@@ -1174,6 +1179,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
       const ctx = requireManager(req, res);
       if (!ctx) return true;
+      if (req.method === 'GET' && path === PREFIX + '/feeds/3min') return writeJson(res, 200, feed.statusForTenant(ctx.tenant));
       if (req.method === 'GET' && path === PREFIX + '/gusto/configuration') {
         if (!requireGustoAdministrator(ctx, res)) return true;
         return writeJson(res, 200, gustoConfigurationFor(ctx.tenant));
@@ -1224,3 +1230,4 @@ module.exports = {
   validCredentialReference,
   screenWorkforceProvenanceShadow
 };
+
