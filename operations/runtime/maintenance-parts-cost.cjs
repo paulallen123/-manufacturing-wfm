@@ -18,6 +18,9 @@ function source(x) {
 function scoped(x, input) {
   if (x.tenantId !== input.tenantId || x.siteId !== input.siteId) fail('SCOPE_MISMATCH');
 }
+// One declared source revision cannot identify two contradictory receipts.
+// Structured tuples preserve field boundaries even when IDs contain separators.
+function sourceKey(x) { return JSON.stringify([x.source, x.recordId, x.revision]); }
 function estimateMaintenancePartsCost(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input) ||
     !id(input.tenantId) || !id(input.siteId) || !id(input.workOrderId) ||
@@ -30,7 +33,7 @@ function estimateMaintenancePartsCost(input) {
   const eventAt = time(order.eventAt), observedAt = time(order.observedAt);
   if (eventAt > observedAt || observedAt > asOf) fail('WORK_ORDER_CHRONOLOGY');
   if (!Array.isArray(input.prices) || input.prices.length !== order.requiredParts.length) fail('PRICE_SET_MISMATCH');
-  const quantities = new Map(), priceByPart = new Map(), sourceKeys = new Set();
+  const quantities = new Map(), priceByPart = new Map(), sourceKeys = new Set([sourceKey(order)]);
   const sourceHashes = new Set([order.recordSha256]);
   for (const part of order.requiredParts) {
     if (!part || !id(part.partId) || !Number.isSafeInteger(part.quantity) ||
@@ -39,13 +42,13 @@ function estimateMaintenancePartsCost(input) {
   }
   for (const price of input.prices) {
     source(price); scoped(price, input);
-    const sourceKey = price.source + '\u0000' + price.recordId + '\u0000' + price.revision;
+    const priceSourceKey = sourceKey(price);
     if (!id(price.partId) || !quantities.has(price.partId) || priceByPart.has(price.partId) ||
-      sourceKeys.has(sourceKey) || sourceHashes.has(price.recordSha256) || price.currency !== input.currency ||
+      sourceKeys.has(priceSourceKey) || sourceHashes.has(price.recordSha256) || price.currency !== input.currency ||
       !Number.isSafeInteger(price.unitCostPence) || price.unitCostPence < 0) fail('INVALID_PRICE');
     const from = time(price.effectiveFrom), to = time(price.effectiveTo), seen = time(price.observedAt);
     if (from >= to || from > asOf || to <= asOf || seen > asOf) fail('PRICE_NOT_CURRENT');
-    sourceKeys.add(sourceKey);
+    sourceKeys.add(priceSourceKey);
     sourceHashes.add(price.recordSha256);
     priceByPart.set(price.partId, { unitCostPence: price.unitCostPence, hash: price.recordSha256 });
   }

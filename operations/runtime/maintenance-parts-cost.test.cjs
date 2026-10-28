@@ -42,3 +42,28 @@ test('order finality, chronology, quantity and overflow fail closed', () => {
   assert.throws(() => estimateMaintenancePartsCost({ ...x, workOrder: { ...x.workOrder, requiredParts: [{ partId: 'bearing', quantity: 0 }, x.workOrder.requiredParts[1]] } }));
   assert.throws(() => estimateMaintenancePartsCost({ ...x, prices: [{ ...x.prices[0], unitCostPence: Number.MAX_SAFE_INTEGER }, x.prices[1]] }));
 });
+test('price cannot reuse the work-order source revision with contradictory bytes', () => {
+  const x = fixture();
+  const orderIdentity = Object.fromEntries(['source','recordId','revision'].map(k => [k,x.workOrder[k]]));
+  for (const position of [0,1]) {
+    const prices=x.prices.map((p,i)=>i===position?{...p,...orderIdentity}:p);
+    assert.throws(()=>estimateMaintenancePartsCost({...x,prices}),/INVALID_PRICE/);
+  }
+});
+test('structured source keys do not collapse distinct identities containing separators', () => {
+  const x = fixture();
+  x.prices[0]={...x.prices[0],source:'a\u0000b',recordId:'c',revision:'d'};
+  x.prices[1]={...x.prices[1],source:'a',recordId:'b\u0000c',revision:'d'};
+  assert.equal(estimateMaintenancePartsCost(x).declaredPlannedPartsCostPence,5375);
+  x.workOrder={...x.workOrder,source:'a',recordId:'b',revision:'c\u0000d'};
+  assert.equal(estimateMaintenancePartsCost(x).declaredPlannedPartsCostPence,5375);
+  x.prices[1]={...x.prices[1],source:x.workOrder.source,recordId:x.workOrder.recordId,revision:x.workOrder.revision};
+  assert.throws(()=>estimateMaintenancePartsCost(x),/INVALID_PRICE/);
+});
+test('source identity includes revision and preserves zero-valued price evidence', () => {
+  const x = fixture();
+  x.prices[0]={...x.prices[0],source:x.workOrder.source,recordId:x.workOrder.recordId,revision:'3',unitCostPence:0};
+  const r=estimateMaintenancePartsCost(x);assert.equal(r.declaredPlannedPartsCostPence,375);
+  assert.equal(r.sourceAuthenticated,false);assert.equal(r.executionAuthority,false);
+  delete x.prices[0].unitCostPence;assert.throws(()=>estimateMaintenancePartsCost(x),/INVALID_PRICE/);
+});
