@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "runId": "vector-session-recovery-20261027",
+  "owner": "/root",
+  "workspace": "cd4e2bcb0821",
+  "parentSha": "7fa8e4f370c5b3f8d19f862f07b67f11b4fa3ad8",
+  "createdAt": "2026-10-27T15:57:14.943245+00:00",
+  "finding": 4382253645,
+  "change": "Expire unusable wfm_session on guard401; preserve rejection, containment, and active-session federation409.",
+  "localProof": {
+    "node": "22.23.2",
+    "before": {
+      "tests": 14,
+      "pass": 9,
+      "fail": 5
+    },
+    "after": {
+      "tests": 48,
+      "pass": 48,
+      "fail": 0,
+      "skipped": 0
+    },
+    "providerCalls": 0
+  },
+  "servingBaseline": {
+    "sha": "7fa8e4f370c5b3f8d19f862f07b67f11b4fa3ad8",
+    "deploymentId": "a312e44e-57f1-4672-99e5-d0089be97433",
+    "artifactDigest": "sha256:79df3e7b207ed8ef1e8b6a1af9ad67880c3af809b1751f54c1f76fd4e3fcf69b",
+    "url": "https://vector-hardening-proof-production.up.railway.app/",
+    "identity": "build-file-matched",
+    "health": "ok",
+    "fixtureOnly": true,
+    "productionApproved": false,
+    "pilotReady": false,
+    "browserMethod": "cloud CUA public sign-in, identity and health pages",
+    "healthTraceId": "9ee8431467e384bb0228d9e3408f9595",
+    "observedBuildGroups": [
+      {
+        "tests": 327,
+        "pass": 327,
+        "skip": 0
+      },
+      {
+        "tests": 1614,
+        "pass": 1614,
+        "skip": 0
+      },
+      {
+        "tests": 707,
+        "pass": 695,
+        "skip": 12
+      },
+      {
+        "tests": 88,
+        "pass": 88,
+        "skip": 0
+      }
+    ],
+    "warning": "Groups overlap;12 installed-stage pinned-session checks skipped (archive unavailable); no blanket zero-skip claim."
+  },
+  "sourceFiles": {
+    "security/runtime/identity-survival-guard.cjs": {
+      "sha256": "2e07ac5b5f2046a8ef4a5ca0a698f9940800a24e224a5119445bffa75db939d4",
+      "gitBlob": "f5325b5537db8f10ba45511aa3e3a831a6c16b38"
+    },
+    "security/runtime/federated-session-boundary.test.cjs": {
+      "sha256": "b817d57041b2e12aab94b1194fa6726ef4f1f78816e4a96545071cbad90b1d09",
+      "gitBlob": "847e7b45bce1320d877872fab81d502c52e4c0db"
+    }
+  },
+  "limitations": [
+    "Successor not image/hosted proven",
+    "Google/Apple not configured on proof service",
+    "No authenticated setup wizard or provider/customer proof",
+    "Security review on previous06b9 stale; current review required",
+    "Rollback artifact known; restore not rehearsed"
+  ],
+  "evidenceHashes": {
+    "after.tap": "a3bb8bc63f07c24f677aac9198a6b7b15cce5ff3f70991551465da1090ddce47",
+    "before.tap": "7fed7b9f78d035c38bd775ba6c6dd3edac805091d654b28221aff946627f4c34",
+    "hosted-build-evidence.json": "7948915a710cae1acc99cc9b68be619f3a416ed4607f4784e9b9d703771c7cbf"
+  },
+  "screenshot": {
+    "path": "vector-live-7fa8-signin.jpg",
+    "sha256": "6277b86c2b70458a4fd2c9f3cbffd9b3fd3854129ce1aab9f218f6953e5a170a"
+  },
+  "independentReview": {
+    "owner": "/root/session_recovery_review",
+    "verdict": "ACCEPT",
+    "tests": 52,
+    "pass": 52,
+    "skip": 0,
+    "overlapsAuthor": true
+  }
+}

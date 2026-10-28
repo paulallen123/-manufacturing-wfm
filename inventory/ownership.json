@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-27T01:40:18.374Z",
+  "updatedAt": "2026-10-28T03:10:41.313432+00:00",
   "integrationOwner": "/root (existing Work integration owner, explicit user resume)",
   "visibility": "Visible agents and checked PRs only; external chats not exhaustively observable.",
   "leases": [
@@ -152,14 +152,82 @@
         "docs/execution/STATE.md",
         "inventory/capability-map.yaml"
       ]
+    },
+    {
+      "task": "Read-only Help runtime integration",
+      "owner": "/root/help_runtime",
+      "reviewer": "/root",
+      "branch": "test/vector-empty-organisation-regression-20261020",
+      "scope": [
+        "resilience/support-selfhelp-service.cjs",
+        "resilience/support-selfhelp-service.test.cjs",
+        "resilience/support-selfhelp-root.test.cjs",
+        "ux-overlay/vector-help.test.cjs",
+        "ux-overlay/vector-help-root.test.cjs",
+        "ux-overlay/vector-shell.js",
+        "security/runtime/bootstrap.cjs",
+        "scripts/compose-vector-local-runtime.mjs",
+        "Dockerfile",
+        "tests/vector-runtime-packaging.test.cjs"
+      ],
+      "status": "completed implementation; independently reviewed; source377f693; hosted pending",
+      "claimComment": 6450906725,
+      "expiresAt": "2026-10-27T20:00:00Z"
+    },
+    {
+      "task": "Reporting unresolved outcome UI",
+      "owner": "/root",
+      "reviewer": "/root/readiness_reconcile",
+      "scope": [
+        "reporting/ui/vector-reporting-ui.js",
+        "reporting/ui/vector-reporting-ui.test.cjs"
+      ],
+      "status": "completed with47/47 author and24/24 independent; source377f693; hosted pending",
+      "claimComment": 6450995417,
+      "expiresAt": "2026-10-27T20:00:00Z"
+    },
+    {
+      "task": "Full capability readiness reconciliation",
+      "owner": "/root/readiness_reconcile",
+      "status": "completed read-only;59 IDs preserved; no customer-proof upgrades"
+    },
+    {
+      "task": "Repair maintenance order/price identity collision",
+      "owner": "/root",
+      "branch": "feature/maintenance-parts-cost-20261026",
+      "claimComment": 6459310758,
+      "status": "completed at bafde76b3dc70e7d2e19202eeff3d8ff8b799911",
+      "scope": [
+        "operations/runtime/maintenance-parts-cost.cjs",
+        "operations/runtime/maintenance-parts-cost.test.cjs"
+      ]
+    },
+    {
+      "task": "Existing signed proof-runner preparation",
+      "owner": "/root/help_runtime",
+      "reviewer": "/root/readiness_reconcile",
+      "status": "completed source preparation at 99564a5b91a28fbdd06d9c79e887490694cb5e15; not activated",
+      "scope": [
+        "docs/execution/proof-runner-activation/"
+      ]
+    },
+    {
+      "task": "New PR520/521 reconciliation",
+      "owner": "/root/readiness_reconcile",
+      "status": "completed read-only, HARVEST pending consumers and gates",
+      "scope": "No branch, service or automation mutations"
     }
   ],
   "currentExecution": {
-    "identity": "/root",
-    "workspace": "/workspace/scratch/cd4e2bcb0821",
-    "sourceParent": "aa4e1035eb5a1b6f6a3c872f0251a07bd27d34e6",
-    "status": "Three-domain source adoption complete; no customer release",
-    "persistentRunner": false
+    "owner": "/root",
+    "workspace": "cd4e2bcb0821",
+    "claimComment": 6459232656,
+    "sourceSha": "99564a5b91a28fbdd06d9c79e887490694cb5e15",
+    "checkpoint": "Containing commit; reconcile remote before resume",
+    "jobs": [],
+    "status": "Checkpoint; no persistent executor for this Work turn",
+    "existingScheduledTasks": "Three enabled daily tasks observed; run status unknown; no new task created",
+    "nextAction": "Reconcile current review/source and existing staged Railway patch; use normal controlled apply only when permitted. Continue highest-priority bounded integration work."
   },
   "externalVerification": {
     "requestComment": 6369979465,

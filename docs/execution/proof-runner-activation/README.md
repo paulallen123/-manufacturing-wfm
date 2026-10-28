@@ -1,31 +1,42 @@
-# Existing VECTOR signed-browser runner activation packet
+# Existing VECTOR signed-browser runner preparation
 
-Prepared and independently reviewed, **not activated**. Existing PR501 owner `/root`; verifier `/root/runner_package_review`. Application target stays at `4ed5eb3668452a0229469b8e1d426e84eea18187`. This packet changes no application source and creates no service or release lane.
+Prepared for review, **not activated or deployed**. Existing PR501 owner `/root`; bounded preparation task `/root/help_runtime`. The four canonical bundled proof scripts are sourced from remotely verified `ca05f1017c1e10f9b164c58a044d2cd4159d4ea3`. `SOURCE`, `runnerSource` and the `VECTOR_PROOF_RUNNER_SOURCE` log identify those four scripts, not the refreshed launcher itself. The launcher and embedded bundle are identified separately by `generated/manifest.json` → `startCommandSha256`. The four canonical proof scripts have the same SHA256 values as the earlier packet and are bundled without edits. This update creates no service or release lane.
 
-Project `43367a88-2233-4c6b-9018-0ce234dd73ca`, environment `eed9f097-610a-416e-83b9-6bc7bdb3eeef`, existing runner service `f84fe27d-af17-451c-b164-54dfef6b6a4b`. Keep its current Playwright image `mcr.microsoft.com/playwright:v1.63.0-noble`; do not enable its obsolete inline proof children alongside the canonical server.
+The currently intended, reviewed application target is also `ca05f1017c1e10f9b164c58a044d2cd4159d4ea3`; that is **not a serving claim**. At preparation, the integration owner's latest deployment observation still identified source `7fa8…`. Reconcile actual deployment and source before activation. A documentation successor does not automatically move the application target or runner configuration.
+
+Preserve project `43367a88-2233-4c6b-9018-0ce234dd73ca`, environment `eed9f097-610a-416e-83b9-6bc7bdb3eeef`, runner service `f84fe27d-af17-451c-b164-54dfef6b6a4b`, target service `48ee3ceb-9cfc-4399-b3a1-3628e3603815`, target URL `https://vector-hardening-proof-production.up.railway.app/` and image `mcr.microsoft.com/playwright:v1.63.0-noble`. Do not run the obsolete inline proof children alongside the canonical server.
+
+## Two separate bindings
+
+`SOURCE` and the four pinned file hashes establish which reviewed runner code is executing. `WFM_EXPECTED_CANDIDATE_SHA` identifies the exact application deployment that code is permitted to examine. They are different facts: updating runner preparation or documentation must not silently select a new product release. The earlier equality check incorrectly coupled them and retained stale `4ed5…` provenance.
+
+The target SHA remains a mandatory, explicit, lowercase 40-hex nonzero value from reviewed deployment configuration. There is no default to `SOURCE`, no discovery from the live response and no automatic rewrite of either value. A correct-looking live response cannot select its own expected target. The canonical client retains its independent deployment, tenant, run, configuration, asset and action-affordance checks.
 
 ## Reproduce preparation
 
-From a checkout whose four canonical source files still match the pinned hashes:
+From a checkout whose four canonical source files match the verified hashes:
 
 ```sh
 node docs/execution/proof-runner-activation/prepare.cjs .
-node --test docs/execution/proof-runner-activation/launcher.test.cjs
+node --test docs/execution/proof-runner-activation/launcher.test.cjs docs/execution/proof-runner-activation/preflight.test.cjs
 ```
 
-The generator refuses changed source bytes. It writes `generated/start-command.txt`, `generated/bundle.json` and `generated/manifest.json`. The committed command is shell-quoted, contains no credentials, embeds compressed exact source and verifies all four files before writing. It uses a fresh private temporary directory, installs only pinned Playwright1.63.0 with scripts disabled, fails on install/browser mismatch and starts the unchanged canonical server. The npm subprocess has a120-second forced-termination budget. Actual registry install/browser image compatibility is still untested in Railway.
+The generator validates the four exact source hashes and produces `generated/start-command.txt`, `generated/bundle.json` and `generated/manifest.json`. The shell-quoted command embeds compressed, hash-bound source and no credentials. It materializes files into a private unique directory only after successful preflight.
 
-## Apply only after these facts exist
+Before materialization, npm installation, signer-module loading or child-server startup, the launcher makes one unauthenticated GET to `/api/runtime-identity`. It sends no cookie, authorization header or signer data. Redirects are rejected; the complete fetch and streamed body share a five-second deadline and an 8 KiB maximum. HTTP failure, wrong content type, bad JSON, timeout, redirected response, excess size or stream failure stops startup.
 
-1. Normally apply the separate target-service patch `564dacd1-ce0f-46f0-bc4c-bb5fd2629422`. It now has five changes: four source fields and the previously missing `WFM_CANDIDATE_SHA=4ed5eb3668452a0229469b8e1d426e84eea18187`. Only target service `48ee3ceb-9cfc-4399-b3a1-3628e3603815` is affected. The corrected saved command is `/usr/local/bin/vector-entrypoint.sh node security-runtime/bootstrap.cjs`. Redeploy reuses the old deployment configuration and does not test this correction. Do not bypass the prior rejected apply.
-2. Verify actual startup logs show volume ownership and UID-drop markers, healthy application, mounted durable DB and `/api/runtime-identity` reporting exact4ed5, `build-file-matched`, `fixtureOnly:true`, `productionApproved:false`. Neither successful image build nor saved configuration proves this.
-3. Enable the existing staging signed-auth route only with a verified public key matching the protected existing private signer. Do not export the signer. Verify the five synthetic persisted users, real implementation run and applied tenant configuration. See `runner-prerequisites.md`. Do not fabricate those values or use manual database grants.
-4. Supply the canonical runner inputs: signed profile; five actor mappings; actual expected source/deployment/tenant/run/configuration; independently derived JS/CSS/workflow digests; both strict flags true. The launcher checks target, source and presence; the unchanged client performs semantic and live identity checks. Presence is not evidence.
-5. Capture the old runner configuration for rollback in approved protected storage, without copying secrets. Replace only this existing runner's start command with the prepared command through normal approved controls. Review the complete environment patch before applying; do not accidentally commit unrelated changes. Keep `/health` as liveness and `/ready` as truthful readiness. Do not repeatedly launch jobs or change the image to work around missing prerequisites.
-6. Observe actual installation, process, browser and source-binding results. `PARTIAL` is successful scoped auth/navigation only; readiness remains503 and business journey flags remain false. Signed screenshots/traces are not yet durably retained; capture/redact those through an approved evidence mechanism before claiming reviewable full browser proof.
+The response must match the configured target SHA exactly, `sourceBinding: "build-file-matched"`, `fixtureOnly: true`, `productionApproved: false` and `pilotReady: false`. The target is never replaced with the returned SHA. This early check only establishes a prerequisite; it does not replace later canonical proof or make a readiness claim.
+
+After preflight, installation remains pinned to Playwright 1.63.0, with scripts disabled and a 120-second forced-termination budget. The installer receives a minimal environment for executable paths, home/temp, locale, trusted CA and proxy transport; it receives no proof signer, actors, customer bindings, provider credentials or `NODE_OPTIONS`. Its cache stays in the disposable directory. The proof child retains the frozen, validated runtime environment it requires. Temporary package/source files are removed on completion or failure. Live registry/image compatibility remains unverified by this local preparation.
+
+## Required before activation
+
+1. Reconcile current ownership, saved target configuration and staged changes; use existing approved release controls. Do not revive an old patch ID or bypass a rejected apply. Independently verify startup, non-root UID, durable volume, health and exact serving identity for the reviewed target.
+2. Retain the existing protected signer/public-key match, persisted synthetic actors and tenant/run/applied-configuration requirements. Do not export secrets, grant identities manually or change access as part of this preparation. The historical `runner-prerequisites.md` remains a source of the canonical contract, not evidence of present deployment state.
+3. Review explicit target/source/deployment/tenant/run/configuration and independently derived asset digests. Signed profile and both strict asset/action flags remain mandatory. Presence checks are not proof of valid credentials or customer readiness.
+4. Capture the existing runner configuration for rollback in approved protected storage. Only then review and apply the existing runner's prepared start command through normal controls. No activation was performed by this work.
+5. Observe actual browser and source results. `PARTIAL` still means scoped signed authentication/navigation only. `/ready` remains 503 for PARTIAL; whole-product and end-to-end readiness remain false. No change was made to canonical proof-result semantics. Retained, redacted screenshots/traces and genuine provider/customer proof remain separate requirements.
 
 ## Evidence and limits
 
-Final package review accepted; author+independent17/17, canonical auth/wrapper+launcher49/49 (overlap), separate runtime identity9/9. The initial author12-test run had one assertion mismatch because a deliberately oversized duplicate triggered the decompression bound before file-set validation; corrected fixture, unchanged validation logic, final12/12. Original output retained.
-
-Evidence is under `evidence/vector-runner-preparation-20261027/`. These are synthetic local tests, not live npm installation, hosted browser, provider or customer proof. No paid resource, customer service, credential or provider write was changed. No active deployment or persistent worker exists at this checkpoint.
+The refresh tests use synthetic identities, local HTTP, fetch stubs and fake npm processes. They verify rejection before materialization/install/child startup, installer environment isolation, malformed and oversized responses, deadlines, source/target separation, unchanged bundle bytes and cleanup. They do not contact Railway, install real packages, activate authentication, read protected secrets, sign production requests or prove a customer environment. Independent review and exact integrated verification are owned by `/root`.

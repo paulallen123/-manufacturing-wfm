@@ -1,0 +1,42 @@
+{
+  "commandExactlyEmbedsReviewedLauncher": true,
+  "commandSha256": "b15c6bf85e4c60076ee9a6a04f03099717f8bc3392d9f764bf00a69362e4b09e",
+  "bundleSha256": "da77ee240dc635f19b29a2d771ff52a856ad98e9ccbe06436e96ac4a63201687",
+  "source": "ca05f1017c1e10f9b164c58a044d2cd4159d4ea3",
+  "canonicalFiles": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "sha256": "5d5921f54b3e501f70004d324036e3c5fbd336b1f04550cb0ec390434252d903",
+      "gitBlob": "b736e153d621daeec4915fbe8627885b6496ff00",
+      "remoteExactMatch": true
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "sha256": "9f945ad2e768ad0645b493015f03fd85022e79b5c1f51038dcb485d6191b9e06",
+      "gitBlob": "17304e46922293a92394938de25972a2148bfc8c",
+      "remoteExactMatch": true
+    },
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "sha256": "6feddbe9a318eae12f79e0374d0bfa13fdace67fd610a6e26abd6a0c4a09205e",
+      "gitBlob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+      "remoteExactMatch": true
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.cjs",
+      "sha256": "0701e4d5d01a211bde865dce2256b9892475f95ae27a415a02132700f1d4fa5b",
+      "gitBlob": "805cb35ce2f750c663be41e8ef6bc780c738a621",
+      "remoteExactMatch": true
+    }
+  ],
+  "generatedFiles": {
+    "launcher.cjs": "c878ff4d3b01257b18493da192012bdb2a24c0c345882b10003d355ea50ff69e",
+    "prepare.cjs": "5953df465f4fb4a1da2a6803b36a05938ee9c71da8e81be609d17dd27296145a",
+    "launcher.test.cjs": "79401f7b1e9db3abc0330846b313a745d3dbad0536e3205763c688866e7e81e5",
+    "preflight.test.cjs": "a30b138b556d0c125315b2d0db000fe0e28ce05869f1b7f6793d7650f678c2d9",
+    "README.md": "6eda9ee3453461a8adbe5b22e500b715c5a65fe0ff32f679f8c1a8486e22f677",
+    "generated/manifest.json": "b12e06c748bce6f06081ca85cea540022f0b2405648c6d0c20a721098928c3cb",
+    "generated/bundle.json": "03a6ac91662aaec0e650b275633966116b2fb82cc86c90f69f695ba4c01a9610",
+    "generated/start-command.txt": "b15c6bf85e4c60076ee9a6a04f03099717f8bc3392d9f764bf00a69362e4b09e"
+  }
+}

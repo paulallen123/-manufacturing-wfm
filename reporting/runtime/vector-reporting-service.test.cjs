@@ -195,10 +195,10 @@ test('role revoked after schedule creation blocks due delivery and appends bound
 });
 
 test('delivery list hides another actor external destination and receipt metadata',async()=>{
-  const x=setup({deliveryAdapter:{authorize:()=>true,deliver:async()=>({destination:'private@payroll.example',receipt:'private-receipt'})}});try{
+  const x=setup({deliveryAdapter:{authorize:()=>true,readback:async()=>({observed:true}),deliver:async()=>({destination:'private@payroll.example',receipt:'private-receipt'})}});try{
     const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'private@payroll.example'});
     await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
-    const own=await call(x.service,'GET','/api/reporting/deliveries','payroll-a');assert.equal(own.body.deliveries[0].status,'SENT');
+    const own=await call(x.service,'GET','/api/reporting/deliveries','payroll-a');assert.equal(own.body.deliveries[0].status,'UNKNOWN');
     const other=await call(x.service,'GET','/api/reporting/deliveries','manager-a');assert.deepEqual(other.body.deliveries,[]);assert.doesNotMatch(JSON.stringify(other.body),/private@|private-receipt/);
   }finally{x.close();}
 });
@@ -232,7 +232,7 @@ test('cross-tenant 404 and append-only triggers preserve every persisted artifac
 });
 
 test('DST spring-forward and repeated fall-back local slots deliver only once',async()=>{
-  let sent=0;const x=setup({deliveryAdapter:{authorize:()=>true,deliver:async()=>{sent++;return {id:'dst'};}}});try{
+  let sent=0;const x=setup({deliveryAdapter:{authorize:()=>true,readback:async()=>({observed:true}),deliver:async()=>{sent++;return {id:'dst'};}}});try{
     const report=await makeReport(x,'manager-a','factory-readiness');await makeSchedule(x,report.id,'manager-a',{hour:1,minute:30,timeZone:'Europe/London',delivery:'email_link',destination:'manager@example.test'});
     assert.equal((await x.service.runDueSchedules(new Date('2026-03-29T00:30:00Z'))).length,0);
     assert.equal((await x.service.runDueSchedules(new Date('2026-03-29T01:30:00Z'))).length,0,'nonexistent spring local slot must not deliver');
@@ -456,5 +456,141 @@ test('async current identity readers retain ordinary manager catalog access',asy
     assert.equal(result.status,200);
     assert.equal(result.body.sources.some(source=>source.id==='factory-readiness'),true);
     assert.equal(result.body.sources.some(source=>source.id==='payroll-control'),false);
+  }finally{x.close();}
+});
+
+
+test('external adapters without readback stay recommend-only and create no dispatch intent',async()=>{
+  let calls=0;const x=setup({deliveryAdapter:{authorize:()=>true,deliver:async()=>{calls++;return {};}}});
+  try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(result[0].status,'BLOCKED_READBACK_REQUIRED');assert.equal(calls,0);
+    const db=new DatabaseSync(x.dbPath);try{assert.equal(db.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);}finally{db.close();}
+  }finally{x.close();}
+});
+for(const responseLost of [false,true])test('durable intent precedes send; '+(responseLost?'response loss':'response alone')+' remains UNKNOWN after independent readback',async()=>{
+  let sent=0,read=0,seen;let x;
+  const adapter={authorize:()=>true,deliver:async payload=>{
+    sent++;seen=payload;const db=new DatabaseSync(x.dbPath);try{
+      assert.ok(db.prepare('SELECT * FROM vector_report_delivery_intents WHERE delivery_key=?').get(payload.idempotencyKey));
+      assert.throws(()=>db.exec('DELETE FROM vector_report_delivery_intents'),/reviewed reconciliation/);
+    }finally{db.close();}
+    if(responseLost)throw Error('synthetic accepted response lost');return {accepted:true,secret:'must not persist'};
+  },readback:async payload=>{read++;assert.equal(payload,seen);return {observed:true,secret:'must not persist'};}};
+  x=setup({deliveryAdapter:adapter});try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(result[0].status,'UNKNOWN');assert.equal(sent,1);assert.equal(read,1);assert.equal(Object.isFrozen(seen),true);
+    assert.equal(result[0].externalReceipt.reconciliationRequired,true);assert.match(result[0].externalReceipt.readbackDigest,/^[a-f0-9]{64}$/);
+    assert.doesNotMatch(JSON.stringify(result),/must not persist/);
+    await x.service.runDueSchedules(new Date('2026-09-25T16:05:00Z'));assert.equal(sent,1);
+  }finally{x.close();}
+});
+test('two service instances cannot send the same slot twice',async()=>{
+  let sent=0,read=0;const adapter={authorize:()=>true,deliver:async()=>{sent++;await new Promise(r=>setTimeout(r,20));return {};},readback:async()=>{read++;return {};}};
+  const x=setup({deliveryAdapter:adapter});let second;
+  try{const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    second=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    await Promise.all([x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z')),second.runDueSchedules(new Date('2026-09-24T16:05:00Z'))]);
+    assert.equal(sent,1);assert.equal(read,1);
+    const listed=await call(x.service,'GET','/api/reporting/deliveries','payroll-a');
+    assert.equal(listed.body.deliveries[0].observations.length,1);
+    assert.match(listed.body.deliveries[0].observations[0].receipt.readbackDigest,/^[a-f0-9]{64}$/);
+  }finally{second?.close();x.close();}
+});
+test('pause during awaited connector authorization prevents intent and dispatch',async()=>{
+  let pause=false,sent=0,x,scheduleId;
+  const adapter={authorize:async()=>{
+    if(pause){const db=new DatabaseSync(x.dbPath);try{db.prepare('INSERT INTO vector_report_schedule_events(tenant,schedule_id,enabled,actor,created_at) VALUES(?,?,?,?,?)').run('tenant-a',scheduleId,0,'payroll@a.example',new Date().toISOString());}finally{db.close();}}
+    return true;
+  },deliver:async()=>{sent++;return {};},readback:async()=>({})};
+  x=setup({deliveryAdapter:adapter});try{
+    const report=await makeReport(x);scheduleId=(await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'})).id;
+    pause=true;const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(result[0].status,'BLOCKED_SCHEDULE_PAUSED');assert.equal(sent,0);
+  }finally{x.close();}
+});
+test('worker death after intent commit retains quarantine across restart, replacement report/schedule and later slot; other tenant continues',async()=>{
+  const {spawnSync}=require('node:child_process');let sent=0;
+  const adapter={authorize:()=>true,deliver:async()=>{sent++;return {};},readback:async()=>({})};
+  const x=setup({deliveryAdapter:adapter});let restarted;
+  try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'Synthetic@Example.Test'});
+    const marker=path.join(x.dir,'dispatch.marker');
+    const child=spawnSync(process.execPath,['-e',`const R=require(${JSON.stringify(require.resolve('./vector-reporting-service.cjs'))}); const fs=require('node:fs'); const s=R.createVectorReportingService({dbPath:process.argv[1],deliveryAdapter:{authorize:()=>true,readback:async()=>({}),deliver:async()=>{fs.appendFileSync(process.argv[2],'applied\\n');process.exit(23);}}});s.runDueSchedules(new Date('2026-09-24T16:05:00Z'));`,x.dbPath,marker],{encoding:'utf8',timeout:15000});
+    assert.equal(child.status,23,child.stderr);assert.match(fs.readFileSync(marker,'utf8'),/applied/);
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    const pending=await call(restarted,'GET','/api/reporting/deliveries','payroll-a');
+    assert.equal(pending.body.deliveries[0].status,'UNKNOWN');
+    assert.equal(pending.body.deliveries[0].receipt.externalReceipt.dispatchOutcome,'UNKNOWN');
+    assert.deepEqual((await call(restarted,'GET','/api/reporting/deliveries','manager-a')).body.deliveries,[]);
+    const recovered=await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(recovered[0].status,'UNKNOWN');assert.equal(recovered[0].externalReceipt.dispatchOutcome,'UNKNOWN');
+    const replacement=await makeReport(x);await makeSchedule(x,replacement.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const other=await makeReport(x,'manager-b','factory-readiness');await makeSchedule(x,other.id,'manager-b',{delivery:'email_link',destination:'synthetic@example.test'});
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.filter(r=>r.status==='BLOCKED_RECONCILIATION_REQUIRED').length,2);assert.equal(sent,1,'only independent other tenant dispatches');
+  }finally{restarted?.close();x.close();}
+});
+
+test('separate worker processes race through one durable dispatch claim',async()=>{
+  const {spawn}=require('node:child_process');const x=setup({deliveryAdapter:{authorize:()=>true,deliver:async()=>({}),readback:async()=>({})}});
+  try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const marker=path.join(x.dir,'race.marker');
+    const script=`const R=require(${JSON.stringify(require.resolve('./vector-reporting-service.cjs'))});const fs=require('node:fs');const s=R.createVectorReportingService({dbPath:process.argv[1],deliveryAdapter:{authorize:()=>true,deliver:async()=>{fs.appendFileSync(process.argv[2],'applied\\n');await new Promise(r=>setTimeout(r,100));return {};},readback:async()=>({observed:true})}});s.runDueSchedules(new Date('2026-09-24T16:05:00Z')).then(()=>{s.close();},e=>{console.error(e);s.close();process.exitCode=1;});`;
+    const run=()=>new Promise((resolve,reject)=>{
+      const child=spawn(process.execPath,['-e',script,x.dbPath,marker],{stdio:['ignore','ignore','pipe']});let err='';
+      child.stderr.on('data',d=>err+=d);child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(Error('child exit '+code+' '+err)));
+    });
+    await Promise.all([run(),run()]);assert.equal(fs.readFileSync(marker,'utf8').trim().split('\n').length,1);
+    const deliveries=await call(x.service,'GET','/api/reporting/deliveries','payroll-a');
+    assert.equal(deliveries.body.deliveries.length,1);assert.equal(deliveries.body.deliveries[0].status,'UNKNOWN');
+    assert.equal(deliveries.body.deliveries[0].observations.length,1);
+  }finally{x.close();}
+});
+test('readback failure never releases quarantine or claims send failure',async()=>{
+  let sent=0;const x=setup({deliveryAdapter:{authorize:()=>true,deliver:async()=>{sent++;return {accepted:true};},readback:async()=>{throw Error('synthetic provider read unavailable');}}});
+  try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));assert.equal(result[0].status,'UNKNOWN');
+    assert.match(result[0].externalReceipt.readbackErrorDigest,/^[a-f0-9]{64}$/);assert.equal(result[0].externalReceipt.reconciliationRequired,true);
+    await x.service.runDueSchedules(new Date('2026-09-25T16:05:00Z'));assert.equal(sent,1);
+  }finally{x.close();}
+});
+
+test('authority revoked during dispatch blocks external readback while preserving UNKNOWN',async()=>{
+  let reads=0,x;const adapter={authorize:()=>true,deliver:async()=>{changeRole(x,'payroll@a.example','director');return {accepted:true};},readback:async()=>{reads++;return {};}};
+  x=setup({deliveryAdapter:adapter});try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(result[0].status,'UNKNOWN');assert.equal(reads,0);assert.equal(result[0].externalReceipt.readbackAttempted,false);
+    assert.equal(result[0].externalReceipt.reconciliationRequired,true);
+  }finally{x.close();}
+});
+for(const status of ['SENT','FAILED'])test('historical response-only '+status+' receipt contains replacement schedule after upgrade',async()=>{
+  let sent=0;const x=setup({deliveryAdapter:{authorize:()=>true,deliver:async()=>{sent++;return {};},readback:async()=>({})}});
+  try{
+    const oldReport=await makeReport(x);const oldSchedule=await makeSchedule(x,oldReport.id,'payroll-a',{delivery:'email_link',destination:'Synthetic@Example.Test'});
+    const db=new DatabaseSync(x.dbPath);try{db.prepare('INSERT INTO vector_report_deliveries VALUES(?,?,?,?,?,?,?,?)').run(oldSchedule.id+':old','tenant-a',oldSchedule.id,oldReport.id,'email_link',status,JSON.stringify({status}),new Date().toISOString());}finally{db.close();}
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const result=await x.service.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(result.length,2);assert.ok(result.every(r=>r.status==='BLOCKED_RECONCILIATION_REQUIRED'));assert.equal(sent,0);
+  }finally{x.close();}
+});
+
+test('identity change on final preclaim read cannot replace the actor authorized for dispatch',async()=>{
+  let armed=false,reads=0,sent=0;
+  const x=setup({currentUserReader:({email,tenant})=>{
+    if(armed)reads++;
+    return {email,tenant,role:armed&&reads===6?'employee':'payroll_admin'};
+  },deliveryAdapter:{authorize:()=>true,deliver:async()=>{sent++;return {};},readback:async()=>({})}});
+  try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    // Selection read + schedule/report/recheck/final authorization reads =5;
+    // the sixth read is the last preclaim snapshot after access resolves.
+    armed=true;const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(reads,6);assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');assert.equal(sent,0);
   }finally{x.close();}
 });

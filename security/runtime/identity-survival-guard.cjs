@@ -59,6 +59,9 @@ function privilegedAction(req, role) {
 function writeJson(res, status, body) {
   if (res.headersSent || res.writableEnded) return true;
   res.statusCode = status;
+  // A rejected session must not trap the browser behind its stale cookie.
+  // Keep the 401 and containment; expire only the unusable session credential.
+  if (status === 401) res.setHeader('Set-Cookie', 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');

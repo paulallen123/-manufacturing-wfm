@@ -1,3 +1,31 @@
+# Current blockers — 2026-10-28T03:10:41.313432+00:00
+
+1. Existing Railway normal apply remains cancelled by action control; no current candidate image/build. Preserve reviewed staged changes, no bypass/repeat unchanged apply.
+2. Current successor code review and required dedicated/security release evidence pending. Older06b9 scan is not current. Source-only evidence cannot substitute for exact artifact/browser proof.
+3. Signed existing runner prerequisites and child environment least-privilege activation review outstanding. Packet prepared/tested, not activated; no keys copied.
+4. PR519 source defect repaired atbafde76b3dc70e7d2e19202eeff3d8ff8b799911; consumer/source custody/PR394/488 convergence still block canonical adoption.
+5. PR520 financial heldouts expose pre-existing out-of-period/null consumption claims; source oracle preserved, no customer financial exposure approved.521 needs real scheduling/LMS consumer.
+6. Three enabled daily tasks observed, including stalePR369 direction; liveness/results unknown. Existing owner/leases must be reconciled, no new worker.
+7. Full customer journey, managed Google/Apple provider configuration, provider readback, customer acceptance and realized outcomes remain unproven. Full backlog scope unchanged.
+
+Current evidence: evidence/vector-execution-progress-20261028/manifest.json. Current entries supersede resolved historical blockers below.
+
+## Preserved prior checkpoint
+
+# Current blockers — 2026-10-27T19:08:22.057Z
+
+This section supersedes conflicting historical status below. Full accepted scope is retained.
+
+- Latest serving isolated proof artifact remains source 7fa8e4f370c5b3f8d19f862f07b67f11b4fa3ad8, deployment a312e44e-57f1-4672-99e5-d0089be97433 SUCCESS. Its final installed archive gate ran 88/88 with zero skips; historical twelve early skips are covered there. Newer source repairs are not hosted yet.
+- Railway normal staged apply again returned "Cancelled — the user did not approve this action. No changes were made." during this Work execution. User authorization is already recorded; platform action control remains blocking. No alternate route/bypass, new service, volume, subscription or apply loop. Align pending source+identity to the current reviewed candidate before any permitted apply; check the whole patch and active jobs first.
+- Source377f69314b2e5de5d30078f36cb15760916806db includes read-only Help and honest reporting outcomes.195/195 integrated local tests and fresh assembled HTTP proof passed with synthetic data. Full candidate image/native browser/current security review and required formal release approvals remain outstanding.
+- Existing proof-runner has not been activated with matching secure signing configuration, persisted synthetic actors and a real implementation run/configuration. A receipt-only runner is not a customer journey. No repeated Codex build request6369979465.
+- Customer service configuration has signed-proof and provider variable names; presence is not credential validity or provider acceptance. Do not copy values. Google/Apple provider client configuration is not present in inspected variable names. Exact authorized identity/provider setup is still required.
+- Invite/questionnaire/connected workforce+production/schedule/absence/approved external write/readback/outcome/audit must still be joined in the authorized customer environment. No current customer acceptance, cash-confirmed savings or full product completion is established.
+- Current open-PR recount288 including269 drafts. Two new records518/519 await actual review. Full disposition and59-capability proof remain incomplete; inventory/customer-readiness.json preserves all scope and per-domain gaps.
+
+## Prior blocker history (may be superseded above)
+
 # Current blockers — 2026-10-23T21:13:34.361Z
 
 - Prior753109 isolated build nowSUCCESS, actual digest recorded; missing-image/startup failure below is superseded for that build only.
@@ -42,3 +70,5 @@ The prior lookup-to-issuance race is closed in the containing candidate: owner13
 - Unchanged local composed test passed1/1. Diagnostic proposal remains UNADOPTED, validation2pass/3fail; root cause unresolved. /root/build_route_review verdict HOLD.
 - No timeout increase, customer deployment, release or new build. Next: reliable startup-phase diagnostics, coherent source/artifact identity, then current hosted proof and existing review/release gates.
 - See evidence/vector-build-startup-20261023/manifest.json and review.md. Existing isolated compute incurred usage; amount unverified. No new resource/subscription.
+
+

@@ -11,7 +11,7 @@ RUN node --test implementation/ui/implementation-observer.test.cjs
 RUN node --test implementation/ui/workspace-setup.test.cjs implementation/runtime/workspace-setup.test.cjs implementation/runtime/customer-workspace.test.cjs implementation/runtime/organisation-access-setup.test.cjs
 RUN node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/clean-customer-state.test.cjs implementation/runtime/setup-customer-state.test.cjs
 RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs verification/first-use-regressions-20261012/deferred-connections.test.cjs
-RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-admission.test.cjs resilience/support-selfhelp.test.cjs
+RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-admission.test.cjs resilience/support-selfhelp.test.cjs resilience/support-selfhelp-service.test.cjs resilience/support-selfhelp-root.test.cjs ux-overlay/vector-help.test.cjs ux-overlay/vector-help-root.test.cjs
 RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
@@ -163,6 +163,7 @@ COPY operations/runtime/workforce-lifecycle-guard.cjs /app/operations-runtime/wo
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/decision-episode.cjs operations/runtime/manufacturing-scheduling-engine.cjs operations/runtime/scheduling-intelligence-service.cjs operations/runtime/scheduling-authority.cjs operations/runtime/manufacturing-demand-forecast.cjs operations/runtime/schedule-attendance-reconciliation.cjs operations/runtime/customer-demand-intelligence.cjs operations/runtime/absence-recovery-shadow.cjs operations/runtime/demand-decision-service.cjs operations/runtime/decision-outcome-proof.cjs operations/runtime/realtime-event-service.cjs operations/runtime/autopilot-execution-engine.cjs operations/runtime/t9-customer-guardian.cjs /app/operations-runtime/
 RUN mkdir -p /app/reporting-runtime /app/policy-runtime
 COPY reporting/runtime/vector-reporting-service.cjs /app/reporting-runtime/vector-reporting-service.cjs
+COPY resilience/support-selfhelp.cjs resilience/support-selfhelp-service.cjs /app/support-runtime/
 COPY policy/runtime/country-policy-pack-registry.cjs policy/runtime/jurisdiction-policy-graph.cjs policy/runtime/global-site-policy-preflight.cjs policy/runtime/authoritative-policy-source-registry.cjs policy/runtime/regulatory-change-candidate.cjs /app/policy-runtime/
 RUN mkdir -p /app/trust-runtime
 COPY trust/runtime/vector-trust-spine.cjs /app/trust-runtime/vector-trust-spine.cjs

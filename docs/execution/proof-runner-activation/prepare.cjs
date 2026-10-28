@@ -20,8 +20,12 @@ fs.writeFileSync(path.join(out, 'bundle.json'), JSON.stringify({ payload, bundle
 fs.writeFileSync(path.join(out, 'start-command.txt'), command + '\n');
 fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify({ schema: 1, source: launcher.SOURCE,
   scope: 'existing isolated signed browser runner; prepared, not activated',
+  runnerSource: launcher.SOURCE, intendedReviewedTargetSha: 'ca05f1017c1e10f9b164c58a044d2cd4159d4ea3',
+  targetSelection: 'explicit WFM_EXPECTED_CANDIDATE_SHA from reviewed deployment configuration; never inferred from response or runner source',
+  preflight: { endpoint: '/api/runtime-identity', unauthenticated: true, beforeInstallAndSigner: true, timeoutMs: launcher.PREFLIGHT_TIMEOUT_MS, maximumBytes: launcher.MAX_IDENTITY_BYTES, redirects: 'error', requires: ['exact configured target SHA', 'build-file-matched', 'fixtureOnly:true', 'productionApproved:false', 'pilotReady:false'] },
   serviceId: 'f84fe27d-af17-451c-b164-54dfef6b6a4b', bundleSha256: bundleHash,
   startCommandSha256: launcher.hash(Buffer.from(command + '\n')), startCommandBytes: Buffer.byteLength(command),
+  installerEnvironment: 'minimal transport/CA/path/locale allowlist; proof and provider credentials excluded',
   playwright: '1.63.0', image: 'mcr.microsoft.com/playwright:v1.63.0-noble', files: launcher.FILES,
   proof: { materializationOnly: true, hosted: false, provider: false, customer: false },
   pending: ['normal target staged-change application', 'verified target startup and serving identity',

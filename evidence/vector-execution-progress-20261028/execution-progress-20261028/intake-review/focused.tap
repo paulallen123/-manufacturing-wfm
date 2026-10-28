@@ -1,0 +1,110 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: uses GB local time so BST does not misprice a half-hour
+ok 1 - uses GB local time so BST does not misprice a half-hour
+  ---
+  duration_ms: 27.287372
+  type: 'test'
+  ...
+# Subtest: winter UTC and summer BST resolve to different tariff bands correctly
+ok 2 - winter UTC and summer BST resolve to different tariff bands correctly
+  ---
+  duration_ms: 0.745903
+  type: 'test'
+  ...
+# Subtest: uses the latest ordered meter revision and drops exact replay duplicates
+ok 3 - uses the latest ordered meter revision and drops exact replay duplicates
+  ---
+  duration_ms: 0.248364
+  type: 'test'
+  ...
+# Subtest: fails closed on conflicting same-revision reads
+ok 4 - fails closed on conflicting same-revision reads
+  ---
+  duration_ms: 0.512781
+  type: 'test'
+  ...
+# Subtest: fails closed when the meter point does not match the tariff
+ok 5 - fails closed when the meter point does not match the tariff
+  ---
+  duration_ms: 0.34605
+  type: 'test'
+  ...
+# Subtest: models explicit CCL-style per-kWh and maximum-demand charges without hardcoding customer rates
+ok 6 - models explicit CCL-style per-kWh and maximum-demand charges without hardcoding customer rates
+  ---
+  duration_ms: 0.403237
+  type: 'test'
+  ...
+# Subtest: refuses exact spend when half-hourly coverage is incomplete
+ok 7 - refuses exact spend when half-hourly coverage is incomplete
+  ---
+  duration_ms: 0.685581
+  type: 'test'
+  ...
+# Subtest: allows exact spend only when meter, tariff, invoice and ledger reconcile
+ok 8 - allows exact spend only when meter, tariff, invoice and ledger reconcile
+  ---
+  duration_ms: 0.686483
+  type: 'test'
+  ...
+# Subtest: foreign or unbound ledger cannot finance-reconcile an exact meter bill
+ok 9 - foreign or unbound ledger cannot finance-reconcile an exact meter bill
+  ---
+  duration_ms: 1.485215
+  type: 'test'
+  ...
+# Subtest: malformed invoice, ledger and tolerance values cannot produce exact spend
+ok 10 - malformed invoice, ledger and tolerance values cannot produce exact spend
+  ---
+  duration_ms: 3.251823
+  type: 'test'
+  ...
+# Subtest: missing and rolled invoice billing periods cannot omit standing charges from exact spend
+ok 11 - missing and rolled invoice billing periods cannot omit standing charges from exact spend
+  ---
+  duration_ms: 0.210527
+  type: 'test'
+  ...
+# Subtest: foreign and coerced meter coverage cannot establish an exact bill
+ok 12 - foreign and coerced meter coverage cannot establish an exact bill
+  ---
+  duration_ms: 1.064662
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: bounded training and published shift overlap is advisory and hides worker reference
+ok 13 - bounded training and published shift overlap is advisory and hides worker reference
+  ---
+  duration_ms: 1.744726
+  type: 'test'
+  ...
+# Subtest: touching boundaries have no declared overlap, without claiming full availability
+ok 14 - touching boundaries have no declared overlap, without claiming full availability
+  ---
+  duration_ms: 1.071642
+  type: 'test'
+  ...
+# Subtest: foreign identity, incomplete state and reused source evidence reject
+ok 15 - foreign identity, incomplete state and reused source evidence reject
+  ---
+  duration_ms: 0.733224
+  type: 'test'
+  ...
+# Subtest: past, future, rolled and inverted evidence times reject
+ok 16 - past, future, rolled and inverted evidence times reject
+  ---
+  duration_ms: 0.382446
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 132.489783

@@ -20,7 +20,7 @@ function fixture(t) {
   const passkey=createPasskeyAuth({dbPath,publicOrigin:'https://vector.test',hosted:true,nodeEnv:'staging',federatedAuth:fed});
   const federatedHandle=fed;
   t.after(()=>{passkey.close();federatedHandle.close();guard.securityControlForTests().db.close();db.close();rmSync(dir,{recursive:true,force:true});});
-  return {db,digest,guard,passkey,disableVerifier(){fed=undefined;},request:{method:'GET',url:'/',headers:{cookie:'wfm_session='+token}}};
+  return {db,digest,guard,passkey,fed,disableVerifier(){fed=undefined;},request:{method:'GET',url:'/',headers:{cookie:'wfm_session='+token}}};
 }
 const response=()=>({headers:{},setHeader(k,v){this.headers[k]=v;},end(body){this.body=body;}});
 test('valid bound federated session reaches existing customer UI and identity guard',t=>{
@@ -39,4 +39,29 @@ for(const mutation of ['role','epoch','freeze','missing-metadata','missing-bindi
 });
 test('missing federated verifier refuses a federated binding',t=>{
   const f=fixture(t);f.disableVerifier();const res=response();assert.equal(f.guard.beforeRequest(f.request,res),true);assert.equal(res.statusCode,401);
+});
+
+for(const mutation of ['revoked','expired','role','epoch','missing-metadata']) test('logout clears '+mutation+' cookie and permits a fresh federated flow', async t=>{
+  const f=fixture(t);
+  if(mutation==='revoked')f.db.exec('DELETE FROM sessions');
+  if(mutation==='expired')f.db.exec('UPDATE sessions SET expires=1');
+  if(mutation==='role')f.db.exec("UPDATE users SET role='employee'");
+  if(mutation==='epoch')f.db.exec('UPDATE identity_tenant_control SET session_epoch=2');
+  if(mutation==='missing-metadata')f.db.exec('DELETE FROM federated_sessions');
+  const start={...f.request,url:'/api/auth/federated/google/start',socket:{encrypted:true}};
+  const blocked=response();await f.fed.handleRequest(start,blocked);assert.equal(blocked.statusCode,409);
+  const logout=response();assert.equal(f.guard.beforeRequest({...f.request,method:'POST',url:'/api/logout'},logout),true);
+  assert.equal(logout.statusCode,401); // No protected operation is admitted.
+  assert.equal(logout.headers['Set-Cookie'],'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0');
+  // Model the browser applying the explicit deletion receipt, not bypassing auth.
+  const next=response();await f.fed.handleRequest({...start,headers:{}},next);
+  assert.equal(next.statusCode,302);assert.match(next.headers.Location,/^https:\/\/accounts.google.com\//);
+  assert.equal(f.db.prepare('SELECT count(*) AS n FROM sessions WHERE expires>?').get(Date.now()).n,0);
+});
+test('valid session still blocks identity switching and is not cleared by the guard',async t=>{
+  const f=fixture(t),start=response();
+  await f.fed.handleRequest({...f.request,url:'/api/auth/federated/google/start',socket:{encrypted:true}},start);
+  assert.equal(start.statusCode,409);assert.equal(start.headers['Set-Cookie'],undefined);
+  const normal=response();assert.equal(f.guard.beforeRequest(f.request,normal),false);
+  assert.equal(normal.headers['Set-Cookie'],undefined);
 });

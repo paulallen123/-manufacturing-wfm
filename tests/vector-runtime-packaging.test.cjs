@@ -104,6 +104,15 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
       assert.match(composer, /artifact\/wfm-0\.6\.76-hosted-staging-rc1\.tar\.gz/, 'base server must remain sourced from the pinned sealed runtime artifact');
       continue;
     }
+    if (required === 'support-runtime/support-selfhelp-service.cjs') {
+      for (const file of ['support-selfhelp.cjs', 'support-selfhelp-service.cjs']) {
+        assert.ok(fs.existsSync(path.join(root, 'resilience', file)), `support dependency missing: ${file}`);
+        assert.ok(composer.includes(`copy('resilience/${file}', 'support-runtime/${file}')`), `support dependency not composed: ${file}`);
+        assert.ok(docker.includes(`resilience/${file}`), `support dependency not packaged: ${file}`);
+      }
+      assert.match(docker, /COPY resilience\/support-selfhelp\.cjs resilience\/support-selfhelp-service\.cjs \/app\/support-runtime\//);
+      continue;
+    }
     const [runtimeGroup, ...rest] = required.split('/');
     const sourceGroup = runtimeGroups[runtimeGroup];
     assert.ok(sourceGroup, `unmapped bootstrap runtime group: ${runtimeGroup}`);
