@@ -5,6 +5,9 @@ const DOMAINS = Object.freeze(['people','organisation','skills','absence','time'
 const ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 const MAX_BYTES = 256 * 1024;
+// Public source IDs must begin with an alphanumeric character. Rejections are
+// transport events, so their internal identities must never occupy that space.
+const rejectedEventId = recordId => '!rejected:' + recordId;
 const fields = ['schemaVersion','tenant','site','source','domain','environment','eventId','occurredAt','records'];
 const webhookFields = ['id','operation','status','endpoint_slug','payload','processed_at'];
 const digest = value => createHash('sha256').update(value).digest('hex');
@@ -56,6 +59,25 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
  const insert=db.prepare('INSERT INTO integration_feed_inbox VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
  const audit=db.prepare('INSERT INTO integration_events(tenant,connection_id,event,detail_json,created_at) VALUES(?,NULL,?,?,?)');
  const recent=db.prepare('SELECT id,binding_id,site,source,domain,environment,event_id,record_count,payload_sha256,occurred_at,received_at,status,validation_error FROM integration_feed_inbox WHERE tenant=? ORDER BY rowid DESC LIMIT 50');
+ // Preserve original receipts and delivery aliases while moving only the old
+ // derived rejection IDs out of the public source-event namespace. Old binaries
+ // cannot replay these migrated IDs: keep feeds disabled on a pre-fix rollback.
+ const migrationSavepoint=db.isTransaction?'feed_rejections_'+randomUUID().replaceAll('-',''):null;
+ db.exec(migrationSavepoint?'SAVEPOINT '+migrationSavepoint:'BEGIN IMMEDIATE');
+ try{
+  const legacy=db.prepare("SELECT id,binding_id,tenant,record_id,event_id FROM integration_feed_inbox WHERE status='REJECTED_VALIDATION' AND event_id='rejected.' || record_id").all();
+  const migrate=db.prepare("UPDATE integration_feed_inbox SET event_id=? WHERE id=? AND status='REJECTED_VALIDATION' AND event_id=?");
+  for(const row of legacy){
+   if(!UUID.test(row.record_id))throw Error('Invalid legacy feed rejection identity.');
+   const eventId=rejectedEventId(row.record_id);
+   if(Number(migrate.run(eventId,row.id,row.event_id).changes)!==1)throw Error('Feed rejection identity changed during migration.');
+   audit.run(row.tenant,'three-min-feed-rejection-identity-migrated',JSON.stringify({receiptId:row.id,bindingId:row.binding_id,previousEventId:row.event_id,eventId}),new Date(now()).toISOString());
+  }
+  db.exec(migrationSavepoint?'RELEASE '+migrationSavepoint:'COMMIT');
+ }catch(error){
+  try{db.exec(migrationSavepoint?'ROLLBACK TO '+migrationSavepoint+'; RELEASE '+migrationSavepoint:'ROLLBACK');}catch{}
+  throw error;
+ }
  function receipt(row,replayed){return {receiptId:row.id,status:row.status,replayed,transportAuthenticated:true,sourceAuthenticated:false,executionAuthority:false};}
  function statusForTenant(tenant){return {transport:'3min-api',schemaVersion:'vector-feed-v1',sourceAuthenticated:false,executionAuthority:false,
   bindings:[...bindings.values()].filter(b=>b.tenant===tenant).map(b=>({id:b.id,site:b.site,source:b.source,domain:b.domain,environment:b.environment,endpointSlug:b.endpointSlug,configured:validToken(env[b.secretEnv])})),
@@ -125,7 +147,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
    if(raw && ['INVALID_JSON','INVALID_WEBHOOK','UNSUPPORTED_WEBHOOK_RESULT','INVALID_ENVELOPE','INVALID_FEED_RECORDS'].includes(error.code)) {
     // Valid transport credentials bind the rejection to this configured scope.
     // Retain metadata/digest only, never invalid or unbounded source payloads.
-    try{return persist(binding,recordId,{eventId:'rejected.'+recordId,records:[],occurredAt:new Date(now()).toISOString()},raw,res,providedToken,error.code);}catch(storageError){error=storageError;}
+    try{return persist(binding,recordId,{eventId:rejectedEventId(recordId),records:[],occurredAt:new Date(now()).toISOString()},raw,res,providedToken,error.code);}catch(storageError){error=storageError;}
    }
    return json(res,error.status||503,{code:error.code&&error.status?error.code:'FEED_STORAGE_UNAVAILABLE'});
   }

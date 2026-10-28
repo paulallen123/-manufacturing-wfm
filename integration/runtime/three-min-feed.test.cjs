@@ -160,3 +160,70 @@ test('credential revocation or rotation while reading a body cannot persist acce
   }finally{db.close();}
  }
 });
+
+test('rejected deliveries and valid source IDs cannot collide in either arrival order',async t=>{
+ for(const rejectionFirst of [true,false]){
+  const f=await fixture(t),id=randomUUID();
+  const reject=()=>f.send(null,{recordId:id,raw:'{bad'});
+  const accept=()=>f.send(payload({eventId:'rejected.'+id}));
+  const [first,second]=rejectionFirst?[await reject(),await accept()]:[await accept(),await reject()];
+  assert.equal(first.status,202);assert.equal(second.status,202);
+  assert.notEqual(first.body.receiptId,second.body.receiptId);
+  const rows=f.db.prepare('SELECT event_id,status FROM integration_feed_inbox ORDER BY status').all();
+  assert.deepEqual(rows.map(r=>[r.event_id,r.status]),[['rejected.'+id,'RECEIVED_UNVALIDATED'],['!rejected:'+id,'REJECTED_VALIDATION']]);
+  f.reopen();assert.equal((await reject()).status,200);assert.equal((await accept()).status,200);
+  assert.equal(f.db.prepare('SELECT count(*) n FROM integration_feed_inbox').get().n,2);
+ }
+});
+
+test('legacy rejection migration preserves receipt aliases, payload custody and original audit across reopen',async t=>{
+ const f=await fixture(t),id=randomUUID();
+ const rejected=await f.send(null,{recordId:id,raw:'{bad'});
+ f.db.prepare('UPDATE integration_feed_inbox SET event_id=? WHERE id=?').run('rejected.'+id,rejected.body.receiptId);
+ const valid=await f.send(payload({eventId:'rejected.'+randomUUID()}));
+ const before=f.db.prepare('SELECT * FROM integration_feed_inbox WHERE id=?').get(rejected.body.receiptId);
+ const validBefore=f.db.prepare('SELECT * FROM integration_feed_inbox WHERE id=?').get(valid.body.receiptId);
+ const deliveries=f.db.prepare('SELECT * FROM integration_feed_deliveries ORDER BY record_id').all();
+ const originalAudit=f.db.prepare('SELECT * FROM integration_events').all();
+ f.reopen();
+ assert.deepEqual({...f.db.prepare('SELECT * FROM integration_feed_inbox WHERE id=?').get(rejected.body.receiptId)},{...before,event_id:'!rejected:'+id});
+ assert.deepEqual(f.db.prepare('SELECT * FROM integration_feed_inbox WHERE id=?').get(valid.body.receiptId),validBefore);
+ assert.deepEqual(f.db.prepare('SELECT * FROM integration_feed_deliveries ORDER BY record_id').all(),deliveries);
+ const audit=f.db.prepare('SELECT * FROM integration_events ORDER BY rowid').all();
+ assert.deepEqual(audit.slice(0,originalAudit.length),originalAudit);
+ const migrated=JSON.parse(audit.at(-1).detail_json);
+ assert.equal(audit.at(-1).event,'three-min-feed-rejection-identity-migrated');
+ assert.equal(migrated.receiptId,rejected.body.receiptId);assert.equal(migrated.previousEventId,'rejected.'+id);assert.equal(migrated.eventId,'!rejected:'+id);
+ f.reopen();assert.equal(f.db.prepare("SELECT count(*) n FROM integration_events WHERE event='three-min-feed-rejection-identity-migrated'").get().n,1);
+ const replay=await f.send(null,{recordId:id,raw:'{bad'});assert.equal(replay.status,200);assert.equal(replay.body.receiptId,rejected.body.receiptId);
+ assert.equal((await f.send(payload({eventId:'rejected.'+id}))).status,202);
+});
+
+test('migration audit failure atomically rolls back legacy IDs and allows a later retry',async t=>{
+ const {createThreeMinFeed}=require('./three-min-feed.cjs');
+ const f=await fixture(t);const id=randomUUID();const r=await f.send(null,{recordId:id,raw:'{bad'});
+ f.db.prepare('UPDATE integration_feed_inbox SET event_id=? WHERE id=?').run('rejected.'+id,r.body.receiptId);
+ const before=f.db.prepare('SELECT * FROM integration_feed_inbox').all();
+ f.db.exec("CREATE TRIGGER reject_namespace_audit BEFORE INSERT ON integration_events WHEN NEW.event='three-min-feed-rejection-identity-migrated' BEGIN SELECT RAISE(ABORT,'synthetic-migration-audit-failure'); END;");
+ assert.throws(()=>createThreeMinFeed({db:f.db,env:f.env}),/synthetic-migration-audit-failure/);
+ assert.deepEqual(f.db.prepare('SELECT * FROM integration_feed_inbox').all(),before);
+ assert.equal(f.db.prepare("SELECT count(*) n FROM integration_events WHERE event='three-min-feed-rejection-identity-migrated'").get().n,0);
+ f.db.exec('DROP TRIGGER reject_namespace_audit');createThreeMinFeed({db:f.db,env:f.env});
+ assert.equal(f.db.prepare('SELECT event_id FROM integration_feed_inbox').get().event_id,'!rejected:'+id);
+});
+
+test('migration update failure rolls back every prior row and its migration audit',async t=>{
+ const {createThreeMinFeed}=require('./three-min-feed.cjs');const f=await fixture(t);
+ for(let n=0;n<2;n++){const id=randomUUID();const r=await f.send(null,{recordId:id,raw:'{bad'});f.db.prepare('UPDATE integration_feed_inbox SET event_id=? WHERE id=?').run('rejected.'+id,r.body.receiptId);}
+ const before=f.db.prepare('SELECT * FROM integration_feed_inbox ORDER BY rowid').all();
+ f.db.exec("CREATE TRIGGER reject_second_namespace_update BEFORE UPDATE OF event_id ON integration_feed_inbox WHEN (SELECT count(*) FROM integration_feed_inbox WHERE event_id LIKE '!rejected:%')>0 BEGIN SELECT RAISE(ABORT,'synthetic-migration-update-failure'); END;");
+ assert.throws(()=>createThreeMinFeed({db:f.db,env:f.env}),/synthetic-migration-update-failure/);
+ assert.deepEqual(f.db.prepare('SELECT * FROM integration_feed_inbox ORDER BY rowid').all(),before);
+ assert.equal(f.db.prepare("SELECT count(*) n FROM integration_events WHERE event='three-min-feed-rejection-identity-migrated'").get().n,0);
+});
+
+test('reserved rejection namespace is never accepted as a public source event',async t=>{
+ const f=await fixture(t);const r=await f.send(payload({eventId:'!rejected:'+randomUUID()}));
+ assert.equal(r.status,202);assert.equal(r.body.status,'REJECTED_VALIDATION');
+ assert.equal(f.db.prepare("SELECT count(*) n FROM integration_feed_inbox WHERE status='RECEIVED_UNVALIDATED'").get().n,0);
+});
