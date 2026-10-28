@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-27T19:08:22.057Z",
+  "observedAt": "2026-10-28T03:10:41.313432+00:00",
   "complete": false,
-  "totalOpen": 288,
-  "draftsAtInventory": 269,
+  "totalOpen": 290,
+  "draftsAtInventory": 271,
   "reviewed": [
     {
       "pr": 501,
@@ -123,20 +123,65 @@
       "reason": "Exact two-file expired mastery correction adopted;124/124 Node22; actual readiness consumer traced.",
       "releaseStatus": "Integrated into candidate source only; no hosted/provider/customer proof",
       "evidence": "evidence/vector-domain-safety-20261027/manifest.json"
-    }
-  ],
-  "remaining": "All other PRs await actual diff/dependency review; no automatic discard or adoption.",
-  "currentInventory": "inventory/open-pr-snapshot-20261027.json",
-  "newlyObserved": [
-    {
-      "pr": 518,
-      "classification": "UNREVIEWED",
-      "reason": "New since previous snapshot; exact-order material availability evidence needs diff/dependency/security review. No adoption."
     },
     {
       "pr": 519,
-      "classification": "UNREVIEWED",
-      "reason": "New since previous snapshot; maintenance cost estimate needs diff/dependency/financial claims review. No adoption."
+      "head": "bafde76b3dc70e7d2e19202eeff3d8ff8b799911",
+      "disposition": "BLOCKED",
+      "reason": "Source identity collision fixed and independently13/13 verified; current code review clean. Canonical authenticated consumer, source custody, PR394/488 reconciliation and release proof still required.",
+      "resolvedFinding": "519-01",
+      "canonicalAdopted": false,
+      "evidence": "evidence/vector-execution-progress-20261028/manifest.json"
+    },
+    {
+      "pr": 520,
+      "head": "de570d8d9746edd0829131a8cf0ca04942f8388b",
+      "disposition": "HARVEST",
+      "reason": "Useful in-place foreign-ledger/amount/billing-period/coverage rejection; harvest narrowly when higher-priority proof work permits, preserving remaining financial-claim blockers.",
+      "gaps": [
+        "Keep exactSpendClaimAllowed/financeReconciled out of customer financial claims until trusted invoice ID, posting provenance and current complete meter source binding exist.",
+        "Reject meter timestamps outside invoice billing period and missing/null consumption before exact claims; independent heldouts reproduce these pre-existing gaps on donor and canonical.",
+        "Reconcile adjacent energy-data-reconciliation pricing/claim contract; verify existing consumer and input shape before changing admission.",
+        "Exact combined-source/security/image/hosted proof; no realised savings or customer proof inferred."
+      ],
+      "evidence": "evidence/vector-execution-progress-20261028/new-intake-review.json"
+    },
+    {
+      "pr": 521,
+      "head": "585d36f4181475bab887fcfc11b812458f5f53cd",
+      "disposition": "HARVEST",
+      "reason": "Potential useful pairwise conflict oracle; harvest only with real published-roster and mandatory-registration consumer, not as unused module growth.",
+      "gaps": [
+        "Bind authenticated latest published shifts and confirmed mandatory registrations to same tenant/site/opaque worker.",
+        "Reconcile current scheduling and learning models, including source namespaces, all other commitments and role/site authorization.",
+        "Keep pairwise NO_DECLARED_OVERLAP distinct from whole-roster availability; no mastery/assignment/payroll authority.",
+        "Wire one existing customer decision surface, then exact combined image/hosted/permission negatives; no customer readiness upgrade."
+      ],
+      "evidence": "evidence/vector-execution-progress-20261028/new-intake-review.json"
+    },
+    {
+      "pr": 518,
+      "head": "671e5caec641652f94e1b7dffb486b31f5b9c93a",
+      "disposition": "HARVEST",
+      "reason": "Prior ledger6451315494: exact donor4/4. Pure material evidence assessor awaits authenticated canonical consumer, PR486 timing and provider/tenant/order/BOM revision/unit/custody reconciliation. Caller completeness flags are not authenticated stock evidence.",
+      "releaseStatus": "No route/UI/persistence/image/customer proof; no immediate unused-helper adoption."
+    }
+  ],
+  "remaining": "Full inventory classification incomplete; reviewed subset retained. Passing isolated tests does not imply adoption.",
+  "currentInventory": {
+    "path": "evidence/vector-execution-progress-20261028/execution-progress-20261028/open-pr-snapshot-20261028.json",
+    "open": 290,
+    "drafts": 271,
+    "nonDrafts": 19
+  },
+  "newlyObserved": [
+    {
+      "pr": 520,
+      "reviewed": true
+    },
+    {
+      "pr": 521,
+      "reviewed": true
     }
   ]
 }

@@ -1,0 +1,81 @@
+{
+  "task": "/root/help_runtime",
+  "status": "SOURCE_FROZEN_FOR_INDEPENDENT_REVIEW",
+  "runnerBundledScriptsSource": "ca05f1017c1e10f9b164c58a044d2cd4159d4ea3",
+  "intendedReviewedTargetSha": "ca05f1017c1e10f9b164c58a044d2cd4159d4ea3",
+  "newLauncherIdentity": "generated/start-command.txt SHA256",
+  "files": [
+    {
+      "path": "docs/execution/proof-runner-activation/launcher.cjs",
+      "sha256": "c878ff4d3b01257b18493da192012bdb2a24c0c345882b10003d355ea50ff69e",
+      "baselineSha256": "5dd4cec93760df447bf9cbdef8ef5894493b3112f7b66531301090af55f84814",
+      "changed": true
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/prepare.cjs",
+      "sha256": "5953df465f4fb4a1da2a6803b36a05938ee9c71da8e81be609d17dd27296145a",
+      "baselineSha256": "260321485ba96ece4c8109985746961dca2f84ddac015c71f6b9a8efe126201f",
+      "changed": true
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/launcher.test.cjs",
+      "sha256": "79401f7b1e9db3abc0330846b313a745d3dbad0536e3205763c688866e7e81e5",
+      "baselineSha256": "5087e43ee7628a2b4ee83f63b41ae3d6954f3ec97fb3af92ab947f09e2c2837c",
+      "changed": true
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/preflight.test.cjs",
+      "sha256": "a30b138b556d0c125315b2d0db000fe0e28ce05869f1b7f6793d7650f678c2d9",
+      "baselineSha256": null,
+      "changed": true
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/README.md",
+      "sha256": "6eda9ee3453461a8adbe5b22e500b715c5a65fe0ff32f679f8c1a8486e22f677",
+      "baselineSha256": "062319b53addd491c27fd1eed34f67e34d972cd7801b0e8cd071635679ee8530",
+      "changed": true
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/generated/bundle.json",
+      "sha256": "03a6ac91662aaec0e650b275633966116b2fb82cc86c90f69f695ba4c01a9610",
+      "baselineSha256": "20c01febe416198bf1392f3ba7ee5d7098927cb55be6e2877e94485641bba713",
+      "changed": true
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/generated/start-command.txt",
+      "sha256": "b15c6bf85e4c60076ee9a6a04f03099717f8bc3392d9f764bf00a69362e4b09e",
+      "baselineSha256": "b0de6370ab3cc2186a0043f7ad85890909d0358f85d792ec831871b919f0083f",
+      "changed": true
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/generated/manifest.json",
+      "sha256": "b12e06c748bce6f06081ca85cea540022f0b2405648c6d0c20a721098928c3cb",
+      "baselineSha256": null,
+      "changed": true,
+      "historicalLocalSha256": "5a973b71edecc6e59ce6d4d4a6dab96b2419b68aeeb65f4c3b51d5f47fd89980",
+      "baselinePresentInGit": false
+    }
+  ],
+  "verification": {
+    "authorTests": 38,
+    "adaptedLegacyTests": 5,
+    "failed": 0,
+    "externalTargetCalls": 0,
+    "registryInstalls": 0,
+    "activations": 0,
+    "remoteCommits": 0
+  },
+  "evidence": [
+    "remote-source-verification.json",
+    "refresh-tests.tap",
+    "legacy-compatibility.tap",
+    "generated/manifest.json",
+    "final-tests.tap"
+  ],
+  "limits": [
+    "synthetic local verification only",
+    "not deployed or activated",
+    "independent review still required",
+    "PARTIAL semantics unchanged"
+  ]
+}

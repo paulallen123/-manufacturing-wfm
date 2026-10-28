@@ -1,3 +1,17 @@
+# Current blockers — 2026-10-28T03:10:41.313432+00:00
+
+1. Existing Railway normal apply remains cancelled by action control; no current candidate image/build. Preserve reviewed staged changes, no bypass/repeat unchanged apply.
+2. Current successor code review and required dedicated/security release evidence pending. Older06b9 scan is not current. Source-only evidence cannot substitute for exact artifact/browser proof.
+3. Signed existing runner prerequisites and child environment least-privilege activation review outstanding. Packet prepared/tested, not activated; no keys copied.
+4. PR519 source defect repaired atbafde76b3dc70e7d2e19202eeff3d8ff8b799911; consumer/source custody/PR394/488 convergence still block canonical adoption.
+5. PR520 financial heldouts expose pre-existing out-of-period/null consumption claims; source oracle preserved, no customer financial exposure approved.521 needs real scheduling/LMS consumer.
+6. Three enabled daily tasks observed, including stalePR369 direction; liveness/results unknown. Existing owner/leases must be reconciled, no new worker.
+7. Full customer journey, managed Google/Apple provider configuration, provider readback, customer acceptance and realized outcomes remain unproven. Full backlog scope unchanged.
+
+Current evidence: evidence/vector-execution-progress-20261028/manifest.json. Current entries supersede resolved historical blockers below.
+
+## Preserved prior checkpoint
+
 # Current blockers — 2026-10-27T19:08:22.057Z
 
 This section supersedes conflicting historical status below. Full accepted scope is retained.
@@ -56,4 +70,5 @@ The prior lookup-to-issuance race is closed in the containing candidate: owner13
 - Unchanged local composed test passed1/1. Diagnostic proposal remains UNADOPTED, validation2pass/3fail; root cause unresolved. /root/build_route_review verdict HOLD.
 - No timeout increase, customer deployment, release or new build. Next: reliable startup-phase diagnostics, coherent source/artifact identity, then current hosted proof and existing review/release gates.
 - See evidence/vector-build-startup-20261023/manifest.json and review.md. Existing isolated compute incurred usage; amount unverified. No new resource/subscription.
+
 
