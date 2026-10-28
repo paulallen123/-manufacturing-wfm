@@ -67,6 +67,8 @@ test('rejects different source and decompression bombs', () => {
 });
 test('environment requirements are exact; no presence check is treated as proof', () => {
   assert.equal(launcher.validateEnvironment(env()), undefined);
+  assert.equal(launcher.validateEnvironment({...env(),WFM_EXPECTED_CANDIDATE_SHA:'a'.repeat(40)}), undefined);
+  for(const value of ['abc','A'.repeat(40),'f'.repeat(39),'f'.repeat(41),'f'.repeat(40)+'\n'])assert.throws(()=>launcher.validateEnvironment({...env(),WFM_EXPECTED_CANDIDATE_SHA:value}),/INVALID_EXPECTED_TARGET_SOURCE/);
   for (const key of Object.keys(env())) {
     const missing = env(); delete missing[key]; assert.throws(() => launcher.validateEnvironment(missing));
   }
@@ -86,10 +88,18 @@ test('install failure propagates, cleans materialized files and never logs priva
   const root = fs.mkdtempSync(path.join(os.tmpdir(),'runner-install-failure-')); t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
   const bin=path.join(root,'bin'),tmp=path.join(root,'tmp');fs.mkdirSync(bin);fs.mkdirSync(tmp);
   fs.symlinkSync(process.execPath,path.join(bin,'node'));
-  fs.writeFileSync(path.join(bin,'npm'),'#!/bin/sh\nexit 7\n',{mode:0o700});
+  const captured=path.join(root,'installer-environment.json');
+  fs.writeFileSync(path.join(bin,'npm'),'#!'+process.execPath+'\nrequire("node:fs").writeFileSync('+JSON.stringify(captured)+',JSON.stringify(process.env));process.exit(7);\n',{mode:0o700});
+  const preflight=path.join(root,'preflight-fixture.cjs');
+  fs.writeFileSync(preflight,`global.fetch=async url=>{const response=new Response(JSON.stringify({candidateSha:process.env.WFM_EXPECTED_CANDIDATE_SHA,sourceBinding:'build-file-matched',fixtureOnly:true,productionApproved:false,pilotReady:false}),{headers:{'content-type':'application/json'}});Object.defineProperty(response,'url',{value:url});return response;};`);
   const command=fs.readFileSync(path.join(__dirname,'generated/start-command.txt'),'utf8');
-  const result=spawnSync('/bin/sh',['-c',command],{encoding:'utf8',env:{...env(),PATH:bin,TMPDIR:tmp,NODE_OPTIONS:''}});
+  const result=spawnSync('/bin/sh',['-c',command],{encoding:'utf8',env:{...env(),PATH:bin,TMPDIR:tmp,NODE_OPTIONS:'--require '+preflight,SSL_CERT_FILE:'/trusted/ca.pem',HTTPS_PROXY:'http://trusted-proxy.invalid',PROVIDER_API_TOKEN:'PROVIDER_SECRET_SENTINEL'}});
   assert.equal(result.status,1);assert.match(result.stderr,/PLAYWRIGHT_INSTALL_FAILED/);
   assert.ok(!result.stderr.includes(env().PROOF_PRIVATE_KEY_B64));assert.ok(!result.stdout.includes(env().PROOF_PRIVATE_KEY_B64));
   assert.deepEqual(fs.readdirSync(tmp),[]);
+  const installed=JSON.parse(fs.readFileSync(captured));
+  assert.equal(installed.SSL_CERT_FILE,'/trusted/ca.pem');assert.equal(installed.HTTPS_PROXY,'http://trusted-proxy.invalid');
+  assert.equal(installed.PATH,bin);assert.equal(installed.TMPDIR,tmp);
+  for(const key of [...Object.keys(env()),'PROVIDER_API_TOKEN','NODE_OPTIONS'])assert.equal(installed[key],undefined,key+' must not reach npm');
+  assert.doesNotMatch(JSON.stringify(installed),/SYNTHETIC_SECRET_NOT_TO_LOG|PROVIDER_SECRET_SENTINEL/);
 });
