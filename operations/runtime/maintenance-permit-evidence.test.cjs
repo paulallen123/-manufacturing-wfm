@@ -38,3 +38,29 @@ test('foreign, stale and contradictory safety evidence fails closed',()=>{
   x=>{x.permit.validTo='2026-10-29T10:31:00.000Z';x.permit.validFrom='2026-10-29T10:32:00.000Z';}
  ]){const x=fixture();mutate(x);assert.throws(()=>assessMaintenancePermitEvidence(x));}
 });
+test('rejects active-object hash substitution before invoking caller getters',()=>{
+ const x=fixture();let reads=0;
+ Object.defineProperty(x.permit,'recordSha256',{enumerable:true,get(){return ++reads<5?B:A;}});
+ assert.throws(()=>assessMaintenancePermitEvidence(x),/INVALID_DATA_RECORD/);
+ assert.equal(reads,0);
+});
+test('rejects accessor revisions, inherited records and proxy traps before evidence reads',()=>{
+ const x=fixture();let reads=0;
+ Object.defineProperty(x.workOrder,'revision',{enumerable:true,get(){reads++;return 'r1';}});
+ assert.throws(()=>assessMaintenancePermitEvidence(x),/INVALID_DATA_RECORD/);
+ assert.equal(reads,0);
+ const inherited=fixture();inherited.permit=Object.create(inherited.permit);
+ assert.throws(()=>assessMaintenancePermitEvidence(inherited),/INVALID_DATA_RECORD/);
+ const proxied=fixture();let traps=0;
+ proxied.isolation=new Proxy(proxied.isolation,{get(){traps++;throw new Error('caller hook');},ownKeys(){traps++;throw new Error('caller hook');},getPrototypeOf(){traps++;throw new Error('caller hook');}});
+ assert.throws(()=>assessMaintenancePermitEvidence(proxied),/INVALID_DATA_RECORD/);
+ assert.equal(traps,0);
+});
+test('rejects hidden or symbolic record fields while retaining own plain-data records',()=>{
+ for(const decorate of [x=>Object.defineProperty(x.permit,'extra',{value:'hidden'}),x=>{x.isolation[Symbol('extra')]='hidden';}]){
+  const x=fixture();decorate(x);assert.throws(()=>assessMaintenancePermitEvidence(x),/INVALID_DATA_RECORD/);
+ }
+ const x=fixture();for(const key of ['workOrder','permit','isolation'])x[key]=Object.assign(Object.create(null),x[key]);
+ const out=assessMaintenancePermitEvidence(x);assert.equal(out.status,'DECLARED_EVIDENCE_FOR_REVIEW');
+ assert.equal(out.permitAuthority,false);assert.equal(out.safetyAuthority,false);assert.equal(out.executionAuthority,false);
+});

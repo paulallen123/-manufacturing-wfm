@@ -1,8 +1,21 @@
 'use strict';
 
 // Advisory record consistency only; no permit issuance, safety clearance or work authority.
+const {types}=require('node:util');
 const SHA=/^[0-9a-f]{64}$/;
 function fail(code){throw new Error(code);}
+function dataRecord(value){
+ if(!value||typeof value!=='object'||Array.isArray(value)||types.isProxy(value))fail('INVALID_DATA_RECORD');
+ const proto=Object.getPrototypeOf(value);
+ if(proto!==Object.prototype&&proto!==null)fail('INVALID_DATA_RECORD');
+ const snapshot=Object.create(null);
+ for(const key of Reflect.ownKeys(value)){
+  const d=Object.getOwnPropertyDescriptor(value,key);
+  if(typeof key!=='string'||!d.enumerable||!Object.hasOwn(d,'value'))fail('INVALID_DATA_RECORD');
+  Object.defineProperty(snapshot,key,{value:d.value,enumerable:true});
+ }
+ return snapshot;
+}
 function id(v){return typeof v==='string'&&v.length>0&&v.length<=160&&v.trim()===v&&!/[\u0000-\u001f\u007f]/.test(v);}
 function time(v){
  if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(v))fail('INVALID_TIME');
@@ -21,15 +34,18 @@ function interval(row){
  if(from>=to)fail('INVALID_INTERVAL');return {from,to};
 }
 function assessMaintenancePermitEvidence(input){
+ input=dataRecord(input);
+ const workOrder=dataRecord(input.workOrder),permit=input.permit?dataRecord(input.permit):input.permit,
+  isolation=input.isolation?dataRecord(input.isolation):input.isolation;
  if(!input||typeof input!=='object'||Array.isArray(input)||!id(input.tenantId)||!id(input.siteId)||
   !id(input.assetId)||!id(input.workOrderId)||!Number.isSafeInteger(input.maxAgeMinutes)||
   input.maxAgeMinutes<1||input.maxAgeMinutes>1440)fail('INVALID_SCOPE');
- const asOfMs=time(input.asOf),context={...input,asOfMs},workOrder=input.workOrder;
+ const asOfMs=time(input.asOf),context={...input,asOfMs};
  record(workOrder,context,'CMMS');
  if(workOrder.state!=='OPEN')fail('WORK_ORDER_NOT_OPEN');
  const start=time(workOrder.plannedStart),end=time(workOrder.plannedEnd);
  if(start>=end||asOfMs>=end)fail('INVALID_WORK_WINDOW');
- const blockers=[],permit=input.permit,isolation=input.isolation;
+ const blockers=[];
  if(!permit)blockers.push('PERMIT_MISSING');
  if(!isolation)blockers.push('ISOLATION_MISSING');
  let permitWindow,isolationWindow;
