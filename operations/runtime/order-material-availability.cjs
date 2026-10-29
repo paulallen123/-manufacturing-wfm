@@ -1,5 +1,7 @@
 'use strict';
 
+const { types } = require('node:util');
+
 const CONTRACT_VERSION = 'VECTOR_ORDER_MATERIAL_AVAILABILITY_V1';
 const MAX_COMPONENTS = 1000;
 const MAX_MILLIUNITS = 1_000_000_000_000;
@@ -7,6 +9,7 @@ const MAX_INVENTORY_AGE_MS = 15 * 60000;
 
 function own(row, field) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) throw Error(`${field} needs an evidence object.`);
+  if (types.isProxy(row)) throw Error(`${field} cannot use a proxy evidence object.`);
   const descriptor = Object.getOwnPropertyDescriptor(row, field);
   if (!descriptor || !Object.hasOwn(descriptor, 'value')) throw Error(`${field} must be an own data field.`);
   return descriptor.value;
@@ -31,8 +34,10 @@ function scope(row, tenantId, siteId, orderId, field) {
   }
 }
 function array(value, field) {
-  if (!Array.isArray(value) || value.length < 1 || value.length > MAX_COMPONENTS) throw Error(`${field} needs a bounded nonempty array.`);
-  return value;
+  if (types.isProxy(value)) throw Error(`${field} cannot use a proxy array.`);
+  const length = Array.isArray(value) ? value.length : 0;
+  if (length < 1 || length > MAX_COMPONENTS) throw Error(`${field} needs a bounded nonempty array.`);
+  return { value, length };
 }
 function evidence(row, seen, field) {
   const ref = label(own(row, 'evidenceRef'), `${field}.evidenceRef`);
@@ -47,14 +52,16 @@ function assessOrderMaterialAvailability(input) {
   const tenantId = label(own(input, 'tenantId'), 'tenantId');
   const siteId = label(own(input, 'siteId'), 'siteId');
   const orderId = label(own(input, 'orderId'), 'orderId');
-  const asOf = instant(own(input, 'asOf'), 'asOf');
+  const asOfText = own(input, 'asOf');
+  const asOf = instant(asOfText, 'asOf');
   const bom = own(input, 'bom');
   scope(bom, tenantId, siteId, orderId, 'BOM');
   if (own(bom, 'complete') !== true) throw Error('Complete exact-order BOM required.');
   const bomSource = label(own(bom, 'source'), 'bom.source');
   const bomRevision = label(own(bom, 'revision'), 'bom.revision');
   const bomDigest = label(own(bom, 'digest'), 'bom.digest');
-  const bomObservedAt = instant(own(bom, 'observedAt'), 'bom.observedAt');
+  const bomObservedAtText = own(bom, 'observedAt');
+  const bomObservedAt = instant(bomObservedAtText, 'bom.observedAt');
   const effectiveStart = instant(own(bom, 'effectiveStart'), 'bom.effectiveStart');
   const effectiveEnd = instant(own(bom, 'effectiveEnd'), 'bom.effectiveEnd');
   if (effectiveStart > asOf || effectiveEnd <= asOf || bomObservedAt > asOf) throw Error('BOM revision must be effective and observed at asOf.');
@@ -67,7 +74,8 @@ function assessOrderMaterialAvailability(input) {
   const inventorySource = label(own(inventory, 'source'), 'inventory.source');
   const inventoryRevision = label(own(inventory, 'revision'), 'inventory.revision');
   const inventoryDigest = label(own(inventory, 'digest'), 'inventory.digest');
-  const inventoryObservedAt = instant(own(inventory, 'observedAt'), 'inventory.observedAt');
+  const inventoryObservedAtText = own(inventory, 'observedAt');
+  const inventoryObservedAt = instant(inventoryObservedAtText, 'inventory.observedAt');
   if (inventoryObservedAt < bomObservedAt || inventoryObservedAt > asOf || asOf - inventoryObservedAt > MAX_INVENTORY_AGE_MS) {
     throw Error('Inventory observation must follow the BOM and remain current.');
   }
@@ -78,7 +86,7 @@ function assessOrderMaterialAvailability(input) {
   const seenEvidence = new Set();
   const required = new Map();
   for (let index = 0; index < components.length; index++) {
-    const descriptor = Object.getOwnPropertyDescriptor(components, index);
+    const descriptor = Object.getOwnPropertyDescriptor(components.value, index);
     if (!descriptor || !Object.hasOwn(descriptor, 'value')) throw Error('BOM components must be explicit data entries.');
     const component = descriptor.value;
     scope(component, tenantId, siteId, orderId, 'BOM component');
@@ -92,7 +100,7 @@ function assessOrderMaterialAvailability(input) {
   const seenBalances = new Set();
   const shortfalls = [];
   for (let index = 0; index < balances.length; index++) {
-    const descriptor = Object.getOwnPropertyDescriptor(balances, index);
+    const descriptor = Object.getOwnPropertyDescriptor(balances.value, index);
     if (!descriptor || !Object.hasOwn(descriptor, 'value')) throw Error('Inventory balances must be explicit data entries.');
     const balance = descriptor.value;
     scope(balance, tenantId, siteId, orderId, 'Inventory balance');
@@ -115,9 +123,9 @@ function assessOrderMaterialAvailability(input) {
   return Object.freeze({
     contractVersion: CONTRACT_VERSION,
     status: shortfalls.length ? 'DECLARED_MATERIAL_SHORTFALL' : 'NO_DECLARED_MATERIAL_SHORTFALL',
-    tenantId, siteId, orderId, asOf: input.asOf,
-    bom: Object.freeze({ source: bomSource, revision: bomRevision, digest: bomDigest, observedAt: bom.observedAt }),
-    inventory: Object.freeze({ source: inventorySource, revision: inventoryRevision, digest: inventoryDigest, observedAt: inventory.observedAt }),
+    tenantId, siteId, orderId, asOf: asOfText,
+    bom: Object.freeze({ source: bomSource, revision: bomRevision, digest: bomDigest, observedAt: bomObservedAtText }),
+    inventory: Object.freeze({ source: inventorySource, revision: inventoryRevision, digest: inventoryDigest, observedAt: inventoryObservedAtText }),
     componentCount: components.length, shortfallCount: shortfalls.length, shortfalls: Object.freeze(shortfalls),
     sourceAuthenticated: false, actionAuthority: false, claimedSavingsPence: null
   });

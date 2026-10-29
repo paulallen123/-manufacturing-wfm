@@ -81,3 +81,31 @@ test('rejects accessor-backed and sparse source arrays', () => {
   const sparse = fixture(); delete sparse.bom.components[1];
   assert.throws(() => assessOrderMaterialAvailability(sparse), /explicit data entries/);
 });
+
+test('rejects proxy evidence objects that could change fields after validation', () => {
+  const disagree = (object, property) => new Proxy(object, {
+    get(target, key, receiver) { return key === property ? '2020-01-01T00:00:00Z' : Reflect.get(target, key, receiver); }
+  });
+  const input = fixture();
+  assert.throws(() => assessOrderMaterialAvailability(disagree(input, 'asOf')), /proxy/i);
+  input.bom = disagree(input.bom, 'observedAt');
+  assert.throws(() => assessOrderMaterialAvailability(input), /proxy/i);
+  input.bom = fixture().bom;
+  input.inventory = disagree(input.inventory, 'observedAt');
+  assert.throws(() => assessOrderMaterialAvailability(input), /proxy/i);
+});
+
+test('rejects proxied collections with changing length before a shortfall can disappear', () => {
+  for (const field of ['components', 'balances']) {
+    const input = fixture();
+    const owner = field === 'components' ? input.bom : input.inventory;
+    let reads = 0;
+    owner[field] = new Proxy(owner[field], {
+      get(target, key, receiver) {
+        if (key === 'length') return ++reads <= 2 ? 2 : 1;
+        return Reflect.get(target, key, receiver);
+      }
+    });
+    assert.throws(() => assessOrderMaterialAvailability(input), /proxy/i);
+  }
+});
