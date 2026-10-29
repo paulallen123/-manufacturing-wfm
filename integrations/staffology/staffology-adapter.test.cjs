@@ -48,6 +48,20 @@ test('C06 read timeout terminates even if the client ignores the AbortSignal',as
 test('C07 raw POST refuses missing write authority before any client call',async()=>{let calls=0;await assert.rejects(S.request(async()=>{calls++;return response(200);},config,'/employers/employer-001/payrun/Monthly/importpay',{method:'POST',body:[]}));assert.equal(calls,0);});
 
 test('C08 employee detail maps documented nested fields and canonical Person columns',()=>{const x=S.mapEmployee(employee(),{employerId:'employer-001',acquiredAt:'2026-09-30T00:00:00.000Z',sourcePath:'/employers/employer-001/employees/employee-001'});assert.equal(x.data.employment.effectiveFrom,'2026-01-01');assert.equal(x.data.identity.payrollCode,'W001');assert.equal(x.canonicalPerson.employeeId,'employee-001');assert.equal(x.canonicalPerson.firstName,'Fixture');});
+test('C08a provider leaver authority is preserved, revision-bound and contradictory states fail closed',()=>{
+ const current=employee();current.employmentDetails.leaverDetails={hasLeft:false,leaveDate:'2026-12-31'};
+ const mappedCurrent=S.mapEmployee(current,{employerId:'employer-001'});
+ assert.equal(mappedCurrent.data.employment.hasLeft,false);
+ assert.equal(mappedCurrent.data.employment.effectiveTo,'2026-12-31');
+ const former=employee();former.status='Former';former.employmentDetails.leaverDetails={hasLeft:true,leaveDate:'2026-12-31'};
+ const mappedFormer=S.mapEmployee(former,{employerId:'employer-001'});
+ assert.equal(mappedFormer.data.employment.hasLeft,true);
+ assert.notEqual(mappedFormer.revision,mappedCurrent.revision);
+ for(const [status,hasLeft] of [['Current',true],['Upcoming',true],['Former',false]]){
+  const contradictory=employee();contradictory.status=status;contradictory.employmentDetails.leaverDetails={hasLeft,leaveDate:'2026-12-31'};
+  assert.throws(()=>S.mapEmployee(contradictory,{employerId:'employer-001'}),{code:'STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED'});
+ }
+});
 test('C09 pageNum=0 plus full pages and detail GETs acquire the whole fixture cohort',async()=>{const calls=[];const result=await S.acquireEmployees({config,employerId:'employer-001',pageSize:2,client:async(url)=>{calls.push(url);const u=new URL(url);if(u.pathname.endsWith('/employees'))return response(200,u.searchParams.get('pageNum')==='0'?[{id:'employee-001'},{id:'employee-002'}]:[{id:'employee-003'}]);return response(200,employee(u.pathname.split('/').pop()));}});assert.equal(result.records.length,3);assert.equal(new URL(calls[0]).searchParams.get('pageNum'),'0');assert.equal(calls.filter(u=>new URL(u).pathname.endsWith('/employees')).length,2);assert.equal(calls.length,5);});
 test('C10 duplicate list IDs and mismatched detail identity are refused',async()=>{await assert.rejects(S.acquireEmployees({config,employerId:'employer-001',client:async url=>response(200,new URL(url).pathname.endsWith('/employees')?[{id:'employee-001'},{id:'employee-001'}]:employee())}));await assert.rejects(S.acquireEmployees({config,employerId:'employer-001',client:async url=>response(200,new URL(url).pathname.endsWith('/employees')?[{id:'employee-001'}]:employee('employee-999'))}));});
 test('C11 missing employee dates are not invented and impossible dates fail',()=>{for(const date of [undefined,'2026-02-30','2026-01-01junk']){const e=employee();e.employmentDetails.starterDetails.startDate=date;assert.throws(()=>S.mapEmployee(e,{employerId:'employer-001'}));}});
