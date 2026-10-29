@@ -1,8 +1,21 @@
 'use strict';
 
 // Pairwise declared overlap only. Source authentication and release authority stay upstream.
+const { types: { isProxy } } = require('node:util');
 const SHA = /^[0-9a-f]{64}$/;
 function fail(code) { throw new Error(code); }
+function snapshotRecord(value, code) {
+  if (!value || typeof value !== 'object' || isProxy(value) || Array.isArray(value)) fail(code);
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) fail(code);
+  const snapshot = Object.create(null);
+  for (const key of Reflect.ownKeys(value)) {
+    const field = Object.getOwnPropertyDescriptor(value, key);
+    if (typeof key !== 'string' || !field.enumerable || !Object.hasOwn(field, 'value')) fail(code);
+    Object.defineProperty(snapshot, key, { value: field.value, writable: true, enumerable: true, configurable: true });
+  }
+  return snapshot;
+}
 function id(x) { return typeof x === 'string' && x.length > 0 && x.length <= 160 && x.trim() === x; }
 function instant(x) {
   if (typeof x !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(x)) fail('INVALID_INSTANT');
@@ -23,9 +36,12 @@ function receipt(x, input, asOf) {
     recordSha256: x.recordSha256, start, end };
 }
 function assessTrainingShiftCollision(input) {
+  input = snapshotRecord(input, 'INVALID_SCOPE');
   if (!input || typeof input !== 'object' || Array.isArray(input) ||
     !id(input.tenantId) || !id(input.siteId) || !id(input.workerRef)) fail('INVALID_SCOPE');
   const asOf = instant(input.asOf);
+  input.publishedShift = snapshotRecord(input.publishedShift, 'RECEIPT_SCOPE_MISMATCH');
+  input.trainingSession = snapshotRecord(input.trainingSession, 'RECEIPT_SCOPE_MISMATCH');
   const shift = receipt(input.publishedShift, input, asOf);
   const training = receipt(input.trainingSession, input, asOf);
   if (!id(input.publishedShift.shiftId) || !id(input.publishedShift.slotId) ||

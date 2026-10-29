@@ -45,3 +45,60 @@ test('past, future, rolled and inverted evidence times reject', () => {
     { end: x.trainingSession.start }])
     assert.throws(() => assessTrainingShiftCollision({ ...x, trainingSession: { ...x.trainingSession, ...change } }));
 });
+
+test('active root scope and receipt selectors reject without invoking getters', () => {
+  for (const key of ['tenantId', 'siteId', 'workerRef', 'asOf', 'publishedShift', 'trainingSession']) {
+    const x = fixture(); let reads = 0; const value = x[key];
+    Object.defineProperty(x, key, { enumerable: true, get() { reads++; return value; } });
+    assert.throws(() => assessTrainingShiftCollision(x));
+    assert.equal(reads, 0, key);
+  }
+});
+test('active receipt fields reject before a value can change after validation', () => {
+  for (const kind of ['publishedShift', 'trainingSession']) {
+    for (const key of Object.keys(fixture()[kind])) {
+      const x = fixture(); let reads = 0; const value = x[kind][key];
+      Object.defineProperty(x[kind], key, { enumerable: true, get() { reads++; return reads === 1 ? value : 'unvalidated'; } });
+      assert.throws(() => assessTrainingShiftCollision(x));
+      assert.equal(reads, 0, kind + '.' + key);
+    }
+  }
+});
+test('frozen accessor receipts remain active and must reject without invocation', () => {
+  const x = fixture(); let reads = 0;
+  Object.defineProperty(x.publishedShift, 'recordSha256', { enumerable: true, get() { return ++reads <= 2 ? A : 'not-a-hash'; } });
+  Object.freeze(x.publishedShift); Object.freeze(x);
+  assert.throws(() => assessTrainingShiftCollision(x));
+  assert.equal(reads, 0);
+});
+test('proxy roots and receipt records reject without running traps', () => {
+  for (const key of [null, 'publishedShift', 'trainingSession']) {
+    const x = fixture(); let traps = 0;
+    const wrapped = new Proxy(key ? x[key] : x, {
+      get(target, prop, receiver) { traps++; return Reflect.get(target, prop, receiver); },
+      ownKeys(target) { traps++; return Reflect.ownKeys(target); },
+      getOwnPropertyDescriptor(target, prop) { traps++; return Reflect.getOwnPropertyDescriptor(target, prop); },
+      getPrototypeOf(target) { traps++; return Reflect.getPrototypeOf(target); }
+    });
+    if (key) x[key] = wrapped;
+    assert.throws(() => assessTrainingShiftCollision(key ? x : wrapped));
+    assert.equal(traps, 0);
+  }
+});
+test('inherited scope and active extra fields cannot enter validated records', () => {
+  const inherited = fixture();
+  inherited.trainingSession = Object.create(inherited.trainingSession);
+  assert.throws(() => assessTrainingShiftCollision(inherited));
+  const x = fixture(); let reads = 0;
+  Object.defineProperty(x.trainingSession, 'displayNote', { enumerable: true, get() { reads++; return 'note'; } });
+  assert.throws(() => assessTrainingShiftCollision(x));
+  assert.equal(reads, 0);
+});
+test('plain JSON, null-prototype data and ignored extra data retain ordinary behavior', () => {
+  const x = fixture(); const expected = assessTrainingShiftCollision(x);
+  assert.deepEqual(assessTrainingShiftCollision(JSON.parse(JSON.stringify(x))), expected);
+  x.displayNote = 'ignored'; x.publishedShift.displayNote = { nested: ['plain', 1, null] };
+  assert.deepEqual(assessTrainingShiftCollision(x), expected);
+  const asNull = value => Object.assign(Object.create(null), value);
+  assert.deepEqual(assessTrainingShiftCollision(asNull({ ...x, publishedShift: asNull(x.publishedShift), trainingSession: asNull(x.trainingSession) })), expected);
+});
