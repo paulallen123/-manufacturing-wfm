@@ -1,0 +1,739 @@
+{
+  "schema_version": 1,
+  "prepared_at": "2026-10-29",
+  "source": "Fresh GitHub open-PR search returned current PR bodies; tests are reported historical receipts and were not executed by this triage agent.",
+  "claim_boundary": "Read-only triage. No product changes, no deployments, no customer/provider writes. Stages are next work stages, not a claim of live readiness. All lane owners are existing role holders; this agent claims audit-only scope.",
+  "count": 31,
+  "lanes": [
+    {
+      "local_id": "MV-001",
+      "area": "Factory and production intelligence",
+      "bullet": "Complete the shared people/skills/assets/orders/materials/cost graph.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "evidence_prs": [
+        205,
+        230,
+        377
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/230",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/377"
+      ],
+      "observed_status": "Factory Graph kernel and historical projection exist; #377 reports 15 asset node types cannot enter current Implementation Twin. No live graph coverage established.",
+      "existing_owner": "Canonical graph/integration owner; historical Product Evolution",
+      "next_action": "Resolve the canonical schema/provenance mapping recorded by #377, then extend the existing graph adapter and test asset/person/order relationships without introducing a parallel graph.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-002",
+      "area": "Factory and production intelligence",
+      "bullet": "Integrate document, drawing, BOM, routing and revision intelligence.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "yes",
+      "evidence_prs": [
+        205,
+        230
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/230"
+      ],
+      "observed_status": "Engineering Memory accepts supplied vectors/text, but #205 explicitly excludes real OCR/GD&T/CAD extraction and production retrieval proof.",
+      "existing_owner": "Existing graph/Engineering Memory owner",
+      "next_action": "Inspect accepted extraction specifications and evaluate only unresolved OCR/CAD/provider contracts; implement one provenance-bound extractor into existing graph with held-out manufacturing documents.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-003",
+      "area": "Factory and production intelligence",
+      "bullet": "Complete bottleneck, demand and production-capacity modelling.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        240,
+        357,
+        489,
+        503,
+        514
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/357",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/489",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/503",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/514"
+      ],
+      "observed_status": "Capacity Rescue, forecast guards, output-gap and order-staffing packages exist as isolated source/shadow slices; no complete live model is proven.",
+      "existing_owner": "Existing scheduling/Capacity Rescue and canonical integration owners",
+      "next_action": "Reconcile the exact forecast/Capacity Rescue/output packages, bind authenticated MES/ERP/WFM inputs and test baseline/shortfall/overstaffed bottleneck scenarios.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-004",
+      "area": "Factory and production intelligence",
+      "bullet": "Verify material, tooling, quality and configuration readiness.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        518,
+        486,
+        502,
+        394
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/518",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/486",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/502",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/394"
+      ],
+      "observed_status": "#518 material assessor passed reported 4/4 focused and 377/377 operations locally; it is read-only, unauthenticated and lacks runtime adapter. Tooling/configuration coverage not established.",
+      "existing_owner": "Canonical integration owner; existing materials/quality owners",
+      "next_action": "Independent exact-head review of #518 and reconcile #486/#502; bind complete BOM, available stock net reservations, tooling and approved configuration sources with denial tests.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-005",
+      "area": "Factory and production intelligence",
+      "bullet": "Integrate output-gap, order-start variance and material-availability assessments.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        503,
+        524,
+        518
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/503",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/524",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/518"
+      ],
+      "observed_status": "#503 repaired snapshot handling; #524 reported 2/2 focused and 375/375 operations; #518 reported 4/4 and 377/377. All remain open isolated drafts.",
+      "existing_owner": "Sole canonical integration/release owner",
+      "next_action": "Review exact executable heads, authenticate distinct ERP/MES/stock snapshots, compose shared consumer, and run exact-image plus role/site readback.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-006",
+      "area": "Factory and production intelligence",
+      "bullet": "Complete changeover crew readiness and shift-handover acknowledgement.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        522,
+        525
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/522",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/525"
+      ],
+      "observed_status": "#522 reported 3/3 and 376/376; #525 2/2 and 375/375 plus corrected review findings. Both explicitly advisory and isolated only.",
+      "existing_owner": "Sole canonical integration owner; MES/WFM source owners",
+      "next_action": "Authenticate current approved changeover, published crew and linked handover records; bind role/site and integrate through existing operational action evidence before hosted proof.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-007",
+      "area": "Maintenance",
+      "bullet": "Integrate preventive, corrective and predictive maintenance.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "yes",
+      "evidence_prs": [
+        394,
+        415,
+        491,
+        449
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/415",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/491",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/449"
+      ],
+      "observed_status": "Preventive due and corrective triage assessors exist; #449 only compares declared meter readings and explicitly supplies no machine diagnosis. Predictive-maintenance model capability remains unverified.",
+      "existing_owner": "Existing maintenance kernel/canonical owner",
+      "next_action": "Adopt due/triage contracts directly; separately establish predictive target, trusted condition history, failure labels and validation criteria before implementing prediction. Do not equate two-reading advisory with predictive maintenance.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-008",
+      "area": "Maintenance",
+      "bullet": "Complete work orders, inspections, checklists, spares and tools.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        394,
+        430,
+        519
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/430",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/519"
+      ],
+      "observed_status": "Workforce/parts preflight, checklist evidence and spare-parts cost packages are built locally; no actual work-order execution or inventory reservation authority.",
+      "existing_owner": "Existing maintenance/canonical integration owner",
+      "next_action": "Review exact checklist/preflight heads, authenticate CMMS/parts/tool inventory and reconcile into one work-order workflow; test missing/withdrawn checklist and unavailable stock.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-009",
+      "area": "Maintenance",
+      "bullet": "Verify technician qualifications and contractor readiness.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        394,
+        488,
+        404
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/488",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/404"
+      ],
+      "observed_status": "#394 screens caller-supplied qualification/availability; #488 estimates declared labour/contractor costs. #404 confirms workflow learning is not manufacturing qualification authority.",
+      "existing_owner": "Maintenance/integration and qualification source owners",
+      "next_action": "Bind authoritative technician certification, effective windows, contractor insurance/eligibility and availability; verify source revocation and cross-site denial before any ready claim.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-010",
+      "area": "Maintenance",
+      "bullet": "Integrate downtime, reliability and cause-evidence packages.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        421,
+        479,
+        484
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/421",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/479",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/484"
+      ],
+      "observed_status": "#421 reported 18/18 on Node24 and Node22.23.3; #479 binds a separately supplied cause record without inferring causality. Current source authentication remains absent.",
+      "existing_owner": "Sole canonical integration owner",
+      "next_action": "Authenticate complete current CMMS failure window and cause revisions/withdrawals, reconcile #421/#479, run supported exact-image checks and hosted readback without promoting recorded cause to causal proof.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-011",
+      "area": "Maintenance",
+      "bullet": "Complete labour, contractor and spare-parts costing.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        488,
+        519
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/488",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/519"
+      ],
+      "observed_status": "#488 and #519 reported scoped integer-pence estimator tests and independent corrections; no authenticated rates/price-list or CMMS binding, actual invoice reconciliation or deployment.",
+      "existing_owner": "Canonical integration and finance/CMMS source owners",
+      "next_action": "Reconcile planned cost modules, bind effective scoped rate cards and price receipts, test currency/rounding/duplicate-price evidence, and expose clearly labelled planned estimates.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-012",
+      "area": "Maintenance",
+      "bullet": "Coordinate maintenance with production, staffing and energy.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        477,
+        498,
+        394,
+        420
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/477",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/498",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/420"
+      ],
+      "observed_status": "#477 overlap assessor and #498 maintenance-energy wrapper are isolated; no production/maintenance schedule writer or automatic actuation authority.",
+      "existing_owner": "Existing maintenance/Capacity Rescue/canonical owner",
+      "next_action": "Compose current CMMS/MES/WFM/energy evidence into existing Capacity Rescue; keep advisories separated from approval/execution, and verify constraint-preserving alternatives on exact candidate.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-013",
+      "area": "Maintenance",
+      "bullet": "Integrate permit, isolation and safe-work evidence checks.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        526,
+        394,
+        477,
+        498
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/526",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/477",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/498"
+      ],
+      "observed_status": "#526 fresh draft reports 3/3 focused and 376/376 operations plus corrected hash-reuse finding. All source/permit/safety/execution authority flags remain false.",
+      "existing_owner": "Canonical integration owner plus independent site safety authority",
+      "next_action": "Review exact #526 head and bind current CMMS/EHS permits/isolation over full work window; require trusted independent safety authority, role/site controls and negative/withdrawal tests before exposure.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-014",
+      "area": "Decision Twin and Factory Autopilot",
+      "bullet": "Complete frozen what-if simulations with a do-nothing baseline.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        240,
+        333,
+        482,
+        374
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/333",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/482",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/374"
+      ],
+      "observed_status": "Capacity Rescue and decision episode prototypes already contain baseline/immutable plan concepts; #333 fixed negative economics locally; factory playback theory passed reported 17/17 related tests.",
+      "existing_owner": "Existing Decision Twin/Capacity Rescue owner",
+      "next_action": "Reconcile exact immutable-input, economics and replay contracts; run actual public consumer with as-known-at snapshots and verify do-nothing comparison without hindsight leakage.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-015",
+      "area": "Decision Twin and Factory Autopilot",
+      "bullet": "Compare absence, breakdown, urgent-order and material-delay responses.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        240,
+        500,
+        486,
+        477
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/500",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/486",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/477"
+      ],
+      "observed_status": "Existing shadow Capacity Rescue, frozen absence-recovery advice and material-delay assessor cover parts; none establishes full live multi-domain response.",
+      "existing_owner": "Existing Capacity Rescue owner",
+      "next_action": "Bind scenario-specific authenticated evidence, reuse one planner and compare feasible alternatives through existing decision service with independent oracle and current scope.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-016",
+      "area": "Decision Twin and Factory Autopilot",
+      "bullet": "Quantify overtime, agency, redeployment and resequencing options.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        240,
+        333,
+        496,
+        508,
+        511
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/333",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/496",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/508",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/511"
+      ],
+      "observed_status": "Shadow economic components and wage/premium/absence-cover repairs exist; estimates are explicitly not actual payroll spend or realised savings.",
+      "existing_owner": "Existing Capacity Rescue/scheduling/payroll costing owners",
+      "next_action": "Compose approved wage/rate/policy sources with one economic engine; test exact pence, overtime authority, constraints and baseline tradeoffs; retain unknowns for missing cost evidence.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-017",
+      "area": "Decision Twin and Factory Autopilot",
+      "bullet": "Enforce safety constraints and current execution authority.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "evidence_prs": [
+        269,
+        314,
+        388,
+        444,
+        240
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/269",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/314",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/388",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/444",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/240"
+      ],
+      "observed_status": "Trust chronology/current-binding guards and uncertain-write containment exist in open packages. #240 explicitly grants no new machine/material/maintenance authority.",
+      "existing_owner": "Existing Trust and canonical owner; independent verifier",
+      "next_action": "Test current actor/tenant/site/policy/revision checks at actual consumer boundary, revoke authority between proposal and execution, and prove no unsafe dispatch occurs.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-018",
+      "area": "Decision Twin and Factory Autopilot",
+      "bullet": "Prove approved execution, rollback and outcome capture.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "evidence_prs": [
+        240,
+        400,
+        444,
+        501
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/400",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/444",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_status": "Source-level execution/rollback receipts are not hosted proof; #400 notes synthetic V8 tests only and independent rollback receipt provenance remains required.",
+      "existing_owner": "Existing canonical release owner and independent proof lane",
+      "next_action": "After healthy admitted image, exercise an explicitly approved disposable scenario through existing workflow, independently read back durable outcome and verify rollback/restart; no live OT/payroll writes.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-019",
+      "area": "Costs, savings and cash",
+      "bullet": "Complete whole-period labour, premium, agency and travel costing.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        496,
+        508,
+        511,
+        488,
+        352
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/496",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/508",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/511",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/488",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352"
+      ],
+      "observed_status": "Wage, shift-premium, cover, maintenance labour and cross-site travel slices exist separately; their scopes and money contracts must be reconciled.",
+      "existing_owner": "Existing economic/payroll/scheduling and canonical integration owners",
+      "next_action": "Map current costing consumers and adopt exact reviewed wage/premium/travel deltas; prove whole-period coverage, currencies, rounding and denied/missing evidence.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-020",
+      "area": "Costs, savings and cash",
+      "bullet": "Reconcile calculated costs with payroll and operational actuals.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "evidence_prs": [
+        495,
+        497,
+        506,
+        520,
+        502
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/495",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/497",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/506",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/520",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/502"
+      ],
+      "observed_status": "Multiple receipt/serialization/variance/economic modules exist; #506 explicitly records failing pinned #495 receipt regressions. No authoritative end-to-end actual-cost reconciliation.",
+      "existing_owner": "Existing payroll variance/economic owner",
+      "next_action": "Resolve owned receipt regressions then bind final payroll export/provider readback and operational ledger identities to exact period/batch/site; test independent totals and atomic failure.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-021",
+      "area": "Costs, savings and cash",
+      "bullet": "Show unknown evidence correctly rather than false zero-cost results.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "evidence_prs": [
+        496,
+        205,
+        501
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/496",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_status": "Historical cost fixes and current cost-shape guards exist; deployment/customer UI proof is not established. No new economic research needed.",
+      "existing_owner": "Existing costing/UX and canonical owner",
+      "next_action": "Locate adopted empty-workforce/unknown-state fixes on current integration head; run current API and UI tests for zero, empty, missing rates and unavailable source; require refresh/fresh-login rendering.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-022",
+      "area": "Costs, savings and cash",
+      "bullet": "Integrate the Savings/Outcome Ledger.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "evidence_prs": [
+        205,
+        475,
+        507,
+        502
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/475",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/507",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/502"
+      ],
+      "observed_status": "#205 ledger is source-level; #475 exact-ref duplication guard remains in-memory only and explicitly lacks durable transactional attribution.",
+      "existing_owner": "Existing Savings Ledger/canonical owner",
+      "next_action": "Adopt reviewed exact-ref guard and implement persistent transactional ledger with tenant/entity/currency/period/source custody; reconcile existing decision/outcome storage rather than creating another ledger.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-023",
+      "area": "Costs, savings and cash",
+      "bullet": "Separate projected, realised, avoided and at-risk values.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        205,
+        210,
+        240,
+        502,
+        503
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/210",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/502",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/503"
+      ],
+      "observed_status": "Existing kernels separate projected/realised or cash timing from economic value; isolated assessors explicitly set claimedSavingsPence:null.",
+      "existing_owner": "Existing Savings Engine/finance UX owner",
+      "next_action": "Map all APIs/cards/report outputs to canonical value taxonomy; test source classifications and ensure caller-declared costs or synthetic unit gaps never become realised savings.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-024",
+      "area": "Costs, savings and cash",
+      "bullet": "Prove attribution and prevent double counting.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "evidence_prs": [
+        475,
+        354,
+        205,
+        502
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/475",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/354",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/502"
+      ],
+      "observed_status": "#475 rejects repeated exact evidence refs in memory; it explicitly does not handle durable idempotency or semantic same-effect detection. Other recorded hash/dedup repairs are isolated.",
+      "existing_owner": "Existing Savings/outcome attribution owner",
+      "next_action": "Extend existing transactional ledger to unique source-effect custody and overlapping period/entity claims; demonstrate concurrent duplicate rejection and independent durable readback with no unsupported causal claim.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-025",
+      "area": "Costs, savings and cash",
+      "bullet": "Complete cash-to-capacity, invoice milestones and working-capital workflows.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        210,
+        425,
+        438,
+        423,
+        451
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/210",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/425",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/438",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/423",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/451"
+      ],
+      "observed_status": "Cash-to-Capacity evaluator and evidence-time/role/snapshot repairs exist as frontier/open work; no real MES/ERP/AR/treasury roundtrip.",
+      "existing_owner": "Existing Cash-to-Capacity/integration owner",
+      "next_action": "Reconcile exact cash repairs, bind authoritative production commitment and invoice/payment outcomes, prove role-safe economic presentation and actual milestone reconciliation.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-026",
+      "area": "Costs, savings and cash",
+      "bullet": "Integrate quality loss, staffing surplus and administration-effort assessments.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        502,
+        492,
+        507
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/502",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/492",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/507"
+      ],
+      "observed_status": "#502 quality costs, #492 surplus and #507 manual touches are read-only isolated modules; #507 exact core job succeeded but full image not admitted.",
+      "existing_owner": "Canonical integration owner plus relevant source owners",
+      "next_action": "Independent exact-head review/admission as needed, authenticate complete QMS/WFM/audit sources, reconcile with ledger without treating counts/declared costs as saved money, and prove role/site reads.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-027",
+      "area": "Energy, water and resilience",
+      "bullet": "Complete tariff, meter and invoice reconciliation.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "evidence_prs": [
+        69,
+        520
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/69",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/520"
+      ],
+      "observed_status": "Energy reconcilers exist; #520 fixes foreign ledger/malformed coverage but explicitly lacks invoice ID/posting provenance and authentication.",
+      "existing_owner": "Existing energy/integration/economic owner",
+      "next_action": "Review #520 exact head alongside adjacent reconciler; add missing trusted invoice/posting/source identity binding, then prove complete bill-period coverage and ledger/meter reconciliation.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-028",
+      "area": "Energy, water and resilience",
+      "bullet": "Integrate energy-aware scheduling and maintenance options.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        69,
+        315,
+        420,
+        498
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/69",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/315",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/420",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/498"
+      ],
+      "observed_status": "Shadow energy planner and several conflicting-signal/economic repairs exist; #498 binds maintenance work order but supplies no execution authority.",
+      "existing_owner": "Existing energy/maintenance/Capacity Rescue owner",
+      "next_action": "Reconcile overlapping energy-engine deltas once, bind authenticated tariff/flexibility/WFM/CMMS sources and test constraints/current signal revisions through shared planner.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-029",
+      "area": "Energy, water and resilience",
+      "bullet": "Verify demand peaks, flexibility events and settlement.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        510,
+        69,
+        315,
+        520
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/510",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/69",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/315",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/520"
+      ],
+      "observed_status": "#510 reports synthetic 4/4 and 377/377; no authenticated meter/tariff source or hosted proof. #69 shadow experiment explicitly lacks live grid/aggregator settlement.",
+      "existing_owner": "Existing energy/integration owner",
+      "next_action": "Review/adopt peak assessor; verify complete current meter intervals, effective thresholds and aggregator accepted/settled receipts. Keep kW, price opportunities and realised settlement separate.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-030",
+      "area": "Energy, water and resilience",
+      "bullet": "Complete water, utility and environmental capacity constraints.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence_prs": [
+        218,
+        410,
+        355,
+        330,
+        216
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/218",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/410",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/355",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/330",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/216"
+      ],
+      "observed_status": "Water and sensitive-zone shadow models exist with safety/permit boundaries; multiple numerical/source/outcome repairs remain separate open drafts.",
+      "existing_owner": "Existing water/utility/site-policy and canonical owner",
+      "next_action": "Reconcile exact water deltas, authenticate local reserve/restriction/effluent/source/task demand and controlled-zone policy; run infeasibility/finite arithmetic/site-isolation replay before safe UX integration.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    },
+    {
+      "local_id": "MV-031",
+      "area": "Energy, water and resilience",
+      "bullet": "Prove safe degraded operation and continuity arrangements.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "evidence_prs": [
+        214,
+        216,
+        218,
+        501
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/214",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/216",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/218",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_status": "Loss-prevention, sensitive-zone and water experiments provide local constraints, not live continuity/operational safety proof. Hosted exact-source recovery is still a release gate.",
+      "existing_owner": "Independent proof lane plus canonical/safety authority owners",
+      "next_action": "On admitted isolated candidate inject stale/missing utility/provider data and restarts; demonstrate fail-closed containment, retained state, approved recovery and explicit handover authority with independent readback.",
+      "execution_status": "AUDITED_NOT_STARTED",
+      "live_customer_proven": false
+    }
+  ]
+}

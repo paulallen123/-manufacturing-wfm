@@ -1,0 +1,27 @@
+{
+  "group": "Reporting",
+  "original_bullet": "Integrate and verify typed CSV/XLSX/PDF/DOCX exports.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    318,
+    371
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/318",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/371"
+  ],
+  "next_action": "Reconcile current typed formatter, invoke every supported export through governed route, verify real readers preserve type/ID/null/0 and formula safety; implement missing formats only after inventory.",
+  "blocker": [],
+  "observed_evidence": "PR318 independent verifier reports200 mixed exports/400 negative mutations and13/13 local tests; exact Linux/hosted/external spreadsheet behavior remain unproven. Scope does not establish every output format.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V080",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V080.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,29 @@
+{
+  "group": "Time and attendance",
+  "original_bullet": "Prove independently approved corrections and their payroll consequences.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    416,
+    501,
+    369
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/416",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/369"
+  ],
+  "next_action": "Adopt oracle guards and run authorised rejected+nonzero applied correction; compare raw/effective time, distinct actors, revisions, payroll invalidation and fresh-login audit.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR416 oracle111/111 local, independent/full-image/hosted handoff pending; PR369 is reconciliation guard not correction workflow completion.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V038",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V038.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

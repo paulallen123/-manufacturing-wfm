@@ -1,0 +1,29 @@
+{
+  "group": "Costs, savings and cash",
+  "original_bullet": "Integrate quality loss, staffing surplus and administration-effort assessments.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Canonical integration owner plus relevant source owners",
+  "existing_prs": [
+    502,
+    492,
+    507
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/502",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/492",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/507"
+  ],
+  "next_action": "Independent exact-head review/admission as needed, authenticate complete QMS/WFM/audit sources, reconcile with ledger without treating counts/declared costs as saved money, and prove role/site reads.",
+  "blocker": [],
+  "observed_evidence": "#502 quality costs, #492 surplus and #507 manual touches are read-only isolated modules; #507 exact core job succeeded but full image not admitted.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V116",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V116.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,13 @@
+{
+  "pr": 495,
+  "source_sha": "5f30507d3dc3f634b699a4a9c477a2766cf3456a",
+  "node": "24.22.1",
+  "command": "node --test payroll-release-variance.test.cjs",
+  "pass": 7,
+  "fail": 0,
+  "skip": 0,
+  "exit": 0,
+  "source_blob": "4eae492658e5c20adf29830cfe70ee481abd50a7",
+  "test_blob": "8be4c4c2a818236657328f7d761acf52f3616aaa",
+  "claim_boundary": "Isolated synthetic module test only; not Node22/image/integration/hosted/provider/customer proof."
+}

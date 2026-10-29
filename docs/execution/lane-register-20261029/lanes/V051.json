@@ -1,0 +1,29 @@
+{
+  "group": "Payroll",
+  "original_bullet": "Verify exact calculations, premiums, factors and export serialization.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    497,
+    506,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/497",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/506",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Reconcile exact current factor/money fixes and test-only packages; obtain independent exact-delta review; run all19-column Unicode/quote/formula boundaries and independent expected pay calculations on integrated runtime.",
+  "blocker": [],
+  "observed_evidence": "PR497/506 synthetic serialization/domain receipts pass; no actual browser/HTTP/SQLite/process-restart/provider proof. PR501 preserves payroll-factor repairs but does not establish whole payroll accuracy.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V051",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V051.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

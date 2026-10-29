@@ -1,0 +1,27 @@
+{
+  "group": "People and organisation",
+  "original_bullet": "Prove manager permissions, cross-site authority and role changes.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    365,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/365",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Run current integrated negative matrix across manager/site/role changes and fresh sessions, then hosted proof.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR365 source review covers malformed plan scope and public entry filtering; full image and hosted current-role/revocation proof explicitly pending.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V025",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V025.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,274 @@
+TAP version 13
+# Subtest: accepts a fully bound synthetic rollback receipt set
+ok 1 - accepts a fully bound synthetic rollback receipt set
+  ---
+  duration_ms: 2.691235
+  type: 'test'
+  ...
+# Subtest: rejects real environment
+ok 2 - rejects real environment
+  ---
+  duration_ms: 0.646334
+  type: 'test'
+  ...
+# Subtest: rejects duplicate capture
+ok 3 - rejects duplicate capture
+  ---
+  duration_ms: 0.448223
+  type: 'test'
+  ...
+# Subtest: rejects different volume
+ok 4 - rejects different volume
+  ---
+  duration_ms: 0.160957
+  type: 'test'
+  ...
+# Subtest: rejects out of order events
+ok 5 - rejects out of order events
+  ---
+  duration_ms: 0.344983
+  type: 'test'
+  ...
+# Subtest: rejects unserved bad build
+ok 6 - rejects unserved bad build
+  ---
+  duration_ms: 0.227508
+  type: 'test'
+  ...
+# Subtest: rejects wrong bad SHA
+ok 7 - rejects wrong bad SHA
+  ---
+  duration_ms: 0.282645
+  type: 'test'
+  ...
+# Subtest: rejects unauthorised rollback
+ok 8 - rejects unauthorised rollback
+  ---
+  duration_ms: 0.182553
+  type: 'test'
+  ...
+# Subtest: rejects provider-only success
+ok 9 - rejects provider-only success
+  ---
+  duration_ms: 0.357161
+  type: 'test'
+  ...
+# Subtest: rejects old deployment ID reused
+ok 10 - rejects old deployment ID reused
+  ---
+  duration_ms: 0.225202
+  type: 'test'
+  ...
+# Subtest: rejects bad healthcheck could not serve
+ok 11 - rejects bad healthcheck could not serve
+  ---
+  duration_ms: 0.177659
+  type: 'test'
+  ...
+# Subtest: rejects wrong restored SHA
+ok 12 - rejects wrong restored SHA
+  ---
+  duration_ms: 0.33515
+  type: 'test'
+  ...
+# Subtest: rejects lost durable state
+ok 13 - rejects lost durable state
+  ---
+  duration_ms: 7.414812
+  type: 'test'
+  ...
+# Subtest: admits same exact candidate and readbacks across witnessed restart
+ok 14 - admits same exact candidate and readbacks across witnessed restart
+  ---
+  duration_ms: 3.122069
+  type: 'test'
+  ...
+# Subtest: rejects missing volume
+ok 15 - rejects missing volume
+  ---
+  duration_ms: 0.500192
+  type: 'test'
+  ...
+# Subtest: rejects no process change
+ok 16 - rejects no process change
+  ---
+  duration_ms: 0.470387
+  type: 'test'
+  ...
+# Subtest: rejects old receipt
+ok 17 - rejects old receipt
+  ---
+  duration_ms: 0.232824
+  type: 'test'
+  ...
+# Subtest: rejects volume changed
+ok 18 - rejects volume changed
+  ---
+  duration_ms: 0.293514
+  type: 'test'
+  ...
+# Subtest: rejects candidate changed
+ok 19 - rejects candidate changed
+  ---
+  duration_ms: 0.299717
+  type: 'test'
+  ...
+# Subtest: rejects tenant changed
+ok 20 - rejects tenant changed
+  ---
+  duration_ms: 0.239054
+  type: 'test'
+  ...
+# Subtest: rejects batch changed
+ok 21 - rejects batch changed
+  ---
+  duration_ms: 0.201769
+  type: 'test'
+  ...
+# Subtest: rejects CSV changed
+ok 22 - rejects CSV changed
+  ---
+  duration_ms: 0.388653
+  type: 'test'
+  ...
+# Subtest: rejects stale fresh login
+ok 23 - rejects stale fresh login
+  ---
+  duration_ms: 0.630178
+  type: 'test'
+  ...
+# Subtest: rejects audit missing
+ok 24 - rejects audit missing
+  ---
+  duration_ms: 0.322381
+  type: 'test'
+  ...
+# Subtest: admits a denied overlapping action with fresh-session and effect readback
+ok 25 - admits a denied overlapping action with fresh-session and effect readback
+  ---
+  duration_ms: 4.627204
+  type: 'test'
+  ...
+# Subtest: rejects stale candidate
+ok 26 - rejects stale candidate
+  ---
+  duration_ms: 1.050107
+  type: 'test'
+  ...
+# Subtest: rejects another tenant
+ok 27 - rejects another tenant
+  ---
+  duration_ms: 0.261928
+  type: 'test'
+  ...
+# Subtest: rejects reused capture
+ok 28 - rejects reused capture
+  ---
+  duration_ms: 0.578338
+  type: 'test'
+  ...
+# Subtest: rejects uncommitted revocation
+ok 29 - rejects uncommitted revocation
+  ---
+  duration_ms: 0.381362
+  type: 'test'
+  ...
+# Subtest: rejects unwitnessed race
+ok 30 - rejects unwitnessed race
+  ---
+  duration_ms: 0.3136
+  type: 'test'
+  ...
+# Subtest: rejects stale authority decision
+ok 31 - rejects stale authority decision
+  ---
+  duration_ms: 0.481984
+  type: 'test'
+  ...
+# Subtest: rejects accepted in-flight action
+ok 32 - rejects accepted in-flight action
+  ---
+  duration_ms: 0.24818
+  type: 'test'
+  ...
+# Subtest: rejects old session only
+ok 33 - rejects old session only
+  ---
+  duration_ms: 0.355687
+  type: 'test'
+  ...
+# Subtest: rejects persisted effect
+ok 34 - rejects persisted effect
+  ---
+  duration_ms: 0.457178
+  type: 'test'
+  ...
+# Subtest: rejects detached audit
+ok 35 - rejects detached audit
+  ---
+  duration_ms: 0.248382
+  type: 'test'
+  ...
+# Subtest: exact external watermark and restored readback compare cleanly
+ok 36 - exact external watermark and restored readback compare cleanly
+  ---
+  duration_ms: 2.662551
+  type: 'test'
+  ...
+# Subtest: rejects older sequence
+ok 37 - rejects older sequence
+  ---
+  duration_ms: 0.544886
+  type: 'test'
+  ...
+# Subtest: rejects unwitnessed later sequence
+ok 38 - rejects unwitnessed later sequence
+  ---
+  duration_ms: 0.341718
+  type: 'test'
+  ...
+# Subtest: rejects same sequence different state
+ok 39 - rejects same sequence different state
+  ---
+  duration_ms: 0.13406
+  type: 'test'
+  ...
+# Subtest: rejects different epoch
+ok 40 - rejects different epoch
+  ---
+  duration_ms: 0.261794
+  type: 'test'
+  ...
+# Subtest: rejects different tenant
+ok 41 - rejects different tenant
+  ---
+  duration_ms: 0.322669
+  type: 'test'
+  ...
+# Subtest: rejects different candidate
+ok 42 - rejects different candidate
+  ---
+  duration_ms: 0.205985
+  type: 'test'
+  ...
+# Subtest: rejects unbound receipt
+ok 43 - rejects unbound receipt
+  ---
+  duration_ms: 0.396858
+  type: 'test'
+  ...
+# Subtest: rejects invalid digest
+ok 44 - rejects invalid digest
+  ---
+  duration_ms: 1.090274
+  type: 'test'
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 186.894948

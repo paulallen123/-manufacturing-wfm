@@ -1,0 +1,26 @@
+{
+  "group": "Payroll",
+  "original_bullet": "Integrate the Staffology lifecycle repair, including authoritative leaver status.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    512
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/512#issuecomment-6390223225",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/512"
+  ],
+  "next_action": "Wait for/verify existing code review completion, compare exact donor to current integration source, adopt bounded four-file delta under sole integrator, rerun complete exact-source suite and image admission.",
+  "blocker": [],
+  "observed_evidence": "Open non-draft donor2e04efe. Latest comment supersedes initial missing-file blockers: exact-source Node22.23.2 composed runtime329/329 zero skips. Code review still reported RUNNING; security completed. Not integrated/image/hosted/customer-proven.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V048",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V048.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

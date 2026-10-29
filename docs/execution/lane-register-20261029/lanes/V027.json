@@ -1,0 +1,35 @@
+{
+  "group": "Scheduling",
+  "original_bullet": "Reconcile the overlapping scheduler repairs into one implementation.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    352,
+    356,
+    357,
+    365,
+    369,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/356",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/357",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/365",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/369",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Canonical owner preserve reviewed deltas and both authority/reconciliation tests; resolve Dockerfile conflicts then run actual merged SHA gates.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR352 latest head5a3aea6 focused110/110 Node22.23.3; PR369 donor image now independently admitted; PR501 lacks PR369 repair and Docker conflicts remain.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V027",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V027.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

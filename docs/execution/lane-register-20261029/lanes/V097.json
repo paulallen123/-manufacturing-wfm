@@ -1,0 +1,31 @@
+{
+  "group": "Maintenance",
+  "original_bullet": "Integrate preventive, corrective and predictive maintenance.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "yes",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing maintenance kernel/canonical owner",
+  "existing_prs": [
+    394,
+    415,
+    491,
+    449
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/415",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/491",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/449"
+  ],
+  "next_action": "Adopt due/triage contracts directly; separately establish predictive target, trusted condition history, failure labels and validation criteria before implementing prediction. Do not equate two-reading advisory with predictive maintenance.",
+  "blocker": [],
+  "observed_evidence": "Preventive due and corrective triage assessors exist; #449 only compares declared meter readings and explicitly supplies no machine diagnosis. Predictive-maintenance model capability remains unverified.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V097",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V097.json",
+  "research_route": "TARGETED_RESEARCH_WITH_EXIT_CRITERION",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

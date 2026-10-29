@@ -1,0 +1,33 @@
+{
+  "group": "People and organisation",
+  "original_bullet": "Complete multi-country, timezone, currency and policy configuration.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    385,
+    395,
+    435,
+    436,
+    429
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/385",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/395",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/435",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/436",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/429"
+  ],
+  "next_action": "Reconcile ordered policy stack retaining population/provenance guards; bind approved customer policies, then DST/currency/country consumer tests.",
+  "blocker": "Effective-dated customer policy evidence and qualified source authority; no external legal research needed unless actual target policy gap appears.",
+  "observed_evidence": "Policy stack includes tested source/image packages, but isolated evidence is not release adoption nor legal policy authentication.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V026",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V026.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

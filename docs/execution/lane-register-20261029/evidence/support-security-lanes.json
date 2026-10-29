@@ -1,0 +1,538 @@
+{
+  "audit_date": "2026-10-29",
+  "auditor": "/root/support_security_extensions_audit",
+  "scope": "24 exact leaf bullets: support/learning, security/enterprise, customer proof and historical extensions",
+  "observed_candidate": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "proof_run": {
+    "runtime": "Node v24.22.1",
+    "command": "node --test --test-reporter=tap tests/permission-revocation-race-oracle.test.mjs tests/bad-deployment-rollback-oracle.test.mjs tests/payroll-restart-proof-oracle.test.mjs tests/restore-freshness-proof-oracle.test.mjs",
+    "cwd": "/workspace/scratch/2ea1ba0f2164/support-proof",
+    "exit_code": 0,
+    "tests": 44,
+    "pass": 44,
+    "fail": 0,
+    "skipped": 0,
+    "source_identity": "All8 source/test Git blob SHA1 values verified against exact GitHub fetch result after byte-preserving write.",
+    "manifest": "/workspace/scratch/2ea1ba0f2164/support-proof/source-manifest.json",
+    "tap": "/workspace/scratch/2ea1ba0f2164/support-proof/support-proof.tap",
+    "claim_boundary": "Pure synthetic read-only oracle execution only. No Node22, full image, hosted events, provider, customer, restart or rollback was executed. PR399/400 former V8-only evidence now has actual Node24 execution, not a release gate."
+  },
+  "northstar": {
+    "skill_project_id": "d9cdf06b-22b2-4733-a4b0-655b42bf8479",
+    "parent_observed_same_name_id": "e4152ea8-d443-4f8f-a015-88f8e5f75d2f",
+    "status": "UNPROVEN_IDENTITY_MISMATCH",
+    "action": "Do not substitute same-name project for pinned canonical standalone Northstar until identity is authoritatively reconciled."
+  },
+  "model_policy": {
+    "routine": "Use lowest-cost available model that reliably resolves source/status and formatting; escalate uncertainty rather than guessing.",
+    "engineering": "Use efficient Codex/Sol model with exact source/tests; batch independent deterministic checks.",
+    "security_review": "Independent verifier separate from author; higher reasoning for authority/concurrency/tenant/payroll/rollback. Astra only if a concrete hard issue cannot be resolved efficiently.",
+    "activation": "No external cloud model selection or paid compute was activated by this audit; this session agent uses inherited model."
+  },
+  "lanes": [
+    {
+      "category": "Autonomous support and learning",
+      "bullet": "Prove detection → diagnosis → containment → repair → verification → recovery.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        86,
+        238,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/86",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/238",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "next_action": "Reconcile existing support controller and provider recovery onto actual current candidate; run independent end-to-end failure/recovery scenario without a new controller.",
+      "blocked_on": [
+        "Current-source consumer integration",
+        "Approved synthetic failure target"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Autonomous support and learning",
+      "bullet": "Complete durable incident/engineering memory and recurrence prevention.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        238,
+        354,
+        335,
+        451
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/238",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/354",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/335",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/451"
+      ],
+      "next_action": "Check current persistence boundaries; integrate replay/digest/snapshot fixes and make deduplication survive restart, then prove recurrence and non-recurrence paths.",
+      "blocked_on": [
+        "PR354 memory-only replay boundary",
+        "Authenticated measurement provenance"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Autonomous support and learning",
+      "bullet": "Verify unique ownership, leases and dispatch intent.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/docs/execution/STATE.md"
+      ],
+      "next_action": "Execute existing duplicate-owner, stale-fence and uncertain-send regressions on exact combined source; verify durable intent before any network dispatch.",
+      "blocked_on": [
+        "Protected actor/run configuration",
+        "Current dispatcher authority"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Autonomous support and learning",
+      "bullet": "Complete forecast-versus-actual learning and outcome calibration.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        335,
+        354,
+        451
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/335",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/354",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/451"
+      ],
+      "next_action": "Adopt reviewed integrity/replay/snapshot deltas without duplicating learning engines; test authenticated measured outcomes, replay after restart and no false causal/cash claim.",
+      "blocked_on": [
+        "Current-source reconciliation",
+        "Trusted outcome/source custody"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Autonomous support and learning",
+      "bullet": "Demonstrate the zero-human implementation/support target under realistic failures.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        86,
+        238,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/86",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/238",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "next_action": "Exercise T0–T4 safe terminal paths through the existing approved proof runner; retain abstention/containment boundaries and quantify scenario coverage rather than universal success.",
+      "blocked_on": [
+        "Signed proof bindings",
+        "Runtime-level source/tenant verification",
+        "Approved failure environment"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Security and enterprise readiness",
+      "bullet": "Prove tenant, role, site and payroll-data isolation throughout.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        396,
+        398,
+        399,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/396",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/398",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/399",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "next_action": "Integrate existing denial/revocation probes; run two approved synthetic tenants, current roles, fresh-session denials, audit/effect readback and exact response-source binding.",
+      "blocked_on": [
+        "Approved synthetic actor/tenant bindings",
+        "Current target identity"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Security and enterprise readiness",
+      "bullet": "Complete enterprise identity/account lifecycle requirements, including OIDC/SCIM.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "unknown",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "next_action": "Inspect accepted enterprise SSO/provisioning contract and actual identity interfaces; search found no dedicated OIDC+SCIM PR, which is not proof of absence. Separate Google/Apple OAuth from enterprise provisioning.",
+      "blocked_on": [
+        "Verified OIDC/SCIM scope and provider/tenant configuration"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Security and enterprise readiness",
+      "bullet": "Verify revocation, retention, erasure and minimum disclosure.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        398,
+        399,
+        194,
+        82
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/398",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/399",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/82"
+      ],
+      "next_action": "Run supported-runtime revocation suite and existing retention/erasure/minimum-disclosure checks against current consumers; fill evidence matrix and isolate missing implementation.",
+      "blocked_on": [
+        "Current-source coverage matrix",
+        "Provider deletion/retention authority where applicable"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Security and enterprise readiness",
+      "bullet": "Complete worker challenge, oversight and authority boundaries.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "unknown",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        86,
+        238
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/86",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/238"
+      ],
+      "next_action": "Map actual employee challenge/remediation and human-oversight UI/API contracts to accepted governance requirements; develop only demonstrated missing seams.",
+      "blocked_on": [
+        "Authoritative governance acceptance and current consumer mapping"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Security and enterprise readiness",
+      "bullet": "Recheck release protection, artifact integrity and current security findings.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/208",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/1"
+      ],
+      "next_action": "Read current branch/ruleset enforcement where authorized, exact artifact and installed-file identity, and security finding state; do not treat old open issues as fresh live defects.",
+      "blocked_on": [
+        "Administrative read access may be unavailable",
+        "Fresh exact-candidate scan"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Security and enterprise readiness",
+      "bullet": "Prove backup/restore and operation at 10,000 employees across 50 sites.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        383,
+        389,
+        400
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/383",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/389",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/400",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265"
+      ],
+      "next_action": "Use existing restart/restore/rollback oracles with independently captured receipts; execute scale proof on current exact runtime rather than inheriting historical baseline results.",
+      "blocked_on": [
+        "Approved disposable volume-backed recovery target",
+        "Independent external witness custody",
+        "Current runtime and scale fixture binding"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Customer proof",
+      "bullet": "Run the complete Golden Journey on one identified live version.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265"
+      ],
+      "next_action": "Use dedicated CP lane to verify actual serving SHA then execute secure entry, discovery/import, time/absence, scheduling/approval, payroll, provider readback, recovery and value journey.",
+      "blocked_on": [
+        "Protected signed session and customer configuration",
+        "Exact tenant/run/actor identity",
+        "Relevant accepted feature integration"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Customer proof",
+      "bullet": "Verify every action through saved state, refresh and fresh login.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        383,
+        393,
+        399
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/383",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/393",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/399"
+      ],
+      "next_action": "Capture action, authoritative persisted state, refresh and fresh-login readback with immutable source/tenant/run/audit identifiers for each delivered capability.",
+      "blocked_on": [
+        "Authenticated proof runner",
+        "Durable storage observations"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Customer proof",
+      "bullet": "Include required real-provider acceptance and readback.",
+      "stage": "BLOCKED",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "next_action": "Validate scoped provider connection/consent and synthetic employer/person/period mappings; only execute writes when specifically permitted, then independently read back and reconcile.",
+      "blocked_on": [
+        "Real authorized provider connection",
+        "Specific approved write scope",
+        "Provider-independent readback custody"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Customer proof",
+      "bullet": "Retain independent browser, audit and recovery evidence.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        383,
+        389,
+        393,
+        399,
+        400
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/383",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/389",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/393",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/399",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/400"
+      ],
+      "next_action": "Retain exact-version screenshots/traces, raw source headers, audit/receipt hashes, independent captures and recovery transition; use passed oracle logic but do not equate it to hosted events.",
+      "blocked_on": [
+        "Signed runner identity/configuration",
+        "Approved retained evidence target"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Customer proof",
+      "bullet": "Complete customer acceptance and a reproducible end-to-end demonstration.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/265"
+      ],
+      "next_action": "After integrated Golden Journey gates pass, record reproducible intended-role demonstration and obtain actual customer acceptance through approved process.",
+      "blocked_on": [
+        "All mandatory exact-candidate gates",
+        "Customer acceptance evidence"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "Recruitment, talent and performance.",
+      "stage": "RESEARCH",
+      "research_needed": "yes",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/202"
+      ],
+      "next_action": "Resolve accepted requirement/source and intended customer workflow before implementing or rejecting; do not silently expand core release scope.",
+      "blocked_on": [
+        "Explicit scope disposition"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "Court/client-event scheduling.",
+      "stage": "RESEARCH",
+      "research_needed": "yes",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/202"
+      ],
+      "next_action": "Recover original requirement and clarify whether retained extension is accepted VECTOR delivery scope; identify reusable scheduling contract before any new domain code.",
+      "blocked_on": [
+        "Explicit scope disposition and domain authority"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "Construction/public-works certified payroll.",
+      "stage": "RESEARCH",
+      "research_needed": "yes",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        106
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/106"
+      ],
+      "next_action": "Recover original target jurisdictions and accepted customer workflow; verify primary-source rules only after scope is grounded, then reuse payroll contract.",
+      "blocked_on": [
+        "Explicit scope/jurisdiction disposition"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "Field-service dispatch and offline completion.",
+      "stage": "RESEARCH",
+      "research_needed": "yes",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        106
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/106"
+      ],
+      "next_action": "Recover accepted field-service use case; map existing workforce/asset/offline primitives and decide exact incremental requirements before development.",
+      "blocked_on": [
+        "Explicit scope disposition"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "Supplier licensing, insurance and assurance.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "unknown",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        82,
+        239
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/82",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+      ],
+      "next_action": "Inspect agency supplier eligibility/assurance implementations and original extension source; reuse accepted licensing/insurance evidence checks rather than creating duplicate supplier engine.",
+      "blocked_on": [
+        "Current supplier authority/expiry source",
+        "Explicit extension scope"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "RFP scoring and buyer-specific migration/cutover.",
+      "stage": "RESEARCH",
+      "research_needed": "yes",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/202"
+      ],
+      "next_action": "Separate traceable RFP scoring from actual buyer migration rehearsal/UAT/cutover; recover accepted outcomes and establish source/data/approval contracts.",
+      "blocked_on": [
+        "Buyer-specific accepted scope and migration source"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "Portable Skills Trust, robot/AMR planning, industrial edge interoperability and autonomy receipts.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "unknown",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [
+        359
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/359",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/60",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/62",
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/65"
+      ],
+      "next_action": "Reconcile each retained frontier outcome to existing shadow implementations and original safety boundaries. PR359 is synthetic Ed25519 advisory, not standards-conformant wallet verification or production assignment authority.",
+      "blocked_on": [
+        "Actual accepted standards/provider scope",
+        "Authenticated source adapters",
+        "Canonical Northstar source identity if used"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    },
+    {
+      "category": "Historical extensions still needing an explicit scope decision",
+      "bullet": "Remaining named frontier concepts, including Thermal Capacity Twin and commercial automation.",
+      "stage": "RESEARCH",
+      "research_needed": "yes",
+      "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+      "existing_prs": [],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/issues/202"
+      ],
+      "next_action": "Recover named historical records and assign explicit accepted/rejected/superseded dispositions; investigate only unresolved accepted requirements and retain no uncontrolled scope growth.",
+      "blocked_on": [
+        "Original source and explicit scope disposition"
+      ],
+      "status": "TRIAGED_NOT_CUSTOMER_PROVEN"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "group": "Payroll",
+  "original_bullet": "Complete safe first import and employee/provider identity mapping.",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    309,
+    512
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/309",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/512"
+  ],
+  "next_action": "Verify current installed Staffology version and protected cohort/site/mapping profile; exercise approved synthetic first-worker import and independent persisted identity readback; retain external provider gate.",
+  "blocker": [],
+  "observed_evidence": "PR309 closed after canonical merge3420d526 and deployed admission; genuine provider configuration and authenticated journey unproven. PR512 lifecycle follow-up remains separate.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V049",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V049.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

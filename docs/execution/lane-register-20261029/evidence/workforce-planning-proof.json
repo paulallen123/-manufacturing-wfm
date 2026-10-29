@@ -1,0 +1,169 @@
+{
+  "schema": "vector-independent-evidence/v1",
+  "checked_on": "2026-10-29",
+  "lane": "Time/attendance: adopt already-built PR369 schedule-attendance reconciliation repair",
+  "decision": "INTEGRATION_REQUIRED; no additional algorithm research or competing repair branch",
+  "ownership_check": {
+    "source": "Fresh PR501/PR369 metadata and latest PR comments; targeted openPR search for369 Dockerfile",
+    "canonical_owner": "Existing sole PR501 integration/release owner retained",
+    "pr501_current_head": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+    "pr501_status": "open, not draft, not merged (fresh raw API); body references older candidate and is stale",
+    "donor_current_head": "624fba2f4eb6c5d94d83a42fff977949a8ac3bb4",
+    "related_active_package": "PR513 Replace unsupported bind mounts with COPY-based archive proof stage; check owner before touching Dockerfile",
+    "evidence_urls": [
+      "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6469898020",
+      "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6496361719",
+      "https://github.com/paulallen123/-manufacturing-wfm/pull/369#issuecomment-6468589709"
+    ]
+  },
+  "fresh_executed_checks": [
+    {
+      "variant": "current",
+      "source_commit": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "source_provenance": "Fetched via GitHub connector at exact immutable ref; reconstructed bytes verified against returned Git blob hashes before accepted execution",
+      "command": "node --test --test-reporter=tap schedule-attendance-reconciliation.test.cjs",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/workforce-proof/current",
+      "runtime": "Node v24.22.1",
+      "exit_code": 1,
+      "counts": {
+        "tests": 27,
+        "pass": 6,
+        "fail": 21,
+        "skipped": 0
+      },
+      "tap_path": "/workspace/scratch/2ea1ba0f2164/workforce-proof/current/focused.tap",
+      "tap_sha256": "6bbe4db3394f7233651f7899b42a0b20651abc1ea963c6c49f7b4196405c15f7",
+      "failed_test_names": [
+        "rejects invalid tenant and plan identities before a ready receipt",
+        "requires exact payroll projection tenant and plan binding",
+        "declared unassigned shortfall remains a blocking schedule row",
+        "rejects invalid worker and employee identities without coercion",
+        "rejects nonfinite provenance and invalid intervals before receipt hashing",
+        "one attendance interval cannot reconcile two shifts for the same worker",
+        "duplicate attendance intervals are retained as unexpected evidence",
+        "overlapping evidence has an order-invariant maximum one-to-one assignment",
+        "byte-identical attendance evidence cannot cover two shifts",
+        "a contested interval is reassigned when another shift has no alternative",
+        "the same source interval stays single-use despite unrelated metadata",
+        "inherited filter cannot erase schedule and unexpected evidence",
+        "sparse, accessor and custom-traversal input arrays are rejected",
+        "a ready projection requires explicit schedule and attendance arrays",
+        "inherited numeric setters cannot erase internal assignment arrays",
+        "array proxies cannot hide declared assignments",
+        "inherited Map iteration cannot manufacture a non-overlapping evidence match",
+        "returned receipt and nested provenance stay immutable under attempted edits",
+        "collation-equal slot ids retain the same attendance attribution across input order",
+        "collation-equal unexpected worker ids have a canonical order",
+        "duplicate slot ids fail closed before matching"
+      ],
+      "files": [
+        {
+          "path": "/workspace/scratch/2ea1ba0f2164/workforce-proof/current/schedule-attendance-reconciliation.cjs",
+          "git_blob": "a56bdb106b90d01d323e3297ceb17fdb9c0a7772",
+          "sha256": "d60c40b1e1bb3ead724b6f20e10336e49f7ce9d20a74b61404fbd5d7f0126cdb"
+        },
+        {
+          "path": "/workspace/scratch/2ea1ba0f2164/workforce-proof/current/schedule-attendance-reconciliation.test.cjs",
+          "git_blob": "b3e3d5efa1212c235d932bb8fb17782971c8a0c3",
+          "sha256": "dc756372f3b7c8768a58315378aed565d021b37a972bd839299a967aa178c8a6"
+        }
+      ]
+    },
+    {
+      "variant": "donor",
+      "source_commit": "624fba2f4eb6c5d94d83a42fff977949a8ac3bb4",
+      "source_provenance": "Fetched via GitHub connector at exact immutable ref; reconstructed bytes verified against returned Git blob hashes before accepted execution",
+      "command": "node --test --test-reporter=tap schedule-attendance-reconciliation.test.cjs",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/workforce-proof/donor",
+      "runtime": "Node v24.22.1",
+      "exit_code": 0,
+      "counts": {
+        "tests": 27,
+        "pass": 27,
+        "fail": 0,
+        "skipped": 0
+      },
+      "tap_path": "/workspace/scratch/2ea1ba0f2164/workforce-proof/donor/focused.tap",
+      "tap_sha256": "ae8271f7a3e964a0decc1a0762e1b776c7d7b35e3f98f04945a1e4e45aa711d6",
+      "failed_test_names": [],
+      "files": [
+        {
+          "path": "/workspace/scratch/2ea1ba0f2164/workforce-proof/donor/schedule-attendance-reconciliation.cjs",
+          "git_blob": "b7a6f903c350f339db43025913af1235e7ec1748",
+          "sha256": "234eb01497eb989b4ac8c2973a86484357e250efd96bff66c619dd78fbca4be4"
+        },
+        {
+          "path": "/workspace/scratch/2ea1ba0f2164/workforce-proof/donor/schedule-attendance-reconciliation.test.cjs",
+          "git_blob": "b3e3d5efa1212c235d932bb8fb17782971c8a0c3",
+          "sha256": "dc756372f3b7c8768a58315378aed565d021b37a972bd839299a967aa178c8a6"
+        }
+      ]
+    }
+  ],
+  "docker_three_way_diagnostic": {
+    "command": "git merge-file -p --diff3 current/Dockerfile base/Dockerfile donor/Dockerfile",
+    "exit_code": 2,
+    "conflicts": [
+      {
+        "start_line": 15,
+        "text": [
+          "<<<<<<< /workspace/scratch/2ea1ba0f2164/workforce-proof/current/Dockerfile",
+          "RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-admission.test.cjs resilience/support-selfhelp.test.cjs resilience/support-selfhelp-service.test.cjs resilience/support-selfhelp-root.test.cjs ux-overlay/vector-help.test.cjs ux-overlay/vector-help-root.test.cjs",
+          "RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs",
+          "RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \\",
+          " && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs",
+          "||||||| /workspace/scratch/2ea1ba0f2164/workforce-proof/base/Dockerfile",
+          "RUN node --test scripts/patch-payroll-money.test.mjs",
+          "RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs",
+          "RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \\",
+          " && node --test security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs",
+          "=======",
+          "RUN node --test scripts/patch-payroll-money.test.mjs",
+          "RUN node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs",
+          "RUN --mount=type=secret,id=proxy_ca \\",
+          " if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \\",
+          " npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \\",
+          " && node --test security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs",
+          ">>>>>>> /workspace/scratch/2ea1ba0f2164/workforce-proof/donor/Dockerfile"
+        ],
+        "end_line": 32
+      },
+      {
+        "start_line": 135,
+        "text": [
+          "<<<<<<< /workspace/scratch/2ea1ba0f2164/workforce-proof/current/Dockerfile",
+          "RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund",
+          "COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs security/runtime/federated-auth.cjs security/runtime/federated-ui.js /app/security-runtime/",
+          "||||||| /workspace/scratch/2ea1ba0f2164/workforce-proof/base/Dockerfile",
+          "RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund",
+          "COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs /app/security-runtime/",
+          "=======",
+          "RUN --mount=type=secret,id=proxy_ca \\",
+          " if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \\",
+          " npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund",
+          "COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs /app/security-runtime/",
+          ">>>>>>> /workspace/scratch/2ea1ba0f2164/workforce-proof/donor/Dockerfile"
+        ],
+        "end_line": 146
+      }
+    ],
+    "stderr": ""
+  },
+  "owner_ready_resolution_requirements": [
+    "Do not merge donor Dockerfile wholesale: preserve current payroll-factor/support-help/3Min integration regressions and every federated-auth/session/UI test.",
+    "First conflict: retain current test-command union and add donor optional BuildKit proxy_ca secret mount around npm ci; keep TLS verification enabled and secret out of image layers.",
+    "Second conflict: retain current federated-auth.cjs/federated-ui.js runtime COPY additions and add optional TLS CA secret handling around runtime npm ci.",
+    "Preserve both current scheduling-authority regressions and donor tenant/plan projection-binding tests; diagnostic file has conflict markers and must never be built/promoted.",
+    "Coordinate Dockerfile with current PR501 owner and PR513 proof-stage owner; this independent lane supplies evidence only.",
+    "After owner resolves onto actual integration SHA, rerun supported Node22.23.2 affected scheduling/service/authority/forecast/reconciliation tests, independent review and full exact-image gate.",
+    "Then prove exact serving candidate with authorised synthetic role/UI/persisted-state/fresh-login/audit/recovery journey."
+  ],
+  "limitations": [
+    "Fresh checks are Node24.22.1 local isolated source tests, not pinned Node22 admission.",
+    "No whole-repository checkout, full Docker build, actual integrated SHA, hosted/customer/browser/provider proof was executed here.",
+    "git merge-file diagnoses exact3-file content conflicts, not a complete repository merge.",
+    "No code fix, canonical branch/ref mutation, PR/comment write, Railway mutation, credential read, provider operation, tenant/run write or customer contact occurred.",
+    "Initial local reconstruction normalized line endings/added newline; those preparatory runs were not accepted as exact-byte evidence. Final source and test bytes match returned Git hashes; Dockerfile JSON byte reconstruction preserves original mixed CRLF/LF exactly."
+  ],
+  "progress": "Already-built lane independently advanced through fresh differential regression and exact Dockerfile conflict reproduction; next owner action is concrete integration, not renewed research."
+}

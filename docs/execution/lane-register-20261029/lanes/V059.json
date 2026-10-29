@@ -1,0 +1,27 @@
+{
+  "group": "Agency workforce",
+  "original_bullet": "Complete clocking, approval and invoice/actual-cost reconciliation.",
+  "stage": "STATUS_RECONCILIATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    239,
+    82
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/239",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/82"
+  ],
+  "next_action": "Trace agency confirmation/attendance/approval/cost/invoice pipeline on current head, identify genuinely absent links, then implement scoped delta and exact expected-amount/revision tests.",
+  "blocker": [],
+  "observed_evidence": "Shadow architecture exists; end-to-end authoritative invoice/actual-cost workflow not demonstrated by retrieved PR receipts.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V059",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V059.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

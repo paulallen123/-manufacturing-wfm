@@ -1,0 +1,27 @@
+{
+  "group": "People and organisation",
+  "original_bullet": "Verify legal entities, sites, departments, lines and reporting hierarchies.",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "no",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    501,
+    385
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/385"
+  ],
+  "next_action": "Capture current role-scoped hierarchy from UI/API/source, verify exact entity/site/line bindings and persistent reload; create bounded defects for mismatches.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "Source/domain foundations exist; no fresh authenticated whole-hierarchy journey observed in this audit.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V024",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V024.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

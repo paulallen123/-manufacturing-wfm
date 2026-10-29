@@ -1,0 +1,29 @@
+{
+  "group": "Absence and leave",
+  "original_bullet": "Complete joiner/leaver and irregular-hours treatment.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    271,
+    512,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/271",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/512",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Map existing source lifecycle to entitlement calculations, implement only uncovered joiner/leaver/irregular-hours cases with approved policy fixtures.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "Provider lifecycle correction has separate open PR512; absence accrual parity to provider effective-date evidence remains unproven.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V044",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V044.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

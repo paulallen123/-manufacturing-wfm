@@ -1,0 +1,147 @@
+{
+  "id": "CP-001",
+  "original_bullet": "Independently customer-prove functionality already deployed while development proceeds.",
+  "group": "Independent existing-capability proof",
+  "pool": "P",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "no",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "execution_state": "PARTIAL_PROOF_EXECUTED",
+  "existing_owner": "Independent proof pool; canonical owner retains runtime changes",
+  "next_action": "Reuse existing reviewed signed runner, bind protected matching signer/public key and persisted approved synthetic actor/tenant/run/configuration, confirm least-privilege child environment, then run independent authenticated role workflows against exact currently served61718. Keep existing customer service90ad and volume unchanged until single integration owner completes promotion gates.",
+  "claimed_customer_complete": false,
+  "evidence": {
+    "schemaVersion": 1,
+    "laneId": "CP-001",
+    "name": "Independent proof of already deployed functionality",
+    "observedAt": "2026-10-29T22:35:38Z",
+    "stage": "CUSTOMER_PROOF",
+    "result": "PARTIAL",
+    "boundaries": "Read-only platform and actual browser observations; no sign-in, credential issuance, business/provider write, restart, deployment or Northstar execution.",
+    "proofService": {
+      "serviceId": "48ee3ceb-9cfc-4399-b3a1-3628e3603815",
+      "url": "https://vector-hardening-proof-production.up.railway.app/",
+      "deploymentId": "c95e7a37-2504-437c-9edb-495178a88935",
+      "deploymentStatus": "SUCCESS",
+      "configuredSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "actualBrowserIdentity": {
+        "candidateSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+        "sourceBinding": "build-file-matched",
+        "fixtureOnly": true,
+        "productionApproved": false,
+        "pilotReady": false
+      },
+      "actualBrowserHealth": {
+        "status": "ok",
+        "mode": "hosted-staging",
+        "fixtureOnly": true,
+        "hosted": true,
+        "productionApproved": false,
+        "pilotReady": false,
+        "release": "0.6.76-hosted-staging-rc1"
+      },
+      "actualBrowserRoot": {
+        "title": "VECTOR · Secure sign in",
+        "heading": "Welcome to VECTOR",
+        "passkeyButtonVisible": true,
+        "googleAppleButtonsVisible": false
+      },
+      "ready": {
+        "url": "https://vector-hardening-proof-production.up.railway.app/ready",
+        "body": {
+          "error": "Not found."
+        },
+        "statusCode": "Not available from AX observation; no ready PASS inferred"
+      },
+      "imageDigest": "sha256:d7bf5bd6c02b35ccd1a04f7b7daf1aa727af09199b66dfb167d7eb54ff6930fe",
+      "installedArchive": {
+        "tests": 88,
+        "pass": 88,
+        "fail": 0,
+        "skip": 0,
+        "requiredCases": 12,
+        "source": "Actual61718 build logs, not rerun"
+      },
+      "otherBuildEvidence": {
+        "observedSuite": {
+          "tests": 736,
+          "pass": 724,
+          "fail": 0,
+          "skip": 12
+        },
+        "additionalSuite": {
+          "tests": 15,
+          "pass": 15,
+          "fail": 0,
+          "skip": 0
+        },
+        "boundary": "Tail500 entries inspected only; total full-build source-test count not independently reconstructed"
+      },
+      "runtimeGuards": [
+        "VECTOR_VOLUME_WRITABLE=PASS mount=/data owner=node",
+        "VECTOR_RUNTIME_UID_DROP=PASS target=node",
+        "WFM_DURABLE_STATE=PASS mount=/data"
+      ],
+      "stagedPatch": null,
+      "protectedProofBindings": "Proof variable-name inventory only9 entries, no matching proof signer/public key/actor/run configuration verified."
+    },
+    "customerService": {
+      "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+      "url": "https://vector-customer-ready-candidate-production.up.railway.app/",
+      "activeDeployment": {
+        "id": "057e19a2-7d49-4390-8705-63e71ea79a89",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-17T15:13:17.130Z",
+        "replicasRunning": 1,
+        "totalReplicas": 1
+      },
+      "latestAttempt": {
+        "id": "d9112b19-7e46-4eab-8873-9a51826870b6",
+        "status": "FAILED",
+        "createdAt": "2026-10-23T19:45:53.348Z"
+      },
+      "configuredSha": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+      "actualBrowserIdentity": {
+        "candidateSha": "90ad90fcf60adaca9abacdd4ad14bf392f95e585",
+        "sourceBinding": "build-file-matched",
+        "fixtureOnly": true,
+        "productionApproved": false,
+        "pilotReady": false
+      },
+      "actualBrowserHealth": {
+        "status": "ok",
+        "mode": "hosted-staging",
+        "fixtureOnly": true,
+        "hosted": true,
+        "productionApproved": false,
+        "pilotReady": false,
+        "release": "0.6.76-hosted-staging-rc1"
+      },
+      "actualBrowserRoot": {
+        "title": "VECTOR · Secure sign in",
+        "heading": "Welcome to VECTOR",
+        "passkeyButtonVisible": true
+      },
+      "stagedPatch": null
+    },
+    "northstar": {
+      "requiredCanonicalProject": "d9cdf06b-22b2-4733-a4b0-655b42bf8479",
+      "status": "BLOCKED",
+      "reason": "Parent reports required project absent and different same-name e415 project. Identity unverified; no alternative project assumed and no Northstar run executed."
+    },
+    "unproven": [
+      "Authenticated role/customer Golden Journey",
+      "Actual new-customer invitation/signing/questionnaire/configuration",
+      "Persistence through restart/redeploy and verified recovery/rollback",
+      "External provider accepted write/readback",
+      "Customer/production acceptance"
+    ],
+    "nextAction": "Reuse existing reviewed signed runner, bind protected matching signer/public key and persisted approved synthetic actor/tenant/run/configuration, confirm least-privilege child environment, then run independent authenticated role workflows against exact currently served61718. Keep existing customer service90ad and volume unchanged until single integration owner completes promotion gates.",
+    "evidenceLinks": [
+      "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6460520015",
+      "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/docs/execution/STATE.md",
+      "https://vector-hardening-proof-production.up.railway.app/api/runtime-identity",
+      "https://vector-customer-ready-candidate-production.up.railway.app/api/runtime-identity"
+    ]
+  }
+}

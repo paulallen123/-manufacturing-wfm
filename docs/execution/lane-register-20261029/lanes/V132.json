@@ -1,0 +1,34 @@
+{
+  "group": "Security and enterprise readiness",
+  "original_bullet": "Prove backup/restore and operation at 10,000 employees across 50 sites.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    383,
+    389,
+    400
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/383",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/389",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/400",
+    "https://github.com/paulallen123/-manufacturing-wfm/issues/265"
+  ],
+  "next_action": "Use existing restart/restore/rollback oracles with independently captured receipts; execute scale proof on current exact runtime rather than inheriting historical baseline results.",
+  "blocker": [
+    "Approved disposable volume-backed recovery target",
+    "Independent external witness custody",
+    "Current runtime and scale fixture binding"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V132",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V132.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

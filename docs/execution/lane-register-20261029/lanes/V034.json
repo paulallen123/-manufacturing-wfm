@@ -1,0 +1,29 @@
+{
+  "group": "Scheduling",
+  "original_bullet": "Integrate the newer roster-change, scarce-skill and order-staffing assessments.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    517,
+    523,
+    514
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/517",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/523",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/514"
+  ],
+  "next_action": "Review exact heads, bind authenticated complete inputs and existing scheduling queue consumers, then combined image and hosted readback.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "All three appear as separate current open packages; supplied source evidence remains advisory, not authenticated customer actions.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V034",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V034.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

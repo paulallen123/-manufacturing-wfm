@@ -1,0 +1,27 @@
+{
+  "group": "Agency workforce",
+  "original_bullet": "Complete requisitions, supplier selection and responses.",
+  "stage": "STATUS_RECONCILIATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    82,
+    239
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/82",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+  ],
+  "next_action": "Reconcile existing exchange/V2 package and source ownership; map accepted requisition/response requirements to current consumers and missing tests, then develop only confirmed gaps.",
+  "blocker": [],
+  "observed_evidence": "PR82 exchange foundations and PR239 V2 remain open drafts; existing research and shadow implementation already present. Do not start a third agency engine.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V056",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V056.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

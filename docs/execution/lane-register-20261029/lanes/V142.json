@@ -1,0 +1,30 @@
+{
+  "group": "Historical extensions still needing an explicit scope decision",
+  "original_bullet": "Supplier licensing, insurance and assurance.",
+  "stage": "STATUS_RECONCILIATION",
+  "research_needed": "unknown",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    82,
+    239
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/82",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+  ],
+  "next_action": "Inspect agency supplier eligibility/assurance implementations and original extension source; reuse accepted licensing/insurance evidence checks rather than creating duplicate supplier engine.",
+  "blocker": [
+    "Current supplier authority/expiry source",
+    "Explicit extension scope"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V142",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V142.json",
+  "research_route": "RECONCILE_EVIDENCE_OR_SCOPE_FIRST_NO_AUTOMATIC_RESEARCH_RESTART",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

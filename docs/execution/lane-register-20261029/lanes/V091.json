@@ -1,0 +1,29 @@
+{
+  "group": "Factory and production intelligence",
+  "original_bullet": "Complete the shared people/skills/assets/orders/materials/cost graph.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Canonical graph/integration owner; historical Product Evolution",
+  "existing_prs": [
+    205,
+    230,
+    377
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/230",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/377"
+  ],
+  "next_action": "Resolve the canonical schema/provenance mapping recorded by #377, then extend the existing graph adapter and test asset/person/order relationships without introducing a parallel graph.",
+  "blocker": [],
+  "observed_evidence": "Factory Graph kernel and historical projection exist; #377 reports 15 asset node types cannot enter current Implementation Twin. No live graph coverage established.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V091",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V091.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

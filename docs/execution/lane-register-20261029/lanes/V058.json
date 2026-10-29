@@ -1,0 +1,27 @@
+{
+  "group": "Agency workforce",
+  "original_bullet": "Connect confirmed workers to temporary clocking profiles.",
+  "stage": "STATUS_RECONCILIATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    239,
+    82
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/239",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/82"
+  ],
+  "next_action": "Locate current two-file clocking handoff and compare to actual runtime consumer before adopting; prove confirmation→scoped temporary profile→clock→expiry in isolated fixture.",
+  "blocker": [],
+  "observed_evidence": "Recorded backlog says current handoff exists but stale broader PR overlaps. Exact current consumer integration not established in this audit.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V058",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V058.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

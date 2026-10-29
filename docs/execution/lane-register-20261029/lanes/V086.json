@@ -1,0 +1,29 @@
+{
+  "group": "Integrations",
+  "original_bullet": "Complete authenticated mapping, paging, freshness and reconciliation.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "targeted_only",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    194,
+    504,
+    309
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/504",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/309"
+  ],
+  "next_action": "Wire authenticated source adapters and exact ID/scope/completeness checkpoints to existing import consumers; resolve504 helper-only wiring; test paging/duplicates/multi-job/effective dates against source receipts.",
+  "blocker": [],
+  "observed_evidence": "PR194 provides locally tested provider evidence authorities; PR50428/28 Node22 identity helper reviewed but no runtime caller found. Staffology current config import foundation exists.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V086",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V086.json",
+  "research_route": "REFRESH_ONLY_UNRESOLVED_PROVIDER_OR_PLATFORM_CONTRACT",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

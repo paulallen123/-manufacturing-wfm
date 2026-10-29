@@ -1,0 +1,27 @@
+{
+  "group": "Training and competency",
+  "original_bullet": "Connect genuine assessment and assessor evidence.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    79,
+    232
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/79",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/232"
+  ],
+  "next_action": "Bind authoritative assessor/credential sources to current roles and learners; reject self-certified or absent evidence; test route-to-readiness consequences.",
+  "blocker": [],
+  "observed_evidence": "Current adaptive source requires independently observed success; passive practice cannot certify, independently exercised in 18/18 local tests. External assessor evidence not established.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V063",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V063.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

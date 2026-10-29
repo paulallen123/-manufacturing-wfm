@@ -1,0 +1,34 @@
+{
+  "group": "Autonomous support and learning",
+  "original_bullet": "Complete durable incident/engineering memory and recurrence prevention.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    238,
+    354,
+    335,
+    451
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/238",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/354",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/335",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/451"
+  ],
+  "next_action": "Check current persistence boundaries; integrate replay/digest/snapshot fixes and make deduplication survive restart, then prove recurrence and non-recurrence paths.",
+  "blocker": [
+    "PR354 memory-only replay boundary",
+    "Authenticated measurement provenance"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V123",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V123.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,27 @@
+{
+  "group": "Time and attendance",
+  "original_bullet": "Prove clocking survives crashes/restarts with an intact audit trail.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    83,
+    369
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/83",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/369"
+  ],
+  "next_action": "Wire/admit existing durable path; run isolated process restart and failure injection, then hosted recovery against authorised test profile, independently verify audit and pay boundary.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR83 local crash/restart/authenticated antirollback journal is reference proof; no current customer datastore/hosted proof. PR369 exact local image independently built28Oct.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V041",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V041.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

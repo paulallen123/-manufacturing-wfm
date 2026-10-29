@@ -1,0 +1,31 @@
+{
+  "group": "Decision Twin and Factory Autopilot",
+  "original_bullet": "Compare absence, breakdown, urgent-order and material-delay responses.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing Capacity Rescue owner",
+  "existing_prs": [
+    240,
+    500,
+    486,
+    477
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/500",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/486",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/477"
+  ],
+  "next_action": "Bind scenario-specific authenticated evidence, reuse one planner and compare feasible alternatives through existing decision service with independent oracle and current scope.",
+  "blocker": [],
+  "observed_evidence": "Existing shadow Capacity Rescue, frozen absence-recovery advice and material-delay assessor cover parts; none establishes full live multi-domain response.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V105",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V105.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

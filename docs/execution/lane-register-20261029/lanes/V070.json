@@ -1,0 +1,29 @@
+{
+  "group": "User experience and mobile",
+  "original_bullet": "Verify visual schedules and consistent loading/error/empty states.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    233,
+    225,
+    219
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/219"
+  ],
+  "next_action": "Exercise current screens with empty, loading, denied, stale, source-unavailable and realistic schedule states; reconcile only reproduced visual behavior gaps.",
+  "blocker": [],
+  "observed_evidence": "Scheduling/UI/zero-state repairs already exist as PRs; list/navigation assertions alone explicitly cannot establish business readiness.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V070",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V070.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

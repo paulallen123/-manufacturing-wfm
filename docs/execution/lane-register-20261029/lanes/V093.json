@@ -1,0 +1,33 @@
+{
+  "group": "Factory and production intelligence",
+  "original_bullet": "Complete bottleneck, demand and production-capacity modelling.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scheduling/Capacity Rescue and canonical integration owners",
+  "existing_prs": [
+    240,
+    357,
+    489,
+    503,
+    514
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/357",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/489",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/503",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/514"
+  ],
+  "next_action": "Reconcile the exact forecast/Capacity Rescue/output packages, bind authenticated MES/ERP/WFM inputs and test baseline/shortfall/overstaffed bottleneck scenarios.",
+  "blocker": [],
+  "observed_evidence": "Capacity Rescue, forecast guards, output-gap and order-staffing packages exist as isolated source/shadow slices; no complete live model is proven.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V093",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V093.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

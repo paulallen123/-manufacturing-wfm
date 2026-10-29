@@ -1,0 +1,27 @@
+{
+  "group": "People and organisation",
+  "original_bullet": "Complete joiner, mover and leaver handling with effective dates.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    501,
+    512
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/512"
+  ],
+  "next_action": "Adopt reviewed provider-authoritative lifecycle correction, then test effective-date transitions and independent provider readback.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "Current inventory shows Staffology lifecycle repair PR512 remains open; source-level lifecycle handling is not hosted proof.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V023",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V023.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,29 @@
+{
+  "group": "Maintenance",
+  "original_bullet": "Integrate downtime, reliability and cause-evidence packages.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Sole canonical integration owner",
+  "existing_prs": [
+    421,
+    479,
+    484
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/421",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/479",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/484"
+  ],
+  "next_action": "Authenticate complete current CMMS failure window and cause revisions/withdrawals, reconcile #421/#479, run supported exact-image checks and hosted readback without promoting recorded cause to causal proof.",
+  "blocker": [],
+  "observed_evidence": "#421 reported 18/18 on Node24 and Node22.23.3; #479 binds a separately supplied cause record without inferring causality. Current source authentication remains absent.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V100",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V100.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

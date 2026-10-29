@@ -1,0 +1,31 @@
+{
+  "group": "Maintenance",
+  "original_bullet": "Integrate permit, isolation and safe-work evidence checks.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Canonical integration owner plus independent site safety authority",
+  "existing_prs": [
+    526,
+    394,
+    477,
+    498
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/526",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/477",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/498"
+  ],
+  "next_action": "Review exact #526 head and bind current CMMS/EHS permits/isolation over full work window; require trusted independent safety authority, role/site controls and negative/withdrawal tests before exposure.",
+  "blocker": [],
+  "observed_evidence": "#526 fresh draft reports 3/3 focused and 376/376 operations plus corrected hash-reuse finding. All source/permit/safety/execution authority flags remain false.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V103",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V103.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

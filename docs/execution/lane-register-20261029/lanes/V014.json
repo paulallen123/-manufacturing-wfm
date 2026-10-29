@@ -1,0 +1,25 @@
+{
+  "group": "Sign-in and customer onboarding",
+  "original_bullet": "Keep setup-only customers contained from operational/provider actions.",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "no",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing PR501 onboarding/security owner",
+  "existing_prs": [],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/customer-workspace.cjs",
+    "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/setup-only-policy.cjs"
+  ],
+  "next_action": "Run role/tenant/setup-state negative journey across UI, API, background workers and outbound dispatch; verify no side effects and durable audit.",
+  "blocker": [],
+  "observed_evidence": "Customer-workspace uses setup-only-policy. Comprehensive runtime/provider/outbound negative hosted proof not established by current landing page.",
+  "source_audit": "release-access-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V014",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V014.json",
+  "fresh_platform_correction": "Direct platform/browser observation 29Oct: proof61718/c95e7a37 is healthy, installed-archive88/88 in actual build logs; customer-designated service still90ad90f/057e19a2. Both fixtureOnly=true, productionApproved=false. An old startup/apply blocker is obsolete; authenticated business proof and customer promotion remain open.",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

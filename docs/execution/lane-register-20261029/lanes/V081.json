@@ -1,0 +1,27 @@
+{
+  "group": "Reporting",
+  "original_bullet": "Resolve browser lifecycle, stale-response and interrupted-flow issues.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    225,
+    371
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/371"
+  ],
+  "next_action": "Reproduce existing lifecycle cases on integrated UI: return-to-tab, request races, interruption and focus; fix only owning component, rerun meaningful cases.",
+  "blocker": [],
+  "observed_evidence": "Recorded backlog retains reporting browser cleanup/lifecycle holds; no fresh exact browser result fetched. Source CI results do not close this.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V081",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V081.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

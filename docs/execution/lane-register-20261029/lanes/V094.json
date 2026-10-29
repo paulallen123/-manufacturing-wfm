@@ -1,0 +1,31 @@
+{
+  "group": "Factory and production intelligence",
+  "original_bullet": "Verify material, tooling, quality and configuration readiness.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Canonical integration owner; existing materials/quality owners",
+  "existing_prs": [
+    518,
+    486,
+    502,
+    394
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/518",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/486",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/502",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/394"
+  ],
+  "next_action": "Independent exact-head review of #518 and reconcile #486/#502; bind complete BOM, available stock net reservations, tooling and approved configuration sources with denial tests.",
+  "blocker": [],
+  "observed_evidence": "#518 material assessor passed reported 4/4 focused and 377/377 operations locally; it is read-only, unauthenticated and lacks runtime adapter. Tooling/configuration coverage not established.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V094",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V094.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

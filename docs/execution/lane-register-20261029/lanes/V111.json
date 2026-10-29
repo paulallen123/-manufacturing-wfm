@@ -1,0 +1,29 @@
+{
+  "group": "Costs, savings and cash",
+  "original_bullet": "Show unknown evidence correctly rather than false zero-cost results.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing costing/UX and canonical owner",
+  "existing_prs": [
+    496,
+    205,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/496",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Locate adopted empty-workforce/unknown-state fixes on current integration head; run current API and UI tests for zero, empty, missing rates and unavailable source; require refresh/fresh-login rendering.",
+  "blocker": [],
+  "observed_evidence": "Historical cost fixes and current cost-shape guards exist; deployment/customer UI proof is not established. No new economic research needed.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V111",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V111.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

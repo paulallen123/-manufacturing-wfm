@@ -1,0 +1,31 @@
+{
+  "group": "Decision Twin and Factory Autopilot",
+  "original_bullet": "Complete frozen what-if simulations with a do-nothing baseline.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing Decision Twin/Capacity Rescue owner",
+  "existing_prs": [
+    240,
+    333,
+    482,
+    374
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/333",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/482",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/374"
+  ],
+  "next_action": "Reconcile exact immutable-input, economics and replay contracts; run actual public consumer with as-known-at snapshots and verify do-nothing comparison without hindsight leakage.",
+  "blocker": [],
+  "observed_evidence": "Capacity Rescue and decision episode prototypes already contain baseline/immutable plan concepts; #333 fixed negative economics locally; factory playback theory passed reported 17/17 related tests.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V104",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V104.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

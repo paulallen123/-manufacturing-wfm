@@ -1,0 +1,476 @@
+{
+  "scope": "Read-only triage of every leaf bullet for Training/competency, User experience/mobile, Vecta assistant, Reporting",
+  "source_inventory": "Assistant preceding list, user request 2026-10-29",
+  "observed_at": "2026-10-29",
+  "agent": "experience_reporting_audit",
+  "lane_count": 24,
+  "research_policy": "Accepted specs/implemented code proceed directly to missing development/test/integration/proof; targeted external SDK/provider verification only when necessary. No blanket repeat research.",
+  "fresh_execution": {
+    "pr": 516,
+    "head": "9da811e6dc6733500db7720ebeb99214bf2f6d97",
+    "node": "v24.22.1",
+    "command": "node --test adaptive-learning-engine.test.cjs",
+    "exit_code": 0,
+    "pass": 18,
+    "fail": 0,
+    "skip": 0,
+    "scope": "Unmodified exact-head source/test + training-twin/workflow-manifest reconstructed in isolated scratch. Synthetic SQLite only. Not full learning suite, supported pinned Node22, image, hosted or customer proof.",
+    "initial_attempts": "Two 16/18 runs failed only because fetched partial reconstruction lacked training-twin then workflow-manifest; unchanged exact-head dependencies fetched; no test/source edited.",
+    "source_blobs": {
+      "adaptive-learning-engine.cjs": "7d3dfecc5be19e418bb2e8611ea65218936b6621",
+      "adaptive-learning-engine.test.cjs": "a503e03d5a800d4f41de91f29b3f7918cd27f547",
+      "training-twin.cjs": "29b41957cc73ecbbba137ce573c96ca2f18b9238",
+      "training-workflow-manifest.cjs": "15ad64c398c2f359a46bf3f14c4b3d9bc83893dd"
+    }
+  },
+  "limitations": [
+    "No product/GitHub/provider/Railway mutation performed.",
+    "Most existing test counts quoted are PR-author evidence, explicitly not rerun here; fresh18/18 isolated result separated.",
+    "Direct guessed reporting-service source path returned404; no inferred file contents.",
+    "Root AGENTS.md at PR516 exact head returned404; no local repo exists in scoped scratch."
+  ],
+  "lanes": [
+    {
+      "area": "Training and competency",
+      "original_text": "Complete role-specific onboarding and contextual coaching.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        79,
+        232,
+        516
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/79",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/232",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/516"
+      ],
+      "observed_evidence": "Current source at PR516 head defines employee/manager/payroll/admin curricula and scoring. Fresh exact-head reconstructed adaptive suite independently passed 18/18 on Node24.22.1.",
+      "next_executable_action": "Reconcile current learning modules and reviewed PR232 deltas against PR501; retain current curricula and run integrated training-route/browser checks.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Training and competency",
+      "original_text": "Prove multilingual, voice and accessible delivery.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        232,
+        241
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/232",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/241"
+      ],
+      "observed_evidence": "PR232 has authored media/voice/publication contracts, but states BUILT source only. PR241 requires configured speech provider, microphone/TTS matrix and hosted multilingual journeys.",
+      "next_executable_action": "Use existing accepted delivery contract; test actual configured locale/provider/browser/accessibility combinations after source reconciliation. Research only an evidenced provider-capability gap.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Training and competency",
+      "original_text": "Connect genuine assessment and assessor evidence.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        79,
+        232
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/79",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/232"
+      ],
+      "observed_evidence": "Current adaptive source requires independently observed success; passive practice cannot certify, independently exercised in 18/18 local tests. External assessor evidence not established.",
+      "next_executable_action": "Bind authoritative assessor/credential sources to current roles and learners; reject self-certified or absent evidence; test route-to-readiness consequences.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Training and competency",
+      "original_text": "Separate course completion from demonstrated competency.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        516,
+        232
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/516",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/232"
+      ],
+      "observed_evidence": "Existing test assertions guidance cannot certify, browser cannot self-certify, teach-back required and expired mastery leaves totals passed 18/18 independently.",
+      "next_executable_action": "Preserve these existing guards during integration and demonstrate actual training completion does not grant restricted competency in hosted fresh-session readback.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Training and competency",
+      "original_text": "Verify expiry, overdue mastery and rare-skill currency.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        516,
+        490
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/516",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/490"
+      ],
+      "observed_evidence": "PR516 overdue mastery repair independently passes 18/18 local existing tests on exact head. PR490 is isolated skill-bench package, not hosted competence authority.",
+      "next_executable_action": "Review PR516 current consumers, admit supported Node22/full image, integrate rare-skill source authority and prove expiry/renewal against current serving SHA.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Training and competency",
+      "original_text": "Complete supervised practice, trainer capacity and succession coverage.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        211,
+        490,
+        232
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/211",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/490",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/232"
+      ],
+      "observed_evidence": "Skill-chain, coach and succession components exist in isolated PRs; current curricula include trainer.teachback, but authenticated trainer/capacity consumer coverage is unproven.",
+      "next_executable_action": "Reconcile existing packages; connect effective trainer/assessor capacity and qualification evidence before operational advice; test shortage and revocation.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Training and competency",
+      "original_text": "Integrate training-versus-shift conflict checks.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        521
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/521"
+      ],
+      "observed_evidence": "PR521 is current draft/unmerged exact head585d36f; read-only pairwise collision reports 4/4 focused and377/377 Node24 isolated tests, independent author-reported review. Not freshly rerun here.",
+      "next_executable_action": "Canonical owner adopts current roster/LMS bindings; verify all simultaneous commitments, role/site scope and combined image/hosted proof.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "User experience and mobile",
+      "original_text": "Integrate the simple role-specific screens and action queues.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        225,
+        233,
+        80
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/80"
+      ],
+      "observed_evidence": "FORGE/task-first/universal action queue PRs already own role-first UI. PR501 integration still awaiting healthy hosted startup. No need to redesign from scratch.",
+      "next_executable_action": "Audit exact PR501 UI consumer deltas against existing screen/action-queue owners, reconcile reviewed bytes, run actual authenticated role browser journeys.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "User experience and mobile",
+      "original_text": "Complete clear priorities, options, reasons and saved outcomes.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        225,
+        80,
+        241
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/80",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/241"
+      ],
+      "observed_evidence": "Accepted role-first action queue and Vecta propose/confirm/result contracts exist; PR241 currently executes leave only.",
+      "next_executable_action": "Inspect each current actionable card against existing contract; fill only missing durable outcome/action seams and test actual saved result rather than navigation.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "User experience and mobile",
+      "original_text": "Verify visual schedules and consistent loading/error/empty states.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        233,
+        225,
+        219
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/219"
+      ],
+      "observed_evidence": "Scheduling/UI/zero-state repairs already exist as PRs; list/navigation assertions alone explicitly cannot establish business readiness.",
+      "next_executable_action": "Exercise current screens with empty, loading, denied, stale, source-unavailable and realistic schedule states; reconcile only reproduced visual behavior gaps.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "User experience and mobile",
+      "original_text": "Complete accessibility, keyboard use and localisation.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        225,
+        232,
+        241
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/232",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/241"
+      ],
+      "observed_evidence": "FORGE/training/bot contracts include accessibility and locales but current exact serving browser evidence not retrieved.",
+      "next_executable_action": "Run keyboard focus/return-to-tab, semantic announcements and locale formatting checks against exact integrated UI; implement failures within owning UI lane.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "User experience and mobile",
+      "original_text": "Prove desktop, tablet and mobile workflows.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        225,
+        242,
+        501
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/242",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "Existing role-first web UI and native draft coexist; PR501 still lacks healthy successor hosted startup; PR242 native branch currently mergeable:false.",
+      "next_executable_action": "Use existing proof lane once exact target is healthy: authenticate each role, act, refresh/relogin at device sizes, retain trace and authority denials.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "User experience and mobile",
+      "original_text": "Complete native iOS/Android security, recovery and distribution.",
+      "stage": "INTEGRATION",
+      "research_needed": "targeted_only",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        242
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/242"
+      ],
+      "observed_evidence": "Fresh PR242 fetch: open/draft, mergeable:false, headfb491e2,48commits/28files; initial Expo57 client/biometric approval broker exists; store/recovery/security proof remains required.",
+      "next_executable_action": "Resolve existing mobile branch conflicts through owner; verify current platform SDK/store requirements only where needed, then device security/recovery/Golden Journey and distribution gates.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Vecta assistant",
+      "original_text": "Connect text and voice requests to registered product workflows.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        241
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/241"
+      ],
+      "observed_evidence": "Fresh PR241: registered typed actions, scoped expiring plans and gateway exist; first executable mutation is leave; Time Review/Agency/factory currently safe navigation.",
+      "next_executable_action": "Reconcile existing bot with canonical action registry; implement missing explicitly authorised workflow adapters without generic free-form mutation.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Vecta assistant",
+      "original_text": "Prove propose → confirm → execute → independent readback.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        241
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/241"
+      ],
+      "observed_evidence": "Existing PR241 contract requires explicit confirmation, rechecked authority, append-only audit and source reread; uncertainty is NEEDS_VERIFICATION. HTTP/SQLite, image and hosted gates not shown passed.",
+      "next_executable_action": "Execute existing tests on supported runtime, then isolated hosted leave happy/deny/stale/uncertain/recovery sequences with independent authoritative readback.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Vecta assistant",
+      "original_text": "Cover scheduling, leave, agency, training, reporting and factory actions.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        241,
+        225
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/241",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225"
+      ],
+      "observed_evidence": "Bot scope is accepted; PR241 explicitly limits actual mutation to leave and other named domains to navigation.",
+      "next_executable_action": "Add domain adapters one at a time to existing registry using current domain permissions and immutable plans; independent consumer checks per action before integration.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Vecta assistant",
+      "original_text": "Verify accents, background noise, languages and device fallback.",
+      "stage": "TEST",
+      "research_needed": "targeted_only",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        241,
+        232,
+        242
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/241",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/232",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/242"
+      ],
+      "observed_evidence": "PR241 remaining gates explicitly include microphone/TTS matrix, multilingual provider config; no real audio/browser evidence was retrieved.",
+      "next_executable_action": "Test real target devices/locale/noise/fallback matrix against chosen provider. Research only unsupported device/provider combinations; preserve text fallback and no unclear confirmation.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Reporting",
+      "original_text": "Integrate governed templates, saved reports and versioned definitions.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        371,
+        481
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/371",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/481"
+      ],
+      "observed_evidence": "Fresh PR371 is draft/unmerged; server-governed claim-boundary repair has62/62 reported Node22 and exact CI signals, no hosted proof. PR481 restricts payroll source roles.",
+      "next_executable_action": "Compare exact current canonical source with these reviewed repairs; adopt nonduplicate deltas and test versioned immutable definitions and scheduled creator revocation.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Reporting",
+      "original_text": "Complete filtering, grouping, sorting and role-safe access.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        481,
+        371
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/481",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/371"
+      ],
+      "observed_evidence": "PR481 open/draft head e1ed2eae; fixes director inherited payroll access across catalogue/create/read/schedule; reports62/62 local tests. PR501 states reporting authority corrections integrated only on candidate branch.",
+      "next_executable_action": "Verify exact union contains current source-role fix, then run role/tenant/site negative filter/export tests through actual consumer and hosted fresh session.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Reporting",
+      "original_text": "Integrate and verify typed CSV/XLSX/PDF/DOCX exports.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        318,
+        371
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/318",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/371"
+      ],
+      "observed_evidence": "PR318 independent verifier reports200 mixed exports/400 negative mutations and13/13 local tests; exact Linux/hosted/external spreadsheet behavior remain unproven. Scope does not establish every output format.",
+      "next_executable_action": "Reconcile current typed formatter, invoke every supported export through governed route, verify real readers preserve type/ID/null/0 and formula safety; implement missing formats only after inventory.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Reporting",
+      "original_text": "Resolve browser lifecycle, stale-response and interrupted-flow issues.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        225,
+        371
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/371"
+      ],
+      "observed_evidence": "Recorded backlog retains reporting browser cleanup/lifecycle holds; no fresh exact browser result fetched. Source CI results do not close this.",
+      "next_executable_action": "Reproduce existing lifecycle cases on integrated UI: return-to-tab, request races, interruption and focus; fix only owning component, rerun meaningful cases.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Reporting",
+      "original_text": "Complete authorised scheduled delivery and acknowledgement.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        481,
+        501
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/481",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR481 proves role change must prevent schedule sends. PR501 explicitly keeps reporting delivery disabled pending durable intent/UNKNOWN/readback/containment.",
+      "next_executable_action": "Complete existing durable scheduler/receipt/acknowledgement path with current creator authority and idempotency; test external ambiguity/revocation before enablement.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Reporting",
+      "original_text": "Keep delivery disabled until durable dispatch and uncertain-result containment are proven.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        501,
+        481
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/481"
+      ],
+      "observed_evidence": "Current PR501 body explicitly confirms delivery remains disabled until named evidence exists; this is an intentional safety hold, not a need for new research.",
+      "next_executable_action": "Verify hold is enforced on every delivery entry point; prove durable intent, UNKNOWN recovery, independent readback and containment on exact candidate before sole owner enables.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    },
+    {
+      "area": "Reporting",
+      "original_text": "Connect KPIs to causes, recommended actions and measured outcomes.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+      "existing_prs": [
+        225,
+        226,
+        273
+      ],
+      "evidence_urls": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/226",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/273"
+      ],
+      "observed_evidence": "FORGE Decision Episode/outcome-learning components exist but reporting consumer/current-source linkage and actual measured outcome proof were not established.",
+      "next_executable_action": "Reconcile existing episode/outcome ledger with governed KPI readers; show provenance/confidence, distinguish estimates from measured outcomes, and test no invented causality.",
+      "completion_gate": "Exact integrated candidate + relevant authenticated role action + persistent/fresh-session readback + security/recovery + required external result. This triage is not customer proof."
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "group": "Scheduling",
+  "original_bullet": "Complete visual schedules, rotations and demand-based planning.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    233,
+    357,
+    489,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/357",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/489",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Inspect current integrated UI/consumer against existing spec, reuse engine, close only missing vertical slice; test source-bound forecast-to-plan.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR233 supplies shadow planning foundation; PR357 tested169/169 malformed demand translation; whole visual published scheduling workflow not established.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V028",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V028.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}
