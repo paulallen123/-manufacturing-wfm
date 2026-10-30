@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { isProxy } = require('node:util').types;
 
 const CONTRACT_VERSION = 'VECTOR_MANUFACTURING_SCHEDULER_V1';
 const SOLVER_VERSION = 'VECTOR_DETERMINISTIC_OPTIMISER_V1';
@@ -94,13 +95,45 @@ function certs(v){
     expiresAt:x.expiresAt?iso(x.expiresAt,'certification expiry'):null
   })).filter(x=>x.name):[];
 }
+function normaliseFairness(input){
+  const fields=['overtimeHours','nightShifts','weekendShifts','undesirableShifts'];
+  const out={overtimeHours:0,nightShifts:0,weekendShifts:0,undesirableShifts:0};
+  const descriptor=Object.getOwnPropertyDescriptor(input,'fairness');
+  if(!descriptor){
+    if('fairness' in input)throw new TypeError('Worker fairness must be own data.');
+    return out;
+  }
+  if(!descriptor.enumerable||!Object.hasOwn(descriptor,'value'))throw new TypeError('Worker fairness must be own data.');
+  const value=descriptor.value;
+  // Preserve the existing absent/null container defaults. Explicit fields are
+  // evidence: malformed exposure must not be converted into beneficial zero.
+  if(value==null)return out;
+  if(typeof value!=='object'||isProxy(value)||Array.isArray(value))throw new TypeError('Worker fairness must be an inert record.');
+  const prototype=Object.getPrototypeOf(value);
+  if(prototype!==Object.prototype&&prototype!==null)throw new TypeError('Worker fairness must be an inert record.');
+  const descriptors=Object.getOwnPropertyDescriptors(value);
+  for(const field of fields){
+    if(!Object.hasOwn(descriptors,field)){
+      if(field in value)throw new TypeError('Worker fairness fields must be own data.');
+      continue;
+    }
+    const entry=descriptors[field];
+    if(!entry.enumerable||!Object.hasOwn(entry,'value'))throw new TypeError('Worker fairness fields must be own data.');
+    const n=entry.value;
+    if(typeof n!=='number'||!Number.isFinite(n)||n<0)
+      throw new TypeError('Worker fairness '+field+' must be a finite nonnegative number.');
+    out[field]=Math.max(0,n);
+  }
+  return out;
+}
 function normaliseWorker(input={}){
+  if(isProxy(input))throw new TypeError('Worker input must be inert own data.');
   const id=text(input.id,120);
   if(!id) throw new Error('Worker id is required.');
   const type=text(input.type||'EMPLOYEE',30).toUpperCase();
   if(!WORKER_TYPES.includes(type)) throw new Error('Unsupported worker type for '+id+'.');
   const homeSite=text(input.homeSite||input.site,160);
-  const p=input.preferences||{},f=input.fairness||{};
+  const fairness=normaliseFairness(input),p=input.preferences||{};
   return {
     id,type,status:text(input.status||'ACTIVE',30).toUpperCase(),homeSite,
     eligibleSites:list(input.eligibleSites?.length?input.eligibleSites:[homeSite],100,160),
@@ -122,10 +155,7 @@ function normaliseWorker(input={}){
       avoidedTags:list(p.avoidedTags,100,80).map(x=>x.toUpperCase()),
       preferredTags:list(p.preferredTags,100,80).map(x=>x.toUpperCase())
     },
-    fairness:{
-      overtimeHours:Math.max(0,n(f.overtimeHours,0)),nightShifts:Math.max(0,n(f.nightShifts,0)),
-      weekendShifts:Math.max(0,n(f.weekendShifts,0)),undesirableShifts:Math.max(0,n(f.undesirableShifts,0))
-    },
+    fairness,
     ruleBlocks:new Set(list(input.ruleBlocks,100,180)),
     evidenceRefs:list(input.evidenceRefs,100,220)
   };
