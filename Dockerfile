@@ -11,6 +11,8 @@ RUN node --test implementation/ui/implementation-observer.test.cjs
 RUN node --test implementation/ui/workspace-setup.test.cjs implementation/runtime/workspace-setup.test.cjs implementation/runtime/customer-workspace.test.cjs implementation/runtime/organisation-access-setup.test.cjs
 RUN node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/clean-customer-state.test.cjs implementation/runtime/setup-customer-state.test.cjs
 RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs verification/first-use-regressions-20261012/deferred-connections.test.cjs
+# Admit the cumulative setup-containment, recovery and advisory-helper regressions.
+RUN node --test --test-concurrency=1 verification/vector-v014-setup-containment/heldout.test.cjs integration/runtime/gusto-http-process-recovery.test.cjs operations/runtime/training-shift-collision.test.cjs operations/runtime/maintenance-permit-evidence.test.cjs
 RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-admission.test.cjs resilience/support-selfhelp.test.cjs resilience/support-selfhelp-service.test.cjs resilience/support-selfhelp-root.test.cjs ux-overlay/vector-help.test.cjs ux-overlay/vector-help-root.test.cjs
 RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
@@ -250,6 +252,14 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
       /tmp/wfm-tests/operations/runtime/autopilot-execution-engine.test.cjs \
       /tmp/wfm-tests/reporting/runtime/vector-reporting-service.test.cjs \
  && rm -rf /tmp/wfm-tests
+
+# Exercise installed integration modules, without a source-tree fallback. Test-only
+# HTTP fixtures use synthetic provider I/O and disposable SQLite state, then leave the image.
+COPY verification/vector-v014-setup-containment/heldout.test.cjs /tmp/vector-integration-admission/verification/vector-v014-setup-containment/heldout.test.cjs
+COPY integration/runtime/gusto-http-process-recovery.test.cjs /tmp/vector-integration-admission/integration/runtime/gusto-http-process-recovery.test.cjs
+COPY integration/runtime/fixtures/gusto-http-child.cjs /tmp/vector-integration-admission/integration/runtime/fixtures/gusto-http-child.cjs
+RUN VECTOR_IMAGE_ADMISSION_ROOT=/app node --test --test-concurrency=1 /tmp/vector-integration-admission/verification/vector-v014-setup-containment/heldout.test.cjs /tmp/vector-integration-admission/integration/runtime/gusto-http-process-recovery.test.cjs \
+ && rm -rf /tmp/vector-integration-admission
 
 # Railway cloud-build admission: execute the exact 10,000-employee / 50-site
 # configuration and independent payroll reconciliation proof without starting a server.

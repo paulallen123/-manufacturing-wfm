@@ -1,0 +1,71 @@
+diff --git a/Dockerfile b/Dockerfile
+index 03ff804..de6fe1a 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -11,6 +11,8 @@ RUN node --test implementation/ui/implementation-observer.test.cjs
+ RUN node --test implementation/ui/workspace-setup.test.cjs implementation/runtime/workspace-setup.test.cjs implementation/runtime/customer-workspace.test.cjs implementation/runtime/organisation-access-setup.test.cjs
+ RUN node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/clean-customer-state.test.cjs implementation/runtime/setup-customer-state.test.cjs
+ RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs implementation/runtime/one-day-enterprise-engine.test.cjs verification/first-use-regressions-20261012/deferred-connections.test.cjs
++# Admit the cumulative setup-containment, recovery and advisory-helper regressions.
++RUN node --test --test-concurrency=1 verification/vector-v014-setup-containment/heldout.test.cjs integration/runtime/gusto-http-process-recovery.test.cjs operations/runtime/training-shift-collision.test.cjs operations/runtime/maintenance-permit-evidence.test.cjs
+ RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-admission.test.cjs resilience/support-selfhelp.test.cjs resilience/support-selfhelp-service.test.cjs resilience/support-selfhelp-root.test.cjs ux-overlay/vector-help.test.cjs ux-overlay/vector-help-root.test.cjs
+ RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
+ RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
+@@ -251,6 +253,14 @@ RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
+       /tmp/wfm-tests/reporting/runtime/vector-reporting-service.test.cjs \
+  && rm -rf /tmp/wfm-tests
+ 
++# Exercise installed integration modules, without a source-tree fallback. Test-only
++# HTTP fixtures use synthetic provider I/O and disposable SQLite state, then leave the image.
++COPY verification/vector-v014-setup-containment/heldout.test.cjs /tmp/vector-integration-admission/verification/vector-v014-setup-containment/heldout.test.cjs
++COPY integration/runtime/gusto-http-process-recovery.test.cjs /tmp/vector-integration-admission/integration/runtime/gusto-http-process-recovery.test.cjs
++COPY integration/runtime/fixtures/gusto-http-child.cjs /tmp/vector-integration-admission/integration/runtime/fixtures/gusto-http-child.cjs
++RUN VECTOR_IMAGE_ADMISSION_ROOT=/app node --test --test-concurrency=1 /tmp/vector-integration-admission/verification/vector-v014-setup-containment/heldout.test.cjs /tmp/vector-integration-admission/integration/runtime/gusto-http-process-recovery.test.cjs \
++ && rm -rf /tmp/vector-integration-admission
++
+ # Railway cloud-build admission: execute the exact 10,000-employee / 50-site
+ # configuration and independent payroll reconciliation proof without starting a server.
+ RUN WFM_PROOF_ONESHOT=true \
+diff --git a/integration/runtime/fixtures/gusto-http-child.cjs b/integration/runtime/fixtures/gusto-http-child.cjs
+index 1629afb..bba078c 100644
+--- a/integration/runtime/fixtures/gusto-http-child.cjs
++++ b/integration/runtime/fixtures/gusto-http-child.cjs
+@@ -3,7 +3,11 @@
+ // Test-only HTTP boundary. Provider I/O is replaced; the hub, routes and SQLite
+ // lifecycle are the product implementations under test.
+ const http = require('node:http');
+-const { createAutonomousIntegrationHub } = require('../autonomous-integration-hub.cjs');
++const path = require('node:path');
++const hubPath = process.env.VECTOR_IMAGE_ADMISSION_ROOT
++  ? path.join(process.env.VECTOR_IMAGE_ADMISSION_ROOT, 'integration-runtime/autonomous-integration-hub.cjs')
++  : path.join(__dirname, '../autonomous-integration-hub.cjs');
++const { createAutonomousIntegrationHub } = require(hubPath);
+ 
+ const COMPANY = '11111111-1111-4111-8111-111111111111';
+ const env = {
+diff --git a/verification/vector-v014-setup-containment/heldout.test.cjs b/verification/vector-v014-setup-containment/heldout.test.cjs
+index 022b6e3..3425230 100644
+--- a/verification/vector-v014-setup-containment/heldout.test.cjs
++++ b/verification/vector-v014-setup-containment/heldout.test.cjs
+@@ -8,9 +8,18 @@ const path = require('node:path');
+ const { Readable } = require('node:stream');
+ const { createHash } = require('node:crypto');
+ const { DatabaseSync } = require('node:sqlite');
+-const { createCustomerWorkspaceRegistry } = require('../../implementation/runtime/customer-workspace.cjs');
+-const { createSetupOnlyPolicy } = require('../../implementation/runtime/setup-only-policy.cjs');
+-const { createAutonomousIntegrationHub } = require('../../integration/runtime/autonomous-integration-hub.cjs');
++// Test-only selector: image admission uses the modules already copied into /app.
++// Without it, ordinary checkout runs retain the original source-tree targets.
++const installedRoot = process.env.VECTOR_IMAGE_ADMISSION_ROOT;
++const implementationRoot = installedRoot
++  ? path.join(installedRoot, 'implementation-runtime')
++  : path.resolve(__dirname, '../../implementation/runtime');
++const integrationRoot = installedRoot
++  ? path.join(installedRoot, 'integration-runtime')
++  : path.resolve(__dirname, '../../integration/runtime');
++const { createCustomerWorkspaceRegistry } = require(path.join(implementationRoot, 'customer-workspace.cjs'));
++const { createSetupOnlyPolicy } = require(path.join(implementationRoot, 'setup-only-policy.cjs'));
++const { createAutonomousIntegrationHub } = require(path.join(integrationRoot, 'autonomous-integration-hub.cjs'));
+ 
+ const sha = value => createHash('sha256').update(String(value)).digest('hex');
+ const prefix = '/api/integrations/autonomous';
