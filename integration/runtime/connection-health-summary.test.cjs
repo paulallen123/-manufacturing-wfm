@@ -127,6 +127,43 @@ test('healthy connection produces a calm customer-safe summary', () => {
   assert.ok(result.setupProgress.every((step) => step.state === 'COMPLETE'));
 });
 
+test('future runtime evidence cannot resume sync through ordinary or unfinished-maintenance summaries', () => {
+  for (const maintenanceExecution of [{}, {state:'CLAIM_EXPIRED'}, {state:'COMPLETION_UNCERTAIN'}]) {
+    for (const values of [
+      {lastReconciliationAt: new Date(NOW + 60_000).toISOString()},
+      {lastSyncAt: new Date(NOW + 60_000).toISOString(), lastReconciliationAt: new Date(NOW + 60_000).toISOString()}
+    ]) {
+      const input = {currentConfig:config, activationEvidence:approvedEvidence(), providerProofLease:providerProofLease(), circuitState:closedCircuit(), runtime:healthyRuntime(values), maintenanceExecution};
+      const before = structuredClone(input);
+      const result = summarizeConnectionHealth(review, input, NOW);
+      assert.equal(result.state, 'ATTENTION_REQUIRED');
+      assert.equal(result.canSync, false);
+      assert.equal(result.signals.runtime, 'BLOCKED');
+      assert.deepEqual(input, before);
+    }
+  }
+});
+
+for (const state of ['CLAIM_EXPIRED', 'COMPLETION_UNCERTAIN']) {
+  for (const [condition, values] of [
+    ['stale data', {lastSyncAt:new Date(NOW-400_000).toISOString(), lastReconciliationAt:new Date(NOW-399_000).toISOString()}],
+    ['high latency', {measuredLatencyMs:3000}],
+    ['pending retries', {pendingRetries:1}]
+  ]) {
+    test(`${state} preserves ${condition} as a degraded runtime signal while current proof permits sync`, () => {
+      const input = {currentConfig:config, activationEvidence:approvedEvidence(), providerProofLease:providerProofLease(), circuitState:closedCircuit(), runtime:healthyRuntime(values), maintenanceExecution:{state}};
+      const before = structuredClone(input);
+      const result = summarizeConnectionHealth(review, input, NOW);
+      assert.equal(result.state, 'DEGRADED');
+      assert.equal(result.canSync, true);
+      assert.equal(result.signals.runtime, 'DEGRADED');
+      assert.match(result.customerMessage, /freshness|latency|retries|degrad/i);
+      assert.equal(result.maintenanceExecutionState, state);
+      assert.deepEqual(input, before);
+    });
+  }
+}
+
 test('setup remains fail closed and points to the first useful customer action', () => {
   const evidence = approvedEvidence();
   delete evidence.approval;

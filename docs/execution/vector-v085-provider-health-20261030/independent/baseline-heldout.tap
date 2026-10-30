@@ -1,0 +1,3973 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: runtime reconciliation-only clock offset 0ms has independently expected trust state
+ok 1 - runtime reconciliation-only clock offset 0ms has independently expected trust state
+  ---
+  duration_ms: 6.866436
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 0ms has independently expected trust state
+ok 2 - runtime both clock offset 0ms has independently expected trust state
+  ---
+  duration_ms: 0.235127
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 4999ms has independently expected trust state
+ok 3 - runtime reconciliation-only clock offset 4999ms has independently expected trust state
+  ---
+  duration_ms: 0.23727
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 4999ms has independently expected trust state
+ok 4 - runtime both clock offset 4999ms has independently expected trust state
+  ---
+  duration_ms: 0.175709
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 5000ms has independently expected trust state
+ok 5 - runtime reconciliation-only clock offset 5000ms has independently expected trust state
+  ---
+  duration_ms: 0.309686
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 5000ms has independently expected trust state
+ok 6 - runtime both clock offset 5000ms has independently expected trust state
+  ---
+  duration_ms: 0.167327
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 5001ms has independently expected trust state
+not ok 7 - runtime reconciliation-only clock offset 5001ms has independently expected trust state
+  ---
+  duration_ms: 1.156816
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:94:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:100:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime both clock offset 5001ms has independently expected trust state
+not ok 8 - runtime both clock offset 5001ms has independently expected trust state
+  ---
+  duration_ms: 0.297939
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:94:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:100:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime reconciliation-only clock offset 10000ms has independently expected trust state
+not ok 9 - runtime reconciliation-only clock offset 10000ms has independently expected trust state
+  ---
+  duration_ms: 0.508961
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:94:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:100:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime both clock offset 10000ms has independently expected trust state
+not ok 10 - runtime both clock offset 10000ms has independently expected trust state
+  ---
+  duration_ms: 0.817646
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:94:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:100:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime reconciliation-only clock offset 86400000ms has independently expected trust state
+not ok 11 - runtime reconciliation-only clock offset 86400000ms has independently expected trust state
+  ---
+  duration_ms: 0.497193
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:94:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:100:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime both clock offset 86400000ms has independently expected trust state
+not ok 12 - runtime both clock offset 86400000ms has independently expected trust state
+  ---
+  duration_ms: 0.367051
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:94:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:100:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: future sync alone is rejected independently of the separate unreconciled-sync blocker
+not ok 13 - future sync alone is rejected independently of the separate unreconciled-sync blocker
+  ---
+  duration_ms: 0.404396
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:108:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /sync.*future/i. Input:
+    
+    'Latest successful sync has not been reconciled.'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: 'Latest successful sync has not been reconciled.'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:111:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "IDLE" cannot bypass future reconciliation
+not ok 14 - current proof / "IDLE" cannot bypass future reconciliation
+  ---
+  duration_ms: 3.134612
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "IDLE" cannot bypass future sync and reconciliation
+not ok 15 - current proof / "IDLE" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.998592
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "IDLE" cannot bypass authority conflict
+ok 16 - current proof / "IDLE" cannot bypass authority conflict
+  ---
+  duration_ms: 0.820901
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass review digest drift
+ok 17 - current proof / "IDLE" cannot bypass review digest drift
+  ---
+  duration_ms: 0.568458
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass unreconciled sync
+ok 18 - current proof / "IDLE" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.955499
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass missing sync evidence
+ok 19 - current proof / "IDLE" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.85414
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass malformed reconciliation
+ok 20 - current proof / "IDLE" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 4.168908
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass recovery exhausted
+ok 21 - current proof / "IDLE" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.729866
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass quarantined payload
+ok 22 - current proof / "IDLE" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.819118
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass missing measured latency
+ok 23 - current proof / "IDLE" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.566516
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass future reconciliation
+not ok 24 - current proof / "SUCCESS" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.758569
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass future sync and reconciliation
+not ok 25 - current proof / "SUCCESS" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.527889
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass authority conflict
+ok 26 - current proof / "SUCCESS" cannot bypass authority conflict
+  ---
+  duration_ms: 1.048115
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass review digest drift
+ok 27 - current proof / "SUCCESS" cannot bypass review digest drift
+  ---
+  duration_ms: 0.409374
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass unreconciled sync
+ok 28 - current proof / "SUCCESS" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.42048
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass missing sync evidence
+ok 29 - current proof / "SUCCESS" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.396485
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass malformed reconciliation
+ok 30 - current proof / "SUCCESS" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.418537
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass recovery exhausted
+ok 31 - current proof / "SUCCESS" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.379831
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass quarantined payload
+ok 32 - current proof / "SUCCESS" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.379099
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass missing measured latency
+ok 33 - current proof / "SUCCESS" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.403996
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass future reconciliation
+not ok 34 - current proof / "SUCCEEDED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.548959
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+not ok 35 - current proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.516272
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass authority conflict
+ok 36 - current proof / "SUCCEEDED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.382214
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass review digest drift
+ok 37 - current proof / "SUCCEEDED" cannot bypass review digest drift
+  ---
+  duration_ms: 0.412078
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass unreconciled sync
+ok 38 - current proof / "SUCCEEDED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.432358
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass missing sync evidence
+ok 39 - current proof / "SUCCEEDED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.393621
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass malformed reconciliation
+ok 40 - current proof / "SUCCEEDED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.428992
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass recovery exhausted
+ok 41 - current proof / "SUCCEEDED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 4.354592
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass quarantined payload
+ok 42 - current proof / "SUCCEEDED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.381503
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass missing measured latency
+ok 43 - current proof / "SUCCEEDED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.375133
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+not ok 44 - current proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.609709
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+not ok 45 - current proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.452667
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+not ok 46 - current proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.405798
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+not ok 47 - current proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+  ---
+  duration_ms: 0.403485
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+not ok 48 - current proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.421622
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+not ok 49 - current proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.443313
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+not ok 50 - current proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.718349
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+not ok 51 - current proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.389264
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+not ok 52 - current proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.424496
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+not ok 53 - current proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.384116
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+not ok 54 - current proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.48798
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+not ok 55 - current proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.353501
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+not ok 56 - current proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+  ---
+  duration_ms: 0.354603
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+not ok 57 - current proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+  ---
+  duration_ms: 0.984782
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+not ok 58 - current proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.38011
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+not ok 59 - current proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.419719
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+not ok 60 - current proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.501619
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+not ok 61 - current proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.308445
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+not ok 62 - current proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.322085
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+not ok 63 - current proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.304288
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass future reconciliation
+not ok 64 - current proof / " claim_expired " cannot bypass future reconciliation
+  ---
+  duration_ms: 0.302956
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass future sync and reconciliation
+not ok 65 - current proof / " claim_expired " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.374271
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass authority conflict
+not ok 66 - current proof / " claim_expired " cannot bypass authority conflict
+  ---
+  duration_ms: 0.267604
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass review digest drift
+not ok 67 - current proof / " claim_expired " cannot bypass review digest drift
+  ---
+  duration_ms: 2.904133
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass unreconciled sync
+not ok 68 - current proof / " claim_expired " cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.485145
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass missing sync evidence
+not ok 69 - current proof / " claim_expired " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.406299
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass malformed reconciliation
+not ok 70 - current proof / " claim_expired " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.512145
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass recovery exhausted
+not ok 71 - current proof / " claim_expired " cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.403325
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass quarantined payload
+not ok 72 - current proof / " claim_expired " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.441582
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass missing measured latency
+not ok 73 - current proof / " claim_expired " cannot bypass missing measured latency
+  ---
+  duration_ms: 0.437555
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass future reconciliation
+not ok 74 - current proof / " completion_uncertain " cannot bypass future reconciliation
+  ---
+  duration_ms: 0.429844
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass future sync and reconciliation
+not ok 75 - current proof / " completion_uncertain " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.374432
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass authority conflict
+not ok 76 - current proof / " completion_uncertain " cannot bypass authority conflict
+  ---
+  duration_ms: 0.368153
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass review digest drift
+not ok 77 - current proof / " completion_uncertain " cannot bypass review digest drift
+  ---
+  duration_ms: 0.436924
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass unreconciled sync
+not ok 78 - current proof / " completion_uncertain " cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.375514
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass missing sync evidence
+not ok 79 - current proof / " completion_uncertain " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.400901
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass malformed reconciliation
+not ok 80 - current proof / " completion_uncertain " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.358809
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass recovery exhausted
+not ok 81 - current proof / " completion_uncertain " cannot bypass recovery exhausted
+  ---
+  duration_ms: 2.890312
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass quarantined payload
+not ok 82 - current proof / " completion_uncertain " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.443755
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass missing measured latency
+not ok 83 - current proof / " completion_uncertain " cannot bypass missing measured latency
+  ---
+  duration_ms: 0.453219
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "IDLE" cannot bypass future reconciliation
+not ok 84 - due proof / "IDLE" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.699071
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "IDLE" cannot bypass future sync and reconciliation
+not ok 85 - due proof / "IDLE" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.410065
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "IDLE" cannot bypass authority conflict
+ok 86 - due proof / "IDLE" cannot bypass authority conflict
+  ---
+  duration_ms: 0.37293
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass review digest drift
+ok 87 - due proof / "IDLE" cannot bypass review digest drift
+  ---
+  duration_ms: 0.339851
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass unreconciled sync
+ok 88 - due proof / "IDLE" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.309497
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass missing sync evidence
+ok 89 - due proof / "IDLE" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.357147
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass malformed reconciliation
+ok 90 - due proof / "IDLE" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 2.628276
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass recovery exhausted
+ok 91 - due proof / "IDLE" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.383786
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass quarantined payload
+ok 92 - due proof / "IDLE" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.375083
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass missing measured latency
+ok 93 - due proof / "IDLE" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.321404
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass future reconciliation
+not ok 94 - due proof / "SUCCESS" cannot bypass future reconciliation
+  ---
+  duration_ms: 1.182945
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass future sync and reconciliation
+not ok 95 - due proof / "SUCCESS" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.421642
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass authority conflict
+ok 96 - due proof / "SUCCESS" cannot bypass authority conflict
+  ---
+  duration_ms: 0.291339
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass review digest drift
+ok 97 - due proof / "SUCCESS" cannot bypass review digest drift
+  ---
+  duration_ms: 1.855596
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass unreconciled sync
+ok 98 - due proof / "SUCCESS" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.266273
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass missing sync evidence
+ok 99 - due proof / "SUCCESS" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.240956
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass malformed reconciliation
+ok 100 - due proof / "SUCCESS" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.216038
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass recovery exhausted
+ok 101 - due proof / "SUCCESS" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.266533
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass quarantined payload
+ok 102 - due proof / "SUCCESS" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.267414
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass missing measured latency
+ok 103 - due proof / "SUCCESS" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.308635
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass future reconciliation
+not ok 104 - due proof / "SUCCEEDED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.368143
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+not ok 105 - due proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.443624
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass authority conflict
+ok 106 - due proof / "SUCCEEDED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.333202
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass review digest drift
+ok 107 - due proof / "SUCCEEDED" cannot bypass review digest drift
+  ---
+  duration_ms: 0.363306
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass unreconciled sync
+ok 108 - due proof / "SUCCEEDED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.2985
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass missing sync evidence
+ok 109 - due proof / "SUCCEEDED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.723777
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass malformed reconciliation
+ok 110 - due proof / "SUCCEEDED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.288024
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass recovery exhausted
+ok 111 - due proof / "SUCCEEDED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.273143
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass quarantined payload
+ok 112 - due proof / "SUCCEEDED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.337778
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass missing measured latency
+ok 113 - due proof / "SUCCEEDED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.308815
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+not ok 114 - due proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.437846
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+not ok 115 - due proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.456754
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+not ok 116 - due proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.442493
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+not ok 117 - due proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+  ---
+  duration_ms: 0.423805
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+not ok 118 - due proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.446598
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+not ok 119 - due proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.466998
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+not ok 120 - due proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.411416
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+not ok 121 - due proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.423294
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+not ok 122 - due proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.394191
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+not ok 123 - due proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.550422
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+not ok 124 - due proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.925525
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+not ok 125 - due proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.733682
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+not ok 126 - due proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+  ---
+  duration_ms: 0.870193
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+not ok 127 - due proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+  ---
+  duration_ms: 0.701164
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+not ok 128 - due proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.724568
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+not ok 129 - due proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.668896
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+not ok 130 - due proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.716106
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+not ok 131 - due proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.740102
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+not ok 132 - due proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.71943
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+not ok 133 - due proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.654065
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass future reconciliation
+not ok 134 - due proof / " claim_expired " cannot bypass future reconciliation
+  ---
+  duration_ms: 4.050483
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass future sync and reconciliation
+not ok 135 - due proof / " claim_expired " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.747773
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass authority conflict
+not ok 136 - due proof / " claim_expired " cannot bypass authority conflict
+  ---
+  duration_ms: 4.980865
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass review digest drift
+not ok 137 - due proof / " claim_expired " cannot bypass review digest drift
+  ---
+  duration_ms: 0.569069
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass unreconciled sync
+not ok 138 - due proof / " claim_expired " cannot bypass unreconciled sync
+  ---
+  duration_ms: 5.455055
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass missing sync evidence
+not ok 139 - due proof / " claim_expired " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.440059
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass malformed reconciliation
+not ok 140 - due proof / " claim_expired " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.428482
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass recovery exhausted
+not ok 141 - due proof / " claim_expired " cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.487119
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass quarantined payload
+not ok 142 - due proof / " claim_expired " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.415643
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass missing measured latency
+not ok 143 - due proof / " claim_expired " cannot bypass missing measured latency
+  ---
+  duration_ms: 0.450244
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass future reconciliation
+not ok 144 - due proof / " completion_uncertain " cannot bypass future reconciliation
+  ---
+  duration_ms: 0.39966
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass future sync and reconciliation
+not ok 145 - due proof / " completion_uncertain " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.424356
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass authority conflict
+not ok 146 - due proof / " completion_uncertain " cannot bypass authority conflict
+  ---
+  duration_ms: 0.400481
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass review digest drift
+not ok 147 - due proof / " completion_uncertain " cannot bypass review digest drift
+  ---
+  duration_ms: 0.403796
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass unreconciled sync
+not ok 148 - due proof / " completion_uncertain " cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.381523
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass missing sync evidence
+not ok 149 - due proof / " completion_uncertain " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.392198
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass malformed reconciliation
+not ok 150 - due proof / " completion_uncertain " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.482331
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass recovery exhausted
+not ok 151 - due proof / " completion_uncertain " cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.406229
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass quarantined payload
+not ok 152 - due proof / " completion_uncertain " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.454561
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass missing measured latency
+not ok 153 - due proof / " completion_uncertain " cannot bypass missing measured latency
+  ---
+  duration_ms: 0.421391
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:131:7'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:133:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: current proof / "IDLE" preserves permitted sync at the +5000ms boundary
+ok 154 - current proof / "IDLE" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.476482
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+ok 155 - current proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.298861
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+ok 156 - current proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.327993
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+ok 157 - current proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.340002
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+ok 158 - current proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.301374
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+ok 159 - current proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.449884
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+ok 160 - current proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.327322
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" preserves permitted sync at the +5000ms boundary
+ok 161 - due proof / "IDLE" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.31901
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+ok 162 - due proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.404196
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+ok 163 - due proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.338779
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+ok 164 - due proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.323768
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+ok 165 - due proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.355795
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+ok 166 - due proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.330827
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+ok 167 - due proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.353892
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock NaN
+not ok 168 - runtime explicitly rejects invalid clock NaN
+  ---
+  duration_ms: 0.316467
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock NaN cannot continue with IDLE
+not ok 169 - summary invalid clock NaN cannot continue with IDLE
+  ---
+  duration_ms: 0.52199
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock NaN cannot continue with CLAIM_EXPIRED
+not ok 170 - summary invalid clock NaN cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.430455
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock NaN cannot continue with COMPLETION_UNCERTAIN
+not ok 171 - summary invalid clock NaN cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.384997
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime explicitly rejects invalid clock positive infinity
+not ok 172 - runtime explicitly rejects invalid clock positive infinity
+  ---
+  duration_ms: 0.225553
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'DEGRADED'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'DEGRADED'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock positive infinity cannot continue with IDLE
+ok 173 - summary invalid clock positive infinity cannot continue with IDLE
+  ---
+  duration_ms: 0.391868
+  type: 'test'
+  ...
+# Subtest: summary invalid clock positive infinity cannot continue with CLAIM_EXPIRED
+ok 174 - summary invalid clock positive infinity cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.327103
+  type: 'test'
+  ...
+# Subtest: summary invalid clock positive infinity cannot continue with COMPLETION_UNCERTAIN
+ok 175 - summary invalid clock positive infinity cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.366501
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock negative infinity
+not ok 176 - runtime explicitly rejects invalid clock negative infinity
+  ---
+  duration_ms: 0.152545
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock negative infinity cannot continue with IDLE
+ok 177 - summary invalid clock negative infinity cannot continue with IDLE
+  ---
+  duration_ms: 0.309777
+  type: 'test'
+  ...
+# Subtest: summary invalid clock negative infinity cannot continue with CLAIM_EXPIRED
+ok 178 - summary invalid clock negative infinity cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.33177
+  type: 'test'
+  ...
+# Subtest: summary invalid clock negative infinity cannot continue with COMPLETION_UNCERTAIN
+ok 179 - summary invalid clock negative infinity cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.29793
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock null
+not ok 180 - runtime explicitly rejects invalid clock null
+  ---
+  duration_ms: 0.167747
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock null cannot continue with IDLE
+ok 181 - summary invalid clock null cannot continue with IDLE
+  ---
+  duration_ms: 0.332431
+  type: 'test'
+  ...
+# Subtest: summary invalid clock null cannot continue with CLAIM_EXPIRED
+ok 182 - summary invalid clock null cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.781012
+  type: 'test'
+  ...
+# Subtest: summary invalid clock null cannot continue with COMPLETION_UNCERTAIN
+ok 183 - summary invalid clock null cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.429754
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock empty string
+not ok 184 - runtime explicitly rejects invalid clock empty string
+  ---
+  duration_ms: 0.167837
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock empty string cannot continue with IDLE
+ok 185 - summary invalid clock empty string cannot continue with IDLE
+  ---
+  duration_ms: 0.37263
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty string cannot continue with CLAIM_EXPIRED
+ok 186 - summary invalid clock empty string cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.397506
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty string cannot continue with COMPLETION_UNCERTAIN
+ok 187 - summary invalid clock empty string cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.327323
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock numeric string
+not ok 188 - runtime explicitly rejects invalid clock numeric string
+  ---
+  duration_ms: 0.199605
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock numeric string cannot continue with IDLE
+not ok 189 - summary invalid clock numeric string cannot continue with IDLE
+  ---
+  duration_ms: 0.533597
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock numeric string cannot continue with CLAIM_EXPIRED
+not ok 190 - summary invalid clock numeric string cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.438076
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock numeric string cannot continue with COMPLETION_UNCERTAIN
+not ok 191 - summary invalid clock numeric string cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.378288
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime explicitly rejects invalid clock ISO string
+not ok 192 - runtime explicitly rejects invalid clock ISO string
+  ---
+  duration_ms: 0.174036
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock ISO string cannot continue with IDLE
+not ok 193 - summary invalid clock ISO string cannot continue with IDLE
+  ---
+  duration_ms: 0.377617
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock ISO string cannot continue with CLAIM_EXPIRED
+not ok 194 - summary invalid clock ISO string cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.371417
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock ISO string cannot continue with COMPLETION_UNCERTAIN
+not ok 195 - summary invalid clock ISO string cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.871595
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime explicitly rejects invalid clock boolean
+not ok 196 - runtime explicitly rejects invalid clock boolean
+  ---
+  duration_ms: 0.192514
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock boolean cannot continue with IDLE
+ok 197 - summary invalid clock boolean cannot continue with IDLE
+  ---
+  duration_ms: 0.343797
+  type: 'test'
+  ...
+# Subtest: summary invalid clock boolean cannot continue with CLAIM_EXPIRED
+ok 198 - summary invalid clock boolean cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.330607
+  type: 'test'
+  ...
+# Subtest: summary invalid clock boolean cannot continue with COMPLETION_UNCERTAIN
+ok 199 - summary invalid clock boolean cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.391367
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock empty object
+not ok 200 - runtime explicitly rejects invalid clock empty object
+  ---
+  duration_ms: 0.166976
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock empty object cannot continue with IDLE
+not ok 201 - summary invalid clock empty object cannot continue with IDLE
+  ---
+  duration_ms: 0.391417
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock empty object cannot continue with CLAIM_EXPIRED
+not ok 202 - summary invalid clock empty object cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.415703
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock empty object cannot continue with COMPLETION_UNCERTAIN
+not ok 203 - summary invalid clock empty object cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.418226
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runtime explicitly rejects invalid clock array
+not ok 204 - runtime explicitly rejects invalid clock array
+  ---
+  duration_ms: 0.159866
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock array cannot continue with IDLE
+ok 205 - summary invalid clock array cannot continue with IDLE
+  ---
+  duration_ms: 0.37242
+  type: 'test'
+  ...
+# Subtest: summary invalid clock array cannot continue with CLAIM_EXPIRED
+ok 206 - summary invalid clock array cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.320472
+  type: 'test'
+  ...
+# Subtest: summary invalid clock array cannot continue with COMPLETION_UNCERTAIN
+ok 207 - summary invalid clock array cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.361893
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock Date object
+not ok 208 - runtime explicitly rejects invalid clock Date object
+  ---
+  duration_ms: 0.169309
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:158:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:160:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock Date object cannot continue with IDLE
+not ok 209 - summary invalid clock Date object cannot continue with IDLE
+  ---
+  duration_ms: 0.404466
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock Date object cannot continue with CLAIM_EXPIRED
+not ok 210 - summary invalid clock Date object cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.41368
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary invalid clock Date object cannot continue with COMPLETION_UNCERTAIN
+not ok 211 - summary invalid clock Date object cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 1.23446
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:164:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/heldout.test.cjs:166:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: expired proof / CLAIM_EXPIRED remains paused when runtime also has a blocker
+ok 212 - expired proof / CLAIM_EXPIRED remains paused when runtime also has a blocker
+  ---
+  duration_ms: 0.429814
+  type: 'test'
+  ...
+# Subtest: setup approval remains mandatory for CLAIM_EXPIRED
+ok 213 - setup approval remains mandatory for CLAIM_EXPIRED
+  ---
+  duration_ms: 0.453749
+  type: 'test'
+  ...
+# Subtest: invalid circuit remains blocked for CLAIM_EXPIRED
+ok 214 - invalid circuit remains blocked for CLAIM_EXPIRED
+  ---
+  duration_ms: 0.424586
+  type: 'test'
+  ...
+# Subtest: expired proof / COMPLETION_UNCERTAIN remains paused when runtime also has a blocker
+ok 215 - expired proof / COMPLETION_UNCERTAIN remains paused when runtime also has a blocker
+  ---
+  duration_ms: 0.395122
+  type: 'test'
+  ...
+# Subtest: setup approval remains mandatory for COMPLETION_UNCERTAIN
+ok 216 - setup approval remains mandatory for COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.201898
+  type: 'test'
+  ...
+# Subtest: invalid circuit remains blocked for COMPLETION_UNCERTAIN
+ok 217 - invalid circuit remains blocked for COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.203761
+  type: 'test'
+  ...
+1..217
+# tests 217
+# suites 0
+# pass 92
+# fail 125
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 347.223624

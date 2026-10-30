@@ -1,0 +1,31 @@
+{
+  "command": [
+    "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+    "--test",
+    "--test-reporter=tap",
+    "integration/runtime/apply-handoff-ledger.test.cjs",
+    "integration/runtime/connection-health-summary.test.cjs",
+    "integration/runtime/connection-proof-gate.test.cjs",
+    "integration/runtime/provider-circuit-breaker.test.cjs",
+    "integration/runtime/provider-proof-lifecycle.test.cjs",
+    "integration/runtime/provider-proof-maintenance-ledger.test.cjs",
+    "integration/runtime/provider-proof-maintenance-worker.test.cjs",
+    "integration/runtime/provider-proof-maintenance.test.cjs",
+    "integration/runtime/provider-proof-profiles.test.cjs",
+    "integration/runtime/provider-proof-response-verifier.test.cjs",
+    "integration/runtime/runtime-ingestion-gate.test.cjs",
+    "integration/runtime/source-authority-fence.test.cjs",
+    "integration/runtime/source-settlement-gate.test.cjs",
+    "integration/runtime/transport-runtime-policy.test.cjs"
+  ],
+  "node": "22.23.2",
+  "exit": 0,
+  "files": 14,
+  "summary": {
+    "tests": 113,
+    "pass": 113,
+    "fail": 0,
+    "skipped": 0
+  },
+  "tapSha256": "2f0d5af74ed345078507f385b12013e665d515e7a45cf6ae7f7f25d505d6ec0e"
+}

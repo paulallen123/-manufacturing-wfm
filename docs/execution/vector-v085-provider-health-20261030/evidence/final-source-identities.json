@@ -1,0 +1,46 @@
+[
+  {
+    "path": "integration/runtime/connection-proof-gate.cjs",
+    "baseline": {
+      "gitBlob": "955e16d4885b8eccd316da92efdce1c7fdd69d26",
+      "sha256": "d8d2470775222586db5d47779e23c683cc4eeae17b5c4e496afd2fc22eb225d2"
+    },
+    "candidate": {
+      "gitBlob": "6ad28eed3fd2e819d1538f32d95abf93535da64f",
+      "sha256": "4ed09983cf2dcbba21255a79c6b4b38a5a053dced6011bf49568468fc09d62e9"
+    }
+  },
+  {
+    "path": "integration/runtime/connection-proof-gate.test.cjs",
+    "baseline": {
+      "gitBlob": "c38c2ec4e9c69c4065c2bb7f249b3d8a6417fc97",
+      "sha256": "1b0ede2149316496a0b0d600b1c0445ef21f08154c6677820e76b1228c6a1822"
+    },
+    "candidate": {
+      "gitBlob": "e2d3a8dd36c23bdd314561977d54fca21f229494",
+      "sha256": "6c006a30b8ea4b0c8b05af9a54b1c6f6cf45e254ef9d4dfad62608cc311145fa"
+    }
+  },
+  {
+    "path": "integration/runtime/connection-health-summary.cjs",
+    "baseline": {
+      "gitBlob": "177cb8e6bc4b8c5e20f61a9498a1ac2de2ac455e",
+      "sha256": "00fd2303fb60a3eea85b07f604852316cf042a39e2b5e200d5edbcbc14423bd5"
+    },
+    "candidate": {
+      "gitBlob": "56ae5b04c42321bbe0ebfe531279f46b84f3adb5",
+      "sha256": "4f8d89bd0c89bd2b23c7ad6da9c338bc7a6e27e35ff4b0667e1a2f39a5c2aefc"
+    }
+  },
+  {
+    "path": "integration/runtime/connection-health-summary.test.cjs",
+    "baseline": {
+      "gitBlob": "84c09dad70c080f5da4a870075f50eb2507f935e",
+      "sha256": "0cd51e12c8e85f1dd38f3c651e84a1a7e236ce03551b6aa6f90f271ffab13854"
+    },
+    "candidate": {
+      "gitBlob": "0bde039a19992686c94c263695bc3a728ba46111",
+      "sha256": "b27d40e9dff239cb7802649ce41e544f58d6558788109aaf4884597159fe08ef"
+    }
+  }
+]

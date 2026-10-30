@@ -16,6 +16,7 @@ const TRANSPORTS = Object.freeze({
 const CREDENTIAL_REF = /^(vault|secret|managed|railway|keyvault|awssecrets|gcpsecrets):\/\/[A-Za-z0-9._:/-]{3,240}$/;
 const CAPABILITY = /^[a-z0-9][a-z0-9.-]{1,79}$/;
 const TARGET_PROOF_METHODS = new Set(['provider-metadata', 'provider-account-identity', 'tenant-metadata', 'connection-metadata']);
+const MAX_CLOCK_SKEW_MS = 5000;
 
 function sha256(value) {
   return createHash('sha256').update(String(value)).digest('hex');
@@ -287,6 +288,7 @@ function evaluateActivation(review, evidence = {}, currentConfig) {
 function evaluateRuntimeHealth(review, runtime = {}, now = Date.now()) {
   const blockers = [];
   const warnings = [];
+  if (!Number.isFinite(now)) blockers.push('Runtime evaluation clock is invalid.');
   if (runtime.reviewedDigest !== review.reviewedDigest) blockers.push('Runtime configuration no longer matches the approved review.');
   if (runtime.authorityConflict === true) blockers.push('More than one source is claiming authority for the same capability.');
   if (runtime.retryExhausted === true) blockers.push('Automatic recovery is exhausted and requires review.');
@@ -295,10 +297,12 @@ function evaluateRuntimeHealth(review, runtime = {}, now = Date.now()) {
   const lastSyncMs = Date.parse(String(runtime.lastSyncAt || ''));
   const reconMs = Date.parse(String(runtime.lastReconciliationAt || ''));
   if (!Number.isFinite(lastSyncMs)) blockers.push('No successful sync freshness evidence is available.');
+  else if (lastSyncMs > now + MAX_CLOCK_SKEW_MS) blockers.push('Successful sync freshness evidence is future-dated.');
   else {
     const ageSeconds = Math.max(0, Math.floor((now - lastSyncMs) / 1000));
     if (ageSeconds > review.monitoring.maxFreshnessSeconds) warnings.push('Integration data is older than the reviewed freshness target.');
   }
+  if (Number.isFinite(reconMs) && reconMs > now + MAX_CLOCK_SKEW_MS) blockers.push('Reconciliation evidence is future-dated.');
   if (!Number.isFinite(reconMs) || (Number.isFinite(lastSyncMs) && reconMs < lastSyncMs)) blockers.push('Latest successful sync has not been reconciled.');
 
   const latency = Number(runtime.measuredLatencyMs);

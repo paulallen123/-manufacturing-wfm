@@ -1,0 +1,147 @@
+[
+  {
+    "path": ".github/workflows/integration-activation-runtime-proof.yml",
+    "gitBlob": "ff8437a76412708fe3e3ab427fe5bae6e5a5c0a1",
+    "sha256": "bde4ed4ee2faabd678e8be14425135096927d57cc0da720420d89c31e6f9939e"
+  },
+  {
+    "path": "integration/runtime/apply-handoff-ledger.cjs",
+    "gitBlob": "4bb7584ea21315fba97f6e6e0f8eb44e95a91fb5",
+    "sha256": "2f7aaa390ebb964e853b361c89cdf3c372b2201344b3a38cf87f04b8050ab92a"
+  },
+  {
+    "path": "integration/runtime/apply-handoff-ledger.test.cjs",
+    "gitBlob": "1186d1a34cc36f185d750a369793e831ac90a9cf",
+    "sha256": "c07a5b4de89241333ec5946cd340b48d39483a1aabeb347ad2153c4bb5852410"
+  },
+  {
+    "path": "integration/runtime/connection-health-summary.cjs",
+    "gitBlob": "177cb8e6bc4b8c5e20f61a9498a1ac2de2ac455e",
+    "sha256": "00fd2303fb60a3eea85b07f604852316cf042a39e2b5e200d5edbcbc14423bd5"
+  },
+  {
+    "path": "integration/runtime/connection-health-summary.test.cjs",
+    "gitBlob": "84c09dad70c080f5da4a870075f50eb2507f935e",
+    "sha256": "0cd51e12c8e85f1dd38f3c651e84a1a7e236ce03551b6aa6f90f271ffab13854"
+  },
+  {
+    "path": "integration/runtime/connection-proof-gate.cjs",
+    "gitBlob": "955e16d4885b8eccd316da92efdce1c7fdd69d26",
+    "sha256": "d8d2470775222586db5d47779e23c683cc4eeae17b5c4e496afd2fc22eb225d2"
+  },
+  {
+    "path": "integration/runtime/connection-proof-gate.test.cjs",
+    "gitBlob": "c38c2ec4e9c69c4065c2bb7f249b3d8a6417fc97",
+    "sha256": "1b0ede2149316496a0b0d600b1c0445ef21f08154c6677820e76b1228c6a1822"
+  },
+  {
+    "path": "integration/runtime/provider-circuit-breaker.cjs",
+    "gitBlob": "e0796ec7e3cd4b0ee18f46ec3779c114779f81b6",
+    "sha256": "b627ed70cb02279b728340cb69946b40182ed0c8ef180dc30a86fc51ea5595b7"
+  },
+  {
+    "path": "integration/runtime/provider-circuit-breaker.test.cjs",
+    "gitBlob": "60e005bf8ef5a12dd2252f0c828d4b40b6b8c05a",
+    "sha256": "eb56817532313772cb231117121d2871f7d5ea889508d071388dc0596191798d"
+  },
+  {
+    "path": "integration/runtime/provider-proof-lifecycle.cjs",
+    "gitBlob": "1bfd33ec67ce9f1e2658505a51fcac59623eadaf",
+    "sha256": "267f23be0489a87a9f66cad90c67f6e57d20c533210d26d3cf8d7e912517659a"
+  },
+  {
+    "path": "integration/runtime/provider-proof-lifecycle.test.cjs",
+    "gitBlob": "735c96d6f93a4337f6af386439560aee6b18d39b",
+    "sha256": "1651aca357974e6b7df71f16e34b37895e440400e861c99ac1c8893b33374537"
+  },
+  {
+    "path": "integration/runtime/provider-proof-maintenance-ledger.cjs",
+    "gitBlob": "91d66ac43a6cd187c9c4f3bc60a84fb84c52527f",
+    "sha256": "4943b6774e1c87afc6a4ccc42f35e1a212d735aede924ed344bd2bddc2931acb"
+  },
+  {
+    "path": "integration/runtime/provider-proof-maintenance-ledger.test.cjs",
+    "gitBlob": "f6778595240011742b709079643a0253d1049001",
+    "sha256": "e68db17464d791de3e50862e65d3ee48069df0098c3d441dfe24b191c51481e0"
+  },
+  {
+    "path": "integration/runtime/provider-proof-maintenance-worker.cjs",
+    "gitBlob": "487aa9388dbefabc7535d5ec44586bf4db961f39",
+    "sha256": "0ec6d63ef28db8fcb869be189961bc41e1861f1df163684b0e2a2dca216aaa13"
+  },
+  {
+    "path": "integration/runtime/provider-proof-maintenance-worker.test.cjs",
+    "gitBlob": "d9a599d2b26ec3261df07ee8663b06b5f143e65d",
+    "sha256": "7a7c6ba4c12f2ed4e124b49912ef119dea695eba79969923f568b8e211883a36"
+  },
+  {
+    "path": "integration/runtime/provider-proof-maintenance.cjs",
+    "gitBlob": "94c0e986861b03ae17192d03be9f03741203cbc0",
+    "sha256": "40cddeb843ca9d83272755017d6ec960826ea68c13b8144b72cfa084a2555638"
+  },
+  {
+    "path": "integration/runtime/provider-proof-maintenance.test.cjs",
+    "gitBlob": "5a94fba2777b1199430a9182801379b278247b58",
+    "sha256": "fa6fa10a4d927b05a81f7812a1d1019302c3ba6b40e7606abaa3ebd8a563d797"
+  },
+  {
+    "path": "integration/runtime/provider-proof-profiles.cjs",
+    "gitBlob": "99a5f19f2093c7b3f9207e0ba465b9ec9f8d4665",
+    "sha256": "0ea5ee39a574583297723b78a1ff940e470762620c3ac2f38674d6e6cac2d68b"
+  },
+  {
+    "path": "integration/runtime/provider-proof-profiles.test.cjs",
+    "gitBlob": "7f5f1f63c918ff38c02522ac9ad51b70eee8a18d",
+    "sha256": "1382ec0e974f1a8cb4353d26f0f7433aee43c24dd44c5cdb0fa8081bcf559f40"
+  },
+  {
+    "path": "integration/runtime/provider-proof-response-verifier.cjs",
+    "gitBlob": "d643cff53fe4a1c83b19e726d4f886ed75f7d50a",
+    "sha256": "cc4aa9fb40aa1577efcc9fe1fe953c572c9fe90ae8e03b54095c623e27234d48"
+  },
+  {
+    "path": "integration/runtime/provider-proof-response-verifier.test.cjs",
+    "gitBlob": "cc01ad4c47fb700af00e2d50d377231f74568e59",
+    "sha256": "3993f3d080e137a4686c43bacc78495724d0e97bb901ebce3c7db9424220119d"
+  },
+  {
+    "path": "integration/runtime/runtime-ingestion-gate.cjs",
+    "gitBlob": "0427b1d36a6e3e113ff86b4d1a156da5ecd3f95d",
+    "sha256": "a6d3e3a9fe89276ecf639aa565eea0d17fd3eef73ae1b02e4e394becbc26350a"
+  },
+  {
+    "path": "integration/runtime/runtime-ingestion-gate.test.cjs",
+    "gitBlob": "0fab2fe1d770471ecceb3b598fc151dd4bb18fd8",
+    "sha256": "74cadda5f8a7333c590f56a48db75f3dfbebadf2c2bf8fa89e16772841d875a8"
+  },
+  {
+    "path": "integration/runtime/source-authority-fence.cjs",
+    "gitBlob": "143db3008922d47548c6b01ee2d37781ad04c086",
+    "sha256": "3c26177d18de2583b3d87110015e35218eda7e2c294e411ea657d85566c14279"
+  },
+  {
+    "path": "integration/runtime/source-authority-fence.test.cjs",
+    "gitBlob": "6c73a8b2f23af8de967a800319b74862d62ed98d",
+    "sha256": "f735c11c4e5130f8e30d9f753b2eeb8efb20baeb67dfcbab0e706ba9d82ecfae"
+  },
+  {
+    "path": "integration/runtime/source-settlement-gate.cjs",
+    "gitBlob": "9e2840e1233624379b12257bd6a1cb0989950fa9",
+    "sha256": "e0622a602c2ab5ef8c20cbdadb45605085d55268274847bfa5ab5fe7f74864fc"
+  },
+  {
+    "path": "integration/runtime/source-settlement-gate.test.cjs",
+    "gitBlob": "4b9d29ce480fa9b98b37423d7486530ee2355eb8",
+    "sha256": "80f182c72e029a8cca5089e17041a41c890448e2469ca9c8d6edb3cfb057611a"
+  },
+  {
+    "path": "integration/runtime/transport-runtime-policy.cjs",
+    "gitBlob": "3116d01b6fc15b323ad70cfcb7123efbbc26b6b4",
+    "sha256": "e9b9c35666c462d4b04ba5522f1757e64a88827b8fc004e64b8d06568a8da5c5"
+  },
+  {
+    "path": "integration/runtime/transport-runtime-policy.test.cjs",
+    "gitBlob": "7c162d29a31f875725e0b8c03f252645af8168b3",
+    "sha256": "9993dcfa97bc1ca49f4740f0737236e12427ca59479aafc7fa0b7003661eb3a9"
+  }
+]

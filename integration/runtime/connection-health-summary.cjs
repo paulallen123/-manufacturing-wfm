@@ -122,12 +122,16 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
     });
   }
 
+  const runtime = evaluateRuntimeHealth(review, input.runtime || {}, now);
   const maintenanceExecution = maintenanceExecutionDisposition(maintenance, input.maintenanceExecution || {});
-  if (maintenanceExecution) {
+  if (maintenanceExecution && runtime.state !== 'BLOCKED') {
+    const runtimeDegraded = maintenanceExecution.canSync && runtime.state === 'DEGRADED';
     return Object.freeze({
       state: maintenanceExecution.state,
       canSync: maintenanceExecution.canSync,
-      customerMessage: maintenanceExecution.customerMessage,
+      customerMessage: runtimeDegraded
+        ? maintenanceExecution.customerMessage + ' Integration freshness, latency or retries are below the reviewed target.'
+        : maintenanceExecution.customerMessage,
       nextAction: maintenanceExecution.nextAction,
       setupProgress: progress,
       automation: maintenance,
@@ -136,7 +140,7 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
       signals: Object.freeze({
         activation: 'APPROVED',
         provider: maintenanceExecution.providerSignal,
-        runtime: maintenanceExecution.runtimeSignal
+        runtime: runtimeDegraded ? 'DEGRADED' : maintenanceExecution.runtimeSignal
       })
     });
   }
@@ -165,7 +169,6 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
     });
   }
 
-  const runtime = evaluateRuntimeHealth(review, input.runtime || {}, now);
   if (runtime.state === 'BLOCKED') {
     return Object.freeze({
       state: 'ATTENTION_REQUIRED',

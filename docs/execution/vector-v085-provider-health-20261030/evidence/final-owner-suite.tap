@@ -1,0 +1,719 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing durable intent blocks WFM apply
+ok 1 - missing durable intent blocks WFM apply
+  ---
+  duration_ms: 0.834
+  type: 'test'
+  ...
+# Subtest: durable idempotent intent allows first apply or safe retry with same operation key
+ok 2 - durable idempotent intent allows first apply or safe retry with same operation key
+  ---
+  duration_ms: 1.971657
+  type: 'test'
+  ...
+# Subtest: applied outcome advances authority without reapplying business effect
+ok 3 - applied outcome advances authority without reapplying business effect
+  ---
+  duration_ms: 0.410355
+  type: 'test'
+  ...
+# Subtest: ambiguous prior apply forces reconciliation before retry
+ok 4 - ambiguous prior apply forces reconciliation before retry
+  ---
+  duration_ms: 0.518234
+  type: 'test'
+  ...
+# Subtest: tampered or cross-observation handoff fails closed
+ok 5 - tampered or cross-observation handoff fails closed
+  ---
+  duration_ms: 0.290969
+  type: 'test'
+  ...
+# Subtest: automated apply intent refuses non-idempotent business application
+ok 6 - automated apply intent refuses non-idempotent business application
+  ---
+  duration_ms: 0.421662
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: healthy connection produces a calm customer-safe summary
+ok 7 - healthy connection produces a calm customer-safe summary
+  ---
+  duration_ms: 2.553826
+  type: 'test'
+  ...
+# Subtest: future runtime evidence cannot resume sync through ordinary or unfinished-maintenance summaries
+ok 8 - future runtime evidence cannot resume sync through ordinary or unfinished-maintenance summaries
+  ---
+  duration_ms: 3.07845
+  type: 'test'
+  ...
+# Subtest: CLAIM_EXPIRED preserves stale data as a degraded runtime signal while current proof permits sync
+ok 9 - CLAIM_EXPIRED preserves stale data as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.704459
+  type: 'test'
+  ...
+# Subtest: CLAIM_EXPIRED preserves high latency as a degraded runtime signal while current proof permits sync
+ok 10 - CLAIM_EXPIRED preserves high latency as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.992954
+  type: 'test'
+  ...
+# Subtest: CLAIM_EXPIRED preserves pending retries as a degraded runtime signal while current proof permits sync
+ok 11 - CLAIM_EXPIRED preserves pending retries as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.517994
+  type: 'test'
+  ...
+# Subtest: COMPLETION_UNCERTAIN preserves stale data as a degraded runtime signal while current proof permits sync
+ok 12 - COMPLETION_UNCERTAIN preserves stale data as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.391498
+  type: 'test'
+  ...
+# Subtest: COMPLETION_UNCERTAIN preserves high latency as a degraded runtime signal while current proof permits sync
+ok 13 - COMPLETION_UNCERTAIN preserves high latency as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.472196
+  type: 'test'
+  ...
+# Subtest: COMPLETION_UNCERTAIN preserves pending retries as a degraded runtime signal while current proof permits sync
+ok 14 - COMPLETION_UNCERTAIN preserves pending retries as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.338389
+  type: 'test'
+  ...
+# Subtest: setup remains fail closed and points to the first useful customer action
+ok 15 - setup remains fail closed and points to the first useful customer action
+  ---
+  duration_ms: 0.470834
+  type: 'test'
+  ...
+# Subtest: expired provider proof pauses sync and asks only for safe re-proof
+ok 16 - expired provider proof pauses sync and asks only for safe re-proof
+  ---
+  duration_ms: 0.987667
+  type: 'test'
+  ...
+# Subtest: proof due soon keeps sync running but is visible as degraded
+ok 17 - proof due soon keeps sync running but is visible as degraded
+  ---
+  duration_ms: 0.39351
+  type: 'test'
+  ...
+# Subtest: open provider circuit cannot be shown as healthy or syncing
+ok 18 - open provider circuit cannot be shown as healthy or syncing
+  ---
+  duration_ms: 0.572945
+  type: 'test'
+  ...
+# Subtest: unreconciled latest sync is attention-required even when provider is reachable
+ok 19 - unreconciled latest sync is attention-required even when provider is reachable
+  ---
+  duration_ms: 1.431741
+  type: 'test'
+  ...
+# Subtest: stale but reconciled data is degraded rather than falsely healthy
+ok 20 - stale but reconciled data is degraded rather than falsely healthy
+  ---
+  duration_ms: 0.234245
+  type: 'test'
+  ...
+# Subtest: summary never echoes credentials, raw payloads or provider rows
+ok 21 - summary never echoes credentials, raw payloads or provider rows
+  ---
+  duration_ms: 0.242497
+  type: 'test'
+  ...
+# Subtest: expired maintenance claim is visible without pausing a still-valid provider proof
+ok 22 - expired maintenance claim is visible without pausing a still-valid provider proof
+  ---
+  duration_ms: 0.251551
+  type: 'test'
+  ...
+# Subtest: uncertain maintenance completion blocks an expired proof until control-plane reconciliation
+ok 23 - uncertain maintenance completion blocks an expired proof until control-plane reconciliation
+  ---
+  duration_ms: 0.310658
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: raw credentials are rejected and protected references are accepted
+ok 24 - raw credentials are rejected and protected references are accepted
+  ---
+  duration_ms: 2.928879
+  type: 'test'
+  ...
+# Subtest: read-only database transport fails closed unless both read-only controls are explicit
+ok 25 - read-only database transport fails closed unless both read-only controls are explicit
+  ---
+  duration_ms: 0.246383
+  type: 'test'
+  ...
+# Subtest: activation requires explicit approval, exact target proof, current mapping and reconciliation
+ok 26 - activation requires explicit approval, exact target proof, current mapping and reconciliation
+  ---
+  duration_ms: 0.919797
+  type: 'test'
+  ...
+# Subtest: approval is bound to the exact proof bundle and must follow the latest evidence
+ok 27 - approval is bound to the exact proof bundle and must follow the latest evidence
+  ---
+  duration_ms: 0.533176
+  type: 'test'
+  ...
+# Subtest: approval cannot be minted from incomplete or failing evidence
+ok 28 - approval cannot be minted from incomplete or failing evidence
+  ---
+  duration_ms: 0.294875
+  type: 'test'
+  ...
+# Subtest: boolean-only or mismatched target identity proof cannot activate a connection
+ok 29 - boolean-only or mismatched target identity proof cannot activate a connection
+  ---
+  duration_ms: 0.524333
+  type: 'test'
+  ...
+# Subtest: target proof must be metadata-only and explicitly free of employee/payroll data
+ok 30 - target proof must be metadata-only and explicitly free of employee/payroll data
+  ---
+  duration_ms: 0.394982
+  type: 'test'
+  ...
+# Subtest: any reviewed connection change invalidates stale activation approval
+ok 31 - any reviewed connection change invalidates stale activation approval
+  ---
+  duration_ms: 0.361142
+  type: 'test'
+  ...
+# Subtest: queue transport requires observed failure recovery proof before approval and activation
+ok 32 - queue transport requires observed failure recovery proof before approval and activation
+  ---
+  duration_ms: 0.610561
+  type: 'test'
+  ...
+# Subtest: runtime health blocks unreconciled or conflicting authority and degrades stale data
+ok 33 - runtime health blocks unreconciled or conflicting authority and degrades stale data
+  ---
+  duration_ms: 0.623069
+  type: 'test'
+  ...
+# Subtest: runtime health refuses sync or reconciliation evidence beyond the existing clock-skew allowance
+ok 34 - runtime health refuses sync or reconciliation evidence beyond the existing clock-skew allowance
+  ---
+  duration_ms: 1.0103
+  type: 'test'
+  ...
+# Subtest: runtime health fails closed when its evaluation clock is not finite
+ok 35 - runtime health fails closed when its evaluation clock is not finite
+  ---
+  duration_ms: 0.207046
+  type: 'test'
+  ...
+# Subtest: safe test plan is non-mutating and adds transport-specific recovery/read-only checks
+ok 36 - safe test plan is non-mutating and adds transport-specific recovery/read-only checks
+  ---
+  duration_ms: 0.225943
+  type: 'test'
+  ...
+# (node:21) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: transient failures stay bounded before opening the provider circuit
+ok 37 - transient failures stay bounded before opening the provider circuit
+  ---
+  duration_ms: 1.74911
+  type: 'test'
+  ...
+# Subtest: an open circuit allows only a bounded safe metadata probe after cooldown
+ok 38 - an open circuit allows only a bounded safe metadata probe after cooldown
+  ---
+  duration_ms: 1.375599
+  type: 'test'
+  ...
+# Subtest: recovery closes only after a non-mutating safe probe reconciles
+ok 39 - recovery closes only after a non-mutating safe probe reconciles
+  ---
+  duration_ms: 0.267194
+  type: 'test'
+  ...
+# Subtest: a failed half-open probe reopens the circuit and restarts cooldown
+ok 40 - a failed half-open probe reopens the circuit and restarts cooldown
+  ---
+  duration_ms: 0.275426
+  type: 'test'
+  ...
+# Subtest: credential failures require reauthorisation instead of opening a retry circuit
+ok 41 - credential failures require reauthorisation instead of opening a retry circuit
+  ---
+  duration_ms: 0.184752
+  type: 'test'
+  ...
+# Subtest: circuit evidence is bound to the exact reviewed connection and fails closed on mismatch
+ok 42 - circuit evidence is bound to the exact reviewed connection and fails closed on mismatch
+  ---
+  duration_ms: 0.400831
+  type: 'test'
+  ...
+# (node:27) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: current proof lease permits business traffic and becomes due before expiry
+ok 43 - current proof lease permits business traffic and becomes due before expiry
+  ---
+  duration_ms: 1.742309
+  type: 'test'
+  ...
+# Subtest: expired proof fails closed for new business traffic
+ok 44 - expired proof fails closed for new business traffic
+  ---
+  duration_ms: 0.215127
+  type: 'test'
+  ...
+# Subtest: tampering or cross-target lease reuse is blocked
+ok 45 - tampering or cross-target lease reuse is blocked
+  ---
+  duration_ms: 0.308194
+  type: 'test'
+  ...
+# Subtest: same-metadata re-proof preserves customer activation approval
+ok 46 - same-metadata re-proof preserves customer activation approval
+  ---
+  duration_ms: 0.349866
+  type: 'test'
+  ...
+# Subtest: provider metadata change requires review instead of silently preserving approval
+ok 47 - provider metadata change requires review instead of silently preserving approval
+  ---
+  duration_ms: 0.247284
+  type: 'test'
+  ...
+# Subtest: unsafe or future provider proof cannot mint a lease
+ok 48 - unsafe or future provider proof cannot mint a lease
+  ---
+  duration_ms: 0.460258
+  type: 'test'
+  ...
+# (node:33) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:33) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: scheduling is durable and exact duplicate scheduling stays single-copy across reopen
+ok 49 - scheduling is durable and exact duplicate scheduling stays single-copy across reopen
+  ---
+  duration_ms: 8.33422
+  type: 'test'
+  ...
+# Subtest: same task key with changed safe task body fails closed
+ok 50 - same task key with changed safe task body fails closed
+  ---
+  duration_ms: 0.791517
+  type: 'test'
+  ...
+# Subtest: credentials and arbitrary provider payloads are never persisted in the safe task record
+ok 51 - credentials and arbitrary provider payloads are never persisted in the safe task record
+  ---
+  duration_ms: 0.484124
+  type: 'test'
+  ...
+# Subtest: claim is exclusive until lease expiry, then safely reclaimable
+ok 52 - claim is exclusive until lease expiry, then safely reclaimable
+  ---
+  duration_ms: 1.611686
+  type: 'test'
+  ...
+# Subtest: successful completion is durable and the same scheduled task remains completed
+ok 53 - successful completion is durable and the same scheduled task remains completed
+  ---
+  duration_ms: 0.67116
+  type: 'test'
+  ...
+# Subtest: retry delay prevents hot-looping and preserves the same deterministic task
+ok 54 - retry delay prevents hot-looping and preserves the same deterministic task
+  ---
+  duration_ms: 0.738789
+  type: 'test'
+  ...
+# Subtest: retry budget fails closed instead of looping forever
+ok 55 - retry budget fails closed instead of looping forever
+  ---
+  duration_ms: 0.918414
+  type: 'test'
+  ...
+# Subtest: recovery tasks must remain metadata-only and require reconciliation
+ok 56 - recovery tasks must remain metadata-only and require reconciliation
+  ---
+  duration_ms: 0.701404
+  type: 'test'
+  ...
+# Subtest: tampered durable task is blocked before any worker can execute it
+ok 57 - tampered durable task is blocked before any worker can execute it
+  ---
+  duration_ms: 0.961878
+  type: 'test'
+  ...
+# (node:35) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: routine metadata re-proof preserves approval and can resume only through runtime gates
+ok 58 - routine metadata re-proof preserves approval and can resume only through runtime gates
+  ---
+  duration_ms: 3.50562
+  type: 'test'
+  ...
+# Subtest: recovery proof requires bounded control-plane reconciliation and never auto-resumes directly
+ok 59 - recovery proof requires bounded control-plane reconciliation and never auto-resumes directly
+  ---
+  duration_ms: 1.221211
+  type: 'test'
+  ...
+# Subtest: unsafe recovery reconciliation is rejected before durable success
+ok 60 - unsafe recovery reconciliation is rejected before durable success
+  ---
+  duration_ms: 0.879908
+  type: 'test'
+  ...
+# Subtest: worker records transient provider failure as retry without exposing response data
+ok 61 - worker records transient provider failure as retry without exposing response data
+  ---
+  duration_ms: 1.004612
+  type: 'test'
+  ...
+# Subtest: provider response time is evaluated at observation completion rather than claim start
+ok 62 - provider response time is evaluated at observation completion rather than claim start
+  ---
+  duration_ms: 0.777457
+  type: 'test'
+  ...
+# Subtest: worker never records success after its durable claim lease expired
+ok 63 - worker never records success after its durable claim lease expired
+  ---
+  duration_ms: 0.58323
+  type: 'test'
+  ...
+# (node:69) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: current proof and closed provider circuit require no maintenance
+ok 64 - current proof and closed provider circuit require no maintenance
+  ---
+  duration_ms: 1.901374
+  type: 'test'
+  ...
+# Subtest: proof due soon schedules a safe refresh without pausing business traffic
+ok 65 - proof due soon schedules a safe refresh without pausing business traffic
+  ---
+  duration_ms: 0.388533
+  type: 'test'
+  ...
+# Subtest: expired proof pauses business traffic and schedules only bounded re-proof
+ok 66 - expired proof pauses business traffic and schedules only bounded re-proof
+  ---
+  duration_ms: 0.205553
+  type: 'test'
+  ...
+# Subtest: open provider circuit waits for the recovery window instead of hammering the provider
+ok 67 - open provider circuit waits for the recovery window instead of hammering the provider
+  ---
+  duration_ms: 0.389745
+  type: 'test'
+  ...
+# Subtest: half-open provider state runs one recovery probe and can combine overdue identity refresh
+ok 68 - half-open provider state runs one recovery probe and can combine overdue identity refresh
+  ---
+  duration_ms: 0.231652
+  type: 'test'
+  ...
+# Subtest: maintenance task key is deterministic for the same exact provider state
+ok 69 - maintenance task key is deterministic for the same exact provider state
+  ---
+  duration_ms: 0.219364
+  type: 'test'
+  ...
+# Subtest: same-metadata maintenance preserves approval while changed metadata blocks for review
+ok 70 - same-metadata maintenance preserves approval while changed metadata blocks for review
+  ---
+  duration_ms: 0.543372
+  type: 'test'
+  ...
+# Subtest: invalid prior proof anchor cannot silently preserve customer approval
+ok 71 - invalid prior proof anchor cannot silently preserve customer approval
+  ---
+  duration_ms: 0.221387
+  type: 'test'
+  ...
+# Subtest: maintenance output never echoes arbitrary credentials or provider payloads
+ok 72 - maintenance output never echoes arbitrary credentials or provider payloads
+  ---
+  duration_ms: 0.351619
+  type: 'test'
+  ...
+# (node:70) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: SuccessFactors proof reads bounded service metadata only
+ok 73 - SuccessFactors proof reads bounded service metadata only
+  ---
+  duration_ms: 1.129475
+  type: 'test'
+  ...
+# Subtest: NetSuite proof binds account id to the account-specific REST domain
+ok 74 - NetSuite proof binds account id to the account-specific REST domain
+  ---
+  duration_ms: 0.484684
+  type: 'test'
+  ...
+# Subtest: Oracle NetSuite alias remains bound to the exact reviewed connection identity
+ok 75 - Oracle NetSuite alias remains bound to the exact reviewed connection identity
+  ---
+  duration_ms: 1.068186
+  type: 'test'
+  ...
+# Subtest: provider proof refuses redirect-prone or ambiguous target strings
+ok 76 - provider proof refuses redirect-prone or ambiguous target strings
+  ---
+  duration_ms: 0.199614
+  type: 'test'
+  ...
+# Subtest: provider proof refuses transport-valid authentication that is not approved for that provider
+ok 77 - provider proof refuses transport-valid authentication that is not approved for that provider
+  ---
+  duration_ms: 0.147006
+  type: 'test'
+  ...
+# Subtest: provider proof profile remains separate from mapping and WFM rules
+ok 78 - provider proof profile remains separate from mapping and WFM rules
+  ---
+  duration_ms: 0.164342
+  type: 'test'
+  ...
+# (node:81) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: SuccessFactors proof verifies pinned host, OData metadata and company identity without retaining the body
+ok 79 - SuccessFactors proof verifies pinned host, OData metadata and company identity without retaining the body
+  ---
+  duration_ms: 3.101543
+  type: 'test'
+  ...
+# Subtest: SuccessFactors proof fails closed when provider-reported company identity differs
+ok 80 - SuccessFactors proof fails closed when provider-reported company identity differs
+  ---
+  duration_ms: 0.885666
+  type: 'test'
+  ...
+# Subtest: NetSuite proof verifies exact account-specific host and bounded OpenAPI metadata
+ok 81 - NetSuite proof verifies exact account-specific host and bounded OpenAPI metadata
+  ---
+  duration_ms: 0.543672
+  type: 'test'
+  ...
+# Subtest: verified NetSuite response converts directly into review-bound activation target proof
+ok 82 - verified NetSuite response converts directly into review-bound activation target proof
+  ---
+  duration_ms: 0.798788
+  type: 'test'
+  ...
+# Subtest: proof rejects host drift, redirects and oversized responses
+ok 83 - proof rejects host drift, redirects and oversized responses
+  ---
+  duration_ms: 0.461871
+  type: 'test'
+  ...
+# (node:82) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: approved closed-circuit observation is ready only after current provider proof, durable staging and idempotent apply intent
+ok 84 - approved closed-circuit observation is ready only after current provider proof, durable staging and idempotent apply intent
+  ---
+  duration_ms: 5.288874
+  type: 'test'
+  ...
+# Subtest: missing or expired provider proof pauses business traffic for safe metadata re-proof only
+ok 85 - missing or expired provider proof pauses business traffic for safe metadata re-proof only
+  ---
+  duration_ms: 0.534748
+  type: 'test'
+  ...
+# Subtest: proof renewal window does not interrupt business traffic before expiry
+ok 86 - proof renewal window does not interrupt business traffic before expiry
+  ---
+  duration_ms: 0.513808
+  type: 'test'
+  ...
+# Subtest: missing or tampered durable stage proof blocks apply
+ok 87 - missing or tampered durable stage proof blocks apply
+  ---
+  duration_ms: 0.849983
+  type: 'test'
+  ...
+# Subtest: durable stage without apply intent cannot enter WFM business mutation
+ok 88 - durable stage without apply intent cannot enter WFM business mutation
+  ---
+  duration_ms: 0.580476
+  type: 'test'
+  ...
+# Subtest: already-applied durable outcome advances authority without repeating the WFM mutation
+ok 89 - already-applied durable outcome advances authority without repeating the WFM mutation
+  ---
+  duration_ms: 0.857825
+  type: 'test'
+  ...
+# Subtest: ambiguous prior WFM apply outcome must reconcile before any retry
+ok 90 - ambiguous prior WFM apply outcome must reconcile before any retry
+  ---
+  duration_ms: 0.553186
+  type: 'test'
+  ...
+# Subtest: changed current configuration invalidates historic activation before data admission
+ok 91 - changed current configuration invalidates historic activation before data admission
+  ---
+  duration_ms: 0.360512
+  type: 'test'
+  ...
+# Subtest: open provider circuit pauses business ingestion and half-open permits safe probes only
+ok 92 - open provider circuit pauses business ingestion and half-open permits safe probes only
+  ---
+  duration_ms: 0.776395
+  type: 'test'
+  ...
+# Subtest: duplicate, stale and generation-reset observations preserve authority decisions
+ok 93 - duplicate, stale and generation-reset observations preserve authority decisions
+  ---
+  duration_ms: 1.022048
+  type: 'test'
+  ...
+# Subtest: future-dated observation cannot mint a durable apply receipt
+ok 94 - future-dated observation cannot mint a durable apply receipt
+  ---
+  duration_ms: 0.455322
+  type: 'test'
+  ...
+# (node:83) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: newer source evidence advances the deterministic authority fence
+ok 95 - newer source evidence advances the deterministic authority fence
+  ---
+  duration_ms: 2.335534
+  type: 'test'
+  ...
+# Subtest: an exact replay is a no-op rather than a second apply
+ok 96 - an exact replay is a no-op rather than a second apply
+  ---
+  duration_ms: 0.224871
+  type: 'test'
+  ...
+# Subtest: late source evidence is quarantined instead of overwriting newer truth
+ok 97 - late source evidence is quarantined instead of overwriting newer truth
+  ---
+  duration_ms: 0.188949
+  type: 'test'
+  ...
+# Subtest: different evidence at the same source position fails closed
+ok 98 - different evidence at the same source position fails closed
+  ---
+  duration_ms: 0.27152
+  type: 'test'
+  ...
+# Subtest: source generation changes require reconciliation before apply
+ok 99 - source generation changes require reconciliation before apply
+  ---
+  duration_ms: 0.227155
+  type: 'test'
+  ...
+# Subtest: wrong authority, stale mapping or changed review cannot enter the fence
+ok 100 - wrong authority, stale mapping or changed review cannot enter the fence
+  ---
+  duration_ms: 0.408162
+  type: 'test'
+  ...
+# Subtest: tampering with an accepted fence is detected before later data can apply
+ok 101 - tampering with an accepted fence is detected before later data can apply
+  ---
+  duration_ms: 0.26439
+  type: 'test'
+  ...
+# Subtest: generation rebase requires exact reconciliation and explicit approval
+ok 102 - generation rebase requires exact reconciliation and explicit approval
+  ---
+  duration_ms: 0.600766
+  type: 'test'
+  ...
+# (node:89) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: queue acknowledgement is blocked until the exact observation is durably staged
+ok 103 - queue acknowledgement is blocked until the exact observation is durably staged
+  ---
+  duration_ms: 1.779284
+  type: 'test'
+  ...
+# Subtest: tampered durable stage proof cannot acknowledge the source
+ok 104 - tampered durable stage proof cannot acknowledge the source
+  ---
+  duration_ms: 0.344087
+  type: 'test'
+  ...
+# Subtest: secure file cannot be marked processed without complete matching source and staged artifacts
+ok 105 - secure file cannot be marked processed without complete matching source and staged artifacts
+  ---
+  duration_ms: 0.487378
+  type: 'test'
+  ...
+# Subtest: polling transports do not invent an external acknowledgement step
+ok 106 - polling transports do not invent an external acknowledgement step
+  ---
+  duration_ms: 0.158854
+  type: 'test'
+  ...
+# (node:116) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: customer setup is metadata driven and never requests a raw secret value
+ok 107 - customer setup is metadata driven and never requests a raw secret value
+  ---
+  duration_ms: 0.751979
+  type: 'test'
+  ...
+# Subtest: unsafe or ambiguous failures fail closed while transient provider failures retry
+ok 108 - unsafe or ambiguous failures fail closed while transient provider failures retry
+  ---
+  duration_ms: 0.923953
+  type: 'test'
+  ...
+# Subtest: duplicate-sensitive transports require an operation key before retry
+ok 109 - duplicate-sensitive transports require an operation key before retry
+  ---
+  duration_ms: 0.277269
+  type: 'test'
+  ...
+# Subtest: retry schedule is deterministic, bounded and honours provider retry-after
+ok 110 - retry schedule is deterministic, bounded and honours provider retry-after
+  ---
+  duration_ms: 0.789494
+  type: 'test'
+  ...
+# Subtest: exhausted retries quarantine instead of looping forever
+ok 111 - exhausted retries quarantine instead of looping forever
+  ---
+  duration_ms: 0.138785
+  type: 'test'
+  ...
+# Subtest: reconciliation checkpoint is integrity bound and proves canonical source/staged equality
+ok 112 - reconciliation checkpoint is integrity bound and proves canonical source/staged equality
+  ---
+  duration_ms: 0.385318
+  type: 'test'
+  ...
+# Subtest: recovery completion is bound to reviewed connection, same operation and verified reconciliation
+ok 113 - recovery completion is bound to reviewed connection, same operation and verified reconciliation
+  ---
+  duration_ms: 0.496932
+  type: 'test'
+  ...
+1..113
+# tests 113
+# suites 0
+# pass 113
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 214.287484

@@ -1,0 +1,1314 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: runtime reconciliation-only clock offset 0ms has independently expected trust state
+ok 1 - runtime reconciliation-only clock offset 0ms has independently expected trust state
+  ---
+  duration_ms: 5.136976
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 0ms has independently expected trust state
+ok 2 - runtime both clock offset 0ms has independently expected trust state
+  ---
+  duration_ms: 0.229077
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 4999ms has independently expected trust state
+ok 3 - runtime reconciliation-only clock offset 4999ms has independently expected trust state
+  ---
+  duration_ms: 0.277729
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 4999ms has independently expected trust state
+ok 4 - runtime both clock offset 4999ms has independently expected trust state
+  ---
+  duration_ms: 0.205052
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 5000ms has independently expected trust state
+ok 5 - runtime reconciliation-only clock offset 5000ms has independently expected trust state
+  ---
+  duration_ms: 6.967288
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 5000ms has independently expected trust state
+ok 6 - runtime both clock offset 5000ms has independently expected trust state
+  ---
+  duration_ms: 0.141398
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 5001ms has independently expected trust state
+ok 7 - runtime reconciliation-only clock offset 5001ms has independently expected trust state
+  ---
+  duration_ms: 0.412919
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 5001ms has independently expected trust state
+ok 8 - runtime both clock offset 5001ms has independently expected trust state
+  ---
+  duration_ms: 0.206484
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 10000ms has independently expected trust state
+ok 9 - runtime reconciliation-only clock offset 10000ms has independently expected trust state
+  ---
+  duration_ms: 0.500108
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 10000ms has independently expected trust state
+ok 10 - runtime both clock offset 10000ms has independently expected trust state
+  ---
+  duration_ms: 0.57605
+  type: 'test'
+  ...
+# Subtest: runtime reconciliation-only clock offset 86400000ms has independently expected trust state
+ok 11 - runtime reconciliation-only clock offset 86400000ms has independently expected trust state
+  ---
+  duration_ms: 0.252402
+  type: 'test'
+  ...
+# Subtest: runtime both clock offset 86400000ms has independently expected trust state
+ok 12 - runtime both clock offset 86400000ms has independently expected trust state
+  ---
+  duration_ms: 0.116091
+  type: 'test'
+  ...
+# Subtest: future sync alone is rejected independently of the separate unreconciled-sync blocker
+ok 13 - future sync alone is rejected independently of the separate unreconciled-sync blocker
+  ---
+  duration_ms: 0.217631
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass future reconciliation
+ok 14 - current proof / "IDLE" cannot bypass future reconciliation
+  ---
+  duration_ms: 7.343098
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass future sync and reconciliation
+ok 15 - current proof / "IDLE" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.857514
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass authority conflict
+ok 16 - current proof / "IDLE" cannot bypass authority conflict
+  ---
+  duration_ms: 3.384771
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass review digest drift
+ok 17 - current proof / "IDLE" cannot bypass review digest drift
+  ---
+  duration_ms: 0.496292
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass unreconciled sync
+ok 18 - current proof / "IDLE" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.702867
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass missing sync evidence
+ok 19 - current proof / "IDLE" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.568929
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass malformed reconciliation
+ok 20 - current proof / "IDLE" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 7.868634
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass recovery exhausted
+ok 21 - current proof / "IDLE" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.649398
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass quarantined payload
+ok 22 - current proof / "IDLE" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.832067
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" cannot bypass missing measured latency
+ok 23 - current proof / "IDLE" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.590611
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass future reconciliation
+ok 24 - current proof / "SUCCESS" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.513497
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass future sync and reconciliation
+ok 25 - current proof / "SUCCESS" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.470825
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass authority conflict
+ok 26 - current proof / "SUCCESS" cannot bypass authority conflict
+  ---
+  duration_ms: 0.383866
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass review digest drift
+ok 27 - current proof / "SUCCESS" cannot bypass review digest drift
+  ---
+  duration_ms: 0.399499
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass unreconciled sync
+ok 28 - current proof / "SUCCESS" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.367311
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass missing sync evidence
+ok 29 - current proof / "SUCCESS" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.370546
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass malformed reconciliation
+ok 30 - current proof / "SUCCESS" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.356336
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass recovery exhausted
+ok 31 - current proof / "SUCCESS" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.323497
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass quarantined payload
+ok 32 - current proof / "SUCCESS" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.31873
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" cannot bypass missing measured latency
+ok 33 - current proof / "SUCCESS" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.322275
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass future reconciliation
+ok 34 - current proof / "SUCCEEDED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.327453
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+ok 35 - current proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 4.51635
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass authority conflict
+ok 36 - current proof / "SUCCEEDED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.451777
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass review digest drift
+ok 37 - current proof / "SUCCEEDED" cannot bypass review digest drift
+  ---
+  duration_ms: 0.361092
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass unreconciled sync
+ok 38 - current proof / "SUCCEEDED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.44093
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass missing sync evidence
+ok 39 - current proof / "SUCCEEDED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.317458
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass malformed reconciliation
+ok 40 - current proof / "SUCCEEDED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.35923
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass recovery exhausted
+ok 41 - current proof / "SUCCEEDED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 6.048179
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass quarantined payload
+ok 42 - current proof / "SUCCEEDED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.342946
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" cannot bypass missing measured latency
+ok 43 - current proof / "SUCCEEDED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.430975
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+ok 44 - current proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.311169
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+ok 45 - current proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.30544
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+ok 46 - current proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.323917
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+ok 47 - current proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+  ---
+  duration_ms: 2.832127
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+ok 48 - current proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.384867
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+ok 49 - current proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.439198
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+ok 50 - current proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.349185
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+ok 51 - current proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.317678
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+ok 52 - current proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.344599
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+ok 53 - current proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.294044
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+ok 54 - current proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.282577
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+ok 55 - current proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.323838
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+ok 56 - current proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+  ---
+  duration_ms: 2.694704
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+ok 57 - current proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+  ---
+  duration_ms: 0.36651
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+ok 58 - current proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.335745
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+ok 59 - current proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.310779
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+ok 60 - current proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.435042
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+ok 61 - current proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.299632
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+ok 62 - current proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.322095
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+ok 63 - current proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.281966
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass future reconciliation
+ok 64 - current proof / " claim_expired " cannot bypass future reconciliation
+  ---
+  duration_ms: 2.434981
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass future sync and reconciliation
+ok 65 - current proof / " claim_expired " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.462482
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass authority conflict
+ok 66 - current proof / " claim_expired " cannot bypass authority conflict
+  ---
+  duration_ms: 0.356826
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass review digest drift
+ok 67 - current proof / " claim_expired " cannot bypass review digest drift
+  ---
+  duration_ms: 0.390206
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass unreconciled sync
+ok 68 - current proof / " claim_expired " cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.357668
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass missing sync evidence
+ok 69 - current proof / " claim_expired " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.328424
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass malformed reconciliation
+ok 70 - current proof / " claim_expired " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 1.210906
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass recovery exhausted
+ok 71 - current proof / " claim_expired " cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.333862
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass quarantined payload
+ok 72 - current proof / " claim_expired " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.32523
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " cannot bypass missing measured latency
+ok 73 - current proof / " claim_expired " cannot bypass missing measured latency
+  ---
+  duration_ms: 0.459257
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass future reconciliation
+ok 74 - current proof / " completion_uncertain " cannot bypass future reconciliation
+  ---
+  duration_ms: 0.319161
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass future sync and reconciliation
+ok 75 - current proof / " completion_uncertain " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.351428
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass authority conflict
+ok 76 - current proof / " completion_uncertain " cannot bypass authority conflict
+  ---
+  duration_ms: 0.494589
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass review digest drift
+ok 77 - current proof / " completion_uncertain " cannot bypass review digest drift
+  ---
+  duration_ms: 0.378327
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass unreconciled sync
+ok 78 - current proof / " completion_uncertain " cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.32517
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass missing sync evidence
+ok 79 - current proof / " completion_uncertain " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.335785
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass malformed reconciliation
+ok 80 - current proof / " completion_uncertain " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.381933
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass recovery exhausted
+ok 81 - current proof / " completion_uncertain " cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.341263
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass quarantined payload
+ok 82 - current proof / " completion_uncertain " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.326882
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " cannot bypass missing measured latency
+ok 83 - current proof / " completion_uncertain " cannot bypass missing measured latency
+  ---
+  duration_ms: 3.43126
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass future reconciliation
+ok 84 - due proof / "IDLE" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.581238
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass future sync and reconciliation
+ok 85 - due proof / "IDLE" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.448422
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass authority conflict
+ok 86 - due proof / "IDLE" cannot bypass authority conflict
+  ---
+  duration_ms: 0.392499
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass review digest drift
+ok 87 - due proof / "IDLE" cannot bypass review digest drift
+  ---
+  duration_ms: 0.435162
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass unreconciled sync
+ok 88 - due proof / "IDLE" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.38676
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass missing sync evidence
+ok 89 - due proof / "IDLE" cannot bypass missing sync evidence
+  ---
+  duration_ms: 2.547887
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass malformed reconciliation
+ok 90 - due proof / "IDLE" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.37962
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass recovery exhausted
+ok 91 - due proof / "IDLE" cannot bypass recovery exhausted
+  ---
+  duration_ms: 1.393395
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass quarantined payload
+ok 92 - due proof / "IDLE" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.409314
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" cannot bypass missing measured latency
+ok 93 - due proof / "IDLE" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.397396
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass future reconciliation
+ok 94 - due proof / "SUCCESS" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.333021
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass future sync and reconciliation
+ok 95 - due proof / "SUCCESS" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.324419
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass authority conflict
+ok 96 - due proof / "SUCCESS" cannot bypass authority conflict
+  ---
+  duration_ms: 4.503241
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass review digest drift
+ok 97 - due proof / "SUCCESS" cannot bypass review digest drift
+  ---
+  duration_ms: 0.453249
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass unreconciled sync
+ok 98 - due proof / "SUCCESS" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.386379
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass missing sync evidence
+ok 99 - due proof / "SUCCESS" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.342195
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass malformed reconciliation
+ok 100 - due proof / "SUCCESS" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.393851
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass recovery exhausted
+ok 101 - due proof / "SUCCESS" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.342555
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass quarantined payload
+ok 102 - due proof / "SUCCESS" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.337228
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" cannot bypass missing measured latency
+ok 103 - due proof / "SUCCESS" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.366991
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass future reconciliation
+ok 104 - due proof / "SUCCEEDED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.323577
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+ok 105 - due proof / "SUCCEEDED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.306181
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass authority conflict
+ok 106 - due proof / "SUCCEEDED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.45429
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass review digest drift
+ok 107 - due proof / "SUCCEEDED" cannot bypass review digest drift
+  ---
+  duration_ms: 0.312661
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass unreconciled sync
+ok 108 - due proof / "SUCCEEDED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.343326
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass missing sync evidence
+ok 109 - due proof / "SUCCEEDED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.28472
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass malformed reconciliation
+ok 110 - due proof / "SUCCEEDED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.293313
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass recovery exhausted
+ok 111 - due proof / "SUCCEEDED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.345459
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass quarantined payload
+ok 112 - due proof / "SUCCEEDED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.301495
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" cannot bypass missing measured latency
+ok 113 - due proof / "SUCCEEDED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.313132
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+ok 114 - due proof / "CLAIM_EXPIRED" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.362915
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+ok 115 - due proof / "CLAIM_EXPIRED" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.33909
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+ok 116 - due proof / "CLAIM_EXPIRED" cannot bypass authority conflict
+  ---
+  duration_ms: 0.329386
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+ok 117 - due proof / "CLAIM_EXPIRED" cannot bypass review digest drift
+  ---
+  duration_ms: 0.415292
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+ok 118 - due proof / "CLAIM_EXPIRED" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.313993
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+ok 119 - due proof / "CLAIM_EXPIRED" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.3937
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+ok 120 - due proof / "CLAIM_EXPIRED" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.374032
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+ok 121 - due proof / "CLAIM_EXPIRED" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.438066
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+ok 122 - due proof / "CLAIM_EXPIRED" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.396675
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+ok 123 - due proof / "CLAIM_EXPIRED" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.406289
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+ok 124 - due proof / "COMPLETION_UNCERTAIN" cannot bypass future reconciliation
+  ---
+  duration_ms: 0.400591
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+ok 125 - due proof / "COMPLETION_UNCERTAIN" cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.351718
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+ok 126 - due proof / "COMPLETION_UNCERTAIN" cannot bypass authority conflict
+  ---
+  duration_ms: 0.423865
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+ok 127 - due proof / "COMPLETION_UNCERTAIN" cannot bypass review digest drift
+  ---
+  duration_ms: 0.367381
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+ok 128 - due proof / "COMPLETION_UNCERTAIN" cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.361323
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+ok 129 - due proof / "COMPLETION_UNCERTAIN" cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.366821
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+ok 130 - due proof / "COMPLETION_UNCERTAIN" cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.365939
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+ok 131 - due proof / "COMPLETION_UNCERTAIN" cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.539255
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+ok 132 - due proof / "COMPLETION_UNCERTAIN" cannot bypass quarantined payload
+  ---
+  duration_ms: 0.35243
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+ok 133 - due proof / "COMPLETION_UNCERTAIN" cannot bypass missing measured latency
+  ---
+  duration_ms: 0.386981
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass future reconciliation
+ok 134 - due proof / " claim_expired " cannot bypass future reconciliation
+  ---
+  duration_ms: 0.356836
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass future sync and reconciliation
+ok 135 - due proof / " claim_expired " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.358278
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass authority conflict
+ok 136 - due proof / " claim_expired " cannot bypass authority conflict
+  ---
+  duration_ms: 0.431857
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass review digest drift
+ok 137 - due proof / " claim_expired " cannot bypass review digest drift
+  ---
+  duration_ms: 0.342606
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass unreconciled sync
+ok 138 - due proof / " claim_expired " cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.389995
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass missing sync evidence
+ok 139 - due proof / " claim_expired " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.346341
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass malformed reconciliation
+ok 140 - due proof / " claim_expired " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 1.258616
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass recovery exhausted
+ok 141 - due proof / " claim_expired " cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.371418
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass quarantined payload
+ok 142 - due proof / " claim_expired " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.322375
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " cannot bypass missing measured latency
+ok 143 - due proof / " claim_expired " cannot bypass missing measured latency
+  ---
+  duration_ms: 0.329947
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass future reconciliation
+ok 144 - due proof / " completion_uncertain " cannot bypass future reconciliation
+  ---
+  duration_ms: 0.387731
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass future sync and reconciliation
+ok 145 - due proof / " completion_uncertain " cannot bypass future sync and reconciliation
+  ---
+  duration_ms: 0.318019
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass authority conflict
+ok 146 - due proof / " completion_uncertain " cannot bypass authority conflict
+  ---
+  duration_ms: 0.382083
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass review digest drift
+ok 147 - due proof / " completion_uncertain " cannot bypass review digest drift
+  ---
+  duration_ms: 0.351188
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass unreconciled sync
+ok 148 - due proof / " completion_uncertain " cannot bypass unreconciled sync
+  ---
+  duration_ms: 0.303708
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass missing sync evidence
+ok 149 - due proof / " completion_uncertain " cannot bypass missing sync evidence
+  ---
+  duration_ms: 0.344668
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass malformed reconciliation
+ok 150 - due proof / " completion_uncertain " cannot bypass malformed reconciliation
+  ---
+  duration_ms: 0.363375
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass recovery exhausted
+ok 151 - due proof / " completion_uncertain " cannot bypass recovery exhausted
+  ---
+  duration_ms: 0.395102
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass quarantined payload
+ok 152 - due proof / " completion_uncertain " cannot bypass quarantined payload
+  ---
+  duration_ms: 0.31214
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " cannot bypass missing measured latency
+ok 153 - due proof / " completion_uncertain " cannot bypass missing measured latency
+  ---
+  duration_ms: 0.315085
+  type: 'test'
+  ...
+# Subtest: current proof / "IDLE" preserves permitted sync at the +5000ms boundary
+ok 154 - current proof / "IDLE" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.502
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+ok 155 - current proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.376225
+  type: 'test'
+  ...
+# Subtest: current proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+ok 156 - current proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.311259
+  type: 'test'
+  ...
+# Subtest: current proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+ok 157 - current proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.333101
+  type: 'test'
+  ...
+# Subtest: current proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+ok 158 - current proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.315736
+  type: 'test'
+  ...
+# Subtest: current proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+ok 159 - current proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.333182
+  type: 'test'
+  ...
+# Subtest: current proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+ok 160 - current proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.316557
+  type: 'test'
+  ...
+# Subtest: due proof / "IDLE" preserves permitted sync at the +5000ms boundary
+ok 161 - due proof / "IDLE" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.315225
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+ok 162 - due proof / "SUCCESS" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.377968
+  type: 'test'
+  ...
+# Subtest: due proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+ok 163 - due proof / "SUCCEEDED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.314714
+  type: 'test'
+  ...
+# Subtest: due proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+ok 164 - due proof / "CLAIM_EXPIRED" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.326992
+  type: 'test'
+  ...
+# Subtest: due proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+ok 165 - due proof / "COMPLETION_UNCERTAIN" preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.394171
+  type: 'test'
+  ...
+# Subtest: due proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+ok 166 - due proof / " claim_expired " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.315265
+  type: 'test'
+  ...
+# Subtest: due proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+ok 167 - due proof / " completion_uncertain " preserves permitted sync at the +5000ms boundary
+  ---
+  duration_ms: 0.324829
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock NaN
+ok 168 - runtime explicitly rejects invalid clock NaN
+  ---
+  duration_ms: 0.299842
+  type: 'test'
+  ...
+# Subtest: summary invalid clock NaN cannot continue with IDLE
+ok 169 - summary invalid clock NaN cannot continue with IDLE
+  ---
+  duration_ms: 0.334333
+  type: 'test'
+  ...
+# Subtest: summary invalid clock NaN cannot continue with CLAIM_EXPIRED
+ok 170 - summary invalid clock NaN cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.299822
+  type: 'test'
+  ...
+# Subtest: summary invalid clock NaN cannot continue with COMPLETION_UNCERTAIN
+ok 171 - summary invalid clock NaN cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.308034
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock positive infinity
+ok 172 - runtime explicitly rejects invalid clock positive infinity
+  ---
+  duration_ms: 0.156511
+  type: 'test'
+  ...
+# Subtest: summary invalid clock positive infinity cannot continue with IDLE
+ok 173 - summary invalid clock positive infinity cannot continue with IDLE
+  ---
+  duration_ms: 0.334783
+  type: 'test'
+  ...
+# Subtest: summary invalid clock positive infinity cannot continue with CLAIM_EXPIRED
+ok 174 - summary invalid clock positive infinity cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.371177
+  type: 'test'
+  ...
+# Subtest: summary invalid clock positive infinity cannot continue with COMPLETION_UNCERTAIN
+ok 175 - summary invalid clock positive infinity cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.317268
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock negative infinity
+ok 176 - runtime explicitly rejects invalid clock negative infinity
+  ---
+  duration_ms: 0.083323
+  type: 'test'
+  ...
+# Subtest: summary invalid clock negative infinity cannot continue with IDLE
+ok 177 - summary invalid clock negative infinity cannot continue with IDLE
+  ---
+  duration_ms: 0.365208
+  type: 'test'
+  ...
+# Subtest: summary invalid clock negative infinity cannot continue with CLAIM_EXPIRED
+ok 178 - summary invalid clock negative infinity cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.86771
+  type: 'test'
+  ...
+# Subtest: summary invalid clock negative infinity cannot continue with COMPLETION_UNCERTAIN
+ok 179 - summary invalid clock negative infinity cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.33876
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock null
+ok 180 - runtime explicitly rejects invalid clock null
+  ---
+  duration_ms: 0.085146
+  type: 'test'
+  ...
+# Subtest: summary invalid clock null cannot continue with IDLE
+ok 181 - summary invalid clock null cannot continue with IDLE
+  ---
+  duration_ms: 0.356296
+  type: 'test'
+  ...
+# Subtest: summary invalid clock null cannot continue with CLAIM_EXPIRED
+ok 182 - summary invalid clock null cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.33869
+  type: 'test'
+  ...
+# Subtest: summary invalid clock null cannot continue with COMPLETION_UNCERTAIN
+ok 183 - summary invalid clock null cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.322746
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock empty string
+ok 184 - runtime explicitly rejects invalid clock empty string
+  ---
+  duration_ms: 0.082422
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty string cannot continue with IDLE
+ok 185 - summary invalid clock empty string cannot continue with IDLE
+  ---
+  duration_ms: 0.353932
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty string cannot continue with CLAIM_EXPIRED
+ok 186 - summary invalid clock empty string cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.283928
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty string cannot continue with COMPLETION_UNCERTAIN
+ok 187 - summary invalid clock empty string cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.266513
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock numeric string
+ok 188 - runtime explicitly rejects invalid clock numeric string
+  ---
+  duration_ms: 0.070494
+  type: 'test'
+  ...
+# Subtest: summary invalid clock numeric string cannot continue with IDLE
+ok 189 - summary invalid clock numeric string cannot continue with IDLE
+  ---
+  duration_ms: 0.363686
+  type: 'test'
+  ...
+# Subtest: summary invalid clock numeric string cannot continue with CLAIM_EXPIRED
+ok 190 - summary invalid clock numeric string cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.270639
+  type: 'test'
+  ...
+# Subtest: summary invalid clock numeric string cannot continue with COMPLETION_UNCERTAIN
+ok 191 - summary invalid clock numeric string cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.298069
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock ISO string
+ok 192 - runtime explicitly rejects invalid clock ISO string
+  ---
+  duration_ms: 0.117593
+  type: 'test'
+  ...
+# Subtest: summary invalid clock ISO string cannot continue with IDLE
+ok 193 - summary invalid clock ISO string cannot continue with IDLE
+  ---
+  duration_ms: 0.308084
+  type: 'test'
+  ...
+# Subtest: summary invalid clock ISO string cannot continue with CLAIM_EXPIRED
+ok 194 - summary invalid clock ISO string cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 1.22091
+  type: 'test'
+  ...
+# Subtest: summary invalid clock ISO string cannot continue with COMPLETION_UNCERTAIN
+ok 195 - summary invalid clock ISO string cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.362585
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock boolean
+ok 196 - runtime explicitly rejects invalid clock boolean
+  ---
+  duration_ms: 0.09503
+  type: 'test'
+  ...
+# Subtest: summary invalid clock boolean cannot continue with IDLE
+ok 197 - summary invalid clock boolean cannot continue with IDLE
+  ---
+  duration_ms: 0.329035
+  type: 'test'
+  ...
+# Subtest: summary invalid clock boolean cannot continue with CLAIM_EXPIRED
+ok 198 - summary invalid clock boolean cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.3119
+  type: 'test'
+  ...
+# Subtest: summary invalid clock boolean cannot continue with COMPLETION_UNCERTAIN
+ok 199 - summary invalid clock boolean cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.39354
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock empty object
+ok 200 - runtime explicitly rejects invalid clock empty object
+  ---
+  duration_ms: 0.113417
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty object cannot continue with IDLE
+ok 201 - summary invalid clock empty object cannot continue with IDLE
+  ---
+  duration_ms: 0.301534
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty object cannot continue with CLAIM_EXPIRED
+ok 202 - summary invalid clock empty object cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.313823
+  type: 'test'
+  ...
+# Subtest: summary invalid clock empty object cannot continue with COMPLETION_UNCERTAIN
+ok 203 - summary invalid clock empty object cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.314183
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock array
+ok 204 - runtime explicitly rejects invalid clock array
+  ---
+  duration_ms: 0.120298
+  type: 'test'
+  ...
+# Subtest: summary invalid clock array cannot continue with IDLE
+ok 205 - summary invalid clock array cannot continue with IDLE
+  ---
+  duration_ms: 0.337247
+  type: 'test'
+  ...
+# Subtest: summary invalid clock array cannot continue with CLAIM_EXPIRED
+ok 206 - summary invalid clock array cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.35921
+  type: 'test'
+  ...
+# Subtest: summary invalid clock array cannot continue with COMPLETION_UNCERTAIN
+ok 207 - summary invalid clock array cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.327473
+  type: 'test'
+  ...
+# Subtest: runtime explicitly rejects invalid clock Date object
+ok 208 - runtime explicitly rejects invalid clock Date object
+  ---
+  duration_ms: 0.121289
+  type: 'test'
+  ...
+# Subtest: summary invalid clock Date object cannot continue with IDLE
+ok 209 - summary invalid clock Date object cannot continue with IDLE
+  ---
+  duration_ms: 0.366049
+  type: 'test'
+  ...
+# Subtest: summary invalid clock Date object cannot continue with CLAIM_EXPIRED
+ok 210 - summary invalid clock Date object cannot continue with CLAIM_EXPIRED
+  ---
+  duration_ms: 0.319782
+  type: 'test'
+  ...
+# Subtest: summary invalid clock Date object cannot continue with COMPLETION_UNCERTAIN
+ok 211 - summary invalid clock Date object cannot continue with COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.311689
+  type: 'test'
+  ...
+# Subtest: expired proof / CLAIM_EXPIRED remains paused when runtime also has a blocker
+ok 212 - expired proof / CLAIM_EXPIRED remains paused when runtime also has a blocker
+  ---
+  duration_ms: 0.442933
+  type: 'test'
+  ...
+# Subtest: setup approval remains mandatory for CLAIM_EXPIRED
+ok 213 - setup approval remains mandatory for CLAIM_EXPIRED
+  ---
+  duration_ms: 0.369646
+  type: 'test'
+  ...
+# Subtest: invalid circuit remains blocked for CLAIM_EXPIRED
+ok 214 - invalid circuit remains blocked for CLAIM_EXPIRED
+  ---
+  duration_ms: 0.394642
+  type: 'test'
+  ...
+# Subtest: expired proof / COMPLETION_UNCERTAIN remains paused when runtime also has a blocker
+ok 215 - expired proof / COMPLETION_UNCERTAIN remains paused when runtime also has a blocker
+  ---
+  duration_ms: 0.299682
+  type: 'test'
+  ...
+# Subtest: setup approval remains mandatory for COMPLETION_UNCERTAIN
+ok 216 - setup approval remains mandatory for COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.252732
+  type: 'test'
+  ...
+# Subtest: invalid circuit remains blocked for COMPLETION_UNCERTAIN
+ok 217 - invalid circuit remains blocked for COMPLETION_UNCERTAIN
+  ---
+  duration_ms: 0.283247
+  type: 'test'
+  ...
+1..217
+# tests 217
+# suites 0
+# pass 217
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 370.54352
