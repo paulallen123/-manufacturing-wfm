@@ -71,7 +71,7 @@ export class AdaptiveIntelligenceEngine {
       observed:receipt.result,
       evidenceRef:receipt.evidenceRef,
       releaseBlocking:true,
-      createdAt:nowIso()
+      createdAt:receipt.createdAt
     };
     this.#evals.push(evaluation);
     return evaluation;
@@ -93,7 +93,7 @@ export class AdaptiveIntelligenceEngine {
       verifiedWinCount:wins.length,
       averageImprovement:avgDelta,
       evidenceRefs:wins.map(x=>x.evidenceRef).filter(Boolean),
-      createdAt:nowIso()
+      createdAt:receipt.createdAt
     };
     this.#skills.push(candidate);
     return candidate;
