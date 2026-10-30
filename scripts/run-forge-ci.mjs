@@ -34,6 +34,7 @@ const checks = [
     'operations/runtime/demand-decision-service.test.cjs',
     'operations/runtime/decision-outcome-proof.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs',
+    'scripts/validate-staffology-canonical-assembly.test.mjs',
     'policy/runtime/country-policy-pack-registry.test.cjs',
     'policy/runtime/jurisdiction-policy-graph.test.cjs',
     'policy/runtime/global-site-policy-preflight.test.cjs',

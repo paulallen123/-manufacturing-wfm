@@ -1,0 +1,119 @@
+{
+  "lane": "V086",
+  "scope": "Staffology canonical assembly source-validator drift",
+  "basePR": 545,
+  "baseCommit": "2d0f4e41e3b0463386b2887f39afa064068f9166",
+  "baseTree": "b6e21c4afa9880c651fe0898235cd4695ce4bfca",
+  "prior540VerifiedBlobCount": 1694,
+  "545DeltaVerifiedBlobCount": 30,
+  "canonicalCommit": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "existingValidatorOwnerPR": 292,
+  "existingValidatorOwnerHead": "9e6565decaf439fc44f72719c1b473a206684d2d",
+  "reviewedOwnerHandoff": "https://github.com/paulallen123/-manufacturing-wfm/pull/292#issuecomment-6512267605",
+  "validatorPreimageBlob": "7256a48528618262ad424fbae4e481e209b6d1c7",
+  "validatorCandidateSha256": "0d666cf2496a9e382308e779a0bccce18fa38f0b98ff3a6f15cb2159dc9895de",
+  "node": "v22.23.2",
+  "baselineOn545": {
+    "validatorExit": 1,
+    "reason": "Staffology status is missing from the existing integration report",
+    "rawLocalLogSha256": "411c085ae2e924d73e14100843b3c55055a6f3c8abc5d3887cc1362e0e880d06",
+    "rawLocalLogPublished": false,
+    "regressionExit": 1,
+    "pass": 6,
+    "fail": 2,
+    "skip": 0
+  },
+  "candidate": {
+    "regressionExit": 0,
+    "regressionPass": 8,
+    "regressionFail": 0,
+    "regressionSkip": 0,
+    "fullValidatorExit": 0,
+    "fullValidatorMarker": "STAFFOLOGY_CANONICAL_ASSEMBLY=PASS",
+    "fullForgeExit": 0,
+    "fullForgeGroups": [
+      5,
+      175,
+      127
+    ],
+    "fullForgePass": 307,
+    "fullForgeSkip": 0,
+    "dockerSourceSelectionExit": 0,
+    "dockerSourceSelectionPass": 116,
+    "dockerSourceSelectionSkip": 0,
+    "dockerImageBuildPerformed": false
+  },
+  "selectorPreservation": {
+    "existing545ForgeBytesRecoveredByDeletingSingleSelector": true,
+    "existing545DockerBytesRecoveredByDeletingSingleSelector": true,
+    "V026TestRetained": true,
+    "dockerCRLFCount": 405,
+    "baseDockerCRLFCount": 405
+  },
+  "preparationFailure": {
+    "exit": 1,
+    "pass": 0,
+    "fail": 8,
+    "reason": "initial new test used absent-output composer mode without local passkey dependencies; corrected to extracted-output mode used by validator",
+    "excludedFromBehaviorComparison": true
+  },
+  "checks": {
+    "syntax": 0,
+    "defaultDiffCheck": 2,
+    "defaultDiffCheckReason": "Git treats the preserved CR in the changed CRLF Docker line as trailing whitespace",
+    "crAtEolDiffCheck": 0
+  },
+  "localOnlyTarOptions": "--no-same-owner for existing validator archive ownership; no CI/config override",
+  "claimBoundary": {
+    "providerRequests": false,
+    "canonicalAdoption": false,
+    "imageAdmission": false,
+    "hostedProof": false,
+    "customerReady": false
+  },
+  "rawLogs": {
+    "baseline-regression.tap": {
+      "sha256": "018e42c7609128f74021938dd10bf4bd4850e791ccf4b6760df3da9ef7f9c534",
+      "bytes": 3563,
+      "gzipSha256": "0f8b043e4a4e85fec9375e0354ca1807a69d0ccc71ed7a77c966cc6d43a832d4"
+    },
+    "candidate-regression.tap": {
+      "sha256": "93db68620552d09cb34c8882de4102b175e7c14775a6142383108ad4178f1b55",
+      "bytes": 1953,
+      "gzipSha256": "daf386d1169d35e961f78be84704a8d6dbd9e720d1ba91d07a5d29e091a8558c"
+    },
+    "candidate-validator.log": {
+      "sha256": "9dbd2bc8d319ba0fd5cb5eb6fb6100944263acc1ab81d9445b0642dfc98c8b23",
+      "bytes": 915,
+      "gzipSha256": "eaffc2293456aa981b83f49ba55dbd2b12e4e2643a6e07e1bee0355e0e56464d"
+    },
+    "forge-source.log": {
+      "sha256": "8b5b47ddd933d21512c75bb62c93a543308350b604f69c5e96d606a341d4eef8",
+      "bytes": 102228,
+      "gzipSha256": "d600c7b99934656ceebbb24478eec8094923c52f9e516dc9519b10775ec5bf23"
+    },
+    "docker-source-selection.tap": {
+      "sha256": "213184ab3933e851a668573e806857c5171ff4ca2d4f734100ad1ba58082909a",
+      "bytes": 26711,
+      "gzipSha256": "d6817e971ffc1578eaa53f269b513257b713ef3937d40b479bfe4462fed9b2ed"
+    }
+  },
+  "sourceFiles": {
+    "scripts/validate-staffology-canonical-assembly.mjs": {
+      "sha256": "0d666cf2496a9e382308e779a0bccce18fa38f0b98ff3a6f15cb2159dc9895de",
+      "gitBlob": "4ec0ae78ad97d7256f45dc32fb49fe1252119232"
+    },
+    "scripts/validate-staffology-canonical-assembly.test.mjs": {
+      "sha256": "77fc748ff31bcfa85636ea84dc74d9873afa5d837cf9936325d4ea6f0044979a",
+      "gitBlob": "4d17402f004189b2b3cef042cb8a9e465fdaa30b"
+    },
+    "scripts/run-forge-ci.mjs": {
+      "sha256": "c6a118b68988e52eff058946ff1100a208ee4abe7a3638aac08980c61d505816",
+      "gitBlob": "54e7a5c39995199a3ebc93a89b74976f6e82ff32"
+    },
+    "Dockerfile": {
+      "sha256": "93ee8bf3f5ebc2558a4642b3753617293e1945b8617eaa5ec79e5aaaaf30f2db",
+      "gitBlob": "edfaa48f325294df1aef88e04ca9ed033b21f027"
+    }
+  }
+}
