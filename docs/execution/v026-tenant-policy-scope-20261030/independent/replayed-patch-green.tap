@@ -1,0 +1,104 @@
+TAP version 13
+# (node:100) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: tenant-bound policy applies only to its exact tenant, including same site identifier
+ok 1 - tenant-bound policy applies only to its exact tenant, including same site identifier
+  ---
+  duration_ms: 4.832569
+  type: 'test'
+  ...
+# Subtest: tenant-bound policy does not match missing tenant context
+ok 2 - tenant-bound policy does not match missing tenant context
+  ---
+  duration_ms: 0.501113
+  type: 'test'
+  ...
+# Subtest: tenant-bound policy does not coerce non-string tenant context into authority
+ok 3 - tenant-bound policy does not coerce non-string tenant context into authority
+  ---
+  duration_ms: 1.10549
+  type: 'test'
+  ...
+# Subtest: explicit malformed tenant scopes fail closed rather than turning into global policy
+ok 4 - explicit malformed tenant scopes fail closed rather than turning into global policy
+  ---
+  duration_ms: 0.378395
+  type: 'test'
+  ...
+# Subtest: an explicit undefined tenant scope cannot disappear during JSON normalization and become global
+ok 5 - an explicit undefined tenant scope cannot disappear during JSON normalization and become global
+  ---
+  duration_ms: 0.221213
+  type: 'test'
+  ...
+# Subtest: scope serialization cannot remove or wildcard an explicitly named tenant
+ok 6 - scope serialization cannot remove or wildcard an explicitly named tenant
+  ---
+  duration_ms: 0.280458
+  type: 'test'
+  ...
+# Subtest: tenant scope preserves existing exact-or-list match semantics
+ok 7 - tenant scope preserves existing exact-or-list match semantics
+  ---
+  duration_ms: 0.624543
+  type: 'test'
+  ...
+# Subtest: same tenant cannot inherit a different site policy
+ok 8 - same tenant cannot inherit a different site policy
+  ---
+  duration_ms: 0.243123
+  type: 'test'
+  ...
+# Subtest: unscoped public policy stays applicable while a foreign tenant policy is excluded
+ok 9 - unscoped public policy stays applicable while a foreign tenant policy is excluded
+  ---
+  duration_ms: 0.690779
+  type: 'test'
+  ...
+# Subtest: preflight forwards tenant so bound policy covers only the intended tenant population
+ok 10 - preflight forwards tenant so bound policy covers only the intended tenant population
+  ---
+  duration_ms: 1.952105
+  type: 'test'
+  ...
+# Subtest: preflight does not coerce malformed tenant identity into an authorized tenant
+ok 11 - preflight does not coerce malformed tenant identity into an authorized tenant
+  ---
+  duration_ms: 1.036028
+  type: 'test'
+  ...
+# Subtest: preflight does not truncate a distinct overlength tenant into an authorized tenant
+ok 12 - preflight does not truncate a distinct overlength tenant into an authorized tenant
+  ---
+  duration_ms: 0.951105
+  type: 'test'
+  ...
+# Subtest: tenant scope cannot bypass legal effective and knowledge boundaries
+ok 13 - tenant scope cannot bypass legal effective and knowledge boundaries
+  ---
+  duration_ms: 0.778836
+  type: 'test'
+  ...
+# Subtest: currency-bearing synthetic policy values preserve JSON and do not cross tenant or site boundaries
+ok 14 - currency-bearing synthetic policy values preserve JSON and do not cross tenant or site boundaries
+  ---
+  duration_ms: 10.39948
+  type: 'test'
+  ...
+# Subtest: missing policy fails closed for every worker while output remains JSON compatible
+ok 15 - missing policy fails closed for every worker while output remains JSON compatible
+  ---
+  duration_ms: 0.567233
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 156.642106
+(node:93) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)

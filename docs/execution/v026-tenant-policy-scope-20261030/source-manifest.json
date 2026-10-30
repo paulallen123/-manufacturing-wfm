@@ -1,0 +1,57 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "sourceCommit": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "baseCommit": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+  "files": [
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "blob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "sha256": "0a3d5b39a796d509e20b62e2d18227ab49000e6706ccf4d09342134a83aafde8"
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "blob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "sha256": "c6f4d4f5348fb60cff8e8736f1dca639391cced66d490fb51d0b9cff5a58d83d"
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.cjs",
+      "blob": "67e30c2e43329bdcea11905ee78cd90bbc3f6592",
+      "sha256": "d49d5258a991024fc1cfea3060b9cd403c1c6d71a6756a32bda0d1f10393c642"
+    },
+    {
+      "path": "policy/runtime/country-policy-pack-registry.test.cjs",
+      "blob": "e91bbee4ca83fd56838a5e67a8d0cac7104af618",
+      "sha256": "e567775ab36913c0a78f1cdf73bcda3725c5235c99c032e8695c173fcb71b59c"
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "blob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "sha256": "ba91ae4e44cb4da19d76978c1c3c067f54646015cdb7928e777187bc7710b62f"
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "blob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "sha256": "5ba6ca5bbfbfe9c24add83ce6b46cf40a9d2e2631d703a69c624771a9aa33819"
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "blob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "sha256": "3f7f932197f54abdc5aed5d9c797d3287306c9e6ebf74a8cb57f8c7124cc7a9b"
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "blob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "sha256": "77de65adce623c17f29b4d9eec8cb2b9c26fc99535eeac30871ee4af78b230cc"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "blob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "sha256": "446ef707cb70185c6b4641bdaf375f1e6379a21b7367fc63ee785e0d77062041"
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "blob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "sha256": "779441de28d1985ac8606ed16f3e4dda7225ceec0a4c517efac8c8f0ba6ea807"
+    }
+  ]
+}

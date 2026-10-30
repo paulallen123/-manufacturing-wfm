@@ -1,0 +1,119 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: tenant-bound policy applies only to its exact tenant, including same site identifier
+ok 1 - tenant-bound policy applies only to its exact tenant, including same site identifier
+  ---
+  duration_ms: 3.730498
+  type: 'test'
+  ...
+# Subtest: tenant-bound policy does not match missing tenant context
+ok 2 - tenant-bound policy does not match missing tenant context
+  ---
+  duration_ms: 0.393448
+  type: 'test'
+  ...
+# Subtest: tenant-bound policy does not coerce non-string tenant context into authority
+ok 3 - tenant-bound policy does not coerce non-string tenant context into authority
+  ---
+  duration_ms: 0.936444
+  type: 'test'
+  ...
+# Subtest: explicit malformed tenant scopes fail closed rather than turning into global policy
+ok 4 - explicit malformed tenant scopes fail closed rather than turning into global policy
+  ---
+  duration_ms: 0.438671
+  type: 'test'
+  ...
+# Subtest: an explicit undefined tenant scope cannot disappear during JSON normalization and become global
+not ok 5 - an explicit undefined tenant scope cannot disappear during JSON normalization and become global
+  ---
+  duration_ms: 1.232712
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:49:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:55:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tenant scope preserves existing exact-or-list match semantics
+ok 6 - tenant scope preserves existing exact-or-list match semantics
+  ---
+  duration_ms: 0.554434
+  type: 'test'
+  ...
+# Subtest: same tenant cannot inherit a different site policy
+ok 7 - same tenant cannot inherit a different site policy
+  ---
+  duration_ms: 0.233378
+  type: 'test'
+  ...
+# Subtest: unscoped public policy stays applicable while a foreign tenant policy is excluded
+ok 8 - unscoped public policy stays applicable while a foreign tenant policy is excluded
+  ---
+  duration_ms: 1.095859
+  type: 'test'
+  ...
+# Subtest: preflight forwards tenant so bound policy covers only the intended tenant population
+ok 9 - preflight forwards tenant so bound policy covers only the intended tenant population
+  ---
+  duration_ms: 1.90491
+  type: 'test'
+  ...
+# Subtest: preflight does not coerce malformed tenant identity into an authorized tenant
+ok 10 - preflight does not coerce malformed tenant identity into an authorized tenant
+  ---
+  duration_ms: 1.317606
+  type: 'test'
+  ...
+# Subtest: preflight does not truncate a distinct overlength tenant into an authorized tenant
+ok 11 - preflight does not truncate a distinct overlength tenant into an authorized tenant
+  ---
+  duration_ms: 0.387845
+  type: 'test'
+  ...
+# Subtest: tenant scope cannot bypass legal effective and knowledge boundaries
+ok 12 - tenant scope cannot bypass legal effective and knowledge boundaries
+  ---
+  duration_ms: 0.4027
+  type: 'test'
+  ...
+# Subtest: currency-bearing synthetic policy values preserve JSON and do not cross tenant or site boundaries
+ok 13 - currency-bearing synthetic policy values preserve JSON and do not cross tenant or site boundaries
+  ---
+  duration_ms: 8.701345
+  type: 'test'
+  ...
+# Subtest: missing policy fails closed for every worker while output remains JSON compatible
+ok 14 - missing policy fails closed for every worker while output remains JSON compatible
+  ---
+  duration_ms: 0.692708
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 13
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 124.716225
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)

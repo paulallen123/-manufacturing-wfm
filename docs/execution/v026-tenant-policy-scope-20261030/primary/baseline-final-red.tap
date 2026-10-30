@@ -1,0 +1,255 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: same site and legal entity IDs do not cross an explicit tenant scope
+not ok 1 - same site and legal entity IDs do not cross an explicit tenant scope
+  ---
+  duration_ms: 13.125386
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:25:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        'tenant-a',
+    +   'tenant-b'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'tenant-a'
+  actual:
+    0: 'tenant-a'
+    1: 'tenant-b'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:32:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+  ...
+# Subtest: missing or malformed tenant context cannot match an explicitly scoped node
+not ok 2 - missing or malformed tenant context cannot match an explicitly scoped node
+  ---
+  duration_ms: 0.687255
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:38:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:44:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: an explicit list of tenant scopes admits only exact named tenants
+not ok 3 - an explicit list of tenant scopes admits only exact named tenants
+  ---
+  duration_ms: 0.714939
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:49:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:57:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicitly malformed tenant scopes are rejected instead of becoming global
+not ok 4 - explicitly malformed tenant scopes are rejected instead of becoming global
+  ---
+  duration_ms: 0.479856
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:61:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:63:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: an explicit tenant scope cannot disappear during JSON cloning
+not ok 5 - an explicit tenant scope cannot disappear during JSON cloning
+  ---
+  duration_ms: 0.287766
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:69:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:77:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unscoped public rules remain available with or without a tenant
+not ok 6 - unscoped public rules remain available with or without a tenant
+  ---
+  duration_ms: 1.014822
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:81:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        'public-country',
+    +   'tenant-a'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'public-country'
+  actual:
+    0: 'public-country'
+    1: 'tenant-a'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: preflight forwards its tenant so only that tenant gains scoped coverage
+not ok 7 - preflight forwards its tenant so only that tenant gains scoped coverage
+  ---
+  duration_ms: 1.580221
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:93:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'READY_ADVISORY'
+    - 'BLOCKED_POLICY_COVERAGE'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED_POLICY_COVERAGE'
+  actual: 'READY_ADVISORY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:101:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: preflight context digest binds exact tenant while leaving caller input unchanged
+not ok 8 - preflight context digest binds exact tenant while leaving caller input unchanged
+  ---
+  duration_ms: 0.787525
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:107:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+    
+    'fb63679ac15872e44e8f8d906f88d9af95f27063302def82b13bc645f04c1a6e'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'fb63679ac15872e44e8f8d906f88d9af95f27063302def82b13bc645f04c1a6e'
+  actual: 'fb63679ac15872e44e8f8d906f88d9af95f27063302def82b13bc645f04c1a6e'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:114:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: preflight rejects tenant inputs that would coerce or truncate into another binding
+not ok 9 - preflight rejects tenant inputs that would coerce or truncate into another binding
+  ---
+  duration_ms: 1.100164
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:118:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-unblock/baseline/policy/runtime/v026-tenant-policy-scope.test.cjs:123:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 0
+# fail 9
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 126.358018
