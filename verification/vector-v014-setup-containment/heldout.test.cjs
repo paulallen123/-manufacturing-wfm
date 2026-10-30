@@ -8,9 +8,18 @@ const path = require('node:path');
 const { Readable } = require('node:stream');
 const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
-const { createCustomerWorkspaceRegistry } = require('../../implementation/runtime/customer-workspace.cjs');
-const { createSetupOnlyPolicy } = require('../../implementation/runtime/setup-only-policy.cjs');
-const { createAutonomousIntegrationHub } = require('../../integration/runtime/autonomous-integration-hub.cjs');
+// Test-only selector: image admission uses the modules already copied into /app.
+// Without it, ordinary checkout runs retain the original source-tree targets.
+const installedRoot = process.env.VECTOR_IMAGE_ADMISSION_ROOT;
+const implementationRoot = installedRoot
+  ? path.join(installedRoot, 'implementation-runtime')
+  : path.resolve(__dirname, '../../implementation/runtime');
+const integrationRoot = installedRoot
+  ? path.join(installedRoot, 'integration-runtime')
+  : path.resolve(__dirname, '../../integration/runtime');
+const { createCustomerWorkspaceRegistry } = require(path.join(implementationRoot, 'customer-workspace.cjs'));
+const { createSetupOnlyPolicy } = require(path.join(implementationRoot, 'setup-only-policy.cjs'));
+const { createAutonomousIntegrationHub } = require(path.join(integrationRoot, 'autonomous-integration-hub.cjs'));
 
 const sha = value => createHash('sha256').update(String(value)).digest('hex');
 const prefix = '/api/integrations/autonomous';

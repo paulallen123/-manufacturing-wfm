@@ -3,7 +3,11 @@
 // Test-only HTTP boundary. Provider I/O is replaced; the hub, routes and SQLite
 // lifecycle are the product implementations under test.
 const http = require('node:http');
-const { createAutonomousIntegrationHub } = require('../autonomous-integration-hub.cjs');
+const path = require('node:path');
+const hubPath = process.env.VECTOR_IMAGE_ADMISSION_ROOT
+  ? path.join(process.env.VECTOR_IMAGE_ADMISSION_ROOT, 'integration-runtime/autonomous-integration-hub.cjs')
+  : path.join(__dirname, '../autonomous-integration-hub.cjs');
+const { createAutonomousIntegrationHub } = require(hubPath);
 
 const COMPANY = '11111111-1111-4111-8111-111111111111';
 const env = {
