@@ -1,0 +1,99 @@
+{
+  "lane": "V113",
+  "scope": "reject missing or coercible verified observed actuals only",
+  "basePR": 335,
+  "baseCommit": "5c3c5e37f4ae97cb17920e8e64deaa3bc324453d",
+  "baseTree": "eb895dd535187868cc9e2b4c96308f51fa517599",
+  "baseBlobCount": 1254,
+  "canonicalCommit": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "baseSourceGitBlob": "26f94067437f9e82c821ae7c79b4632d0aeeda4e",
+  "baseTestGitBlob": "814985762886203d705a84d81343281420aeb7c5",
+  "reviewedNumericHandoff": "https://github.com/paulallen123/-manufacturing-wfm/pull/335#issuecomment-6512199875",
+  "priorReviewedPatchSha256": "f53d33274ced402252747b7d43580f927b41b28f1d973395d3d91bf2dfafc963",
+  "reviewedAuthoredTestSha256": "454971c2751d0cafdd7d44c4a0408498539a2ea25fafb63364e5d94c11555464",
+  "reviewedIndependentTestSha256": "94ab2086bb218b558adac8d7faf1307e54b11a91b969cb98e6a35dde7a81887f",
+  "preservation": {
+    "donorDigestGuardUnchanged": true,
+    "originalSevenTestsBytePrefixPreserved": true,
+    "simulationBehaviorUnchanged": true,
+    "existingForgeAndDockerSelectTestEntryPoint": true,
+    "newCIConfigOrSelectorChanges": false
+  },
+  "node": "v22.23.2",
+  "tests": {
+    "baselineWithRegressions": {
+      "exit": 1,
+      "pass": 13,
+      "fail": 4,
+      "skip": 0
+    },
+    "candidate": {
+      "exit": 0,
+      "pass": 17,
+      "fail": 0,
+      "skip": 0
+    },
+    "affected": {
+      "exit": 0,
+      "pass": 22,
+      "fail": 0,
+      "skip": 0
+    },
+    "independentRootAffected": {
+      "exit": 0,
+      "pass": 22,
+      "fail": 0,
+      "skip": 0
+    },
+    "countsOverlap": true
+  },
+  "checks": {
+    "syntax": 0,
+    "diffCheck": 0
+  },
+  "remainingBlockers": [
+    "P1 active-object TOCTOU in digest consumer",
+    "P1 upstream episode outcome receipt custody",
+    "P2 canonical timestamp/measurement chronology",
+    "P2 shallow receipt freeze",
+    "authenticated independent baseline/result/finance source custody and actual consumer",
+    "current-canonical reconciliation, exact image/security/recovery and authorized hosted/customer proof"
+  ],
+  "claimBoundary": {
+    "syntheticInProcessOnly": true,
+    "financeAuthorityEstablished": false,
+    "realCustomerSavingsEstablished": false,
+    "canonicalAdoption": false,
+    "imageAdmission": false,
+    "deployment": false,
+    "providerOrTenantWrite": false,
+    "customerReady": false
+  },
+  "sourceFiles": {
+    "operations/runtime/decision-outcome-proof.cjs": {
+      "sha256": "581c60d0210c373c73d8426819ddd48779cf8de145c5dbfe2d86230e19c48174",
+      "gitBlob": "620f7238a9797bb40a4af0b2627ca960c08da8c0"
+    },
+    "operations/runtime/decision-outcome-proof.test.cjs": {
+      "sha256": "cdcfd8ac4c991daf3d699926b3de3c6148ed405657d7214f57eafb264bb8cbb4",
+      "gitBlob": "66f823458a3901722bff3a0fdf184af4f32d3bee"
+    }
+  },
+  "rawLogs": {
+    "baseline-with-regressions.tap": {
+      "sha256": "bfcb04e005856ff918f4ac14ce8eba15d22d49a0152b76f99d651db1820b564d",
+      "bytes": 8615,
+      "gzipSha256": "f3dd6d224803581b2806ddc385279cb4bb14da869f98b7dfe3e293fd7205463b"
+    },
+    "candidate-regressions.tap": {
+      "sha256": "3bfc3c531c4440621575bf05bbff09a75bb0d9d3d6138b6f05eaba9a9a7d1fc2",
+      "bytes": 4028,
+      "gzipSha256": "0423461d59b0d2c3b44401e59fb3968cbe46422d4e3e0880773131e87e50cb46"
+    },
+    "affected-regressions.tap": {
+      "sha256": "ece020ce3a037b0a7e2ae409786cc091d9d2fe6a4c906e05c95acbf224a9a4ce",
+      "bytes": 5057,
+      "gzipSha256": "238bf042303c3876e47816fad4fd5c8dfeb74eedf74039bd0c3051a49b0a2c05"
+    }
+  }
+}
