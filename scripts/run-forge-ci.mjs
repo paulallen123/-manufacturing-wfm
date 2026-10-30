@@ -35,6 +35,7 @@ const checks = [
     'operations/runtime/decision-outcome-proof.test.cjs',
     'scripts/prove-vector-built-asset-provenance.test.mjs',
     'scripts/validate-staffology-canonical-assembly.test.mjs',
+    'scripts/runtime-artifact-manifest.test.mjs',
     'scripts/proof-access-preflight.test.cjs',
     'integrations/staffology/canonical-runtime-bridge.test.cjs',
     'integrations/staffology/staffology-adapter.test.cjs',
