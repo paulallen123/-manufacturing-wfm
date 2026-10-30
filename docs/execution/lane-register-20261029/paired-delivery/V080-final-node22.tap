@@ -1,0 +1,354 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: review CSV never starts a cell with a formula, URL or Unicode control
+ok 1 - review CSV never starts a cell with a formula, URL or Unicode control
+  ---
+  duration_ms: 3.815561
+  type: 'test'
+  ...
+# Subtest: review CSV retains distinct null, empty, zero, false, and leading-zero ID
+ok 2 - review CSV retains distinct null, empty, zero, false, and leading-zero ID
+  ---
+  duration_ms: 1.279898
+  type: 'test'
+  ...
+# Subtest: unsupported missing value fails closed before any browser download
+ok 3 - unsupported missing value fails closed before any browser download
+  ---
+  duration_ms: 1.00229
+  type: 'test'
+  ...
+# Subtest: labels match the actual CSV and browser print functions
+ok 4 - labels match the actual CSV and browser print functions
+  ---
+  duration_ms: 0.502484
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: desktop fresh open reconciles catalog/saved/dashboard/schedules without restricted cached metadata
+ok 5 - desktop fresh open reconciles catalog/saved/dashboard/schedules without restricted cached metadata
+  ---
+  duration_ms: 29.492212
+  type: 'test'
+  ...
+# Subtest: tablet fresh open reconciles catalog/saved/dashboard/schedules without restricted cached metadata
+ok 6 - tablet fresh open reconciles catalog/saved/dashboard/schedules without restricted cached metadata
+  ---
+  duration_ms: 15.468339
+  type: 'test'
+  ...
+# Subtest: mobile fresh open reconciles catalog/saved/dashboard/schedules without restricted cached metadata
+ok 7 - mobile fresh open reconciles catalog/saved/dashboard/schedules without restricted cached metadata
+  ---
+  duration_ms: 20.535975
+  type: 'test'
+  ...
+# Subtest: delivery history exposes unknown and blocked outcomes beyond the old five-row cutoff without external receipts
+ok 8 - delivery history exposes unknown and blocked outcomes beyond the old five-row cutoff without external receipts
+  ---
+  duration_ms: 43.939436
+  type: 'test'
+  ...
+# Subtest: external SENT remains unverified and escaped
+ok 9 - external SENT remains unverified and escaped
+  ---
+  duration_ms: 4.945303
+  type: 'test'
+  ...
+# Subtest: external FAILED remains unverified and escaped
+ok 10 - external FAILED remains unverified and escaped
+  ---
+  duration_ms: 5.506862
+  type: 'test'
+  ...
+# Subtest: external READY remains unverified and escaped
+ok 11 - external READY remains unverified and escaped
+  ---
+  duration_ms: 7.466934
+  type: 'test'
+  ...
+# Subtest: external VERIFIED remains unverified and escaped
+ok 12 - external VERIFIED remains unverified and escaped
+  ---
+  duration_ms: 5.009763
+  type: 'test'
+  ...
+# Subtest: external FUTURE_STATUS remains unverified and escaped
+ok 13 - external FUTURE_STATUS remains unverified and escaped
+  ---
+  duration_ms: 4.981605
+  type: 'test'
+  ...
+# Subtest: external toString remains unverified and escaped
+ok 14 - external toString remains unverified and escaped
+  ---
+  duration_ms: 4.251174
+  type: 'test'
+  ...
+# Subtest: external __proto__ remains unverified and escaped
+ok 15 - external __proto__ remains unverified and escaped
+  ---
+  duration_ms: 5.095854
+  type: 'test'
+  ...
+# Subtest: external <img src=x onerror=alert(1)> remains unverified and escaped
+ok 16 - external <img src=x onerror=alert(1)> remains unverified and escaped
+  ---
+  duration_ms: 7.531785
+  type: 'test'
+  ...
+# Subtest: all authorized unresolved receipts remain visible, including the endpoint hundredth row
+ok 17 - all authorized unresolved receipts remain visible, including the endpoint hundredth row
+  ---
+  duration_ms: 13.745781
+  type: 'test'
+  ...
+# Subtest: dialog Escape returns focus and announces current controls
+ok 18 - dialog Escape returns focus and announces current controls
+  ---
+  duration_ms: 8.607901
+  type: 'test'
+  ...
+# Subtest: returning to the open reporting dialog rechecks server authority
+ok 19 - returning to the open reporting dialog rechecks server authority
+  ---
+  duration_ms: 6.800976
+  type: 'test'
+  ...
+# Subtest: save denial 401 reconciles every surface and open editor
+ok 20 - save denial 401 reconciles every surface and open editor
+  ---
+  duration_ms: 10.266948
+  type: 'test'
+  ...
+# Subtest: save denial 403 reconciles every surface and open editor
+ok 21 - save denial 403 reconciles every surface and open editor
+  ---
+  duration_ms: 9.684663
+  type: 'test'
+  ...
+# Subtest: save denial 404 reconciles every surface and open editor
+ok 22 - save denial 404 reconciles every surface and open editor
+  ---
+  duration_ms: 9.232059
+  type: 'test'
+  ...
+# Subtest: pin denial 401 reconciles every surface and open editor
+ok 23 - pin denial 401 reconciles every surface and open editor
+  ---
+  duration_ms: 9.416501
+  type: 'test'
+  ...
+# Subtest: pin denial 403 reconciles every surface and open editor
+ok 24 - pin denial 403 reconciles every surface and open editor
+  ---
+  duration_ms: 11.880257
+  type: 'test'
+  ...
+# Subtest: pin denial 404 reconciles every surface and open editor
+ok 25 - pin denial 404 reconciles every surface and open editor
+  ---
+  duration_ms: 11.045899
+  type: 'test'
+  ...
+# Subtest: schedule creation denial 401 reconciles every surface and open editor
+ok 26 - schedule creation denial 401 reconciles every surface and open editor
+  ---
+  duration_ms: 16.2312
+  type: 'test'
+  ...
+# Subtest: schedule creation denial 403 reconciles every surface and open editor
+ok 27 - schedule creation denial 403 reconciles every surface and open editor
+  ---
+  duration_ms: 22.474401
+  type: 'test'
+  ...
+# Subtest: schedule creation denial 404 reconciles every surface and open editor
+ok 28 - schedule creation denial 404 reconciles every surface and open editor
+  ---
+  duration_ms: 18.272146
+  type: 'test'
+  ...
+# Subtest: pause denial 401 reconciles every surface and open editor
+ok 29 - pause denial 401 reconciles every surface and open editor
+  ---
+  duration_ms: 12.188366
+  type: 'test'
+  ...
+# Subtest: pause denial 403 reconciles every surface and open editor
+ok 30 - pause denial 403 reconciles every surface and open editor
+  ---
+  duration_ms: 11.189063
+  type: 'test'
+  ...
+# Subtest: pause denial 404 reconciles every surface and open editor
+ok 31 - pause denial 404 reconciles every surface and open editor
+  ---
+  duration_ms: 10.647059
+  type: 'test'
+  ...
+# Subtest: resume denial 401 reconciles every surface and open editor
+ok 32 - resume denial 401 reconciles every surface and open editor
+  ---
+  duration_ms: 10.027271
+  type: 'test'
+  ...
+# Subtest: resume denial 403 reconciles every surface and open editor
+ok 33 - resume denial 403 reconciles every surface and open editor
+  ---
+  duration_ms: 11.143306
+  type: 'test'
+  ...
+# Subtest: resume denial 404 reconciles every surface and open editor
+ok 34 - resume denial 404 reconciles every surface and open editor
+  ---
+  duration_ms: 10.25337
+  type: 'test'
+  ...
+# Subtest: denied mutation and failed refresh keep all restricted metadata cleared
+ok 35 - denied mutation and failed refresh keep all restricted metadata cleared
+  ---
+  duration_ms: 11.182252
+  type: 'test'
+  ...
+# Subtest: an obsolete refresh cannot repaint after close
+ok 36 - an obsolete refresh cannot repaint after close
+  ---
+  duration_ms: 9.593141
+  type: 'test'
+  ...
+# Subtest: [data-report-save] obsolete denied mutation neither repaints nor announces stale errors
+ok 37 - [data-report-save] obsolete denied mutation neither repaints nor announces stale errors
+  ---
+  duration_ms: 14.319864
+  type: 'test'
+  ...
+# Subtest: [data-report-pin] obsolete denied mutation neither repaints nor announces stale errors
+ok 38 - [data-report-pin] obsolete denied mutation neither repaints nor announces stale errors
+  ---
+  duration_ms: 9.566046
+  type: 'test'
+  ...
+# Subtest: [data-report-schedule-state] obsolete denied mutation neither repaints nor announces stale errors
+ok 39 - [data-report-schedule-state] obsolete denied mutation neither repaints nor announces stale errors
+  ---
+  duration_ms: 9.273779
+  type: 'test'
+  ...
+# Subtest: obsolete rejected fetch after authority refresh preserves the current calm UI
+ok 40 - obsolete rejected fetch after authority refresh preserves the current calm UI
+  ---
+  duration_ms: 11.144772
+  type: 'test'
+  ...
+# Subtest: obsolete rejected json after authority refresh preserves the current calm UI
+ok 41 - obsolete rejected json after authority refresh preserves the current calm UI
+  ---
+  duration_ms: 12.854241
+  type: 'test'
+  ...
+# Subtest: shipped editor Tab trap uses actual collapsed Advanced controls
+ok 42 - shipped editor Tab trap uses actual collapsed Advanced controls
+  ---
+  duration_ms: 10.965446
+  type: 'test'
+  ...
+# Subtest: shipped editor Tab trap uses actual expanded Advanced controls
+ok 43 - shipped editor Tab trap uses actual expanded Advanced controls
+  ---
+  duration_ms: 12.629957
+  type: 'test'
+  ...
+# Subtest: unavailable delivery history never claims no deliveries: {"status":503}
+ok 44 - unavailable delivery history never claims no deliveries: {"status":503}
+  ---
+  duration_ms: 6.010453
+  type: 'test'
+  ...
+# Subtest: unavailable delivery history never claims no deliveries: {"status":404}
+ok 45 - unavailable delivery history never claims no deliveries: {"status":404}
+  ---
+  duration_ms: 4.721114
+  type: 'test'
+  ...
+# Subtest: unavailable delivery history never claims no deliveries: {"status":200,"body":{}}
+ok 46 - unavailable delivery history never claims no deliveries: {"status":200,"body":{}}
+  ---
+  duration_ms: 5.710384
+  type: 'test'
+  ...
+# Subtest: unavailable delivery history never claims no deliveries: {"status":200,"body":{"deliveries":null}}
+ok 47 - unavailable delivery history never claims no deliveries: {"status":200,"body":{"deliveries":null}}
+  ---
+  duration_ms: 3.885185
+  type: 'test'
+  ...
+# Subtest: unavailable delivery history never claims no deliveries: {"status":200,"rejectJson":true}
+ok 48 - unavailable delivery history never claims no deliveries: {"status":200,"rejectJson":true}
+  ---
+  duration_ms: 3.942695
+  type: 'test'
+  ...
+# Subtest: delivery-only authority denial 401 clears the entire reporting surface
+ok 49 - delivery-only authority denial 401 clears the entire reporting surface
+  ---
+  duration_ms: 10.113743
+  type: 'test'
+  ...
+# Subtest: delivery-only authority denial 403 clears the entire reporting surface
+ok 50 - delivery-only authority denial 403 clears the entire reporting surface
+  ---
+  duration_ms: 5.511609
+  type: 'test'
+  ...
+# Subtest: confirmed empty delivery history remains distinct from unavailable and can recover on refresh
+ok 51 - confirmed empty delivery history remains distinct from unavailable and can recover on refresh
+  ---
+  duration_ms: 7.432854
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: hostile header and text cannot become an active spreadsheet cell
+ok 52 - hostile header and text cannot become an active spreadsheet cell
+  ---
+  duration_ms: 56.912293
+  type: 'test'
+  ...
+# Subtest: missing own property cannot be filled from inherited __proto__
+ok 53 - missing own property cannot be filled from inherited __proto__
+  ---
+  duration_ms: 8.394035
+  type: 'test'
+  ...
+# Subtest: typed false, zero, empty, null and identifier remain distinct
+ok 54 - typed false, zero, empty, null and identifier remain distinct
+  ---
+  duration_ms: 14.654797
+  type: 'test'
+  ...
+# Subtest: unsupported non-finite and absent values do not trigger a browser download
+ok 55 - unsupported non-finite and absent values do not trigger a browser download
+  ---
+  duration_ms: 10.095153
+  type: 'test'
+  ...
+# Subtest: user-facing controls identify only the formats actually produced
+ok 56 - user-facing controls identify only the formats actually produced
+  ---
+  duration_ms: 0.470199
+  type: 'test'
+  ...
+1..56
+# tests 56
+# suites 0
+# pass 56
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 657.683267
