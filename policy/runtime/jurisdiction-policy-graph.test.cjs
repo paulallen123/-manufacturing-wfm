@@ -2,6 +2,26 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {createJurisdictionPolicyGraph}=require('./jurisdiction-policy-graph.cjs');
+const resolution={legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'GB'}};
+test('published node scope cannot change applicability under its admitted digest',()=>{
+  const graph=createJurisdictionPolicyGraph([baseNode()]),node=graph.all()[0],before=graph.resolve(resolution);
+  assert.throws(()=>{node.scope.country='DE';},TypeError);
+  assert.equal(graph.resolve({...resolution,context:{country:'DE'}}).verifiedCoverage,false);
+  assert.deepEqual(graph.resolve(resolution),before);
+});
+test('registered node freezes nested scope, rules and provenance without freezing caller data',()=>{
+  const input=baseNode({scope:{country:['GB'],metadata:{tags:['synthetic']}},rules:[{id:'requirement',domain:'test',key:'test',legalCharacter:'MANDATORY_REQUIREMENT',operator:'REQUIRE',value:{approvals:['synthetic']},remediation:['review']}]});
+  const graph=createJurisdictionPolicyGraph(),node=graph.register(input),before=graph.resolve(resolution);
+  for(const change of [()=>node.scope.country.push('DE'),()=>node.scope.metadata.tags.push('changed'),()=>node.sourceRefs.push('changed'),()=>node.rules.pop(),()=>node.rules[0].sourceRefs.push('changed'),()=>node.rules[0].remediation.push('changed'),()=>node.rules[0].value.approvals.push('changed')]) assert.throws(change,TypeError);
+  input.scope.country.push('DE');input.rules[0].value.approvals.push('caller change');input.sourceRefs.push('caller change');
+  assert.deepEqual(graph.resolve(resolution),before);
+});
+test('published resolution freezes nested evidence and values under its context digest',()=>{
+  const graph=createJurisdictionPolicyGraph([baseNode({rules:[{id:'requirement',domain:'test',key:'test',legalCharacter:'MANDATORY_REQUIREMENT',operator:'REQUIRE',value:{approvals:['synthetic']}}]})]),result=graph.resolve(resolution);
+  const before=JSON.stringify(result);
+  for(const change of [()=>{result.context.country='DE';},()=>result.applicableNodes.pop(),()=>result.applicableNodes[0].sourceRefs.push('changed'),()=>result.constraints[0].sources.push('changed'),()=>result.constraints[0].value.approvals.push('changed')]) assert.throws(change,TypeError);
+  assert.equal(JSON.stringify(result),before);assert.deepEqual(graph.resolve(resolution),result);
+});
 function baseNode(overrides={}){return {id:'gb-base',layer:'COUNTRY',effectiveFrom:'2026-01-01T00:00:00Z',recordedAt:'2025-12-01T00:00:00Z',sourceRefs:['official:gb'],verified:true,scope:{country:'GB'},rules:[{id:'weekly-max',domain:'working-time',key:'weekly-hours',legalCharacter:'MANDATORY_CEILING',operator:'MAX',value:48,unit:'hours',sourceRefs:['official:gb']}],...overrides};}
 test('bitemporal resolution distinguishes legal validity from what VECTOR knew',()=>{const graph=createJurisdictionPolicyGraph([baseNode({recordedAt:'2026-02-01T00:00:00Z'})]);assert.equal(graph.resolve({legalAt:'2026-03-01T00:00:00Z',knownAt:'2026-01-15T00:00:00Z',context:{country:'GB'}}).verifiedCoverage,false);const r=graph.resolve({legalAt:'2026-03-01T00:00:00Z',knownAt:'2026-03-02T00:00:00Z',context:{country:'GB'}});assert.equal(r.verifiedCoverage,true);assert.equal(r.constraints[0].value,48);});
 test('mandatory ceilings compose to the strictest applicable rule across layers',()=>{const graph=createJurisdictionPolicyGraph([baseNode(),baseNode({id:'site-stricter',layer:'SITE',scope:{country:'GB',siteId:'site-1'},sourceRefs:['customer:policy'],rules:[{id:'site-max',domain:'working-time',key:'weekly-hours',legalCharacter:'MANDATORY_CEILING',operator:'MAX',value:44,unit:'hours',sourceRefs:['customer:policy']}]})]);const r=graph.resolve({legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'GB',siteId:'site-1'}});assert.equal(r.constraints.find(x=>x.key==='weekly-hours'&&x.result==='MAX').value,44);});

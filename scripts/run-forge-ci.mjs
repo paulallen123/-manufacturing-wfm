@@ -38,7 +38,8 @@ const checks = [
     'policy/runtime/jurisdiction-policy-graph.test.cjs',
     'policy/runtime/global-site-policy-preflight.test.cjs',
     'policy/runtime/authoritative-policy-source-registry.test.cjs',
-    'policy/runtime/regulatory-change-candidate.test.cjs'
+    'policy/runtime/regulatory-change-candidate.test.cjs',
+    'policy/runtime/v026-tenant-policy-scope.test.cjs'
   ]]
 ];
 

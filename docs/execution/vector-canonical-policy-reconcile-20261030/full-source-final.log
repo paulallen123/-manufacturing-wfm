@@ -1,0 +1,2379 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+=== node scripts/validate-deployment.mjs ===
+(node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "ok": true,
+  "schemaVersion": 4,
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeArtifact": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "runtimeSizeBytes": 562434,
+  "runtimeManifestSha256": "8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce",
+  "canonicalSourceSha256": "52e6f77d39fd71bc3240f05a763e77c790f6937b2614638db4bda51d43328219",
+  "hostedSourceSha256": "0eff86d3034c6493aba130ec052bce8ee98e2205c37baae7c89ac6bd01ea84d9",
+  "nodeImage": "node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96",
+  "runtimeUser": "node",
+  "nodeSecurityFloor": "22.23.2",
+  "packageManagersPresent": false,
+  "productionApproved": false,
+  "stagingOnly": true
+}
+
+=== node scripts/validate-proof-lane-policy.mjs ===
+(node:22) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+VECTOR_PROOF_LANE_INDEPENDENCE=PASS providers=3 exactImageLanes=3
+
+=== node scripts/validate-research-convergence-ledger.mjs ===
+(node:30) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+VECTOR_RESEARCH_CONVERGENCE_GATE=PASS items=16 pending=13 registeredSources=15
+
+=== node --test resilience/research-convergence-theory-simulator.test.cjs ===
+(node:38) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:45) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: country policy research routes into existing engines and creates no seventh loop
+ok 1 - country policy research routes into existing engines and creates no seventh loop
+  ---
+  duration_ms: 1.184326
+  type: 'test'
+  ...
+# Subtest: implementation cannot start before design and theory pass
+ok 2 - implementation cannot start before design and theory pass
+  ---
+  duration_ms: 0.309096
+  type: 'test'
+  ...
+# Subtest: a falsified theory is retained and routed to redesign rather than dropped
+ok 3 - a falsified theory is retained and routed to redesign rather than dropped
+  ---
+  duration_ms: 1.183676
+  type: 'test'
+  ...
+# Subtest: high-impact country policy implementation must remain advisory or use independent authority
+ok 4 - high-impact country policy implementation must remain advisory or use independent authority
+  ---
+  duration_ms: 0.193205
+  type: 'test'
+  ...
+# Subtest: implementation does not equal convergence until exact hosted Golden Journey and value proof pass
+ok 5 - implementation does not equal convergence until exact hosted Golden Journey and value proof pass
+  ---
+  duration_ms: 0.180056
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 95.098667
+
+=== node scripts/validate-product-factory.mjs ===
+(node:53) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+PRODUCT_FACTORY_VALIDATION=PASS|features=2
+
+=== node scripts/validate-isolated-environment-provisioning-plan.mjs ===
+(node:61) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"validator":"isolated-environment-provisioning-plan","result":"PASS","scaleCases":[{"siteCount":1,"employeeCount":1,"regions":1,"planningStepsRemoved":5,"actions":9},{"siteCount":1,"employeeCount":25,"regions":1,"planningStepsRemoved":5,"actions":9},{"siteCount":2,"employeeCount":100,"regions":1,"planningStepsRemoved":6,"actions":10},{"siteCount":5,"employeeCount":500,"regions":2,"planningStepsRemoved":13,"actions":21},{"siteCount":10,"employeeCount":2000,"regions":2,"planningStepsRemoved":18,"actions":26},{"siteCount":50,"employeeCount":10000,"regions":3,"planningStepsRemoved":62,"actions":74},{"siteCount":120,"employeeCount":25000,"regions":4,"planningStepsRemoved":136,"actions":152}],"edgeCases":19,"humanTouch":{"planningQuestionsAdded":0,"smallCustomerPlanningStepsRemoved":5,"enterprise10000PlanningStepsRemoved":62,"stress25000PlanningStepsRemoved":136,"providerExecutionStepsRemoved":0},"proofBoundary":{"realProvisioningExecuted":false,"autonomousProvisioningProven":false,"permitIssued":false,"llmExecutionAuthority":false}}
+
+=== node scripts/validate-resilience-scenarios.mjs ===
+(node:69) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "ok": true,
+  "scenarios": 33,
+  "categories": [
+    "ai-security",
+    "clocking",
+    "configuration",
+    "data",
+    "experience",
+    "governance",
+    "identity",
+    "infrastructure",
+    "integration",
+    "messaging",
+    "observability",
+    "payroll",
+    "release",
+    "runtime",
+    "security",
+    "supply-chain",
+    "support",
+    "time"
+  ],
+  "critical": 16
+}
+
+=== node scripts/validate-autonomous-recovery-proof.mjs ===
+(node:77) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "schemaVersion": 1,
+  "proof": "zero-human-known-worker-recovery",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "scenario": "worker-unhealthy",
+  "runbook": "worker-unhealthy",
+  "action": "worker.restart",
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "faultInjected": true,
+  "faultDetected": true,
+  "independentDryRunVerified": true,
+  "safetyKernelApproved": true,
+  "replacementVerifiedHealthy": true,
+  "originalPid": 87,
+  "replacementPid": 103,
+  "detectionMs": 4,
+  "recoveryMs": 123,
+  "referenceRecoveryGateMs": 2500,
+  "evidenceDigest": "d3cd72f364d8adf83f8df4b91d7716f9957b6040a63045f47caf4948bb92f22e",
+  "verificationDigest": "103c9a58144701d60e7231fc7e676254df2be1ea17fb1e62e928b384ed1456ce",
+  "safetyDecisionDigest": "0e52323bddf32de82971cc06919267de99ae23daeb45ae69a1c1f9f336b1b765",
+  "negativeAuthorityTests": {
+    "payrollWriteDenied": true,
+    "languageModelDirectExecutionDenied": true,
+    "crossTenantExecutionDenied": true,
+    "unknownFaultFailsClosed": true
+  },
+  "learning": {
+    "knownFingerprint": "runtime:worker-unhealthy:failed-health-check",
+    "prevention": "Keep worker.restart deterministic, reversible, same-tenant where scoped, dry-run verified and evidence-bound.",
+    "unknownFaultPolicy": "Protect/preserve/isolate and continue diagnosis; never invent an autonomous production repair."
+  },
+  "generatedAt": "2026-10-30T16:11:15.914Z"
+}
+
+=== node scripts/validate-autonomous-recovery-matrix.mjs ===
+(node:111) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "schemaVersion": 1,
+  "proof": "zero-human-deterministic-recovery-matrix",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "scenariosPassed": 6,
+  "scenarios": [
+    {
+      "scenario": "integration-transient-failure",
+      "fingerprint": "integration:transient:retry-idempotent",
+      "runbook": "integration-transient",
+      "action": "integration.retry",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 17,
+      "evidenceDigest": "a3834c502e4697f699d9295f3291413596fc8361c0aee5cde798541aea95418d",
+      "verificationDigest": "b178ded3109b666b0908387f28f032f40f4d09d452281cb8de6bf6496048a712",
+      "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831"
+    },
+    {
+      "scenario": "integration-stuck-replay",
+      "fingerprint": "integration:stuck:checkpoint-replay",
+      "runbook": "integration-stuck-replay",
+      "action": "integration.replay-idempotent",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 2,
+      "evidenceDigest": "57b602032cc5dc982db6ddcffb03290096247b58f8b9a943a24f92070d218ed9",
+      "verificationDigest": "7286387940e655744a0b6f7cacab8ce2a96983155d487a25c266b2cf8be31b12",
+      "safetyDecisionDigest": "1d6d9cb280f9026cc3e0734738d838b92aa263244d86e7a09a2b5c4eac73028a"
+    },
+    {
+      "scenario": "queue-drift",
+      "fingerprint": "messaging:queue-drift:ledger-mismatch",
+      "runbook": "queue-drift",
+      "action": "queue.reconcile",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 1,
+      "evidenceDigest": "3ec862b46fda9495c73c7b37f504ba8953ed7dc69f4d8d7e6edb5e6e70aee9d1",
+      "verificationDigest": "ba67b2f27d05f767b50d69b9c28e3584f4802c84b056be496872ffc1e9d9bade",
+      "safetyDecisionDigest": "16556d448a157f47c0215149bb3c8d24f0809a15390787463e6c2bd04bd79541"
+    },
+    {
+      "scenario": "cache-drift",
+      "fingerprint": "runtime:cache-drift:checksum-mismatch",
+      "runbook": "cache-drift",
+      "action": "cache.rebuild",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 4,
+      "evidenceDigest": "e494b72fd3af19c27b49c6f030f1426fc23c6af28a4f1cf0eec0fc790daec050",
+      "verificationDigest": "c0343069b5f231c2a84a99904ff014ad2ee4c055e0e137b6db59eeaff914b508",
+      "safetyDecisionDigest": "37694f0478ac26a1efd893e336ad0cab5e500eca19138e0719a6e778f19aa72c"
+    },
+    {
+      "scenario": "configuration-drift",
+      "fingerprint": "configuration:drift:last-known-good",
+      "runbook": "configuration-drift",
+      "action": "configuration.restore-drift",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 4,
+      "evidenceDigest": "fad869417cf6269e50e875a3921ac25e74ee52b0b499deb6535a284be775a996",
+      "verificationDigest": "9f949a19602640743d1398f8ec4094ebb360afef9aaeac06548a064ec9db0be4",
+      "safetyDecisionDigest": "c42664603dbaeb4b6ec53a167f0db00f59a33b0212fefe8875d0f2da48fff868"
+    },
+    {
+      "scenario": "bad-release",
+      "fingerprint": "release:bad-release:last-good-rollback",
+      "runbook": "bad-release",
+      "action": "release.rollback",
+      "blockedBeforeIndependentProof": true,
+      "independentDryRunVerified": true,
+      "safetyKernelApproved": true,
+      "isolatedRecoveryVerified": true,
+      "idempotencyVerified": true,
+      "recoveryMicros": 2,
+      "evidenceDigest": "ee8cf53da8fefe3fc39e70372dd856a7f4fa333d1a283c01e7408bd8f6a0abe3",
+      "verificationDigest": "340a17310aa3c3317232574a5a4ffc42efbd66e35517aff4d5ca35f04d18603f",
+      "safetyDecisionDigest": "19c5c55d098d1598125ae74fe1711c20c6f8525f92684303da7a5f5ce8490da2"
+    }
+  ],
+  "negativeAuthorityTests": {
+    "payrollWriteDenied": true,
+    "languageModelDirectExecutionDenied": true,
+    "crossTenantExecutionDenied": true,
+    "unknownFaultFailsClosed": true
+  },
+  "learning": {
+    "policy": "Known, independently verified, reversible faults become deterministic machine reflexes. Unknown or high-impact faults remain isolate/protect/preserve only.",
+    "nextProof": "Connect these runbooks to real support incidents and provider/runtime executors in hosted staging without widening authority."
+  },
+  "claimBoundary": "Disposable CI proof using the exact sealed runtime remediation and safety modules plus isolated deterministic state primitives. This does not claim live customer, provider or production execution.",
+  "generatedAt": "2026-10-30T16:11:16.992Z"
+}
+
+=== node scripts/validate-support-incident-recovery-proof.mjs ===
+(node:121) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "schemaVersion": 1,
+  "proof": "customer-report-to-bounded-recovery",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "customerReportStored": true,
+  "supportInvestigationJobCreated": true,
+  "customerTextGrantsAuthority": false,
+  "instructionShapedCustomerTextIgnoredForAuthority": true,
+  "corroboratingSystemFindingRequired": true,
+  "selectionSource": "retained-deterministic-system-finding",
+  "selectedRunbook": "integration-transient",
+  "selectedAction": "integration.retry",
+  "blockedBeforeIndependentProof": true,
+  "independentDryRunVerified": true,
+  "safetyKernelApproved": true,
+  "isolatedRecoveryVerified": true,
+  "idempotencyVerified": true,
+  "evidenceDigest": "8d073237e46b433e24d77784a2609a4acc099fd7c6bd1a756a46441381e58252",
+  "verificationDigest": "7c1c48f9f611a90505a4af9def7e32c87ef96e941579bf085a00fb8152f85014",
+  "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831",
+  "findingToBoundedRecoveryMicros": 2342,
+  "executorMicros": 20,
+  "negativeAuthorityTests": {
+    "payrollWriteDenied": true,
+    "languageModelDirectExecutionDenied": true,
+    "crossTenantExecutionDenied": true,
+    "unknownFaultFailsClosed": true
+  },
+  "learning": {
+    "customerReportsAreSensorsNotAuthority": true,
+    "policy": "Customer reports create evidence and investigation work. Only corroborated deterministic same-tenant system evidence plus independent verification can select an allowlisted reversible repair.",
+    "nextProof": "Replace the isolated executor with the sealed provider-recovery authority path and then prove the same chain in hosted staging."
+  },
+  "claimBoundary": "Disposable CI proof using the exact sealed support store, remediation library and safety kernel. The bounded executor is isolated test state; this is not a live provider, Railway customer environment or production repair.",
+  "generatedAt": "2026-10-30T16:11:17.080Z"
+}
+(node:121) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+=== node scripts/validate-provider-recovery-authority-proof.mjs ===
+(node:131) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "schemaVersion": 1,
+  "proof": "attested-signed-provider-recovery-authority",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "buildIdentity": {
+    "release": "0.6.76-hosted-staging-rc1",
+    "sourceContentSha256": "456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781",
+    "artifactManifestSha256": "b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a",
+    "manifestRelease": "0.6.76-hosted-staging-rc1",
+    "manifestFiles": 137
+  },
+  "humanInteractionRequired": false,
+  "productionMutation": false,
+  "customerReportRetained": true,
+  "providerSystemFindingLinkedToSupport": true,
+  "realProviderJobStore": true,
+  "realProviderInvestigation": true,
+  "attestedIndependentVerification": true,
+  "attestationPolicy": {
+    "predicateType": "https://slsa.dev/provenance/v1",
+    "keyType": "ephemeral-ed25519-ci-only",
+    "repository": "paulallen123/-manufacturing-wfm",
+    "workflowRef": "wfm-autonomous-recovery-proof"
+  },
+  "signedExternalObservationVerified": true,
+  "externalObservationTrust": "untrusted-external-data",
+  "externalObservationIgnoredForAuthority": true,
+  "realDurableOneShotActionGrant": true,
+  "realBoundedProviderExecutor": true,
+  "selectedRunbook": "integration-transient",
+  "selectedAction": "integration.retry",
+  "providerNetworkCall": false,
+  "businessMutation": false,
+  "leaseReacquired": true,
+  "actionGrantReplayDenied": true,
+  "secondExecutionDeniedAfterStateChange": true,
+  "providerObservationTamperDenied": true,
+  "crossTenantDenied": true,
+  "staleEvidenceDenied": true,
+  "directLlmExecutionDenied": true,
+  "payrollWriteDenied": true,
+  "unknownRepairFailsClosed": true,
+  "verificationProofDigest": "1e12dde2473f39c79b6f050f31557530339d7794d90a26f4c8845b798c8e28d9",
+  "attestationStatementDigest": "3a76281ce5b223a9a3e0a489e2f1785300df1f3329a0308b0d8fd8d28fe55aa1",
+  "actionGrantJti": "3bfcaa6e-2cb5-4438-b382-787198836596",
+  "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831",
+  "executorMicros": 4012,
+  "fullProofMicros": 65796,
+  "auditEventTypes": [
+    "permit-issued",
+    "bounded-recovery-lease-acquired"
+  ],
+  "learning": {
+    "machineReflex": "provider retry/replay authority is selected only from retained same-tenant provider state plus exact-build attested verification; external provider text is audit evidence only.",
+    "oneShotAuthority": "signed action grants are durable and consumable exactly once.",
+    "stateChangeRule": "any provider-run evidence change after verification invalidates the recovery proof and blocks permit issuance.",
+    "nextProof": "run this exact chain against the hosted staging service once Railway deployment authorization is available; then connect successful lease recovery to the normal provider adapter and reconciliation without widening executor authority."
+  },
+  "claimBoundary": "Disposable CI proof using the exact sealed 0.6.76 provider job, investigation, attestation, authority and recovery modules. The executor only reacquires durable provider work; no external provider call, customer business mutation or production deployment occurs.",
+  "generatedAt": "2026-10-30T16:11:17.262Z"
+}
+(node:131) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+=== node scripts/validate-provider-recovery-handoff-prototype.mjs ===
+(node:141) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "schemaVersion": 1,
+  "proof": "provider-recovery-internal-handoff-reference",
+  "status": "PASS",
+  "candidate": "0.6.76-hosted-staging-rc1",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "runtimeMutation": false,
+  "productionMutation": false,
+  "referenceImplementationOnly": true,
+  "exactSealedSafetyDecisionUsed": true,
+  "allowedAction": "integration.retry",
+  "rawContinuationServerSideOnly": true,
+  "publicReceiptNoContinuation": true,
+  "publicStatusNoContinuation": true,
+  "capabilityTokenNoContinuation": true,
+  "auditEventsNoContinuation": true,
+  "correctWorkerReceivesExactContinuation": true,
+  "wrongTenantDenied": true,
+  "wrongRunDenied": true,
+  "wrongWorkerDenied": true,
+  "signatureTamperDenied": true,
+  "stateChangeDenied": true,
+  "replayDenied": true,
+  "expiryDenied": true,
+  "duplicateActionGrantDenied": true,
+  "directLlmIssuanceDenied": true,
+  "payrollActionDenied": true,
+  "crossTenantSafetyDenied": true,
+  "oneShot": true,
+  "shortLived": true,
+  "stateBound": true,
+  "evidenceBound": true,
+  "verificationBound": true,
+  "safetyDecisionBound": true,
+  "actionGrantBound": true,
+  "eventTypes": [
+    "handoff-issued",
+    "handoff-consumed"
+  ],
+  "continuationDigest": "b3ec29efe3407ae780e20c742c0a6754c65beb01651948f3dd1f67578014eeee",
+  "safetyDecisionDigest": "4cbf340cb5fbd8fce115f216ddeed17c0bdfe24d27699eca50dbe20fd56b4831",
+  "learning": {
+    "design": "Keep the continuation payload in server-side storage; pass only an opaque signed capability internally. Bind consumption to tenant, run, worker, current provider state, evidence, verification, safety decision and the consumed recovery action grant.",
+    "integrationRule": "The browser/admin recovery endpoint must continue returning only the existing sanitised recovery result. An internal provider orchestrator consumes the capability and passes nextRequest into the normal sealed adapter runner.",
+    "nextStep": "Port this contract into canonical WFM source as a derived staging candidate, add an internal provider runner, and prove recovered checkpoint continuation/reconciliation before any hosted or production claim."
+  },
+  "claimBoundary": "Security/reference proof only. This module is not imported by the sealed 0.6.76 runtime and does not repair the currently deployed handoff gap."
+}
+(node:141) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+=== node scripts/validate-vector-only-ui.mjs ===
+(node:151) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+VECTOR_ONLY_REPOSITORY_GUARD=PASS
+VECTOR_NEUTRAL_REVIEW_CONTRACT=PASS
+VECTOR_NEUTRAL_PLANNING_CONTRACT=PASS
+VECTOR_KPI_EVIDENCE_CONTRACT=PASS
+VECTOR_IDENTITY_SOURCE_CONTRACT=PASS
+VECTOR_LEAVE_SOURCE_CONTRACT=PASS
+VECTOR_ACTION_SOURCE_CONTRACT=PASS
+VECTOR_ACTION_LIFECYCLE_VISIBLE_CONTRACT=PASS
+VECTOR_ACTION_FRESHNESS_NEUTRAL_CONTRACT=PASS
+VECTOR_ACTION_CONFIRMATION_SOURCE_CONTRACT=PASS
+VECTOR_TIME_REVIEW_EVIDENCE_CONSUMER=PASS
+
+=== node scripts/validate-onedrive-sync-guardian.mjs ===
+(node:159) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS classifies auth, throttle and service failures
+PASS retries transient direct failures and succeeds without fallback
+PASS uses fallback after direct retries are exhausted
+PASS does not hide authentication failures behind fallback
+PASS falls back to last-known-good snapshot when Microsoft stays unavailable
+PASS refuses a stale base version before writing
+PASS passes expectedVersion to an exact write and persists a refreshed snapshot
+PASS queues a delta instead of losing it when a write has a transient failure
+PASS flushes a queued delta once connectivity returns
+PASS opens the circuit after repeated complete read failures
+10/10 OneDrive guardian checks passed
+
+=== node --experimental-sqlite --test --test-concurrency=1 implementation/runtime/one-day-enterprise-engine.test.cjs implementation/runtime/readiness-evidence-contract.test.cjs implementation/runtime/readiness-evidence-wrapper.test.cjs implementation/runtime/implementation-active-controller.integration.test.cjs implementation/runtime/implementation-work-controller.test.cjs implementation/runtime/implementation-work-fencing.test.cjs scripts/vector-repair-regressions.test.mjs tests/vector-payroll-release-proof.test.mjs scripts/current-candidate-role-browser-proof-server.test.mjs ===
+(node:171) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:178) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:178) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: unregistered workers cannot claim with the shared internal token or a claimed owner label
+ok 1 - unregistered workers cannot claim with the shared internal token or a claimed owner label
+  ---
+  duration_ms: 75.107575
+  type: 'test'
+  ...
+# Subtest: work result authentication is checked before looking up a run
+ok 2 - work result authentication is checked before looking up a run
+  ---
+  duration_ms: 69.268874
+  type: 'test'
+  ...
+# Subtest: registered worker routes enforce exact scope, private claim tokens and result ownership
+ok 3 - registered worker routes enforce exact scope, private claim tokens and result ownership
+  ---
+  duration_ms: 132.710114
+  type: 'test'
+  ...
+# Subtest: registered worker executes only its live fenced tenant-environment claim and awaits independent evidence
+ok 4 - registered worker executes only its live fenced tenant-environment claim and awaits independent evidence
+  ---
+  duration_ms: 139.813379
+  type: 'test'
+  ...
+# Subtest: trusted activation captures scope and autonomously provisions one tenant environment
+ok 5 - trusted activation captures scope and autonomously provisions one tenant environment
+  ---
+  duration_ms: 105.919294
+  type: 'test'
+  ...
+# Subtest: automated tenant environment effect remains unproven until independent evidence is recorded
+ok 6 - automated tenant environment effect remains unproven until independent evidence is recorded
+  ---
+  duration_ms: 131.517055
+  type: 'test'
+  ...
+# Subtest: missing policy authority creates blocking questions and only complete authorised answers satisfy policy gates
+ok 7 - missing policy authority creates blocking questions and only complete authorised answers satisfy policy gates
+  ---
+  duration_ms: 131.804739
+  type: 'test'
+  ...
+# (node:186) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:186) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: readiness becomes an executable dependency plan instead of a passive checklist
+ok 8 - readiness becomes an executable dependency plan instead of a passive checklist
+  ---
+  duration_ms: 11.50654
+  type: 'test'
+  ...
+# Subtest: independent safe work becomes runnable immediately when dependencies are satisfied
+ok 9 - independent safe work becomes runnable immediately when dependencies are satisfied
+  ---
+  duration_ms: 6.98803
+  type: 'test'
+  ...
+# Subtest: claimed work is effect-once and stale results fail closed
+ok 10 - claimed work is effect-once and stale results fail closed
+  ---
+  duration_ms: 10.4631
+  type: 'test'
+  ...
+# Subtest: retry and blocked states survive restart without idling unrelated work
+ok 11 - retry and blocked states survive restart without idling unrelated work
+  ---
+  duration_ms: 12.182616
+  type: 'test'
+  ...
+# Subtest: external authority is explicit while unrelated autonomous work remains visible
+ok 12 - external authority is explicit while unrelated autonomous work remains visible
+  ---
+  duration_ms: 7.285253
+  type: 'test'
+  ...
+# Subtest: authority-only state has no autonomous work and resumes when authority arrives
+ok 13 - authority-only state has no autonomous work and resumes when authority arrives
+  ---
+  duration_ms: 6.77412
+  type: 'test'
+  ...
+# (node:194) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:194) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: a reentrant effect cannot publish a receipt after invalidating its own claim
+ok 14 - a reentrant effect cannot publish a receipt after invalidating its own claim
+  ---
+  duration_ms: 11.586207
+  type: 'test'
+  ...
+# Subtest: a caught failed local effect rolls back its writes while an outer write commits
+ok 15 - a caught failed local effect rolls back its writes while an outer write commits
+  ---
+  duration_ms: 14.095687
+  type: 'test'
+  ...
+# Subtest: outer rollback undoes reconciliation, claim, local effect and receipt together
+ok 16 - outer rollback undoes reconciliation, claim, local effect and receipt together
+  ---
+  duration_ms: 7.924447
+  type: 'test'
+  ...
+# Subtest: failed nested effect rolls back only itself and preserves caller transaction
+ok 17 - failed nested effect rolls back only itself and preserves caller transaction
+  ---
+  duration_ms: 9.5335
+  type: 'test'
+  ...
+# Subtest: local configuration effect cannot run after its claim expires
+ok 18 - local configuration effect cannot run after its claim expires
+  ---
+  duration_ms: 8.25893
+  type: 'test'
+  ...
+# Subtest: local configuration and effect receipt commit or roll back together
+ok 19 - local configuration and effect receipt commit or roll back together
+  ---
+  duration_ms: 10.858675
+  type: 'test'
+  ...
+# Subtest: claim requires an explicit worker owner
+ok 20 - claim requires an explicit worker owner
+  ---
+  duration_ms: 6.634293
+  type: 'test'
+  ...
+# Subtest: complete rejects an unclaimed job
+ok 21 - complete rejects an unclaimed job
+  ---
+  duration_ms: 6.427219
+  type: 'test'
+  ...
+# Subtest: complete rejects the wrong worker owner
+ok 22 - complete rejects the wrong worker owner
+  ---
+  duration_ms: 8.992923
+  type: 'test'
+  ...
+# Subtest: complete rejects a missing claim token
+ok 23 - complete rejects a missing claim token
+  ---
+  duration_ms: 8.13058
+  type: 'test'
+  ...
+# Subtest: complete rejects at the exact lease-expiry boundary
+ok 24 - complete rejects at the exact lease-expiry boundary
+  ---
+  duration_ms: 7.14685
+  type: 'test'
+  ...
+# Subtest: complete rejects the old attempt after another worker reclaims
+ok 25 - complete rejects the old attempt after another worker reclaims
+  ---
+  duration_ms: 11.3847
+  type: 'test'
+  ...
+# Subtest: block rejects an unclaimed job
+ok 26 - block rejects an unclaimed job
+  ---
+  duration_ms: 7.14021
+  type: 'test'
+  ...
+# Subtest: block rejects the wrong worker owner
+ok 27 - block rejects the wrong worker owner
+  ---
+  duration_ms: 10.62504
+  type: 'test'
+  ...
+# Subtest: block rejects a missing claim token
+ok 28 - block rejects a missing claim token
+  ---
+  duration_ms: 9.058199
+  type: 'test'
+  ...
+# Subtest: block rejects at the exact lease-expiry boundary
+ok 29 - block rejects at the exact lease-expiry boundary
+  ---
+  duration_ms: 9.697522
+  type: 'test'
+  ...
+# Subtest: block rejects the old attempt after another worker reclaims
+ok 30 - block rejects the old attempt after another worker reclaims
+  ---
+  duration_ms: 12.823591
+  type: 'test'
+  ...
+# Subtest: fail rejects an unclaimed job
+ok 31 - fail rejects an unclaimed job
+  ---
+  duration_ms: 9.218616
+  type: 'test'
+  ...
+# Subtest: fail rejects the wrong worker owner
+ok 32 - fail rejects the wrong worker owner
+  ---
+  duration_ms: 10.239059
+  type: 'test'
+  ...
+# Subtest: fail rejects a missing claim token
+ok 33 - fail rejects a missing claim token
+  ---
+  duration_ms: 9.322579
+  type: 'test'
+  ...
+# Subtest: fail rejects at the exact lease-expiry boundary
+ok 34 - fail rejects at the exact lease-expiry boundary
+  ---
+  duration_ms: 7.038189
+  type: 'test'
+  ...
+# Subtest: fail rejects the old attempt after another worker reclaims
+ok 35 - fail rejects the old attempt after another worker reclaims
+  ---
+  duration_ms: 12.927185
+  type: 'test'
+  ...
+# Subtest: one live claim blocks a second database connection
+ok 36 - one live claim blocks a second database connection
+  ---
+  duration_ms: 7.149615
+  type: 'test'
+  ...
+# Subtest: claim token is unique, hashed at rest and absent from status views
+ok 37 - claim token is unique, hashed at rest and absent from status views
+  ---
+  duration_ms: 7.731932
+  type: 'test'
+  ...
+# Subtest: current owner records an effect and duplicate receipt is read-only
+ok 38 - current owner records an effect and duplicate receipt is read-only
+  ---
+  duration_ms: 9.625
+  type: 'test'
+  ...
+# Subtest: a different completion cannot overwrite an accepted effect
+ok 39 - a different completion cannot overwrite an accepted effect
+  ---
+  duration_ms: 8.125563
+  type: 'test'
+  ...
+# Subtest: a wrong owner cannot replay the accepted receipt
+ok 40 - a wrong owner cannot replay the accepted receipt
+  ---
+  duration_ms: 8.030763
+  type: 'test'
+  ...
+# Subtest: fence increases across retries and intent resets
+ok 41 - fence increases across retries and intent resets
+  ---
+  duration_ms: 11.718452
+  type: 'test'
+  ...
+# Subtest: a valid claim survives controller restart without replacement
+ok 42 - a valid claim survives controller restart without replacement
+  ---
+  duration_ms: 8.348582
+  type: 'test'
+  ...
+# Subtest: a claim from another deployment fails closed after restart
+ok 43 - a claim from another deployment fails closed after restart
+  ---
+  duration_ms: 8.405166
+  type: 'test'
+  ...
+# Subtest: result rejects wrong tenant
+ok 44 - result rejects wrong tenant
+  ---
+  duration_ms: 8.796863
+  type: 'test'
+  ...
+# Subtest: result rejects wrong runId
+ok 45 - result rejects wrong runId
+  ---
+  duration_ms: 11.275028
+  type: 'test'
+  ...
+# Subtest: receipt insertion rolls back when state update fails
+ok 46 - receipt insertion rolls back when state update fails
+  ---
+  duration_ms: 8.060487
+  type: 'test'
+  ...
+# Subtest: lease expiry cannot turn missing policy authority into runnable work
+ok 47 - lease expiry cannot turn missing policy authority into runnable work
+  ---
+  duration_ms: 7.787374
+  type: 'test'
+  ...
+# Subtest: a mismatched fence is rejected even with the correct token
+ok 48 - a mismatched fence is rejected even with the correct token
+  ---
+  duration_ms: 7.291043
+  type: 'test'
+  ...
+# Subtest: expired legacy RUNNING rows without ownership cannot complete
+ok 49 - expired legacy RUNNING rows without ownership cannot complete
+  ---
+  duration_ms: 6.749624
+  type: 'test'
+  ...
+# Subtest: complete rejects an incorrect token without changing state
+ok 50 - complete rejects an incorrect token without changing state
+  ---
+  duration_ms: 6.870421
+  type: 'test'
+  ...
+# Subtest: block rejects an incorrect token without changing state
+ok 51 - block rejects an incorrect token without changing state
+  ---
+  duration_ms: 11.478528
+  type: 'test'
+  ...
+# Subtest: fail rejects an incorrect token without changing state
+ok 52 - fail rejects an incorrect token without changing state
+  ---
+  duration_ms: 7.679014
+  type: 'test'
+  ...
+# Subtest: claim owner is mandatory and is not silently truncated
+ok 53 - claim owner is mandatory and is not silently truncated
+  ---
+  duration_ms: 6.591912
+  type: 'test'
+  ...
+# Subtest: public owner and fence do not authorize completion without the private token
+ok 54 - public owner and fence do not authorize completion without the private token
+  ---
+  duration_ms: 9.29616
+  type: 'test'
+  ...
+# Subtest: a revoked policy invalidates even an unexpired claim
+ok 55 - a revoked policy invalidates even an unexpired claim
+  ---
+  duration_ms: 8.84898
+  type: 'test'
+  ...
+# Subtest: a receipt failure preserves the original RUNNING lease
+ok 56 - a receipt failure preserves the original RUNNING lease
+  ---
+  duration_ms: 8.939313
+  type: 'test'
+  ...
+# (node:194) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:194) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:194) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:194) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:194) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:194) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:194) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:194) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:194) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:194) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:194) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:194) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: six concurrent connections return exactly one winning claim
+ok 57 - six concurrent connections return exactly one winning claim
+  ---
+  duration_ms: 138.393936
+  type: 'test'
+  ...
+# (node:208) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:208) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (node:218) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:228) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:238) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:248) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:258) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:268) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:278) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:288) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:298) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:308) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:318) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:328) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: legacy activation rejects before all writes when an unassociated run or environment already exists
+ok 58 - legacy activation rejects before all writes when an unassociated run or environment already exists
+  ---
+  duration_ms: 243.460947
+  type: 'test'
+  ...
+# (node:338) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: trusted adoption resolves identity independently of spoofed body and preserves completed setup through fresh-session renewal and upgrade
+ok 59 - trusted adoption resolves identity independently of spoofed body and preserves completed setup through fresh-session renewal and upgrade
+  ---
+  duration_ms: 257.961929
+  type: 'test'
+  ...
+# (node:348) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: initial adoption and replay preserve a pending legacy invitation without acquiring notification authority
+ok 60 - initial adoption and replay preserve a pending legacy invitation without acquiring notification authority
+  ---
+  duration_ms: 120.886797
+  type: 'test'
+  ...
+# Subtest: HTTP adoption audit failures roll back associations and successful adoption performs no later legacy audit writes
+# (node:358) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+ok 61 - HTTP adoption audit failures roll back associations and successful adoption performs no later legacy audit writes
+  ---
+  duration_ms: 125.704617
+  type: 'test'
+  ...
+# Subtest: revocation during initial invitation failure prevents later sends and preserves cancellation
+# (node:368) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+ok 62 - revocation during initial invitation failure prevents later sends and preserves cancellation
+  ---
+  duration_ms: 178.652102
+  type: 'test'
+  ...
+# Subtest: revocation during initial invitation success prevents later sends and preserves cancellation
+ok 63 - revocation during initial invitation success prevents later sends and preserves cancellation
+  ---
+  duration_ms: 185.723359
+  type: 'test'
+  ...
+# Subtest: revocation during background invitation failure prevents later sends and preserves cancellation
+# (node:378) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+ok 64 - revocation during background invitation failure prevents later sends and preserves cancellation
+  ---
+  duration_ms: 181.193384
+  type: 'test'
+  ...
+# Subtest: revocation during background invitation success prevents later sends and preserves cancellation
+ok 65 - revocation during background invitation success prevents later sends and preserves cancellation
+  ---
+  duration_ms: 206.570229
+  type: 'test'
+  ...
+# Subtest: setup apply rechecks permission after reading the body inside its transaction
+# (node:388) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+ok 66 - setup apply rechecks permission after reading the body inside its transaction
+  ---
+  duration_ms: 186.679869
+  type: 'test'
+  ...
+# Subtest: setup apply rechecks session after reading the body inside its transaction
+ok 67 - setup apply rechecks session after reading the body inside its transaction
+  ---
+  duration_ms: 176.147328
+  type: 'test'
+  ...
+# Subtest: setup apply rechecks freeze after reading the body inside its transaction
+# (node:398) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+ok 68 - setup apply rechecks freeze after reading the body inside its transaction
+  ---
+  duration_ms: 176.64409
+  type: 'test'
+  ...
+# Subtest: signed input without a real verifier is disabled and creates no workspace
+ok 69 - signed input without a real verifier is disabled and creates no workspace
+  ---
+  duration_ms: 82.358327
+  type: 'test'
+  ...
+# Subtest: verified signing creates a new owner once and renewal preserves completed questionnaire and namespace
+# (node:408) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+ok 70 - verified signing creates a new owner once and renewal preserves completed questionnaire and namespace
+  ---
+  duration_ms: 199.518304
+  type: 'test'
+  ...
+# Subtest: signing audit interruption rolls back owner, workspace, run and notification reservation
+ok 71 - signing audit interruption rolls back owner, workspace, run and notification reservation
+  ---
+  duration_ms: 180.085725
+  type: 'test'
+  ...
+# Subtest: replayed signing cannot issue fresh invitation authority after expiry
+ok 72 - replayed signing cannot issue fresh invitation authority after expiry
+  ---
+  duration_ms: 183.384265
+  type: 'test'
+  ...
+# Subtest: canonical owner revocation atomically closes initial authority: UPDATE users SET permissions='[]' WHERE email=?
+ok 73 - canonical owner revocation atomically closes initial authority: UPDATE users SET permissions='[]' WHERE email=?
+  ---
+  duration_ms: 211.586836
+  type: 'test'
+  ...
+# Subtest: canonical owner revocation atomically closes initial authority: DELETE FROM users WHERE email=?
+ok 74 - canonical owner revocation atomically closes initial authority: DELETE FROM users WHERE email=?
+  ---
+  duration_ms: 193.622054
+  type: 'test'
+  ...
+# Subtest: permanent workspace rejects legacy scope and activation replay cannot overwrite a reviewed setup
+ok 75 - permanent workspace rejects legacy scope and activation replay cannot overwrite a reviewed setup
+  ---
+  duration_ms: 186.468883
+  type: 'test'
+  ...
+# Subtest: setup routes require manager authority and bind drafts to the session tenant/current run
+ok 76 - setup routes require manager authority and bind drafts to the session tenant/current run
+  ---
+  duration_ms: 177.032908
+  type: 'test'
+  ...
+# Subtest: reviewed setup applies metadata through the fenced effect and keeps all 21 readiness controls
+ok 77 - reviewed setup applies metadata through the fenced effect and keeps all 21 readiness controls
+  ---
+  duration_ms: 239.547563
+  type: 'test'
+  ...
+# Subtest: setup application rolls back scope, environment, jobs and draft when implementation_events audit fails
+ok 78 - setup application rolls back scope, environment, jobs and draft when implementation_events audit fails
+  ---
+  duration_ms: 185.254748
+  type: 'test'
+  ...
+# Subtest: setup application rolls back scope, environment, jobs and draft when tenant_environment_events audit fails
+# (node:418) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+ok 79 - setup application rolls back scope, environment, jobs and draft when tenant_environment_events audit fails
+  ---
+  duration_ms: 190.016466
+  type: 'test'
+  ...
+# Subtest: setup application rolls back scope, environment, jobs and draft when workspace_setup_events audit fails
+ok 80 - setup application rolls back scope, environment, jobs and draft when workspace_setup_events audit fails
+  ---
+  duration_ms: 192.954729
+  type: 'test'
+  ...
+# Subtest: legacy scope write cannot commit when the required scope audit fails
+ok 81 - legacy scope write cannot commit when the required scope audit fails
+  ---
+  duration_ms: 184.314176
+  type: 'test'
+  ...
+# Subtest: hosted readiness reopens persisted evidence from a different candidate deployment or invalid policy authority
+ok 82 - hosted readiness reopens persisted evidence from a different candidate deployment or invalid policy authority
+  ---
+  duration_ms: 115.557068
+  type: 'test'
+  ...
+# Subtest: deployment change reopens previously satisfied work without deleting evidence
+ok 83 - deployment change reopens previously satisfied work without deleting evidence
+  ---
+  duration_ms: 127.527791
+  type: 'test'
+  ...
+# (node:428) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: hosted evidence admission refuses another candidate without recording a PASS
+ok 84 - hosted evidence admission refuses another candidate without recording a PASS
+  ---
+  duration_ms: 115.642903
+  type: 'test'
+  ...
+# Subtest: stored order HTTP completion uses its nominee and permanent workspace through setup, duplicate and renewal
+ok 85 - stored order HTTP completion uses its nominee and permanent workspace through setup, duplicate and renewal
+  ---
+  duration_ms: 243.141487
+  type: 'test'
+  ...
+# Subtest: stored order nomination while verifier awaits rejects old completion before owner or workspace effects
+ok 86 - stored order nomination while verifier awaits rejects old completion before owner or workspace effects
+  ---
+  duration_ms: 92.529221
+  type: 'test'
+  ...
+# (node:438) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: stored order revocation while verifier awaits rejects old completion before owner or workspace effects
+ok 87 - stored order revocation while verifier awaits rejects old completion before owner or workspace effects
+  ---
+  duration_ms: 89.736139
+  type: 'test'
+  ...
+# Subtest: stored order nomination change during invitation claim cancels old link and cannot restart questionnaire
+ok 88 - stored order nomination change during invitation claim cancels old link and cannot restart questionnaire
+  ---
+  duration_ms: 166.698297
+  type: 'test'
+  ...
+# Subtest: stored order invitation stays bound through a same-nominee revision and fails atomically if its receipt cannot persist
+ok 89 - stored order invitation stays bound through a same-nominee revision and fails atomically if its receipt cannot persist
+  ---
+  duration_ms: 144.02791
+  type: 'test'
+  ...
+# Subtest: stored order explicitly adopts a verified legacy tuple without mail authority and revocation cannot reuse its existing owner
+ok 90 - stored order explicitly adopts a verified legacy tuple without mail authority and revocation cannot reuse its existing owner
+  ---
+  duration_ms: 222.428852
+  type: 'test'
+  ...
+# Subtest: stored order invitation rechecks role after the awaited claim body
+ok 91 - stored order invitation rechecks role after the awaited claim body
+  ---
+  duration_ms: 120.044137
+  type: 'test'
+  ...
+# Subtest: stored order invitation rechecks permission after the awaited claim body
+ok 92 - stored order invitation rechecks permission after the awaited claim body
+  ---
+  duration_ms: 102.790851
+  type: 'test'
+  ...
+# Subtest: stored order invitation rechecks session after the awaited claim body
+ok 93 - stored order invitation rechecks session after the awaited claim body
+  ---
+  duration_ms: 107.589597
+  type: 'test'
+  ...
+# Subtest: stored order invitation rechecks revocation after the awaited claim body
+ok 94 - stored order invitation rechecks revocation after the awaited claim body
+  ---
+  duration_ms: 93.830279
+  type: 'test'
+  ...
+# Subtest: verified signed contract starts implementation immediately and sends one invitation
+ok 95 - verified signed contract starts implementation immediately and sends one invitation
+  ---
+  duration_ms: 92.255145
+  type: 'test'
+  ...
+# Subtest: trusted activation auto-starts a legacy pending invitation without reporting a missing run
+ok 96 - trusted activation auto-starts a legacy pending invitation without reporting a missing run
+  ---
+  duration_ms: 101.63057
+  type: 'test'
+  ...
+# Subtest: employee cannot inspect enterprise implementation control plane
+ok 97 - employee cannot inspect enterprise implementation control plane
+  ---
+  duration_ms: 101.152676
+  type: 'test'
+  ...
+# Subtest: eight-hour target is assessed by parallel critical path, not serial task sum
+ok 98 - eight-hour target is assessed by parallel critical path, not serial task sum
+  ---
+  duration_ms: 131.471992
+  type: 'test'
+  ...
+# Subtest: notification transport failure cannot block trusted zero-touch implementation start
+ok 99 - notification transport failure cannot block trusted zero-touch implementation start
+  ---
+  duration_ms: 93.51593
+  type: 'test'
+  ...
+# Subtest: legacy activation replay is blocked while the authorised recovery worker retries the same invitation
+ok 100 - legacy activation replay is blocked while the authorised recovery worker retries the same invitation
+  ---
+  duration_ms: 94.078605
+  type: 'test'
+  ...
+# Subtest: one trusted contract event automatically recovers a transient invitation failure
+ok 101 - one trusted contract event automatically recovers a transient invitation failure
+  ---
+  duration_ms: 91.816889
+  type: 'test'
+  ...
+# Subtest: automatic retry preserves an ambiguously accepted invitation and delivery identity
+ok 102 - automatic retry preserves an ambiguously accepted invitation and delivery identity
+  ---
+  duration_ms: 103.05869
+  type: 'test'
+  ...
+# Subtest: signed contract webhook replay uses the same bounded notification recovery
+ok 103 - signed contract webhook replay uses the same bounded notification recovery
+  ---
+  duration_ms: 115.112581
+  type: 'test'
+  ...
+# Subtest: failed invitation retries stop at a durable three-attempt budget
+ok 104 - failed invitation retries stop at a durable three-attempt budget
+  ---
+  duration_ms: 102.689342
+  type: 'test'
+  ...
+# Subtest: simultaneous delayed retry and trusted replay cannot duplicate delivery or falsely exhaust recovery
+ok 105 - simultaneous delayed retry and trusted replay cannot duplicate delivery or falsely exhaust recovery
+  ---
+  duration_ms: 98.139632
+  type: 'test'
+  ...
+# Subtest: implementation status explains pending and exhausted invitation recovery without exposing secrets
+ok 106 - implementation status explains pending and exhausted invitation recovery without exposing secrets
+  ---
+  duration_ms: 115.755142
+  type: 'test'
+  ...
+# Subtest: failed invitation is retried automatically after a safe engine restart
+ok 107 - failed invitation is retried automatically after a safe engine restart
+  ---
+  duration_ms: 135.054928
+  type: 'test'
+  ...
+# Subtest: tampered delayed-retry evidence fails closed without sending
+ok 108 - tampered delayed-retry evidence fails closed without sending
+  ---
+  duration_ms: 112.583766
+  type: 'test'
+  ...
+# Subtest: missing public origin does not block trusted implementation start or create a token
+ok 109 - missing public origin does not block trusted implementation start or create a token
+  ---
+  duration_ms: 92.731058
+  type: 'test'
+  ...
+# Subtest: missing message provider configuration fails immediately without wasting retries or storing an invitation
+ok 110 - missing message provider configuration fails immediately without wasting retries or storing an invitation
+  ---
+  duration_ms: 144.049308
+  type: 'test'
+  ...
+# Subtest: provider credential rejection stops after one attempt and requests authorised repair
+ok 111 - provider credential rejection stops after one attempt and requests authorised repair
+  ---
+  duration_ms: 121.978335
+  type: 'test'
+  ...
+# Subtest: authorised provider recovery resumes the same blocked invitation exactly once
+ok 112 - authorised provider recovery resumes the same blocked invitation exactly once
+  ---
+  duration_ms: 116.114668
+  type: 'test'
+  ...
+# Subtest: provider recovery becomes exhausted on the third failed send without a fourth action
+ok 113 - provider recovery becomes exhausted on the third failed send without a fourth action
+  ---
+  duration_ms: 138.566935
+  type: 'test'
+  ...
+# Subtest: implementation entry preflight exposes missing requirements before a contract without exposing secrets
+ok 114 - implementation entry preflight exposes missing requirements before a contract without exposing secrets
+  ---
+  duration_ms: 256.785391
+  type: 'test'
+  ...
+# Subtest: initial internal activation auto-starts once and replay requires a permanent workspace association
+ok 115 - initial internal activation auto-starts once and replay requires a permanent workspace association
+  ---
+  duration_ms: 109.566222
+  type: 'test'
+  ...
+# Subtest: invitation is bound to the intended tenant and recipient
+ok 116 - invitation is bound to the intended tenant and recipient
+  ---
+  duration_ms: 106.108668
+  type: 'test'
+  ...
+# Subtest: rigorous testing, cleanup and live import cannot be falsely marked complete
+ok 117 - rigorous testing, cleanup and live import cannot be falsely marked complete
+  ---
+  duration_ms: 123.702071
+  type: 'test'
+  ...
+# Subtest: readiness is fail-closed until every required evidence item passes at confidence floor
+ok 118 - readiness is fail-closed until every required evidence item passes at confidence floor
+  ---
+  duration_ms: 305.304859
+  type: 'test'
+  ...
+# Subtest: high-risk inference exception blocks go-live until customer resolves it
+ok 119 - high-risk inference exception blocks go-live until customer resolves it
+  ---
+  duration_ms: 291.562862
+  type: 'test'
+  ...
+# Subtest: implementation runs and decisions are tenant isolated
+ok 120 - implementation runs and decisions are tenant isolated
+  ---
+  duration_ms: 126.70221
+  type: 'test'
+  ...
+# Subtest: customer configuration scope is required, persisted and tenant scoped
+ok 121 - customer configuration scope is required, persisted and tenant scoped
+  ---
+  duration_ms: 107.468539
+  type: 'test'
+  ...
+# Subtest: trusted evidence cannot bypass missing customer scope
+ok 122 - trusted evidence cannot bypass missing customer scope
+  ---
+  duration_ms: 393.617677
+  type: 'test'
+  ...
+# Subtest: implementation audit events are append only
+ok 123 - implementation audit events are append only
+  ---
+  duration_ms: 94.157801
+  type: 'test'
+  ...
+# Subtest: unknown evidence kinds and raw untrusted evidence are rejected
+ok 124 - unknown evidence kinds and raw untrusted evidence are rejected
+  ---
+  duration_ms: 94.384486
+  type: 'test'
+  ...
+# Subtest: legacy implementation_events schema migrates every required audit field in place without losing rows or triggers
+ok 125 - legacy implementation_events schema migrates every required audit field in place without losing rows or triggers
+  ---
+  duration_ms: 77.163672
+  type: 'test'
+  ...
+# Subtest: tenant-environment PASS is validator-bound, fresh, and reopened by a later terminal failure
+ok 126 - tenant-environment PASS is validator-bound, fresh, and reopened by a later terminal failure
+  ---
+  duration_ms: 123.138675
+  type: 'test'
+  ...
+# Subtest: strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+ok 127 - strict replay proof rejects coercible or nonfinite totals and variance before durable admission
+  ---
+  duration_ms: 132.563552
+  type: 'test'
+  ...
+# Subtest: persisted malformed historical-replay receipt loses authority but remains auditable
+ok 128 - persisted malformed historical-replay receipt loses authority but remains auditable
+  ---
+  duration_ms: 106.051996
+  type: 'test'
+  ...
+# Subtest: persisted malformed time-policies receipt loses authority but remains auditable
+ok 129 - persisted malformed time-policies receipt loses authority but remains auditable
+  ---
+  duration_ms: 103.078104
+  type: 'test'
+  ...
+# Subtest: customer policy date rejects impossible days and malformed timestamps without resolving authority
+ok 130 - customer policy date rejects impossible days and malformed timestamps without resolving authority
+  ---
+  duration_ms: 156.254729
+  type: 'test'
+  ...
+# Subtest: current admission: scope update reopens affected evidence without treating 21/21 evidence as launch readiness
+ok 131 - current admission: scope update reopens affected evidence without treating 21/21 evidence as launch readiness
+  ---
+  duration_ms: 609.906429
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must retain and reject historical weak source-systems evidence
+ok 132 - current admission: strict restart must retain and reject historical weak source-systems evidence
+  ---
+  duration_ms: 311.843301
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must retain and reject historical weak security-controls evidence
+ok 133 - current admission: strict restart must retain and reject historical weak security-controls evidence
+  ---
+  duration_ms: 308.029797
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must retain and reject historical weak scenario-validation evidence
+ok 134 - current admission: strict restart must retain and reject historical weak scenario-validation evidence
+  ---
+  duration_ms: 318.799959
+  type: 'test'
+  ...
+# Subtest: current admission: strict restart must retain and reject historical weak live-data-import evidence
+ok 135 - current admission: strict restart must retain and reject historical weak live-data-import evidence
+  ---
+  duration_ms: 312.325598
+  type: 'test'
+  ...
+# Subtest: current admission: strict immediate admission rejects fixture provider, weak security and fixture live import before persistence
+ok 136 - current admission: strict immediate admission rejects fixture provider, weak security and fixture live import before persistence
+  ---
+  duration_ms: 71.45684
+  type: 'test'
+  ...
+# Subtest: current admission: candidate/deployment/tenant/run explicit mismatches are denied without any PASS persistence
+ok 137 - current admission: candidate/deployment/tenant/run explicit mismatches are denied without any PASS persistence
+  ---
+  duration_ms: 76.18419
+  type: 'test'
+  ...
+# Subtest: current admission: manager cookie and unauthenticated caller cannot publish internal readiness evidence
+ok 138 - current admission: manager cookie and unauthenticated caller cannot publish internal readiness evidence
+  ---
+  duration_ms: 65.556579
+  type: 'test'
+  ...
+# Subtest: current admission: same-count scope changes invalidate only affected proof epochs and cannot resurrect prior configuration authority
+ok 139 - current admission: same-count scope changes invalidate only affected proof epochs and cannot resurrect prior configuration authority
+  ---
+  duration_ms: 369.66058
+  type: 'test'
+  ...
+# Subtest: current admission: restored person binding cannot resurrect identity and security receipts
+ok 140 - current admission: restored person binding cannot resurrect identity and security receipts
+  ---
+  duration_ms: 291.160992
+  type: 'test'
+  ...
+# Subtest: current admission: identical scope resubmission preserves ready receipts and existing effect/job identity
+ok 141 - current admission: identical scope resubmission preserves ready receipts and existing effect/job identity
+  ---
+  duration_ms: 301.298576
+  type: 'test'
+  ...
+# Subtest: current admission: configuration-bound evidence rejects stale digest while caller-issued seals are always refused
+ok 142 - current admission: configuration-bound evidence rejects stale digest while caller-issued seals are always refused
+  ---
+  duration_ms: 86.324698
+  type: 'test'
+  ...
+# Subtest: current admission: receipts accepted before first configuration cannot acquire its authority retroactively
+ok 143 - current admission: receipts accepted before first configuration cannot acquire its authority retroactively
+  ---
+  duration_ms: 222.489532
+  type: 'test'
+  ...
+# Subtest: current admission: unassociated activation cannot mutate scope or resurrect prior receipts
+ok 144 - current admission: unassociated activation cannot mutate scope or resurrect prior receipts
+  ---
+  duration_ms: 284.996011
+  type: 'test'
+  ...
+# Subtest: current admission: orchestration does not enter normal operation from evidence rows alone
+ok 145 - current admission: orchestration does not enter normal operation from evidence rows alone
+  ---
+  duration_ms: 280.987094
+  type: 'test'
+  ...
+# Subtest: current admission: orchestration surfaces customer authority instead of pretending implementation is complete
+ok 146 - current admission: orchestration surfaces customer authority instead of pretending implementation is complete
+  ---
+  duration_ms: 274.218318
+  type: 'test'
+  ...
+# (node:446) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: tenant environment refuses weak, fixture or human-assisted evidence
+ok 147 - tenant environment refuses weak, fixture or human-assisted evidence
+  ---
+  duration_ms: 1.955533
+  type: 'test'
+  ...
+# Subtest: source systems require zero-human discovery, authorisation and a real provider receipt
+ok 148 - source systems require zero-human discovery, authorisation and a real provider receipt
+  ---
+  duration_ms: 0.211903
+  type: 'test'
+  ...
+# Subtest: historical replay labels its data class and requires independent exact payroll reconciliation
+ok 149 - historical replay labels its data class and requires independent exact payroll reconciliation
+  ---
+  duration_ms: 0.177131
+  type: 'test'
+  ...
+# Subtest: security, scenario and live import evidence are fail-closed without overstating synthetic tests
+ok 150 - security, scenario and live import evidence are fail-closed without overstating synthetic tests
+  ---
+  duration_ms: 0.448261
+  type: 'test'
+  ...
+# Subtest: non-PASS evidence remains recordable for diagnostics
+ok 151 - non-PASS evidence remains recordable for diagnostics
+  ---
+  duration_ms: 0.182119
+  type: 'test'
+  ...
+# Subtest: runtime identity defeats contradictory tenant-environment claims
+ok 152 - runtime identity defeats contradictory tenant-environment claims
+  ---
+  duration_ms: 0.128219
+  type: 'test'
+  ...
+# Subtest: semantic readiness gates reject generic candidate-bound booleans
+ok 153 - semantic readiness gates reject generic candidate-bound booleans
+  ---
+  duration_ms: 0.35887
+  type: 'test'
+  ...
+# Subtest: operational freshness expires current-state evidence
+ok 154 - operational freshness expires current-state evidence
+  ---
+  duration_ms: 0.130462
+  type: 'test'
+  ...
+# (node:454) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:454) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: strict wrapper preserves worker authentication before exposing contract errors
+ok 155 - strict wrapper preserves worker authentication before exposing contract errors
+  ---
+  duration_ms: 86.256527
+  type: 'test'
+  ...
+# Subtest: strict wrapper rejects weak readiness evidence before it reaches the core engine
+ok 156 - strict wrapper rejects weak readiness evidence before it reaches the core engine
+  ---
+  duration_ms: 85.533231
+  type: 'test'
+  ...
+# Subtest: strict wrapper admits structured zero-human cloud environment evidence and delegates to core
+ok 157 - strict wrapper admits structured zero-human cloud environment evidence and delegates to core
+  ---
+  duration_ms: 93.010667
+  type: 'test'
+  ...
+# Subtest: generic internal evidence cannot manufacture customer policy authority
+ok 158 - generic internal evidence cannot manufacture customer policy authority
+  ---
+  duration_ms: 77.574344
+  type: 'test'
+  ...
+# (node:462) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: wrapper preserves complete scoped payroll evidence without promoting customer readiness
+ok 159 - wrapper preserves complete scoped payroll evidence without promoting customer readiness
+  ---
+  duration_ms: 128.010609
+  type: 'test'
+  ...
+# Subtest: absent payroll evidence stays unverified through the wrapper
+ok 160 - absent payroll evidence stays unverified through the wrapper
+  ---
+  duration_ms: 65.737284
+  type: 'test'
+  ...
+# Subtest: malformed request target returns generic400 and preserves partial proof and readiness denial
+ok 161 - malformed request target returns generic400 and preserves partial proof and readiness denial
+  ---
+  duration_ms: 63.909308
+  type: 'test'
+  ...
+# Subtest: a persisted payroll batch mismatch remains unverified through the wrapper
+ok 162 - a persisted payroll batch mismatch remains unverified through the wrapper
+  ---
+  duration_ms: 63.639111
+  type: 'test'
+  ...
+# Subtest: duplicate team signatures cannot substitute for distinct scoped team sign offs
+ok 163 - duplicate team signatures cannot substitute for distinct scoped team sign offs
+  ---
+  duration_ms: 63.984274
+  type: 'test'
+  ...
+# (node:514) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: authoritative zero attendance and absence survive unrelated rendered numbers
+ok 164 - authoritative zero attendance and absence survive unrelated rendered numbers
+  ---
+  duration_ms: 1.655852
+  type: 'test'
+  ...
+# Subtest: an empty workforce is not replaced by a number from another card
+ok 165 - an empty workforce is not replaced by a number from another card
+  ---
+  duration_ms: 0.518204
+  type: 'test'
+  ...
+# Subtest: missing evidence stays unknown
+ok 166 - missing evidence stays unknown
+  ---
+  duration_ms: 0.429634
+  type: 'test'
+  ...
+# Subtest: missing, blank, boolean and malformed costs cannot become a verified zero
+ok 167 - missing, blank, boolean and malformed costs cannot become a verified zero
+  ---
+  duration_ms: 3.305224
+  type: 'test'
+  ...
+# Subtest: verified zero and pence values remain valid
+ok 168 - verified zero and pence values remain valid
+  ---
+  duration_ms: 1.261471
+  type: 'test'
+  ...
+# Subtest: unbound navigation proof cannot claim end-to-end readiness
+ok 169 - unbound navigation proof cannot claim end-to-end readiness
+  ---
+  duration_ms: 0.328555
+  type: 'test'
+  ...
+# Subtest: exact assets and successful role checks still require completed business workflows
+ok 170 - exact assets and successful role checks still require completed business workflows
+  ---
+  duration_ms: 0.113217
+  type: 'test'
+  ...
+# Subtest: opening a workflow route cannot be counted as a completed business action
+ok 171 - opening a workflow route cannot be counted as a completed business action
+  ---
+  duration_ms: 0.103262
+  type: 'test'
+  ...
+# Subtest: saved leave UI journey removes navigation-only gaps but retains audit and backend proof boundaries
+ok 172 - saved leave UI journey removes navigation-only gaps but retains audit and backend proof boundaries
+  ---
+  duration_ms: 0.340923
+  type: 'test'
+  ...
+# Subtest: saved attendance correction is reported separately without manufacturing weekly or payroll readiness
+ok 173 - saved attendance correction is reported separately without manufacturing weekly or payroll readiness
+  ---
+  duration_ms: 0.351168
+  type: 'test'
+  ...
+# (node:522) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: payroll proof rejects a release when any expected team lacks exact sign-off evidence
+ok 174 - payroll proof rejects a release when any expected team lacks exact sign-off evidence
+  ---
+  duration_ms: 1.349911
+  type: 'test'
+  ...
+# Subtest: payroll proof accepts exact all-team sign-offs and one checksum-bound persisted release
+ok 175 - payroll proof accepts exact all-team sign-offs and one checksum-bound persisted release
+  ---
+  duration_ms: 0.262086
+  type: 'test'
+  ...
+1..175
+# tests 175
+# suites 0
+# pass 175
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17864.385227
+
+=== node --test operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.test.cjs scripts/prove-vector-built-asset-provenance.test.mjs policy/runtime/country-policy-pack-registry.test.cjs policy/runtime/jurisdiction-policy-graph.test.cjs policy/runtime/global-site-policy-preflight.test.cjs policy/runtime/authoritative-policy-source-registry.test.cjs policy/runtime/regulatory-change-candidate.test.cjs policy/runtime/v026-tenant-policy-scope.test.cjs ===
+(node:530) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:537) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: builds first factory-autopilot shadow decision from simulated candidates
+ok 1 - builds first factory-autopilot shadow decision from simulated candidates
+  ---
+  duration_ms: 14.372309
+  type: 'test'
+  ...
+# Subtest: requires skills and source evidence
+ok 2 - requires skills and source evidence
+  ---
+  duration_ms: 0.694073
+  type: 'test'
+  ...
+# (node:538) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: silent demand is recognised
+ok 3 - silent demand is recognised
+  ---
+  duration_ms: 1.091599
+  type: 'test'
+  ...
+# Subtest: independent repeated demand outranks otherwise equal single-account noise
+ok 4 - independent repeated demand outranks otherwise equal single-account noise
+  ---
+  duration_ms: 1.148583
+  type: 'test'
+  ...
+# Subtest: mandatory high-risk demand remains visible even if evidence is narrow
+ok 5 - mandatory high-risk demand remains visible even if evidence is narrow
+  ---
+  duration_ms: 0.322706
+  type: 'test'
+  ...
+# Subtest: outcome KPI and falsification are required
+ok 6 - outcome KPI and falsification are required
+  ---
+  duration_ms: 0.330958
+  type: 'test'
+  ...
+# (node:539) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: episode is deterministic regardless of option order
+ok 7 - episode is deterministic regardless of option order
+  ---
+  duration_ms: 12.456248
+  type: 'test'
+  ...
+# Subtest: hard constraint or policy violating option is never recommended
+ok 8 - hard constraint or policy violating option is never recommended
+  ---
+  duration_ms: 0.548709
+  type: 'test'
+  ...
+# Subtest: do-nothing option is mandatory
+ok 9 - do-nothing option is mandatory
+  ---
+  duration_ms: 0.529871
+  type: 'test'
+  ...
+# Subtest: shadow mode cannot create execution authority
+ok 10 - shadow mode cannot create execution authority
+  ---
+  duration_ms: 0.579224
+  type: 'test'
+  ...
+# Subtest: outcome records predicted versus actual delta with evidence
+ok 11 - outcome records predicted versus actual delta with evidence
+  ---
+  duration_ms: 0.841391
+  type: 'test'
+  ...
+# (node:545) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: simulation can never become learning-eligible or verified value
+ok 12 - simulation can never become learning-eligible or verified value
+  ---
+  duration_ms: 16.869261
+  type: 'test'
+  ...
+# Subtest: operational proof requires independent baseline and result evidence
+ok 13 - operational proof requires independent baseline and result evidence
+  ---
+  duration_ms: 0.961498
+  type: 'test'
+  ...
+# Subtest: cost improvement maps lower actual cost to positive learning delta
+ok 14 - cost improvement maps lower actual cost to positive learning delta
+  ---
+  duration_ms: 0.681785
+  type: 'test'
+  ...
+# Subtest: realised financial value requires finance evidence currency and a bounded window
+ok 15 - realised financial value requires finance evidence currency and a bounded window
+  ---
+  duration_ms: 0.954507
+  type: 'test'
+  ...
+# Subtest: non-financial KPI cannot be labelled realised financial value
+ok 16 - non-financial KPI cannot be labelled realised financial value
+  ---
+  duration_ms: 0.559425
+  type: 'test'
+  ...
+# (node:551) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:551) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: maps lifecycle evidence to silent operational demand without inventing an outcome
+ok 17 - maps lifecycle evidence to silent operational demand without inventing an outcome
+  ---
+  duration_ms: 1.622022
+  type: 'test'
+  ...
+# Subtest: manager summary is tenant isolated and employee access is denied
+ok 18 - manager summary is tenant isolated and employee access is denied
+  ---
+  duration_ms: 26.986365
+  type: 'test'
+  ...
+# Subtest: trusted worker can persist a shadow decision but cannot grant execution authority
+ok 19 - trusted worker can persist a shadow decision but cannot grant execution authority
+  ---
+  duration_ms: 50.083741
+  type: 'test'
+  ...
+# (node:557) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: exported authority tier metadata cannot widen private source admission
+ok 20 - exported authority tier metadata cannot widen private source admission
+  ---
+  duration_ms: 1.811962
+  type: 'test'
+  ...
+# Subtest: exported channel metadata cannot widen private source admission
+ok 21 - exported channel metadata cannot widen private source admission
+  ---
+  duration_ms: 0.2441
+  type: 'test'
+  ...
+# Subtest: editing exported metadata cannot remove supported source tiers or channels
+ok 22 - editing exported metadata cannot remove supported source tiers or channels
+  ---
+  duration_ms: 0.701624
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 2026-02-30T08:00:00Z cannot enter source evidence
+ok 23 - impossible calendar timestamp 2026-02-30T08:00:00Z cannot enter source evidence
+  ---
+  duration_ms: 0.532325
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 2026-02-30T08:00:00Z cannot manufacture freshness
+ok 24 - impossible assessment timestamp 2026-02-30T08:00:00Z cannot manufacture freshness
+  ---
+  duration_ms: 1.477699
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 2025-02-29T08:00:00Z cannot enter source evidence
+ok 25 - impossible calendar timestamp 2025-02-29T08:00:00Z cannot enter source evidence
+  ---
+  duration_ms: 0.225563
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 2025-02-29T08:00:00Z cannot manufacture freshness
+ok 26 - impossible assessment timestamp 2025-02-29T08:00:00Z cannot manufacture freshness
+  ---
+  duration_ms: 0.428763
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 1900-02-29T08:00:00Z cannot enter source evidence
+ok 27 - impossible calendar timestamp 1900-02-29T08:00:00Z cannot enter source evidence
+  ---
+  duration_ms: 0.207526
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 1900-02-29T08:00:00Z cannot manufacture freshness
+ok 28 - impossible assessment timestamp 1900-02-29T08:00:00Z cannot manufacture freshness
+  ---
+  duration_ms: 0.480358
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 2026-04-31T08:00:00+01:00 cannot enter source evidence
+ok 29 - impossible calendar timestamp 2026-04-31T08:00:00+01:00 cannot enter source evidence
+  ---
+  duration_ms: 0.61037
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 2026-04-31T08:00:00+01:00 cannot manufacture freshness
+ok 30 - impossible assessment timestamp 2026-04-31T08:00:00+01:00 cannot manufacture freshness
+  ---
+  duration_ms: 0.362755
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 2026-06-31 cannot enter source evidence
+ok 31 - impossible calendar timestamp 2026-06-31 cannot enter source evidence
+  ---
+  duration_ms: 0.250009
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 2026-06-31 cannot manufacture freshness
+ok 32 - impossible assessment timestamp 2026-06-31 cannot manufacture freshness
+  ---
+  duration_ms: 0.218062
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp +002026-02-30T08:00:00Z cannot enter source evidence
+ok 33 - impossible calendar timestamp +002026-02-30T08:00:00Z cannot enter source evidence
+  ---
+  duration_ms: 0.161438
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp +002026-02-30T08:00:00Z cannot manufacture freshness
+ok 34 - impossible assessment timestamp +002026-02-30T08:00:00Z cannot manufacture freshness
+  ---
+  duration_ms: 0.197922
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 2026-02-30t08:00:00z cannot enter source evidence
+ok 35 - impossible calendar timestamp 2026-02-30t08:00:00z cannot enter source evidence
+  ---
+  duration_ms: 0.204601
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 2026-02-30t08:00:00z cannot manufacture freshness
+ok 36 - impossible assessment timestamp 2026-02-30t08:00:00z cannot manufacture freshness
+  ---
+  duration_ms: 0.198783
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 2026-02-30 08:00:00Z cannot enter source evidence
+ok 37 - impossible calendar timestamp 2026-02-30 08:00:00Z cannot enter source evidence
+  ---
+  duration_ms: 0.160036
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 2026-02-30 08:00:00Z cannot manufacture freshness
+ok 38 - impossible assessment timestamp 2026-02-30 08:00:00Z cannot manufacture freshness
+  ---
+  duration_ms: 0.19659
+  type: 'test'
+  ...
+# Subtest: impossible calendar timestamp 2026-2-30 08:00:00Z cannot enter source evidence
+ok 39 - impossible calendar timestamp 2026-2-30 08:00:00Z cannot enter source evidence
+  ---
+  duration_ms: 0.195629
+  type: 'test'
+  ...
+# Subtest: impossible assessment timestamp 2026-2-30 08:00:00Z cannot manufacture freshness
+ok 40 - impossible assessment timestamp 2026-2-30 08:00:00Z cannot manufacture freshness
+  ---
+  duration_ms: 0.27811
+  type: 'test'
+  ...
+# Subtest: valid leap days and timezone offsets retain exact instants and receipt binding
+ok 41 - valid leap days and timezone offsets retain exact instants and receipt binding
+  ---
+  duration_ms: 0.86842
+  type: 'test'
+  ...
+# Subtest: registered source language evidence cannot change under its admitted digest
+ok 42 - registered source language evidence cannot change under its admitted digest
+  ---
+  duration_ms: 1.154392
+  type: 'test'
+  ...
+# Subtest: registerSource result freezes normalized language evidence while caller inputs and returned lists stay detached
+ok 43 - registerSource result freezes normalized language evidence while caller inputs and returned lists stay detached
+  ---
+  duration_ms: 0.271089
+  type: 'test'
+  ...
+# Subtest: invalid unknown source freshness cannot manufacture current evidence
+ok 44 - invalid unknown source freshness cannot manufacture current evidence
+  ---
+  duration_ms: 0.422613
+  type: 'test'
+  ...
+# Subtest: invalid NaN source freshness cannot manufacture current evidence
+ok 45 - invalid NaN source freshness cannot manufacture current evidence
+  ---
+  duration_ms: 0.160016
+  type: 'test'
+  ...
+# Subtest: invalid Infinity source freshness cannot manufacture current evidence
+ok 46 - invalid Infinity source freshness cannot manufacture current evidence
+  ---
+  duration_ms: 0.166345
+  type: 'test'
+  ...
+# Subtest: invalid negative Infinity source freshness cannot manufacture current evidence
+ok 47 - invalid negative Infinity source freshness cannot manufacture current evidence
+  ---
+  duration_ms: 0.158003
+  type: 'test'
+  ...
+# Subtest: invalid NaN text source freshness cannot manufacture current evidence
+ok 48 - invalid NaN text source freshness cannot manufacture current evidence
+  ---
+  duration_ms: 0.144693
+  type: 'test'
+  ...
+# Subtest: invalid Infinity text source freshness cannot manufacture current evidence
+ok 49 - invalid Infinity text source freshness cannot manufacture current evidence
+  ---
+  duration_ms: 0.154368
+  type: 'test'
+  ...
+# Subtest: finite freshness preserves defaults and clamping but never admits six-year-old evidence
+ok 50 - finite freshness preserves defaults and clamping but never admits six-year-old evidence
+  ---
+  duration_ms: 0.7049
+  type: 'test'
+  ...
+# Subtest: verified official snapshot becomes current evidence
+ok 51 - verified official snapshot becomes current evidence
+  ---
+  duration_ms: 1.334428
+  type: 'test'
+  ...
+# Subtest: stale source cannot silently remain usable
+ok 52 - stale source cannot silently remain usable
+  ---
+  duration_ms: 0.18315
+  type: 'test'
+  ...
+# Subtest: unverified retrieval cannot enter authoritative evidence
+ok 53 - unverified retrieval cannot enter authoritative evidence
+  ---
+  duration_ms: 0.208948
+  type: 'test'
+  ...
+# Subtest: source metadata never grants execution authority
+ok 54 - source metadata never grants execution authority
+  ---
+  duration_ms: 0.134599
+  type: 'test'
+  ...
+# Subtest: snapshot observed at 2026-09-25T09:00:00.001Z is unusable before observation
+ok 55 - snapshot observed at 2026-09-25T09:00:00.001Z is unusable before observation
+  ---
+  duration_ms: 0.227205
+  type: 'test'
+  ...
+# Subtest: snapshot observed at 2026-09-25T10:00:00Z is unusable before observation
+ok 56 - snapshot observed at 2026-09-25T10:00:00Z is unusable before observation
+  ---
+  duration_ms: 0.1153
+  type: 'test'
+  ...
+# Subtest: snapshot observed at 2027-09-25T09:00:00Z is unusable before observation
+ok 57 - snapshot observed at 2027-09-25T09:00:00Z is unusable before observation
+  ---
+  duration_ms: 0.099547
+  type: 'test'
+  ...
+# Subtest: same snapshot becomes current exactly at observation then expires without changing its receipt
+ok 58 - same snapshot becomes current exactly at observation then expires without changing its receipt
+  ---
+  duration_ms: 0.194947
+  type: 'test'
+  ...
+# Subtest: future source evidence cannot enter the existing regulatory candidate path
+ok 59 - future source evidence cannot enter the existing regulatory candidate path
+  ---
+  duration_ms: 0.414521
+  type: 'test'
+  ...
+# (node:559) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 60 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 9.769336
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 61 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 1.355458
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 62 - verified pack requires provenance
+  ---
+  duration_ms: 0.374813
+  type: 'test'
+  ...
+# (node:593) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: complete known site becomes advisory-ready with zero routine customer rule entry
+ok 63 - complete known site becomes advisory-ready with zero routine customer rule entry
+  ---
+  duration_ms: 3.739704
+  type: 'test'
+  ...
+# Subtest: unknown organisational facts create only targeted exception questions
+ok 64 - unknown organisational facts create only targeted exception questions
+  ---
+  duration_ms: 1.399293
+  type: 'test'
+  ...
+# Subtest: worker temporarily located in unsupported country blocks only that worker policy coverage
+ok 65 - worker temporarily located in unsupported country blocks only that worker policy coverage
+  ---
+  duration_ms: 0.791647
+  type: 'test'
+  ...
+# Subtest: preflight never grants execution or customer mutation authority
+ok 66 - preflight never grants execution or customer mutation authority
+  ---
+  duration_ms: 0.628627
+  type: 'test'
+  ...
+# Subtest: unknown workforce population omitted cannot become advisory-ready
+ok 67 - unknown workforce population omitted cannot become advisory-ready
+  ---
+  duration_ms: 0.475652
+  type: 'test'
+  ...
+# Subtest: unknown workforce population null cannot become advisory-ready
+ok 68 - unknown workforce population null cannot become advisory-ready
+  ---
+  duration_ms: 0.131914
+  type: 'test'
+  ...
+# Subtest: unknown workforce population object cannot become advisory-ready
+ok 69 - unknown workforce population object cannot become advisory-ready
+  ---
+  duration_ms: 0.215107
+  type: 'test'
+  ...
+# Subtest: unknown workforce population string cannot become advisory-ready
+ok 70 - unknown workforce population string cannot become advisory-ready
+  ---
+  duration_ms: 0.107067
+  type: 'test'
+  ...
+# Subtest: workforce missing id cannot be silently omitted from policy coverage
+ok 71 - workforce missing id cannot be silently omitted from policy coverage
+  ---
+  duration_ms: 0.453959
+  type: 'test'
+  ...
+# Subtest: workforce blank id cannot be silently omitted from policy coverage
+ok 72 - workforce blank id cannot be silently omitted from policy coverage
+  ---
+  duration_ms: 0.48797
+  type: 'test'
+  ...
+# Subtest: workforce null row cannot be silently omitted from policy coverage
+ok 73 - workforce null row cannot be silently omitted from policy coverage
+  ---
+  duration_ms: 0.186465
+  type: 'test'
+  ...
+# Subtest: duplicate normalized worker identities cannot inflate covered population
+ok 74 - duplicate normalized worker identities cannot inflate covered population
+  ---
+  duration_ms: 0.193656
+  type: 'test'
+  ...
+# Subtest: explicitly empty workforce remains a zero-worker advisory result without authority
+ok 75 - explicitly empty workforce remains a zero-worker advisory result without authority
+  ---
+  duration_ms: 0.382334
+  type: 'test'
+  ...
+# Subtest: distinct supplied workers retain complete policy coverage and input state
+ok 76 - distinct supplied workers retain complete policy coverage and input state
+  ---
+  duration_ms: 0.783806
+  type: 'test'
+  ...
+# (node:599) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: published node scope cannot change applicability under its admitted digest
+ok 77 - published node scope cannot change applicability under its admitted digest
+  ---
+  duration_ms: 3.830027
+  type: 'test'
+  ...
+# Subtest: registered node freezes nested scope, rules and provenance without freezing caller data
+ok 78 - registered node freezes nested scope, rules and provenance without freezing caller data
+  ---
+  duration_ms: 0.702786
+  type: 'test'
+  ...
+# Subtest: published resolution freezes nested evidence and values under its context digest
+ok 79 - published resolution freezes nested evidence and values under its context digest
+  ---
+  duration_ms: 0.575929
+  type: 'test'
+  ...
+# Subtest: bitemporal resolution distinguishes legal validity from what VECTOR knew
+ok 80 - bitemporal resolution distinguishes legal validity from what VECTOR knew
+  ---
+  duration_ms: 0.334443
+  type: 'test'
+  ...
+# Subtest: mandatory ceilings compose to the strictest applicable rule across layers
+ok 81 - mandatory ceilings compose to the strictest applicable rule across layers
+  ---
+  duration_ms: 0.4678
+  type: 'test'
+  ...
+# Subtest: customer policy cannot weaken a mandatory ceiling
+ok 82 - customer policy cannot weaken a mandatory ceiling
+  ---
+  duration_ms: 0.471796
+  type: 'test'
+  ...
+# Subtest: collective agreement scope does not leak to workers outside that agreement
+ok 83 - collective agreement scope does not leak to workers outside that agreement
+  ---
+  duration_ms: 0.870314
+  type: 'test'
+  ...
+# Subtest: verified exceptions never silently weaken the base rule
+ok 84 - verified exceptions never silently weaken the base rule
+  ---
+  duration_ms: 0.424686
+  type: 'test'
+  ...
+# (node:601) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: published candidate cannot change policy domain under its original review decision
+ok 85 - published candidate cannot change policy domain under its original review decision
+  ---
+  duration_ms: 2.740632
+  type: 'test'
+  ...
+# Subtest: published candidate source references cannot change under its original digest
+ok 86 - published candidate source references cannot change under its original digest
+  ---
+  duration_ms: 0.33905
+  type: 'test'
+  ...
+# Subtest: published affected-site evidence cannot change after candidate admission
+ok 87 - published affected-site evidence cannot change after candidate admission
+  ---
+  duration_ms: 0.368543
+  type: 'test'
+  ...
+# Subtest: freezing published candidate keeps supplied change and site evidence detached and editable
+ok 88 - freezing published candidate keeps supplied change and site evidence detached and editable
+  ---
+  duration_ms: 0.96964
+  type: 'test'
+  ...
+# Subtest: invalid NaN confidence cannot suppress qualified policy review
+ok 89 - invalid NaN confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.277119
+  type: 'test'
+  ...
+# Subtest: invalid Infinity confidence cannot suppress qualified policy review
+ok 90 - invalid Infinity confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.182369
+  type: 'test'
+  ...
+# Subtest: invalid negative Infinity confidence cannot suppress qualified policy review
+ok 91 - invalid negative Infinity confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.14943
+  type: 'test'
+  ...
+# Subtest: invalid non-numeric text confidence cannot suppress qualified policy review
+ok 92 - invalid non-numeric text confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.181278
+  type: 'test'
+  ...
+# Subtest: invalid above one confidence cannot suppress qualified policy review
+ok 93 - invalid above one confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.328845
+  type: 'test'
+  ...
+# Subtest: invalid negative confidence cannot suppress qualified policy review
+ok 94 - invalid negative confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.543412
+  type: 'test'
+  ...
+# Subtest: invalid boolean confidence cannot suppress qualified policy review
+ok 95 - invalid boolean confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.206905
+  type: 'test'
+  ...
+# Subtest: invalid array confidence cannot suppress qualified policy review
+ok 96 - invalid array confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.126206
+  type: 'test'
+  ...
+# Subtest: invalid object confidence cannot suppress qualified policy review
+ok 97 - invalid object confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.107579
+  type: 'test'
+  ...
+# Subtest: invalid blank text confidence cannot suppress qualified policy review
+ok 98 - invalid blank text confidence cannot suppress qualified policy review
+  ---
+  duration_ms: 0.146536
+  type: 'test'
+  ...
+# Subtest: valid confidence threshold and absent confidence preserve qualified-review behavior
+ok 99 - valid confidence threshold and absent confidence preserve qualified-review behavior
+  ---
+  duration_ms: 1.059483
+  type: 'test'
+  ...
+# Subtest: malformed confidence in a mixed candidate denies admission without changing caller evidence
+ok 100 - malformed confidence in a mixed candidate denies admission without changing caller evidence
+  ---
+  duration_ms: 0.428261
+  type: 'test'
+  ...
+# Subtest: unchanged authoritative snapshot creates no change
+ok 101 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 0.144143
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 102 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 0.263038
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 103 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 0.172204
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 104 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.212043
+  type: 'test'
+  ...
+# (node:602) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: same site and legal entity IDs do not cross an explicit tenant scope
+ok 105 - same site and legal entity IDs do not cross an explicit tenant scope
+  ---
+  duration_ms: 10.89812
+  type: 'test'
+  ...
+# Subtest: missing or malformed tenant context cannot match an explicitly scoped node
+ok 106 - missing or malformed tenant context cannot match an explicitly scoped node
+  ---
+  duration_ms: 0.763686
+  type: 'test'
+  ...
+# Subtest: an explicit list of tenant scopes admits only exact named tenants
+ok 107 - an explicit list of tenant scopes admits only exact named tenants
+  ---
+  duration_ms: 0.77343
+  type: 'test'
+  ...
+# Subtest: explicitly malformed tenant scopes are rejected instead of becoming global
+ok 108 - explicitly malformed tenant scopes are rejected instead of becoming global
+  ---
+  duration_ms: 0.788262
+  type: 'test'
+  ...
+# Subtest: an explicit tenant scope cannot disappear during JSON cloning
+ok 109 - an explicit tenant scope cannot disappear during JSON cloning
+  ---
+  duration_ms: 0.423936
+  type: 'test'
+  ...
+# Subtest: unscoped public rules remain available with or without a tenant
+ok 110 - unscoped public rules remain available with or without a tenant
+  ---
+  duration_ms: 0.742484
+  type: 'test'
+  ...
+# Subtest: preflight forwards its tenant so only that tenant gains scoped coverage
+ok 111 - preflight forwards its tenant so only that tenant gains scoped coverage
+  ---
+  duration_ms: 1.34244
+  type: 'test'
+  ...
+# Subtest: preflight context digest binds exact tenant while leaving caller input unchanged
+ok 112 - preflight context digest binds exact tenant while leaving caller input unchanged
+  ---
+  duration_ms: 2.984351
+  type: 'test'
+  ...
+# Subtest: preflight rejects tenant inputs that would coerce or truncate into another binding
+ok 113 - preflight rejects tenant inputs that would coerce or truncate into another binding
+  ---
+  duration_ms: 0.59701
+  type: 'test'
+  ...
+# (node:613) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: admits only all three exact presentation/controller assets from the candidate source
+ok 114 - admits only all three exact presentation/controller assets from the candidate source
+  ---
+  duration_ms: 5.245836
+  type: 'test'
+  ...
+# Subtest: an approval marker cannot disguise arbitrary replacement JavaScript
+ok 115 - an approval marker cannot disguise arbitrary replacement JavaScript
+  ---
+  duration_ms: 2.438846
+  type: 'test'
+  ...
+# Subtest: a changed workflow controller cannot pass the UI provenance check
+ok 116 - a changed workflow controller cannot pass the UI provenance check
+  ---
+  duration_ms: 1.812002
+  type: 'test'
+  ...
+# Subtest: workflow styling is included in the source-bound final CSS bytes
+ok 117 - workflow styling is included in the source-bound final CSS bytes
+  ---
+  duration_ms: 1.825422
+  type: 'test'
+  ...
+# Subtest: demand intelligence source is bound into the canonical built assets
+ok 118 - demand intelligence source is bound into the canonical built assets
+  ---
+  duration_ms: 1.882867
+  type: 'test'
+  ...
+# Subtest: reporting source is bound into the canonical built assets
+ok 119 - reporting source is bound into the canonical built assets
+  ---
+  duration_ms: 1.977496
+  type: 'test'
+  ...
+1..119
+# tests 119
+# suites 0
+# pass 119
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 205.149571
+
+VECTOR_FORGE_CORE_CI=PASS
