@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "lane": "V005",
+  "stageBefore": "BLOCKED",
+  "stageAfter": "BLOCKED / offline contract repair independently tested; activation unperformed",
+  "research": "NO / SKIP_REPEAT_RESEARCH",
+  "createdAt": "2026-10-30T01:28:05.426366+00:00",
+  "sourceSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "primary": "/root/proof_runner_unblock",
+  "independentReviewer": "/root",
+  "requestedModel": "Sol xhigh",
+  "runtimeModelIdentifier": "unexposed",
+  "canonicalOwnerRetained": true,
+  "productionFilesChanged": false,
+  "temporaryCandidateChanges": [
+    "scripts/proof-access-preflight.cjs",
+    "scripts/proof-access-preflight.test.cjs"
+  ],
+  "baselineBlobs": {
+    "scripts/proof-access-preflight.cjs": "80668b6f9c1e10d97501ca41e50ca59c684778ee",
+    "scripts/proof-access-preflight.test.cjs": "d9eded07d6d30f3599afbb7c0adfa024351eacda",
+    "scripts/current-candidate-role-browser-proof.mjs": "b736e153d621daeec4915fbe8627885b6496ff00"
+  },
+  "checks": [
+    {
+      "name": "baseline-existing",
+      "node": "v24.22.1",
+      "exitCode": 0,
+      "pass": 3,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "name": "baseline-expanded-regression",
+      "node": "v24.22.1",
+      "exitCode": 1,
+      "pass": 3,
+      "fail": 8,
+      "skip": 0
+    },
+    {
+      "name": "applied-patch",
+      "node": "v24.22.1",
+      "exitCode": 0,
+      "pass": 11,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "name": "independent-final-review",
+      "node": "22",
+      "reportedBy": "/root",
+      "exitCode": 0,
+      "pass": 11,
+      "fail": 0,
+      "skip": 0,
+      "decision": "ACCEPT"
+    }
+  ],
+  "claimBoundary": {
+    "hostedProof": false,
+    "sessionIssued": false,
+    "runnerActivated": false,
+    "businessJourneysProven": false,
+    "providerContacted": false,
+    "productReady": false,
+    "customerAccepted": false
+  },
+  "files": {
+    "README.md": {
+      "sha256": "e93a717a9c03c1477dcc8d32bf0dbba94dbb8535c9b3f7c3260c9e83b4cd491f",
+      "bytes": 4937
+    },
+    "applied-patch.tap": {
+      "sha256": "12cf020291f449441151077d51c1f5198a661547679b883dce90b4c65b41c04b",
+      "bytes": 2517
+    },
+    "baseline-existing.tap": {
+      "sha256": "09b07c2d476bb2a8dbb9b697b1abda203e8a9dc3ceb8b0e616ff5ad68ec1387d",
+      "bytes": 724
+    },
+    "baseline-new-regressions.tap": {
+      "sha256": "b5e5ecf04082e42e4c3a0dd026f5136d104ba4c95a2f4aadb0d0b8f8eac14932",
+      "bytes": 10502
+    },
+    "proof-access-preflight.cjs": {
+      "sha256": "4622bd3831732eced01ed981f94a374300fbe976e87bab7414dab532eb16a0c9",
+      "bytes": 3570
+    },
+    "proof-access-preflight.test.cjs": {
+      "sha256": "9971670327dd39249d8bbb30a6b60b6f8b45b058b927e4799a79f21cbeb973ba",
+      "bytes": 7931
+    },
+    "v005-preflight-parity.patch": {
+      "sha256": "e1e9edd28aaf0faa96e434e768ee3d5e40a4b390c8bd432a70e5f59056b5ea2d",
+      "bytes": 10786
+    }
+  }
+}

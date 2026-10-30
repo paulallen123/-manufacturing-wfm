@@ -1,0 +1,165 @@
+diff --git a/scripts/proof-access-preflight.cjs b/scripts/proof-access-preflight.cjs
+--- a/scripts/proof-access-preflight.cjs
++++ b/scripts/proof-access-preflight.cjs
+@@ -5,15 +5,30 @@
+   const required = ['VECTOR_PROOF_AUTH_PROFILE','VECTOR_PROOF_URL','WFM_EXPECTED_CANDIDATE_SHA','EXPECTED_DEPLOYMENT_ID','EXPECTED_IMPLEMENTATION_TENANT','EXPECTED_IMPLEMENTATION_RUN_ID','EXPECTED_CONFIGURATION_DIGEST','VECTOR_PROOF_ACTORS_JSON','PROOF_PRIVATE_KEY_B64'];
+   for (const name of required) if (!env[name]) missing.push(name);
+   const check = (name, predicate) => { if (env[name] && !predicate(env[name])) invalid.push(name); };
++  // Match createProofClient's offline input contract. This never exchanges a
++  // session or verifies that the configured signer/actors are authorized.
++  const bounded = (value, limit) => typeof value === 'string' && value.trim() === value && value.length > 0 && value.length <= limit;
+   check('VECTOR_PROOF_AUTH_PROFILE', value => value === 'signed');
+-  check('VECTOR_PROOF_URL', value => { try { const u = new URL(value); return u.protocol === 'https:' && u.origin + '/' === value && !u.username && !u.password; } catch { return false; } });
+-  check('WFM_EXPECTED_CANDIDATE_SHA', value => /^[a-f0-9]{40}$/.test(value));
+-  check('EXPECTED_CONFIGURATION_DIGEST', value => /^[a-f0-9]{64}$/.test(value));
+-  check('PROOF_PRIVATE_KEY_B64', value => { try { return createPrivateKey(Buffer.from(value, 'base64').toString('utf8')).asymmetricKeyType === 'ed25519'; } catch { return false; } });
++  check('VECTOR_PROOF_URL', value => { try { const u = new URL(value); return u.protocol === 'https:' && u.pathname === '/' && !u.search && !u.hash && !u.username && !u.password; } catch { return false; } });
++  check('WFM_EXPECTED_CANDIDATE_SHA', value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value));
++  for (const name of ['EXPECTED_DEPLOYMENT_ID','EXPECTED_IMPLEMENTATION_TENANT','EXPECTED_IMPLEMENTATION_RUN_ID']) check(name, value => bounded(value, 160));
++  check('EXPECTED_CONFIGURATION_DIGEST', value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value));
++  check('PROOF_PRIVATE_KEY_B64', value => {
++    try {
++      if (typeof value !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(value) || value.length > 8192) return false;
++      const decoded = Buffer.from(value, 'base64');
++      if (decoded.toString('base64') !== value) return false;
++      const pem = decoded.toString('utf8');
++      return /^-----BEGIN PRIVATE KEY-----\r?\n[\s\S]+\r?\n-----END PRIVATE KEY-----\r?\n?$/.test(pem) &&
++        createPrivateKey(pem).asymmetricKeyType === 'ed25519';
++    } catch { return false; }
++  });
+   check('VECTOR_PROOF_ACTORS_JSON', value => {
+     try {
+       const actors = JSON.parse(value), roles = {'manager':'manager','employee':'employee','payroll':'payroll_admin','company-admin':'director','isolation-manager':'manager'};
+-      return Array.isArray(actors) && actors.length === 5 && new Set(actors.map(a => a.email?.toLowerCase())).size === 5 &&
++      return Array.isArray(actors) && actors.length === 5 &&
++        actors.every(a => a && typeof a === 'object' && !Array.isArray(a) && ['slug','email','tenant','role'].every(key => bounded(a[key], 240))) &&
++        new Set(actors.map(a => a.email.toLowerCase())).size === 5 &&
+         Object.entries(roles).every(([slug, role]) => {
+           const matches = actors.filter(a => a.slug === slug);
+           if (matches.length !== 1) return false;
+diff --git a/scripts/proof-access-preflight.test.cjs b/scripts/proof-access-preflight.test.cjs
+--- a/scripts/proof-access-preflight.test.cjs
++++ b/scripts/proof-access-preflight.test.cjs
+@@ -5,3 +5,122 @@
+ test('preflight identifies missing setup without printing credentials or implying authorization',()=>{const e=valid();delete e.VECTOR_PROOF_ACTORS_JSON;const r=inspectProofAccess(e);assert.equal(r.status,'BLOCKED');assert.deepEqual(r.missing,['VECTOR_PROOF_ACTORS_JSON']);assert.ok(!JSON.stringify(r).includes(e.PROOF_PRIVATE_KEY_B64));});
+ test('valid offline configuration is not a hosted-proof claim',()=>{const r=inspectProofAccess(valid());assert.equal(r.status,'CONFIGURATION_VALID');assert.match(r.scope,/no session issued/);});
+ test('wrong isolation tenant and password mode fail closed',()=>{const e=valid();const a=JSON.parse(e.VECTOR_PROOF_ACTORS_JSON);a[4].tenant='fixture';e.VECTOR_PROOF_ACTORS_JSON=JSON.stringify(a);e.VECTOR_PROOF_AUTH_PROFILE='fixture-password';assert.deepEqual(inspectProofAccess(e).invalid,['VECTOR_PROOF_AUTH_PROFILE','VECTOR_PROOF_ACTORS_JSON']);});
++
++// Exercise the existing public client factory without importing Playwright or
++// executing the runner body. This is offline configuration parity, not login.
++const fs = require('node:fs');
++const vm = require('node:vm');
++const crypto = require('node:crypto');
++const { spawnSync } = require('node:child_process');
++const clientSource = fs.readFileSync(require.resolve('./current-candidate-role-browser-proof.mjs'), 'utf8');
++const boundary = clientSource.indexOf('// VECTOR_PROOF_CLIENT_RUNNER_START');
++assert.ok(boundary > 0, 'Client factory boundary must remain explicit.');
++const clientPrefix = clientSource.slice(0, boundary)
++  .replace(/^import .*?;\r?\n/gm, '')
++  .replaceAll('export function ', 'function ');
++const createProofClient = vm.runInNewContext(clientPrefix + '\n;createProofClient',
++  { assert, crypto, URL, Buffer, process: { env: {} } });
++
++function requireBlocked(env, field) {
++  assert.throws(() => createProofClient(env), 'Actual client must reject the same input.');
++  const result = inspectProofAccess(env);
++  assert.equal(result.status, 'BLOCKED');
++  assert.ok(result.invalid.includes(field), 'Expected invalid field: ' + field);
++}
++
++test('preflight accepts the same HTTPS origin spellings as the signed client', () => {
++  for (const origin of ['https://vector.test', 'https://vector.test/', 'https://vector.test:443/', 'https://vector.test:8443/']) {
++    const env = { ...valid(), VECTOR_PROOF_URL: origin };
++    assert.equal(createProofClient(env).origin, new URL(origin).origin);
++    assert.equal(inspectProofAccess(env).status, 'CONFIGURATION_VALID');
++  }
++  for (const origin of ['http://vector.test/', 'https://user:pass@vector.test/', 'https://vector.test/path', 'https://vector.test/?q=1', 'https://vector.test/#part']) {
++    requireBlocked({ ...valid(), VECTOR_PROOF_URL: origin }, 'VECTOR_PROOF_URL');
++  }
++});
++
++for (const field of ['EXPECTED_DEPLOYMENT_ID', 'EXPECTED_IMPLEMENTATION_TENANT', 'EXPECTED_IMPLEMENTATION_RUN_ID']) {
++  test('preflight enforces trimmed bounded client binding: ' + field, () => {
++    for (const value of [' ', ' leading', 'trailing ', 'x'.repeat(161), 7]) {
++      requireBlocked({ ...valid(), [field]: value }, field);
++    }
++    const env = valid();
++    env[field] = 'x'.repeat(160);
++    if (field === 'EXPECTED_IMPLEMENTATION_TENANT') {
++      const actors = JSON.parse(env.VECTOR_PROOF_ACTORS_JSON);
++      for (const actor of actors) if (actor.slug !== 'isolation-manager') actor.tenant = env[field];
++      env.VECTOR_PROOF_ACTORS_JSON = JSON.stringify(actors);
++    }
++    assert.doesNotThrow(() => createProofClient(env));
++    assert.equal(inspectProofAccess(env).status, 'CONFIGURATION_VALID');
++  });
++}
++
++test('preflight rejects noncanonical base64, invalid PEM envelopes and wrong key types', () => {
++  const env = valid();
++  const pem = Buffer.from(env.PROOF_PRIVATE_KEY_B64, 'base64').toString('utf8');
++  const values = [
++    env.PROOF_PRIVATE_KEY_B64 + '\n',
++    '@' + env.PROOF_PRIVATE_KEY_B64,
++    env.PROOF_PRIVATE_KEY_B64 + '=',
++    Buffer.from('\n' + pem).toString('base64'),
++    Buffer.from(pem + ' \n').toString('base64'),
++    Buffer.from(pem.replace('\n', '\n' + '\n'.repeat(7000))).toString('base64'),
++    Buffer.from(generateKeyPairSync('ec', { namedCurve: 'prime256v1' }).privateKey.export({ type: 'pkcs8', format: 'pem' })).toString('base64')
++  ];
++  for (const value of values) requireBlocked({ ...env, PROOF_PRIVATE_KEY_B64: value }, 'PROOF_PRIVATE_KEY_B64');
++  for (const value of [pem, pem.trimEnd(), pem.replaceAll('\n', '\r\n')]) {
++    const config = { ...env, PROOF_PRIVATE_KEY_B64: Buffer.from(value).toString('base64') };
++    assert.doesNotThrow(() => createProofClient(config));
++    assert.equal(inspectProofAccess(config).status, 'CONFIGURATION_VALID');
++  }
++});
++
++test('preflight rejects actor shape and length drift before runner startup', () => {
++  const cases = [
++    actors => { actors[4].tenant = ' other'; },
++    actors => { actors[4].tenant = 'other '; },
++    actors => { actors[4].tenant = 'x'.repeat(241); },
++    actors => { actors[0].email = 'x'.repeat(230) + '@example.test'; },
++    actors => { actors[0] = null; },
++    actors => { actors[0].email = actors[1].email.toUpperCase(); },
++    actors => { actors[0].role = 'director'; },
++    actors => { actors[0].slug = ' manager'; }
++  ];
++  for (const mutate of cases) {
++    const env = valid(), actors = JSON.parse(env.VECTOR_PROOF_ACTORS_JSON);
++    mutate(actors);
++    requireBlocked({ ...env, VECTOR_PROOF_ACTORS_JSON: JSON.stringify(actors) }, 'VECTOR_PROOF_ACTORS_JSON');
++  }
++  const env = valid(), actors = JSON.parse(env.VECTOR_PROOF_ACTORS_JSON);
++  actors.reverse();
++  for (const actor of actors) actor.email = actor.email.toUpperCase();
++  env.VECTOR_PROOF_ACTORS_JSON = JSON.stringify(actors);
++  assert.doesNotThrow(() => createProofClient(env));
++  assert.equal(inspectProofAccess(env).status, 'CONFIGURATION_VALID');
++});
++
++test('preflight rejects non-string source and configuration digests without coercion', () => {
++  for (const field of ['WFM_EXPECTED_CANDIDATE_SHA', 'EXPECTED_CONFIGURATION_DIGEST']) {
++    const env = valid(), digest = env[field];
++    for (const value of [{ toString: () => digest }, Object(digest), [digest]]) {
++      requireBlocked({ ...env, [field]: value }, field);
++    }
++  }
++});
++
++test('CLI fails closed with field names only and preserves the offline claim boundary', () => {
++  const env = valid();
++  env.EXPECTED_DEPLOYMENT_ID = ' invalid-binding';
++  const child = spawnSync(process.execPath, [require.resolve('./proof-access-preflight.cjs')], { env, encoding: 'utf8', timeout: 10000 });
++  assert.ifError(child.error);
++  assert.equal(child.status, 1);
++  const result = JSON.parse(child.stdout);
++  assert.equal(result.status, 'BLOCKED');
++  assert.ok(result.invalid.includes('EXPECTED_DEPLOYMENT_ID'));
++  assert.match(result.scope, /no session issued, server authorization or customer proof established/);
++  for (const sensitive of [env.PROOF_PRIVATE_KEY_B64, env.VECTOR_PROOF_ACTORS_JSON, env.EXPECTED_DEPLOYMENT_ID]) {
++    assert.ok(!child.stdout.includes(sensitive));
++    assert.ok(!child.stderr.includes(sensitive));
++  }
++});
