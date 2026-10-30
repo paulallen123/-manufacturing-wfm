@@ -1,12 +1,20 @@
 import { DatabaseSync } from 'node:sqlite';
+import { types } from 'node:util';
 import { AdaptiveIntelligenceEngine } from './engine.mjs';
 
 // Narrow, synchronous replay ledger for an approved local SQLite state path.
 // The caller still owns source authentication, tenant binding and volume custody.
 const columns=['tenantScope','source','category','fingerprint','evidenceRef'];
-function normalize(input){
-  if(!input||typeof input!=='object'||(Object.getPrototypeOf(input)!==Object.prototype&&Object.getPrototypeOf(input)!==null)) throw new Error('OUTCOME_INERT_RECORD_REQUIRED');
-  if(Reflect.ownKeys(input).some(key=>typeof key!=='string'||!Object.getOwnPropertyDescriptor(input,key)?.enumerable||!('value' in Object.getOwnPropertyDescriptor(input,key)))) throw new Error('OUTCOME_INERT_RECORD_REQUIRED');
+function normalize(raw){
+  if(!raw||typeof raw!=='object'||types.isProxy(raw)) throw new Error('OUTCOME_INERT_RECORD_REQUIRED');
+  const prototype=Object.getPrototypeOf(raw);
+  if(prototype!==Object.prototype&&prototype!==null) throw new Error('OUTCOME_INERT_RECORD_REQUIRED');
+  const descriptors=Object.getOwnPropertyDescriptors(raw),input=Object.create(null);
+  for(const key of Reflect.ownKeys(descriptors)){
+    const descriptor=descriptors[key];
+    if(typeof key!=='string'||!descriptor.enumerable||!Object.hasOwn(descriptor,'value')) throw new Error('OUTCOME_INERT_RECORD_REQUIRED');
+    input[key]=descriptor.value;
+  }
   for(const key of columns) if(typeof input[key]!=='string'||!input[key].trim()||input[key].length>512) throw new Error('OUTCOME_STABLE_'+key+'_REQUIRED');
   if(typeof input.baseline!=='number'||!Number.isFinite(input.baseline)||typeof input.result!=='number'||!Number.isFinite(input.result)) throw new Error('OUTCOME_FINITE_VALUES_REQUIRED');
   if(typeof input.verified!=='boolean') throw new Error('OUTCOME_VERIFIED_BOOLEAN_REQUIRED');
