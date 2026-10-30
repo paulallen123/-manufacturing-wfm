@@ -171,4 +171,3 @@ function toAdaptiveOutcomeInput(proof){
 }
 
 module.exports=Object.freeze({CLASSIFICATIONS,DIRECTIONS,FINANCIAL_METRICS,createDecisionOutcomeProof,toAdaptiveOutcomeInput,digest});
-
