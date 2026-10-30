@@ -1,8 +1,21 @@
 'use strict';
 
 // Advisory comparison of two supplied source records; source authentication belongs upstream.
+const { types } = require('node:util');
 const SHA = /^[0-9a-f]{64}$/;
 function fail(code) { throw new Error(code); }
+function inertRecord(value) {
+  if (!value || typeof value !== 'object' || types.isProxy(value) || Array.isArray(value)) fail('INERT_RECORD');
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) fail('INERT_RECORD');
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const snapshot = Object.create(null);
+  for (const key of Reflect.ownKeys(descriptors)) {
+    if (typeof key !== 'string' || !descriptors[key].enumerable || !Object.hasOwn(descriptors[key], 'value')) fail('INERT_RECORD');
+    snapshot[key] = descriptors[key].value;
+  }
+  return snapshot;
+}
 function id(value) { return typeof value === 'string' && value.length > 0 && value.length <= 160 && value.trim() === value; }
 function time(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) fail('INVALID_TIME');
@@ -21,12 +34,12 @@ function record(value, input, expectedSource) {
   return observed;
 }
 function assessOrderStartVariance(input) {
-  if (!input || typeof input !== 'object' || Array.isArray(input) ||
-    !id(input.tenantId) || !id(input.siteId) || !id(input.lineId) || !id(input.orderId) ||
-    !Number.isSafeInteger(input.maxAgeMinutes) || input.maxAgeMinutes < 1 || input.maxAgeMinutes > 1440) fail('INVALID_SCOPE');
-  const asOfMs = time(input.asOf);
-  const context = { ...input, asOfMs };
-  const plan = input.plan, actual = input.actual;
+  const scope = inertRecord(input);
+  if (!id(scope.tenantId) || !id(scope.siteId) || !id(scope.lineId) || !id(scope.orderId) ||
+    !Number.isSafeInteger(scope.maxAgeMinutes) || scope.maxAgeMinutes < 1 || scope.maxAgeMinutes > 1440) fail('INVALID_SCOPE');
+  const asOfMs = time(scope.asOf);
+  const context = { ...scope, asOfMs };
+  const plan = inertRecord(scope.plan), actual = inertRecord(scope.actual);
   const planObserved = record(plan, context, 'ERP');
   const actualObserved = record(actual, context, 'MES');
   if (plan.recordSha256 === actual.recordSha256) fail('SOURCE_COLLISION');
@@ -39,7 +52,7 @@ function assessOrderStartVariance(input) {
   const deltaMs = actualStart - plannedStart;
   if (deltaMs % 60000 !== 0 || !Number.isSafeInteger(deltaMs / 60000)) fail('UNSUPPORTED_PRECISION');
   return Object.freeze({
-    tenantId: input.tenantId, siteId: input.siteId, lineId: input.lineId, orderId: input.orderId,
+    tenantId: scope.tenantId, siteId: scope.siteId, lineId: scope.lineId, orderId: scope.orderId,
     plannedRevision: plan.revision, plannedRecordSha256: plan.recordSha256,
     actualRecordSha256: actual.recordSha256, startVarianceMinutes: deltaMs / 60000,
     status: deltaMs > 0 ? 'STARTED_LATE' : deltaMs < 0 ? 'STARTED_EARLY' : 'ON_TIME',
