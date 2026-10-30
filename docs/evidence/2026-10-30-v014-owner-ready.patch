@@ -1,0 +1,387 @@
+diff --git a/integration/runtime/autonomous-integration-hub.cjs b/integration/runtime/autonomous-integration-hub.cjs
+index 16eeaa8..127f83a 100644
+--- a/integration/runtime/autonomous-integration-hub.cjs
++++ b/integration/runtime/autonomous-integration-hub.cjs
+@@ -2,10 +2,17 @@
+ 
+ const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
+ const { DatabaseSync } = require('node:sqlite');
++const path = require('node:path');
+ const { createGustoCompanyConnector } = require('./gusto-company-connector.cjs');
+ const { serveGustoOAuthLanding } = require('./gusto-oauth-landing.cjs');
+ 
+ const { createThreeMinFeed } = require('./three-min-feed.cjs');
++// Source/tests retain their tree layout; the installed image places the two
++// runtime directories side by side under /app.
++const setupPolicyPath = path.basename(__dirname) === 'integration-runtime'
++  ? '../implementation-runtime/setup-only-policy.cjs'
++  : '../../implementation/runtime/setup-only-policy.cjs';
++const { createSetupOnlyPolicy } = require(setupPolicyPath);
+ 
+ const PREFIX = '/api/integrations/autonomous';
+ const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
+@@ -366,10 +373,42 @@ function createAutonomousIntegrationHub(options = {}) {
+       'BEGIN SELECT RAISE(ABORT,\'Integration events are append only.\'); END;'
+   );
+ 
+-  const feed = createThreeMinFeed({ db, env: options.env || process.env, now: options.now || Date.now });
++  const feed = createThreeMinFeed({
++    db, env: options.env || process.env, now: options.now || Date.now,
++    assertEffect: tenant => requirePhase(tenant, 'OPERATIONAL_READ')
++  });
++
++  // The hub can also run for legacy tenants with no customer-workspace
++  // registry. Once any registry state exists, use its current, durable phase
++  // binding before an integration effect. An incomplete registry fails closed.
++  const setupRegistryMarker = db.prepare(
++    "SELECT 1 FROM sqlite_master WHERE type='table' AND " +
++    "(name='customer_workspaces' OR name GLOB 'customer_workspace_*') LIMIT 1"
++  );
++  const setupRegistryRequiredCount = db.prepare(
++    "SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name IN " +
++    "('customer_workspaces','customer_workspace_contracts','customer_workspace_events'," +
++    "'customer_workspace_adoptions','customer_workspace_orders','tenants','implementation_runs')"
++  );
++  let setupPolicy;
++  function requirePhase(tenant, purpose) {
++    if (!setupPolicy) {
++      if (!setupRegistryMarker.get()) return;
++      setupPolicy = createSetupOnlyPolicy({ db });
++    }
++    if (setupRegistryRequiredCount.get().n !== 7) {
++      throw Object.assign(new Error('Setup mode binding unavailable.'), {
++        code: 'SETUP_MODE_BINDING_UNAVAILABLE', statusCode: 503
++      });
++    }
++    setupPolicy.assertAllowed({ tenant, purpose });
++  }
+ 
+   const gustoEnv = options.env || process.env;
+-  const gusto = createGustoCompanyConnector({ db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now });
++  const gusto = createGustoCompanyConnector({
++    db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now,
++    assertEffect: tenant => requirePhase(tenant, 'INITIAL_CREDENTIAL')
++  });
+ 
+   const authStmt = db.prepare(
+     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
+@@ -627,6 +666,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleDiscover(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const source = compact(body.source, 40).toUpperCase();
+     if (!DISCOVERY_SOURCES.has(source)) return writeJson(res, 400, { error: 'Unsupported discovery source.' });
+     if (!Array.isArray(body.apps)) return writeJson(res, 400, { error: 'apps must be an array.' });
+@@ -643,6 +683,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleCreateDiscoverySession(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const provider = compact(body.provider, 40).toUpperCase();
+     if (!['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE'].includes(provider)) {
+       return writeJson(res, 400, { error: 'Unsupported directory discovery provider.' });
+@@ -667,6 +708,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     const body = await readJson(req, maxBodyBytes);
+     const session = discoverySessionById.get(compact(body.discoverySessionId, 80));
+     if (!session) return writeJson(res, 404, { error: 'Discovery session not found.' });
++    requirePhase(session.tenant, 'INITIAL_CREDENTIAL');
+     if (session.status !== 'PENDING') return writeJson(res, 409, { error: 'Discovery session has already been used.' });
+     const nowMs = Date.now();
+     if (Number(session.expires_at) <= nowMs) return writeJson(res, 410, { error: 'Discovery session has expired.' });
+@@ -695,6 +737,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleConfirm(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const candidate = candidateById.get(compact(body.candidateId, 80), ctx.tenant);
+     if (!candidate) return writeJson(res, 404, { error: 'Candidate not found.' });
+     const authoritativeFor = arrayOfStrings(body.authoritativeFor, 12, 40)
+@@ -707,6 +750,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleConnect(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const candidate = candidateById.get(compact(body.candidateId, 80), ctx.tenant);
+     if (!candidate) return writeJson(res, 404, { error: 'Candidate not found.' });
+     if (candidate.status !== 'CONFIRMED') return writeJson(res, 409, { error: 'Confirm the detected system before connecting it.' });
+@@ -784,6 +828,7 @@ function createAutonomousIntegrationHub(options = {}) {
+   }
+ 
+   function saveGustoVerification(ctx, verified, preserveActive = false) {
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const connection = connectionById.get(verified.connectionId, ctx.tenant);
+     if (!connection || connection.product_key !== 'gusto') {
+       throw Object.assign(new Error('Gusto connection not found.'), { statusCode: 404 });
+@@ -805,6 +850,7 @@ function createAutonomousIntegrationHub(options = {}) {
+   async function handleGustoAuthorize(ctx, req, res) {
+     if (!requireGustoAdministrator(ctx, res)) return true;
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const connection = gustoConnection(ctx, res, body.connectionId);
+     if (!connection) return true;
+     const availability = gustoConfigurationFor(ctx.tenant);
+@@ -829,6 +875,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     });
+     if (!requireGustoOrigin(req, res)) return true;
+     const body = await readJson(req, 8192);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     if ((body.code && body.providerError) || typeof body.state !== 'string' ||
+         (body.code !== undefined && body.code !== null && typeof body.code !== 'string') ||
+         (body.providerError !== undefined && body.providerError !== null && typeof body.providerError !== 'string')) {
+@@ -851,6 +898,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     });
+     if (!requireGustoOrigin(req, res)) return true;
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const connection = gustoConnection(ctx, res, body.connectionId);
+     if (!connection) return true;
+     try {
+@@ -879,6 +927,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     const body = await readJson(req, maxBodyBytes);
+     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
++    requirePhase(connection.tenant, 'INITIAL_CREDENTIAL');
+     if (connection.product_key === 'gusto') {
+       return writeJson(res, 409, { error: 'Complete Gusto authorization through the verified company connector.', code: 'GUSTO_PROVIDER_VERIFICATION_REQUIRED' });
+     }
+@@ -912,6 +961,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleMappingActivate(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+     if (!['VALIDATING', 'DEGRADED', 'ACTIVE'].includes(connection.state)) {
+@@ -964,6 +1014,7 @@ function createAutonomousIntegrationHub(options = {}) {
+       });
+       return writeJson(res, 403, { error: 'Connection does not belong to the requested tenant.' });
+     }
++    requirePhase(connection.tenant, 'OPERATIONAL_READ');
+     if (!['VALIDATING', 'ACTIVE', 'DEGRADED'].includes(connection.state)) {
+       return writeJson(res, 409, { error: 'Connection is not ready for validation.' });
+     }
+@@ -1118,6 +1169,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     const body = await readJson(req, maxBodyBytes);
+     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
++    requirePhase(connection.tenant, 'OPERATIONAL_READ');
+     const health = compact(body.health, 40);
+     const transitions = {
+       healthy: ['ACTIVE', null],
+@@ -1143,6 +1195,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleRepair(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+     let requiredAction = { type: 'NONE', instruction: 'No repair action is currently required.' };
+@@ -1179,6 +1232,13 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+       const ctx = requireManager(req, res);
+       if (!ctx) return true;
++      const credentialRoute = [PREFIX + '/gusto/authorize', PREFIX + '/gusto/complete', PREFIX + '/gusto/verify', PREFIX + '/discovery-session'].includes(path);
++      const localSetupRoute = [PREFIX + '/discover', PREFIX + '/confirm', PREFIX + '/connect',
++        PREFIX + '/mapping-preview', PREFIX + '/mapping-activate', PREFIX + '/repair'].includes(path);
++      const purpose = req.method === 'POST'
++        ? credentialRoute ? 'INITIAL_CREDENTIAL' : localSetupRoute ? 'SETUP_LOCAL_CONFIGURATION' : 'OPERATIONAL_READ'
++        : 'SETUP_VIEW';
++      requirePhase(ctx.tenant, purpose);
+       if (req.method === 'GET' && path === PREFIX + '/feeds/3min') return writeJson(res, 200, feed.statusForTenant(ctx.tenant));
+       if (req.method === 'GET' && path === PREFIX + '/gusto/configuration') {
+         if (!requireGustoAdministrator(ctx, res)) return true;
+diff --git a/integration/runtime/gusto-company-connector.cjs b/integration/runtime/gusto-company-connector.cjs
+index b53fb02..0563247 100644
+--- a/integration/runtime/gusto-company-connector.cjs
++++ b/integration/runtime/gusto-company-connector.cjs
+@@ -31,7 +31,12 @@ function fail(code, statusCode, message) {
+   throw new GustoConnectorError(code, statusCode, message);
+ }
+ 
++const isPhaseError = error =>
++  ['SETUP_ONLY_REQUIRED', 'SETUP_MODE_BINDING_UNAVAILABLE'].includes(error?.code) &&
++  [403, 503].includes(error?.statusCode);
++
+ function safeError(error) {
++  if (isPhaseError(error)) return error;
+   return error instanceof GustoConnectorError ? error
+     : new GustoConnectorError('GUSTO_STORAGE_UNAVAILABLE', 503, 'Gusto credential storage is temporarily unavailable.');
+ }
+@@ -149,7 +154,7 @@ function safeMetadata(row, authorizationRef = true) {
+   return result;
+ }
+ 
+-function createGustoCompanyConnector({ db, env = process.env, fetchImpl = globalThis.fetch, now = Date.now }) {
++function createGustoCompanyConnector({ db, env = process.env, fetchImpl = globalThis.fetch, now = Date.now, assertEffect = () => {} }) {
+   if (!db || typeof db.prepare !== 'function' || typeof db.exec !== 'function') throw new TypeError('A SQLite connection is required.');
+   const config = readConfiguration(env);
+   db.exec(`CREATE TABLE IF NOT EXISTS gusto_oauth_states (
+@@ -202,6 +207,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     const expiresAt = createdAt + STATE_TTL_MS;
+     const state = randomBytes(32).toString('base64url');
+     const stateHash = createHash('sha256').update(state).digest('hex');
++    assertEffect(tenant);
+     db.prepare('DELETE FROM gusto_oauth_states WHERE expires_at <= ?').run(createdAt);
+     db.prepare(`INSERT INTO gusto_oauth_states
+       (state_hash, tenant, connection_id, session_hash, company_uuid, environment, client_id_hash, created_at, expires_at)
+@@ -216,7 +222,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     return { authorizationUrl: authorization.toString(), expiresAt: new Date(expiresAt).toISOString(), environment: config.environment };
+   }
+ 
+-  async function requestJson(path, { accessToken, body, operation = 'read' } = {}) {
++  async function requestJson(path, { accessToken, body, operation = 'read', tenant } = {}) {
+     const base = GUSTO_HOSTS[config.environment];
+     // Every caller uses a constant path or a validated UUID; no provider-supplied URL is followed.
+     const target = new URL(path, base);
+@@ -235,6 +241,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+       }, REQUEST_TIMEOUT_MS);
+     });
+     const request = async () => {
++      assertEffect(tenant);
+       const headers = { Accept: 'application/json', 'X-Gusto-API-Version': API_VERSION };
+       if (accessToken) headers.Authorization = 'Bearer ' + accessToken;
+       if (body) headers['Content-Type'] = 'application/json';
+@@ -277,13 +284,14 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     try { return await Promise.race([request(), timeout]); }
+     catch (error) {
+       cancelReader();
++      if (isPhaseError(error)) throw error;
+       if (error instanceof GustoConnectorError) throw error;
+       fail('GUSTO_PROVIDER_UNAVAILABLE', 502, 'Gusto could not complete the request.');
+     } finally { clearTimeout(timer); }
+   }
+ 
+-  async function verifyCompany(accessToken, companyUuid) {
+-    const info = await requestJson('/v1/token_info', { accessToken });
++  async function verifyCompany(accessToken, companyUuid, tenant) {
++    const info = await requestJson('/v1/token_info', { accessToken, tenant });
+     if (info.resource?.type !== 'Company' || typeof info.resource.uuid !== 'string' || !UUID.test(info.resource.uuid)) {
+       fail('GUSTO_TOKEN_SUBJECT_INVALID', 403, 'Gusto authorization must belong to a company.');
+     }
+@@ -291,7 +299,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     if (typeof info.scope !== 'string' || info.scope.length > 16_384) fail('GUSTO_INVALID_PROVIDER_RESPONSE', 502, 'Gusto did not return valid granted scopes.');
+     const scopes = new Set(info.scope.split(/\s+/).filter(Boolean));
+     if (!scopes.has('companies:read')) fail('GUSTO_SCOPE_REQUIRED', 403, 'Gusto company read access is required to verify this connection.');
+-    const company = await requestJson('/v1/companies/' + companyUuid, { accessToken });
++    const company = await requestJson('/v1/companies/' + companyUuid, { accessToken, tenant });
+     if (typeof company.uuid !== 'string' || !UUID.test(company.uuid) || company.uuid.toLowerCase() !== companyUuid) {
+       fail('GUSTO_COMPANY_MISMATCH', 403, 'The Gusto company response does not match the expected company.');
+     }
+@@ -318,6 +326,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+       fail('GUSTO_INVALID_STATE', 400, 'The Gusto authorization state is invalid or expired.');
+     }
+     const at = now();
++    assertEffect(tenant);
+     // A single SQLite statement claims the state before any network operation.
+     const claimed = db.prepare(`UPDATE gusto_oauth_states SET consumed_at = ?
+       WHERE state_hash = ? AND tenant = ? AND session_hash = ? AND environment = ? AND client_id_hash = ?
+@@ -330,13 +339,14 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     }
+     if (providerError !== undefined && providerError !== null && providerError !== '') fail('GUSTO_OAUTH_DENIED', 400, 'Gusto authorization was declined. Start authorization again.');
+     if (!cleanText(code, 4096)) fail('GUSTO_INVALID_INPUT', 400, 'A valid Gusto authorization code is required.');
+-    const tokens = parseTokenResponse(await requestJson('/oauth/token', { operation: 'authorization', body: {
++    const tokens = parseTokenResponse(await requestJson('/oauth/token', { tenant, operation: 'authorization', body: {
+       client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.publicOrigin + CALLBACK_PATH,
+       code, grant_type: 'authorization_code'
+     } }), now());
+-    const verified = await verifyCompany(tokens.accessToken, claimed.company_uuid);
++    const verified = await verifyCompany(tokens.accessToken, claimed.company_uuid, tenant);
+     const verifiedAt = new Date(now()).toISOString();
+     const encrypted = sealTokens(config.encryptionKey, claimed, tokens);
++    assertEffect(tenant);
+     const stored = db.prepare(`INSERT INTO gusto_company_credentials
+       (tenant, connection_id, environment, company_uuid, client_id_hash, company_name, granted_scopes, encrypted_tokens, token_expires_at,
+         credential_version, verified_version, verified_at, updated_at)
+@@ -371,6 +381,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+   }
+ 
+   async function refreshCredentials(row) {
++    assertEffect(row.tenant);
+     const at = now();
+     const leaseId = randomBytes(16).toString('hex');
+     const claimed = db.prepare(`UPDATE gusto_company_credentials SET refresh_lease_id = ?, refresh_lease_until = ?
+@@ -388,18 +399,18 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     try {
+       requireCredentialContext(claimed);
+       const prior = openTokens(config.encryptionKey, claimed);
+-      const tokens = parseTokenResponse(await requestJson('/oauth/token', { operation: 'refresh', body: {
++      const tokens = parseTokenResponse(await requestJson('/oauth/token', { tenant: row.tenant, operation: 'refresh', body: {
+         client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.publicOrigin + CALLBACK_PATH,
+         refresh_token: prior.refreshToken, grant_type: 'refresh_token'
+       } }), now());
+       // Refresh tokens are single-use. Save the replacement before subsequent reads,
+       // retaining an unverified version until company verification succeeds.
+       const encrypted = sealTokens(config.encryptionKey, claimed, tokens);
+-      const rotated = await persistRotatedTokens(() => db.prepare(`UPDATE gusto_company_credentials SET encrypted_tokens = ?, token_expires_at = ?,
++      const rotated = await persistRotatedTokens(() => { assertEffect(row.tenant); return db.prepare(`UPDATE gusto_company_credentials SET encrypted_tokens = ?, token_expires_at = ?,
+         credential_version = credential_version + 1, verified_version = NULL, refresh_lease_id = NULL,
+         refresh_lease_until = NULL, updated_at = ?
+         WHERE tenant = ? AND connection_id = ? AND credential_version = ? AND refresh_lease_id = ? RETURNING *`)
+-        .get(encrypted, tokens.expiresAt, now(), row.tenant, row.connection_id, row.credential_version, leaseId));
++        .get(encrypted, tokens.expiresAt, now(), row.tenant, row.connection_id, row.credential_version, leaseId); });
+       if (!rotated) fail('GUSTO_REFRESH_CONFLICT', 409, 'Gusto credentials changed during refresh. Retry verification.');
+       return rotated;
+     } finally {
+@@ -416,6 +427,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+   async function verifyConnection({ tenant, connectionId } = {}) {
+     requireConfigured();
+     binding(tenant, connectionId);
++    assertEffect(tenant);
+     let row = credential(tenant, connectionId);
+     if (!row) fail('GUSTO_CONNECTION_NOT_FOUND', 404, 'No stored Gusto authorization exists for this connection.');
+     requireCredentialContext(row);
+@@ -427,12 +439,13 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+         refreshed = true;
+       }
+       let verified;
+-      try { verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid); }
++      try { verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid, tenant); }
+       catch (error) {
+         if (error.code !== 'GUSTO_UNAUTHORIZED' || refreshed) throw error;
+         row = await refreshCredentials(row);
+-        verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid);
++        verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid, tenant);
+       }
++      assertEffect(tenant);
+       const saved = db.prepare(`UPDATE gusto_company_credentials SET company_name = ?, granted_scopes = ?,
+         verified_version = credential_version, verified_at = ?, updated_at = ?
+         WHERE tenant = ? AND connection_id = ? AND credential_version = ? RETURNING *`)
+@@ -441,6 +454,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+       return safeMetadata(saved);
+     } catch (error) {
+       if (['GUSTO_REAUTHORIZATION_REQUIRED', 'GUSTO_UNAUTHORIZED', 'GUSTO_FORBIDDEN', 'GUSTO_COMPANY_MISMATCH', 'GUSTO_TOKEN_SUBJECT_INVALID', 'GUSTO_SCOPE_REQUIRED'].includes(error.code)) {
++        assertEffect(tenant);
+         const invalidated = db.prepare(`UPDATE gusto_company_credentials SET verified_version = NULL
+           WHERE tenant = ? AND connection_id = ? AND credential_version = ?`)
+           .run(tenant, connectionId, row.credential_version);
+diff --git a/integration/runtime/three-min-feed.cjs b/integration/runtime/three-min-feed.cjs
+index f81bd20..3654e58 100644
+--- a/integration/runtime/three-min-feed.cjs
++++ b/integration/runtime/three-min-feed.cjs
+@@ -40,7 +40,7 @@ function bindingsFrom(env) {
+ }
+ // An authenticated transport is not evidence that the original provider data is
+ // authorised, current, mapped or reconciled. This inbox cannot grant readiness.
+-function createThreeMinFeed({db,env=process.env,now=Date.now}) {
++function createThreeMinFeed({db,env=process.env,now=Date.now,assertEffect=()=>{}}) {
+  const bindings=bindingsFrom(env);
+  db.exec(`CREATE TABLE IF NOT EXISTS integration_feed_inbox(
+   id TEXT PRIMARY KEY,binding_id TEXT NOT NULL,binding_fingerprint TEXT NOT NULL,
+@@ -91,6 +91,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
+   // Body reads yield control. Revoked or superseded transport credentials cannot
+   // create receipts, reserve replay aliases or retain validation-rejection data.
+   requireCurrentToken(binding,providedToken);
++  assertEffect(binding.tenant);
+   const checksum=digest(raw); const id=binding.id;
+    db.exec('BEGIN IMMEDIATE');
+    try{
+@@ -149,7 +150,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
+     // Retain metadata/digest only, never invalid or unbounded source payloads.
+     try{return persist(binding,recordId,{eventId:rejectedEventId(recordId),records:[],occurredAt:new Date(now()).toISOString()},raw,res,providedToken,error.code);}catch(storageError){error=storageError;}
+    }
+-   return json(res,error.status||503,{code:error.code&&error.status?error.code:'FEED_STORAGE_UNAVAILABLE'});
++   return json(res,error.status||error.statusCode||503,{code:error.code&&(error.status||error.statusCode)?error.code:'FEED_STORAGE_UNAVAILABLE'});
+   }
+  }
+  return {handleRequest,statusForTenant};
