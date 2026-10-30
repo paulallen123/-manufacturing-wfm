@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+    "scripts/run-forge-ci.mjs"
+  ],
+  "node": "v22.23.2",
+  "localPreparationOnly": "TAR_OPTIONS=--no-same-owner",
+  "exitCode": 0,
+  "seconds": 21.584,
+  "commands": 16,
+  "totals": {
+    "tests": 299,
+    "pass": 299,
+    "fail": 0,
+    "skipped": 0
+  },
+  "sha256": "f6a0d41c505e005a2945887cd221fa45bfca3971959ff443409663b41193de01",
+  "forgePass": true
+}

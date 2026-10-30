@@ -1,0 +1,13 @@
+{
+  "verified": [
+    {
+      "path": "scripts/proof-access-preflight.cjs",
+      "gitBlob": "9d4d3a8cd53c2d93d16fd09991920470fbb27832"
+    },
+    {
+      "path": "scripts/proof-access-preflight.test.cjs",
+      "gitBlob": "53544fd9ed1a6b6df9af4719bef3747b01a9958b"
+    }
+  ],
+  "earlierAttempt": "cwd-relative verification path was incorrect; no source mismatch was established; corrected verification succeeds"
+}

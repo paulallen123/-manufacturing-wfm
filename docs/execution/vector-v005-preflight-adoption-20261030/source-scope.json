@@ -1,0 +1,18 @@
+{
+  "parentSourceSha": "2d0f4e41e3b0463386b2887f39afa064068f9166",
+  "parentTree": "b6e21c4afa9880c651fe0898235cd4695ce4bfca",
+  "verifiedTrackedPaths": 1714,
+  "changedPaths": [
+    {
+      "path": "scripts/proof-access-preflight.cjs",
+      "baseGitBlob": "80668b6f9c1e10d97501ca41e50ca59c684778ee",
+      "candidateGitBlob": "9d4d3a8cd53c2d93d16fd09991920470fbb27832"
+    },
+    {
+      "path": "scripts/proof-access-preflight.test.cjs",
+      "baseGitBlob": "d9eded07d6d30f3599afbb7c0adfa024351eacda",
+      "candidateGitBlob": "53544fd9ed1a6b6df9af4719bef3747b01a9958b"
+    }
+  ],
+  "dockerForgeFreezeAndLauncherUnchanged": true
+}
