@@ -33,10 +33,15 @@ async function fixture(t, { loseResponse = false } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'v108-expiry-'));
   const dbPath = path.join(dir, 'local.db');
   const db = new DatabaseSync(dbPath);
-  db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT,role TEXT);' +
+  // Docker installs the lifecycle router under the guard filename. Keep its
+  // real read-only workflow bridge enabled and provide the shared host schema.
+  db.exec('CREATE TABLE tenants(id TEXT PRIMARY KEY,version INTEGER NOT NULL,state TEXT NOT NULL);' +
+    "CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,person_id TEXT NOT NULL,role TEXT NOT NULL,costs INTEGER NOT NULL,salt TEXT NOT NULL,password_hash TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT '[]');" +
     'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT,expires INTEGER);' +
     'CREATE TABLE vector_decision_episodes(tenant TEXT,episode_id TEXT,decision_type TEXT,episode_json TEXT,created_at TEXT,PRIMARY KEY(tenant,episode_id));');
-  db.prepare('INSERT INTO users VALUES(?,?,?)').run('v108-manager', TENANT, 'manager');
+  db.prepare('INSERT INTO tenants VALUES(?,?,?)').run(TENANT, 1, '{"staff":[],"org":[]}');
+  db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)').run(
+    'v108-manager', TENANT, 'v108-synthetic-manager-person', 'manager', 0, 'fixture-only', 'unused', '[]');
   db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256('v108-old-session'), 'v108-manager', START + 86400000);
   const episode = createDecisionEpisode({ tenant: TENANT, site: 'v108-synthetic-site',
     decisionType: 'absence-recovery', triggerId: 'v108-expiry',
