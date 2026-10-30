@@ -1,0 +1,74 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: OS boundaries exclude 247 unapproved keys including malformed/cased/provider/worker/preload/eval names while retaining 37 exact allowed values
+ok 1 - OS boundaries exclude 247 unapproved keys including malformed/cased/provider/worker/preload/eval names while retaining 37 exact allowed values
+  ---
+  duration_ms: 178.323776
+  type: 'test'
+  ...
+# Subtest: preload and obsolete eval expressions cannot execute in actual proof child
+ok 2 - preload and obsolete eval expressions cannot execute in actual proof child
+  ---
+  duration_ms: 116.173613
+  type: 'test'
+  ...
+# Subtest: async preflight mutations cannot replace signer/target or inject later authority
+ok 3 - async preflight mutations cannot replace signer/target or inject later authority
+  ---
+  duration_ms: 119.766721
+  type: 'test'
+  ...
+# Subtest: preflight errors stop both actual process boundaries and redact private fetch details
+ok 4 - preflight errors stop both actual process boundaries and redact private fetch details
+  ---
+  duration_ms: 11.844658
+  type: 'test'
+  ...
+# Subtest: actual installer failure is fail-closed and has no proof or provider authority
+ok 5 - actual installer failure is fail-closed and has no proof or provider authority
+  ---
+  duration_ms: 49.28439
+  type: 'test'
+  ...
+# PEER_PERFORMANCE={"projections":25000,"unknownKeys":50000,"elapsedMs":77}
+# Subtest: actual child nonzero exit and handler cleanup survive explicit env
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+ok 6 - actual child nonzero exit and handler cleanup survive explicit env
+  ---
+  duration_ms: 127.73344
+  type: 'test'
+  ...
+# Subtest: non-string and inherited unknown inputs cannot enter snapshot or output
+ok 7 - non-string and inherited unknown inputs cannot enter snapshot or output
+  ---
+  duration_ms: 0.857474
+  type: 'test'
+  ...
+# Subtest: allowlist cost is bounded independently of unrecognized environment size
+ok 8 - allowlist cost is bounded independently of unrecognized environment size
+  ---
+  duration_ms: 110.758918
+  type: 'test'
+  ...
+# Subtest: signed browser client can validate projected genuine ephemeral Ed25519 signer and actor scope
+ok 9 - signed browser client can validate projected genuine ephemeral Ed25519 signer and actor scope
+  ---
+  duration_ms: 5.660688
+  type: 'test'
+  ...
+# Subtest: exact pinned source bytes, bundle payload, manifest hashes and embedded command are intact
+ok 10 - exact pinned source bytes, bundle payload, manifest hashes and embedded command are intact
+  ---
+  duration_ms: 5.224424
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 816.379946

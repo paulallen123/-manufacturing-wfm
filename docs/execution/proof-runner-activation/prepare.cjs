@@ -26,6 +26,7 @@ fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify({ schema: 1, so
   serviceId: 'f84fe27d-af17-451c-b164-54dfef6b6a4b', bundleSha256: bundleHash,
   startCommandSha256: launcher.hash(Buffer.from(command + '\n')), startCommandBytes: Buffer.byteLength(command),
   installerEnvironment: 'minimal transport/CA/path/locale allowlist; proof and provider credentials excluded',
+  proofChildEnvironment: 'explicit signed proof/browser/transport allowlist; provider, worker, password, eval and preload inputs excluded',
   playwright: '1.63.0', image: 'mcr.microsoft.com/playwright:v1.63.0-noble', files: launcher.FILES,
   proof: { materializationOnly: true, hosted: false, provider: false, customer: false },
   pending: ['normal target staged-change application', 'verified target startup and serving identity',

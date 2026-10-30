@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "base": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "node": "v22.23.2",
+  "newHeldoutBaseline": {
+    "tests": 20,
+    "pass": 5,
+    "fail": 15,
+    "skip": 0
+  },
+  "candidateAffected": {
+    "tests": 108,
+    "pass": 108,
+    "fail": 0,
+    "skip": 0
+  },
+  "independentAuthHeldout": {
+    "tests": 24,
+    "pass": 24,
+    "fail": 0,
+    "skip": 0
+  },
+  "cleanApply": true,
+  "cleanReplayAffected": {
+    "tests": 108,
+    "pass": 108,
+    "fail": 0,
+    "skip": 0
+  },
+  "unchangedBundleSha256": "da77ee240dc635f19b29a2d771ff52a856ad98e9ccbe06436e96ac4a63201687",
+  "unchangedCanonicalFiles": {
+    "scripts/current-candidate-role-browser-proof.mjs": "5d5921f54b3e501f70004d324036e3c5fbd336b1f04550cb0ec390434252d903",
+    "scripts/current-candidate-role-browser-proof-server.mjs": "9f945ad2e768ad0645b493015f03fd85022e79b5c1f51038dcb485d6191b9e06",
+    "scripts/vector-proof-result.mjs": "6feddbe9a318eae12f79e0374d0bfa13fdace67fd610a6e26abd6a0c4a09205e",
+    "security/runtime/proof-runner-auth.cjs": "0701e4d5d01a211bde865dce2256b9892475f95ae27a415a02132700f1d4fa5b"
+  },
+  "startCommandSha256": "a0a95c03001650c011d654f039cdd3c7b9b0ad92cf508fecd25b8872d276ae20",
+  "changedFiles": [
+    "docs/execution/proof-runner-activation/launcher.cjs",
+    "docs/execution/proof-runner-activation/prepare.cjs",
+    "docs/execution/proof-runner-activation/README.md",
+    "docs/execution/proof-runner-activation/generated/manifest.json",
+    "docs/execution/proof-runner-activation/generated/start-command.txt",
+    "docs/execution/proof-runner-activation/child-environment.test.cjs"
+  ],
+  "scope": "Local donor only; hosted authentication, deployment, runtime configuration, business/provider writes and customer acceptance are unproved.",
+  "files": {
+    "baseline-child-environment-node22.tap": "3f5a49176cffdd6817f68d06bb38cf0579aeaa5fcbeeead507fd72fbcb5102dd",
+    "candidate-affected-node22.tap": "c62cf5bcfa80d26287c0798d7f9ba8839b7196ecb3e649441c91ec260ad3b443",
+    "candidate-child-environment-node22.tap": "bd7010c85dd8335772deb2280ec3ba816510874f1122a38c89a8ca926c3c9b93",
+    "candidate-heldout-auth-node22.tap": "460a0ef8541ccbd0821644d0df72fbffa31260735c7137928382063aa701ccac",
+    "clean-replay-affected-node22.tap": "3fd33321488fe511d74546c213e81de23fdef0b672e826f907e897991182e414",
+    "platform-names-only.json": "a1cf8715a90a5fa1d43a9c5b7c2f6d20a250742496851e46ba94a7023457d07e",
+    "verified-github-inputs.json": "f7441537615f4d59abbccb1ff6cd42c10db468b4a7e75b587d5a8418113c505c",
+    "heldout-auth.test.mjs": "8a6b5e089e2bd7946c728545f96d1705f69cd4feaca2c1e63efbbee029916dac",
+    "child-environment.patch": "7190934f898437459ae364c64ff91490d15026f9ed6911ec516c4337225e9581",
+    "peer-heldout-node22.tap": "f8ede69de05331112a7e68e0c7088bc69e4103294bd2aa0224cb50ebc9f13d2a",
+    "peer-heldout-node24.tap": "d3b2339820256b766445511526e5f93c906befd364f5ef6927d47f3dc8d8dac0",
+    "peer-heldout.test.cjs": "530dafc0e8b32b4581601aaf29b69c3d617e7978f4481c54734c9be5bdcb013c",
+    "peer-receipt.md": "50423afa5cc57fda6ca9af4534b2aba2020487aabcc4ae2e759556bcb2ae4f9b"
+  },
+  "rootIndependentReview": {
+    "reviewer": "/root",
+    "affectedTests": 108,
+    "pass": 108,
+    "fail": 0,
+    "skip": 0
+  },
+  "peerIndependentReview": {
+    "reviewer": "/root/cp001_child_peer",
+    "requestedModel": "Sol xhigh",
+    "verdict": "PASS",
+    "node22": {
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skip": 0
+    },
+    "node24": {
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skip": 0
+    },
+    "boundary": "Independent local heldouts only; no hosted proof or source modifications.",
+    "originalSourceSha256": "b0ce3c847a86b9c42c6ef484b681b97503bddbf96b9e8b83cfb1567bb0ca64e6",
+    "portableTestChange": "Two checkout paths become CP001_PEER_CANDIDATE/CP001_PEER_BASE overrides only; same tests rerun10/10 on both runtimes."
+  }
+}

@@ -22,9 +22,10 @@
   },
   "serviceId": "f84fe27d-af17-451c-b164-54dfef6b6a4b",
   "bundleSha256": "da77ee240dc635f19b29a2d771ff52a856ad98e9ccbe06436e96ac4a63201687",
-  "startCommandSha256": "b15c6bf85e4c60076ee9a6a04f03099717f8bc3392d9f764bf00a69362e4b09e",
-  "startCommandBytes": 63482,
+  "startCommandSha256": "a0a95c03001650c011d654f039cdd3c7b9b0ad92cf508fecd25b8872d276ae20",
+  "startCommandBytes": 64571,
   "installerEnvironment": "minimal transport/CA/path/locale allowlist; proof and provider credentials excluded",
+  "proofChildEnvironment": "explicit signed proof/browser/transport allowlist; provider, worker, password, eval and preload inputs excluded",
   "playwright": "1.63.0",
   "image": "mcr.microsoft.com/playwright:v1.63.0-noble",
   "files": {

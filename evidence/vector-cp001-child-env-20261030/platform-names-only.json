@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-30T17:09:49.786Z",
+  "readOnly": true,
+  "valuesRead": false,
+  "liveHttpRequests": 0,
+  "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+  "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+  "sharedVariableNames": [],
+  "services": [
+    {
+      "service": {
+        "id": "48ee3ceb-9cfc-4399-b3a1-3628e3603815",
+        "name": "vector-hardening-proof",
+        "state": "live"
+      },
+      "variableNames": [
+        "NODE_ENV",
+        "NODE_OPTIONS",
+        "PORT",
+        "WFM_CANDIDATE_SHA",
+        "WFM_DB",
+        "WFM_HOSTED_STAGING",
+        "WFM_PUBLIC_ORIGIN",
+        "WFM_REQUIRE_DURABLE_STATE",
+        "WFM_STAGING_PASSWORD"
+      ],
+      "source": {
+        "repo": "paulallen123/-manufacturing-wfm",
+        "branch": "test/vector-empty-organisation-regression-20261020",
+        "commitSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+        "rootDirectory": "/"
+      },
+      "latestDeployment": {
+        "id": "c95e7a37-2504-437c-9edb-495178a88935",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-29T22:18:57.384Z",
+        "url": null
+      },
+      "staged": null,
+      "volumes": [
+        {
+          "id": "165dc893-1132-40fa-a26f-3b0f5306ffa0",
+          "name": "vector-hardening-proof-data",
+          "mountPath": "/data",
+          "sizeMB": 500,
+          "region": "sfo",
+          "state": "live"
+        }
+      ],
+      "healthcheckPath": "/api/health",
+      "startCommandKind": "application bootstrap",
+      "boundary": "Names/configuration only; no values, active-session, stored actor or matching signer inferred."
+    },
+    {
+      "service": {
+        "id": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+        "name": "vector-customer-ready-candidate",
+        "state": "live"
+      },
+      "variableNames": [
+        "        WFM_GUSTO_CLIENT_ID",
+        "        WFM_GUSTO_CLIENT_SECRET",
+        "NODE_ENV",
+        "NODE_OPTIONS",
+        "OPENAI_API_KEY",
+        "PORT",
+        "STAFFOLOGY_API_KEY",
+        "Staffology_api_key",
+        "WFM_AGENTS_API_ENABLED",
+        "WFM_AGENTS_BOOTSTRAP_RUN_ID",
+        "WFM_AGENTS_BOOTSTRAP_TENANT",
+        "WFM_AGENTS_DEPLOY_TRIGGER",
+        "WFM_AGENTS_MODEL",
+        "WFM_CANDIDATE_SHA",
+        "WFM_CANONICAL_DEPLOYMENT_ID",
+        "WFM_CONTRACT_WEBHOOK_SECRET",
+        "WFM_DB",
+        "WFM_DEMAND_INTERNAL_TOKEN",
+        "WFM_GUSTO_CLIENT_ID",
+        "WFM_GUSTO_CLIENT_SECRET",
+        "WFM_GUSTO_ENVIRONMENT",
+        "WFM_GUSTO_TENANT_COMPANIES_JSON",
+        "WFM_GUSTO_TOKEN_ENCRYPTION_KEY_B64",
+        "WFM_GUSTO_WEBHOOK_OVERLAY_CJS_B64",
+        "WFM_HOSTED_STAGING",
+        "WFM_IMPLEMENTATION_INTERNAL_TOKEN",
+        "WFM_IMPLEMENTATION_INVITATION_SECRET",
+        "WFM_IMPLEMENTATION_WORKER_ID",
+        "WFM_IMPLEMENTATION_WORKER_RUN_ID",
+        "WFM_IMPLEMENTATION_WORKER_TENANT",
+        "WFM_IMPLEMENTATION_WORKER_TOKEN",
+        "WFM_INTEGRATION_INTERNAL_TOKEN",
+        "WFM_LEARNING_INTERNAL_TOKEN",
+        "WFM_OWNER_RECOVERY_JSON",
+        "WFM_PROOF_RUNNER_ALLOWED_EMAILS",
+        "WFM_PROOF_RUNNER_AUDIT_STDOUT",
+        "WFM_PROOF_RUNNER_AUTH",
+        "WFM_PROOF_RUNNER_PUBLIC_KEY_B64",
+        "WFM_PROOF_RUNNER_SESSION_TTL_MS",
+        "WFM_PUBLIC_ORIGIN",
+        "WFM_REQUIRE_DURABLE_STATE",
+        "WFM_SITE_TIMEZONES_JSON",
+        "WFM_STAFFOLOGY_OPERATION_JSON",
+        "WFM_STAGING_PASSWORD",
+        "WFM_TENANT_TIMEZONE",
+        "WFM_TODAY_MAX_AGE_MS"
+      ],
+      "source": {
+        "repo": "paulallen123/-manufacturing-wfm",
+        "branch": "release/vector-customer-ready-candidate-20260925",
+        "commitSha": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2"
+      },
+      "latestDeployment": {
+        "id": "d9112b19-7e46-4eab-8873-9a51826870b6",
+        "status": "FAILED",
+        "createdAt": "2026-10-23T19:45:53.348Z",
+        "url": null
+      },
+      "staged": null,
+      "volumes": [
+        {
+          "id": "6b7d38e7-82a0-41e8-96a2-827f688717ad",
+          "name": "vector-customer-ready-candidate-volume",
+          "mountPath": "/data",
+          "sizeMB": 50000,
+          "region": "sfo",
+          "state": "live"
+        }
+      ],
+      "healthcheckPath": "/api/health",
+      "startCommandKind": "application bootstrap",
+      "boundary": "Names/configuration only; no values, active-session, stored actor or matching signer inferred."
+    },
+    {
+      "service": {
+        "id": "f84fe27d-af17-451c-b164-54dfef6b6a4b",
+        "name": "vector-live-browser-proof",
+        "state": "live"
+      },
+      "variableNames": [
+        "APPROVALS_PROOF_SCRIPT",
+        "BROWSER_PROOF_SCRIPT",
+        "BROWSER_PROOF_SCRIPT_1",
+        "BROWSER_PROOF_SCRIPT_2",
+        "BROWSER_PROOF_SCRIPT_3",
+        "BROWSER_ROLE_PROOF_SCRIPT",
+        "BROWSER_RUN_REV",
+        "CANDIDATE_STAFFOLOGY_KEY",
+        "EXPECTED_CANDIDATE_DEPLOYMENT",
+        "EXPECTED_CANDIDATE_SHA",
+        "EXPECTED_CONFIGURATION_DIGEST",
+        "EXPECTED_DEPLOYMENT_ID",
+        "EXPECTED_IMPLEMENTATION_RUN_ID",
+        "EXPECTED_IMPLEMENTATION_TENANT",
+        "EXPECTED_RELEASE",
+        "OWNER_AUTH_IMPL_TRIGGER",
+        "OWNER_AUTH_INSPECT_TRIGGER",
+        "OWNER_OCTOBER_AUTH_INSPECT_SCRIPT",
+        "OWNER_OCTOBER_AUTH_INSPECT_TRIGGER",
+        "OWNER_PAYROLL_INSPECT_REV",
+        "OWNER_PAYROLL_INSPECT_SCRIPT",
+        "OWNER_PAYROLL_INSPECT_TRIGGER",
+        "OWNER_READBACK_TAIL_TRIGGER",
+        "OWNER_REVALIDATION_REV",
+        "OWNER_REVALIDATION_SCRIPT",
+        "OWNER_SCRIPT_INDEX_REV",
+        "OWNER_SCRIPT_RANGE_REV",
+        "PROOF_EMAIL",
+        "PROOF_PRIVATE_KEY_B64",
+        "PROOF_RUNNER_SOURCE_SHA",
+        "SCOPE_RUN_REV",
+        "STAFFOLOGY_PROOF_SOURCE_A",
+        "STAFFOLOGY_PROOF_SOURCE_B",
+        "TARGET_ORIGIN",
+        "VECTOR_PROOF_URL",
+        "VECTOR_RECORD_SECURITY_EVIDENCE",
+        "VECTOR_RUNNER_DIAGNOSTIC_REV",
+        "VECTOR_SCOPE_JSON",
+        "WFM_EXPECTED_CANDIDATE_DEPLOYMENT",
+        "WFM_EXPECTED_CANDIDATE_SHA",
+        "WFM_IMPLEMENTATION_INTERNAL_TOKEN",
+        "WFM_IMPLEMENTATION_WORKER_ID",
+        "WFM_IMPLEMENTATION_WORKER_TOKEN",
+        "WFM_ORIGIN",
+        "WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE",
+        "WFM_STAGING_PASSWORD",
+        "WRAPPED_PASSKEY_CREDENTIALS"
+      ],
+      "source": {
+        "image": "mcr.microsoft.com/playwright:v1.63.0-noble"
+      },
+      "latestDeployment": {
+        "id": "60f21e99-b8e9-4873-bb1f-5f32ddd37a5c",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-17T15:13:13.034Z",
+        "url": null
+      },
+      "staged": null,
+      "volumes": [],
+      "healthcheckPath": "/health",
+      "startCommandKind": "legacy inline env-script eval with inherited process.env",
+      "boundary": "Names/configuration only; no values, active-session, stored actor or matching signer inferred."
+    }
+  ],
+  "tools": {
+    "railway": [
+      "describe_environment",
+      "describe_service",
+      "get_service_config",
+      "list_deployments"
+    ],
+    "github": [
+      "get_pr_info",
+      "fetch_file",
+      "fetch_issue"
+    ],
+    "notUsed": [
+      "list_variables (may return values)",
+      "logs",
+      "any HTTP/browser polling",
+      "secret or credentials retrieval"
+    ]
+  }
+}
