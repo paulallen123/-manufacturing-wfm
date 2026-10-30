@@ -8,6 +8,28 @@ commands:
           command: bash scripts/require-frozen-candidate.sh
 
 jobs:
+  forge_integration_validation:
+    docker:
+      - image: cimg/node:22.23.2
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Validate exact ordinary integration source without freeze gating
+          command: |
+            set -euo pipefail
+            test "$(node --version)" = "v22.23.2"
+            test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
+            mkdir -p circleci-artifacts/ordinary-integration
+            printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/ordinary-integration/source-sha.txt
+            node --version > circleci-artifacts/ordinary-integration/node-version.txt
+            git ls-files --stage -- .circleci/config.yml scripts/run-forge-ci.mjs scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/ordinary-integration/git-blobs.txt
+            node --test scripts/require-frozen-candidate.test.mjs 2>&1 | tee circleci-artifacts/ordinary-integration/admission-tests.tap
+            node scripts/run-forge-ci.mjs 2>&1 | tee circleci-artifacts/ordinary-integration/source-validation.log
+      - store_artifacts:
+          path: circleci-artifacts/ordinary-integration
+          destination: ordinary-integration-proof
+
   forge_core_validation:
     docker:
       - image: cimg/node:22.23.2
@@ -193,6 +215,7 @@ jobs:
 workflows:
   vector_forge_proof:
     jobs:
+      - forge_integration_validation
       - forge_core_validation
       - forge_runtime_validation:
           requires:
