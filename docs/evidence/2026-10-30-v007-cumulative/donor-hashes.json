@@ -1,0 +1,62 @@
+[
+  {
+    "path": "integration/runtime/gusto-http-process-recovery.test.cjs",
+    "sha": "456321470fe17a1c7731c607c5cc43c71caa69f0",
+    "sha256": "72f59766dcb55ba3fea2a8d3b5f57d57c2a92b986ef3535706a992af1ef20c32"
+  },
+  {
+    "path": "integration/runtime/fixtures/gusto-http-child.cjs",
+    "sha": "1629afb3b06588e23e6c0c6666d7dd2b9ab07432",
+    "sha256": "608d746a1ecb6e703abb8dc211d0bf23fe4b4982213b4c8ea9d4cf68dd13f5f7"
+  },
+  {
+    "path": "operations/runtime/training-shift-collision.cjs",
+    "sha": "5b64589a538e3a45029343f85a2cd884ab42955d",
+    "sha256": "a7c7282ef0f2a891fc8f4e299d9775d7299cbb16054b7e4d0e55071fd856fe00"
+  },
+  {
+    "path": "operations/runtime/maintenance-permit-evidence.cjs",
+    "sha": "a23a0d479074c8e51f2ab8a029b84f1ff4904822",
+    "sha256": "7cc281371f9ab37081763bb22243008beab6c643d5d160cc90402964477b9e15"
+  },
+  {
+    "path": "operations/runtime/maintenance-permit-evidence.test.cjs",
+    "sha": "921b2eff9ac69d0cf040fa9de9a61125fefd417e",
+    "sha256": "fe45a5df0691bdcf86ba8a9b9feda51f69bbbb10c4c7475c98a7024d8deb9339"
+  },
+  {
+    "path": "operations/runtime/training-shift-collision.test.cjs",
+    "sha": "41805320b9c4559e62c4de6443a4e9fbc3991992",
+    "sha256": "561808ec4fb6e0bb2363faf4310f943fb67d45ddde2e9fa3ec8efe986884d38e"
+  },
+  {
+    "path": "docs/evidence/2026-10-30-v014-owner-ready.patch",
+    "sha": "e47f13490329e7468e2acacfd22f09ad4894df2b",
+    "sha256": "d7bd86041982977dcf0888b4a78c78172fb405c6e6954d2a7b9435303323e9af"
+  },
+  {
+    "path": "docs/evidence/2026-10-29-v088-gusto-http-process-proof.md",
+    "sha": "843efe7cd4f0f392a42c971f9e9d2e31beb667cf",
+    "sha256": "fc3050378b7a1980d0be75f46e810018683eece3d138bd4bf1c7f659fb1588f6"
+  },
+  {
+    "path": "docs/evidence/2026-10-29-training-shift-inert-records.md",
+    "sha": "dc438a844b8373cac539d9969b465438acea2c29",
+    "sha256": "1d4d9d21eddd9f9535ffbbd7681af17b5684867662cf62f945d14bba72488376"
+  },
+  {
+    "path": "docs/evidence/2026-10-27-training-shift-collision.md",
+    "sha": "830cd50ba76948cde3feadcb21b21875eaa33cde",
+    "sha256": "d15493687bda7689cc66de92f228c505defcc092f8b257d9eda08513c79af638"
+  },
+  {
+    "path": "docs/evidence/2026-10-29-maintenance-permit-evidence.md",
+    "sha": "5dd440ff7201544f020d861032803603100a1404",
+    "sha256": "0f09163b167e7cf688a8a9e2b2affb6920f4894db9061dbcbd3d9a4ee713d002"
+  },
+  {
+    "path": "verification/vector-v014-setup-containment/heldout.test.cjs",
+    "sha": "022b6e366f02a94a94abf180b31d3072d402f644",
+    "sha256": "8a26938319a5f1049db9fd14c19d590facfe059ae9e74e6ced01b061752e4055"
+  }
+]

@@ -1,0 +1,1065 @@
+diff --git a/integration/runtime/autonomous-integration-hub.cjs b/integration/runtime/autonomous-integration-hub.cjs
+index 16eeaa836be9495bfbe3c3a1b04484f88af8eb44..127f83a656dedbf56611d1115f71150517083251 100644
+--- a/integration/runtime/autonomous-integration-hub.cjs
++++ b/integration/runtime/autonomous-integration-hub.cjs
+@@ -2,10 +2,17 @@
+ 
+ const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
+ const { DatabaseSync } = require('node:sqlite');
++const path = require('node:path');
+ const { createGustoCompanyConnector } = require('./gusto-company-connector.cjs');
+ const { serveGustoOAuthLanding } = require('./gusto-oauth-landing.cjs');
+ 
+ const { createThreeMinFeed } = require('./three-min-feed.cjs');
++// Source/tests retain their tree layout; the installed image places the two
++// runtime directories side by side under /app.
++const setupPolicyPath = path.basename(__dirname) === 'integration-runtime'
++  ? '../implementation-runtime/setup-only-policy.cjs'
++  : '../../implementation/runtime/setup-only-policy.cjs';
++const { createSetupOnlyPolicy } = require(setupPolicyPath);
+ 
+ const PREFIX = '/api/integrations/autonomous';
+ const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
+@@ -366,10 +373,42 @@ function createAutonomousIntegrationHub(options = {}) {
+       'BEGIN SELECT RAISE(ABORT,\'Integration events are append only.\'); END;'
+   );
+ 
+-  const feed = createThreeMinFeed({ db, env: options.env || process.env, now: options.now || Date.now });
++  const feed = createThreeMinFeed({
++    db, env: options.env || process.env, now: options.now || Date.now,
++    assertEffect: tenant => requirePhase(tenant, 'OPERATIONAL_READ')
++  });
++
++  // The hub can also run for legacy tenants with no customer-workspace
++  // registry. Once any registry state exists, use its current, durable phase
++  // binding before an integration effect. An incomplete registry fails closed.
++  const setupRegistryMarker = db.prepare(
++    "SELECT 1 FROM sqlite_master WHERE type='table' AND " +
++    "(name='customer_workspaces' OR name GLOB 'customer_workspace_*') LIMIT 1"
++  );
++  const setupRegistryRequiredCount = db.prepare(
++    "SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name IN " +
++    "('customer_workspaces','customer_workspace_contracts','customer_workspace_events'," +
++    "'customer_workspace_adoptions','customer_workspace_orders','tenants','implementation_runs')"
++  );
++  let setupPolicy;
++  function requirePhase(tenant, purpose) {
++    if (!setupPolicy) {
++      if (!setupRegistryMarker.get()) return;
++      setupPolicy = createSetupOnlyPolicy({ db });
++    }
++    if (setupRegistryRequiredCount.get().n !== 7) {
++      throw Object.assign(new Error('Setup mode binding unavailable.'), {
++        code: 'SETUP_MODE_BINDING_UNAVAILABLE', statusCode: 503
++      });
++    }
++    setupPolicy.assertAllowed({ tenant, purpose });
++  }
+ 
+   const gustoEnv = options.env || process.env;
+-  const gusto = createGustoCompanyConnector({ db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now });
++  const gusto = createGustoCompanyConnector({
++    db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now,
++    assertEffect: tenant => requirePhase(tenant, 'INITIAL_CREDENTIAL')
++  });
+ 
+   const authStmt = db.prepare(
+     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
+@@ -627,6 +666,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleDiscover(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const source = compact(body.source, 40).toUpperCase();
+     if (!DISCOVERY_SOURCES.has(source)) return writeJson(res, 400, { error: 'Unsupported discovery source.' });
+     if (!Array.isArray(body.apps)) return writeJson(res, 400, { error: 'apps must be an array.' });
+@@ -643,6 +683,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleCreateDiscoverySession(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const provider = compact(body.provider, 40).toUpperCase();
+     if (!['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE'].includes(provider)) {
+       return writeJson(res, 400, { error: 'Unsupported directory discovery provider.' });
+@@ -667,6 +708,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     const body = await readJson(req, maxBodyBytes);
+     const session = discoverySessionById.get(compact(body.discoverySessionId, 80));
+     if (!session) return writeJson(res, 404, { error: 'Discovery session not found.' });
++    requirePhase(session.tenant, 'INITIAL_CREDENTIAL');
+     if (session.status !== 'PENDING') return writeJson(res, 409, { error: 'Discovery session has already been used.' });
+     const nowMs = Date.now();
+     if (Number(session.expires_at) <= nowMs) return writeJson(res, 410, { error: 'Discovery session has expired.' });
+@@ -695,6 +737,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleConfirm(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const candidate = candidateById.get(compact(body.candidateId, 80), ctx.tenant);
+     if (!candidate) return writeJson(res, 404, { error: 'Candidate not found.' });
+     const authoritativeFor = arrayOfStrings(body.authoritativeFor, 12, 40)
+@@ -707,6 +750,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleConnect(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const candidate = candidateById.get(compact(body.candidateId, 80), ctx.tenant);
+     if (!candidate) return writeJson(res, 404, { error: 'Candidate not found.' });
+     if (candidate.status !== 'CONFIRMED') return writeJson(res, 409, { error: 'Confirm the detected system before connecting it.' });
+@@ -784,6 +828,7 @@ function createAutonomousIntegrationHub(options = {}) {
+   }
+ 
+   function saveGustoVerification(ctx, verified, preserveActive = false) {
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const connection = connectionById.get(verified.connectionId, ctx.tenant);
+     if (!connection || connection.product_key !== 'gusto') {
+       throw Object.assign(new Error('Gusto connection not found.'), { statusCode: 404 });
+@@ -805,6 +850,7 @@ function createAutonomousIntegrationHub(options = {}) {
+   async function handleGustoAuthorize(ctx, req, res) {
+     if (!requireGustoAdministrator(ctx, res)) return true;
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const connection = gustoConnection(ctx, res, body.connectionId);
+     if (!connection) return true;
+     const availability = gustoConfigurationFor(ctx.tenant);
+@@ -829,6 +875,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     });
+     if (!requireGustoOrigin(req, res)) return true;
+     const body = await readJson(req, 8192);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     if ((body.code && body.providerError) || typeof body.state !== 'string' ||
+         (body.code !== undefined && body.code !== null && typeof body.code !== 'string') ||
+         (body.providerError !== undefined && body.providerError !== null && typeof body.providerError !== 'string')) {
+@@ -851,6 +898,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     });
+     if (!requireGustoOrigin(req, res)) return true;
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
+     const connection = gustoConnection(ctx, res, body.connectionId);
+     if (!connection) return true;
+     try {
+@@ -879,6 +927,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     const body = await readJson(req, maxBodyBytes);
+     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
++    requirePhase(connection.tenant, 'INITIAL_CREDENTIAL');
+     if (connection.product_key === 'gusto') {
+       return writeJson(res, 409, { error: 'Complete Gusto authorization through the verified company connector.', code: 'GUSTO_PROVIDER_VERIFICATION_REQUIRED' });
+     }
+@@ -912,6 +961,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleMappingActivate(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+     if (!['VALIDATING', 'DEGRADED', 'ACTIVE'].includes(connection.state)) {
+@@ -964,6 +1014,7 @@ function createAutonomousIntegrationHub(options = {}) {
+       });
+       return writeJson(res, 403, { error: 'Connection does not belong to the requested tenant.' });
+     }
++    requirePhase(connection.tenant, 'OPERATIONAL_READ');
+     if (!['VALIDATING', 'ACTIVE', 'DEGRADED'].includes(connection.state)) {
+       return writeJson(res, 409, { error: 'Connection is not ready for validation.' });
+     }
+@@ -1118,6 +1169,7 @@ function createAutonomousIntegrationHub(options = {}) {
+     const body = await readJson(req, maxBodyBytes);
+     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
++    requirePhase(connection.tenant, 'OPERATIONAL_READ');
+     const health = compact(body.health, 40);
+     const transitions = {
+       healthy: ['ACTIVE', null],
+@@ -1143,6 +1195,7 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+   async function handleRepair(ctx, req, res) {
+     const body = await readJson(req, maxBodyBytes);
++    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
+     const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
+     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+     let requiredAction = { type: 'NONE', instruction: 'No repair action is currently required.' };
+@@ -1179,6 +1232,13 @@ function createAutonomousIntegrationHub(options = {}) {
+ 
+       const ctx = requireManager(req, res);
+       if (!ctx) return true;
++      const credentialRoute = [PREFIX + '/gusto/authorize', PREFIX + '/gusto/complete', PREFIX + '/gusto/verify', PREFIX + '/discovery-session'].includes(path);
++      const localSetupRoute = [PREFIX + '/discover', PREFIX + '/confirm', PREFIX + '/connect',
++        PREFIX + '/mapping-preview', PREFIX + '/mapping-activate', PREFIX + '/repair'].includes(path);
++      const purpose = req.method === 'POST'
++        ? credentialRoute ? 'INITIAL_CREDENTIAL' : localSetupRoute ? 'SETUP_LOCAL_CONFIGURATION' : 'OPERATIONAL_READ'
++        : 'SETUP_VIEW';
++      requirePhase(ctx.tenant, purpose);
+       if (req.method === 'GET' && path === PREFIX + '/feeds/3min') return writeJson(res, 200, feed.statusForTenant(ctx.tenant));
+       if (req.method === 'GET' && path === PREFIX + '/gusto/configuration') {
+         if (!requireGustoAdministrator(ctx, res)) return true;
+diff --git a/integration/runtime/fixtures/gusto-http-child.cjs b/integration/runtime/fixtures/gusto-http-child.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..1629afb3b06588e23e6c0c6666d7dd2b9ab07432
+--- /dev/null
++++ b/integration/runtime/fixtures/gusto-http-child.cjs
+@@ -0,0 +1,60 @@
++'use strict';
++
++// Test-only HTTP boundary. Provider I/O is replaced; the hub, routes and SQLite
++// lifecycle are the product implementations under test.
++const http = require('node:http');
++const { createAutonomousIntegrationHub } = require('../autonomous-integration-hub.cjs');
++
++const COMPANY = '11111111-1111-4111-8111-111111111111';
++const env = {
++  WFM_GUSTO_CLIENT_ID: 'fixture-client',
++  WFM_GUSTO_CLIENT_SECRET: 'fixture-client-secret',
++  WFM_GUSTO_TOKEN_ENCRYPTION_KEY_B64: Buffer.alloc(32, 7).toString('base64'),
++  WFM_PUBLIC_ORIGIN: 'https://vector.example.test',
++  WFM_GUSTO_ENVIRONMENT: 'sandbox'
++};
++let denial = null;
++const fetchImpl = async (url, init = {}) => {
++  const parsed = new URL(url);
++  if (parsed.origin !== 'https://api.gusto-demo.com') throw new Error('Unexpected provider origin');
++  if (parsed.pathname !== '/oauth/token' && init.method !== 'GET')
++    throw new Error('Unexpected provider write');
++  if (parsed.pathname === '/oauth/token') return Response.json({
++    access_token: 'fixture-access-token', refresh_token: 'fixture-refresh-token',
++    expires_in: 7200, token_type: 'Bearer'
++  });
++  if (parsed.pathname === '/v1/token_info') {
++    if (denial === 'forbidden') return Response.json({ error: 'private-provider-detail' }, { status: 403 });
++    return Response.json({
++      scope: denial === 'missing-scope' ? 'employees:read' : 'companies:read employees:read payrolls:read',
++      resource: { type: 'Company', uuid: denial === 'wrong-company'
++        ? '22222222-2222-4222-8222-222222222222' : COMPANY },
++      resource_owner: { type: 'CompanyAdmin', uuid: 'not-the-company' }
++    });
++  }
++  if (parsed.pathname === '/v1/companies/' + COMPANY)
++    return Response.json({ uuid: COMPANY, name: 'Fixture company' });
++  throw new Error('Unexpected provider request');
++};
++
++const hub = createAutonomousIntegrationHub({
++  dbPath: process.argv[2], env, fetchImpl, internalToken: 'fixture-worker'
++});
++const server = http.createServer(async (req, res) => {
++  try {
++    if (!await hub.handleRequest(req, res) && !res.writableEnded) {
++      res.statusCode = 404;
++      res.end();
++    }
++  } catch {
++    if (!res.writableEnded) { res.statusCode = 500; res.end(); }
++  }
++});
++process.on('message', message => {
++  if (message?.type === 'denial') {
++    denial = message.value;
++    process.send({ type: 'denial-set' });
++  }
++});
++process.on('disconnect', () => { server.close(); hub.close(); });
++server.listen(0, '127.0.0.1', () => process.send({ type: 'ready', port: server.address().port }));
+diff --git a/integration/runtime/gusto-company-connector.cjs b/integration/runtime/gusto-company-connector.cjs
+index b53fb02bb707f876b579294ffa93c978fd41da97..05632471531d2a246c2f4dfdd328b3c489610305 100644
+--- a/integration/runtime/gusto-company-connector.cjs
++++ b/integration/runtime/gusto-company-connector.cjs
+@@ -31,7 +31,12 @@ function fail(code, statusCode, message) {
+   throw new GustoConnectorError(code, statusCode, message);
+ }
+ 
++const isPhaseError = error =>
++  ['SETUP_ONLY_REQUIRED', 'SETUP_MODE_BINDING_UNAVAILABLE'].includes(error?.code) &&
++  [403, 503].includes(error?.statusCode);
++
+ function safeError(error) {
++  if (isPhaseError(error)) return error;
+   return error instanceof GustoConnectorError ? error
+     : new GustoConnectorError('GUSTO_STORAGE_UNAVAILABLE', 503, 'Gusto credential storage is temporarily unavailable.');
+ }
+@@ -149,7 +154,7 @@ function safeMetadata(row, authorizationRef = true) {
+   return result;
+ }
+ 
+-function createGustoCompanyConnector({ db, env = process.env, fetchImpl = globalThis.fetch, now = Date.now }) {
++function createGustoCompanyConnector({ db, env = process.env, fetchImpl = globalThis.fetch, now = Date.now, assertEffect = () => {} }) {
+   if (!db || typeof db.prepare !== 'function' || typeof db.exec !== 'function') throw new TypeError('A SQLite connection is required.');
+   const config = readConfiguration(env);
+   db.exec(`CREATE TABLE IF NOT EXISTS gusto_oauth_states (
+@@ -202,6 +207,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     const expiresAt = createdAt + STATE_TTL_MS;
+     const state = randomBytes(32).toString('base64url');
+     const stateHash = createHash('sha256').update(state).digest('hex');
++    assertEffect(tenant);
+     db.prepare('DELETE FROM gusto_oauth_states WHERE expires_at <= ?').run(createdAt);
+     db.prepare(`INSERT INTO gusto_oauth_states
+       (state_hash, tenant, connection_id, session_hash, company_uuid, environment, client_id_hash, created_at, expires_at)
+@@ -216,7 +222,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     return { authorizationUrl: authorization.toString(), expiresAt: new Date(expiresAt).toISOString(), environment: config.environment };
+   }
+ 
+-  async function requestJson(path, { accessToken, body, operation = 'read' } = {}) {
++  async function requestJson(path, { accessToken, body, operation = 'read', tenant } = {}) {
+     const base = GUSTO_HOSTS[config.environment];
+     // Every caller uses a constant path or a validated UUID; no provider-supplied URL is followed.
+     const target = new URL(path, base);
+@@ -235,6 +241,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+       }, REQUEST_TIMEOUT_MS);
+     });
+     const request = async () => {
++      assertEffect(tenant);
+       const headers = { Accept: 'application/json', 'X-Gusto-API-Version': API_VERSION };
+       if (accessToken) headers.Authorization = 'Bearer ' + accessToken;
+       if (body) headers['Content-Type'] = 'application/json';
+@@ -277,13 +284,14 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     try { return await Promise.race([request(), timeout]); }
+     catch (error) {
+       cancelReader();
++      if (isPhaseError(error)) throw error;
+       if (error instanceof GustoConnectorError) throw error;
+       fail('GUSTO_PROVIDER_UNAVAILABLE', 502, 'Gusto could not complete the request.');
+     } finally { clearTimeout(timer); }
+   }
+ 
+-  async function verifyCompany(accessToken, companyUuid) {
+-    const info = await requestJson('/v1/token_info', { accessToken });
++  async function verifyCompany(accessToken, companyUuid, tenant) {
++    const info = await requestJson('/v1/token_info', { accessToken, tenant });
+     if (info.resource?.type !== 'Company' || typeof info.resource.uuid !== 'string' || !UUID.test(info.resource.uuid)) {
+       fail('GUSTO_TOKEN_SUBJECT_INVALID', 403, 'Gusto authorization must belong to a company.');
+     }
+@@ -291,7 +299,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     if (typeof info.scope !== 'string' || info.scope.length > 16_384) fail('GUSTO_INVALID_PROVIDER_RESPONSE', 502, 'Gusto did not return valid granted scopes.');
+     const scopes = new Set(info.scope.split(/\s+/).filter(Boolean));
+     if (!scopes.has('companies:read')) fail('GUSTO_SCOPE_REQUIRED', 403, 'Gusto company read access is required to verify this connection.');
+-    const company = await requestJson('/v1/companies/' + companyUuid, { accessToken });
++    const company = await requestJson('/v1/companies/' + companyUuid, { accessToken, tenant });
+     if (typeof company.uuid !== 'string' || !UUID.test(company.uuid) || company.uuid.toLowerCase() !== companyUuid) {
+       fail('GUSTO_COMPANY_MISMATCH', 403, 'The Gusto company response does not match the expected company.');
+     }
+@@ -318,6 +326,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+       fail('GUSTO_INVALID_STATE', 400, 'The Gusto authorization state is invalid or expired.');
+     }
+     const at = now();
++    assertEffect(tenant);
+     // A single SQLite statement claims the state before any network operation.
+     const claimed = db.prepare(`UPDATE gusto_oauth_states SET consumed_at = ?
+       WHERE state_hash = ? AND tenant = ? AND session_hash = ? AND environment = ? AND client_id_hash = ?
+@@ -330,13 +339,14 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     }
+     if (providerError !== undefined && providerError !== null && providerError !== '') fail('GUSTO_OAUTH_DENIED', 400, 'Gusto authorization was declined. Start authorization again.');
+     if (!cleanText(code, 4096)) fail('GUSTO_INVALID_INPUT', 400, 'A valid Gusto authorization code is required.');
+-    const tokens = parseTokenResponse(await requestJson('/oauth/token', { operation: 'authorization', body: {
++    const tokens = parseTokenResponse(await requestJson('/oauth/token', { tenant, operation: 'authorization', body: {
+       client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.publicOrigin + CALLBACK_PATH,
+       code, grant_type: 'authorization_code'
+     } }), now());
+-    const verified = await verifyCompany(tokens.accessToken, claimed.company_uuid);
++    const verified = await verifyCompany(tokens.accessToken, claimed.company_uuid, tenant);
+     const verifiedAt = new Date(now()).toISOString();
+     const encrypted = sealTokens(config.encryptionKey, claimed, tokens);
++    assertEffect(tenant);
+     const stored = db.prepare(`INSERT INTO gusto_company_credentials
+       (tenant, connection_id, environment, company_uuid, client_id_hash, company_name, granted_scopes, encrypted_tokens, token_expires_at,
+         credential_version, verified_version, verified_at, updated_at)
+@@ -371,6 +381,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+   }
+ 
+   async function refreshCredentials(row) {
++    assertEffect(row.tenant);
+     const at = now();
+     const leaseId = randomBytes(16).toString('hex');
+     const claimed = db.prepare(`UPDATE gusto_company_credentials SET refresh_lease_id = ?, refresh_lease_until = ?
+@@ -388,18 +399,18 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+     try {
+       requireCredentialContext(claimed);
+       const prior = openTokens(config.encryptionKey, claimed);
+-      const tokens = parseTokenResponse(await requestJson('/oauth/token', { operation: 'refresh', body: {
++      const tokens = parseTokenResponse(await requestJson('/oauth/token', { tenant: row.tenant, operation: 'refresh', body: {
+         client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.publicOrigin + CALLBACK_PATH,
+         refresh_token: prior.refreshToken, grant_type: 'refresh_token'
+       } }), now());
+       // Refresh tokens are single-use. Save the replacement before subsequent reads,
+       // retaining an unverified version until company verification succeeds.
+       const encrypted = sealTokens(config.encryptionKey, claimed, tokens);
+-      const rotated = await persistRotatedTokens(() => db.prepare(`UPDATE gusto_company_credentials SET encrypted_tokens = ?, token_expires_at = ?,
++      const rotated = await persistRotatedTokens(() => { assertEffect(row.tenant); return db.prepare(`UPDATE gusto_company_credentials SET encrypted_tokens = ?, token_expires_at = ?,
+         credential_version = credential_version + 1, verified_version = NULL, refresh_lease_id = NULL,
+         refresh_lease_until = NULL, updated_at = ?
+         WHERE tenant = ? AND connection_id = ? AND credential_version = ? AND refresh_lease_id = ? RETURNING *`)
+-        .get(encrypted, tokens.expiresAt, now(), row.tenant, row.connection_id, row.credential_version, leaseId));
++        .get(encrypted, tokens.expiresAt, now(), row.tenant, row.connection_id, row.credential_version, leaseId); });
+       if (!rotated) fail('GUSTO_REFRESH_CONFLICT', 409, 'Gusto credentials changed during refresh. Retry verification.');
+       return rotated;
+     } finally {
+@@ -416,6 +427,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+   async function verifyConnection({ tenant, connectionId } = {}) {
+     requireConfigured();
+     binding(tenant, connectionId);
++    assertEffect(tenant);
+     let row = credential(tenant, connectionId);
+     if (!row) fail('GUSTO_CONNECTION_NOT_FOUND', 404, 'No stored Gusto authorization exists for this connection.');
+     requireCredentialContext(row);
+@@ -427,12 +439,13 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+         refreshed = true;
+       }
+       let verified;
+-      try { verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid); }
++      try { verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid, tenant); }
+       catch (error) {
+         if (error.code !== 'GUSTO_UNAUTHORIZED' || refreshed) throw error;
+         row = await refreshCredentials(row);
+-        verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid);
++        verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid, tenant);
+       }
++      assertEffect(tenant);
+       const saved = db.prepare(`UPDATE gusto_company_credentials SET company_name = ?, granted_scopes = ?,
+         verified_version = credential_version, verified_at = ?, updated_at = ?
+         WHERE tenant = ? AND connection_id = ? AND credential_version = ? RETURNING *`)
+@@ -441,6 +454,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
+       return safeMetadata(saved);
+     } catch (error) {
+       if (['GUSTO_REAUTHORIZATION_REQUIRED', 'GUSTO_UNAUTHORIZED', 'GUSTO_FORBIDDEN', 'GUSTO_COMPANY_MISMATCH', 'GUSTO_TOKEN_SUBJECT_INVALID', 'GUSTO_SCOPE_REQUIRED'].includes(error.code)) {
++        assertEffect(tenant);
+         const invalidated = db.prepare(`UPDATE gusto_company_credentials SET verified_version = NULL
+           WHERE tenant = ? AND connection_id = ? AND credential_version = ?`)
+           .run(tenant, connectionId, row.credential_version);
+diff --git a/integration/runtime/gusto-http-process-recovery.test.cjs b/integration/runtime/gusto-http-process-recovery.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..456321470fe17a1c7731c607c5cc43c71caa69f0
+--- /dev/null
++++ b/integration/runtime/gusto-http-process-recovery.test.cjs
+@@ -0,0 +1,148 @@
++'use strict';
++
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const { mkdtempSync, rmSync } = require('node:fs');
++const { tmpdir } = require('node:os');
++const { join } = require('node:path');
++const { fork } = require('node:child_process');
++const { createHash } = require('node:crypto');
++const { DatabaseSync } = require('node:sqlite');
++
++const PREFIX = '/api/integrations/autonomous';
++const COMPANY = '11111111-1111-4111-8111-111111111111';
++const ORIGIN = 'https://vector.example.test';
++const TOKENS = { manager: 'a'.repeat(64), second: 's'.repeat(64), other: 'b'.repeat(64) };
++
++function seed(dbPath) {
++  const db = new DatabaseSync(dbPath);
++  try {
++    db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,role TEXT NOT NULL);' +
++      'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,expires INTEGER NOT NULL);');
++    for (const [name, tenant, role] of [
++      ['manager', 'alpha', 'manager'], ['second', 'alpha', 'manager'], ['other', 'bravo', 'admin']
++    ]) {
++      db.prepare('INSERT INTO users VALUES(?,?,?)').run(name, tenant, role);
++      db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(
++        createHash('sha256').update(TOKENS[name]).digest('hex'), name, Date.now() + 600_000);
++    }
++  } finally { db.close(); }
++}
++
++function start(dbPath) {
++  const child = fork(join(__dirname, 'fixtures/gusto-http-child.cjs'), [dbPath],
++    { stdio: ['ignore', 'ignore', 'pipe', 'ipc'] });
++  let errors = '';
++  child.stderr.on('data', chunk => { errors += chunk; });
++  const ready = new Promise((resolve, reject) => {
++    const timeout = setTimeout(() => reject(new Error('HTTP child startup timed out: ' + errors)), 10_000);
++    child.once('exit', code => { clearTimeout(timeout); reject(new Error(`HTTP child exited ${code}: ${errors}`)); });
++    child.on('message', message => {
++      if (message?.type === 'ready') { clearTimeout(timeout); resolve(message.port); }
++    });
++  });
++  return { child, ready };
++}
++
++async function crash(worker) {
++  if (worker.child.exitCode !== null || worker.child.signalCode !== null) return;
++  const exited = new Promise(resolve => worker.child.once('exit', resolve));
++  worker.child.kill('SIGKILL');
++  await exited;
++}
++
++async function setDenial(worker, value) {
++  const acknowledged = new Promise((resolve, reject) => {
++    const timeout = setTimeout(() => { worker.child.off('message', onMessage); reject(new Error('Denial control timed out')); }, 5_000);
++    function onMessage(message) {
++      if (message?.type === 'denial-set') {
++        clearTimeout(timeout);
++        worker.child.off('message', onMessage);
++        resolve();
++      }
++    }
++    worker.child.on('message', onMessage);
++  });
++  worker.child.send({ type: 'denial', value });
++  await acknowledged;
++}
++
++async function call(port, token, method, suffix, body, headers = {}) {
++  const response = await fetch(`http://127.0.0.1:${port}${PREFIX}${suffix}`, {
++    method,
++    signal: AbortSignal.timeout(10_000),
++    headers: { ...(token ? { cookie: 'wfm_session=' + TOKENS[token] } : {}),
++      ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...headers },
++    ...(body === undefined ? {} : { body: JSON.stringify(body) })
++  });
++  const raw = await response.text();
++  return { status: response.status, body: raw ? JSON.parse(raw) : null };
++}
++
++for (const denial of ['forbidden', 'wrong-company', 'missing-scope']) {
++  test(`Gusto ${denial} denial survives real HTTP and a separate-process reopen`, async t => {
++    const directory = mkdtempSync(join(tmpdir(), 'vector-gusto-http-'));
++    const dbPath = join(directory, 'hub.sqlite');
++    seed(dbPath);
++    let worker = start(dbPath);
++    t.after(async () => {
++      if (worker) await crash(worker);
++      rmSync(directory, { recursive: true, force: true });
++    });
++    let port = await worker.ready;
++    const discovered = await call(port, 'manager', 'POST', '/discover', {
++      source: 'USER', apps: [{ productKey: 'gusto', name: 'Gusto' }]
++    });
++    assert.equal(discovered.status, 200);
++    const candidateId = discovered.body.candidates[0].id;
++    assert.equal((await call(port, 'manager', 'POST', '/confirm', {
++      candidateId, authoritativeFor: ['people', 'payroll']
++    })).status, 200);
++    const connected = await call(port, 'manager', 'POST', '/connect', { candidateId, authMethod: 'oauth2' });
++    assert.equal(connected.status, 200);
++    const connectionId = connected.body.connection.id;
++    const authorization = await call(port, 'manager', 'POST', '/gusto/authorize',
++      { connectionId, expectedCompanyUuid: COMPANY }, { origin: ORIGIN });
++    assert.equal(authorization.status, 200);
++    const state = new URL(authorization.body.authorizationUrl).searchParams.get('state');
++    assert.equal((await call(port, 'manager', 'POST', '/gusto/complete',
++      { state, code: 'fixture-code' }, { origin: ORIGIN })).status, 200);
++    assert.equal((await call(port, 'manager', 'POST', '/mapping-activate', {
++      connectionId, mappings: [{ sourceField: 'employee_id', canonicalField: 'employeeId', confidence: 1 }]
++    })).status, 200);
++    assert.equal((await call(port, null, 'POST', '/sync-validate', {
++      tenant: 'alpha', connectionId, records: [{ employee_id: 'synthetic-person' }]
++    }, { 'x-wfm-integration-internal': 'fixture-worker' })).status, 200);
++    assert.equal((await call(port, 'manager', 'GET', '/status')).body.readiness.readyForPeopleSync, true);
++
++    await setDenial(worker, denial);
++    const rejected = await call(port, 'manager', 'POST', '/gusto/verify', { connectionId }, { origin: ORIGIN });
++    assert.equal(rejected.status, 403);
++    assert.equal(rejected.body.code, {
++      forbidden: 'GUSTO_FORBIDDEN', 'wrong-company': 'GUSTO_COMPANY_MISMATCH',
++      'missing-scope': 'GUSTO_SCOPE_REQUIRED'
++    }[denial]);
++    assert.doesNotMatch(JSON.stringify(rejected), /private-provider-detail|fixture-access-token|fixture-refresh-token/);
++    await crash(worker);
++    worker = start(dbPath);
++    port = await worker.ready;
++    const readback = await call(port, 'second', 'GET', '/status');
++    assert.equal(readback.status, 200);
++    assert.equal(readback.body.connections[0].state, 'REAUTH_REQUIRED');
++    assert.equal(readback.body.readiness.readyForPeopleSync, false);
++    assert.deepEqual((await call(port, 'other', 'GET', '/status')).body.connections, []);
++    assert.equal((await call(port, null, 'POST', '/health-report',
++      { connectionId, health: 'healthy' }, { 'x-wfm-integration-internal': 'fixture-worker' })).status, 409);
++    const recovery = await call(port, 'manager', 'POST', '/gusto/verify', { connectionId }, { origin: ORIGIN });
++    assert.equal(recovery.status, 200);
++    assert.equal(recovery.body.connection.state, 'VALIDATING');
++    assert.equal(recovery.body.dataSynced, false);
++    assert.equal(recovery.body.payrollProof, false);
++    await crash(worker);
++    worker = start(dbPath);
++    port = await worker.ready;
++    const recoveredReadback = await call(port, 'second', 'GET', '/status');
++    assert.equal(recoveredReadback.body.connections[0].state, 'VALIDATING');
++    assert.equal(recoveredReadback.body.readiness.readyForPeopleSync, false);
++  });
++}
+diff --git a/integration/runtime/three-min-feed.cjs b/integration/runtime/three-min-feed.cjs
+index f81bd20286c34dbd5fcfe4f783a8061f288d7452..3654e587b9de85e1970609ab8e8617f97df01bb7 100644
+--- a/integration/runtime/three-min-feed.cjs
++++ b/integration/runtime/three-min-feed.cjs
+@@ -40,7 +40,7 @@ function bindingsFrom(env) {
+ }
+ // An authenticated transport is not evidence that the original provider data is
+ // authorised, current, mapped or reconciled. This inbox cannot grant readiness.
+-function createThreeMinFeed({db,env=process.env,now=Date.now}) {
++function createThreeMinFeed({db,env=process.env,now=Date.now,assertEffect=()=>{}}) {
+  const bindings=bindingsFrom(env);
+  db.exec(`CREATE TABLE IF NOT EXISTS integration_feed_inbox(
+   id TEXT PRIMARY KEY,binding_id TEXT NOT NULL,binding_fingerprint TEXT NOT NULL,
+@@ -91,6 +91,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
+   // Body reads yield control. Revoked or superseded transport credentials cannot
+   // create receipts, reserve replay aliases or retain validation-rejection data.
+   requireCurrentToken(binding,providedToken);
++  assertEffect(binding.tenant);
+   const checksum=digest(raw); const id=binding.id;
+    db.exec('BEGIN IMMEDIATE');
+    try{
+@@ -149,7 +150,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
+     // Retain metadata/digest only, never invalid or unbounded source payloads.
+     try{return persist(binding,recordId,{eventId:rejectedEventId(recordId),records:[],occurredAt:new Date(now()).toISOString()},raw,res,providedToken,error.code);}catch(storageError){error=storageError;}
+    }
+-   return json(res,error.status||503,{code:error.code&&error.status?error.code:'FEED_STORAGE_UNAVAILABLE'});
++   return json(res,error.status||error.statusCode||503,{code:error.code&&(error.status||error.statusCode)?error.code:'FEED_STORAGE_UNAVAILABLE'});
+   }
+  }
+  return {handleRequest,statusForTenant};
+diff --git a/operations/runtime/maintenance-permit-evidence.cjs b/operations/runtime/maintenance-permit-evidence.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..a23a0d479074c8e51f2ab8a029b84f1ff4904822
+--- /dev/null
++++ b/operations/runtime/maintenance-permit-evidence.cjs
+@@ -0,0 +1,80 @@
++'use strict';
++
++// Advisory record consistency only; no permit issuance, safety clearance or work authority.
++const {types}=require('node:util');
++const SHA=/^[0-9a-f]{64}$/;
++function fail(code){throw new Error(code);}
++function dataRecord(value){
++ if(!value||typeof value!=='object'||Array.isArray(value)||types.isProxy(value))fail('INVALID_DATA_RECORD');
++ const proto=Object.getPrototypeOf(value);
++ if(proto!==Object.prototype&&proto!==null)fail('INVALID_DATA_RECORD');
++ const snapshot=Object.create(null);
++ for(const key of Reflect.ownKeys(value)){
++  const d=Object.getOwnPropertyDescriptor(value,key);
++  if(typeof key!=='string'||!d.enumerable||!Object.hasOwn(d,'value'))fail('INVALID_DATA_RECORD');
++  Object.defineProperty(snapshot,key,{value:d.value,enumerable:true});
++ }
++ return snapshot;
++}
++function id(v){return typeof v==='string'&&v.length>0&&v.length<=160&&v.trim()===v&&!/[\u0000-\u001f\u007f]/.test(v);}
++function time(v){
++ if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(v))fail('INVALID_TIME');
++ const n=Date.parse(v);if(!Number.isFinite(n)||new Date(n).toISOString()!==v)fail('INVALID_TIME');return n;
++}
++function record(row,input,source){
++ if(!row||typeof row!=='object'||Array.isArray(row)||row.source!==source||
++  row.tenantId!==input.tenantId||row.siteId!==input.siteId||row.assetId!==input.assetId||row.workOrderId!==input.workOrderId)fail('SCOPE_MISMATCH');
++ if(!id(row.recordId)||!id(row.revision)||typeof row.recordSha256!=='string'||!SHA.test(row.recordSha256))fail('INVALID_RECORD');
++ const observed=time(row.observedAt);
++ if(observed>input.asOfMs||input.asOfMs-observed>input.maxAgeMinutes*60000)fail('STALE_RECORD');
++ return observed;
++}
++function interval(row){
++ const from=time(row.validFrom),to=time(row.validTo);
++ if(from>=to)fail('INVALID_INTERVAL');return {from,to};
++}
++function assessMaintenancePermitEvidence(input){
++ input=dataRecord(input);
++ const workOrder=dataRecord(input.workOrder),permit=input.permit?dataRecord(input.permit):input.permit,
++  isolation=input.isolation?dataRecord(input.isolation):input.isolation;
++ if(!input||typeof input!=='object'||Array.isArray(input)||!id(input.tenantId)||!id(input.siteId)||
++  !id(input.assetId)||!id(input.workOrderId)||!Number.isSafeInteger(input.maxAgeMinutes)||
++  input.maxAgeMinutes<1||input.maxAgeMinutes>1440)fail('INVALID_SCOPE');
++ const asOfMs=time(input.asOf),context={...input,asOfMs};
++ record(workOrder,context,'CMMS');
++ if(workOrder.state!=='OPEN')fail('WORK_ORDER_NOT_OPEN');
++ const start=time(workOrder.plannedStart),end=time(workOrder.plannedEnd);
++ if(start>=end||asOfMs>=end)fail('INVALID_WORK_WINDOW');
++ const blockers=[];
++ if(!permit)blockers.push('PERMIT_MISSING');
++ if(!isolation)blockers.push('ISOLATION_MISSING');
++ let permitWindow,isolationWindow;
++ if(permit){
++  record(permit,context,'EHS');permitWindow=interval(permit);
++  if(permit.recordSha256===workOrder.recordSha256)fail('SOURCE_RECORD_COLLISION');
++  if(permit.workOrderRevision!==workOrder.revision||permit.workOrderRecordSha256!==workOrder.recordSha256)fail('PERMIT_WORK_ORDER_MISMATCH');
++  if(permit.state!=='ACTIVE')blockers.push('PERMIT_NOT_ACTIVE');
++  if(permitWindow.from>start||permitWindow.to<end)blockers.push('PERMIT_WINDOW_INCOMPLETE');
++ }
++ if(isolation){
++  record(isolation,context,'EHS');isolationWindow=interval(isolation);
++  if(isolation.recordSha256===workOrder.recordSha256)fail('SOURCE_RECORD_COLLISION');
++  if(isolation.workOrderRevision!==workOrder.revision||isolation.workOrderRecordSha256!==workOrder.recordSha256)fail('ISOLATION_WORK_ORDER_MISMATCH');
++  if(isolation.state!=='CONFIRMED')blockers.push('ISOLATION_NOT_CONFIRMED');
++  if(isolationWindow.from>start||isolationWindow.to<end)blockers.push('ISOLATION_WINDOW_INCOMPLETE');
++ }
++ if(permit&&isolation){
++  if(permit.recordSha256===isolation.recordSha256||
++   permit.recordId===isolation.recordId&&permit.revision===isolation.revision||
++   permit.isolationRecordSha256!==isolation.recordSha256)fail('PERMIT_ISOLATION_MISMATCH');
++ }
++ return Object.freeze({
++  tenantId:input.tenantId,siteId:input.siteId,assetId:input.assetId,workOrderId:input.workOrderId,
++  workOrderRevision:workOrder.revision,workOrderRecordSha256:workOrder.recordSha256,
++  permitRecordSha256:permit?.recordSha256||null,isolationRecordSha256:isolation?.recordSha256||null,
++  status:blockers.length?'BLOCKED':'DECLARED_EVIDENCE_FOR_REVIEW',blockers:Object.freeze(blockers),
++  sourceAuthenticated:false,permitAuthority:false,safetyAuthority:false,executionAuthority:false,
++  claimBoundary:'DECLARED_PERMIT_AND_ISOLATION_RECORDS_ONLY_NO_SAFETY_CLEARANCE'
++ });
++}
++module.exports={assessMaintenancePermitEvidence};
+diff --git a/operations/runtime/maintenance-permit-evidence.test.cjs b/operations/runtime/maintenance-permit-evidence.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..921b2eff9ac69d0cf040fa9de9a61125fefd417e
+--- /dev/null
++++ b/operations/runtime/maintenance-permit-evidence.test.cjs
+@@ -0,0 +1,66 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const { assessMaintenancePermitEvidence } = require('./maintenance-permit-evidence.cjs');
++const A='a'.repeat(64), B='b'.repeat(64), C='c'.repeat(64);
++function fixture(){
++ const scope={tenantId:'synthetic',siteId:'site-1',assetId:'asset-1',workOrderId:'wo-1'};
++ return {...scope,asOf:'2026-10-29T09:50:00.000Z',maxAgeMinutes:60,
++  workOrder:{...scope,source:'CMMS',recordId:'wo-record',revision:'r1',recordSha256:A,observedAt:'2026-10-29T09:45:00.000Z',state:'OPEN',plannedStart:'2026-10-29T10:00:00.000Z',plannedEnd:'2026-10-29T11:00:00.000Z'},
++  permit:{...scope,source:'EHS',recordId:'permit-record',revision:'p1',recordSha256:B,observedAt:'2026-10-29T09:40:00.000Z',state:'ACTIVE',workOrderRevision:'r1',workOrderRecordSha256:A,isolationRecordSha256:C,validFrom:'2026-10-29T09:30:00.000Z',validTo:'2026-10-29T12:00:00.000Z'},
++  isolation:{...scope,source:'EHS',recordId:'isolation-record',revision:'i1',recordSha256:C,observedAt:'2026-10-29T09:42:00.000Z',state:'CONFIRMED',workOrderRevision:'r1',workOrderRecordSha256:A,validFrom:'2026-10-29T09:30:00.000Z',validTo:'2026-10-29T12:00:00.000Z'}};
++}
++test('reports only declared permit/isolation evidence for review, without execution authority',()=>{
++ const x=assessMaintenancePermitEvidence(fixture());
++ assert.equal(x.status,'DECLARED_EVIDENCE_FOR_REVIEW');
++ assert.deepEqual(x.blockers,[]);
++ assert.equal(x.sourceAuthenticated,false);
++ assert.equal(x.safetyAuthority,false);
++ assert.equal(x.executionAuthority,false);
++ assert.equal(x.permitRecordSha256,B);
++});
++test('missing, withdrawn and incomplete safety records block review',()=>{
++ for(const mutate of [
++  x=>{delete x.permit;},x=>{delete x.isolation;},x=>{x.permit.state='REVOKED';},
++  x=>{x.isolation.state='WITHDRAWN';},x=>{x.permit.validTo='2026-10-29T10:59:00.000Z';},
++  x=>{x.isolation.validFrom='2026-10-29T10:01:00.000Z';}
++ ]){const x=fixture();mutate(x);const result=assessMaintenancePermitEvidence(x);assert.equal(result.status,'BLOCKED');assert.ok(result.blockers.length);}
++});
++test('foreign, stale and contradictory safety evidence fails closed',()=>{
++ for(const mutate of [
++  x=>{x.permit.tenantId='foreign';},x=>{x.isolation.assetId='foreign';},
++  x=>{x.permit.workOrderRevision='r2';},x=>{x.isolation.workOrderRecordSha256=B;},
++  x=>{x.permit.isolationRecordSha256=B;},x=>{x.permit.recordSha256=C;},
++  x=>{x.permit.recordSha256=A;},x=>{x.isolation.recordSha256=A;x.permit.isolationRecordSha256=A;},
++  x=>{x.permit.observedAt='2026-10-29T08:49:59.000Z';},
++  x=>{x.isolation.observedAt='2026-10-29T09:51:00.000Z';},
++  x=>{x.workOrder.state='CLOSED';},x=>{x.workOrder.plannedEnd='2026-10-29T09:59:00.000Z';},
++  x=>{x.permit.validTo='2026-10-29T10:31:00.000Z';x.permit.validFrom='2026-10-29T10:32:00.000Z';}
++ ]){const x=fixture();mutate(x);assert.throws(()=>assessMaintenancePermitEvidence(x));}
++});
++test('rejects active-object hash substitution before invoking caller getters',()=>{
++ const x=fixture();let reads=0;
++ Object.defineProperty(x.permit,'recordSha256',{enumerable:true,get(){return ++reads<5?B:A;}});
++ assert.throws(()=>assessMaintenancePermitEvidence(x),/INVALID_DATA_RECORD/);
++ assert.equal(reads,0);
++});
++test('rejects accessor revisions, inherited records and proxy traps before evidence reads',()=>{
++ const x=fixture();let reads=0;
++ Object.defineProperty(x.workOrder,'revision',{enumerable:true,get(){reads++;return 'r1';}});
++ assert.throws(()=>assessMaintenancePermitEvidence(x),/INVALID_DATA_RECORD/);
++ assert.equal(reads,0);
++ const inherited=fixture();inherited.permit=Object.create(inherited.permit);
++ assert.throws(()=>assessMaintenancePermitEvidence(inherited),/INVALID_DATA_RECORD/);
++ const proxied=fixture();let traps=0;
++ proxied.isolation=new Proxy(proxied.isolation,{get(){traps++;throw new Error('caller hook');},ownKeys(){traps++;throw new Error('caller hook');},getPrototypeOf(){traps++;throw new Error('caller hook');}});
++ assert.throws(()=>assessMaintenancePermitEvidence(proxied),/INVALID_DATA_RECORD/);
++ assert.equal(traps,0);
++});
++test('rejects hidden or symbolic record fields while retaining own plain-data records',()=>{
++ for(const decorate of [x=>Object.defineProperty(x.permit,'extra',{value:'hidden'}),x=>{x.isolation[Symbol('extra')]='hidden';}]){
++  const x=fixture();decorate(x);assert.throws(()=>assessMaintenancePermitEvidence(x),/INVALID_DATA_RECORD/);
++ }
++ const x=fixture();for(const key of ['workOrder','permit','isolation'])x[key]=Object.assign(Object.create(null),x[key]);
++ const out=assessMaintenancePermitEvidence(x);assert.equal(out.status,'DECLARED_EVIDENCE_FOR_REVIEW');
++ assert.equal(out.permitAuthority,false);assert.equal(out.safetyAuthority,false);assert.equal(out.executionAuthority,false);
++});
+diff --git a/operations/runtime/training-shift-collision.cjs b/operations/runtime/training-shift-collision.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b64589a538e3a45029343f85a2cd884ab42955d
+--- /dev/null
++++ b/operations/runtime/training-shift-collision.cjs
+@@ -0,0 +1,66 @@
++'use strict';
++
++// Pairwise declared overlap only. Source authentication and release authority stay upstream.
++const { types: { isProxy } } = require('node:util');
++const SHA = /^[0-9a-f]{64}$/;
++function fail(code) { throw new Error(code); }
++function snapshotRecord(value, code) {
++  if (!value || typeof value !== 'object' || isProxy(value) || Array.isArray(value)) fail(code);
++  const prototype = Object.getPrototypeOf(value);
++  if (prototype !== Object.prototype && prototype !== null) fail(code);
++  const snapshot = Object.create(null);
++  for (const key of Reflect.ownKeys(value)) {
++    const field = Object.getOwnPropertyDescriptor(value, key);
++    if (typeof key !== 'string' || !field.enumerable || !Object.hasOwn(field, 'value')) fail(code);
++    Object.defineProperty(snapshot, key, { value: field.value, writable: true, enumerable: true, configurable: true });
++  }
++  return snapshot;
++}
++function id(x) { return typeof x === 'string' && x.length > 0 && x.length <= 160 && x.trim() === x; }
++function instant(x) {
++  if (typeof x !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(x)) fail('INVALID_INSTANT');
++  const n = Date.parse(x);
++  if (!Number.isFinite(n) || new Date(n).toISOString() !== x) fail('INVALID_INSTANT');
++  return n;
++}
++function receipt(x, input, asOf) {
++  if (!x || typeof x !== 'object' || Array.isArray(x) ||
++    !id(x.source) || !id(x.recordId) || !id(x.revision) ||
++    typeof x.recordSha256 !== 'string' || !SHA.test(x.recordSha256) ||
++    x.tenantId !== input.tenantId || x.siteId !== input.siteId ||
++    x.workerRef !== input.workerRef) fail('RECEIPT_SCOPE_MISMATCH');
++  const start = instant(x.start), end = instant(x.end), eventAt = instant(x.eventAt), observedAt = instant(x.observedAt);
++  if (start <= asOf || end <= start || end - start > 86400000 ||
++    eventAt > observedAt || observedAt > asOf || eventAt > start) fail('RECEIPT_CHRONOLOGY');
++  return { source: x.source, recordId: x.recordId, revision: x.revision,
++    recordSha256: x.recordSha256, start, end };
++}
++function assessTrainingShiftCollision(input) {
++  input = snapshotRecord(input, 'INVALID_SCOPE');
++  if (!input || typeof input !== 'object' || Array.isArray(input) ||
++    !id(input.tenantId) || !id(input.siteId) || !id(input.workerRef)) fail('INVALID_SCOPE');
++  const asOf = instant(input.asOf);
++  input.publishedShift = snapshotRecord(input.publishedShift, 'RECEIPT_SCOPE_MISMATCH');
++  input.trainingSession = snapshotRecord(input.trainingSession, 'RECEIPT_SCOPE_MISMATCH');
++  const shift = receipt(input.publishedShift, input, asOf);
++  const training = receipt(input.trainingSession, input, asOf);
++  if (!id(input.publishedShift.shiftId) || !id(input.publishedShift.slotId) ||
++    input.publishedShift.state !== 'PUBLISHED' ||
++    !id(input.trainingSession.sessionId) || input.trainingSession.state !== 'CONFIRMED' ||
++    input.trainingSession.attendanceRequired !== true ||
++    shift.source === training.source || shift.recordSha256 === training.recordSha256) fail('INCOMPATIBLE_RECEIPTS');
++  const overlapMs = Math.max(0, Math.min(shift.end, training.end) - Math.max(shift.start, training.start));
++  return Object.freeze({
++    tenantId: input.tenantId, siteId: input.siteId,
++    shiftId: input.publishedShift.shiftId, slotId: input.publishedShift.slotId,
++    sessionId: input.trainingSession.sessionId,
++    shiftRecordSha256: shift.recordSha256, trainingRecordSha256: training.recordSha256,
++    declaredOverlapMinutes: overlapMs / 60000,
++    status: overlapMs > 0 ? 'DECLARED_CONFLICT' : 'NO_DECLARED_OVERLAP',
++    claimBoundary: 'PAIRWISE_DECLARED_TRAINING_SHIFT_OVERLAP_ONLY',
++    sourceAuthenticated: false, rosterCompleteVerified: false,
++    scheduleAuthority: false, trainingAuthority: false, payrollAuthority: false,
++    executionAuthority: false
++  });
++}
++module.exports = { assessTrainingShiftCollision };
+diff --git a/operations/runtime/training-shift-collision.test.cjs b/operations/runtime/training-shift-collision.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..41805320b9c4559e62c4de6443a4e9fbc3991992
+--- /dev/null
++++ b/operations/runtime/training-shift-collision.test.cjs
+@@ -0,0 +1,104 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const { assessTrainingShiftCollision } = require('./training-shift-collision.cjs');
++const A = 'a'.repeat(64), B = 'b'.repeat(64);
++function fixture() {
++  const scope = { tenantId: 'tenant-a', siteId: 'site-a', workerRef: 'opaque-1' };
++  const publishedShift = { ...scope, shiftId: 'shift-a', slotId: 'slot-a', source: 'schedule', recordId: 'plan-a', revision: '2', recordSha256: A,
++    state: 'PUBLISHED', start: '2026-11-01T08:00:00.000Z', end: '2026-11-01T16:00:00.000Z',
++    eventAt: '2026-10-31T08:00:00.000Z', observedAt: '2026-10-31T08:01:00.000Z' };
++  const trainingSession = { ...scope, sessionId: 'training-a', source: 'lms', recordId: 'session-a', revision: '1', recordSha256: B,
++    state: 'CONFIRMED', attendanceRequired: true, start: '2026-11-01T10:00:00.000Z', end: '2026-11-01T12:00:00.000Z',
++    eventAt: '2026-10-31T09:00:00.000Z', observedAt: '2026-10-31T09:01:00.000Z' };
++  return { ...scope, asOf: '2026-10-31T10:00:00.000Z', publishedShift, trainingSession };
++}
++test('bounded training and published shift overlap is advisory and hides worker reference', () => {
++  const r = assessTrainingShiftCollision(fixture());
++  assert.equal(r.status, 'DECLARED_CONFLICT');
++  assert.equal(r.declaredOverlapMinutes, 120);
++  assert.equal(r.workerRef, undefined);
++  for (const key of ['sourceAuthenticated', 'rosterCompleteVerified', 'scheduleAuthority', 'trainingAuthority', 'payrollAuthority', 'executionAuthority']) assert.equal(r[key], false);
++  assert.equal(Object.isFrozen(r), true);
++});
++test('touching boundaries have no declared overlap, without claiming full availability', () => {
++  const x = fixture();
++  const r = assessTrainingShiftCollision({ ...x, trainingSession: { ...x.trainingSession, start: x.publishedShift.end, end: '2026-11-01T18:00:00.000Z' } });
++  assert.equal(r.status, 'NO_DECLARED_OVERLAP');
++  assert.equal(r.declaredOverlapMinutes, 0);
++  assert.equal(r.rosterCompleteVerified, false);
++});
++test('foreign identity, incomplete state and reused source evidence reject', () => {
++  const x = fixture();
++  for (const key of ['tenantId', 'siteId', 'workerRef']) {
++    assert.throws(() => assessTrainingShiftCollision({ ...x, trainingSession: { ...x.trainingSession, [key]: 'other' } }));
++    assert.throws(() => assessTrainingShiftCollision({ ...x, publishedShift: { ...x.publishedShift, [key]: 'other' } }));
++  }
++  for (const change of [{ attendanceRequired: false }, { state: 'PLANNED' }, { source: 'schedule' }, { recordSha256: A }])
++    assert.throws(() => assessTrainingShiftCollision({ ...x, trainingSession: { ...x.trainingSession, ...change } }));
++  assert.throws(() => assessTrainingShiftCollision({ ...x, publishedShift: { ...x.publishedShift, state: 'DRAFT' } }));
++});
++test('past, future, rolled and inverted evidence times reject', () => {
++  const x = fixture();
++  for (const change of [{ start: x.asOf }, { observedAt: '2026-11-02T00:00:00.000Z' },
++    { eventAt: '2026-11-01T11:00:00.000Z' }, { start: '2026-02-30T10:00:00.000Z' },
++    { end: x.trainingSession.start }])
++    assert.throws(() => assessTrainingShiftCollision({ ...x, trainingSession: { ...x.trainingSession, ...change } }));
++});
++
++test('active root scope and receipt selectors reject without invoking getters', () => {
++  for (const key of ['tenantId', 'siteId', 'workerRef', 'asOf', 'publishedShift', 'trainingSession']) {
++    const x = fixture(); let reads = 0; const value = x[key];
++    Object.defineProperty(x, key, { enumerable: true, get() { reads++; return value; } });
++    assert.throws(() => assessTrainingShiftCollision(x));
++    assert.equal(reads, 0, key);
++  }
++});
++test('active receipt fields reject before a value can change after validation', () => {
++  for (const kind of ['publishedShift', 'trainingSession']) {
++    for (const key of Object.keys(fixture()[kind])) {
++      const x = fixture(); let reads = 0; const value = x[kind][key];
++      Object.defineProperty(x[kind], key, { enumerable: true, get() { reads++; return reads === 1 ? value : 'unvalidated'; } });
++      assert.throws(() => assessTrainingShiftCollision(x));
++      assert.equal(reads, 0, kind + '.' + key);
++    }
++  }
++});
++test('frozen accessor receipts remain active and must reject without invocation', () => {
++  const x = fixture(); let reads = 0;
++  Object.defineProperty(x.publishedShift, 'recordSha256', { enumerable: true, get() { return ++reads <= 2 ? A : 'not-a-hash'; } });
++  Object.freeze(x.publishedShift); Object.freeze(x);
++  assert.throws(() => assessTrainingShiftCollision(x));
++  assert.equal(reads, 0);
++});
++test('proxy roots and receipt records reject without running traps', () => {
++  for (const key of [null, 'publishedShift', 'trainingSession']) {
++    const x = fixture(); let traps = 0;
++    const wrapped = new Proxy(key ? x[key] : x, {
++      get(target, prop, receiver) { traps++; return Reflect.get(target, prop, receiver); },
++      ownKeys(target) { traps++; return Reflect.ownKeys(target); },
++      getOwnPropertyDescriptor(target, prop) { traps++; return Reflect.getOwnPropertyDescriptor(target, prop); },
++      getPrototypeOf(target) { traps++; return Reflect.getPrototypeOf(target); }
++    });
++    if (key) x[key] = wrapped;
++    assert.throws(() => assessTrainingShiftCollision(key ? x : wrapped));
++    assert.equal(traps, 0);
++  }
++});
++test('inherited scope and active extra fields cannot enter validated records', () => {
++  const inherited = fixture();
++  inherited.trainingSession = Object.create(inherited.trainingSession);
++  assert.throws(() => assessTrainingShiftCollision(inherited));
++  const x = fixture(); let reads = 0;
++  Object.defineProperty(x.trainingSession, 'displayNote', { enumerable: true, get() { reads++; return 'note'; } });
++  assert.throws(() => assessTrainingShiftCollision(x));
++  assert.equal(reads, 0);
++});
++test('plain JSON, null-prototype data and ignored extra data retain ordinary behavior', () => {
++  const x = fixture(); const expected = assessTrainingShiftCollision(x);
++  assert.deepEqual(assessTrainingShiftCollision(JSON.parse(JSON.stringify(x))), expected);
++  x.displayNote = 'ignored'; x.publishedShift.displayNote = { nested: ['plain', 1, null] };
++  assert.deepEqual(assessTrainingShiftCollision(x), expected);
++  const asNull = value => Object.assign(Object.create(null), value);
++  assert.deepEqual(assessTrainingShiftCollision(asNull({ ...x, publishedShift: asNull(x.publishedShift), trainingSession: asNull(x.trainingSession) })), expected);
++});
+diff --git a/verification/vector-v014-setup-containment/heldout.test.cjs b/verification/vector-v014-setup-containment/heldout.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..022b6e366f02a94a94abf180b31d3072d402f644
+--- /dev/null
++++ b/verification/vector-v014-setup-containment/heldout.test.cjs
+@@ -0,0 +1,112 @@
++'use strict';
++
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const os = require('node:os');
++const path = require('node:path');
++const { Readable } = require('node:stream');
++const { createHash } = require('node:crypto');
++const { DatabaseSync } = require('node:sqlite');
++const { createCustomerWorkspaceRegistry } = require('../../implementation/runtime/customer-workspace.cjs');
++const { createSetupOnlyPolicy } = require('../../implementation/runtime/setup-only-policy.cjs');
++const { createAutonomousIntegrationHub } = require('../../integration/runtime/autonomous-integration-hub.cjs');
++
++const sha = value => createHash('sha256').update(String(value)).digest('hex');
++const prefix = '/api/integrations/autonomous';
++const workerHeader = { 'x-wfm-integration-internal': 'synthetic-integration-worker' };
++
++async function call(hub, token, suffix, body, headers = {}) {
++  const req = Readable.from(body === undefined ? [] : [JSON.stringify(body)]);
++  req.method = 'POST';
++  req.url = prefix + suffix;
++  req.headers = { ...(token ? { cookie: 'wfm_session=' + token } : {}), ...headers };
++  const res = {
++    statusCode: 200,
++    headersSent: false,
++    writableEnded: false,
++    body: '',
++    setHeader() {},
++    end(value = '') { this.body = String(value); this.headersSent = true; this.writableEnded = true; }
++  };
++  assert.equal(await hub.handleRequest(req, res), true);
++  return { status: res.statusCode, body: res.body ? JSON.parse(res.body) : null };
++}
++
++test('setup-only workspace cannot reach worker people sync or persist operational people', async t => {
++  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vector-v014-'));
++  const dbPath = path.join(dir, 'tenant.sqlite');
++  const managerToken = 'm'.repeat(64);
++  let hub;
++  t.after(() => { hub?.close(); fs.rmSync(dir, { recursive: true, force: true }); });
++
++  const db = new DatabaseSync(dbPath);
++  db.exec(`PRAGMA foreign_keys=ON;
++    CREATE TABLE tenants(id TEXT PRIMARY KEY,version INTEGER NOT NULL,state TEXT NOT NULL);
++    CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL REFERENCES tenants(id),person_id TEXT NOT NULL,role TEXT NOT NULL,costs INTEGER NOT NULL,salt TEXT NOT NULL,password_hash TEXT NOT NULL,permissions TEXT NOT NULL DEFAULT '[]');
++    CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL REFERENCES users(email),expires INTEGER NOT NULL);
++    CREATE TABLE implementation_runs(id TEXT PRIMARY KEY,tenant TEXT,contract_ref_hash TEXT);
++    INSERT INTO tenants VALUES('alpha',1,'{}');
++    INSERT INTO users VALUES('manager@alpha','alpha','m1','manager',1,'s','00','[]');`);
++  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha(managerToken), 'manager@alpha', Date.now() + 60000);
++  const registry = createCustomerWorkspaceRegistry({ db, createInitialWorkspace(binding) {
++    db.prepare('INSERT INTO implementation_runs VALUES(?,?,?)').run('run-alpha', binding.tenant, sha(binding.contractRef));
++    return { initialSetupRunId: 'run-alpha' };
++  } });
++  registry.accept({ verified: true, ownerAuthorized: true, customerId: 'synthetic-customer',
++    customerAuthorityRef: 'fixture/customer', tenant: 'alpha', provider: 'verified-provider',
++    eventId: 'initial-event', contractRef: 'initial-contract', relationship: 'initial',
++    ownerEmail: 'owner@alpha.test', ownerAuthorityRef: 'fixture/owner' });
++  const policy = createSetupOnlyPolicy({ db });
++  assert.equal(policy.forTenant('alpha').mode, 'SETUP_ONLY');
++  assert.throws(() => policy.assertAllowed({ tenant: 'alpha', purpose: 'OPERATIONAL_READ' }),
++    error => error.code === 'SETUP_ONLY_REQUIRED' && error.statusCode === 403);
++  db.close();
++
++  hub = createAutonomousIntegrationHub({ dbPath, internalToken: workerHeader['x-wfm-integration-internal'] });
++  let syncStatus = 403;
++  async function deniedOrContinue(suffix, token, body, headers) {
++    const response = await call(hub, token, suffix, body, headers);
++    if (response.status === 403) return null;
++    assert.equal(response.status, 200, `${suffix} failed for an unrelated reason`);
++    return response.body;
++  }
++
++  const discovery = await deniedOrContinue('/discover', managerToken, { source: 'ENTRA',
++    apps: [{ appId: 'w-1', displayName: 'Workday Production' }] });
++  if (discovery) {
++    const candidateId = discovery.candidates.find(candidate => candidate.productKey === 'workday')?.id;
++    assert.ok(candidateId);
++    const confirmed = await deniedOrContinue('/confirm', managerToken,
++      { candidateId, authoritativeFor: ['people'] });
++    if (confirmed) {
++      const connected = await deniedOrContinue('/connect', managerToken,
++        { candidateId, authMethod: 'oauth2', sourceInstanceId: 'synthetic-workday' });
++      if (connected) {
++        const connectionId = connected.connection.id;
++        const authorized = await deniedOrContinue('/authorize-complete', null,
++          { connectionId, authorizationRef: 'vault://synthetic/alpha', grantedScopes: ['people.read'] }, workerHeader);
++        if (authorized) {
++          const preview = await deniedOrContinue('/mapping-preview', managerToken,
++            { connectionId, sourceFields: ['employee_number', 'first_name', 'last_name', 'email', 'department', 'location'] });
++          if (preview) {
++            const mappings = preview.suggestions.map(item => ({ sourceField: item.sourceField,
++              canonicalField: item.canonicalField, confidence: item.confidence }));
++            const activated = await deniedOrContinue('/mapping-activate', managerToken, { connectionId, mappings });
++            if (activated) {
++              const synced = await call(hub, null, '/sync-validate', { tenant: 'alpha', connectionId,
++                records: [{ employee_number: 'E-100', first_name: 'A', last_name: 'One',
++                  email: 'a@example.test', department: 'Assembly', location: 'Plant 1' }] }, workerHeader);
++              syncStatus = synced.status;
++            }
++          }
++        }
++      }
++    }
++  }
++  const check = new DatabaseSync(dbPath);
++  t.after(() => check.close());
++  const peopleRows = check.prepare('SELECT COUNT(*) AS n FROM integration_canonical_people WHERE tenant=?').get('alpha').n;
++  assert.deepEqual({ syncStatus, peopleRows }, { syncStatus: 403, peopleRows: 0 },
++    'setup-only tenant reached operational people import');
++});

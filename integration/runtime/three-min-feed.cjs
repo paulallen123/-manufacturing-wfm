@@ -40,7 +40,7 @@ function bindingsFrom(env) {
 }
 // An authenticated transport is not evidence that the original provider data is
 // authorised, current, mapped or reconciled. This inbox cannot grant readiness.
-function createThreeMinFeed({db,env=process.env,now=Date.now}) {
+function createThreeMinFeed({db,env=process.env,now=Date.now,assertEffect=()=>{}}) {
  const bindings=bindingsFrom(env);
  db.exec(`CREATE TABLE IF NOT EXISTS integration_feed_inbox(
   id TEXT PRIMARY KEY,binding_id TEXT NOT NULL,binding_fingerprint TEXT NOT NULL,
@@ -91,6 +91,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
   // Body reads yield control. Revoked or superseded transport credentials cannot
   // create receipts, reserve replay aliases or retain validation-rejection data.
   requireCurrentToken(binding,providedToken);
+  assertEffect(binding.tenant);
   const checksum=digest(raw); const id=binding.id;
    db.exec('BEGIN IMMEDIATE');
    try{
@@ -149,7 +150,7 @@ function createThreeMinFeed({db,env=process.env,now=Date.now}) {
     // Retain metadata/digest only, never invalid or unbounded source payloads.
     try{return persist(binding,recordId,{eventId:rejectedEventId(recordId),records:[],occurredAt:new Date(now()).toISOString()},raw,res,providedToken,error.code);}catch(storageError){error=storageError;}
    }
-   return json(res,error.status||503,{code:error.code&&error.status?error.code:'FEED_STORAGE_UNAVAILABLE'});
+   return json(res,error.status||error.statusCode||503,{code:error.code&&(error.status||error.statusCode)?error.code:'FEED_STORAGE_UNAVAILABLE'});
   }
  }
  return {handleRequest,statusForTenant};
