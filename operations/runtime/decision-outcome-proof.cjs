@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { snapshotData, deepFreeze, readDecisionEpisode } = require('./decision-episode.cjs');
 
 const CLASSIFICATIONS = Object.freeze(['SIMULATED','VERIFIED_OPERATIONAL','REALISED_FINANCIAL']);
 const DIRECTIONS = Object.freeze(['MAXIMIZE','MINIMIZE']);
@@ -35,7 +36,8 @@ function improvement(direction,baseline,result){
 }
 
 function createDecisionOutcomeProof(input={}){
-  const episode=input.episode;
+  input=snapshotData(input,'proof input');
+  let episode=input.episode;
   if(!episode?.episodeId||!episode?.tenant||!episode?.decisionType) throw new Error('Completed decision episode is required.');
   if(!episode.selection||!episode.outcome) throw new Error('Selected decision episode with recorded outcome is required.');
 
@@ -53,7 +55,7 @@ function createDecisionOutcomeProof(input={}){
 
   const predictedBaseline=number(baselineOption.prediction[metric],'predicted baseline');
   const predictedSelected=number(selected.prediction[metric],'predicted selected');
-  const predictedImprovement=improvement(direction,predictedBaseline,predictedSelected);
+  const predictedImprovement=actualNumber(improvement(direction,predictedBaseline,predictedSelected),'predicted improvement');
 
   const resultActual=episode.outcome.actual?.[metric];
   const resultEvidence=list(episode.outcome.evidenceRefs);
@@ -79,13 +81,14 @@ function createDecisionOutcomeProof(input={}){
       learningEligible:false,
       claimBoundary:'Simulation only. No verified operational or realised financial outcome is claimed.'
     };
-    return Object.freeze({...core,proofDigest:digest(core)});
+    return deepFreeze({...core,proofDigest:digest(core)});
   }
 
   if(resultActual==null) throw new Error('Recorded actual result is required for verified outcomes.');
   const baselineActual=actualNumber(input.baselineActual,'baseline actual');
   const result=actualNumber(resultActual,'result actual');
   if(!baselineEvidence.length||!resultEvidence.length) throw new Error('Baseline and result evidence are required for verified outcomes.');
+  episode=readDecisionEpisode(episode,{requireSelection:true,requireOutcome:true});
 
   let measurementWindow=null,currency=null;
   if(classification==='REALISED_FINANCIAL'){
@@ -96,10 +99,13 @@ function createDecisionOutcomeProof(input={}){
     const start=iso(input.measurementWindow?.start,'measurementWindow.start');
     const end=iso(input.measurementWindow?.end,'measurementWindow.end');
     if(Date.parse(end)<=Date.parse(start)) throw new Error('Measurement window end must be after start.');
+    const observedAt=Date.parse(episode.outcome.observedAt);
+    if(observedAt<Date.parse(start)||observedAt>Date.parse(end)) throw new Error('Outcome observation must be within the measurement window.');
     measurementWindow={start,end};
   }
 
-  const observedImprovement=improvement(direction,baselineActual,result);
+  const observedImprovement=actualNumber(improvement(direction,baselineActual,result),'observed improvement');
+  const predictionError=Number(actualNumber(result-predictedSelected,'prediction error').toFixed(8));
   const core={
     schemaVersion:1,
     recordType:'vector-decision-outcome-proof',
@@ -115,7 +121,7 @@ function createDecisionOutcomeProof(input={}){
       baseline:baselineActual,
       result,
       improvement:observedImprovement,
-      predictionError:selected.prediction?.[metric]!=null?Number((result-number(selected.prediction[metric],'selected prediction')).toFixed(8)):null,
+      predictionError,
       observedAt:episode.outcome.observedAt
     },
     evidence:{baseline:baselineEvidence,result:resultEvidence,finance:financeEvidence},
@@ -128,23 +134,34 @@ function createDecisionOutcomeProof(input={}){
       ?'Realised financial value is evidence-bound to authoritative baseline, result and finance references for the stated measurement window.'
       :'Verified operational outcome only. No realised financial saving is claimed.'
   };
-  return Object.freeze({...core,proofDigest:digest(core)});
+  return deepFreeze({...core,proofDigest:digest(core)});
 }
 
 function toAdaptiveOutcomeInput(proof){
-  if(!proof||proof.recordType!=='vector-decision-outcome-proof'||!proof.learningEligible||!proof.observed) throw new Error('Learning requires a verified decision outcome proof.');
+  proof=snapshotData(proof,'decision outcome proof');
+  if(!proof||proof.recordType!=='vector-decision-outcome-proof'||proof.learningEligible!==true||!proof.observed) throw new Error('Learning requires a verified decision outcome proof.');
   const {proofDigest,...issuedCore}=proof;
   if(typeof proofDigest!=='string'||!(/^[a-f0-9]{64}$/).test(proofDigest)||digest(issuedCore)!==proofDigest){
     throw new Error('Decision outcome proof integrity check failed.');
   }
+  if(proof.schemaVersion!==1||!DIRECTIONS.includes(proof.direction)||!['VERIFIED_OPERATIONAL','REALISED_FINANCIAL'].includes(proof.classification)||proof.verifiedOperationalOutcome!==true||proof.realisedFinancialOutcome!==(proof.classification==='REALISED_FINANCIAL')) throw new Error('Decision outcome proof integrity check failed.');
+  const baseline=actualNumber(proof.observed.baseline,'baseline actual');
+  const result=actualNumber(proof.observed.result,'result actual');
+  const observedImprovement=actualNumber(proof.observed.improvement,'observed improvement');
+  const predictedBaseline=actualNumber(proof.predicted?.baseline,'predicted baseline');
+  const predictedSelected=actualNumber(proof.predicted?.selected,'predicted selected');
+  const predictedImprovement=actualNumber(proof.predicted?.improvement,'predicted improvement');
+  const predictionError=actualNumber(proof.observed.predictionError,'prediction error');
+  const expectedError=Number(actualNumber(result-predictedSelected,'prediction error').toFixed(8));
+  if(observedImprovement!==improvement(proof.direction,baseline,result)||predictedImprovement!==improvement(proof.direction,predictedBaseline,predictedSelected)||predictionError!==expectedError) throw new Error('Decision outcome proof integrity check failed.');
   const sign=proof.direction==='MAXIMIZE'?1:-1;
-  return Object.freeze({
+  return deepFreeze({
     tenantScope:proof.tenant,
     source:'decision-outcome-proof',
     category:proof.metric,
     fingerprint:proof.decisionType+':'+proof.metric,
-    baseline:sign*proof.observed.baseline,
-    result:sign*proof.observed.result,
+    baseline:sign*baseline,
+    result:sign*result,
     verified:true,
     evidenceRef:proof.proofDigest,
     crossTenantRawMemory:false,
@@ -154,4 +171,3 @@ function toAdaptiveOutcomeInput(proof){
 }
 
 module.exports=Object.freeze({CLASSIFICATIONS,DIRECTIONS,FINANCIAL_METRICS,createDecisionOutcomeProof,toAdaptiveOutcomeInput,digest});
-

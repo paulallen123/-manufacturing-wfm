@@ -1,0 +1,165 @@
+{
+  "lane": "V113",
+  "scope": "Bounded local decision lifecycle content custody, inert input, finite actual/derived values, chronology and graph immutability",
+  "publicationParentPR": 550,
+  "publicationParentCommit": "a1edabf081dde5b5ab4fd9a3b978f18c456fafdd",
+  "publicationParentTree": "2653bcc7b507d334c36f70de437ccef4614b9950",
+  "existingOwnerPR": 335,
+  "existingOwnerHead": "5c3c5e37f4ae97cb17920e8e64deaa3bc324453d",
+  "compatibilitySource552": "7ced0fe91742928235fe3be042766eec2911ed90",
+  "runtime": "Node v22.23.2",
+  "sourceFiles": [
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "donor550BasedBlob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "repairedBlob": "7c154b59c161486b99de2dcdc23728f343da5d1a",
+      "sha256": "fe53233646b972fda7dd038429bccd79899fba70d39221f20982c7b1c9d21e84"
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.cjs",
+      "donor550BasedBlob": "620f7238a9797bb40a4af0b2627ca960c08da8c0",
+      "repairedBlob": "0a2af6832cc82932ad5cbcda15cf1d780b0ee301",
+      "sha256": "43607d4f2a1d8d193b0d57649ace435a13d1b9a86b92bab97072d408bde0c102"
+    },
+    {
+      "path": "operations/runtime/decision-outcome-proof.test.cjs",
+      "donor550BasedBlob": "66f823458a3901722bff3a0fdf184af4f32d3bee",
+      "repairedBlob": "d167c036c222a2be785d76dd0db4fee70c3f3271",
+      "sha256": "c07353a412db74427016ba0a15bac1a83ad927f353c47d907ed0bb4251d2e5f8"
+    }
+  ],
+  "contexts": {
+    "focused": "Exact repaired source modules and unchanged parent episode test blobf75dd5bbc3d43fa1035d2718d8acc7b821abcc20; 47/47",
+    "operations": "491/491 on frozen#552 full source with only the three repaired source/test paths overlaid; not a full#550-parent image or hosted run",
+    "independent": "31/31 independent heldouts; 47/47 ordinary episode/proof on frozen exact V3 bytes",
+    "localComposition": "33/33 heldouts against a local composition of the#552 overlay; not an installed image",
+    "rootReview": "Root independently inspected final source/identity and reports focused+independent78/78 plus full operations491/491 zero skips; author publication was explicitly authorized",
+    "countsOverlap": true
+  },
+  "rawLogs": {
+    "focused.tap": {
+      "bytes": 10984,
+      "sha256": "2d5c0506adf4ed1fbdd63d64178fda8234edd26013e97457a7e4b96899eb1a71",
+      "tests": 47,
+      "pass": 47,
+      "fail": 0,
+      "skipped": 0
+    },
+    "operations-source552-overlay.tap": {
+      "bytes": 115312,
+      "sha256": "e38d0352c29e3062b2fa3fe22b062ba6377c9ce73cbd0ae144695f14eeaea3ca",
+      "tests": 491,
+      "pass": 491,
+      "fail": 0,
+      "skipped": 0
+    },
+    "local-heldouts.tap": {
+      "bytes": 8811,
+      "sha256": "d9835e53dd5393f145d8a0b54463efba409139b0b26a401907d5c1b21bb625d2",
+      "tests": 33,
+      "pass": 33,
+      "fail": 0,
+      "skipped": 0
+    },
+    "local-composed-heldouts.tap": {
+      "bytes": 8815,
+      "sha256": "f5eba66ff73feb1b465d453e75e56b1279c5c78d0630f8e64dc0f693102867f5",
+      "tests": 33,
+      "pass": 33,
+      "fail": 0,
+      "skipped": 0
+    },
+    "initial-release-red.tap": {
+      "bytes": 13320,
+      "sha256": "f2a394968260a0a9624b0efb7ade2e792ad9c17396285bc2ae42c6c8b73d41b6",
+      "tests": 13,
+      "pass": 1,
+      "fail": 12,
+      "skipped": 0
+    },
+    "review-selection-overflow-red.tap": {
+      "bytes": 6855,
+      "sha256": "6399e341a4403a15c418f2533ff82ee643d9c03e9c5c623be23fb0c15dfcb76c",
+      "tests": 6,
+      "pass": 0,
+      "fail": 6,
+      "skipped": 0
+    },
+    "provider-actual-red.tap": {
+      "bytes": 5124,
+      "sha256": "74e907a2ea994f18fa8139b9c5979881f410bb50b282acebcc9efeb853bd5cfd",
+      "tests": 6,
+      "pass": 2,
+      "fail": 4,
+      "skipped": 0
+    },
+    "independent-donor-red.tap": {
+      "bytes": 27283,
+      "sha256": "ac95afd7e6aff805e341e1b83746693e15ae2612a8dd71d8247b420c918cc065",
+      "tests": 31,
+      "pass": 7,
+      "fail": 24,
+      "skipped": 0
+    },
+    "independent-v2-red.tap": {
+      "bytes": 11556,
+      "sha256": "b7eabaf42b42e28b864616254f4258c052031f89f21464908ff610adefe316a4",
+      "tests": 31,
+      "pass": 25,
+      "fail": 6,
+      "skipped": 0
+    },
+    "independent-v3-heldouts.tap": {
+      "bytes": 6710,
+      "sha256": "5afadfae49dc22e4b2b9326312c62a2fd6565ebc02f7044a0f902a745dd46f06",
+      "tests": 31,
+      "pass": 31,
+      "fail": 0,
+      "skipped": 0
+    },
+    "independent-v3-source.tap": {
+      "bytes": 10987,
+      "sha256": "a6ec1cebef670cfd76fe4fb1bb838e935c65c0ea6b28d4a474e0ad0c5a1df8ff",
+      "tests": 47,
+      "pass": 47,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "archive": {
+    "path": "logs.tar.gz",
+    "bytes": 29109,
+    "sha256": "f783bbf363a35e5d860be8cece69d146ca74d2a09d72663c81c5f42929afe858"
+  },
+  "independentHeldoutsSha256": "b7e9cc77bb1f553ba404dc0266e394e849d83804f7b692ca7016714edc25bffe",
+  "localPreparation": [
+    "Existing security dependency cache selected by identical lockfile SHA2568a21dada89673eb721a2200c4e64444b4d583a7df5df5d0add52d3ca2546229d",
+    "TAR_OPTIONS=--no-same-owner for local fixture extraction; no shared CI edit"
+  ],
+  "contractChanges": [
+    "Selected lifecycle data now requires a matching selectionDigest and episode identity; stale legacy selected records are refused",
+    "Verified outcomes require matching issued episode, selection and recorded outcome checksums; unbound plain positive fixtures use the real lifecycle instead",
+    "Explicitly supplied actual metric values require finite primitive numbers; explicit null/string/boolean/array values are refused, omitted metrics and omitted actual object retain null semantics",
+    "Derived predicted/observed improvements and prediction errors must remain finite at issuance and learning consumption",
+    "Trigger <=selection<=observation and financial observation within measurement window; equal event times and window endpoints remain valid",
+    "Input must be inert own plain data; issued lifecycle, proof and adaptive graphs are deeply frozen"
+  ],
+  "remainingGates": [
+    "Protected human/provider authentication and authorization",
+    "Authoritative independent baseline/result/finance source custody and actual consumer trust",
+    "Canonical reconciliation/adoption through sole integration owner",
+    "Exact image/security/recovery admission",
+    "Authorized hosted audit/readback and customer/provider proof"
+  ],
+  "claims": {
+    "publicUnkeyedChecksumsOnly": true,
+    "authenticatedActorOrProviderAuthority": false,
+    "financeAuthorityOrRealisedCustomerSavings": false,
+    "canonicalAdoption": false,
+    "imageAdmission": false,
+    "hostedOrCustomerProof": false,
+    "mergeOrDeployment": false,
+    "providerOrTenantWrite": false,
+    "customerComplete": false
+  }
+}

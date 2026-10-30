@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const {createDecisionEpisode,selectDecisionOption,recordDecisionOutcome}=require('./decision-episode.cjs');
 const {createDecisionOutcomeProof,toAdaptiveOutcomeInput}=require('./decision-outcome-proof.cjs');
 
-function completed(metric='planAttainmentPct'){
+function completed(metric='planAttainmentPct',labourCost=320){
   const episode=createDecisionEpisode({
     tenant:'alpha',site:'tamworth',decisionType:'absence-recovery',triggerId:'absence:42',
     triggeredAt:'2026-09-22T08:00:00Z',contextRevision:'twin:abc',mode:'HUMAN_APPROVAL',
@@ -16,7 +16,7 @@ function completed(metric='planAttainmentPct'){
     ]
   });
   const selected=selectDecisionOption(episode,{optionId:'redeploy',selectedAt:'2026-09-22T08:05:00Z',actorRef:'manager:1',authorityDecision:'HUMAN_APPROVED'});
-  const actual=metric==='labourCost'?{labourCost:320,planAttainmentPct:97,riskScore:1}:{labourCost:320,planAttainmentPct:97,riskScore:1};
+  const actual={labourCost,planAttainmentPct:97,riskScore:1};
   return recordDecisionOutcome(selected,{observedAt:'2026-09-22T16:00:00Z',evidenceRefs:['mes:shift:a','payroll:shift:a'],actual});
 }
 
@@ -155,18 +155,10 @@ const modulePath = require.resolve('./decision-outcome-proof.cjs');
 const { createDecisionOutcomeProof, toAdaptiveOutcomeInput } = require(modulePath);
 
 function episode(actual = 320) {
-  return {
-    episodeId: 'decision:independent:1', tenant: 'synthetic-alpha', site: 'synthetic-site',
-    decisionType: 'absence-recovery', selection: { optionId: 'redeploy' },
-    options: [
-      { id: 'do-nothing', prediction: { labourCost: 500, planAttainmentPct: 80 } },
-      { id: 'redeploy', prediction: { labourCost: 300, planAttainmentPct: 98 } }
-    ],
-    outcome: {
-      observedAt: '2026-09-22T16:00:00Z', evidenceRefs: ['synthetic:result'],
-      actual: { labourCost: actual, planAttainmentPct: 97 }
-    }
-  };
+  const finite=typeof actual==='number'&&Number.isFinite(actual);
+  const candidate=structuredClone(completed('labourCost',finite?actual:320));
+  candidate.outcome.actual.labourCost=actual;
+  return candidate;
 }
 
 function input(override = {}) {
@@ -230,4 +222,242 @@ test('valid financial value keeps exact observed improvement and learning delta'
   assert.equal(proof.realisedFinancialOutcome, true);
   assert.equal(toAdaptiveOutcomeInput(proof).result - toAdaptiveOutcomeInput(proof).baseline, 200);
 });
+}
+
+// Custody, chronology and immutable-data regressions run in the ordinary proof CI entry point.
+{
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const proofApi = require('./decision-outcome-proof.cjs');
+const episodeApi = require('./decision-episode.cjs');
+const { createDecisionOutcomeProof, toAdaptiveOutcomeInput, digest } = proofApi;
+const { createDecisionEpisode, selectDecisionOption, recordDecisionOutcome } = episodeApi;
+function initial() {
+  return episodeApi.createDecisionEpisode({
+    tenant: 'peer-synthetic', site: 'peer-site', decisionType: 'absence-recovery',
+    triggerId: 'peer:absence', triggeredAt: '2026-09-22T08:00:00Z',
+    contextRevision: 'peer:twin', mode: 'HUMAN_APPROVAL',
+    sourceEvidence: ['peer:source'], objective: { labourCost: 1 },
+    options: [
+      { id: 'do-nothing', feasible: true, policyAllowed: true, hardConstraintsPassed: true,
+        prediction: { labourCost: 500 }, evidenceRefs: ['peer:simulation-a'] },
+      { id: 'redeploy', feasible: true, policyAllowed: true, hardConstraintsPassed: true,
+        prediction: { labourCost: 300 }, evidenceRefs: ['peer:simulation-b'] }
+    ]
+  });
+}
+function selected(selectedAt = '2026-09-22T08:05:00Z') {
+  return episodeApi.selectDecisionOption(initial(), {
+    optionId: 'redeploy', selectedAt, actorRef: 'peer:manager', authorityDecision: 'HUMAN_APPROVED'
+  });
+}
+function completed(observedAt = '2026-09-22T16:00:00Z', labourCost = 320) {
+  return episodeApi.recordDecisionOutcome(selected(), {
+    observedAt, evidenceRefs: ['peer:result'], actual: { labourCost }
+  });
+}
+function input(overrides = {}) {
+  return {
+    episode: completed(), metric: 'labourCost', direction: 'MINIMIZE',
+    classification: 'REALISED_FINANCIAL', baselineActual: 520,
+    baselineEvidenceRefs: ['peer:baseline'], financeEvidenceRefs: ['peer:finance'],
+    currency: 'GBP', measurementWindow: { start: '2026-09-22T08:00:00Z', end: '2026-09-22T16:00:00Z' },
+    ...overrides
+  };
+}
+
+test('P1 custody: changed recorded actual must not gain a new proof while retaining stale outcomeDigest', () => {
+  const episode = structuredClone(completed());
+  const issuedDigest = episode.outcomeDigest;
+  episode.outcome.actual.labourCost = 0;
+  assert.equal(episode.outcomeDigest, issuedDigest);
+  assert.throws(() => createDecisionOutcomeProof(input({ episode })), /integrity|digest|custody/);
+});
+
+test('P1 TOCTOU: result getter must not switch after digest validation into verified nonfinite learning', () => {
+  const proof = structuredClone(createDecisionOutcomeProof(input()));
+  let reads = 0;
+  Object.defineProperty(proof.observed, 'result', { enumerable: true, get() { return reads++ === 0 ? 320 : NaN; } });
+  assert.throws(() => toAdaptiveOutcomeInput(proof), /integrity|finite|accessor|data/);
+});
+
+test('P1 TOCTOU: consumer must use the direction that was checked against the digest', () => {
+  const issued = createDecisionOutcomeProof(input());
+  const proof = structuredClone(issued);
+  let reads = 0;
+  Object.defineProperty(proof, 'direction', { enumerable: true, get() { return reads++ === 0 ? 'MINIMIZE' : 'MAXIMIZE'; } });
+  assert.throws(() => toAdaptiveOutcomeInput(proof), /integrity|accessor|data/);
+});
+
+test('P2 chronology: selection must not precede trigger', () => {
+  assert.throws(() => selectDecisionOption(initial(), { optionId: 'redeploy',
+    selectedAt: '2026-09-22T07:59:00Z', actorRef: 'peer:manager', authorityDecision: 'HUMAN_APPROVED' }), /before|chronology|trigger/);
+});
+
+test('P2 chronology: observation must not precede selection', () => {
+  assert.throws(() => recordDecisionOutcome(selected(), { observedAt: '2026-09-22T08:04:00Z',
+    evidenceRefs: ['peer:result'], actual: { labourCost: 320 } }), /before|chronology|selection/);
+});
+
+test('P2 chronology: financial observation must belong to measurement window', () => {
+  assert.throws(() => createDecisionOutcomeProof(input({ measurementWindow: {
+    start: '2026-09-22T09:00:00Z', end: '2026-09-22T10:00:00Z'
+  } })), /window|observed|chronology/);
+});
+
+test('P2 freeze: issued proof graph must be deeply frozen', () => {
+  const proof = createDecisionOutcomeProof(input());
+  assert.equal(Object.isFrozen(proof), true);
+  for (const value of [proof.predicted, proof.observed, proof.evidence, proof.evidence.baseline,
+    proof.evidence.result, proof.evidence.finance, proof.measurementWindow]) {
+    assert.equal(Object.isFrozen(value), true);
+  }
+});
+
+test('episode identity: stale base-option change is refused by selection, recording and proof', () => {
+  const e = structuredClone(initial()); e.options[0].prediction.labourCost = 1;
+  assert.throws(() => selectDecisionOption(e, { optionId: 'redeploy', selectedAt: '2026-09-22T08:05:00Z',
+    actorRef: 'peer:manager', authorityDecision: 'HUMAN_APPROVED' }), /integrity/);
+  const s = structuredClone(selected()); s.tenant = 'substituted';
+  assert.throws(() => recordDecisionOutcome(s, { observedAt: '2026-09-22T16:00:00Z',
+    evidenceRefs: ['peer:result'], actual: { labourCost: 320 } }), /integrity/);
+  const c = structuredClone(completed()); c.contextRevision = 'substituted';
+  assert.throws(() => createDecisionOutcomeProof(input({ episode: c })), /integrity/);
+});
+
+test('custody: unissued plain episode and missing recorded digest cannot verify', () => {
+  const episode = structuredClone(completed()); delete episode.outcomeDigest;
+  assert.throws(() => createDecisionOutcomeProof(input({ episode })), /integrity|digest/);
+  const unissued = structuredClone(completed()); delete unissued.episodeId;
+  assert.throws(() => createDecisionOutcomeProof(input({ episode: unissued })), /episode|integrity/i);
+});
+
+test('intake: producer and consumer reject getters and proxies without invoking traps', () => {
+  let calls = 0;
+  const hostile = input();
+  Object.defineProperty(hostile, 'baselineActual', { enumerable: true, get() { calls++; return 520; } });
+  assert.throws(() => createDecisionOutcomeProof(hostile), /accessor|data/);
+  const proxy = new Proxy(input(), { ownKeys() { calls++; return []; }, get() { calls++; return undefined; } });
+  assert.throws(() => createDecisionOutcomeProof(proxy), /proxy|data/);
+  const proof = new Proxy(createDecisionOutcomeProof(input()), { ownKeys() { calls++; return []; }, get() { calls++; return undefined; } });
+  assert.throws(() => toAdaptiveOutcomeInput(proof), /proxy|data/);
+  assert.equal(calls, 0);
+});
+
+test('intake: inherited records and custom toJSON cannot supply evidence', () => {
+  const inherited = Object.create(input());
+  assert.throws(() => createDecisionOutcomeProof(inherited), /plain|data/);
+  let calls = 0; const episode = structuredClone(completed());
+  episode.toJSON = () => { calls++; return {}; };
+  assert.throws(() => createDecisionOutcomeProof(input({ episode })), /data|function/);
+  assert.equal(calls, 0);
+});
+
+test('freeze: episode lifecycle and proof remain portable after JSON serialization', () => {
+  const s = selectDecisionOption(JSON.parse(JSON.stringify(initial())), { optionId: 'redeploy',
+    selectedAt: '2026-09-22T08:05:00Z', actorRef: 'peer:manager', authorityDecision: 'HUMAN_APPROVED' });
+  const c = recordDecisionOutcome(JSON.parse(JSON.stringify(s)), { observedAt: '2026-09-22T16:00:00Z',
+    evidenceRefs: ['peer:result'], actual: { labourCost: 320 } });
+  for (const value of [s.options, s.options[0], s.options[0].prediction, c.outcome, c.outcome.actual, c.outcome.evidenceRefs]) {
+    assert.equal(Object.isFrozen(value), true);
+  }
+  const proof = createDecisionOutcomeProof(input({ episode: JSON.parse(JSON.stringify(c)) }));
+  assert.equal(toAdaptiveOutcomeInput(JSON.parse(JSON.stringify(proof))).verified, true);
+});
+
+test('chronology: equal trigger/selection/observation timestamps and window endpoints remain valid', () => {
+  const s = selected('2026-09-22T08:00:00Z');
+  const c = recordDecisionOutcome(s, { observedAt: '2026-09-22T08:00:00Z', evidenceRefs: ['peer:result'], actual: { labourCost: 320 } });
+  const proof = createDecisionOutcomeProof(input({ episode: c }));
+  assert.equal(proof.observed.observedAt, '2026-09-22T08:00:00.000Z');
+});
+
+function settled({ baselinePrediction = 500, selectedPrediction = 300, actual = 320 } = {}) {
+  const episode = createDecisionEpisode({
+    tenant: 'peer-synthetic', site: 'peer-site', decisionType: 'absence-recovery',
+    triggerId: 'peer:overflow', triggeredAt: '2026-09-22T08:00:00Z', contextRevision: 'peer:twin',
+    mode: 'HUMAN_APPROVAL', sourceEvidence: ['peer:source'], objective: { labourCost: 1 },
+    options: [
+      { id: 'do-nothing', feasible: true, policyAllowed: true, hardConstraintsPassed: true, prediction: { labourCost: baselinePrediction } },
+      { id: 'redeploy', feasible: true, policyAllowed: true, hardConstraintsPassed: true, prediction: { labourCost: selectedPrediction } }
+    ]
+  });
+  const choice = selectDecisionOption(episode, { optionId: 'redeploy', selectedAt: '2026-09-22T08:05:00Z',
+    actorRef: 'real:manager', authorityDecision: 'HUMAN_APPROVED' });
+  return recordDecisionOutcome(choice, { observedAt: '2026-09-22T16:00:00Z', evidenceRefs: ['peer:result'], actual: { labourCost: actual } });
+}
+
+test('review custody: selected actor cannot change before recording under an issued selection seal', () => {
+  const episode = structuredClone(selected()); episode.selection.actorRef = 'forged:manager';
+  assert.throws(() => recordDecisionOutcome(episode, { observedAt: '2026-09-22T16:00:00Z',
+    evidenceRefs: ['peer:result'], actual: { labourCost: 320 } }), /selection.*integrity/i);
+  assert.throws(() => selectDecisionOption(episode, { optionId: 'redeploy', selectedAt: '2026-09-22T08:06:00Z',
+    actorRef: 'real:manager', authorityDecision: 'HUMAN_APPROVED' }), /selection.*integrity/i);
+});
+
+test('review custody: missing selection seal and rewritten outcome digest cannot bypass selection integrity', () => {
+  const episode = structuredClone(completed()); delete episode.selectionDigest;
+  assert.throws(() => createDecisionOutcomeProof(input({ episode })), /selection.*integrity/i);
+  const changed = structuredClone(completed()); changed.selection.actorRef = 'forged:manager';
+  changed.outcomeDigest = digest({ episodeId: changed.episodeId, selection: changed.selection, outcome: changed.outcome });
+  assert.throws(() => createDecisionOutcomeProof(input({ episode: changed })), /selection.*integrity/i);
+});
+
+test('review finite arithmetic: finite actual operands cannot issue an infinite observed improvement', () => {
+  const episode = settled({ actual: -Number.MAX_VALUE });
+  assert.throws(() => createDecisionOutcomeProof(input({ episode, baselineActual: Number.MAX_VALUE })), /improvement.*finite/i);
+});
+
+test('review finite arithmetic: finite predictions cannot issue an infinite predicted improvement', () => {
+  assert.throws(() => createDecisionOutcomeProof(input({ episode: settled({ baselinePrediction: Number.MAX_VALUE,
+    selectedPrediction: -Number.MAX_VALUE, actual: 0 }) })), /improvement.*finite/i);
+});
+
+test('review finite arithmetic: overflowing prediction error cannot be issued as a measured outcome', () => {
+  assert.throws(() => createDecisionOutcomeProof(input({ episode: settled({ baselinePrediction: 0,
+    selectedPrediction: -Number.MAX_VALUE, actual: Number.MAX_VALUE }) })), /prediction error.*finite/i);
+});
+
+test('review finite arithmetic: consumer rejects nonfinite derived fields even after a public checksum is recomputed', () => {
+  for (const [section, field] of [['observed', 'improvement'], ['observed', 'predictionError'], ['predicted', 'improvement']]) {
+    const proof = structuredClone(createDecisionOutcomeProof(input()));
+    proof[section][field] = Infinity;
+    const { proofDigest, ...core } = proof; proof.proofDigest = digest(core);
+    assert.throws(() => toAdaptiveOutcomeInput(proof), /finite|integrity/i, section + '.' + field);
+  }
+});
+
+for (const actual of ['320', true, null]) {
+  test('provider actual: raw ' + String(actual) + ' is refused before a financial measurement is recorded', () => {
+    assert.throws(() => recordDecisionOutcome(selected(), { observedAt: '2026-09-22T16:00:00Z',
+      evidenceRefs: ['peer:result'], actual: { labourCost: actual } }), /actual.*finite/i);
+  });
+}
+
+test('provider actual: every explicitly supplied metric requires a finite primitive number', () => {
+  for (const actual of [undefined, false, '', [], [320], new Number(320), NaN, Infinity, -Infinity]) {
+    assert.throws(() => recordDecisionOutcome(selected(), { observedAt: '2026-09-22T16:00:00Z',
+      evidenceRefs: ['peer:result'], actual: { labourCost: actual } }), /actual|data/i);
+  }
+});
+
+test('provider actual: omitted metric remains null and cannot verify the missing financial result', () => {
+  const episode = recordDecisionOutcome(selected(), { observedAt: '2026-09-22T16:00:00Z',
+    evidenceRefs: ['peer:result'], actual: { planAttainmentPct: 97 } });
+  assert.equal(episode.outcome.actual.labourCost, null);
+  assert.throws(() => createDecisionOutcomeProof(input({ episode })), /Recorded actual/);
+  const omitted = recordDecisionOutcome(selected(), { observedAt: '2026-09-22T16:00:00Z', evidenceRefs: ['peer:result'] });
+  assert.equal(omitted.outcome.actual.labourCost, null);
+});
+
+test('provider actual: explicit numeric zero and omitted other metrics remain valid financial measurements', () => {
+  const episode = recordDecisionOutcome(selected(), { observedAt: '2026-09-22T16:00:00Z',
+    evidenceRefs: ['peer:result'], actual: { labourCost: 0 } });
+  assert.equal(episode.outcome.actual.riskScore, null);
+  const proof = createDecisionOutcomeProof(input({ episode }));
+  assert.equal(proof.observed.result, 0);
+  assert.equal(proof.observed.improvement, 520);
+});
+
 }
