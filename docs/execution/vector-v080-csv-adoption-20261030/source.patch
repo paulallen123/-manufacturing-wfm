@@ -1,5 +1,5 @@
 diff --git a/reporting/ui/vector-reporting-ui.js b/reporting/ui/vector-reporting-ui.js
-index 1b4543a..9192ac3 100644
+index 1b4543a..02a831a 100644
 --- a/reporting/ui/vector-reporting-ui.js
 +++ b/reporting/ui/vector-reporting-ui.js
 @@ -229,7 +229,7 @@ function factoryRows(body){
@@ -41,6 +41,15 @@ index 1b4543a..9192ac3 100644
          <button type="button" class="primary" data-report-run>${state.loading?'Running…':'Run report'}</button>
        </div>
      </div>
+@@ -426,7 +429,7 @@ async function run(){
+   }catch(e){
+     if(e.stale)return;
+     if([401,403,404].includes(e.status)){await loadCatalog();return;}
+-    state.raw={error:e.message};state.rows=[];
++    state.raw={error:e.message};state.baseRows=[];state.rows=[];state.columns=[];
+     const main=modal().querySelector('[data-report-main]');
+     main.innerHTML='<div class="vector-reporting-error"><strong>Source could not be read</strong><span>'+esc(e.message)+'</span><button type="button" data-report-run>Try again</button></div>';
+     state.loading=false;return;
 @@ -489,8 +492,34 @@ async function createSchedule(){
  }
  function csv(){

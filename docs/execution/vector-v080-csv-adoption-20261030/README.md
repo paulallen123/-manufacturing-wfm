@@ -13,7 +13,8 @@ reviewed predecessor source SHA-256 is
 `0eb8a9337ea00c133a7d9abf74057c74764212a04cf55c6d11fe270698b26f9b`.
 The added guard refuses ambiguous flat/nested mappings regardless of insertion
 order or equal values; it defines no precedence or source-key escaping policy.
-The existing run failure path leaves no report rows, Blob or download. Ordinary
+The run failure path also clears cached source rows and columns so a later
+recalculation cannot replay an earlier successful report after refusal. Ordinary
 nested paths and own JSON special names retain the reviewed behavior.
 
 The UI now labels its actions CSV review and Print. Every CSV header/cell is
@@ -33,13 +34,19 @@ Node22.23.2, no skips:
   callback/own-key/missing-cell behavior. Exact reviewed combined predecessor
   replays61/61 affected UI/CSV/mapping checks.
 - New collision fixture on the reviewed combined predecessor:2/4 pass,2/4 fail.
-  With the duplicate-key guard:4/4 pass.
+  With the duplicate-key guard:4/4 pass. Independent review then found a cached
+  prior-row replay via two successive runs and recalc(). A separate new heldout
+  reproduced4/5 on initial donor8355f8ae; clearing baseRows/rows/columns on the
+  existing run error path repairs it, yielding5/5.
 - Final portable command: `node --test reporting/ui/*.test.cjs reporting/runtime/*.test.cjs`
-  passes119/119, zero failures/skips. This includes the current UI/service/
+  passes120/120, zero failures/skips. This includes the current UI/service/
   interchange suites, original CSV author/reviewer checks, reviewed mapping
   heldouts and the new run/error/CSV collision fixture.
-- Parent independent reviewer separately reports114/114 plus5/5 mapping checks
-  on Node22.23.2 and no material finding in this bounded source change. One
+- Parent independent reviewer initially reported114/114 plus5/5 mapping checks
+  on Node22.23.2, then correctly reopened that verdict for the cached-row replay
+  described above. Its separately authored replay heldout is RED0/1 on the
+  published initial donor, GREEN1/1 with the cache clear, followed by independent
+  final120/120, zero skips, and bounded diff acceptance. One
   external heldout invocation initially used its missing default baseline path;
   the reviewer corrected V080_SOURCE and did not count that harness failure as
   product evidence. This is technical review, not formal GitHub approval.

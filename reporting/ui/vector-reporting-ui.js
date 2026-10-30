@@ -429,7 +429,7 @@ async function run(){
   }catch(e){
     if(e.stale)return;
     if([401,403,404].includes(e.status)){await loadCatalog();return;}
-    state.raw={error:e.message};state.rows=[];
+    state.raw={error:e.message};state.baseRows=[];state.rows=[];state.columns=[];
     const main=modal().querySelector('[data-report-main]');
     main.innerHTML='<div class="vector-reporting-error"><strong>Source could not be read</strong><span>'+esc(e.message)+'</span><button type="button" data-report-run>Try again</button></div>';
     state.loading=false;return;

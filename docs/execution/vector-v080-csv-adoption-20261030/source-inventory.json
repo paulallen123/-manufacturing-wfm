@@ -4,9 +4,9 @@
   "source": [
     {
       "path": "reporting/ui/vector-reporting-ui.js",
-      "bytes": 40120,
-      "sha256": "f51c820f6599a8501ccbc589599f7f7e029f5a9c8f0595acb3fe75f32c1eefa7",
-      "git_blob": "9192ac3d509b444db11730e06b7b236a83a48e87"
+      "bytes": 40155,
+      "sha256": "b9e9d9c27a5fbb4a5fb4bb1d1f95c16890ba676d4a8533522354315aa66495da",
+      "git_blob": "02a831a59e468c4959b9166b138184ebda36279f"
     },
     {
       "path": "reporting/ui/vector-reporting-export-safety.test.cjs",
@@ -28,9 +28,9 @@
     },
     {
       "path": "reporting/ui/vector-reporting-mapping-integrity.test.cjs",
-      "bytes": 4175,
-      "sha256": "1a104cfd62cc6463df7e92ea8ec2e9d42ea4941f04540ecb0d12bd006595c926",
-      "git_blob": "627d0f88ef9ee3b0c4fc0a043ef16c81790a63bb"
+      "bytes": 5138,
+      "sha256": "616d0dd49cb36d491777db0437be8f30da0913985157a258eab01cbbe475eb60",
+      "git_blob": "7edff3e9cf16361ef4139bb7bf9c840548b68805"
     }
   ]
 }

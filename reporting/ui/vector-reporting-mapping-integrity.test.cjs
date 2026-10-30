@@ -14,14 +14,14 @@ function section(start, end) {
 }
 const functions = [
   section('function valueAt(', 'function cell(v){'),
-  section('function calculateRow(', 'function recalc()'),
+  section('function calculateRow(', 'async function run(){'),
   section('async function run(){', 'async function save(){'),
   section('function csv(){', 'function printReport(){')
 ].join('\n');
 
 // Exercise the shipped run/error path and CSV consumer together. Only the
 // source HTTP response and browser primitives are synthetic collaborators.
-async function runAndExport(body) {
+async function runAndExport(body, priorBody = null, recalcAfter = false) {
   let blobs = 0, downloads = 0, csv = null;
   const main = { innerHTML: '' };
   const state = {
@@ -31,9 +31,10 @@ async function runAndExport(body) {
   class Blob {
     constructor(parts) { blobs++; csv = parts.join(''); }
   }
+  const responses = priorBody ? [priorBody, body] : [body];
   const context = {
-    state, body, Blob, JSON, Number, String, Date,
-    json: async url => { assert.equal(url, '/api/fixture-source'); return body; },
+    state, body, hasPrior: Boolean(priorBody), recalcAfter, Blob, JSON, Number, String, Date,
+    json: async url => { assert.equal(url, '/api/fixture-source'); return responses.shift(); },
     renderReport() {}, modal: () => ({ querySelector: () => main }),
     esc: value => String(value),
     loadCatalog() { assert.fail('mapping failure must not be mistaken for authority denial'); },
@@ -41,8 +42,8 @@ async function runAndExport(body) {
     document: { createElement: () => ({ click() { downloads++; } }) },
     setTimeout(callback) { callback(); }, toast() {}
   };
-  await vm.runInNewContext(functions + '\n(async()=>{await run();csv();})()', context);
-  return { rows: JSON.parse(JSON.stringify(state.rows)), raw: state.raw, error: main.innerHTML, blobs, downloads, csv };
+  await vm.runInNewContext(functions + '\n(async()=>{if(hasPrior)await run();await run();if(recalcAfter)recalc();csv();})()', context);
+  return { rows: JSON.parse(JSON.stringify(state.rows)), baseRows: JSON.parse(JSON.stringify(state.baseRows)), columns: JSON.parse(JSON.stringify(state.columns)), raw: state.raw, error: main.innerHTML, blobs, downloads, csv };
 }
 
 test('ambiguous flat/nested fields refuse the report before any Blob or download', async () => {
@@ -65,6 +66,20 @@ test('a collision in a later row refuses the whole result before CSV materializa
   const result = await runAndExport({ rows: [{ 'p.x': 'valid' }, { 'p.x': 'direct', p: { x: 'nested' } }] });
   assert.deepEqual(result.rows, []);
   assert.match(result.error, /Source could not be read/);
+  assert.equal(result.blobs, 0);
+  assert.equal(result.downloads, 0);
+});
+
+test('a refused later run cannot replay earlier source rows through recalc and CSV', async () => {
+  const result = await runAndExport(
+    { rows: [{ 'p.x': 'direct', p: { x: 'nested' } }] },
+    { rows: [{ team: 'PREVIOUS SOURCE ROW' }] },
+    true
+  );
+  assert.deepEqual(result.rows, [], 'recalc must not restore stale rows');
+  assert.deepEqual(result.baseRows, [], 'no cached source rows survive a refused run');
+  assert.deepEqual(result.columns, [], 'old columns must not describe a later source');
+  assert.match(result.raw.error, /Ambiguous report source fields/);
   assert.equal(result.blobs, 0);
   assert.equal(result.downloads, 0);
 });
