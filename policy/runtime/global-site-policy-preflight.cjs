@@ -7,6 +7,7 @@ function list(v,max=100,maxLen=160){return Array.isArray(v)?[...new Set(v.map(x=
 function createGlobalSitePolicyPreflight({graph}={}){
   if(!graph||typeof graph.resolve!=='function') throw new Error('Global site preflight requires jurisdiction policy graph.');
   function assess(input={}){
+    if(typeof input.tenant!=='string'||input.tenant.length>120||/[\u0000-\u001f\u007f]/.test(input.tenant)) throw new Error('tenant must be a string of at most 120 characters without control characters.');
     const tenant=text(input.tenant,120),site=input.site||{},workers=Array.isArray(input.workers)?input.workers:[];
     if(!tenant||!text(site.id,120)) throw new Error('tenant and site.id are required.');
     if(!Array.isArray(input.workers)) throw new Error('Explicit workforce array required for policy preflight.');
@@ -23,7 +24,7 @@ function createGlobalSitePolicyPreflight({graph}={}){
     const results=[];
     for(const {worker,workerId} of workforce){
       const workCountry=text(worker.workLocationCountry||country,2).toUpperCase();
-      const context={country:workCountry,subdivision:text(worker.workLocationSubdivision||site.subdivision,80)||null,sector:text(worker.sector||site.sector,120)||null,legalEntityId:text(worker.legalEntityId||site.legalEntityId,160)||null,siteId:text(site.id,120),employmentCategory:text(worker.employmentCategory,120)||null,workerClass:text(worker.workerClass,120)||null,collectiveAgreements:list(worker.collectiveAgreements||site.collectiveAgreements,20,160),workLocationCountry:workCountry,workLocationSubdivision:text(worker.workLocationSubdivision,80)||null};
+      const context={tenant,country:workCountry,subdivision:text(worker.workLocationSubdivision||site.subdivision,80)||null,sector:text(worker.sector||site.sector,120)||null,legalEntityId:text(worker.legalEntityId||site.legalEntityId,160)||null,siteId:text(site.id,120),employmentCategory:text(worker.employmentCategory,120)||null,workerClass:text(worker.workerClass,120)||null,collectiveAgreements:list(worker.collectiveAgreements||site.collectiveAgreements,20,160),workLocationCountry:workCountry,workLocationSubdivision:text(worker.workLocationSubdivision,80)||null};
       if(!context.employmentCategory) baseQuestions.push({code:'EMPLOYMENT_CATEGORY_REQUIRED',scope:'worker',workerId});
       const resolved=/^[A-Z]{2}$/.test(workCountry)?graph.resolve({legalAt:input.legalAt,knownAt:input.knownAt,context}):null;
       results.push({workerId,context,policyContext:resolved,ready:Boolean(resolved?.verifiedCoverage),requiresReview:Boolean(resolved?.review?.length)});

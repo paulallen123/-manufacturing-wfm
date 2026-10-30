@@ -23,6 +23,8 @@ function text(v,max=240){return String(v??'').trim().slice(0,max);}
 function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error((name||'timestamp')+' must be valid ISO.');return new Date(ms).toISOString();}
 function list(v,max=100,maxLen=240){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
+function validTenant(v){return typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[\u0000-\u001f\u007f]/.test(v);}
+function validTenantScope(v){return Array.isArray(v)?v.length>0&&v.every(validTenant):validTenant(v);}
 function deepFreeze(v){
   if(v&&typeof v==='object'){
     for(const child of Object.values(v)) deepFreeze(child);
@@ -62,7 +64,11 @@ function normaliseNode(node={}){
   if(supersededAt&&Date.parse(supersededAt)<Date.parse(recordedAt)) throw new Error('supersededAt cannot precede recordedAt.');
   const sourceRefs=list(node.sourceRefs,40,300);
   if(node.verified!==true||!sourceRefs.length) throw new Error('Policy node must be verified and provenance-backed.');
-  const scope=clone(node.scope||{});
+  const suppliedScope=node.scope||{},hasTenantScope=Object.hasOwn(suppliedScope,'tenant');
+  if(hasTenantScope&&!validTenantScope(suppliedScope.tenant)) throw new Error('Policy tenant scope must name a tenant or a nonempty list of tenants.');
+  const scope=clone(suppliedScope);
+  if(hasTenantScope&&(!scope||!Object.hasOwn(scope,'tenant'))) throw new Error('Policy tenant scope cannot disappear during serialization.');
+  if(scope&&Object.hasOwn(scope,'tenant')&&!validTenantScope(scope.tenant)) throw new Error('Serialized policy tenant scope is invalid.');
   const rules=(node.rules||[]).map(rule=>normaliseRule(rule,{sourceRefs}));
   if(!rules.length) throw new Error('Policy node requires at least one rule.');
   if(new Set(rules.map(x=>x.id)).size!==rules.length) throw new Error('Policy rule ids must be unique within a node.');
@@ -72,6 +78,7 @@ function normaliseNode(node={}){
 
 function nodeMatchesContext(node,context={}){
   const s=node.scope||{};
+  if(Object.hasOwn(s,'tenant')&&(!validTenant(context.tenant)||!exactOrListMatch(s.tenant,context.tenant))) return false;
   for(const f of ['supranationalRegime','country','subdivision','sector','legalEntityId','siteId','employmentCategory','workerClass','workLocationCountry','workLocationSubdivision']) if(!exactOrListMatch(s[f],context[f])) return false;
   if(!exactOrListMatch(s.collectiveAgreements,context.collectiveAgreements||[])) return false;
   return true;
