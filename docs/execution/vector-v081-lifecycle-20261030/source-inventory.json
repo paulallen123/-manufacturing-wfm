@@ -1,0 +1,38 @@
+{
+  "parentSha": "c82d6f98b35768b48df9068eeb8ef8e661554dc4",
+  "parentTree": "75ad13c7ddb75069886924e6033aa679d563c7d5",
+  "verifiedParentBlobs": 1722,
+  "unchangedParentBlobs": 1720,
+  "sourceChanges": [
+    {
+      "path": "reporting/ui/vector-reporting-lifecycle.test.cjs",
+      "parentGitBlob": null,
+      "candidateGitBlob": "a6214639536b717e42b96b5d75279811422fdccb",
+      "sha256": "ad9438012e6faeec23fbdd680411f7f423c4c213b91cc53b13dc2b218b61a136"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-mapping-integrity.test.cjs",
+      "parentGitBlob": "7edff3e9cf16361ef4139bb7bf9c840548b68805",
+      "candidateGitBlob": "07ce8ed442b455bb2faed104f9052242cb6506de",
+      "sha256": "7124c2be596768456d224874a3dbf0c245dd9dcf4a2ce11cd2f57902ab9982ea"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-ui.js",
+      "parentGitBlob": "02a831a59e468c4959b9166b138184ebda36279f",
+      "candidateGitBlob": "2859628e02a6904a738798470d84f966d58fe08f",
+      "sha256": "f2ee0cdfa440868a81450d16ba01b638a735df8300fdfb5fa2d1e785a22d5444"
+    }
+  ],
+  "sourcePatchSha256": "20f07521da2d2f21574f74f8c071f93e3ac57b3ff6e555242c1db656f65a3c0c",
+  "syntaxAndDiffCheck": "PASS",
+  "primary": "/root/customer_proof_lane",
+  "independentReviewer": "/root",
+  "independentReview": "Final exact diff reviewed and full137/137 rerun; zero failures/skips Node22.23.2; technical acceptance, not formal GitHub approval",
+  "runtimeModelIdentifier": "not independently exposed",
+  "hiddenSettingDecision": "copy only stored limit/claimBoundary; server validation must preserve or refuse before creation; post-creation drift disclosed, no rollback claim",
+  "pinScheduleDecision": "native unchanged saved IDs; new-template auto-save; dirty saved editor refuses pending explicit save; revision changes stop continuations; confirmed committed earlier actions disclosed without changing current editor",
+  "sourceRunDecision": "capture editorRevision/source; selection and controls reset loading; stale success/mapping failure cannot repaint; auth denial ordering preserved",
+  "hostedProof": false,
+  "canonicalOrLiveMutation": false,
+  "customerComplete": false
+}
