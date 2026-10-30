@@ -1,46 +1,56 @@
-# V131 release gates — owner action packet
+# V131 ordinary integration and frozen release checks
 
-Status: proposed, not applied. No protected-branch, release, provider, or customer-completion claim.
+Status: owner-ready proposals, not applied. Both canonical branches remain unprotected in the recorded readback. No protected-branch, release, provider, or customer-completion claim.
 
-Fresh GitHub branch summaries show both canonical integration and release branches unprotected, with required checks off and empty; repository rulesets are empty. The connected user reports admin=true, but the installation returns 403 Resource not accessible by integration for protection details, and exposes no protection/ruleset write tool. Effective administration access is the missing capability.
+## Reviewed owner proposals
 
-## Bounded CI repair
+- [Draft PR534](https://github.com/paulallen123/-manufacturing-wfm/pull/534): donor8cace91e816f3c42c29abd0b4540cc799ac03c2b, parent61718. Both frozen proof jobs now refuse missing, stale or malformed freeze authority before heavy work. Exactly three files changed. Author Node24 and independent root Node22 suites11/11,0skips; original unchanged-trigger regression red retained.
+- [Stacked draft PR538](https://github.com/paulallen123/-manufacturing-wfm/pull/538): donor892609622ace380969da46c7c47bd3a6ab79fd4d, parentPR534@8cace. Exactly one config file adds23 lines for an independent always-running ordinary source job. It checks exact Node22.23.2/CIRCLE_SHA1, records source/blob receipts, executes the existing admission11-test suite and unchanged full run-forge-ci.mjs. No freeze gate, dependency, or branch/path filter blocks this job. Existing frozen jobs and scope remain unchanged.
 
-[Draft PR534](https://github.com/paulallen123/-manufacturing-wfm/pull/534), donor8cace91e816f3c42c29abd0b4540cc799ac03c2b, parent61718e1862fa650136e1952f622c9d8dd4c22af8 changes exactly three source files. The original command halts a required job green when the freeze trigger is unchanged. The repair refuses that admission before heavy work, while preserving every source/runtime proof step and the existing valid freeze format.
+Local full source command:16 validation/test commands,225/225 TAP tests,0skips, exit0 on Node22.23.2; admission11/11. All1,538 materialized baseline source hashes match61718;99 omitted baseline files are docs/evidence/inventory only. Local tar extraction used TAR_OPTIONS=--no-same-owner because managed root ownership restoration is unavailable; that preparation override is not proposed in CI.
 
-Fresh local proof:11/11 real-Git fixture tests,0skips, Node24.22.1; Bash syntax and YAML parse pass. The unchanged-trigger test fails against the extracted baseline because original gate exit0 does not satisfy required exit1. Independent root review ran the same exact-donor suite on Node22:11/11,0skips; script and both CI call sites reviewed with no important in-scope finding. The donor deliberately keeps the trigger unchanged, so CI refusal on this donor is expected and no hosted full-proof success is claimed.
+Independent full ordinary shell execution also passed: admission11/11, then all16 source validation/test commands and225/225 TAP tests,0skips on Node22.23.2, with unchanged trigger (private Git fixtureb63a434c442154f88334f93282feeca23823212c). Local TAR_OPTIONS preparation only, same as author.
 
-Canonical owner next action: review/compose PR534, renew the authentic freeze trigger on the final composition, run fresh exact-CIRCLE_SHA1 source and runtime proofs, and independently inspect complete receipts. Green context names alone do not establish executed proof on historical candidates.
+Independent heldouts10/10 verify the actual ordinary shell on a real Git fixture with an unchanged trigger, all11 real admission fixtures, source failure47 through tee, admission failure containment, missing/wrong SHA and wrong runtime refusal, and frozen job/trigger/gate preservation.
 
-## Proposed administrative action
+## Actual platform observation, exact scope
 
-Use an authorized GitHub connection/tool with repository Administration write permission. Administration read is also needed for independent readback. [Official API contract](https://docs.github.com/en/rest/branches/branch-protection#update-branch-protection).
+At exact892609, GitHub emitted ci/circleci: forge_integration_validation and then reported SUCCESS at [CircleCI build1225](https://circleci.com/gh/paulallen123/-manufacturing-wfm/1225), updated2026-10-30T01:35:22Z. An independent verifier, root and code author read this result. Remote config bloba70b04440189706c1e6b9afbd8fd041fb382c33c exactly matches verified local bytes.
 
-The adjacent branch-protection.json is for the release branch only. It requires the two observed CircleCI contexts, an up-to-date branch, one independent approval after the latest push, stale-review dismissal, administrator enforcement and resolved review conversations; force pushes and deletion are disabled. It preserves merge-commit compatibility. This is an exact proposed policy for owner acceptance; no approver or application ID is invented.
+The same donor's frozen forge_core_validation is FAILURE at build1224, expected because its trigger is unchanged. Ordinary validation ran independently of that refusal. Vercel also reports a separate failure; no aggregate all-checks-green claim is made. CircleCI full logs were not downloaded; hosted per-test counts are not asserted from status readback.
 
-After fresh preflight confirms no new policy would be overwritten, apply this JSON only to the release endpoint using the authorized administration tool:
+These statuses belong only to892609. They do not transfer to PR501@61718, PR537, a future integration composition, either canonical branch, any hosted service or customer proof.
 
-- PUT /repos/paulallen123/-manufacturing-wfm/branches/release%2Fvector-customer-ready-candidate-20260925/protection
+## Exact proposed branch policies
 
-Do not apply these freeze-only required contexts to ordinary integration PRs. They intentionally fail on an unrenewed trigger, including the donor PR. The integration branch needs a separate always-running ordinary source-validation context; no such successful context was established in this readback. Implement and independently verify that ordinary CI path and its exact emitted context before defining an integration required-check payload. The integration checks policy remains BLOCKED, with no invented context or empty-check substitute.
+The two branches need different required contexts so ordinary work remains possible:
 
-| Branch | Required CI design | Action state |
+| Branch | JSON input | Exact required contexts |
 |---|---|---|
-| release/vector-customer-ready-candidate-20260925 | Existing exact forge_core_validation + forge_runtime_validation, with authentic freeze renewal and complete exact-SHA receipts | Exact release payload proposed; admin access pending |
-| test/vector-empty-organisation-regression-20261020 | Separate always-running ordinary validation context; frozen proof contexts reserved for release admission | Ordinary context not established; integration policy not ready to apply |
+| test/vector-empty-organisation-regression-20261020 | integration-branch-protection.json | ci/circleci: forge_integration_validation |
+| release/vector-customer-ready-candidate-20260925 | branch-protection.json | ci/circleci: forge_core_validation and ci/circleci: forge_runtime_validation |
 
-GitHub CLI equivalent, to be run only by that authorized administrator from this packet directory:
+The ordinary context name is now verified by actual platform output. The release contexts were independently read at source61718. Frozen jobs require authentic trigger renewal and fresh complete source/runtime proof on the final release composition. Never require freeze-only contexts for ordinary integration PRs.
+
+Both JSONs propose strict/up-to-date checks, one independent approval after latest push, stale-review dismissal, administrator enforcement, resolved conversations, and blocked force pushes/deletion. Merge-commit compatibility is retained. No app ID or approver is invented; CODEOWNERS enforcement is not proposed without an applicable mapping. See the [official API contract](https://docs.github.com/en/rest/branches/branch-protection#update-branch-protection).
+
+Canonical owner first reviews/composes PR534 and PR538 on one exact integration candidate and reruns the ordinary job there; renew the authentic marker and rerun complete frozen source/runtime proofs for release. No existing donor status is proof of that future composition.
+
+## Missing administrative capability
+
+User metadata reports admin=true, but the connected installation returns403 Resource not accessible by integration for protection details, and exposes no protection/ruleset write tool. An authorized Administration-write tool/connection plus Administration-read readback is required. No credential extraction or alternate route is attempted.
+
+After fresh preflight confirms no policy would be overwritten, the authorized administrator may apply the distinct accepted payloads from this packet directory:
 
 ```bash
+gh api --method PUT 'repos/paulallen123/-manufacturing-wfm/branches/test%2Fvector-empty-organisation-regression-20261020/protection' --input integration-branch-protection.json
 gh api --method PUT 'repos/paulallen123/-manufacturing-wfm/branches/release%2Fvector-customer-ready-candidate-20260925/protection' --input branch-protection.json
 ```
 
-An approval must come from an authorized GitHub reviewer other than the latest pusher. Agent self-approval is not a substitute. CODEOWNERS enforcement is not proposed because this packet has not established an applicable CODEOWNERS mapping.
+## Independent enforcement readback
 
-## Mandatory independent readback
+GET both branch summaries, both protection endpoints, each protection/enforce_admins and repository rulesets; record exact current heads. Require protected=true, strict=true and each branch's own exact contexts, admin enforcement, required approval1 with latest-push approval and stale-review dismissal, resolved conversations, blocked force pushes/deletion and no unapproved bypass. Inspect returned checks app_id values; this packet does not assert verified CircleCI app provenance.
 
-GET the release branch summary, its protection endpoint, protection/enforce_admins and repository rulesets. Independently recheck the integration branch too, but do not claim its policy has been applied. Record the exact current heads. The following enforced-policy assertions apply to the release branch; integration remains blocked until its ordinary context and matching rule are verified. Require protected=true, both exact contexts present, strict=true, enforce_admins.enabled=true, required approval1 with require_last_push_approval=true and dismiss_stale_reviews=true, resolved conversations, no force push, no deletion and no unapproved bypass. Inspect the returned checks app_id values; this packet does not assert a verified CircleCI application binding.
+Read complete exact-final-candidate proof receipts independently. A historical green context, a halted/skipped job, an ordinary-only source success or Railway fixture-host health cannot substitute for release runtime proof or authenticated customer workflows.
 
-Read the final candidate's combined statuses and complete provider receipts: both source/runtime proofs must have actually executed on that exact SHA with no skipped/stale result counted as PASS. The Railway vector-hardening-proof status is fixture-host health and is not a substitute for these checks or authenticated customer proof. No GitHub Actions/check runs existed at source61718 during this readback.
-
-If the write or readback is denied, retain the blocked state. Do not substitute direct pushing, force merging, removing requirements, credential extraction or a weaker context name.
+If write or readback is denied, retain the blocked state; do not weaken requirements or claim enforced policy.
