@@ -1,0 +1,322 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: attendance cannot verify sign-off with negative revision
+not ok 1 - attendance cannot verify sign-off with negative revision
+  ---
+  duration_ms: 1.757461
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:41:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:43:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+  ...
+# Subtest: payroll cannot verify sign-offs with negative revision
+not ok 2 - payroll cannot verify sign-offs with negative revision
+  ---
+  duration_ms: 0.258762
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:47:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:49:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: attendance cannot verify sign-off with minimum-safe-negative revision
+not ok 3 - attendance cannot verify sign-off with minimum-safe-negative revision
+  ---
+  duration_ms: 0.185333
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:41:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:43:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot verify sign-offs with minimum-safe-negative revision
+not ok 4 - payroll cannot verify sign-offs with minimum-safe-negative revision
+  ---
+  duration_ms: 0.167027
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:47:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:49:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: attendance cannot verify sign-off with unsafe-positive revision
+not ok 5 - attendance cannot verify sign-off with unsafe-positive revision
+  ---
+  duration_ms: 0.172845
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:41:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:43:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot verify sign-offs with unsafe-positive revision
+not ok 6 - payroll cannot verify sign-offs with unsafe-positive revision
+  ---
+  duration_ms: 0.111735
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:47:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:49:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: attendance cannot verify sign-off with unsafe-negative revision
+not ok 7 - attendance cannot verify sign-off with unsafe-negative revision
+  ---
+  duration_ms: 0.092446
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:41:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:43:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot verify sign-offs with unsafe-negative revision
+not ok 8 - payroll cannot verify sign-offs with unsafe-negative revision
+  ---
+  duration_ms: 0.19609
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:47:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-revision-gates/base/scripts/vector-proof-result.revision-gates.test.mjs:49:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: attendance cannot verify sign-off with fraction revision
+ok 9 - attendance cannot verify sign-off with fraction revision
+  ---
+  duration_ms: 0.477715
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with fraction revision
+ok 10 - payroll cannot verify sign-offs with fraction revision
+  ---
+  duration_ms: 0.353581
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with NaN revision
+ok 11 - attendance cannot verify sign-off with NaN revision
+  ---
+  duration_ms: 0.164383
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with NaN revision
+ok 12 - payroll cannot verify sign-offs with NaN revision
+  ---
+  duration_ms: 0.071164
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with infinity revision
+ok 13 - attendance cannot verify sign-off with infinity revision
+  ---
+  duration_ms: 0.07498
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with infinity revision
+ok 14 - payroll cannot verify sign-offs with infinity revision
+  ---
+  duration_ms: 0.051616
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with numeric-string revision
+ok 15 - attendance cannot verify sign-off with numeric-string revision
+  ---
+  duration_ms: 0.059468
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with numeric-string revision
+ok 16 - payroll cannot verify sign-offs with numeric-string revision
+  ---
+  duration_ms: 0.089362
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with null revision
+ok 17 - attendance cannot verify sign-off with null revision
+  ---
+  duration_ms: 0.095932
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with null revision
+ok 18 - payroll cannot verify sign-offs with null revision
+  ---
+  duration_ms: 0.078736
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with absent revision
+ok 19 - attendance cannot verify sign-off with absent revision
+  ---
+  duration_ms: 0.050775
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with absent revision
+ok 20 - payroll cannot verify sign-offs with absent revision
+  ---
+  duration_ms: 0.077053
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 0 retains scoped proof only
+ok 21 - nonnegative safe revision 0 retains scoped proof only
+  ---
+  duration_ms: 0.148248
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 1 retains scoped proof only
+ok 22 - nonnegative safe revision 1 retains scoped proof only
+  ---
+  duration_ms: 0.056934
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 3 retains scoped proof only
+ok 23 - nonnegative safe revision 3 retains scoped proof only
+  ---
+  duration_ms: 0.045106
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 9007199254740991 retains scoped proof only
+ok 24 - nonnegative safe revision 9007199254740991 retains scoped proof only
+  ---
+  duration_ms: 0.043043
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 16
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 105.483993

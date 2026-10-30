@@ -1,0 +1,51 @@
+{
+  "baseSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "rootTreeTruncated": false,
+  "applicableAgentsFiles": [],
+  "inputs": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof.auth.test.mjs",
+      "gitBlob": "7eea454421ef8a0948e75672996f2c4a9384b591"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "gitBlob": "17304e46922293a92394938de25972a2148bfc8c"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "gitBlob": "48361fd225debdd865c28fe128b940c38ccdbc40"
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.cjs",
+      "gitBlob": "805cb35ce2f750c663be41e8ef6bc780c738a621"
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.test.cjs",
+      "gitBlob": "892db2af30c0b8f6e1093e0f4bf8d6a1e1044a0c"
+    },
+    {
+      "path": "security/runtime/identity-survival-guard.cjs",
+      "gitBlob": "f5325b5537db8f10ba45511aa3e3a831a6c16b38"
+    },
+    {
+      "path": "security/runtime/runtime-identity.cjs",
+      "gitBlob": "d245de951915dc4db8d4aa2e17cc14ff15c35748"
+    },
+    {
+      "path": "security/runtime/passkey-schema.cjs",
+      "gitBlob": "f6d37edc3c7135b3feeb210605cf9c3619c31307"
+    },
+    {
+      "path": "Dockerfile.current-candidate-role-browser-proof",
+      "gitBlob": "577b6686dda20558b4051829baa7badd9f83d941"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "gitBlob": "b736e153d621daeec4915fbe8627885b6496ff00"
+    },
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "gitBlob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0"
+    }
+  ]
+}

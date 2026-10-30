@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "baseSerializerGitBlob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+  "candidateSerializerGitBlob": "7b137c4be6f79d4d6021303d2f95d683a6616d8a",
+  "node": "v22.23.2",
+  "author": "/root/customer_proof_lane",
+  "independentReviewer": "/root",
+  "independentReviewedCases": 71,
+  "baseline": {
+    "tests": 24,
+    "pass": 16,
+    "fail": 8,
+    "skip": 0,
+    "exitCode": 1
+  },
+  "candidate": {
+    "tests": 74,
+    "pass": 74,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "composedWith536": {
+    "tests": 121,
+    "pass": 121,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "customerComplete": false,
+  "hostedBusinessActions": 0,
+  "liveMutations": 0,
+  "lanesDone": 0,
+  "cleanPatchApply": true,
+  "cleanCompositionMatchesTestedBytes": true,
+  "fileSha256": {
+    "runtime-and-signer-prerequisites.json": "ddf82a0e7d00eaf803c61faade9bc75d53efa330daf79b458966b127cfc3d732",
+    "team-identity-gates.patch": "03e4da170dd6af5821d5b67404f5aaf3295f5895d24ce7f9369e00cf6de08a96",
+    "baseline-node22.tap": "1eec44af89be07d3742aee151e1ee33165fdfcd0c5931a03b44a64ca445348fb",
+    "verified-github-inputs.json": "45ec237031946ab5502004e0cabf74a0a5680ec37a57c79d79f8c3bb4dd4fc16",
+    "revision-gates.patch": "0e285f25d3b5a9e7ee18f7a51a0f6431df55c8ed374e7189b76b6c8a474811a6",
+    "composed-node22.tap": "cb4687a7e98bf5c2da8c0d2fa3d3206803c0986ded4c31c8f6b55c4c0cf58aad",
+    "candidate-node22.tap": "e2ee9442803ec77d5d1c3c26ff161aaae3a0488dfef66b16bfa02e58acb149ad",
+    "scripts/vector-proof-result.mjs": "7be32815bc093dd535c4470d979e12994431c95eb4841f2a1d74b1c8b4fcae5f",
+    "scripts/vector-proof-result.revision-gates.test.mjs": "2641b706ea0ce6c321b392b977466667660ad5a350956bb09959fbcc882a4762",
+    "docs/evidence/2026-10-30-cp001-revision-gates.md": "9ebcff32101e7928af840730c37f0094d5ea2832f896aba9189f8b1a6d83d4b7"
+  }
+}
