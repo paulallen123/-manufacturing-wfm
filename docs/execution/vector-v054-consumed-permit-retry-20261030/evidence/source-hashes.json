@@ -1,0 +1,48 @@
+{
+  "ownerSource": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "compatibilitySource": "7ced0fe91742928235fe3be042766eec2911ed90",
+  "inputs": [
+    {
+      "label": "canonical-production-boundaries.cjs:before",
+      "bytes": 26390,
+      "sha256": "b9a5943345ba084fe56fe51e7980601b3e45f985949b67e407842aa01359c5d9",
+      "gitBlob": "fa24af60d4e1c0eafb29249688f5f1b1c1a9f8b2"
+    },
+    {
+      "label": "canonical-production-boundaries.cjs:after",
+      "bytes": 26678,
+      "sha256": "6268ae1a5185f7e43b9e2bf84841b2a64c3d0f8303a6859a15963f6b410b6b64",
+      "gitBlob": "51ee7c8345405c54e774c3775a326586fc9c6de6"
+    },
+    {
+      "label": "consumed-permit-retry.test.cjs",
+      "bytes": 7592,
+      "sha256": "f34ba5df156df473e5d1df00306968a68f4017be6b11244e1cbd2c9b92af573a",
+      "gitBlob": "125cb36d6a51d0ddf35c2a834f04feb896e8473a"
+    },
+    {
+      "label": "staffology-adapter.cjs:owner501",
+      "bytes": 56136,
+      "sha256": "efcb0341acb8bce777073778a543035ac37242c2a9775f85a1273b508f902b5f",
+      "gitBlob": "ec05deedeb5581a4b2f109eb108c796b0e62e59c"
+    },
+    {
+      "label": "canonical-production-boundaries.test.cjs:owner501",
+      "bytes": 22012,
+      "sha256": "88c5055a42077230d54381da843a0c39af0b9521083cda6b5b49563b846e7886",
+      "gitBlob": "537fdaeb8787794447855c204808b67ef0ea8064"
+    },
+    {
+      "label": "staffology-adapter.cjs:composed552",
+      "bytes": 56962,
+      "sha256": "53f724ae3e7fa9f6924677136a631ff83208e064335bbadab2f2b852c5362c09",
+      "gitBlob": "1a8242ce3fd73a95196164502629ac35e681e289"
+    },
+    {
+      "label": "peer-heldout.test.cjs",
+      "bytes": 11204,
+      "sha256": "26d630373e8790d5f4b4ddceb5c02ba2357c2bca5116b554405622e048b32a1c",
+      "gitBlob": "6fe4c6886f848d4a94d6ed57fee6ae7ca7c69178"
+    }
+  ]
+}

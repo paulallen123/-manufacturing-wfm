@@ -1,0 +1,37 @@
+[
+  {
+    "label": "baseline",
+    "retry": {
+      "issued": true,
+      "id": "52c07bf1-f4d0-40a5-94ca-2739c6a8e4f5",
+      "permitDigest": "de4d37b9faabdb7a283867c2d9922aa0c0efd6c6dd499516464899dc7b669fc1",
+      "bindingDigest": "0905905c1030d0ac69164d54ec5d7d953a882c2be6c3b6f6dbb8f17ceca4bed5",
+      "expiresAt": 301000,
+      "reused": false
+    },
+    "originalRowRetained": false,
+    "rowUnchanged": false,
+    "approvalCheckAfterRetry": true,
+    "consumedRowCount": 0,
+    "dispatchApprovalId": "8a982b18-3903-47c8-a0b8-095d3b38b920",
+    "firstApprovalId": "8a982b18-3903-47c8-a0b8-095d3b38b920",
+    "resendCode": "STAFFOLOGY_OWNERSHIP_LOST",
+    "simulatedDispatchCalls": 1
+  },
+  {
+    "label": "candidate",
+    "retry": {
+      "issued": false,
+      "code": "STAFFOLOGY_APPROVAL_CONSUMED",
+      "status": 409
+    },
+    "originalRowRetained": true,
+    "rowUnchanged": true,
+    "approvalCheckAfterRetry": false,
+    "consumedRowCount": 1,
+    "dispatchApprovalId": "4767df74-dedf-4d24-b5ba-e25e10000833",
+    "firstApprovalId": "4767df74-dedf-4d24-b5ba-e25e10000833",
+    "resendCode": "STAFFOLOGY_OWNERSHIP_LOST",
+    "simulatedDispatchCalls": 1
+  }
+]
