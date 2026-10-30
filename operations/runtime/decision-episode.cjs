@@ -1,6 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
+const { types } = require('node:util');
 
 const CONTRACT_VERSION = 'VECTOR_DECISION_EPISODE_V1';
 const MODES = Object.freeze(['SHADOW','HUMAN_APPROVAL','POLICY_BOUNDED']);
@@ -21,6 +22,61 @@ function stable(value){
   return JSON.stringify(value);
 }
 function digest(value){ return createHash('sha256').update(stable(value)).digest('hex'); }
+function snapshotData(value,label='decision data',state={active:new WeakSet(),count:0},depth=0){
+  const actualLabel=label.includes('.baselineActual')?'baseline actual':label.includes('.outcome.actual.')?'result actual':null;
+  const invalid=()=>{throw new Error((actualLabel?actualLabel+' must be a finite number; ':label+' must contain inert plain data; ')+'accessors, proxies and executable values are not allowed.');};
+  if(['function','symbol','bigint'].includes(typeof value)) invalid();
+  if(value===null||typeof value!=='object') return value;
+  if(types.isProxy(value)||depth>64||++state.count>10000||state.active.has(value)) invalid();
+  const array=Array.isArray(value),prototype=Object.getPrototypeOf(value);
+  if(prototype!==(array?Array.prototype:Object.prototype)&&!(prototype===null&&!array)) invalid();
+  state.active.add(value);
+  const copy=array?[]:{},descriptors=Object.getOwnPropertyDescriptors(value);
+  if(array&&(descriptors.length.value>10000||Reflect.ownKeys(descriptors).length!==descriptors.length.value+1)) invalid();
+  for(const key of Reflect.ownKeys(descriptors)){
+    const descriptor=descriptors[key];
+    if(array&&key==='length') continue;
+    if(typeof key!=='string'||!descriptor.enumerable||!Object.hasOwn(descriptor,'value')) invalid();
+    if(array&&(!/^(0|[1-9]\d*)$/.test(key)||Number(key)>=descriptors.length.value)) invalid();
+    Object.defineProperty(copy,key,{value:snapshotData(descriptor.value,label+'.'+key,state,depth+1),enumerable:true,writable:true,configurable:true});
+  }
+  if(array) copy.length=descriptors.length.value;
+  state.active.delete(value);
+  return copy;
+}
+function deepFreeze(value){
+  if(value&&typeof value==='object'){
+    for(const child of Object.values(value)) deepFreeze(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+function readDecisionEpisode(value,{requireSelection=false,requireOutcome=false}={}){
+  // Public checksums bind lifecycle content; actor authentication and authorization remain external.
+  const episode=snapshotData(value,'decision episode');
+  if(!episode||episode.contractVersion!==CONTRACT_VERSION) throw new Error('Valid decision episode required.');
+  const {episodeId,selection,selectionDigest,outcome,outcomeDigest,...issuedCore}=episode;
+  if(typeof episodeId!=='string'||!(/^[a-f0-9]{64}$/).test(episodeId)||digest(issuedCore)!==episodeId) throw new Error('Decision episode integrity check failed.');
+  if(requireSelection&&!selection) throw new Error('A selected decision episode is required before recording outcome.');
+  if(requireOutcome&&!outcome) throw new Error('Recorded decision outcome is required.');
+  if(selection){
+    if(typeof selectionDigest!=='string'||!(/^[a-f0-9]{64}$/).test(selectionDigest)||digest({episodeId,selection})!==selectionDigest) throw new Error('Decision selection integrity check failed.');
+    const option=(episode.options||[]).find(o=>o.id===selection.optionId);
+    if(!option||!option.feasible||!option.policyAllowed||!option.hardConstraintsPassed) throw new Error('Selected option is not eligible.');
+    const authority={SHADOW:'SHADOW_OBSERVED',HUMAN_APPROVAL:'HUMAN_APPROVED',POLICY_BOUNDED:'POLICY_GATE_PASSED'}[episode.mode];
+    if(!authority||selection.authorityDecision!==authority||selection.executionPermitted!==(episode.mode!=='SHADOW')) throw new Error('Decision selection authority integrity check failed.');
+    if(Date.parse(iso(selection.selectedAt))<Date.parse(iso(episode.triggeredAt))) throw new Error('Selection cannot be before the decision trigger.');
+  }else if(selectionDigest!==undefined){
+    throw new Error('Decision selection integrity check failed.');
+  }
+  if(outcome){
+    if(!selection||typeof outcomeDigest!=='string'||!(/^[a-f0-9]{64}$/).test(outcomeDigest)||digest({episodeId,selection,outcome})!==outcomeDigest) throw new Error('Recorded decision outcome integrity check failed.');
+    if(Date.parse(iso(outcome.observedAt))<Date.parse(iso(selection.selectedAt))) throw new Error('Outcome observation cannot be before selection.');
+  }else if(outcomeDigest!==undefined){
+    throw new Error('Recorded decision outcome integrity check failed.');
+  }
+  return deepFreeze(episode);
+}
 function text(value,max=240){ return String(value??'').trim().slice(0,max); }
 function iso(value){
   const raw=text(value,80);
@@ -46,6 +102,16 @@ function list(value,max=50,maxLen=200){
 function normalisePrediction(input={}){
   const out={};
   for(const key of [...BENEFIT_METRICS,...COST_METRICS]) out[key]=numberOrNull(input[key],key);
+  return out;
+}
+function normaliseActual(input){
+  if(!input||typeof input!=='object'||Array.isArray(input)) throw new Error('Recorded actual metrics must be a data object.');
+  const out={};
+  for(const key of [...BENEFIT_METRICS,...COST_METRICS]){
+    if(!Object.hasOwn(input,key)){out[key]=null;continue;}
+    if(typeof input[key]!=='number'||!Number.isFinite(input[key])) throw new Error('Recorded actual '+key+' must be a finite number.');
+    out[key]=input[key];
+  }
   return out;
 }
 function normaliseOption(input={}){
@@ -103,6 +169,7 @@ function rankOptions(options,objective){
   return {ranked,recommendedOptionId:ranked[0]?.optionId||null,reason:'RANKED'};
 }
 function createDecisionEpisode(input={}){
+  input=snapshotData(input,'decision input');
   const tenant=text(input.tenant,120);
   const site=text(input.site,160);
   const decisionType=text(input.decisionType,120);
@@ -134,46 +201,53 @@ function createDecisionEpisode(input={}){
       executionPermitted:false
     }
   };
-  return Object.freeze({...clone(payload),episodeId:digest(payload)});
+  return deepFreeze({...clone(payload),episodeId:digest(payload)});
 }
 function selectDecisionOption(episode,input={}){
-  if(!episode||episode.contractVersion!==CONTRACT_VERSION) throw new Error('Valid decision episode required.');
+  episode=readDecisionEpisode(episode);
+  input=snapshotData(input,'selection input');
+  if(episode.outcome) throw new Error('A completed decision episode cannot be selected again.');
   const optionId=text(input.optionId,120);
   const option=(episode.options||[]).find(o=>o.id===optionId);
   if(!option) throw new Error('Selected option is not part of the episode.');
   if(!option.feasible||!option.policyAllowed||!option.hardConstraintsPassed) throw new Error('Selected option is not eligible.');
   const selectedAt=iso(input.selectedAt);
+  if(Date.parse(selectedAt)<Date.parse(episode.triggeredAt)) throw new Error('Selection cannot be before the decision trigger.');
   const authorityDecision=text(input.authorityDecision,80).toUpperCase();
   if(episode.mode==='SHADOW' && authorityDecision!=='SHADOW_OBSERVED') throw new Error('Shadow mode cannot grant execution authority.');
   if(episode.mode==='HUMAN_APPROVAL' && authorityDecision!=='HUMAN_APPROVED') throw new Error('Human approval is required.');
   if(episode.mode==='POLICY_BOUNDED' && authorityDecision!=='POLICY_GATE_PASSED') throw new Error('Policy gate approval is required.');
-  return Object.freeze({
-    ...clone(episode),
-    selection:Object.freeze({
+  const selection={
       optionId,
       selectedAt,
       actorRef:text(input.actorRef,180)||null,
       authorityDecision,
       executionPermitted:episode.mode!=='SHADOW'
-    })
-  });
+  };
+  return deepFreeze({...clone(episode),selection,selectionDigest:digest({episodeId:episode.episodeId,selection})});
 }
 function recordDecisionOutcome(selectedEpisode,input={}){
-  if(!selectedEpisode?.selection) throw new Error('A selected decision episode is required before recording outcome.');
+  selectedEpisode=readDecisionEpisode(selectedEpisode,{requireSelection:true});
+  input=snapshotData(input,'outcome input');
   const observedAt=iso(input.observedAt);
+  if(Date.parse(observedAt)<Date.parse(selectedEpisode.selection.selectedAt)) throw new Error('Outcome observation cannot be before selection.');
   const evidenceRefs=list(input.evidenceRefs,50,220);
   if(!evidenceRefs.length) throw new Error('Outcome evidence reference is required.');
-  const actual=normalisePrediction(input.actual||{});
+  const actual=normaliseActual(Object.hasOwn(input,'actual')?input.actual:{});
   const predicted=(selectedEpisode.options||[]).find(o=>o.id===selectedEpisode.selection.optionId)?.prediction||{};
   const predictionError={};
   for(const key of [...BENEFIT_METRICS,...COST_METRICS]){
-    predictionError[key]=(predicted[key]!=null&&actual[key]!=null)?Number((actual[key]-predicted[key]).toFixed(8)):null;
+    if(predicted[key]!=null&&actual[key]!=null){
+      const error=actual[key]-predicted[key];
+      if(!Number.isFinite(error)) throw new Error('Prediction error '+key+' must be finite.');
+      predictionError[key]=Number(error.toFixed(8));
+    }else predictionError[key]=null;
   }
   const outcome={observedAt,evidenceRefs,actual,predictionError,notes:text(input.notes,600)||null};
-  return Object.freeze({...clone(selectedEpisode),outcome:Object.freeze(outcome),outcomeDigest:digest({episodeId:selectedEpisode.episodeId,selection:selectedEpisode.selection,outcome})});
+  return deepFreeze({...clone(selectedEpisode),outcome,outcomeDigest:digest({episodeId:selectedEpisode.episodeId,selection:selectedEpisode.selection,outcome})});
 }
 
 module.exports=Object.freeze({
   CONTRACT_VERSION,MODES,AUTHORITY,BENEFIT_METRICS,COST_METRICS,
-  stable,digest,createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,rankOptions
+  stable,digest,snapshotData,deepFreeze,readDecisionEpisode,createDecisionEpisode,selectDecisionOption,recordDecisionOutcome,rankOptions
 });
