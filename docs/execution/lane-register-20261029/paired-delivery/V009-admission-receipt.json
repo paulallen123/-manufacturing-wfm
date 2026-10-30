@@ -1,0 +1,201 @@
+{
+  "lane": "V009",
+  "date": "2026-10-30",
+  "canonical_head": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "prior_docs_head": "d7cb3eb771dcf9d6dee6d0b4c35e5bc7cedd4f74",
+  "stage": "CUSTOMER_PROOF",
+  "execution": "OWNER_READY_ADMISSION_SUPPLEMENT",
+  "owner": "Existing PR501 canonical access/integration/release owner",
+  "implementer": "/root/recovery_unblock",
+  "independent_review": {
+    "reviewer": "/root",
+    "decision": "bounded supplement accepted for owner handoff",
+    "separately_executed": "Node22 installed-layout 4 pass, 0 fail/skip",
+    "boundary": "Simulated copied installed layout only; no full image"
+  },
+  "baseline": {
+    "head": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+    "files": {
+      "security/runtime/owner-access-recovery.cjs": {
+        "git_blob": "b5318e3a6381d1428d15d2180b111ecaf7d54306",
+        "sha256": "ade784832ccb3db7d41d4501e356cae72d782bde46d5eb207af1db2129b45397"
+      },
+      "security/runtime/owner-access-recovery.test.cjs": {
+        "git_blob": "b537e0b6ae909b6e34f553c613b5ccdda9baa7a0",
+        "sha256": "e3b342086d557aa419423ca4fcf2662a8015ae7832d0a8f4fade613bd93cff38"
+      },
+      "security/runtime/identity-survival-guard.cjs": {
+        "git_blob": "f5325b5537db8f10ba45511aa3e3a831a6c16b38",
+        "sha256": "2e07ac5b5f2046a8ef4a5ca0a698f9940800a24e224a5119445bffa75db939d4"
+      },
+      "security/runtime/passkey-schema.cjs": {
+        "git_blob": "f6d37edc3c7135b3feeb210605cf9c3619c31307",
+        "sha256": "5a31cefe7f21f265b16b78182d319e1987ead8e393a357599f7d97a84acd301a"
+      },
+      "security/runtime/passkey-entry.html": {
+        "git_blob": "cc09c25978e12fc09e93c8b216debc96474e6006",
+        "sha256": "29a3f00db351ad780d1f7fec388f25d8c01a5640b3eb86ea34f8a7994457ceb8"
+      },
+      "Dockerfile": {
+        "git_blob": "03ff80449601bd7bbbd8f28a7b6541515f18a4cd",
+        "sha256": "a02d4a1182a077ef48d0ab898a28e29dc08a5ab082136c9a4e46a256144f7b27"
+      }
+    }
+  },
+  "candidate": {
+    "V009-admission-supplement.patch": {
+      "sha256": "8c47f676d5085ea3ad99eaa4e4323a2692f79d92f7c2cccb7f185839bd0b0ca4",
+      "bytes": 3924
+    },
+    "V009-complete-owner-ready.patch": {
+      "sha256": "8d3fbc19b54738a78261aa05d4226b510c98b054ffd0089ff40d2572b6376537",
+      "bytes": 15347
+    },
+    "candidate/Dockerfile": {
+      "sha256": "26ff94210927db6c0e27229d004871585b48164b3b5b9ce5e0727415fdde01e5",
+      "bytes": 49508
+    },
+    "candidate/security/runtime/owner-access-recovery.cjs": {
+      "sha256": "a7211fe3f6ad85f94be2d469eccd0adc6d2e5613c17fe2439d16bc697fa4463e",
+      "bytes": 16095
+    },
+    "candidate/security/runtime/owner-access-recovery-help.test.cjs": {
+      "sha256": "a47246407c0761df1d6c75684d74c685fb4facdcd2f5766502aa7f3f3e70ad3b",
+      "bytes": 5538
+    }
+  },
+  "checks": {
+    "exact_remote_original_patch_matches": true,
+    "complete_clean_apply_check": true,
+    "complete_clean_applied_three_files_match_frozen_candidate": true,
+    "diff_check": true,
+    "required_docker_stages_reachable": true,
+    "prior_runtime_candidate_unchanged": true
+  },
+  "tests": [
+    {
+      "case": "source-red",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "--test-reporter=tap",
+        "security/runtime/owner-access-recovery-help.test.cjs"
+      ],
+      "cwd": "/workspace/scratch/2ea1ba0f2164/v009-admission/baseline",
+      "test_env": {},
+      "runtime": "v22.23.2",
+      "exit": 1,
+      "expected_exit": 1,
+      "counts": {
+        "tests": 4,
+        "pass": 1,
+        "fail": 3,
+        "skipped": 0
+      },
+      "tap_sha256": "ebe292ce1cb74b9d8a9acf95945cbe199d31c7cbc08c4aa6f61a9b4df5ec2a6d",
+      "tap": "TAP version 13\n# (node:11) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: advertised recovery link gives useful public help without a grant or database\nnot ok 1 - advertised recovery link gives useful public help without a grant or database\n  ---\n  duration_ms: 30.708322\n  type: 'test'\n  location: '/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:44:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    404 !== 200\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 200\n  actual: 404\n  operator: 'strictEqual'\n  stack: |-\n    honestHelp (/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:31:10)\n    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:45:28)\n    process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)\n  ...\n# Subtest: malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\nnot ok 2 - malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\n  ---\n  duration_ms: 6.35105\n  type: 'test'\n  location: '/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:51:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    404 !== 200\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 200\n  actual: 404\n  operator: 'strictEqual'\n  stack: |-\n    honestHelp (/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:31:10)\n    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:52:52)\n    process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n  ...\n# Subtest: public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\nnot ok 3 - public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\n  ---\n  duration_ms: 4.912823\n  type: 'test'\n  location: '/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:68:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    404 !== 403\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 403\n  actual: 404\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v009-admission/baseline/security/runtime/owner-access-recovery-help.test.cjs:78:91)\n    process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n  ...\n# Subtest: only configured current first-passkey grant displays existing setup ceremony and does not touch storage\nok 4 - only configured current first-passkey grant displays existing setup ceremony and does not touch storage\n  ---\n  duration_ms: 5.546619\n  type: 'test'\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 1\n# fail 3\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 125.179126\n"
+    },
+    {
+      "case": "source-green",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "--test-reporter=tap",
+        "security/runtime/owner-access-recovery.test.cjs",
+        "security/runtime/owner-access-recovery-help.test.cjs"
+      ],
+      "cwd": "/workspace/scratch/2ea1ba0f2164/v009-admission/candidate",
+      "test_env": {},
+      "runtime": "v22.23.2",
+      "exit": 0,
+      "expected_exit": 0,
+      "counts": {
+        "tests": 15,
+        "pass": 15,
+        "fail": 0,
+        "skipped": 0
+      },
+      "tap_sha256": "55cbcb039d8c29124e0c47e13786d4a86de6a41d3593b2587cdf8a30d4bc25b4",
+      "tap": "TAP version 13\n# (node:11) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: advertised recovery link gives useful public help without a grant or database\nok 1 - advertised recovery link gives useful public help without a grant or database\n  ---\n  duration_ms: 37.794149\n  type: 'test'\n  ...\n# Subtest: malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\nok 2 - malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\n  ---\n  duration_ms: 18.688657\n  type: 'test'\n  ...\n# Subtest: public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\nok 3 - public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\n  ---\n  duration_ms: 16.578026\n  type: 'test'\n  ...\n# Subtest: only configured current first-passkey grant displays existing setup ceremony and does not touch storage\nok 4 - only configured current first-passkey grant displays existing setup ceremony and does not touch storage\n  ---\n  duration_ms: 5.565412\n  type: 'test'\n  ...\n# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: atomic reset preserves authority, revokes only target sessions, audits, and survives restart replay\nok 5 - atomic reset preserves authority, revokes only target sessions, audits, and survives restart replay\n  ---\n  duration_ms: 223.17241\n  type: 'test'\n  ...\n# Subtest: absent/malformed/non-staging/expired configuration never enables recovery\nok 6 - absent/malformed/non-staging/expired configuration never enables recovery\n  ---\n  duration_ms: 25.851635\n  type: 'test'\n  ...\n# Subtest: rejects wrong host, origin, transport, method, injected identity, content type, body and token\nok 7 - rejects wrong host, origin, transport, method, injected identity, content type, body and token\n  ---\n  duration_ms: 27.69246\n  type: 'test'\n  ...\n# Subtest: frozen, rotated, deleted, or tenant/role/person reassigned account fails closed\nok 8 - frozen, rotated, deleted, or tenant/role/person reassigned account fails closed\n  ---\n  duration_ms: 704.190447\n  type: 'test'\n  ...\n# Subtest: audit failure rolls back consumption, password update and session revocation\nok 9 - audit failure rolls back consumption, password update and session revocation\n  ---\n  duration_ms: 172.766456\n  type: 'test'\n  ...\n# Subtest: durable revocation and token re-keying cannot resurrect a used grant\nok 10 - durable revocation and token re-keying cannot resurrect a used grant\n  ---\n  duration_ms: 227.136843\n  type: 'test'\n  ...\n# Subtest: expiry is rechecked after request body and within reset transaction\nok 11 - expiry is rechecked after request body and within reset transaction\n  ---\n  duration_ms: 226.823633\n  type: 'test'\n  ...\n# Subtest: recovery page exposes no secret and accepts no token in request URL\nok 12 - recovery page exposes no secret and accepts no token in request URL\n  ---\n  duration_ms: 25.885331\n  type: 'test'\n  ...\n# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: concurrent independent workers can consume a grant only once\nok 13 - concurrent independent workers can consume a grant only once\n  ---\n  duration_ms: 365.462348\n  type: 'test'\n  ...\n# Subtest: first-passkey recovery page reuses secure VECTOR UI and never asks for an unusable password\nok 14 - first-passkey recovery page reuses secure VECTOR UI and never asks for an unusable password\n  ---\n  duration_ms: 34.686874\n  type: 'test'\n  ...\n# Subtest: first-passkey preparation validates the code and clears stale browser cookies without consuming authority or minting a session\nok 15 - first-passkey preparation validates the code and clears stale browser cookies without consuming authority or minting a session\n  ---\n  duration_ms: 36.03383\n  type: 'test'\n  ...\n1..15\n# tests 15\n# suites 0\n# pass 15\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 2161.901802\n"
+    },
+    {
+      "case": "installed-red",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "--test-reporter=tap",
+        "tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs"
+      ],
+      "cwd": "/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline",
+      "test_env": {
+        "WFM_RECOVERY_MODULE": "/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/app/security-runtime/owner-access-recovery.cjs"
+      },
+      "runtime": "v22.23.2",
+      "exit": 1,
+      "expected_exit": 1,
+      "counts": {
+        "tests": 4,
+        "pass": 1,
+        "fail": 3,
+        "skipped": 0
+      },
+      "tap_sha256": "53fb7404b15d4a3896fb546ddec31cc7cccf9f5fa62eeaba18de82e5ea049be8",
+      "tap": "TAP version 13\n# (node:11) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: advertised recovery link gives useful public help without a grant or database\nnot ok 1 - advertised recovery link gives useful public help without a grant or database\n  ---\n  duration_ms: 32.209266\n  type: 'test'\n  location: '/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:44:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    404 !== 200\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 200\n  actual: 404\n  operator: 'strictEqual'\n  stack: |-\n    honestHelp (/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:31:10)\n    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:45:28)\n    process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)\n  ...\n# Subtest: malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\nnot ok 2 - malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\n  ---\n  duration_ms: 5.188157\n  type: 'test'\n  location: '/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:51:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    404 !== 200\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 200\n  actual: 404\n  operator: 'strictEqual'\n  stack: |-\n    honestHelp (/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:31:10)\n    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:52:52)\n    process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n  ...\n# Subtest: public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\nnot ok 3 - public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\n  ---\n  duration_ms: 3.825508\n  type: 'test'\n  location: '/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:68:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    404 !== 403\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 403\n  actual: 404\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v009-admission/installed-baseline/tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs:78:91)\n    process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n  ...\n# Subtest: only configured current first-passkey grant displays existing setup ceremony and does not touch storage\nok 4 - only configured current first-passkey grant displays existing setup ceremony and does not touch storage\n  ---\n  duration_ms: 7.677244\n  type: 'test'\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 1\n# fail 3\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 130.70557\n"
+    },
+    {
+      "case": "installed-green",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "--test-reporter=tap",
+        "tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs"
+      ],
+      "cwd": "/workspace/scratch/2ea1ba0f2164/v009-admission/installed-candidate",
+      "test_env": {
+        "WFM_RECOVERY_MODULE": "/workspace/scratch/2ea1ba0f2164/v009-admission/installed-candidate/app/security-runtime/owner-access-recovery.cjs"
+      },
+      "runtime": "v22.23.2",
+      "exit": 0,
+      "expected_exit": 0,
+      "counts": {
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "skipped": 0
+      },
+      "tap_sha256": "3840b2f9a08262b44331b771eaa001a2bea11e5a6adc9a5222d559f8eab49fdf",
+      "tap": "TAP version 13\n# (node:11) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: advertised recovery link gives useful public help without a grant or database\nok 1 - advertised recovery link gives useful public help without a grant or database\n  ---\n  duration_ms: 46.232283\n  type: 'test'\n  ...\n# Subtest: malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\nok 2 - malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow\n  ---\n  duration_ms: 19.932176\n  type: 'test'\n  ...\n# Subtest: public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\nok 3 - public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage\n  ---\n  duration_ms: 22.01922\n  type: 'test'\n  ...\n# Subtest: only configured current first-passkey grant displays existing setup ceremony and does not touch storage\nok 4 - only configured current first-passkey grant displays existing setup ceremony and does not touch storage\n  ---\n  duration_ms: 5.217882\n  type: 'test'\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 4\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 194.016213\n"
+    },
+    {
+      "case": "installed-existing-independent",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "--test-reporter=tap",
+        "/workspace/scratch/2ea1ba0f2164/v009-verifier/authority-http.test.cjs"
+      ],
+      "cwd": "/workspace/scratch/2ea1ba0f2164/v009-admission/installed-candidate",
+      "test_env": {
+        "V009_MODULE": "/workspace/scratch/2ea1ba0f2164/v009-admission/installed-candidate/app/security-runtime/owner-access-recovery.cjs"
+      },
+      "runtime": "v22.23.2",
+      "exit": 0,
+      "expected_exit": 0,
+      "counts": {
+        "tests": 10,
+        "pass": 10,
+        "fail": 0,
+        "skipped": 0
+      },
+      "tap_sha256": "ef70ea11a1c582387d44161ea73e34446b46f5653230642a26651bbfad97b7d2",
+      "tap": "TAP version 13\n# (node:11) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: public unavailable recovery help is truthful and carries no authority or account data\nok 1 - public unavailable recovery help is truthful and carries no authority or account data\n  ---\n  duration_ms: 45.180116\n  type: 'test'\n  ...\n# Subtest: expired setup grant cannot expose or accept an enrolment ceremony\nok 2 - expired setup grant cannot expose or accept an enrolment ceremony\n  ---\n  duration_ms: 10.122811\n  type: 'test'\n  ...\n# Subtest: missing authority API remains denied and cannot be upgraded through URL or caller fields\nok 3 - missing authority API remains denied and cannot be upgraded through URL or caller fields\n  ---\n  duration_ms: 11.271441\n  type: 'test'\n  ...\n# Subtest: valid first-passkey grant retains approved code entry and existing WebAuthn assets only\nok 4 - valid first-passkey grant retains approved code entry and existing WebAuthn assets only\n  ---\n  duration_ms: 7.934874\n  type: 'test'\n  ...\n# Subtest: configured route rejects wrong host, insecure transport, query credentials and identity injection\nok 5 - configured route rejects wrong host, insecure transport, query credentials and identity injection\n  ---\n  duration_ms: 11.450212\n  type: 'test'\n  ...\n# Subtest: malformed or production-only configuration cannot show active setup or leak configuration\nok 6 - malformed or production-only configuration cannot show active setup or leak configuration\n  ---\n  duration_ms: 12.559135\n  type: 'test'\n  ...\n# Subtest: unrelated paths never become a recovery or sign-in fallback\nok 7 - unrelated paths never become a recovery or sign-in fallback\n  ---\n  duration_ms: 3.724719\n  type: 'test'\n  ...\n# Subtest: unconfigured public help is still host/transport/method/query bounded\nok 8 - unconfigured public help is still host/transport/method/query bounded\n  ---\n  duration_ms: 8.680194\n  type: 'test'\n  ...\n# Subtest: legacy password-reset configuration never exposes a password sign-in promise in public help\nok 9 - legacy password-reset configuration never exposes a password sign-in promise in public help\n  ---\n  duration_ms: 5.8805\n  type: 'test'\n  ...\n# Subtest: public help cannot use missing or malformed origin as trusted authority\nok 10 - public help cannot use missing or malformed origin as trusted authority\n  ---\n  duration_ms: 6.942362\n  type: 'test'\n  ...\n1..10\n# tests 10\n# suites 0\n# pass 10\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 216.242676\n"
+    }
+  ],
+  "unrun": [
+    "full pinned Docker image build",
+    "hosted navigation against adopted serving SHA",
+    "genuine WebAuthn ceremony",
+    "protected invitation/expiry/revocation/recovery and fresh-login/audit proof"
+  ],
+  "mutations": "Documentation artifacts only; no canonical source, credential, tenant, provider, configuration or deployment writes."
+}
