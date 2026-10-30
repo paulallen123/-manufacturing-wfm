@@ -1,0 +1,144 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: complete two-worker input checks every released line and grants no authority
+ok 1 - complete two-worker input checks every released line and grants no authority
+  ---
+  duration_ms: 4.57656
+  type: 'test'
+  ...
+# Subtest: a correct primary worker cannot hide a financial mismatch in the other worker
+not ok 2 - a correct primary worker cannot hide a financial mismatch in the other worker
+  ---
+  duration_ms: 1.894514
+  type: 'test'
+  location: '/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:46:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schemaVersion":1,"contractValid":true,"authorizationGranted":false,"proofEligible":false,"providerRequestsPerformed":false,"credentialReadinessVerified":false,"currentPrincipalAuthorityVerified":false,"inputProvenanceVerified":false,"claimBoundary":"Offline input consistency only; NOT AUTHORIZATION or provider/customer proof.","blockerCodes":[],"requiredExternalEvidence":["CURRENT_APPROVED_NONPRODUCTION_OPERATION","CURRENT_AUTHENTICATED_PRINCIPAL_AND_ONE_SHOT_RUNTIME_APPROVAL","EXACT_RELEASE_IMAGE_SECURITY_AND_RECOVERY_ADMISSION","CURRENT_PROVIDER_EMPLOYER_COHORT_OPEN_RUN_AND_PAY_CODE_EVIDENCE","VECTOR_DISPATCH_PROVIDER_ACCEPTANCE_AND_INDEPENDENT_DURABLE_READBACK","INTENDED_ROLE_CUSTOMER_JOURNEY_REFRESH_FRESH_LOGIN_AND_AUDIT"],"sourceSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","moduleSha256":{"operations":"1c9b1ef225eaa2ddb0e753dd502fe8e6fb550f13984b0d11b706ee7a9f07e00c","bridge":"cec22f1b9921f456b91c3940f76151b9669f03680dc72b748980663715a4f591","adapter":"efcb0341acb8bce777073778a543035ac37242c2a9775f85a1273b508f902b5f","boundaries":"b9a5943345ba084fe56fe51e7980601b3e45f985949b67e407842aa01359c5d9"},"profileSha256":"3c54d8fe8b0ce2cbe7be9379c9d0052f32603ed35b58a3589482cf1bbdec88d4","stateSha256":"066e33d6d0fadffe899cd7dd24b46b7093f5cbfdb1af4283e110401946687cbd","manifestDigest":"421bf0c216345d4e8c64e993c5c5732e5212799c47af5930f28fd66f948c66a8","lineCount":2}
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    check (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:36:9)
+    TestContext.<anonymous> (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:49:3)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: individually valid worker mappings cannot be swapped between released line digests
+ok 3 - individually valid worker mappings cannot be swapped between released line digests
+  ---
+  duration_ms: 1.048447
+  type: 'test'
+  ...
+# Subtest: two VECTOR workers cannot target one provider business operation
+not ok 4 - two VECTOR workers cannot target one provider business operation
+  ---
+  duration_ms: 1.39
+  type: 'test'
+  location: '/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:57:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schemaVersion":1,"contractValid":true,"authorizationGranted":false,"proofEligible":false,"providerRequestsPerformed":false,"credentialReadinessVerified":false,"currentPrincipalAuthorityVerified":false,"inputProvenanceVerified":false,"claimBoundary":"Offline input consistency only; NOT AUTHORIZATION or provider/customer proof.","blockerCodes":[],"requiredExternalEvidence":["CURRENT_APPROVED_NONPRODUCTION_OPERATION","CURRENT_AUTHENTICATED_PRINCIPAL_AND_ONE_SHOT_RUNTIME_APPROVAL","EXACT_RELEASE_IMAGE_SECURITY_AND_RECOVERY_ADMISSION","CURRENT_PROVIDER_EMPLOYER_COHORT_OPEN_RUN_AND_PAY_CODE_EVIDENCE","VECTOR_DISPATCH_PROVIDER_ACCEPTANCE_AND_INDEPENDENT_DURABLE_READBACK","INTENDED_ROLE_CUSTOMER_JOURNEY_REFRESH_FRESH_LOGIN_AND_AUDIT"],"sourceSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","moduleSha256":{"operations":"1c9b1ef225eaa2ddb0e753dd502fe8e6fb550f13984b0d11b706ee7a9f07e00c","bridge":"cec22f1b9921f456b91c3940f76151b9669f03680dc72b748980663715a4f591","adapter":"efcb0341acb8bce777073778a543035ac37242c2a9775f85a1273b508f902b5f","boundaries":"b9a5943345ba084fe56fe51e7980601b3e45f985949b67e407842aa01359c5d9"},"profileSha256":"38fae09a9b79622a4dcaa59461cca2bfac3b277ba1cd273f3d25d6738a2bfaf9","stateSha256":"c2378a9e426073e18fc385490cb68696d38f28f6a2b9de58bc1345fad97dcab0","manifestDigest":"409d2d2ae0e7cb963504f68657edb088bf794e1fd414ab7d8a29524be73f9bbb","lineCount":2}
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    check (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:36:9)
+    TestContext.<anonymous> (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:67:2)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: removing a non-primary worker mapping or identity refuses the whole batch
+not ok 5 - removing a non-primary worker mapping or identity refuses the whole batch
+  ---
+  duration_ms: 1.953732
+  type: 'test'
+  location: '/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:69:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schemaVersion":1,"contractValid":true,"authorizationGranted":false,"proofEligible":false,"providerRequestsPerformed":false,"credentialReadinessVerified":false,"currentPrincipalAuthorityVerified":false,"inputProvenanceVerified":false,"claimBoundary":"Offline input consistency only; NOT AUTHORIZATION or provider/customer proof.","blockerCodes":[],"requiredExternalEvidence":["CURRENT_APPROVED_NONPRODUCTION_OPERATION","CURRENT_AUTHENTICATED_PRINCIPAL_AND_ONE_SHOT_RUNTIME_APPROVAL","EXACT_RELEASE_IMAGE_SECURITY_AND_RECOVERY_ADMISSION","CURRENT_PROVIDER_EMPLOYER_COHORT_OPEN_RUN_AND_PAY_CODE_EVIDENCE","VECTOR_DISPATCH_PROVIDER_ACCEPTANCE_AND_INDEPENDENT_DURABLE_READBACK","INTENDED_ROLE_CUSTOMER_JOURNEY_REFRESH_FRESH_LOGIN_AND_AUDIT"],"sourceSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","moduleSha256":{"operations":"1c9b1ef225eaa2ddb0e753dd502fe8e6fb550f13984b0d11b706ee7a9f07e00c","bridge":"cec22f1b9921f456b91c3940f76151b9669f03680dc72b748980663715a4f591","adapter":"efcb0341acb8bce777073778a543035ac37242c2a9775f85a1273b508f902b5f","boundaries":"b9a5943345ba084fe56fe51e7980601b3e45f985949b67e407842aa01359c5d9"},"profileSha256":"a92ab9298d7a24da13c616115aef7e206e62a5d2ef65e93f111004f60c761ee4","stateSha256":"5b6c5354ade62a8b9a32af87169070e0a616584f9b0153ee9b7883c0d71fc157","manifestDigest":"421bf0c216345d4e8c64e993c5c5732e5212799c47af5930f28fd66f948c66a8","lineCount":2}
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    check (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:36:9)
+    TestContext.<anonymous> (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:73:2)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: source, dormant, malformed and permission refusals keep every no-grant flag false
+ok 6 - source, dormant, malformed and permission refusals keep every no-grant flag false
+  ---
+  duration_ms: 1.358323
+  type: 'test'
+  ...
+# Subtest: valid and refused checks never reach the ambient HTTP transport
+not ok 7 - valid and refused checks never reach the ambient HTTP transport
+  ---
+  duration_ms: 1.530467
+  type: 'test'
+  location: '/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:82:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schemaVersion":1,"contractValid":true,"authorizationGranted":false,"proofEligible":false,"providerRequestsPerformed":false,"credentialReadinessVerified":false,"currentPrincipalAuthorityVerified":false,"inputProvenanceVerified":false,"claimBoundary":"Offline input consistency only; NOT AUTHORIZATION or provider/customer proof.","blockerCodes":[],"requiredExternalEvidence":["CURRENT_APPROVED_NONPRODUCTION_OPERATION","CURRENT_AUTHENTICATED_PRINCIPAL_AND_ONE_SHOT_RUNTIME_APPROVAL","EXACT_RELEASE_IMAGE_SECURITY_AND_RECOVERY_ADMISSION","CURRENT_PROVIDER_EMPLOYER_COHORT_OPEN_RUN_AND_PAY_CODE_EVIDENCE","VECTOR_DISPATCH_PROVIDER_ACCEPTANCE_AND_INDEPENDENT_DURABLE_READBACK","INTENDED_ROLE_CUSTOMER_JOURNEY_REFRESH_FRESH_LOGIN_AND_AUDIT"],"sourceSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","moduleSha256":{"operations":"1c9b1ef225eaa2ddb0e753dd502fe8e6fb550f13984b0d11b706ee7a9f07e00c","bridge":"cec22f1b9921f456b91c3940f76151b9669f03680dc72b748980663715a4f591","adapter":"efcb0341acb8bce777073778a543035ac37242c2a9775f85a1273b508f902b5f","boundaries":"b9a5943345ba084fe56fe51e7980601b3e45f985949b67e407842aa01359c5d9"},"profileSha256":"3c54d8fe8b0ce2cbe7be9379c9d0052f32603ed35b58a3589482cf1bbdec88d4","stateSha256":"066e33d6d0fadffe899cd7dd24b46b7093f5cbfdb1af4283e110401946687cbd","manifestDigest":"421bf0c216345d4e8c64e993c5c5732e5212799c47af5930f28fd66f948c66a8","lineCount":2}
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    check (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:36:9)
+    TestContext.<anonymous> (/tmp/payroll-preflight-mutant-2gzr_jt3/candidate/scripts/staffology-payroll-proof-preflight.adversarial.test.cjs:88:3)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 3
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.384094

@@ -1,0 +1,107 @@
+[
+  {
+    "path": "scripts/staffology-payroll-proof-preflight.cjs",
+    "gitBlob": "6ea53d84021361cef98d0e5f9b938f25e2c0ebec",
+    "sha256": "7bcd73bf1b5f92ce157c569a7f7f6d4e12d7a5443d527f876b520257798ed511",
+    "remoteRef": "30b86acc2cabd8e0396dfd0e63efc21578c5c53a",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "scripts/staffology-payroll-proof-preflight.test.cjs",
+    "gitBlob": "372cb893158428ba468675e11b05191e5a5d2bfd",
+    "sha256": "af2044729a1129358efe080b7dcc90895e0ab22198226e6597c4d118393a1dd9",
+    "remoteRef": "30b86acc2cabd8e0396dfd0e63efc21578c5c53a",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integrations/staffology/canonical-operations.cjs",
+    "gitBlob": "c5c7fd3072a3a6c16ea7d0929f4fca5d75171247",
+    "sha256": "1c9b1ef225eaa2ddb0e753dd502fe8e6fb550f13984b0d11b706ee7a9f07e00c",
+    "remoteRef": "30b86acc2cabd8e0396dfd0e63efc21578c5c53a",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integrations/staffology/canonical-runtime-bridge.cjs",
+    "gitBlob": "19f7f451ec1db24e19f5b75bd685ebe3d6dc5e70",
+    "sha256": "cec22f1b9921f456b91c3940f76151b9669f03680dc72b748980663715a4f591",
+    "remoteRef": "30b86acc2cabd8e0396dfd0e63efc21578c5c53a",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integrations/staffology/staffology-adapter.cjs",
+    "gitBlob": "ec05deedeb5581a4b2f109eb108c796b0e62e59c",
+    "sha256": "efcb0341acb8bce777073778a543035ac37242c2a9775f85a1273b508f902b5f",
+    "remoteRef": "30b86acc2cabd8e0396dfd0e63efc21578c5c53a",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integrations/staffology/canonical-production-boundaries.cjs",
+    "gitBlob": "fa24af60d4e1c0eafb29249688f5f1b1c1a9f8b2",
+    "sha256": "b9a5943345ba084fe56fe51e7980601b3e45f985949b67e407842aa01359c5d9",
+    "remoteRef": "30b86acc2cabd8e0396dfd0e63efc21578c5c53a",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "scripts/current-candidate-role-browser-proof.mjs",
+    "gitBlob": "b736e153d621daeec4915fbe8627885b6496ff00",
+    "sha256": "5d5921f54b3e501f70004d324036e3c5fbd336b1f04550cb0ec390434252d903",
+    "remoteRef": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "security/runtime/proof-runner-auth.cjs",
+    "gitBlob": "805cb35ce2f750c663be41e8ef6bc780c738a621",
+    "sha256": "0701e4d5d01a211bde865dce2256b9892475f95ae27a415a02132700f1d4fa5b",
+    "remoteRef": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integration/runtime/gusto-http-process-recovery.test.cjs",
+    "gitBlob": "456321470fe17a1c7731c607c5cc43c71caa69f0",
+    "sha256": "72f59766dcb55ba3fea2a8d3b5f57d57c2a92b986ef3535706a992af1ef20c32",
+    "remoteRef": "57907609bca28aa0401298db3089cb49bf1beb0f",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integration/runtime/fixtures/gusto-http-child.cjs",
+    "gitBlob": "bba078cd80fa46ad5cce528e864da2157092f8f2",
+    "sha256": "122a0d62eb00568434e2fcf444a640d448ab3f40ead3ea610c1d528ad274b695",
+    "remoteRef": "57907609bca28aa0401298db3089cb49bf1beb0f",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integration/runtime/autonomous-integration-hub.cjs",
+    "gitBlob": "127f83a656dedbf56611d1115f71150517083251",
+    "sha256": "e158dd5be8e55e4b771fcb85117d9ef72cf424f4e410d64c6af4360c526aea99",
+    "remoteRef": "57907609bca28aa0401298db3089cb49bf1beb0f",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integration/runtime/gusto-company-connector.cjs",
+    "gitBlob": "05632471531d2a246c2f4dfdd328b3c489610305",
+    "sha256": "84e4df58692612f578d831885885aa0fa55154b99ebb389358786f66ff8f7fd3",
+    "remoteRef": "57907609bca28aa0401298db3089cb49bf1beb0f",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integration/runtime/gusto-oauth-landing.cjs",
+    "gitBlob": "60ca5c2f7397414577f02eff4a73686f651739f2",
+    "sha256": "15dafadc71fdcb1e667a968f23f81297883dea94b51b53993bcd008f3cb8eed1",
+    "remoteRef": "57907609bca28aa0401298db3089cb49bf1beb0f",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "integration/runtime/three-min-feed.cjs",
+    "gitBlob": "3654e587b9de85e1970609ab8e8617f97df01bb7",
+    "sha256": "33cc0470bacf098a97c3fd3ec310476bc9200c406cc1df95e484b66bca144a7f",
+    "remoteRef": "57907609bca28aa0401298db3089cb49bf1beb0f",
+    "remoteGitBlobMatched": true
+  },
+  {
+    "path": "implementation/runtime/setup-only-policy.cjs",
+    "gitBlob": "efc0bef0f3fe405d89facc3f397df55f29670648",
+    "sha256": "27a7a34629cc9e411caad86ad07628d665e4b4497a43da3e3a1e41e4b1d148b0",
+    "remoteRef": "57907609bca28aa0401298db3089cb49bf1beb0f",
+    "remoteGitBlobMatched": true
+  }
+]

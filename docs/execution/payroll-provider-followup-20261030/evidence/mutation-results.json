@@ -1,0 +1,20 @@
+[
+  {
+    "mutant": "primary-only",
+    "exitCode": 1,
+    "detected": true,
+    "requiredFailingCase": "a correct primary worker cannot hide a financial mismatch in the other worker"
+  },
+  {
+    "mutant": "collision-guard-removed",
+    "exitCode": 1,
+    "detected": true,
+    "requiredFailingCase": "two VECTOR workers cannot target one provider business operation"
+  },
+  {
+    "mutant": "authority-claim-enabled",
+    "exitCode": 1,
+    "detected": true,
+    "requiredFailingCase": "complete two-worker input checks every released line and grants no authority"
+  }
+]
