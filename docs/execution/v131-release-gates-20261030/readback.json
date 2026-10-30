@@ -1,0 +1,97 @@
+{
+  "schema": "VECTOR_V131_RELEASE_GATE_READBACK_V1",
+  "observed_at": "2026-10-30T01:26:52Z",
+  "repo": "paulallen123/-manufacturing-wfm",
+  "actor": "paulallen123",
+  "reported_repo_permissions": {
+    "admin": true,
+    "maintain": true,
+    "pull": true,
+    "push": true,
+    "triage": true
+  },
+  "effective_admin_detail_access": {
+    "status": 403,
+    "message": "Resource not accessible by integration"
+  },
+  "available_admin_mutation_tool": false,
+  "branches": [
+    {
+      "name": "test/vector-empty-organisation-regression-20261020",
+      "sha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "protected": false,
+      "required_status_checks": {
+        "enforcement_level": "off",
+        "contexts": [],
+        "checks": []
+      }
+    },
+    {
+      "name": "release/vector-customer-ready-candidate-20260925",
+      "sha": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+      "protected": false,
+      "required_status_checks": {
+        "enforcement_level": "off",
+        "contexts": [],
+        "checks": []
+      }
+    }
+  ],
+  "rulesets": [],
+  "source_sha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "statuses": [
+    {
+      "context": "ci/circleci: forge_runtime_validation",
+      "state": "success",
+      "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/1191",
+      "created_at": "2026-10-28T04:14:41Z",
+      "updated_at": "2026-10-28T04:14:41Z"
+    },
+    {
+      "context": "vector-hardening-proof - vector-hardening-proof",
+      "state": "success",
+      "target_url": "https://railway.com/project/43367a88-2233-4c6b-9018-0ce234dd73ca/service/48ee3ceb-9cfc-4399-b3a1-3628e3603815?id=c95e7a37-2504-437c-9edb-495178a88935&environmentId=eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+      "created_at": "2026-10-29T22:31:21Z",
+      "updated_at": "2026-10-29T22:31:21Z"
+    },
+    {
+      "context": "ci/circleci: forge_core_validation",
+      "state": "success",
+      "target_url": "https://circleci.com/gh/paulallen123/-manufacturing-wfm/1213",
+      "created_at": "2026-10-30T00:56:18Z",
+      "updated_at": "2026-10-30T00:56:18Z"
+    }
+  ],
+  "github_check_runs": 0,
+  "github_actions_runs": 0,
+  "code_donor": {
+    "sha": "8cace91e816f3c42c29abd0b4540cc799ac03c2b",
+    "pr": "https://github.com/paulallen123/-manufacturing-wfm/pull/534",
+    "source_files": [
+      ".circleci/config.yml",
+      "scripts/require-frozen-candidate.sh",
+      "scripts/require-frozen-candidate.test.mjs"
+    ],
+    "fresh_local_tests": {
+      "node": "v24.22.1",
+      "command": "node --test scripts/require-frozen-candidate.test.mjs",
+      "exit": 0,
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "skip": 0
+    },
+    "baseline_negative": {
+      "command": "PATH=/workspace/scratch/2ea1ba0f2164/v131-baseline/bin:$PATH node --test --test-name-pattern='unchanged freeze trigger' scripts/require-frozen-candidate.test.mjs",
+      "test_exit": 1,
+      "actual_original_gate_exit": 0,
+      "expected_gate_exit": 1
+    },
+    "independent_verification": "PENDING",
+    "hosted_verification": "NOT_RUN",
+    "trigger_changed": false
+  },
+  "admin_action_state": "PROPOSED_NOT_APPLIED",
+  "lane_state": "TEST_OWNER_REVIEW_AND_ADMIN_ENFORCEMENT_PENDING",
+  "customer_complete": false
+}
