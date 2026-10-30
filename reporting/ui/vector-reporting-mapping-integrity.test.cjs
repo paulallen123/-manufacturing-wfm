@@ -33,7 +33,7 @@ async function runAndExport(body, priorBody = null, recalcAfter = false) {
   }
   const responses = priorBody ? [priorBody, body] : [body];
   const context = {
-    state, body, hasPrior: Boolean(priorBody), recalcAfter, Blob, JSON, Number, String, Date,
+    state, editorRevision: 0, body, hasPrior: Boolean(priorBody), recalcAfter, Blob, JSON, Number, String, Date,
     json: async url => { assert.equal(url, '/api/fixture-source'); return responses.shift(); },
     renderReport() {}, modal: () => ({ querySelector: () => main }),
     esc: value => String(value),
