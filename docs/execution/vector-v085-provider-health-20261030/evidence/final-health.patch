@@ -1,0 +1,165 @@
+diff --git a/integration/runtime/connection-health-summary.cjs b/integration/runtime/connection-health-summary.cjs
+index 177cb8e..56ae5b0 100644
+--- a/integration/runtime/connection-health-summary.cjs
++++ b/integration/runtime/connection-health-summary.cjs
+@@ -122,12 +122,16 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
+     });
+   }
+ 
++  const runtime = evaluateRuntimeHealth(review, input.runtime || {}, now);
+   const maintenanceExecution = maintenanceExecutionDisposition(maintenance, input.maintenanceExecution || {});
+-  if (maintenanceExecution) {
++  if (maintenanceExecution && runtime.state !== 'BLOCKED') {
++    const runtimeDegraded = maintenanceExecution.canSync && runtime.state === 'DEGRADED';
+     return Object.freeze({
+       state: maintenanceExecution.state,
+       canSync: maintenanceExecution.canSync,
+-      customerMessage: maintenanceExecution.customerMessage,
++      customerMessage: runtimeDegraded
++        ? maintenanceExecution.customerMessage + ' Integration freshness, latency or retries are below the reviewed target.'
++        : maintenanceExecution.customerMessage,
+       nextAction: maintenanceExecution.nextAction,
+       setupProgress: progress,
+       automation: maintenance,
+@@ -136,7 +140,7 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
+       signals: Object.freeze({
+         activation: 'APPROVED',
+         provider: maintenanceExecution.providerSignal,
+-        runtime: maintenanceExecution.runtimeSignal
++        runtime: runtimeDegraded ? 'DEGRADED' : maintenanceExecution.runtimeSignal
+       })
+     });
+   }
+@@ -165,7 +169,6 @@ function summarizeConnectionHealth(review, input = {}, now = Date.now()) {
+     });
+   }
+ 
+-  const runtime = evaluateRuntimeHealth(review, input.runtime || {}, now);
+   if (runtime.state === 'BLOCKED') {
+     return Object.freeze({
+       state: 'ATTENTION_REQUIRED',
+diff --git a/integration/runtime/connection-health-summary.test.cjs b/integration/runtime/connection-health-summary.test.cjs
+index 84c09da..0bde039 100644
+--- a/integration/runtime/connection-health-summary.test.cjs
++++ b/integration/runtime/connection-health-summary.test.cjs
+@@ -127,6 +127,43 @@ test('healthy connection produces a calm customer-safe summary', () => {
+   assert.ok(result.setupProgress.every((step) => step.state === 'COMPLETE'));
+ });
+ 
++test('future runtime evidence cannot resume sync through ordinary or unfinished-maintenance summaries', () => {
++  for (const maintenanceExecution of [{}, {state:'CLAIM_EXPIRED'}, {state:'COMPLETION_UNCERTAIN'}]) {
++    for (const values of [
++      {lastReconciliationAt: new Date(NOW + 60_000).toISOString()},
++      {lastSyncAt: new Date(NOW + 60_000).toISOString(), lastReconciliationAt: new Date(NOW + 60_000).toISOString()}
++    ]) {
++      const input = {currentConfig:config, activationEvidence:approvedEvidence(), providerProofLease:providerProofLease(), circuitState:closedCircuit(), runtime:healthyRuntime(values), maintenanceExecution};
++      const before = structuredClone(input);
++      const result = summarizeConnectionHealth(review, input, NOW);
++      assert.equal(result.state, 'ATTENTION_REQUIRED');
++      assert.equal(result.canSync, false);
++      assert.equal(result.signals.runtime, 'BLOCKED');
++      assert.deepEqual(input, before);
++    }
++  }
++});
++
++for (const state of ['CLAIM_EXPIRED', 'COMPLETION_UNCERTAIN']) {
++  for (const [condition, values] of [
++    ['stale data', {lastSyncAt:new Date(NOW-400_000).toISOString(), lastReconciliationAt:new Date(NOW-399_000).toISOString()}],
++    ['high latency', {measuredLatencyMs:3000}],
++    ['pending retries', {pendingRetries:1}]
++  ]) {
++    test(`${state} preserves ${condition} as a degraded runtime signal while current proof permits sync`, () => {
++      const input = {currentConfig:config, activationEvidence:approvedEvidence(), providerProofLease:providerProofLease(), circuitState:closedCircuit(), runtime:healthyRuntime(values), maintenanceExecution:{state}};
++      const before = structuredClone(input);
++      const result = summarizeConnectionHealth(review, input, NOW);
++      assert.equal(result.state, 'DEGRADED');
++      assert.equal(result.canSync, true);
++      assert.equal(result.signals.runtime, 'DEGRADED');
++      assert.match(result.customerMessage, /freshness|latency|retries|degrad/i);
++      assert.equal(result.maintenanceExecutionState, state);
++      assert.deepEqual(input, before);
++    });
++  }
++}
++
+ test('setup remains fail closed and points to the first useful customer action', () => {
+   const evidence = approvedEvidence();
+   delete evidence.approval;
+diff --git a/integration/runtime/connection-proof-gate.cjs b/integration/runtime/connection-proof-gate.cjs
+index 955e16d..6ad28ee 100644
+--- a/integration/runtime/connection-proof-gate.cjs
++++ b/integration/runtime/connection-proof-gate.cjs
+@@ -16,6 +16,7 @@ const TRANSPORTS = Object.freeze({
+ const CREDENTIAL_REF = /^(vault|secret|managed|railway|keyvault|awssecrets|gcpsecrets):\/\/[A-Za-z0-9._:/-]{3,240}$/;
+ const CAPABILITY = /^[a-z0-9][a-z0-9.-]{1,79}$/;
+ const TARGET_PROOF_METHODS = new Set(['provider-metadata', 'provider-account-identity', 'tenant-metadata', 'connection-metadata']);
++const MAX_CLOCK_SKEW_MS = 5000;
+ 
+ function sha256(value) {
+   return createHash('sha256').update(String(value)).digest('hex');
+@@ -287,6 +288,7 @@ function evaluateActivation(review, evidence = {}, currentConfig) {
+ function evaluateRuntimeHealth(review, runtime = {}, now = Date.now()) {
+   const blockers = [];
+   const warnings = [];
++  if (!Number.isFinite(now)) blockers.push('Runtime evaluation clock is invalid.');
+   if (runtime.reviewedDigest !== review.reviewedDigest) blockers.push('Runtime configuration no longer matches the approved review.');
+   if (runtime.authorityConflict === true) blockers.push('More than one source is claiming authority for the same capability.');
+   if (runtime.retryExhausted === true) blockers.push('Automatic recovery is exhausted and requires review.');
+@@ -295,10 +297,12 @@ function evaluateRuntimeHealth(review, runtime = {}, now = Date.now()) {
+   const lastSyncMs = Date.parse(String(runtime.lastSyncAt || ''));
+   const reconMs = Date.parse(String(runtime.lastReconciliationAt || ''));
+   if (!Number.isFinite(lastSyncMs)) blockers.push('No successful sync freshness evidence is available.');
++  else if (lastSyncMs > now + MAX_CLOCK_SKEW_MS) blockers.push('Successful sync freshness evidence is future-dated.');
+   else {
+     const ageSeconds = Math.max(0, Math.floor((now - lastSyncMs) / 1000));
+     if (ageSeconds > review.monitoring.maxFreshnessSeconds) warnings.push('Integration data is older than the reviewed freshness target.');
+   }
++  if (Number.isFinite(reconMs) && reconMs > now + MAX_CLOCK_SKEW_MS) blockers.push('Reconciliation evidence is future-dated.');
+   if (!Number.isFinite(reconMs) || (Number.isFinite(lastSyncMs) && reconMs < lastSyncMs)) blockers.push('Latest successful sync has not been reconciled.');
+ 
+   const latency = Number(runtime.measuredLatencyMs);
+diff --git a/integration/runtime/connection-proof-gate.test.cjs b/integration/runtime/connection-proof-gate.test.cjs
+index c38c2ec..e2d3a8d 100644
+--- a/integration/runtime/connection-proof-gate.test.cjs
++++ b/integration/runtime/connection-proof-gate.test.cjs
+@@ -190,6 +190,39 @@ test('runtime health blocks unreconciled or conflicting authority and degrades s
+   assert.equal(degraded.state, 'DEGRADED');
+ });
+ 
++test('runtime health refuses sync or reconciliation evidence beyond the existing clock-skew allowance', () => {
++  const review = reviewConnection(config());
++  const now = Date.parse('2026-10-30T17:00:00.000Z');
++  const runtime = {
++    reviewedDigest: review.reviewedDigest,
++    lastSyncAt: new Date(now - 1000).toISOString(),
++    lastReconciliationAt: new Date(now).toISOString(),
++    measuredLatencyMs: 100
++  };
++  for (const offset of [5001, 60_000, 86_400_000]) {
++    const future = new Date(now + offset).toISOString();
++    for (const values of [{lastReconciliationAt: future}, {lastSyncAt: future, lastReconciliationAt: future}]) {
++      const input = {...runtime, ...values}, before = structuredClone(input);
++      const result = evaluateRuntimeHealth(review, input, now);
++      assert.equal(result.state, 'BLOCKED');
++      assert.match(result.blockers.join(' '), /future/i);
++      assert.deepEqual(input, before);
++    }
++  }
++  for (const offset of [0, 5000]) {
++    const timestamp = new Date(now + offset).toISOString();
++    assert.equal(evaluateRuntimeHealth(review, {...runtime, lastSyncAt: timestamp, lastReconciliationAt: timestamp}, now).state, 'HEALTHY');
++  }
++});
++
++test('runtime health fails closed when its evaluation clock is not finite', () => {
++  const review = reviewConnection(config());
++  const runtime = {reviewedDigest: review.reviewedDigest, lastSyncAt:'2026-10-30T17:00:00.000Z', lastReconciliationAt:'2026-10-30T17:00:01.000Z', measuredLatencyMs:100};
++  for (const now of [NaN, Infinity, -Infinity, null, '2026-10-30T17:00:02.000Z']) {
++    assert.equal(evaluateRuntimeHealth(review, runtime, now).state, 'BLOCKED');
++  }
++});
++
+ test('safe test plan is non-mutating and adds transport-specific recovery/read-only checks', () => {
+   const review = reviewConnection(config({
+     transport: 'read-only-db',

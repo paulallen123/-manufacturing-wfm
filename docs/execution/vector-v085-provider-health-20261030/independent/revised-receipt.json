@@ -1,0 +1,82 @@
+{
+  "verdict": "PASS_FINAL_BOUNDED_PATCH",
+  "node": "v22.23.2",
+  "candidate_file_count": 29,
+  "changed_vs_baseline": [
+    "integration/runtime/connection-health-summary.cjs",
+    "integration/runtime/connection-health-summary.test.cjs",
+    "integration/runtime/connection-proof-gate.cjs",
+    "integration/runtime/connection-proof-gate.test.cjs"
+  ],
+  "changed_vs_first_review": [
+    "integration/runtime/connection-health-summary.cjs",
+    "integration/runtime/connection-health-summary.test.cjs"
+  ],
+  "candidate_sha256": {
+    ".github/workflows/integration-activation-runtime-proof.yml": "bde4ed4ee2faabd678e8be14425135096927d57cc0da720420d89c31e6f9939e",
+    "integration/runtime/apply-handoff-ledger.cjs": "2f7aaa390ebb964e853b361c89cdf3c372b2201344b3a38cf87f04b8050ab92a",
+    "integration/runtime/apply-handoff-ledger.test.cjs": "c07a5b4de89241333ec5946cd340b48d39483a1aabeb347ad2153c4bb5852410",
+    "integration/runtime/connection-health-summary.cjs": "4f8d89bd0c89bd2b23c7ad6da9c338bc7a6e27e35ff4b0667e1a2f39a5c2aefc",
+    "integration/runtime/connection-health-summary.test.cjs": "b27d40e9dff239cb7802649ce41e544f58d6558788109aaf4884597159fe08ef",
+    "integration/runtime/connection-proof-gate.cjs": "4ed09983cf2dcbba21255a79c6b4b38a5a053dced6011bf49568468fc09d62e9",
+    "integration/runtime/connection-proof-gate.test.cjs": "6c006a30b8ea4b0c8b05af9a54b1c6f6cf45e254ef9d4dfad62608cc311145fa",
+    "integration/runtime/provider-circuit-breaker.cjs": "b627ed70cb02279b728340cb69946b40182ed0c8ef180dc30a86fc51ea5595b7",
+    "integration/runtime/provider-circuit-breaker.test.cjs": "eb56817532313772cb231117121d2871f7d5ea889508d071388dc0596191798d",
+    "integration/runtime/provider-proof-lifecycle.cjs": "267f23be0489a87a9f66cad90c67f6e57d20c533210d26d3cf8d7e912517659a",
+    "integration/runtime/provider-proof-lifecycle.test.cjs": "1651aca357974e6b7df71f16e34b37895e440400e861c99ac1c8893b33374537",
+    "integration/runtime/provider-proof-maintenance-ledger.cjs": "4943b6774e1c87afc6a4ccc42f35e1a212d735aede924ed344bd2bddc2931acb",
+    "integration/runtime/provider-proof-maintenance-ledger.test.cjs": "e68db17464d791de3e50862e65d3ee48069df0098c3d441dfe24b191c51481e0",
+    "integration/runtime/provider-proof-maintenance-worker.cjs": "0ec6d63ef28db8fcb869be189961bc41e1861f1df163684b0e2a2dca216aaa13",
+    "integration/runtime/provider-proof-maintenance-worker.test.cjs": "7a7c6ba4c12f2ed4e124b49912ef119dea695eba79969923f568b8e211883a36",
+    "integration/runtime/provider-proof-maintenance.cjs": "40cddeb843ca9d83272755017d6ec960826ea68c13b8144b72cfa084a2555638",
+    "integration/runtime/provider-proof-maintenance.test.cjs": "fa6fa10a4d927b05a81f7812a1d1019302c3ba6b40e7606abaa3ebd8a563d797",
+    "integration/runtime/provider-proof-profiles.cjs": "0ea5ee39a574583297723b78a1ff940e470762620c3ac2f38674d6e6cac2d68b",
+    "integration/runtime/provider-proof-profiles.test.cjs": "1382ec0e974f1a8cb4353d26f0f7433aee43c24dd44c5cdb0fa8081bcf559f40",
+    "integration/runtime/provider-proof-response-verifier.cjs": "cc4aa9fb40aa1577efcc9fe1fe953c572c9fe90ae8e03b54095c623e27234d48",
+    "integration/runtime/provider-proof-response-verifier.test.cjs": "3993f3d080e137a4686c43bacc78495724d0e97bb901ebce3c7db9424220119d",
+    "integration/runtime/runtime-ingestion-gate.cjs": "a6d3e3a9fe89276ecf639aa565eea0d17fd3eef73ae1b02e4e394becbc26350a",
+    "integration/runtime/runtime-ingestion-gate.test.cjs": "74cadda5f8a7333c590f56a48db75f3dfbebadf2c2bf8fa89e16772841d875a8",
+    "integration/runtime/source-authority-fence.cjs": "3c26177d18de2583b3d87110015e35218eda7e2c294e411ea657d85566c14279",
+    "integration/runtime/source-authority-fence.test.cjs": "f735c11c4e5130f8e30d9f753b2eeb8efb20baeb67dfcbab0e706ba9d82ecfae",
+    "integration/runtime/source-settlement-gate.cjs": "e0622a602c2ab5ef8c20cbdadb45605085d55268274847bfa5ab5fe7f74864fc",
+    "integration/runtime/source-settlement-gate.test.cjs": "80f182c72e029a8cca5089e17041a41c890448e2469ca9c8d6edb3cfb057611a",
+    "integration/runtime/transport-runtime-policy.cjs": "e9b9c35666c462d4b04ba5522f1757e64a88827b8fc004e64b8d06568a8da5c5",
+    "integration/runtime/transport-runtime-policy.test.cjs": "9993dcfa97bc1ca49f4740f0737236e12427ca59479aafc7fa0b7003661eb3a9"
+  },
+  "counts": {
+    "revised-heldout": {
+      "tests": 217,
+      "pass": 217,
+      "fail": 0
+    },
+    "revised-degradation": {
+      "tests": 6,
+      "pass": 6,
+      "fail": 0
+    },
+    "pre-signal-degradation": {
+      "tests": 6,
+      "pass": 0,
+      "fail": 6
+    },
+    "revised-existing": {
+      "tests": 113,
+      "pass": 113,
+      "fail": 0
+    },
+    "pre-signal-primary-summary": {
+      "tests": 17,
+      "pass": 11,
+      "fail": 6
+    }
+  },
+  "independent_test_sha256": {
+    "heldout.test.cjs": "d436c9b80394c14d52e329ebb2aaaefc3ecb187fd656391a579657baa62268d7",
+    "degradation.test.cjs": "ee4bb5fc956db4bc4aef9944a3a7d8b26c8fb10e71d510b0e7335b2679b198c6",
+    "revised-adjacent-observations.cjs": "4f332fd3a7f1cb51622689c18e875b7e5f0a459c7edee5a9cce65308707ec6c6"
+  },
+  "degraded_signal_finding": "RESOLVED_SIX_CASES",
+  "remaining_limitation": "Symbol/BigInt clocks throw TypeError without allowing sync; pre-existing numeric-clock API limitation",
+  "candidate_modified_by_reviewer": false,
+  "provider_live_or_protected_approval_actions": false
+}

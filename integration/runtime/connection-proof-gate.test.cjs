@@ -190,6 +190,39 @@ test('runtime health blocks unreconciled or conflicting authority and degrades s
   assert.equal(degraded.state, 'DEGRADED');
 });
 
+test('runtime health refuses sync or reconciliation evidence beyond the existing clock-skew allowance', () => {
+  const review = reviewConnection(config());
+  const now = Date.parse('2026-10-30T17:00:00.000Z');
+  const runtime = {
+    reviewedDigest: review.reviewedDigest,
+    lastSyncAt: new Date(now - 1000).toISOString(),
+    lastReconciliationAt: new Date(now).toISOString(),
+    measuredLatencyMs: 100
+  };
+  for (const offset of [5001, 60_000, 86_400_000]) {
+    const future = new Date(now + offset).toISOString();
+    for (const values of [{lastReconciliationAt: future}, {lastSyncAt: future, lastReconciliationAt: future}]) {
+      const input = {...runtime, ...values}, before = structuredClone(input);
+      const result = evaluateRuntimeHealth(review, input, now);
+      assert.equal(result.state, 'BLOCKED');
+      assert.match(result.blockers.join(' '), /future/i);
+      assert.deepEqual(input, before);
+    }
+  }
+  for (const offset of [0, 5000]) {
+    const timestamp = new Date(now + offset).toISOString();
+    assert.equal(evaluateRuntimeHealth(review, {...runtime, lastSyncAt: timestamp, lastReconciliationAt: timestamp}, now).state, 'HEALTHY');
+  }
+});
+
+test('runtime health fails closed when its evaluation clock is not finite', () => {
+  const review = reviewConnection(config());
+  const runtime = {reviewedDigest: review.reviewedDigest, lastSyncAt:'2026-10-30T17:00:00.000Z', lastReconciliationAt:'2026-10-30T17:00:01.000Z', measuredLatencyMs:100};
+  for (const now of [NaN, Infinity, -Infinity, null, '2026-10-30T17:00:02.000Z']) {
+    assert.equal(evaluateRuntimeHealth(review, runtime, now).state, 'BLOCKED');
+  }
+});
+
 test('safe test plan is non-mutating and adds transport-specific recovery/read-only checks', () => {
   const review = reviewConnection(config({
     transport: 'read-only-db',

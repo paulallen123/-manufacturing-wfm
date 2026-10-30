@@ -1,0 +1,252 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: healthy connection produces a calm customer-safe summary
+ok 1 - healthy connection produces a calm customer-safe summary
+  ---
+  duration_ms: 2.870593
+  type: 'test'
+  ...
+# Subtest: future runtime evidence cannot resume sync through ordinary or unfinished-maintenance summaries
+ok 2 - future runtime evidence cannot resume sync through ordinary or unfinished-maintenance summaries
+  ---
+  duration_ms: 3.043669
+  type: 'test'
+  ...
+# Subtest: CLAIM_EXPIRED preserves stale data as a degraded runtime signal while current proof permits sync
+not ok 3 - CLAIM_EXPIRED preserves stale data as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 1.330712
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:153:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'DEGRADED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'DEGRADED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:159:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: CLAIM_EXPIRED preserves high latency as a degraded runtime signal while current proof permits sync
+not ok 4 - CLAIM_EXPIRED preserves high latency as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.687975
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:153:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'DEGRADED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'DEGRADED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:159:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: CLAIM_EXPIRED preserves pending retries as a degraded runtime signal while current proof permits sync
+not ok 5 - CLAIM_EXPIRED preserves pending retries as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.468721
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:153:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'DEGRADED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'DEGRADED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:159:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: COMPLETION_UNCERTAIN preserves stale data as a degraded runtime signal while current proof permits sync
+not ok 6 - COMPLETION_UNCERTAIN preserves stale data as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.470534
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:153:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'DEGRADED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'DEGRADED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:159:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: COMPLETION_UNCERTAIN preserves high latency as a degraded runtime signal while current proof permits sync
+not ok 7 - COMPLETION_UNCERTAIN preserves high latency as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 0.352229
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:153:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'DEGRADED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'DEGRADED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:159:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: COMPLETION_UNCERTAIN preserves pending retries as a degraded runtime signal while current proof permits sync
+not ok 8 - COMPLETION_UNCERTAIN preserves pending retries as a degraded runtime signal while current proof permits sync
+  ---
+  duration_ms: 1.011071
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:153:5'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'HEALTHY'
+    - 'DEGRADED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'DEGRADED'
+  actual: 'HEALTHY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v085-independent-review/pre-signal-reconstruction/integration/runtime/connection-health-summary.test.cjs:159:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: setup remains fail closed and points to the first useful customer action
+ok 9 - setup remains fail closed and points to the first useful customer action
+  ---
+  duration_ms: 0.548188
+  type: 'test'
+  ...
+# Subtest: expired provider proof pauses sync and asks only for safe re-proof
+ok 10 - expired provider proof pauses sync and asks only for safe re-proof
+  ---
+  duration_ms: 0.696738
+  type: 'test'
+  ...
+# Subtest: proof due soon keeps sync running but is visible as degraded
+ok 11 - proof due soon keeps sync running but is visible as degraded
+  ---
+  duration_ms: 0.32574
+  type: 'test'
+  ...
+# Subtest: open provider circuit cannot be shown as healthy or syncing
+ok 12 - open provider circuit cannot be shown as healthy or syncing
+  ---
+  duration_ms: 0.355754
+  type: 'test'
+  ...
+# Subtest: unreconciled latest sync is attention-required even when provider is reachable
+ok 13 - unreconciled latest sync is attention-required even when provider is reachable
+  ---
+  duration_ms: 0.342685
+  type: 'test'
+  ...
+# Subtest: stale but reconciled data is degraded rather than falsely healthy
+ok 14 - stale but reconciled data is degraded rather than falsely healthy
+  ---
+  duration_ms: 0.916001
+  type: 'test'
+  ...
+# Subtest: summary never echoes credentials, raw payloads or provider rows
+ok 15 - summary never echoes credentials, raw payloads or provider rows
+  ---
+  duration_ms: 0.282487
+  type: 'test'
+  ...
+# Subtest: expired maintenance claim is visible without pausing a still-valid provider proof
+ok 16 - expired maintenance claim is visible without pausing a still-valid provider proof
+  ---
+  duration_ms: 0.251081
+  type: 'test'
+  ...
+# Subtest: uncertain maintenance completion blocks an expired proof until control-plane reconciliation
+ok 17 - uncertain maintenance completion blocks an expired proof until control-plane reconciliation
+  ---
+  duration_ms: 0.318891
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 11
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 127.740479

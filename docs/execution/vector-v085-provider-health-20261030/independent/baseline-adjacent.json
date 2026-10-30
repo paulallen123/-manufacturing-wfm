@@ -1,0 +1,102 @@
+{
+  "target": "/workspace/scratch/2ea1ba0f2164/v085-proof-health/baseline",
+  "node": "v22.23.2",
+  "observations": [
+    {
+      "case": "stale sync",
+      "maintenanceExecution": "IDLE",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED"
+    },
+    {
+      "case": "stale sync",
+      "maintenanceExecution": "CLAIM_EXPIRED",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "HEALTHY"
+    },
+    {
+      "case": "stale sync",
+      "maintenanceExecution": "COMPLETION_UNCERTAIN",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "HEALTHY"
+    },
+    {
+      "case": "slow latency",
+      "maintenanceExecution": "IDLE",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED"
+    },
+    {
+      "case": "slow latency",
+      "maintenanceExecution": "CLAIM_EXPIRED",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "HEALTHY"
+    },
+    {
+      "case": "slow latency",
+      "maintenanceExecution": "COMPLETION_UNCERTAIN",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "HEALTHY"
+    },
+    {
+      "case": "pending retry",
+      "maintenanceExecution": "IDLE",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED"
+    },
+    {
+      "case": "pending retry",
+      "maintenanceExecution": "CLAIM_EXPIRED",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "HEALTHY"
+    },
+    {
+      "case": "pending retry",
+      "maintenanceExecution": "COMPLETION_UNCERTAIN",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "HEALTHY"
+    },
+    {
+      "case": "symbol",
+      "api": "evaluateRuntimeHealth",
+      "throws": "TypeError",
+      "message": "Cannot convert a Symbol value to a number"
+    },
+    {
+      "case": "symbol",
+      "api": "summarizeConnectionHealth",
+      "throws": "TypeError",
+      "message": "Cannot convert a Symbol value to a number"
+    },
+    {
+      "case": "bigint",
+      "api": "evaluateRuntimeHealth",
+      "throws": "TypeError",
+      "message": "Cannot mix BigInt and other types, use explicit conversions"
+    },
+    {
+      "case": "bigint",
+      "api": "summarizeConnectionHealth",
+      "throws": "TypeError",
+      "message": "Cannot mix BigInt and other types, use explicit conversions"
+    }
+  ]
+}

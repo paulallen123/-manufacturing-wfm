@@ -1,0 +1,48 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: CLAIM_EXPIRED truthfully preserves stale sync degradation and maintenance reason while permitting safe continuation
+ok 1 - CLAIM_EXPIRED truthfully preserves stale sync degradation and maintenance reason while permitting safe continuation
+  ---
+  duration_ms: 1.911549
+  type: 'test'
+  ...
+# Subtest: COMPLETION_UNCERTAIN truthfully preserves stale sync degradation and maintenance reason while permitting safe continuation
+ok 2 - COMPLETION_UNCERTAIN truthfully preserves stale sync degradation and maintenance reason while permitting safe continuation
+  ---
+  duration_ms: 0.207225
+  type: 'test'
+  ...
+# Subtest: CLAIM_EXPIRED truthfully preserves slow latency degradation and maintenance reason while permitting safe continuation
+ok 3 - CLAIM_EXPIRED truthfully preserves slow latency degradation and maintenance reason while permitting safe continuation
+  ---
+  duration_ms: 0.097523
+  type: 'test'
+  ...
+# Subtest: COMPLETION_UNCERTAIN truthfully preserves slow latency degradation and maintenance reason while permitting safe continuation
+ok 4 - COMPLETION_UNCERTAIN truthfully preserves slow latency degradation and maintenance reason while permitting safe continuation
+  ---
+  duration_ms: 0.098335
+  type: 'test'
+  ...
+# Subtest: CLAIM_EXPIRED truthfully preserves pending retry degradation and maintenance reason while permitting safe continuation
+ok 5 - CLAIM_EXPIRED truthfully preserves pending retry degradation and maintenance reason while permitting safe continuation
+  ---
+  duration_ms: 0.207727
+  type: 'test'
+  ...
+# Subtest: COMPLETION_UNCERTAIN truthfully preserves pending retry degradation and maintenance reason while permitting safe continuation
+ok 6 - COMPLETION_UNCERTAIN truthfully preserves pending retry degradation and maintenance reason while permitting safe continuation
+  ---
+  duration_ms: 0.074079
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 165.773601

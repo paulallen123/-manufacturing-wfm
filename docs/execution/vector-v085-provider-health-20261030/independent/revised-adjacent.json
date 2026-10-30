@@ -1,0 +1,126 @@
+{
+  "target": "/workspace/scratch/2ea1ba0f2164/v085-proof-health/candidate",
+  "node": "v22.23.2",
+  "observations": [
+    {
+      "case": "stale sync",
+      "maintenanceExecution": "IDLE",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection is running, but freshness, latency or retry performance is below its reviewed target.",
+      "providerSignal": "AVAILABLE"
+    },
+    {
+      "case": "stale sync",
+      "maintenanceExecution": "CLAIM_EXPIRED",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection can keep syncing on its current proof, but an automatic provider safety check expired before completion. Integration freshness, latency or retries are below the reviewed target.",
+      "providerSignal": "RETRYING",
+      "maintenanceExecutionState": "CLAIM_EXPIRED"
+    },
+    {
+      "case": "stale sync",
+      "maintenanceExecution": "COMPLETION_UNCERTAIN",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection can keep syncing on its current proof, but WFM has not confirmed the outcome of the latest safety check. Integration freshness, latency or retries are below the reviewed target.",
+      "providerSignal": "OUTCOME_UNCERTAIN",
+      "maintenanceExecutionState": "COMPLETION_UNCERTAIN"
+    },
+    {
+      "case": "slow latency",
+      "maintenanceExecution": "IDLE",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection is running, but freshness, latency or retry performance is below its reviewed target.",
+      "providerSignal": "AVAILABLE"
+    },
+    {
+      "case": "slow latency",
+      "maintenanceExecution": "CLAIM_EXPIRED",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection can keep syncing on its current proof, but an automatic provider safety check expired before completion. Integration freshness, latency or retries are below the reviewed target.",
+      "providerSignal": "RETRYING",
+      "maintenanceExecutionState": "CLAIM_EXPIRED"
+    },
+    {
+      "case": "slow latency",
+      "maintenanceExecution": "COMPLETION_UNCERTAIN",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection can keep syncing on its current proof, but WFM has not confirmed the outcome of the latest safety check. Integration freshness, latency or retries are below the reviewed target.",
+      "providerSignal": "OUTCOME_UNCERTAIN",
+      "maintenanceExecutionState": "COMPLETION_UNCERTAIN"
+    },
+    {
+      "case": "pending retry",
+      "maintenanceExecution": "IDLE",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection is running, but freshness, latency or retry performance is below its reviewed target.",
+      "providerSignal": "AVAILABLE"
+    },
+    {
+      "case": "pending retry",
+      "maintenanceExecution": "CLAIM_EXPIRED",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection can keep syncing on its current proof, but an automatic provider safety check expired before completion. Integration freshness, latency or retries are below the reviewed target.",
+      "providerSignal": "RETRYING",
+      "maintenanceExecutionState": "CLAIM_EXPIRED"
+    },
+    {
+      "case": "pending retry",
+      "maintenanceExecution": "COMPLETION_UNCERTAIN",
+      "direct": "DEGRADED",
+      "summary": "DEGRADED",
+      "canSync": true,
+      "runtimeSignal": "DEGRADED",
+      "customerMessage": "The connection can keep syncing on its current proof, but WFM has not confirmed the outcome of the latest safety check. Integration freshness, latency or retries are below the reviewed target.",
+      "providerSignal": "OUTCOME_UNCERTAIN",
+      "maintenanceExecutionState": "COMPLETION_UNCERTAIN"
+    },
+    {
+      "case": "symbol",
+      "api": "evaluateRuntimeHealth",
+      "throws": "TypeError",
+      "message": "Cannot convert a Symbol value to a number"
+    },
+    {
+      "case": "symbol",
+      "api": "summarizeConnectionHealth",
+      "throws": "TypeError",
+      "message": "Cannot convert a Symbol value to a number"
+    },
+    {
+      "case": "bigint",
+      "api": "evaluateRuntimeHealth",
+      "throws": "TypeError",
+      "message": "Cannot mix BigInt and other types, use explicit conversions"
+    },
+    {
+      "case": "bigint",
+      "api": "summarizeConnectionHealth",
+      "throws": "TypeError",
+      "message": "Cannot mix BigInt and other types, use explicit conversions"
+    }
+  ]
+}
