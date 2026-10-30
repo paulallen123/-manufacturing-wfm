@@ -1,0 +1,47 @@
+{
+  "source_commit": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "files": [
+    {
+      "path": "operations/runtime/autopilot-execution-engine.cjs",
+      "git_blob": "8f011b0fe0d1780c76b2b3c25d7f89c15f74c1e9",
+      "sha256": "0da7a256efde824427e592b9b74bea6e53fcec07ae847eea19b58817d2ffbfb8",
+      "bytes": 19293
+    },
+    {
+      "path": "operations/runtime/autopilot-execution-engine.test.cjs",
+      "git_blob": "0801ea360bf86f53115c290980492f6fdec26ec6",
+      "sha256": "86a16ae5c53da03d3315e3e623679f3dc0088d93adee95910765da24b3ac78cc",
+      "bytes": 43998
+    },
+    {
+      "path": "operations/runtime/autopilot-replay.regression.test.cjs",
+      "git_blob": "622871944e6e3f956b4580974f915a48ce0619f6",
+      "sha256": "cb45f85fe13da99062f1116ce5fd8032ed4b15715a40daef00685ea0d9100007",
+      "bytes": 7536
+    },
+    {
+      "path": "operations/runtime/decision-episode.cjs",
+      "git_blob": "a8a118ed8fc90a80272077213e1e6ad3956ac4c4",
+      "sha256": "537717590b6dcc00ca264d13cbc7a2a7359b9744334cb3a5deb22582ba4dcd39",
+      "bytes": 8853
+    },
+    {
+      "path": "operations/runtime/decision-episode.test.cjs",
+      "git_blob": "f75dd5bbc3d43fa1035d2718d8acc7b821abcc20",
+      "sha256": "a5ccaf466cba8dcede53a46975f8f85c55845d49c6933d35eee2da7b2ef3a4d3",
+      "bytes": 3042
+    },
+    {
+      "path": "operations/runtime/workforce-lifecycle-guard.cjs",
+      "git_blob": "69582fb6e1f945063828b30d9c429579cbc5140a",
+      "sha256": "6b8a6bc95f8c4c37f72041514298d28d2af4bf2e4c79d7a0e7166db011bbd511",
+      "bytes": 16509
+    },
+    {
+      "path": "operations/runtime/workforce-lifecycle-guard.test.cjs",
+      "git_blob": "99fb9fcccd0490abafec2a909fac905e0ab7a5f8",
+      "sha256": "f8ae54a7c2d18c592ac9a7417346f63539de518b8e4a26d583248e8fb5c02059",
+      "bytes": 9000
+    }
+  ]
+}

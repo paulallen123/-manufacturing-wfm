@@ -1,0 +1,213 @@
+'use strict';
+
+// Synthetic local proof only. A replaced SQLite session models session rotation;
+// this does not exercise passkey sign-in, a hosted volume, or provider rollback.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const http = require('node:http');
+const { createHash } = require('node:crypto');
+const { DatabaseSync } = require('node:sqlite');
+const { createDecisionEpisode } = require('./decision-episode.cjs');
+const { createAutopilotExecutionEngine } = require('./autopilot-execution-engine.cjs');
+const { createWorkforceLifecycleGuard } = require('./workforce-lifecycle-guard.cjs');
+
+const START = Date.UTC(2026, 9, 30, 17, 30);
+const PREFIX = '/api/operations/autopilot';
+const TENANT = 'v108-synthetic-a';
+const WORKER = 'v108-synthetic-worker';
+const sha256 = value => createHash('sha256').update(value).digest('hex');
+
+function plan(eventKey = 'v108-action') {
+  return {
+    adapter: 'workforce-lifecycle', reversible: true,
+    action: { eventKey, kind: 'OVERTIME_OVERRIDE', employeeId: WORKER,
+      effectiveAt: '2026-10-30T18:00:00.000Z', payload: { minutes: 30 } },
+    rollback: { eventKey: 'v108-rollback', reason: 'synthetic rollback plan only' }
+  };
+}
+
+async function fixture(t, { loseResponse = false } = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'v108-expiry-'));
+  const dbPath = path.join(dir, 'local.db');
+  const db = new DatabaseSync(dbPath);
+  db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT,role TEXT);' +
+    'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT,expires INTEGER);' +
+    'CREATE TABLE vector_decision_episodes(tenant TEXT,episode_id TEXT,decision_type TEXT,episode_json TEXT,created_at TEXT,PRIMARY KEY(tenant,episode_id));');
+  db.prepare('INSERT INTO users VALUES(?,?,?)').run('v108-manager', TENANT, 'manager');
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256('v108-old-session'), 'v108-manager', START + 86400000);
+  const episode = createDecisionEpisode({ tenant: TENANT, site: 'v108-synthetic-site',
+    decisionType: 'absence-recovery', triggerId: 'v108-expiry',
+    triggeredAt: '2026-10-30T17:00:00Z', contextRevision: 'v108-r1', mode: 'SHADOW',
+    sourceEvidence: ['v108-synthetic-input'], objective: { labourCost: 1 },
+    options: [{ id: 'do-nothing', feasible: true, policyAllowed: true, hardConstraintsPassed: true,
+      uncertainty: 0, prediction: { labourCost: 100 } },
+    { id: 'overtime', feasible: true, policyAllowed: true, hardConstraintsPassed: true,
+      uncertainty: 0, prediction: { labourCost: 50 } }] });
+  db.prepare('INSERT INTO vector_decision_episodes VALUES(?,?,?,?,?)').run(
+    TENANT, episode.episodeId, episode.decisionType, JSON.stringify(episode), new Date(START).toISOString());
+  db.close();
+
+  const originalNow = Date.now;
+  let now = START, guard, engine, server, origin, dispatches = 0;
+  Date.now = () => now;
+  async function stop() {
+    if (server) {
+      const closing = server;
+      server = null;
+      closing.closeAllConnections();
+      await new Promise((resolve, reject) => closing.close(error => error ? reject(error) : resolve()));
+    }
+    engine?.close(); engine = null;
+    guard?.close(); guard = null;
+  }
+  async function open() {
+    guard = createWorkforceLifecycleGuard({ dbPath });
+    engine = createAutopilotExecutionEngine({ dbPath, lifecycleAdapter: {
+      applyTrustedEvent(input) {
+        dispatches++;
+        const result = guard.applyTrustedEvent(input);
+        if (loseResponse) throw new Error('synthetic response lost after real SQLite commit');
+        return result;
+      },
+      getTrustedEvent(input) { return guard.getTrustedEvent(input); }
+    } });
+    server = http.createServer((req, res) => {
+      engine.handleRequest(req, res).then(handled => {
+        if (!handled) { res.statusCode = 404; res.end(); }
+      }, error => { res.statusCode = 500; res.end(String(error)); });
+    });
+    await new Promise((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    origin = 'http://127.0.0.1:' + server.address().port;
+  }
+  t.after(async () => {
+    try { await stop(); } finally {
+      Date.now = originalNow;
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  await open();
+  assert.equal(guard.applyTrustedEvent({ tenant: TENANT, eventKey: 'v108-starter', event: {
+    kind: 'STARTER', employeeId: WORKER, effectiveAt: '2026-10-01T06:00:00Z',
+    payload: { location: 'v108-synthetic-site', department: 'v108-synthetic-line' }
+  } }).decision.status, 'ACCEPTED');
+
+  function withDb(fn) {
+    const connection = new DatabaseSync(dbPath);
+    try { return fn(connection); } finally { connection.close(); }
+  }
+  async function request(method, suffix, body, token = 'v108-old-session') {
+    const headers = { origin };
+    if (token) headers.cookie = 'wfm_session=' + token;
+    if (body !== undefined) headers['content-type'] = 'application/json';
+    const response = await fetch(origin + PREFIX + suffix, {
+      method, headers, body: body === undefined ? undefined : JSON.stringify(body)
+    });
+    return { status: response.status, body: await response.json() };
+  }
+  async function permit(eventKey, token) {
+    const response = await request('POST', '/permit', {
+      episodeId: episode.episodeId, optionId: 'overtime', contextRevision: 'v108-r1', plan: plan(eventKey)
+    }, token);
+    assert.equal(response.status, 201);
+    return response.body.permit;
+  }
+  function snapshot() {
+    return withDb(connection => ({
+      execution: connection.prepare('SELECT * FROM vector_autopilot_execution_events ORDER BY id').all(),
+      lifecycle: connection.prepare('SELECT * FROM workforce_lifecycle_events ORDER BY rowid').all()
+    }));
+  }
+  return {
+    request, permit, snapshot, dispatches: () => dispatches,
+    action: () => guard.getTrustedEvent({ tenant: TENANT, eventKey: 'v108-action' }),
+    rollback: () => guard.getTrustedEvent({ tenant: TENANT, eventKey: 'v108-rollback' }),
+    async reopenAfterExpiry() {
+      await stop();
+      now = START + 16 * 60000;
+      // Fixture-only session rotation; no claim that this is actual fresh login.
+      withDb(connection => {
+        connection.prepare('DELETE FROM sessions WHERE token_hash=?').run(sha256('v108-old-session'));
+        connection.prepare('INSERT INTO sessions VALUES(?,?,?)').run(
+          sha256('v108-new-session'), 'v108-manager', now + 86400000);
+      });
+      await open();
+    }
+  };
+}
+
+for (const loseResponse of [false, true]) {
+  test(`expired ${loseResponse ? 'uncertain' : 'verified'} execution retains durable readback after SQLite reopen`, async t => {
+    const s = await fixture(t, { loseResponse });
+    const permit = await s.permit('v108-action');
+    const execute = { permitId: permit.permitId, contextRevision: 'v108-r1' };
+    const first = await s.request('POST', '/execute', execute);
+    const state = loseResponse ? 'RECONCILIATION_REQUIRED' : 'VERIFIED';
+    assert.equal(first.status, loseResponse ? 409 : 200);
+    assert.equal(first.body.result.state, state);
+    const applied = s.action();
+    assert.equal(applied.status, 'ACCEPTED');
+    assert.equal(applied.payload.minutes, 30);
+    assert.equal(applied.payload.approvalRef, permit.permitId);
+    assert.equal(applied.payload.approvedBy, 'v108-manager');
+    if (loseResponse) {
+      assert.equal(first.body.result.detail.externalState, 'UNKNOWN');
+      assert.equal(first.body.result.detail.observedEventId, applied.id);
+    } else assert.equal(first.body.result.detail.eventId, applied.id);
+    const before = s.snapshot();
+    const statusBefore = await s.request('GET', '/status');
+
+    await s.reopenAfterExpiry();
+    assert.equal((await s.request('GET', '/status')).status, 401, 'old session is absent after fixture rotation');
+    const expired = await s.request('POST', '/execute', execute, 'v108-new-session');
+    assert.equal(expired.status, 409);
+    assert.match(expired.body.error, /permit expired/i);
+    const statusAfter = await s.request('GET', '/status', undefined, 'v108-new-session');
+    assert.equal(statusAfter.status, 200);
+    assert.deepEqual(statusAfter.body, statusBefore.body, 'GET returns retained receipts independently of permit expiry');
+    assert.equal(statusAfter.body.events[0].state, state);
+    assert.deepEqual(s.snapshot(), before, 'expired retry and status reads cannot append or change either journal');
+    assert.deepEqual(s.action(), applied, 'fresh lifecycle connection independently retains the applied event');
+    assert.equal(s.dispatches(), 1);
+    assert.equal(s.rollback(), null, 'unknown readback never grants a compensating write');
+
+    if (loseResponse) {
+      const renewed = await s.permit('v108-new-key', 'v108-new-session');
+      const blocked = await s.request('POST', '/execute', {
+        permitId: renewed.permitId, contextRevision: 'v108-r1'
+      }, 'v108-new-session');
+      assert.equal(blocked.status, 409);
+      assert.equal(blocked.body.result.state, 'BLOCKED');
+      assert.equal(blocked.body.result.detail.reason, 'PRIOR_EXECUTION_UNRESOLVED');
+      assert.equal(blocked.body.result.detail.blockingExecutionId, first.body.result.executionId);
+      assert.equal(blocked.body.result.detail.externalState, 'NOT_DISPATCHED');
+      assert.deepEqual(s.snapshot().lifecycle, before.lifecycle);
+      assert.equal(s.dispatches(), 1, 'renewal cannot repeat an uncertain action after reopen');
+      assert.equal(s.rollback(), null);
+    }
+  });
+}
+
+test('an unexecuted expired permit cannot create intent or dispatch after SQLite reopen', async t => {
+  const s = await fixture(t);
+  const permit = await s.permit('v108-action');
+  const before = s.snapshot();
+  await s.reopenAfterExpiry();
+  const result = await s.request('POST', '/execute', {
+    permitId: permit.permitId, contextRevision: 'v108-r1'
+  }, 'v108-new-session');
+  assert.equal(result.status, 409);
+  assert.match(result.body.error, /permit expired/i);
+  const status = await s.request('GET', '/status', undefined, 'v108-new-session');
+  assert.equal(status.status, 200);
+  assert.deepEqual(status.body.events, []);
+  assert.deepEqual(s.snapshot(), before);
+  assert.equal(s.dispatches(), 0);
+  assert.equal(s.action(), null);
+  assert.equal(s.rollback(), null);
+});
