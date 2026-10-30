@@ -1,0 +1,19 @@
+✔ OS boundaries exclude 247 unapproved keys including malformed/cased/provider/worker/preload/eval names while retaining 37 exact allowed values (163.095133ms)
+✔ preload and obsolete eval expressions cannot execute in actual proof child (150.702032ms)
+✔ async preflight mutations cannot replace signer/target or inject later authority (150.293825ms)
+✔ preflight errors stop both actual process boundaries and redact private fetch details (11.600257ms)
+✔ actual installer failure is fail-closed and has no proof or provider authority (71.329019ms)
+PEER_PERFORMANCE={"projections":25000,"unknownKeys":50000,"elapsedMs":73}
+✔ actual child nonzero exit and handler cleanup survive explicit env (211.219688ms)
+✔ non-string and inherited unknown inputs cannot enter snapshot or output (1.097769ms)
+✔ allowlist cost is bounded independently of unrecognized environment size (104.797336ms)
+✔ signed browser client can validate projected genuine ephemeral Ed25519 signer and actor scope (5.235061ms)
+✔ exact pinned source bytes, bundle payload, manifest hashes and embedded command are intact (2.686332ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1021.913796

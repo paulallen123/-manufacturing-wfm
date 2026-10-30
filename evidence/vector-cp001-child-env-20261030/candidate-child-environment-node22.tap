@@ -1,0 +1,132 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: installer excludes proof and unrelated authority while preserving transport
+ok 1 - installer excludes proof and unrelated authority while preserving transport
+  ---
+  duration_ms: 13.13324
+  type: 'test'
+  ...
+# Subtest: proof child retains explicit signed source, role, run, asset and transport bindings
+ok 2 - proof child retains explicit signed source, role, run, asset and transport bindings
+  ---
+  duration_ms: 5.654179
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: STAFFOLOGY_API_KEY
+ok 3 - proof child excludes unrelated authority: STAFFOLOGY_API_KEY
+  ---
+  duration_ms: 5.936435
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: CANDIDATE_STAFFOLOGY_KEY
+ok 4 - proof child excludes unrelated authority: CANDIDATE_STAFFOLOGY_KEY
+  ---
+  duration_ms: 3.896317
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: OPENAI_API_KEY
+ok 5 - proof child excludes unrelated authority: OPENAI_API_KEY
+  ---
+  duration_ms: 4.375313
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_INTERNAL_TOKEN
+ok 6 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_INTERNAL_TOKEN
+  ---
+  duration_ms: 4.019979
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_TOKEN
+ok 7 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_TOKEN
+  ---
+  duration_ms: 4.109901
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_ID
+ok 8 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_ID
+  ---
+  duration_ms: 3.250153
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_STAGING_PASSWORD
+ok 9 - proof child excludes unrelated authority: WFM_STAGING_PASSWORD
+  ---
+  duration_ms: 4.771797
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WRAPPED_PASSKEY_CREDENTIALS
+ok 10 - proof child excludes unrelated authority: WRAPPED_PASSKEY_CREDENTIALS
+  ---
+  duration_ms: 3.438692
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: NODE_OPTIONS
+ok 11 - proof child excludes unrelated authority: NODE_OPTIONS
+  ---
+  duration_ms: 3.256303
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: NODE_PATH
+ok 12 - proof child excludes unrelated authority: NODE_PATH
+  ---
+  duration_ms: 4.21045
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: LD_PRELOAD
+ok 13 - proof child excludes unrelated authority: LD_PRELOAD
+  ---
+  duration_ms: 6.65154
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: BROWSER_PROOF_SCRIPT
+ok 14 - proof child excludes unrelated authority: BROWSER_PROOF_SCRIPT
+  ---
+  duration_ms: 3.56031
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: BROWSER_ROLE_PROOF_SCRIPT
+ok 15 - proof child excludes unrelated authority: BROWSER_ROLE_PROOF_SCRIPT
+  ---
+  duration_ms: 3.031321
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: UNKNOWN_FUTURE_CREDENTIAL
+ok 16 - proof child excludes unrelated authority: UNKNOWN_FUTURE_CREDENTIAL
+  ---
+  duration_ms: 3.250054
+  type: 'test'
+  ...
+# Subtest: a real local Node child starts with only the captured proof environment
+ok 17 - a real local Node child starts with only the captured proof environment
+  ---
+  duration_ms: 44.535293
+  type: 'test'
+  ...
+# Subtest: child exit propagates: 7
+ok 18 - child exit propagates: 7
+  ---
+  duration_ms: 4.132835
+  type: 'test'
+  ...
+# Subtest: child exit propagates: SIGTERM
+ok 19 - child exit propagates: SIGTERM
+  ---
+  duration_ms: 3.66092
+  type: 'test'
+  ...
+# Subtest: child exit propagates: SIGINT
+ok 20 - child exit propagates: SIGINT
+  ---
+  duration_ms: 3.641632
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 196.076293

@@ -1,0 +1,386 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: installer excludes proof and unrelated authority while preserving transport
+ok 1 - installer excludes proof and unrelated authority while preserving transport
+  ---
+  duration_ms: 15.11628
+  type: 'test'
+  ...
+# Subtest: proof child retains explicit signed source, role, run, asset and transport bindings
+ok 2 - proof child retains explicit signed source, role, run, asset and transport bindings
+  ---
+  duration_ms: 4.484433
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: STAFFOLOGY_API_KEY
+not ok 3 - proof child excludes unrelated authority: STAFFOLOGY_API_KEY
+  ---
+  duration_ms: 6.182387
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    STAFFOLOGY_API_KEY must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_PROVIDER_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_PROVIDER_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: CANDIDATE_STAFFOLOGY_KEY
+not ok 4 - proof child excludes unrelated authority: CANDIDATE_STAFFOLOGY_KEY
+  ---
+  duration_ms: 4.670877
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    CANDIDATE_STAFFOLOGY_KEY must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_PROVIDER_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_PROVIDER_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: OPENAI_API_KEY
+not ok 5 - proof child excludes unrelated authority: OPENAI_API_KEY
+  ---
+  duration_ms: 5.50006
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    OPENAI_API_KEY must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_PROVIDER_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_PROVIDER_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_INTERNAL_TOKEN
+not ok 6 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_INTERNAL_TOKEN
+  ---
+  duration_ms: 3.748718
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    WFM_IMPLEMENTATION_INTERNAL_TOKEN must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_WORKER_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_WORKER_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_TOKEN
+not ok 7 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_TOKEN
+  ---
+  duration_ms: 4.422252
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    WFM_IMPLEMENTATION_WORKER_TOKEN must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_WORKER_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_WORKER_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_ID
+not ok 8 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_ID
+  ---
+  duration_ms: 3.958747
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    WFM_IMPLEMENTATION_WORKER_ID must not reach the proof child
+    + actual - expected
+    
+    + 'fictional-worker'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'fictional-worker'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_STAGING_PASSWORD
+not ok 9 - proof child excludes unrelated authority: WFM_STAGING_PASSWORD
+  ---
+  duration_ms: 6.188986
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    WFM_STAGING_PASSWORD must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_PASSWORD_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_PASSWORD_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: WRAPPED_PASSKEY_CREDENTIALS
+not ok 10 - proof child excludes unrelated authority: WRAPPED_PASSKEY_CREDENTIALS
+  ---
+  duration_ms: 4.054839
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    WRAPPED_PASSKEY_CREDENTIALS must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_PASSKEY_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_PASSKEY_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: NODE_OPTIONS
+not ok 11 - proof child excludes unrelated authority: NODE_OPTIONS
+  ---
+  duration_ms: 4.361101
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    NODE_OPTIONS must not reach the proof child
+    + actual - expected
+    
+    + '--require /fictional/untrusted-preload.cjs'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: '--require /fictional/untrusted-preload.cjs'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: NODE_PATH
+not ok 12 - proof child excludes unrelated authority: NODE_PATH
+  ---
+  duration_ms: 5.697823
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    NODE_PATH must not reach the proof child
+    + actual - expected
+    
+    + '/fictional/untrusted-modules'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: '/fictional/untrusted-modules'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: LD_PRELOAD
+not ok 13 - proof child excludes unrelated authority: LD_PRELOAD
+  ---
+  duration_ms: 7.42624
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    LD_PRELOAD must not reach the proof child
+    + actual - expected
+    
+    + '/fictional/untrusted.so'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: '/fictional/untrusted.so'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: BROWSER_PROOF_SCRIPT
+not ok 14 - proof child excludes unrelated authority: BROWSER_PROOF_SCRIPT
+  ---
+  duration_ms: 3.889945
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    BROWSER_PROOF_SCRIPT must not reach the proof child
+    + actual - expected
+    
+    + 'fictional_obsolete_eval()'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'fictional_obsolete_eval()'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: BROWSER_ROLE_PROOF_SCRIPT
+not ok 15 - proof child excludes unrelated authority: BROWSER_ROLE_PROOF_SCRIPT
+  ---
+  duration_ms: 3.334517
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    BROWSER_ROLE_PROOF_SCRIPT must not reach the proof child
+    + actual - expected
+    
+    + 'fictional_obsolete_eval()'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'fictional_obsolete_eval()'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: proof child excludes unrelated authority: UNKNOWN_FUTURE_CREDENTIAL
+not ok 16 - proof child excludes unrelated authority: UNKNOWN_FUTURE_CREDENTIAL
+  ---
+  duration_ms: 3.617515
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:92:43'
+  failureType: 'testCodeFailure'
+  error: |-
+    UNKNOWN_FUTURE_CREDENTIAL must not reach the proof child
+    + actual - expected
+    
+    + 'FICTIONAL_UNKNOWN_SENTINEL'
+    - undefined
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  actual: 'FICTIONAL_UNKNOWN_SENTINEL'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:94:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a real local Node child starts with only the captured proof environment
+not ok 17 - a real local Node child starts with only the captured proof environment
+  ---
+  duration_ms: 31.042414
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:96:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Isolated local Node child must start without inherited preload hooks
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/cp001-proof-unblock-20261030/candidate/docs/execution/proof-runner-activation/child-environment.test.cjs:100:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: child exit propagates: 7
+ok 18 - child exit propagates: 7
+  ---
+  duration_ms: 3.963124
+  type: 'test'
+  ...
+# Subtest: child exit propagates: SIGTERM
+ok 19 - child exit propagates: SIGTERM
+  ---
+  duration_ms: 3.383389
+  type: 'test'
+  ...
+# Subtest: child exit propagates: SIGINT
+ok 20 - child exit propagates: SIGINT
+  ---
+  duration_ms: 3.59392
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 5
+# fail 15
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 197.147954

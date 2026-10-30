@@ -1,0 +1,77 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "baseSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "files": [
+    {
+      "path": "docs/execution/proof-runner-activation/prepare.cjs",
+      "blob": "890628acb595dfd5a377dfb890824ecd4b62ceac"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/README.md",
+      "blob": "667ddede0f5c49f66d1ce013d76ae53fc00d42b5"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/generated/start-command.txt",
+      "blob": "47e18f17eea9f2e4e9e17797e188d1f43f29ea1c"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/generated/bundle.json",
+      "blob": "f2b1bb7ab3b149621f8a584a31fe37a6f2fe7667"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/launcher.test.cjs",
+      "blob": "e0fbe9906ff7c910be52a7580e190d1f5a8d97d4"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/preflight.test.cjs",
+      "blob": "d974bdde76bcd589613db7037f95daa4a2679473"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/launcher.cjs",
+      "blob": "004307d0e400a41edc7a62063de39199affb3305"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/generated/manifest.json",
+      "blob": "baefc6ec6b76272c771cbcd22afb2a414ecbae0e"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "blob": "b736e153d621daeec4915fbe8627885b6496ff00"
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.cjs",
+      "blob": "805cb35ce2f750c663be41e8ef6bc780c738a621"
+    }
+  ],
+  "prs": [
+    {
+      "number": 501,
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+      "head": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "base": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+      "draft": false,
+      "state": "open"
+    },
+    {
+      "number": 552,
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/552",
+      "head": "7ced0fe91742928235fe3be042766eec2911ed90",
+      "base": "2d0f4e41e3b0463386b2887f39afa064068f9166",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 553,
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/553",
+      "head": "9d1490bb000007b6453aba82482357842a54797a",
+      "base": "c82d6f98b35768b48df9068eeb8ef8e661554dc4",
+      "draft": true,
+      "state": "open"
+    }
+  ],
+  "revisionDonor": {
+    "number": 544,
+    "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/544",
+    "head": "ce697fdd810b5de82aa4d092c5225a586486046b"
+  }
+}

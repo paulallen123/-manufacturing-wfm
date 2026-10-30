@@ -1,0 +1,673 @@
+TAP version 13
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: installer excludes proof and unrelated authority while preserving transport
+ok 1 - installer excludes proof and unrelated authority while preserving transport
+  ---
+  duration_ms: 30.37873
+  type: 'test'
+  ...
+# Subtest: proof child retains explicit signed source, role, run, asset and transport bindings
+ok 2 - proof child retains explicit signed source, role, run, asset and transport bindings
+  ---
+  duration_ms: 6.767871
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: STAFFOLOGY_API_KEY
+ok 3 - proof child excludes unrelated authority: STAFFOLOGY_API_KEY
+  ---
+  duration_ms: 12.640702
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: CANDIDATE_STAFFOLOGY_KEY
+ok 4 - proof child excludes unrelated authority: CANDIDATE_STAFFOLOGY_KEY
+  ---
+  duration_ms: 4.83483
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: OPENAI_API_KEY
+ok 5 - proof child excludes unrelated authority: OPENAI_API_KEY
+  ---
+  duration_ms: 6.77401
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_INTERNAL_TOKEN
+ok 6 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_INTERNAL_TOKEN
+  ---
+  duration_ms: 3.571727
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_TOKEN
+ok 7 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_TOKEN
+  ---
+  duration_ms: 10.223086
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_ID
+ok 8 - proof child excludes unrelated authority: WFM_IMPLEMENTATION_WORKER_ID
+  ---
+  duration_ms: 4.792367
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WFM_STAGING_PASSWORD
+ok 9 - proof child excludes unrelated authority: WFM_STAGING_PASSWORD
+  ---
+  duration_ms: 9.761235
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: WRAPPED_PASSKEY_CREDENTIALS
+ok 10 - proof child excludes unrelated authority: WRAPPED_PASSKEY_CREDENTIALS
+  ---
+  duration_ms: 5.464969
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: NODE_OPTIONS
+ok 11 - proof child excludes unrelated authority: NODE_OPTIONS
+  ---
+  duration_ms: 7.874883
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: NODE_PATH
+ok 12 - proof child excludes unrelated authority: NODE_PATH
+  ---
+  duration_ms: 12.096649
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: LD_PRELOAD
+ok 13 - proof child excludes unrelated authority: LD_PRELOAD
+  ---
+  duration_ms: 18.805082
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: BROWSER_PROOF_SCRIPT
+ok 14 - proof child excludes unrelated authority: BROWSER_PROOF_SCRIPT
+  ---
+  duration_ms: 4.17051
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: BROWSER_ROLE_PROOF_SCRIPT
+ok 15 - proof child excludes unrelated authority: BROWSER_ROLE_PROOF_SCRIPT
+  ---
+  duration_ms: 3.953821
+  type: 'test'
+  ...
+# Subtest: proof child excludes unrelated authority: UNKNOWN_FUTURE_CREDENTIAL
+ok 16 - proof child excludes unrelated authority: UNKNOWN_FUTURE_CREDENTIAL
+  ---
+  duration_ms: 3.135954
+  type: 'test'
+  ...
+# Subtest: a real local Node child starts with only the captured proof environment
+ok 17 - a real local Node child starts with only the captured proof environment
+  ---
+  duration_ms: 66.556016
+  type: 'test'
+  ...
+# Subtest: child exit propagates: 7
+ok 18 - child exit propagates: 7
+  ---
+  duration_ms: 5.550044
+  type: 'test'
+  ...
+# Subtest: child exit propagates: SIGTERM
+ok 19 - child exit propagates: SIGTERM
+  ---
+  duration_ms: 6.993223
+  type: 'test'
+  ...
+# Subtest: child exit propagates: SIGINT
+ok 20 - child exit propagates: SIGINT
+  ---
+  duration_ms: 10.757124
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:15) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: materializes exact four files in private isolated layout and loads real serializer
+ok 21 - materializes exact four files in private isolated layout and loads real serializer
+  ---
+  duration_ms: 13.25677
+  type: 'test'
+  ...
+# Subtest: separate materializations cannot overwrite one another
+ok 22 - separate materializations cannot overwrite one another
+  ---
+  duration_ms: 11.52085
+  type: 'test'
+  ...
+# Subtest: rejects changed compressed bytes and noncanonical base64
+ok 23 - rejects changed compressed bytes and noncanonical base64
+  ---
+  duration_ms: 2.646423
+  type: 'test'
+  ...
+# Subtest: rejects altered source bytes even with recomputed outer bundle hash
+ok 24 - rejects altered source bytes even with recomputed outer bundle hash
+  ---
+  duration_ms: 2.449703
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path ../escape.cjs
+ok 25 - rejects unapproved path ../escape.cjs
+  ---
+  duration_ms: 5.813493
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path /tmp/escape.cjs
+ok 26 - rejects unapproved path /tmp/escape.cjs
+  ---
+  duration_ms: 7.675699
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path __proto__
+ok 27 - rejects unapproved path __proto__
+  ---
+  duration_ms: 8.086886
+  type: 'test'
+  ...
+# Subtest: rejects missing, extra and duplicate files
+ok 28 - rejects missing, extra and duplicate files
+  ---
+  duration_ms: 9.482443
+  type: 'test'
+  ...
+# Subtest: rejects different source and decompression bombs
+ok 29 - rejects different source and decompression bombs
+  ---
+  duration_ms: 6.222066
+  type: 'test'
+  ...
+# Subtest: environment requirements are exact; no presence check is treated as proof
+ok 30 - environment requirements are exact; no presence check is treated as proof
+  ---
+  duration_ms: 0.869802
+  type: 'test'
+  ...
+# Subtest: generated shell command fails closed before installing when bindings are missing
+ok 31 - generated shell command fails closed before installing when bindings are missing
+  ---
+  duration_ms: 93.710371
+  type: 'test'
+  ...
+# Subtest: install failure propagates, cleans materialized files and never logs private values
+ok 32 - install failure propagates, cleans materialized files and never logs private values
+  ---
+  duration_ms: 108.850377
+  type: 'test'
+  ...
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: runner source and explicit reviewed target are separate; request is bounded and unauthenticated
+ok 33 - runner source and explicit reviewed target are separate; request is bounded and unauthenticated
+  ---
+  duration_ms: 6.767841
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: stale target
+ok 34 - preflight fails closed: stale target
+  ---
+  duration_ms: 1.130056
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: missing SHA
+ok 35 - preflight fails closed: missing SHA
+  ---
+  duration_ms: 0.777777
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: configured-only
+ok 36 - preflight fails closed: configured-only
+  ---
+  duration_ms: 0.807061
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: fixture false
+ok 37 - preflight fails closed: fixture false
+  ---
+  duration_ms: 1.15288
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: fixture string
+ok 38 - preflight fails closed: fixture string
+  ---
+  duration_ms: 0.659122
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: production true
+ok 39 - preflight fails closed: production true
+  ---
+  duration_ms: 0.977952
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: pilot true
+ok 40 - preflight fails closed: pilot true
+  ---
+  duration_ms: 0.711089
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: missing pilot
+ok 41 - preflight fails closed: missing pilot
+  ---
+  duration_ms: 2.382413
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: redirect status
+ok 42 - preflight fails closed: redirect status
+  ---
+  duration_ms: 1.008618
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: redirected response
+ok 43 - preflight fails closed: redirected response
+  ---
+  duration_ms: 0.795624
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: different final URL
+ok 44 - preflight fails closed: different final URL
+  ---
+  duration_ms: 0.530573
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: server error
+ok 45 - preflight fails closed: server error
+  ---
+  duration_ms: 0.422393
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: html
+ok 46 - preflight fails closed: html
+  ---
+  duration_ms: 0.381272
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: malformed JSON
+ok 47 - preflight fails closed: malformed JSON
+  ---
+  duration_ms: 0.803025
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: null JSON
+ok 48 - preflight fails closed: null JSON
+  ---
+  duration_ms: 0.6845
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: array JSON
+ok 49 - preflight fails closed: array JSON
+  ---
+  duration_ms: 0.478455
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: oversized body
+ok 50 - preflight fails closed: oversized body
+  ---
+  duration_ms: 0.532986
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: oversized declared length
+ok 51 - preflight fails closed: oversized declared length
+  ---
+  duration_ms: 0.438196
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: invalid declared length
+ok 52 - preflight fails closed: invalid declared length
+  ---
+  duration_ms: 0.463304
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: body stream failure
+ok 53 - preflight fails closed: body stream failure
+  ---
+  duration_ms: 1.337963
+  type: 'test'
+  ...
+# Subtest: preflight fails closed: network failure
+ok 54 - preflight fails closed: network failure
+  ---
+  duration_ms: 0.52922
+  type: 'test'
+  ...
+# Subtest: fetch and streaming-body stalls hit deadline even when transport ignores abort
+ok 55 - fetch and streaming-body stalls hit deadline even when transport ignores abort
+  ---
+  duration_ms: 44.027938
+  type: 'test'
+  ...
+# Subtest: stream size counts actual bytes despite misleading content-length
+ok 56 - stream size counts actual bytes despite misleading content-length
+  ---
+  duration_ms: 0.506417
+  type: 'test'
+  ...
+# Subtest: full launcher fails before materialization/install/signing for every invalid identity
+ok 57 - full launcher fails before materialization/install/signing for every invalid identity
+  ---
+  duration_ms: 78.83543
+  type: 'test'
+  ...
+# Subtest: actual synthetic HTTP identity response uses no authorization and passes required fields
+ok 58 - actual synthetic HTTP identity response uses no authorization and passes required fields
+  ---
+  duration_ms: 24.915763
+  type: 'test'
+  ...
+# (node:18) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: wrapper preserves complete scoped payroll evidence without promoting customer readiness
+ok 59 - wrapper preserves complete scoped payroll evidence without promoting customer readiness
+  ---
+  duration_ms: 157.609778
+  type: 'test'
+  ...
+# Subtest: absent payroll evidence stays unverified through the wrapper
+ok 60 - absent payroll evidence stays unverified through the wrapper
+  ---
+  duration_ms: 102.292366
+  type: 'test'
+  ...
+# Subtest: malformed request target returns generic400 and preserves partial proof and readiness denial
+ok 61 - malformed request target returns generic400 and preserves partial proof and readiness denial
+  ---
+  duration_ms: 94.14729
+  type: 'test'
+  ...
+# Subtest: a persisted payroll batch mismatch remains unverified through the wrapper
+ok 62 - a persisted payroll batch mismatch remains unverified through the wrapper
+  ---
+  duration_ms: 64.878377
+  type: 'test'
+  ...
+# Subtest: duplicate team signatures cannot substitute for distinct scoped team sign offs
+ok 63 - duplicate team signatures cannot substitute for distinct scoped team sign offs
+  ---
+  duration_ms: 92.161882
+  type: 'test'
+  ...
+# (node:24) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:24) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: signed client uses actual handler cookie and persisted actor rather than password login
+ok 64 - signed client uses actual handler cookie and persisted actor rather than password login
+  ---
+  duration_ms: 75.77788
+  type: 'test'
+  ...
+# Subtest: all explicit roles and every fresh same-role context receive separate signed assertions
+ok 65 - all explicit roles and every fresh same-role context receive separate signed assertions
+  ---
+  duration_ms: 114.950529
+  type: 'test'
+  ...
+# Subtest: signed client refuses signature and never falls back to password
+ok 66 - signed client refuses signature and never falls back to password
+  ---
+  duration_ms: 55.647144
+  type: 'test'
+  ...
+# Subtest: signed client refuses origin and never falls back to password
+ok 67 - signed client refuses origin and never falls back to password
+  ---
+  duration_ms: 56.260387
+  type: 'test'
+  ...
+# Subtest: signed client refuses expired and never falls back to password
+ok 68 - signed client refuses expired and never falls back to password
+  ---
+  duration_ms: 37.428942
+  type: 'test'
+  ...
+# Subtest: signed client refuses actor and never falls back to password
+ok 69 - signed client refuses actor and never falls back to password
+  ---
+  duration_ms: 33.662758
+  type: 'test'
+  ...
+# Subtest: signed client refuses roleDrift and never falls back to password
+ok 70 - signed client refuses roleDrift and never falls back to password
+  ---
+  duration_ms: 30.959647
+  type: 'test'
+  ...
+# Subtest: signed client refuses tenantDrift and never falls back to password
+ok 71 - signed client refuses tenantDrift and never falls back to password
+  ---
+  duration_ms: 35.774082
+  type: 'test'
+  ...
+# Subtest: signed client refuses source and never falls back to password
+ok 72 - signed client refuses source and never falls back to password
+  ---
+  duration_ms: 33.424696
+  type: 'test'
+  ...
+# Subtest: signed client refuses header and never falls back to password
+ok 73 - signed client refuses header and never falls back to password
+  ---
+  duration_ms: 35.797605
+  type: 'test'
+  ...
+# Subtest: actual nonce replay is rejected on a fresh page without password fallback
+ok 74 - actual nonce replay is rejected on a fresh page without password fallback
+  ---
+  duration_ms: 41.229843
+  type: 'test'
+  ...
+# Subtest: a previously authenticated page is refused rather than clearing or replacing its cookie
+ok 75 - a previously authenticated page is refused rather than clearing or replacing its cookie
+  ---
+  duration_ms: 32.634716
+  type: 'test'
+  ...
+# Subtest: an explicitly requested actor outside the existing server allowlist cannot mint a session
+ok 76 - an explicitly requested actor outside the existing server allowlist cannot mint a session
+  ---
+  duration_ms: 26.946128
+  type: 'test'
+  ...
+# Subtest: current manager context deployment mismatch stops auth/navigation proof
+ok 77 - current manager context deployment mismatch stops auth/navigation proof
+  ---
+  duration_ms: 35.988723
+  type: 'test'
+  ...
+# Subtest: current manager context run mismatch stops auth/navigation proof
+ok 78 - current manager context run mismatch stops auth/navigation proof
+  ---
+  duration_ms: 37.002388
+  type: 'test'
+  ...
+# Subtest: current manager context tenant mismatch stops auth/navigation proof
+ok 79 - current manager context tenant mismatch stops auth/navigation proof
+  ---
+  duration_ms: 35.734719
+  type: 'test'
+  ...
+# Subtest: current manager context configuration mismatch stops auth/navigation proof
+ok 80 - current manager context configuration mismatch stops auth/navigation proof
+  ---
+  duration_ms: 37.140872
+  type: 'test'
+  ...
+# Subtest: current manager context absent mismatch stops auth/navigation proof
+ok 81 - current manager context absent mismatch stops auth/navigation proof
+  ---
+  duration_ms: 34.828221
+  type: 'test'
+  ...
+# Subtest: historical evidence observed identity is never treated as current deployment authority
+ok 82 - historical evidence observed identity is never treated as current deployment authority
+  ---
+  duration_ms: 34.064135
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when VECTOR_PROOF_AUTH_PROFILE is absent
+ok 83 - signed constructor fails before transport when VECTOR_PROOF_AUTH_PROFILE is absent
+  ---
+  duration_ms: 25.579612
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when VECTOR_PROOF_ACTORS_JSON is absent
+ok 84 - signed constructor fails before transport when VECTOR_PROOF_ACTORS_JSON is absent
+  ---
+  duration_ms: 24.771791
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_DEPLOYMENT_ID is absent
+ok 85 - signed constructor fails before transport when EXPECTED_DEPLOYMENT_ID is absent
+  ---
+  duration_ms: 24.638905
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_IMPLEMENTATION_TENANT is absent
+ok 86 - signed constructor fails before transport when EXPECTED_IMPLEMENTATION_TENANT is absent
+  ---
+  duration_ms: 22.171717
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_IMPLEMENTATION_RUN_ID is absent
+ok 87 - signed constructor fails before transport when EXPECTED_IMPLEMENTATION_RUN_ID is absent
+  ---
+  duration_ms: 22.430769
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_CONFIGURATION_DIGEST is absent
+ok 88 - signed constructor fails before transport when EXPECTED_CONFIGURATION_DIGEST is absent
+  ---
+  duration_ms: 22.842716
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when PROOF_PRIVATE_KEY_B64 is absent
+ok 89 - signed constructor fails before transport when PROOF_PRIVATE_KEY_B64 is absent
+  ---
+  duration_ms: 23.623137
+  type: 'test'
+  ...
+# Subtest: malformed actor JSON, missing roles, duplicate emails and wrong isolation tenant reject
+ok 90 - malformed actor JSON, missing roles, duplicate emails and wrong isolation tenant reject
+  ---
+  duration_ms: 24.725132
+  type: 'test'
+  ...
+# Subtest: signer accepts declared base64 PEM Ed25519 only and never appears in returned profile
+ok 91 - signer accepts declared base64 PEM Ed25519 only and never appears in returned profile
+  ---
+  duration_ms: 131.709443
+  type: 'test'
+  ...
+# Subtest: signed runner emits distinct partial receipt and excludes the fixed business branch
+ok 92 - signed runner emits distinct partial receipt and excludes the fixed business branch
+  ---
+  duration_ms: 32.703028
+  type: 'test'
+  ...
+# Subtest: faithful source-layout image files load the same canonical serializer without duplicate authority
+ok 93 - faithful source-layout image files load the same canonical serializer without duplicate authority
+  ---
+  duration_ms: 29.279809
+  type: 'test'
+  ...
+# Subtest: actual unchanged wrapper keeps partial auth child business checks false and readiness503
+ok 94 - actual unchanged wrapper keeps partial auth child business checks false and readiness503
+  ---
+  duration_ms: 96.751671
+  type: 'test'
+  ...
+# Subtest: legacy password profile requires explicit loopback origin and retains fixture actor expectations
+ok 95 - legacy password profile requires explicit loopback origin and retains fixture actor expectations
+  ---
+  duration_ms: 0.615678
+  type: 'test'
+  ...
+# (node:32) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:32) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: exact candidate exposes the signed proof runner authentication boundary
+ok 96 - exact candidate exposes the signed proof runner authentication boundary
+  ---
+  duration_ms: 1.194782
+  type: 'test'
+  ...
+# Subtest: signed proof identity mints a short-lived audited session without a password
+ok 97 - signed proof identity mints a short-lived audited session without a password
+  ---
+  duration_ms: 60.141066
+  type: 'test'
+  ...
+# Subtest: ambiguous normalized proof identity fails closed before session issuance
+ok 98 - ambiguous normalized proof identity fails closed before session issuance
+  ---
+  duration_ms: 31.182655
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent add-ambiguous-user until issuance commits
+ok 99 - principal selection locks out concurrent add-ambiguous-user until issuance commits
+  ---
+  duration_ms: 21.190711
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent change-tenant until issuance commits
+ok 100 - principal selection locks out concurrent change-tenant until issuance commits
+  ---
+  duration_ms: 18.434015
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent change-role until issuance commits
+ok 101 - principal selection locks out concurrent change-role until issuance commits
+  ---
+  duration_ms: 21.731077
+  type: 'test'
+  ...
+# Subtest: principal lookup failure rolls back and refuses without issuing credentials
+ok 102 - principal lookup failure rolls back and refuses without issuing credentials
+  ---
+  duration_ms: 18.047995
+  type: 'test'
+  ...
+# Subtest: signed assertion is single use and replay fails closed
+ok 103 - signed assertion is single use and replay fails closed
+  ---
+  duration_ms: 21.066367
+  type: 'test'
+  ...
+# Subtest: tampered signature and expired assertion are rejected
+ok 104 - tampered signature and expired assertion are rejected
+  ---
+  duration_ms: 30.504485
+  type: 'test'
+  ...
+# Subtest: proof runner refuses non-staging activation
+ok 105 - proof runner refuses non-staging activation
+  ---
+  duration_ms: 1.662812
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back session issuance and permits a clean retry after repair
+ok 106 - audit failure rolls back session issuance and permits a clean retry after repair
+  ---
+  duration_ms: 28.483375
+  type: 'test'
+  ...
+# Subtest: proof session refuses tenant drift before first product request
+ok 107 - proof session refuses tenant drift before first product request
+  ---
+  duration_ms: 49.138174
+  type: 'test'
+  ...
+# Subtest: proof session refuses role drift before first product request
+ok 108 - proof session refuses role drift before first product request
+  ---
+  duration_ms: 41.163744
+  type: 'test'
+  ...
+1..108
+# tests 108
+# suites 0
+# pass 108
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1447.049077

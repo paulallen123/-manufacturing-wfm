@@ -8,6 +8,12 @@ const zlib = require('node:zlib');
 const { spawnSync, spawn } = require('node:child_process');
 const { createRequire } = require('node:module');
 
+const TRANSPORT_ENVIRONMENT_KEYS = Object.freeze([
+  'PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TZ',
+  'NODE_EXTRA_CA_CERTS', 'SSL_CERT_FILE', 'SSL_CERT_DIR', 'NODE_USE_ENV_PROXY',
+  'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'
+]);
+
 // Runner-code provenance is distinct from the reviewed application target.
 const SOURCE = 'ca05f1017c1e10f9b164c58a044d2cd4159d4ea3';
 const FILES = Object.freeze({
@@ -130,11 +136,22 @@ async function preflightRuntimeIdentity(env, { fetchImpl = globalThis.fetch, tim
 function installerEnvironment(env, root) {
   // Package retrieval needs transport/CA settings, not the proof signer's authority.
   const clean = {};
-  for (const key of ['PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TZ',
-    'NODE_EXTRA_CA_CERTS', 'SSL_CERT_FILE', 'SSL_CERT_DIR', 'NODE_USE_ENV_PROXY',
-    'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'])
+  for (const key of TRANSPORT_ENVIRONMENT_KEYS)
     if (typeof env[key] === 'string') clean[key] = env[key];
   clean.npm_config_cache = path.join(root, 'npm-cache');
+  return Object.freeze(clean);
+}
+function proofChildEnvironment(env) {
+  // Signed navigation needs only its explicit proof scope, browser and transport.
+  // Provider/worker authority, obsolete eval inputs and Node preload hooks stay out.
+  const clean = {};
+  for (const key of [...TRANSPORT_ENVIRONMENT_KEYS, 'PORT', 'PLAYWRIGHT_BROWSERS_PATH',
+    'VECTOR_PROOF_URL', 'WFM_EXPECTED_CANDIDATE_SHA', 'VECTOR_PROOF_AUTH_PROFILE',
+    'VECTOR_PROOF_ACTORS_JSON', 'PROOF_PRIVATE_KEY_B64', 'EXPECTED_DEPLOYMENT_ID',
+    'EXPECTED_IMPLEMENTATION_TENANT', 'EXPECTED_IMPLEMENTATION_RUN_ID', 'EXPECTED_CONFIGURATION_DIGEST',
+    'WFM_REQUIRE_VECTOR_ASSET_DIGESTS', 'WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE',
+    'VECTOR_CANONICAL_JS_SHA256', 'VECTOR_CANONICAL_CSS_SHA256', 'VECTOR_WORKFLOW_JS_SHA256'])
+    if (typeof env[key] === 'string') clean[key] = env[key];
   return Object.freeze(clean);
 }
 async function run(encoded, expectedHash, { fetchImpl = globalThis.fetch, timeoutMs = PREFLIGHT_TIMEOUT_MS } = {}) {
@@ -154,7 +171,7 @@ async function run(encoded, expectedHash, { fetchImpl = globalThis.fetch, timeou
     requireThat(fs.existsSync(requireHere('playwright').chromium.executablePath()), 'PLAYWRIGHT_BROWSER_MISSING');
     console.log('VECTOR_PROOF_RUNNER_SOURCE=' + SOURCE + '|targetSha=' + env.WFM_EXPECTED_CANDIDATE_SHA + '|bundleSha256=' + expectedHash);
     const child = spawn(process.execPath, [path.join(root, 'scripts/current-candidate-role-browser-proof-server.mjs')],
-      { cwd: root, env, stdio: 'inherit' });
+      { cwd: root, env: proofChildEnvironment(env), stdio: 'inherit' });
     const onTerm = () => child.kill('SIGTERM');
     const onInt = () => child.kill('SIGINT');
     process.on('SIGTERM', onTerm);
@@ -175,4 +192,4 @@ async function run(encoded, expectedHash, { fetchImpl = globalThis.fetch, timeou
     fs.rmSync(root, { recursive: true, force: true });
   }
 }
-module.exports = { SOURCE, FILES, hash, validateBundle, materialize, validateEnvironment, preflightRuntimeIdentity, MAX_IDENTITY_BYTES, PREFLIGHT_TIMEOUT_MS, installerEnvironment, run };
+module.exports = { SOURCE, FILES, hash, validateBundle, materialize, validateEnvironment, preflightRuntimeIdentity, MAX_IDENTITY_BYTES, PREFLIGHT_TIMEOUT_MS, installerEnvironment, proofChildEnvironment, run };
