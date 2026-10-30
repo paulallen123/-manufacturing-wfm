@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "laneIds": [
+    "CP-001",
+    "V133",
+    "V134",
+    "V135",
+    "V136",
+    "V137"
+  ],
+  "observedAt": "2026-10-30T01:29:39.823538+00:00",
+  "baseSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "baseSerializerBlob": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0",
+  "node": "v22.23.2",
+  "authorTask": "/root/customer_proof_unblock",
+  "independentReviewerTask": "/root",
+  "reviewResult": "ACCEPT; independent same-command97/97 PASS0skip exit0; clean apply verified",
+  "baseline": {
+    "tests": 47,
+    "pass": 40,
+    "fail": 7,
+    "skip": 0,
+    "exitCode": 1,
+    "tapSha256": "88724b389689a037d3da4b8857bacd22d9aa29e38749a8797903333bff7b36f7"
+  },
+  "candidate": {
+    "tests": 97,
+    "pass": 97,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0,
+    "tapSha256": "44f0bcac848e1b4e16fef3550404b010d213c3d5b2bbecad4b5d19b99d0a0c8d"
+  },
+  "candidateSourceSha256": "cc4bb1b5b76dff638963eb9a704bb4a31af72bc59cafd2b520190d89d6c2496d",
+  "newTestSha256": "90f2dac6efd95c4b282674810676a37f270de1ff2d3dbe3be0e0bef5874b206e",
+  "patchSha256": "123f0974483c0af5f7475e02511651b561d3ddcf48d3f431f8705ec7ea4dc000",
+  "sourceInputs": [
+    {
+      "path": "scripts/current-candidate-role-browser-proof.mjs",
+      "sha": "b736e153d621daeec4915fbe8627885b6496ff00"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof.auth.test.mjs",
+      "sha": "7eea454421ef8a0948e75672996f2c4a9384b591"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.mjs",
+      "sha": "17304e46922293a92394938de25972a2148bfc8c"
+    },
+    {
+      "path": "scripts/current-candidate-role-browser-proof-server.test.mjs",
+      "sha": "48361fd225debdd865c28fe128b940c38ccdbc40"
+    },
+    {
+      "path": "scripts/proof-access-preflight.cjs",
+      "sha": "80668b6f9c1e10d97501ca41e50ca59c684778ee"
+    },
+    {
+      "path": "scripts/signed-proof-session.mjs",
+      "sha": "f4e2a5ebd5fc58d770f3268f3823c5450e87b2c4"
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.cjs",
+      "sha": "805cb35ce2f750c663be41e8ef6bc780c738a621"
+    },
+    {
+      "path": "security/runtime/proof-runner-auth.test.cjs",
+      "sha": "892db2af30c0b8f6e1093e0f4bf8d6a1e1044a0c"
+    },
+    {
+      "path": "Dockerfile.current-candidate-role-browser-proof",
+      "sha": "577b6686dda20558b4051829baa7badd9f83d941"
+    },
+    {
+      "path": "docs/execution/proof-runner-activation/runner-prerequisites.md",
+      "sha": "496a82be2734fb85169402a5f653941840e43927"
+    },
+    {
+      "path": "scripts/vector-proof-result.mjs",
+      "sha": "68d4fb92d52b3a06f273a22044b3f9e16a8857a0"
+    },
+    {
+      "path": "security/runtime/identity-survival-guard.cjs",
+      "sha": "f5325b5537db8f10ba45511aa3e3a831a6c16b38"
+    },
+    {
+      "path": "security/runtime/runtime-identity.cjs",
+      "sha": "d245de951915dc4db8d4aa2e17cc14ff15c35748"
+    },
+    {
+      "path": "security/runtime/passkey-schema.cjs",
+      "sha": "f6d37edc3c7135b3feeb210605cf9c3619c31307"
+    }
+  ],
+  "customerProof": "PARTIAL;0/6DONE",
+  "boundaries": [
+    "synthetic proof-gate validation only",
+    "no actual browser action or provider acceptance established by tests",
+    "fresh public app JSON read-only observations",
+    "no live state, deployment, tenant, account, payroll, provider or runtime configuration write"
+  ]
+}
