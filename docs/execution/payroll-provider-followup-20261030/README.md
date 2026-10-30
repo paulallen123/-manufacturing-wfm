@@ -15,7 +15,7 @@ Supported Node **22.23.2**:
 | Existing signed-runner independent heldouts | 24/24, zero fail/skip | Synthetic authentication seam; environment-only approval causes zero business actions |
 | Existing Gusto HTTP/process recovery fixture | 3/3, zero fail/skip | Loopback HTTP, temporary SQLite and SIGKILL/reopen; provider responses replaced |
 
-The signed-runner and Gusto checks are separate supporting receipts, not new tests or business acceptance counts. Their tested blobs and import dependencies were matched to exact remote #501 `61718e18` and #540 `57907609bca28aa0401298db3089cb49bf1beb0f` respectively. The six payroll checker/test/import blobs match exact #535. See `evidence/source-hashes.json`. Node syntax checking of the new test passed. These are author-session checks; no new independent review or formal release approval is claimed.
+The signed-runner and Gusto checks are separate supporting receipts, not new tests or business acceptance counts. Their tested blobs and import dependencies were matched to exact remote #501 `61718e18` and #540 `57907609bca28aa0401298db3089cb49bf1beb0f` respectively. The six payroll checker/test/import blobs match exact #535. See `evidence/source-hashes.json`. Node syntax checking of the new test passed. These are author-session checks. The independent coordinator `/root` subsequently inspected the seven-case test and reran the existing nine plus new seven on Node22.23.2: 16/16, zero skips, exit 0; no production checker change, provider call or authority grant. This is bounded technical review, not formal release approval.
 
 The new file goes at `scripts/staffology-payroll-proof-preflight.adversarial.test.cjs` beside #535's existing checker. From the intended checkout:
 
@@ -24,7 +24,7 @@ node --test --test-reporter=tap scripts/staffology-payroll-proof-preflight.test.
 VECTOR_PREFLIGHT_SOURCE_ROOT="$PWD" VECTOR_PREFLIGHT_TEST_NODE=node python docs/execution/payroll-provider-followup-20261030/run-mutations.py
 ```
 
-The mutation runner copies only the offline checker, new test and its four imports into disposable directories. It never modifies the source checkout. The fictional retained CSV/checksum is a consistency fixture, not a real export or evidence of snapshot provenance. The transport trap checks that the offline comparator does not reach ambient `fetch`; it does not certify an actual provider connection.
+The mutation runner copies only the offline checker, new test and its four imports into disposable directories. It never modifies the checked product source. It writes mutation TAP and summary receipts under this packet's `evidence` directory. The fictional retained CSV/checksum is a consistency fixture, not a real export or evidence of snapshot provenance. The transport trap checks that the offline comparator does not reach ambient `fetch`; it does not certify an actual provider connection.
 
 ## Authority and actual proof remain missing
 
