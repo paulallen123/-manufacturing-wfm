@@ -1,0 +1,40 @@
+{
+  "checks": [
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "selectedExactlyOnce": {
+        "policy/runtime/v026-tenant-policy-scope.test.cjs": 1,
+        "scripts/validate-staffology-canonical-assembly.test.mjs": 1,
+        "scripts/proof-access-preflight.test.cjs": 1,
+        "reporting/ui/vector-reporting-export-safety.test.cjs": 1,
+        "reporting/ui/vector-reporting-export-heldout.test.cjs": 1,
+        "reporting/ui/vector-reporting-multirow-export.test.cjs": 1,
+        "reporting/ui/vector-reporting-mapping-integrity.test.cjs": 1
+      },
+      "baseCRLF": 0,
+      "finalCRLF": 0
+    },
+    {
+      "path": "Dockerfile",
+      "selectedExactlyOnce": {
+        "policy/runtime/v026-tenant-policy-scope.test.cjs": 1,
+        "scripts/validate-staffology-canonical-assembly.test.mjs": 1,
+        "scripts/proof-access-preflight.test.cjs": 1,
+        "reporting/ui/vector-reporting-export-safety.test.cjs": 1,
+        "reporting/ui/vector-reporting-export-heldout.test.cjs": 1,
+        "reporting/ui/vector-reporting-multirow-export.test.cjs": 1,
+        "reporting/ui/vector-reporting-mapping-integrity.test.cjs": 1
+      },
+      "baseCRLF": 405,
+      "finalCRLF": 405
+    }
+  ],
+  "v023OrdinaryFocusedSelection": [
+    "integrations/staffology/canonical-runtime-bridge.test.cjs",
+    "integrations/staffology/staffology-adapter.test.cjs"
+  ],
+  "dockerV023ExistingGlob": "integrations/staffology/*.test.cjs",
+  "freezeMarkerUnchanged": true,
+  "ciConfigUnchanged": true,
+  "sourceNotYetFrozen": true
+}
