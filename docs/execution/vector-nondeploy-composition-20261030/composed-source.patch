@@ -1,0 +1,400 @@
+diff --git a/.circleci/config.yml b/.circleci/config.yml
+index 907c145..a70b044 100644
+--- a/.circleci/config.yml
++++ b/.circleci/config.yml
+@@ -5,13 +5,31 @@ commands:
+     steps:
+       - run:
+           name: Admit explicit frozen candidate only
+-          command: |
+-            if git rev-parse HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- artifact/vector-proof-freeze.trigger; then
+-              echo 'No frozen-candidate trigger change; halting heavy proof without marking product failure.'
+-              circleci-agent step halt
+-            fi
++          command: bash scripts/require-frozen-candidate.sh
+ 
+ jobs:
++  forge_integration_validation:
++    docker:
++      - image: cimg/node:22.23.2
++    resource_class: small
++    steps:
++      - checkout
++      - run:
++          name: Validate exact ordinary integration source without freeze gating
++          command: |
++            set -euo pipefail
++            test "$(node --version)" = "v22.23.2"
++            test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
++            mkdir -p circleci-artifacts/ordinary-integration
++            printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/ordinary-integration/source-sha.txt
++            node --version > circleci-artifacts/ordinary-integration/node-version.txt
++            git ls-files --stage -- .circleci/config.yml scripts/run-forge-ci.mjs scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/ordinary-integration/git-blobs.txt
++            node --test scripts/require-frozen-candidate.test.mjs 2>&1 | tee circleci-artifacts/ordinary-integration/admission-tests.tap
++            node scripts/run-forge-ci.mjs 2>&1 | tee circleci-artifacts/ordinary-integration/source-validation.log
++      - store_artifacts:
++          path: circleci-artifacts/ordinary-integration
++          destination: ordinary-integration-proof
++
+   forge_core_validation:
+     docker:
+       - image: cimg/node:22.23.2
+@@ -30,8 +48,10 @@ jobs:
+             test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
+             printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/auth-client-source-sha.txt
+             node --version > circleci-artifacts/auth-client-node-version.txt
++            git ls-files --stage -- scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/frozen-candidate-gate-git-blobs.txt
+             git ls-files --stage -- .circleci/config.yml artifact/vector-proof-freeze.trigger Dockerfile.current-candidate-role-browser-proof scripts/current-candidate-role-browser-proof.mjs scripts/current-candidate-role-browser-proof.auth.test.mjs scripts/current-candidate-role-browser-proof-server.mjs scripts/current-candidate-role-browser-proof-server.test.mjs scripts/vector-proof-result.mjs security/runtime/proof-runner-auth.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/identity-survival-guard.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/runtime-identity.cjs security/runtime/runtime-identity.test.cjs security/runtime/bootstrap.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/one-day-enterprise-engine.test.cjs scripts/run-forge-ci.mjs > circleci-artifacts/auth-client-git-blobs.txt
+             node --test \
++              scripts/require-frozen-candidate.test.mjs \
+               scripts/current-candidate-role-browser-proof.auth.test.mjs \
+               security/runtime/proof-runner-auth.test.cjs \
+               security/runtime/identity-survival-guard.test.cjs \
+@@ -195,6 +215,7 @@ jobs:
+ workflows:
+   vector_forge_proof:
+     jobs:
++      - forge_integration_validation
+       - forge_core_validation
+       - forge_runtime_validation:
+           requires:
+diff --git a/Dockerfile b/Dockerfile
+index de6fe1a..686a758 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -17,6 +17,8 @@ RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-
+ RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
+ RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
+  && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
++# Recovery help is part of the passkey boundary, not an optional navigation fixture.
++RUN node --test security/runtime/owner-access-recovery.test.cjs security/runtime/owner-access-recovery-help.test.cjs
+ RUN node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs
+ RUN node --test scripts/three-min-feed.composed.test.mjs
+ RUN node --test integrations/staffology/configured-site-authority.test.cjs integrations/staffology/configured-site-source-writer.test.cjs integrations/staffology/employee-import-previews.test.cjs integrations/staffology/employee-preview-consumer.test.cjs scripts/staffology-preview-route.test.mjs scripts/staffology-preview-active-route.test.mjs
+@@ -124,6 +126,10 @@ COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs secur
+ COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
+ COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
+ COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs /app/security-runtime/
++# Test the exact installed recovery module; keep the fixture outside the application.
++COPY security/runtime/owner-access-recovery-help.test.cjs /tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs
++RUN WFM_RECOVERY_MODULE=/app/security-runtime/owner-access-recovery.cjs node --test /tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs \
++ && rm -rf /tmp/wfm-recovery-help
+ RUN node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');s=s.replace('</head>','<script src=\"/passkey-session-ui.js\" defer></script></head>');fs.writeFileSync(p,s);" \
+  && node --check /app/security-runtime/passkey-auth.cjs
+ 
+diff --git a/scripts/require-frozen-candidate.sh b/scripts/require-frozen-candidate.sh
+new file mode 100644
+index 0000000..b14ccaa
+--- /dev/null
++++ b/scripts/require-frozen-candidate.sh
+@@ -0,0 +1,35 @@
++#!/usr/bin/env bash
++set -euo pipefail
++
++# Required CI contexts must never succeed without running their proof steps.
++# Reject an unfrozen candidate before any expensive proof or deployment work.
++refuse() {
++  printf 'FROZEN_CANDIDATE_ADMISSION=FAIL reason=%s\n' "$1" >&2
++  exit 1
++}
++
++trigger='artifact/vector-proof-freeze.trigger'
++expected_sha="${CIRCLE_SHA1:-}"
++[[ "$expected_sha" =~ ^[0-9a-f]{40}$ ]] || refuse missing_or_invalid_source_sha
++actual_sha="$(git rev-parse --verify HEAD 2>/dev/null)" || refuse unreadable_head
++[[ "$actual_sha" = "$expected_sha" ]] || refuse source_sha_mismatch
++parent_sha="$(git rev-parse --verify 'HEAD^1' 2>/dev/null)" || refuse missing_parent
++
++# Read committed bytes: an untracked, deleted or symlink trigger is not authority.
++entry="$(git ls-tree HEAD -- "$trigger")" || refuse unreadable_trigger
++[[ "$entry" = '100644 blob '* ]] || refuse missing_or_nonregular_trigger
++trigger_content="$(git show "HEAD:$trigger" 2>/dev/null)" || refuse unreadable_trigger
++[[ "${trigger_content%%$'\n'*}" = 'VECTOR_PROOF_FREEZE_V1' ]] || refuse invalid_trigger_contract
++grep -Fxq 'safety=no proof scope weakened; no skipped or stale result counts as PASS' <<< "$trigger_content" || refuse missing_safety_contract
++git diff --quiet HEAD -- "$trigger" || refuse dirty_trigger
++
++# git diff exits 0 for unchanged, 1 for changed and >1 for an error.
++set +e
++git diff --quiet "$parent_sha" HEAD -- "$trigger"
++diff_status=$?
++set -e
++case "$diff_status" in
++  1) printf 'FROZEN_CANDIDATE_ADMISSION=PASS sha=%s\n' "$actual_sha" ;;
++  0) refuse unchanged_trigger ;;
++  *) refuse trigger_comparison_failed ;;
++esac
+diff --git a/scripts/require-frozen-candidate.test.mjs b/scripts/require-frozen-candidate.test.mjs
+new file mode 100644
+index 0000000..671792f
+--- /dev/null
++++ b/scripts/require-frozen-candidate.test.mjs
+@@ -0,0 +1,117 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
++import { tmpdir } from 'node:os';
++import path from 'node:path';
++import { fileURLToPath } from 'node:url';
++import { spawnSync } from 'node:child_process';
++
++const script = fileURLToPath(new URL('./require-frozen-candidate.sh', import.meta.url));
++const contract = 'VECTOR_PROOF_FREEZE_V1\nsafety=no proof scope weakened; no skipped or stale result counts as PASS\n';
++
++function fixture(t, { rootOnly = false } = {}) {
++  const cwd = mkdtempSync(path.join(tmpdir(), 'vector-frozen-candidate-'));
++  t.after(() => rmSync(cwd, { recursive: true, force: true }));
++  function git(...args) {
++    const result = spawnSync('git', ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@fixture.invalid', ...args], { cwd, encoding: 'utf8' });
++    assert.equal(result.status, 0, result.stderr);
++    return result.stdout.trim();
++  }
++  git('init', '--quiet');
++  mkdirSync(path.join(cwd, 'artifact'));
++  writeFileSync(path.join(cwd, 'artifact/vector-proof-freeze.trigger'), contract + 'candidate=initial\n');
++  git('add', '.');
++  git('commit', '--quiet', '-m', 'initial fixture');
++  function commit(content = contract + 'candidate=reviewed\n') {
++    if (content !== null) writeFileSync(path.join(cwd, 'artifact/vector-proof-freeze.trigger'), content);
++    git('add', '-A');
++    git('commit', '--quiet', '--allow-empty', '-m', 'candidate fixture');
++    return git('rev-parse', 'HEAD');
++  }
++  if (!rootOnly) commit();
++  function run(sourceSha = git('rev-parse', 'HEAD')) {
++    return spawnSync('bash', [script], { cwd, env: { ...process.env, CIRCLE_SHA1: sourceSha }, encoding: 'utf8' });
++  }
++  return { cwd, git, commit, run };
++}
++
++function fails(result, reason) {
++  assert.equal(result.status, 1, result.stdout + result.stderr);
++  assert.match(result.stderr, new RegExp('FROZEN_CANDIDATE_ADMISSION=FAIL reason=' + reason));
++  assert.doesNotMatch(result.stdout, /ADMISSION=PASS/);
++}
++
++test('changed authentic trigger admits the exact committed candidate', t => {
++  const f = fixture(t);
++  const result = f.run();
++  assert.equal(result.status, 0, result.stderr);
++  assert.equal(result.stdout.trim(), 'FROZEN_CANDIDATE_ADMISSION=PASS sha=' + f.git('rev-parse', 'HEAD'));
++});
++
++test('existing repository freeze contract remains compatible when renewed', t => {
++  const f = fixture(t);
++  const existing = readFileSync(new URL('../artifact/vector-proof-freeze.trigger', import.meta.url), 'utf8');
++  f.commit(existing + '\nreview_fixture=renewed_exact_candidate\n');
++  const result = f.run();
++  assert.equal(result.status, 0, result.stderr);
++  assert.match(result.stdout, /FROZEN_CANDIDATE_ADMISSION=PASS sha=[0-9a-f]{40}/);
++});
++
++test('unchanged freeze trigger refuses success instead of halting a required job green', t => {
++  const f = fixture(t);
++  writeFileSync(path.join(f.cwd, 'product.js'), 'changed product\n');
++  f.commit(null);
++  fails(f.run(), 'unchanged_trigger');
++});
++
++test('deleted trigger is refused even though its path changed', t => {
++  const f = fixture(t);
++  rmSync(path.join(f.cwd, 'artifact/vector-proof-freeze.trigger'));
++  f.commit(null);
++  fails(f.run(), 'missing_or_nonregular_trigger');
++});
++
++test('symlink trigger is refused even when its target has valid marker bytes', t => {
++  const f = fixture(t);
++  rmSync(path.join(f.cwd, 'artifact/vector-proof-freeze.trigger'));
++  writeFileSync(path.join(f.cwd, 'target'), contract);
++  symlinkSync('../target', path.join(f.cwd, 'artifact/vector-proof-freeze.trigger'));
++  f.commit(null);
++  fails(f.run(), 'missing_or_nonregular_trigger');
++});
++
++test('arbitrary changed trigger text is not a freeze contract', t => {
++  const f = fixture(t);
++  f.commit('arbitrary text\n');
++  fails(f.run(), 'invalid_trigger_contract');
++});
++
++test('freeze marker with weakened safety contract is refused', t => {
++  const f = fixture(t);
++  f.commit('VECTOR_PROOF_FREEZE_V1\nsafety=skipped counts as pass\n');
++  fails(f.run(), 'missing_safety_contract');
++});
++
++test('missing comparison parent refuses admission', t => {
++  fails(fixture(t, { rootOnly: true }).run(), 'missing_parent');
++});
++
++test('missing and mismatched CI source bindings refuse admission', t => {
++  const f = fixture(t);
++  fails(f.run(''), 'missing_or_invalid_source_sha');
++  fails(f.run('0'.repeat(40)), 'source_sha_mismatch');
++});
++
++test('uncommitted trigger edits cannot supply freeze authority', t => {
++  const f = fixture(t);
++  writeFileSync(path.join(f.cwd, 'artifact/vector-proof-freeze.trigger'), contract + 'candidate=uncommitted\n');
++  fails(f.run(), 'dirty_trigger');
++});
++
++test('both CircleCI proof jobs use the fail-closed gate and core executes its tests', () => {
++  const config = readFileSync(new URL('../.circleci/config.yml', import.meta.url), 'utf8');
++  assert.match(config, /command: bash scripts\/require-frozen-candidate\.sh/);
++  assert.doesNotMatch(config, /circleci-agent step halt/);
++  assert.equal((config.match(/^      - require_frozen_candidate$/gm) || []).length, 2);
++  assert.match(config, /scripts\/require-frozen-candidate\.test\.mjs/);
++});
+diff --git a/security/runtime/owner-access-recovery-help.test.cjs b/security/runtime/owner-access-recovery-help.test.cjs
+new file mode 100644
+index 0000000..a2986fb
+--- /dev/null
++++ b/security/runtime/owner-access-recovery-help.test.cjs
+@@ -0,0 +1,85 @@
++'use strict';
++const test=require('node:test');
++const assert=require('node:assert/strict');
++const http=require('node:http');
++const fs=require('node:fs');
++const os=require('node:os');
++const path=require('node:path');
++const modulePath=path.resolve(process.env.WFM_RECOVERY_MODULE||path.join(__dirname,'owner-access-recovery.cjs'));
++const {createOwnerAccessRecovery,API_PATH,PAGE_PATH}=require(modulePath);
++const {FORBIDDEN_IDENTITY_HEADERS}=require(path.join(path.dirname(modulePath),'identity-survival-guard.cjs'));
++
++async function fixture(t,patch={}) {
++  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-recovery-help-'));
++  const dbPath=path.join(dir,'must-not-be-created.sqlite');
++  const now=1700000000000;
++  const grant={id:'synthetic-grant-identity',tokenHash:'1'.repeat(64),issuedAt:now-1000,expiresAt:now+60000,sessionEpoch:1,policyVersion:1,purpose:'first-passkey'};
++  const env={NODE_ENV:'staging',WFM_HOSTED_STAGING:'true',WFM_DB:dbPath,WFM_PUBLIC_ORIGIN:'https://vector.example',...patch};
++  const handler=createOwnerAccessRecovery({env,clock:()=>now});
++  const server=http.createServer(async(req,res)=>{if(!await handler.handleRequest(req,res)){res.statusCode=404;res.end('Unhandled');}});
++  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
++  t.after(async()=>{await new Promise(resolve=>server.close(resolve));fs.rmSync(dir,{recursive:true,force:true});});
++  const call=(url=PAGE_PATH,options={})=>new Promise((resolve,reject)=>{
++    const req=http.request({host:'127.0.0.1',port:server.address().port,path:url,headers:{host:'vector.example','x-forwarded-proto':'https',...options.headers},method:options.method||'GET'},res=>{
++      let body='';res.setEncoding('utf8');res.on('data',chunk=>{body+=chunk;});res.on('end',()=>resolve({status:res.statusCode,headers:{get:name=>res.headers[name]??null},body}));
++    });req.on('error',reject);req.end(options.body);
++  });
++  return {env,grant,now,dbPath,call};
++}
++
++function honestHelp(response){
++  assert.equal(response.status,200);
++  assert.match(response.headers.get('content-type'),/text\/html/);
++  assert.match(response.body,/Help signing in/);
++  assert.match(response.body,/secure invitation/);
++  assert.match(response.body,/organisation.s administrator/);
++  assert.match(response.body,/href="\/"/);
++  assert.doesNotMatch(response.body,/<form|<input|<script|superuser@|northstar-demo|new-password|owner-recovery-code|tokenHash/i);
++  assert.equal(response.headers.get('set-cookie'),null);
++  assert.equal(response.headers.get('cache-control'),'no-store');
++  assert.match(response.headers.get('content-security-policy'),/default-src 'none'/);
++  assert.match(response.headers.get('content-security-policy'),/frame-ancestors 'none'/);
++}
++
++test('advertised recovery link gives useful public help without a grant or database',async t=>{
++  const f=await fixture(t);honestHelp(await f.call());
++  assert.equal(fs.existsSync(f.dbPath),false);
++  const api=await f.call(API_PATH,{method:'POST',headers:{origin:'https://vector.example','content-type':'application/json'},body:'{"token":"not-a-valid-code"}'});
++  assert.equal(api.status,404);assert.equal(api.headers.get('set-cookie'),null);assert.equal(fs.existsSync(f.dbPath),false);
++});
++
++test('malformed, expired, nonstaging and legacy grants give identical public help without enabling a password or setup flow',async t=>{
++  const f=await fixture(t),baseline=await f.call();honestHelp(baseline);
++  const legacy={...f.grant};delete legacy.purpose;
++  for(const changes of [
++    {WFM_OWNER_RECOVERY_JSON:'{'},
++    {WFM_OWNER_RECOVERY_JSON:'{}'},
++    {WFM_OWNER_RECOVERY_JSON:JSON.stringify({...f.grant,issuedAt:f.now-120000,expiresAt:f.now-60000})},
++    {WFM_OWNER_RECOVERY_JSON:JSON.stringify(f.grant),NODE_ENV:'production'},
++    {WFM_OWNER_RECOVERY_JSON:JSON.stringify(f.grant),WFM_HOSTED_STAGING:'false'},
++    {WFM_OWNER_RECOVERY_JSON:JSON.stringify(legacy)}
++  ]){
++    Object.assign(f.env,{NODE_ENV:'staging',WFM_HOSTED_STAGING:'true'},changes);
++    const response=await f.call();honestHelp(response);assert.equal(response.body,baseline.body);
++    assert.equal(fs.existsSync(f.dbPath),false);
++  }
++});
++
++test('public recovery help rejects altered URL, host, transport, method and identity headers without cookies or storage',async t=>{
++  const f=await fixture(t);
++  const cases=[
++    [PAGE_PATH+'?token=untrusted',{},403],
++    [PAGE_PATH,{headers:{host:'attacker.example'}},403],
++    [PAGE_PATH,{headers:{'x-forwarded-proto':'http'}},403],
++    [PAGE_PATH,{headers:{'x-forwarded-proto':'https,http'}},403],
++    [PAGE_PATH,{method:'POST'},405],
++    ...FORBIDDEN_IDENTITY_HEADERS.map(name=>[PAGE_PATH,{headers:{[name]:'untrusted'}},403])
++  ];
++  for(const [url,options,status]of cases){const response=await f.call(url,options);assert.equal(response.status,status);assert.equal(response.headers.get('set-cookie'),null);assert.doesNotMatch(response.body,/superuser@|northstar-demo|owner-recovery-code|new-password/);assert.equal(fs.existsSync(f.dbPath),false);}
++});
++
++test('only configured current first-passkey grant displays existing setup ceremony and does not touch storage',async t=>{
++  const f=await fixture(t);f.env.WFM_OWNER_RECOVERY_JSON=JSON.stringify(f.grant);
++  const response=await f.call();assert.equal(response.status,200);assert.match(response.body,/id="owner-recovery-code"/);assert.match(response.body,/src="\/passkey-ui.js"/);
++  assert.doesNotMatch(response.body,/new-password|superuser@|northstar-demo/);assert.equal(response.headers.get('set-cookie'),null);assert.equal(fs.existsSync(f.dbPath),false);
++});
+diff --git a/security/runtime/owner-access-recovery.cjs b/security/runtime/owner-access-recovery.cjs
+index b5318e3..889b852 100644
+--- a/security/runtime/owner-access-recovery.cjs
++++ b/security/runtime/owner-access-recovery.cjs
+@@ -159,36 +159,44 @@ function firstPasskeyPage(res) {
+ }
+ 
+ function recoveryPage(res) {
+-  const nonce = randomBytes(24).toString('base64');
++  // This public help page conveys no account or grant state and grants no authority.
+   res.statusCode = 200;
+   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+   res.setHeader('Cache-Control', 'no-store');
+   res.setHeader('Referrer-Policy', 'no-referrer');
+   res.setHeader('X-Content-Type-Options', 'nosniff');
+   res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+-  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'`);
+-  res.end(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recover Vector access</title>
+-<style nonce="${nonce}">body{font:17px system-ui;max-width:32rem;margin:4rem auto;padding:1rem;color:#17302b}label{display:block;margin-top:1rem}input,button{box-sizing:border-box;width:100%;font:inherit;padding:.7rem;margin-top:.4rem}button{margin-top:1.5rem}#status{min-height:3rem}</style>
+-<h1>Recover your Vector access</h1><p>Use the one-time recovery code provided by your environment owner. This changes the password for superuser@northstar.example.</p>
+-<form id="recovery"><label>Recovery code<input id="token" type="password" autocomplete="off" required maxlength="43"></label><label>New password (20–256 characters)<input id="password" type="password" autocomplete="new-password" required minlength="20" maxlength="256"></label><label>Confirm new password<input id="confirm" type="password" autocomplete="new-password" required minlength="20" maxlength="256"></label><button>Set new password</button></form><p id="status" role="status"></p><a href="/">Return to sign in</a>
+-<script nonce="${nonce}">'use strict';const form=document.getElementById('recovery'),token=document.getElementById('token'),password=document.getElementById('password'),confirm=document.getElementById('confirm'),status=document.getElementById('status');form.addEventListener('submit',async event=>{event.preventDefault();if(password.value!==confirm.value){status.textContent='Passwords must match.';return;}const button=form.querySelector('button');button.disabled=true;try{const response=await fetch('${API_PATH}',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',cache:'no-store',body:JSON.stringify({token:token.value,password:password.value})});token.value='';password.value='';confirm.value='';status.textContent=response.ok?'Password updated. Return to sign in with your new password.':'Recovery could not be completed. Ask your environment owner to check the code and security status.';if(response.ok)form.hidden=true;}catch{status.textContent='No result was confirmed. Try signing in with your new password before requesting a new code.';}finally{button.disabled=false;}});</script></html>`);
++  res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
++  res.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VECTOR · Help signing in</title><link rel="stylesheet" href="/passkey-ui.css"></head>
++<body><header><a href="/" aria-label="VECTOR home">VECTOR</a></header><main><section aria-labelledby="heading"><h1 id="heading">Help signing in</h1>
++<p>Use a registered passkey on this device, another device or a security key to sign in.</p>
++<p>New here? Open your secure invitation to set up your first passkey. If your environment owner gave you a one-time access setup code, ask them to check that access setup is available.</p>
++<p>If you have lost every registered passkey, contact your organisation’s administrator to verify your identity and arrange the appropriate recovery process.</p>
++<a href="/">Return to secure sign in</a><p>Your biometric information stays on your device.</p></section></main></body></html>`);
+   return true;
+ }
+-
+ function createOwnerAccessRecovery({ env = process.env, clock = Date.now } = {}) {
+   return {
+     async handleRequest(req, res) {
+       const path = String(req.url || '').split('?')[0];
+       if (path !== API_PATH && path !== PAGE_PATH) return false;
+       try {
++        if (path === PAGE_PATH) {
++          // Help is public; account setup still requires the existing explicit grant.
++          const origin = new URL(env.WFM_PUBLIC_ORIGIN);
++          if (origin.protocol !== 'https:' || origin.origin !== env.WFM_PUBLIC_ORIGIN || origin.username || origin.password) throw Error('Recovery unavailable.');
++          if (req.url !== path || req.headers.host !== origin.host || req.headers['x-forwarded-proto'] !== 'https' ||
++              FORBIDDEN_IDENTITY_HEADERS.some(name => req.headers[name] !== undefined)) throw denied();
++          if (req.method !== 'GET') throw denied(405);
++          const now = clock();
++          let setupGrant;
++          try { setupGrant = configuration(env, now); } catch { /* Invalid setup authority never enables a form. */ }
++          return setupGrant?.purpose === 'first-passkey' && now < setupGrant.expiresAt ? firstPasskeyPage(res) : recoveryPage(res);
++        }
+         const grant = configuration(env, clock());
+         if (!grant || clock() >= grant.expiresAt) return respond(res, 404, { error: 'Not Found' });
+         if (req.url !== path || req.headers.host !== grant.host || req.headers['x-forwarded-proto'] !== 'https' ||
+             FORBIDDEN_IDENTITY_HEADERS.some(name => req.headers[name] !== undefined)) throw denied();
+-        if (path === PAGE_PATH) {
+-          if (req.method !== 'GET') throw denied(405);
+-          return grant.purpose === 'first-passkey' ? firstPasskeyPage(res) : recoveryPage(res);
+-        }
+         if (req.method !== 'POST') throw denied(405);
+         if (req.headers.origin !== grant.origin || (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site'] !== 'same-origin')) throw denied();
+         if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] || '') || req.headers['content-encoding']) throw denied(415);
