@@ -5,11 +5,7 @@ commands:
     steps:
       - run:
           name: Admit explicit frozen candidate only
-          command: |
-            if git rev-parse HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- artifact/vector-proof-freeze.trigger; then
-              echo 'No frozen-candidate trigger change; halting heavy proof without marking product failure.'
-              circleci-agent step halt
-            fi
+          command: bash scripts/require-frozen-candidate.sh
 
 jobs:
   forge_core_validation:
@@ -30,8 +26,10 @@ jobs:
             test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
             printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/auth-client-source-sha.txt
             node --version > circleci-artifacts/auth-client-node-version.txt
+            git ls-files --stage -- scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/frozen-candidate-gate-git-blobs.txt
             git ls-files --stage -- .circleci/config.yml artifact/vector-proof-freeze.trigger Dockerfile.current-candidate-role-browser-proof scripts/current-candidate-role-browser-proof.mjs scripts/current-candidate-role-browser-proof.auth.test.mjs scripts/current-candidate-role-browser-proof-server.mjs scripts/current-candidate-role-browser-proof-server.test.mjs scripts/vector-proof-result.mjs security/runtime/proof-runner-auth.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/identity-survival-guard.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/runtime-identity.cjs security/runtime/runtime-identity.test.cjs security/runtime/bootstrap.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/one-day-enterprise-engine.test.cjs scripts/run-forge-ci.mjs > circleci-artifacts/auth-client-git-blobs.txt
             node --test \
+              scripts/require-frozen-candidate.test.mjs \
               scripts/current-candidate-role-browser-proof.auth.test.mjs \
               security/runtime/proof-runner-auth.test.cjs \
               security/runtime/identity-survival-guard.test.cjs \
