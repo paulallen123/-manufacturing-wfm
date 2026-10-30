@@ -618,9 +618,24 @@ function createVectorReportingService(options={}){
           }
         }
       }
-      const receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
+      // Final pause observation and READY publication share one write lock.
+      // No authority reader or external operation runs inside this transaction.
+      const inAppReady=schedule.delivery==='in_app'&&status==='READY';
+      if(inAppReady)db.exec('BEGIN IMMEDIATE');
+      let receipt,inserted;
       const createdAt=new Date().toISOString();
-      const inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
+      try{
+        if(inAppReady){
+          const latestControl=scheduleState.get(row.tenant,row.id);
+          if(latestControl&&Number(latestControl.enabled)!==1)status='BLOCKED_SCHEDULE_PAUSED';
+        }
+        receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
+        inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
+        if(inAppReady)db.exec('COMMIT');
+      }catch(error){
+        if(inAppReady)try{db.exec('ROLLBACK');}catch{}
+        throw error;
+      }
       if(inserted){
         if(status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
         results.push({...receipt,deliveryKey:key,createdAt});
