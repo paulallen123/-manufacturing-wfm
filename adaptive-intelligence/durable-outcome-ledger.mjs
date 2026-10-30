@@ -23,7 +23,8 @@ function normalize(raw){
   return {
     tenantScope:input.tenantScope.trim(),source:input.source.trim(),
     category:input.category.trim(),fingerprint:input.fingerprint.trim(),
-    baseline:input.baseline,result:input.result,verified:input.verified,
+    baseline:input.baseline===0?0:input.baseline,
+    result:input.result===0?0:input.result,verified:input.verified,
     evidenceRef:input.evidenceRef.trim(),
     ...(input.createdAt===undefined?{}:{createdAt:input.createdAt})
   };

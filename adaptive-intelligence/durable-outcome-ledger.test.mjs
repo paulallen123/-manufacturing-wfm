@@ -81,3 +81,24 @@ test('derived advisory and regression metadata replays identically after restart
   assert.deepEqual(l.snapshot(),before);
   l.close();
 }));
+
+for(const [label,values] of [
+  ['baseline',{baseline:-0,result:1}],
+  ['result',{baseline:1,result:-0}],
+  ['both',{baseline:-0,result:-0}]
+]){
+  test(`signed-zero ${label} preserves one canonical receipt across restart`,()=>temp(path=>{
+    let l=new DurableOutcomeLedger({path});
+    try{
+      const input=outcome(1,values),receipt=l.ingestOutcome(input);
+      assert.deepEqual(l.snapshot().outcomes,[receipt]);
+      assert.equal(Object.is(receipt.baseline,-0),false);
+      assert.equal(Object.is(receipt.result,-0),false);
+      const before=l.snapshot();l.close();l=undefined;
+      l=new DurableOutcomeLedger({path});
+      assert.deepEqual(l.snapshot(),before);
+      assert.deepEqual(l.ingestOutcome(input),receipt);
+      assert.equal(l.snapshot().outcomes.length,1);
+    }finally{l?.close();}
+  }));
+}
