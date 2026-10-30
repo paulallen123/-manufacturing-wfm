@@ -11,44 +11,53 @@
   ],
   "productDiff": {
     "files": 4,
-    "insertions": 93,
+    "insertions": 115,
     "deletions": 4
   },
   "node": "22.23.2",
-  "baseWithFinalTests": {
-    "pass": 56,
-    "fail": 4,
-    "skip": 0,
-    "exit": 1
-  },
-  "originalDonorWithFinalTests": {
-    "pass": 58,
-    "fail": 2,
-    "skip": 0,
-    "exit": 1
-  },
   "finalFocused": {
-    "pass": 60,
+    "pass": 61,
     "fail": 0,
     "skip": 0,
     "exit": 0
   },
   "finalAffected": {
-    "pass": 335,
+    "pass": 336,
     "fail": 0,
     "skip": 0,
     "exit": 0,
     "files": 28
   },
   "independentReview": {
-    "reviewer": "/root",
-    "focusedPass": 60,
-    "focusedFail": 0,
-    "focusedSkip": 0,
-    "sourceScope": "two lifecycle modules/two existing test files",
-    "formalReleaseApproval": false
+    "reviewer": "/root/image_ci_gate",
+    "scope": "Bridge-only conservative hold follow-on; adapter acquisition contract preserved",
+    "node": "22.23.2",
+    "preholdPublishedBridge": {
+      "pass": 7,
+      "fail": 1,
+      "skip": 0,
+      "exit": 1
+    },
+    "finalCandidate": {
+      "pass": 8,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    "finalComposedCopy": {
+      "pass": 8,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    "heldoutSha256": "13767df1106200e38af1c6c7c16c68adfa0427ae9c1c4d2b397082b98551221c",
+    "verdict": "No new material issue in bounded final follow-on; conservative stop prevents date loss",
+    "ownerSemanticsAcceptance": false,
+    "businessTransitionImplemented": false,
+    "formalReleaseApproval": false,
+    "actualProviderCalls": 0
   },
-  "ownerDecisionOpen": "Missing status with explicit hasLeft=false and end date retains donor upsert/no staged end date; no accepted provider/customer semantics claimed.",
+  "ownerDecisionOpen": "Actual approved effective-dated employee-change workflow remains unimplemented; dated onboarding is conservatively refused.",
   "actualProviderRequests": 0,
   "hostedBusinessActions": 0,
   "deployments": 0,
@@ -57,19 +66,177 @@
   "runtimeProvenanceSourceCommit": null,
   "runtimeSourceFixtureLabel": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "sha256": {
-    "docs/execution/vector-v023-lifecycle-adoption-20261030/README.md": "e03694d69d8fea7df487703bbe1ca38426cd7b7a7b11b8819e48c9a2ad3ed1d3",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/README.md": "0c62aa4075a4d54f76b623c2e8d69f369175017e4370a67fb69cf8ebaeb97ccd",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/affected-full-node22.tap": "057a8b3ab6d6efed9c30c20b9f944c8d55bcb54539759d039e6fac95007b65ef",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/affected-full-receipt.json": "dedabf9a0320f430b184a45454926bb2d373556c1500d46e759ca0e4aec539c3",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/base-focused-red.tap": "eaf80a4cbe9526ba4468b85b10bfc93488eab992df138fc6a29a1fef4b041481",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/composition.log": "bf6e85906e3fca2a4dc209c64b6d6b7ea572678143e32827d1dcd46f5b748c44",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/corrected-focused-green.tap": "42137b27eeb4bdc00f5c31e1d06f5861a8aceda0079fcc838eb448f6f47b8698",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/donor-focused-red.tap": "43cc69538c7f9b874f8ace2b5eca2b84caf147834161e30ff6f543d7373868d0",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon-affected-node22.tap": "8f0805e55e82d2c28fbee5ecd9c68af5caf756a91ce3d574fd6cd49bd71b6a6b",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon-affected-receipt.json": "7ef000990152090ffe77bae8528c5b0f8a7a3b52880ce394349aedd0fb5792ab",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon-composition.log": "3f6be54e450048aeb69f2d6f55d6e103da7993c3284813e83bdfb8f17123a42f",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon-contract-trace.json": "ac3b72cf2c2754dd24c91296b5cb2516314e8aed16f26defc93590e3f2b0373d",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon-focused-green.tap": "0bb1fd1eefc895a10a7c8be80fd3b1b102fdc50902eb2691592e161a24dd3d7b",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon-focused-red.tap": "7b65c78fc922254502a8c36cfaa400a2b083aa119090481b4cfcbc62e0e86c54",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon-source-identities.json": "e55ed10ec21bb29490c9c61b1f96ff015aa73ee7af93ee30e75bf8e0eef4a7ed",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/followon.patch": "1c6c6dc1d2ca8e56e0741be9b8f7835a699cddf1a71f9ed6a4e600ae53cb8e5b",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/historical-prehold-independent-baseline.tap": "0c72cc16a395d7e2374a56507bd627274f3d3f4b830f5a76985f6852a5a0f4c3",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/historical-prehold-independent-candidate.tap": "7a774836483aa873090aa9d6b8f4086a5f64c5303dd7e3efb4b54c0ed76d0dd5",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/historical-prehold-independent-composed.tap": "905ed07c492d4231af5b6b581d305cc6ef6571b9a62892fcaa9915b2eb424bc8",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/historical-prehold-independent-donor.tap": "e6fdaca154eaac29c763f50f0013a202b4d016fd548aab0ad93a5063e0bee49f",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/historical-prehold-independent-heldout.cjs": "368e311fe112155523b394137e2cac33b1f2b9d3dff844419d2664e62d0ae9b7",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/historical-prehold-independent-review.json": "33dffa128d38bf2f06bdf39f386dae927727566f09513826dd5129aa39560cde",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/independent-followon-baseline.tap": "86e04dd2de685bff8834ddbc35884eb1a815fe22672d0e638618d0af3bceed8a",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/independent-followon-candidate.tap": "4496f950df128d23f818943323ba567917e2e5fe1e1a256faba2cfc2a6d4c7f8",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/independent-followon-composed.tap": "0f6e7fd68135916ae8e3a2bff7d9e70907b6a4d8b0bbe4cdafe6b45321807554",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/independent-followon-heldout.cjs": "13767df1106200e38af1c6c7c16c68adfa0427ae9c1c4d2b397082b98551221c",
+    "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/independent-followon-review.json": "b8fb010cccfddc7212f4afcf7be510725879123bfb139256fc326cec27751d39",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/lifecycle.patch": "223da806ff5dde2f2cd22fec613299e46564cf7c4c317652a59749595e43b697",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/missing-status-explicit-false-observation.json": "f1e641a8ca2e95a6440b30cd14aa65f85c8ea1e7ed39fc6f903bce1e68346130",
     "docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/source-identities.json": "f014d84bf3d05e74685e21224c91e71c7672bab15cea02fa4675afd1320094cb",
-    "integrations/staffology/canonical-runtime-bridge.cjs": "6fbe168e8715ff9f3813dd95c4d79a9f6c6f9db1d302f835b2b90a9acb929749",
-    "integrations/staffology/canonical-runtime-bridge.test.cjs": "83a85f7a5638cc5a3b318aee1b0e776ae26ff44f4bd4a8475b232bded6a1c43f",
+    "integrations/staffology/canonical-runtime-bridge.cjs": "b2567041a137b0cbb3940c72154f8d1f9386df1c5e5dfc7843dac69919289fbe",
+    "integrations/staffology/canonical-runtime-bridge.test.cjs": "200223535de26822e466e1607216afee08bc95bee844fe7e563dbb9098de76b1",
     "integrations/staffology/staffology-adapter.cjs": "53f724ae3e7fa9f6924677136a631ff83208e064335bbadab2f2b852c5362c09",
     "integrations/staffology/staffology-adapter.test.cjs": "9a3dbb95c670dad27501529b0a40983b9a023f7df80357b02b6f3ef491bb429c"
+  },
+  "additionalIndependentReview": {
+    "reviewer": "/root/image_ci_gate",
+    "reviewedSource": "1ba304718ca2f1eca1cb63d16fdc2a8d617fdb4f",
+    "verdict": "No new material issue in bounded corrected four-file diff; owner semantics decision remains open",
+    "node": "22.23.2",
+    "baseline": {
+      "pass": 2,
+      "fail": 6,
+      "skip": 0,
+      "exit": 1
+    },
+    "originalDonor": {
+      "pass": 6,
+      "fail": 2,
+      "skip": 0,
+      "exit": 1
+    },
+    "candidate": {
+      "pass": 8,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    "composedCopy": {
+      "pass": 8,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    "heldoutSha256": "368e311fe112155523b394137e2cac33b1f2b9d3dff844419d2664e62d0ae9b7",
+    "sourceFilesChangedByReviewer": 0,
+    "ownerSemanticsAcceptance": false,
+    "observedCompatibility": "Normalized status=null + hasLeft=false + past OR future end date retains donor upsert/no staged end date/application guard allows; no clock comparison",
+    "businessAdoption": "BLOCKED_PENDING_DOMAIN_OWNER_DECISION",
+    "formalReleaseApproval": false
+  },
+  "initialReviewIsHistorical": true,
+  "followon": {
+    "parent": "1ba304718ca2f1eca1cb63d16fdc2a8d617fdb4f",
+    "sourcePaths": [
+      "integrations/staffology/canonical-runtime-bridge.cjs",
+      "integrations/staffology/canonical-runtime-bridge.test.cjs"
+    ],
+    "finalProductDiffAgainst545": {
+      "files": 4,
+      "insertions": 115,
+      "deletions": 4
+    },
+    "failFirst": {
+      "pass": 59,
+      "fail": 2,
+      "skip": 0,
+      "exit": 1
+    },
+    "focused": {
+      "pass": 61,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    "affected": {
+      "pass": 336,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0,
+      "files": 28
+    },
+    "independentReview": {
+      "reviewer": "/root/image_ci_gate",
+      "scope": "Bridge-only conservative hold follow-on; adapter acquisition contract preserved",
+      "node": "22.23.2",
+      "preholdPublishedBridge": {
+        "pass": 7,
+        "fail": 1,
+        "skip": 0,
+        "exit": 1
+      },
+      "finalCandidate": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0,
+        "exit": 0
+      },
+      "finalComposedCopy": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0,
+        "exit": 0
+      },
+      "heldoutSha256": "13767df1106200e38af1c6c7c16c68adfa0427ae9c1c4d2b397082b98551221c",
+      "verdict": "No new material issue in bounded final follow-on; conservative stop prevents date loss",
+      "ownerSemanticsAcceptance": false,
+      "businessTransitionImplemented": false,
+      "formalReleaseApproval": false,
+      "actualProviderCalls": 0
+    },
+    "behavior": "Any dated non-Former source is refused before staging; no date omission or deletion inference; source mapper unchanged"
+  },
+  "initialPublication": {
+    "head": "1ba304718ca2f1eca1cb63d16fdc2a8d617fdb4f",
+    "productDiff": {
+      "files": 4,
+      "insertions": 93,
+      "deletions": 4
+    },
+    "baseWithInitialTests": {
+      "pass": 56,
+      "fail": 4,
+      "skip": 0,
+      "exit": 1
+    },
+    "originalDonorWithInitialTests": {
+      "pass": 58,
+      "fail": 2,
+      "skip": 0,
+      "exit": 1
+    },
+    "focused": {
+      "pass": 60,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    "affected": {
+      "pass": 335,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0,
+      "files": 28
+    },
+    "coordinatorReview": {
+      "reviewer": "/root",
+      "focusedPass": 60,
+      "focusedFail": 0,
+      "focusedSkip": 0,
+      "sourceScope": "two lifecycle modules/two existing test files",
+      "formalReleaseApproval": false
+    }
   }
 }

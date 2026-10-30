@@ -128,6 +128,7 @@ function peopleEnvelope(acquisition,receipt){
    fail('An employee end date requires explicit provider leaver status.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
   const former=status==='Former'||hasLeft===true;
   if(former&&!effectiveTo)fail('A provider-confirmed former employee requires an end date.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
+  if(effectiveTo&&!former)fail('A dated employment change requires the reviewed employee-change lifecycle workflow.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
   const data={source_id:record.externalId,payroll_id:mapping.payrollId,name:`${person?.firstName||''} ${person?.lastName||''}`.trim(),email:sourceEmail||providedEmail,manager_id:mapping.managerId,site:mapping.site,job:mapping.job,start_date:employment?.effectiveFrom,contract_type:mapping.contractType,weekly_hours:mapping.weeklyHours,language:mapping.language||'en-GB',skills:Array.isArray(mapping.skills)?mapping.skills.join('|'):''};
   if(!sourceEmail&&providedEmail)data.email_mapping_origin='reviewed-vector-mapping';
   if(former){data.employment_status='Former';data.employment_end_date=exact(effectiveTo,'Former employee end date');}
