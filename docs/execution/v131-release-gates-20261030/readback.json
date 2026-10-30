@@ -87,11 +87,22 @@
       "actual_original_gate_exit": 0,
       "expected_gate_exit": 1
     },
-    "independent_verification": "PENDING",
+    "independent_verification": {
+      "reviewer": "root session, separate from code author",
+      "node_major": 22,
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "skip": 0,
+      "review": "script and CI wiring reviewed; no important in-scope finding",
+      "customer_proof": false
+    },
     "hosted_verification": "NOT_RUN",
     "trigger_changed": false
   },
   "admin_action_state": "PROPOSED_NOT_APPLIED",
   "lane_state": "TEST_OWNER_REVIEW_AND_ADMIN_ENFORCEMENT_PENDING",
-  "customer_complete": false
+  "customer_complete": false,
+  "admin_action_scope": "release/vector-customer-ready-candidate-20260925 only",
+  "integration_rule_dependency": "Separate always-running ordinary source-validation context must be implemented, independently run and exact emitted name verified before an integration required-check payload is ready; do not require freeze-only contexts on ordinary integration PRs."
 }
