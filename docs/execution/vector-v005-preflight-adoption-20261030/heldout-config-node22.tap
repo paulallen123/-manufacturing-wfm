@@ -1,0 +1,78 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing or empty required binding fails closed: VECTOR_PROOF_AUTH_PROFILE
+ok 1 - missing or empty required binding fails closed: VECTOR_PROOF_AUTH_PROFILE
+  ---
+  duration_ms: 5.077976
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: VECTOR_PROOF_URL
+ok 2 - missing or empty required binding fails closed: VECTOR_PROOF_URL
+  ---
+  duration_ms: 1.488144
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: WFM_EXPECTED_CANDIDATE_SHA
+ok 3 - missing or empty required binding fails closed: WFM_EXPECTED_CANDIDATE_SHA
+  ---
+  duration_ms: 1.197505
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: EXPECTED_DEPLOYMENT_ID
+ok 4 - missing or empty required binding fails closed: EXPECTED_DEPLOYMENT_ID
+  ---
+  duration_ms: 1.149996
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: EXPECTED_IMPLEMENTATION_TENANT
+ok 5 - missing or empty required binding fails closed: EXPECTED_IMPLEMENTATION_TENANT
+  ---
+  duration_ms: 1.01731
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: EXPECTED_IMPLEMENTATION_RUN_ID
+ok 6 - missing or empty required binding fails closed: EXPECTED_IMPLEMENTATION_RUN_ID
+  ---
+  duration_ms: 0.951884
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: EXPECTED_CONFIGURATION_DIGEST
+ok 7 - missing or empty required binding fails closed: EXPECTED_CONFIGURATION_DIGEST
+  ---
+  duration_ms: 1.016759
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: VECTOR_PROOF_ACTORS_JSON
+ok 8 - missing or empty required binding fails closed: VECTOR_PROOF_ACTORS_JSON
+  ---
+  duration_ms: 0.857495
+  type: 'test'
+  ...
+# Subtest: missing or empty required binding fails closed: PROOF_PRIVATE_KEY_B64
+ok 9 - missing or empty required binding fails closed: PROOF_PRIVATE_KEY_B64
+  ---
+  duration_ms: 0.864144
+  type: 'test'
+  ...
+# Subtest: CLI with zero bindings exits1 and reports only missing field names
+ok 10 - CLI with zero bindings exits1 and reports only missing field names
+  ---
+  duration_ms: 23.457334
+  type: 'test'
+  ...
+# Subtest: synthetic structurally valid inputs retain offline-only claim and issue no request
+ok 11 - synthetic structurally valid inputs retain offline-only claim and issue no request
+  ---
+  duration_ms: 0.61715
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 106.449472

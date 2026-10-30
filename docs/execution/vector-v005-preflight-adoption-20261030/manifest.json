@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "lane": "V005",
+  "stageBefore": "BLOCKED",
+  "stageAfter": "BLOCKED; isolated reviewed source adoption draft",
+  "research": "NO/SKIP_REPEAT_RESEARCH",
+  "parentSourceSha": "2d0f4e41e3b0463386b2887f39afa064068f9166",
+  "parentTree": "b6e21c4afa9880c651fe0898235cd4695ce4bfca",
+  "parentBlobsVerified": 1714,
+  "sourceFilesChanged": 2,
+  "reviewedDonor": "152482629f8930096b7eafe5923e420d7e0bfae4",
+  "node": "v22.23.2",
+  "primary": "/root/customer_proof_lane",
+  "independentReviewer": "/root",
+  "runtimeModelIdentifier": "not independently exposed",
+  "baseline": {
+    "pass": 3,
+    "fail": 8,
+    "skip": 0,
+    "exitCode": 1
+  },
+  "composition": {
+    "pass": 99,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "heldouts": {
+    "pass": 11,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "independentRerun": {
+    "compositionPass": 99,
+    "heldoutPass": 11,
+    "fail": 0,
+    "skip": 0
+  },
+  "ordinaryForge": {
+    "commands": 16,
+    "pass": 299,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "ciSelectorAdopted": false,
+  "ciSelectorOwnerHandoff": "canonical integration owner after V086 shared-selector reconciliation",
+  "runnerActivated": false,
+  "sessionIssued": false,
+  "protectedAuthorityEstablished": false,
+  "hostedBusinessActions": 0,
+  "liveMutations": 0,
+  "customerAccepted": false,
+  "productReady": false,
+  "compressedEvidence": {
+    "baseline-preflight-node22.tap": {
+      "rawSha256": "10f30dd099dd8cd4820353a39cf89cd96762e779c546acbbed0cb4f5d0afc654",
+      "rawBytes": 11255,
+      "gzipSha256": "924a483069fab6ef62ea2c9841b94dff70ef079b0929c9fea827fa3eec9efc0a",
+      "gzipBytes": 1449
+    },
+    "full-source-node22.log": {
+      "rawSha256": "f6a0d41c505e005a2945887cd221fa45bfca3971959ff443409663b41193de01",
+      "rawBytes": 100474,
+      "gzipSha256": "03be647017f6cd77dfe7e873e369904b3e8961389e0e6fcb308605bac9caca5e",
+      "gzipBytes": 18961
+    }
+  },
+  "fileSha256": {
+    "full-source-receipt.json": "cdca3fa8d9f9ecae21c32789dac911165030cb614f70e500a203486300100dd7",
+    "source.patch": "533cd453600470338f5674c0e0142ed7ad706ac29bbe0bee9bb03a9d2f05a24b",
+    "full-source-node22.log.gz": "03be647017f6cd77dfe7e873e369904b3e8961389e0e6fcb308605bac9caca5e",
+    "composed-affected-node22.tap": "74768b3ea67197bd920e150dbc9c79b5f9c5550a0a5e995ca1ba43f98dc527eb",
+    "baseline-preflight-node22.tap.gz": "924a483069fab6ef62ea2c9841b94dff70ef079b0929c9fea827fa3eec9efc0a",
+    "source-scope.json": "24e4ddfc2d18afb81b8d5e4c4b9dfa8636c014df4984fca576ea63e45e0ebbaa",
+    "README.md": "2ed2c275a69c363e9142e4c63c1752ac8d95e277c31c17c25e2d53ed3aa0ea31",
+    "donor-byte-verification.json": "988c1ed2b9a0bf1a59b90b8ded8d425888d105b5d05fa397127eb47169768632",
+    "heldout-config.test.cjs": "ebc7c0b38c1a4a314f18c2159344216a606a105584006ad6b03c722c867ef4ca",
+    "heldout-config-node22.tap": "fd4f8a24a608ad1e32716993995c7bece8524702f74e6443cbd7fa5df8b4dd67"
+  }
+}
