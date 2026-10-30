@@ -1,0 +1,62 @@
+(node:7) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing/null lifecycle authority rejects before staging for both past and future end dates
+ok 1 - missing/null lifecycle authority rejects before staging for both past and future end dates
+  ---
+  duration_ms: 2.034821
+  type: 'test'
+  ...
+# Subtest: Current/Upcoming without explicit leaver flag refuse dated staging
+ok 2 - Current/Upcoming without explicit leaver flag refuse dated staging
+  ---
+  duration_ms: 0.329797
+  type: 'test'
+  ...
+# Subtest: contradictory lifecycle assertions refuse before staging
+ok 3 - contradictory lifecycle assertions refuse before staging
+  ---
+  duration_ms: 0.292601
+  type: 'test'
+  ...
+# Subtest: actual raw mapper refuses dated missing-status data without hasLeft
+ok 4 - actual raw mapper refuses dated missing-status data without hasLeft
+  ---
+  duration_ms: 1.018181
+  type: 'test'
+  ...
+# Subtest: missing status plus explicit false retains documented upsert/date-omission behavior, not owner policy acceptance
+ok 5 - missing status plus explicit false retains documented upsert/date-omission behavior, not owner policy acceptance
+  ---
+  duration_ms: 0.963351
+  type: 'test'
+  ...
+# Subtest: explicit confirmed leaver is represented only as held delete, never applicable onboarding
+ok 6 - explicit confirmed leaver is represented only as held delete, never applicable onboarding
+  ---
+  duration_ms: 0.25099
+  type: 'test'
+  ...
+# Subtest: review flag absence refuses before any staging callback
+ok 7 - review flag absence refuses before any staging callback
+  ---
+  duration_ms: 0.201417
+  type: 'test'
+  ...
+# Subtest: no provider write authority means the injected client is never reached
+ok 8 - no provider write authority means the injected client is never reached
+  ---
+  duration_ms: 0.744998
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.278621

@@ -1,0 +1,22 @@
+[
+  {
+    "path": "integrations/staffology/canonical-runtime-bridge.cjs",
+    "sha256": "b2567041a137b0cbb3940c72154f8d1f9386df1c5e5dfc7843dac69919289fbe",
+    "gitBlob": "68c9111169ce7cd6ef58435510eb202e2c047233"
+  },
+  {
+    "path": "integrations/staffology/canonical-runtime-bridge.test.cjs",
+    "sha256": "200223535de26822e466e1607216afee08bc95bee844fe7e563dbb9098de76b1",
+    "gitBlob": "5b937081845b3e6c20313454956867752a59d2f7"
+  },
+  {
+    "path": "integrations/staffology/staffology-adapter.cjs",
+    "sha256": "53f724ae3e7fa9f6924677136a631ff83208e064335bbadab2f2b852c5362c09",
+    "gitBlob": "1a8242ce3fd73a95196164502629ac35e681e289"
+  },
+  {
+    "path": "integrations/staffology/staffology-adapter.test.cjs",
+    "sha256": "9a3dbb95c670dad27501529b0a40983b9a023f7df80357b02b6f3ef491bb429c",
+    "gitBlob": "129b6019bcf8866f6ba78adb2080d16c911d54e3"
+  }
+]

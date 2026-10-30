@@ -1,0 +1,40 @@
+{
+  "scope": "Repository contract/source trace only; no provider API, customer policy or authorization inference",
+  "mapperContract": {
+    "file": "integrations/staffology/staffology-adapter.test.cjs",
+    "case": "C08a provider leaver authority is preserved, revision-bound and contradictory states fail closed",
+    "requirement": "Current + hasLeft=false + endDate remains represented in acquired employment data and revision",
+    "preserved": true
+  },
+  "stagingGap": {
+    "file": "integrations/staffology/canonical-runtime-bridge.test.cjs",
+    "oldExpectation": "Current + false + dated source upserts without staged end date",
+    "finding": "End-date evidence is silently lost at onboarding envelope; original donor regression was updated under explicit task instruction"
+  },
+  "existingOwnershipContracts": [
+    {
+      "file": "integrations/staffology/OWNERSHIP_AND_APPROVAL_REGISTER.md",
+      "line": 88,
+      "rule": "Applying, inviting, configuring or activating an employee remains a separate reviewed lifecycle."
+    },
+    {
+      "file": "integrations/staffology/REVIEW_5925613376_RESOLUTION.md",
+      "lines": [
+        52,
+        55,
+        654,
+        657
+      ],
+      "rule": "Leavers remain held by existing application guard; mixed cohort may stage eligible Current records; no accepted scheduled-end staging path located."
+    },
+    {
+      "file": "scripts/compose-vector-local-runtime.mjs",
+      "rule": "Staffology assertPeopleApplicationRecord and upsert-only onboarding validation remain assembled; no scheduled-end transition added."
+    }
+  ],
+  "exhaustiveHistoricalApprovalAudit": false,
+  "conservativeRepair": "Bridge refuses any effectiveTo where provider status/hasLeft does not classify Former, before data construction or stage callback; source mapper still retains date/revision",
+  "authorizationGranted": false,
+  "actualProviderRequests": 0,
+  "newTransitionOrDeletionInference": false
+}
