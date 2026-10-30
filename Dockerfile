@@ -17,6 +17,8 @@ RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-
 RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
 RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
+# Recovery help is part of the passkey boundary, not an optional navigation fixture.
+RUN node --test security/runtime/owner-access-recovery.test.cjs security/runtime/owner-access-recovery-help.test.cjs
 RUN node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs
 RUN node --test scripts/three-min-feed.composed.test.mjs
 RUN node --test integrations/staffology/configured-site-authority.test.cjs integrations/staffology/configured-site-source-writer.test.cjs integrations/staffology/employee-import-previews.test.cjs integrations/staffology/employee-preview-consumer.test.cjs scripts/staffology-preview-route.test.mjs scripts/staffology-preview-active-route.test.mjs
@@ -124,6 +126,10 @@ COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs secur
 COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
 COPY security/runtime/identity-survival-guard.cjs security/runtime/proof-runner-auth.cjs security/runtime/hosted-listen-guard.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/bootstrap.cjs security/runtime/owner-access-recovery.cjs security/runtime/durable-state-guard.cjs security/runtime/runtime-identity.cjs security/runtime/retired-presentation.cjs /app/security-runtime/
+# Test the exact installed recovery module; keep the fixture outside the application.
+COPY security/runtime/owner-access-recovery-help.test.cjs /tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs
+RUN WFM_RECOVERY_MODULE=/app/security-runtime/owner-access-recovery.cjs node --test /tmp/wfm-recovery-help/owner-access-recovery-help.test.cjs \
+ && rm -rf /tmp/wfm-recovery-help
 RUN node -e "const fs=require('fs');const p='/app/public/index.html';let s=fs.readFileSync(p,'utf8');s=s.replace('</head>','<script src=\"/passkey-session-ui.js\" defer></script></head>');fs.writeFileSync(p,s);" \
  && node --check /app/security-runtime/passkey-auth.cjs
 

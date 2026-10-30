@@ -1,0 +1,30 @@
+{
+  "scope": "INDEPENDENT_LOCAL_COMPOSED_SOURCE_ONLY",
+  "node": "v22.23.2",
+  "cwd": "/workspace/scratch/2ea1ba0f2164/proof-gate-composition/candidate",
+  "command": [
+    "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+    "--test",
+    "--test-concurrency=1",
+    "scripts/require-frozen-candidate.test.mjs",
+    "security/runtime/owner-access-recovery.test.cjs",
+    "security/runtime/owner-access-recovery-help.test.cjs",
+    "verification/vector-v014-setup-containment/heldout.test.cjs",
+    "integration/runtime/gusto-http-process-recovery.test.cjs",
+    "operations/runtime/training-shift-collision.test.cjs",
+    "operations/runtime/maintenance-permit-evidence.test.cjs",
+    "integrations/staffology/independent/docker-admission-contract.test.cjs"
+  ],
+  "exit": 0,
+  "seconds": 5.541479587554932,
+  "counts": {
+    "tests": 61,
+    "pass": 61,
+    "fail": 0,
+    "skipped": 0
+  },
+  "log_sha256": "15900d2834426853baff605b27cc0c20ce8947989bc9856187fa35c006c63737",
+  "log_bytes": 16483,
+  "source_inventory_sha256": "122e4b6166187e8be82f6986f6bccea4844ab05fe88d64ad4910ba07d3ea93eb",
+  "external_runtime_customer_provider_writes": false
+}
