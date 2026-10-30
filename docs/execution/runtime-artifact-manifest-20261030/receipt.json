@@ -1,0 +1,132 @@
+{
+  "scope": "isolated future CI artifact identity manifest; no historical artifact recovery",
+  "sourceParent": "8e0251cd659365f236c589895dd76fa6db9b597d",
+  "sourceParentTree": "2767d1b597e5cf90eccf843782fe5dc7e03e3da5",
+  "sourceParentBlobCount": 1728,
+  "frozen552Untouched": "7ced0fe91742928235fe3be042766eec2911ed90",
+  "canonical501Untouched": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "node": "v22.23.2",
+  "tests": {
+    "unchangedCIWiringWithFinalTests": {
+      "exit": 1,
+      "pass": 14,
+      "fail": 1,
+      "skip": 0
+    },
+    "proposalManifest": {
+      "exit": 0,
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    },
+    "ordinaryForge": {
+      "exit": 0,
+      "commands": 16,
+      "groups": [
+        5,
+        175,
+        280
+      ],
+      "pass": 460,
+      "skip": 0
+    },
+    "independentRootManifest": {
+      "exit": 0,
+      "pass": 15,
+      "skip": 0
+    },
+    "countsOverlap": true
+  },
+  "preservation": {
+    "existingCIRecoveredByDeletingOnly7InsertedLines": true,
+    "existingForgeRecoveredByDeletingOnly1Selector": true,
+    "allExistingCICommandsWorkflowsSourceJobsPreserved": true,
+    "freezeMarkerUnchanged": true,
+    "DockerfileUnchanged": true
+  },
+  "checks": {
+    "syntax": 0,
+    "diffCheck": 0,
+    "yamlParseAndStructure": 0,
+    "officialCircleCICLIValidation": "unavailable: CLI absent"
+  },
+  "observedPlatform": {
+    "source552": {
+      "sha": "8e0251cd659365f236c589895dd76fa6db9b597d",
+      "ordinary": "SUCCESS1269",
+      "core": "FAILURE1267",
+      "runtimeStatusPresent": false,
+      "githubCheckRuns": 0,
+      "githubActionsRuns": 0
+    },
+    "frozen552": {
+      "sha": "7ced0fe91742928235fe3be042766eec2911ed90",
+      "ordinary": "SUCCESS1272",
+      "core": "SUCCESS1270",
+      "runtime": "PENDING1271"
+    },
+    "historical540": {
+      "sha": "57907609bca28aa0401298db3089cb49bf1beb0f",
+      "ordinary": "SUCCESS1228",
+      "core": "SUCCESS1229",
+      "runtime": "SUCCESS1230",
+      "githubCheckRuns": 0,
+      "githubActionsRuns": 0
+    },
+    "imageDigestObserved": null,
+    "logsOrArtifactsDownloaded": false
+  },
+  "access": {
+    "circleciConnectedToolAvailable": false,
+    "officialCircleCICLIAvailable": false,
+    "ghCLIAvailable": false,
+    "dockerAvailable": false,
+    "observedBrowserJob1230": "expired-session login; no authentication selected",
+    "requiredCapability": "existing CircleCI project/job/artifact read access for paulallen123/-manufacturing-wfm; historical jobs1230/1228/1229 and current1271/1270/1272 after completion; no trigger/write/deploy capability"
+  },
+  "manifestClaims": {
+    "fixedRequiredArtifactCount": 21,
+    "signed": false,
+    "registryDigestAttested": false,
+    "testCountsVerified": false,
+    "providerAuthority": false,
+    "hostedCustomerProof": false,
+    "historical540Recovered": false,
+    "newImageContentsProvenByFixtures": false
+  },
+  "sourceFiles": {
+    ".circleci/config.yml": {
+      "sha256": "e0894c8b425b8c468c7849be83dfdb7a53adcb4d5b6546d4bbeb5bb02b8f8b25",
+      "gitBlob": "f92b7c457a5ed2950d2643fab83ce1c9b56b27cc"
+    },
+    "scripts/run-forge-ci.mjs": {
+      "sha256": "f43dbd49627b51fd1e419f46a428e70e9c3e8103534faa1d406e4c1d7165522c",
+      "gitBlob": "4c527ca02b5ee23385372d5fe6cbcd83064d19e2"
+    },
+    "scripts/runtime-artifact-manifest.mjs": {
+      "sha256": "67da872777866d1e728c8f509a00044391e2a5e57bcb279e4ea5fb7945af3307",
+      "gitBlob": "fb927485870b77bd7cf528e044d651ce4931b271"
+    },
+    "scripts/runtime-artifact-manifest.test.mjs": {
+      "sha256": "b6e7c4fae0c6791624a220278442076c18012d4f2c8661a066a106e8662da5bf",
+      "gitBlob": "ae33dcb3988809291458684c30382777b17d4fbb"
+    }
+  },
+  "logs": {
+    "baseline-wiring-red.tap": {
+      "rawSha256": "22b1244caef9626bd62a075df2e27d74d057d06e9c047a2ea76d0d5f883f6380",
+      "rawBytes": 4110,
+      "gzipSha256": "821f3c1f6e8e1785a20f585af1001ddd2589621ca420e1b9c938033277a2c10e"
+    },
+    "manifest-green.tap": {
+      "rawSha256": "81b00180733cd221108c1c9078656dd056371e83f7917838a042f21f55d54aec",
+      "rawBytes": 3168,
+      "gzipSha256": "76a99db8bce1e553ab2ac40d7f6fcb5a5bd9a135a45cacf6f688ee7790bb0fb8"
+    },
+    "forge-source.log": {
+      "rawSha256": "fce6716fdae6e68f0ab4e23f8f0b516d4fc115478d951861102418576de02b2e",
+      "rawBytes": 136412,
+      "gzipSha256": "260a8bdf119984a8e8775e5825bdf6bc60cccf537480bb945f2873806f959ad6"
+    }
+  }
+}
