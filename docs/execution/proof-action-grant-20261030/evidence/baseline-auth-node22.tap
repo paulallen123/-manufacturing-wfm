@@ -1,0 +1,157 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: heldout roles use arbitrary explicit actors and unique signed assertions on new pages
+ok 1 - heldout roles use arbitrary explicit actors and unique signed assertions on new pages
+  ---
+  duration_ms: 30.722578
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/runtime-identity / x-wfm-source-sha
+ok 2 - heldout source binding is required at /api/runtime-identity / x-wfm-source-sha
+  ---
+  duration_ms: 4.32827
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/runtime-identity / x-wfm-source-binding
+ok 3 - heldout source binding is required at /api/runtime-identity / x-wfm-source-binding
+  ---
+  duration_ms: 2.268475
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/runtime-identity / x-wfm-fixture-only
+ok 4 - heldout source binding is required at /api/runtime-identity / x-wfm-fixture-only
+  ---
+  duration_ms: 1.512538
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/proof-runner/session / x-wfm-source-sha
+ok 5 - heldout source binding is required at /api/proof-runner/session / x-wfm-source-sha
+  ---
+  duration_ms: 3.71367
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/proof-runner/session / x-wfm-source-binding
+ok 6 - heldout source binding is required at /api/proof-runner/session / x-wfm-source-binding
+  ---
+  duration_ms: 3.763653
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/proof-runner/session / x-wfm-fixture-only
+ok 7 - heldout source binding is required at /api/proof-runner/session / x-wfm-fixture-only
+  ---
+  duration_ms: 3.675784
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/bootstrap / x-wfm-source-sha
+ok 8 - heldout source binding is required at /api/bootstrap / x-wfm-source-sha
+  ---
+  duration_ms: 1.633048
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/bootstrap / x-wfm-source-binding
+ok 9 - heldout source binding is required at /api/bootstrap / x-wfm-source-binding
+  ---
+  duration_ms: 2.357714
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/bootstrap / x-wfm-fixture-only
+ok 10 - heldout source binding is required at /api/bootstrap / x-wfm-fixture-only
+  ---
+  duration_ms: 2.093592
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/implementation/autonomous/status / x-wfm-source-sha
+ok 11 - heldout source binding is required at /api/implementation/autonomous/status / x-wfm-source-sha
+  ---
+  duration_ms: 5.119172
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/implementation/autonomous/status / x-wfm-source-binding
+ok 12 - heldout source binding is required at /api/implementation/autonomous/status / x-wfm-source-binding
+  ---
+  duration_ms: 3.351836
+  type: 'test'
+  ...
+# Subtest: heldout source binding is required at /api/implementation/autonomous/status / x-wfm-fixture-only
+ok 13 - heldout source binding is required at /api/implementation/autonomous/status / x-wfm-fixture-only
+  ---
+  duration_ms: 4.520113
+  type: 'test'
+  ...
+# Subtest: heldout session exchange rejects persisted actor role substitution
+ok 14 - heldout session exchange rejects persisted actor role substitution
+  ---
+  duration_ms: 3.201105
+  type: 'test'
+  ...
+# Subtest: heldout session exchange rejects persisted actor tenant substitution
+ok 15 - heldout session exchange rejects persisted actor tenant substitution
+  ---
+  duration_ms: 3.000375
+  type: 'test'
+  ...
+# Subtest: heldout session exchange rejects persisted actor email substitution
+ok 16 - heldout session exchange rejects persisted actor email substitution
+  ---
+  duration_ms: 2.727148
+  type: 'test'
+  ...
+# Subtest: heldout current implementation rejects missing expected candidateSha even when historical evidence exists
+ok 17 - heldout current implementation rejects missing expected candidateSha even when historical evidence exists
+  ---
+  duration_ms: 6.6651
+  type: 'test'
+  ...
+# Subtest: heldout current implementation rejects missing expected deploymentId even when historical evidence exists
+ok 18 - heldout current implementation rejects missing expected deploymentId even when historical evidence exists
+  ---
+  duration_ms: 6.317217
+  type: 'test'
+  ...
+# Subtest: heldout current implementation rejects missing expected tenant even when historical evidence exists
+ok 19 - heldout current implementation rejects missing expected tenant even when historical evidence exists
+  ---
+  duration_ms: 4.181734
+  type: 'test'
+  ...
+# Subtest: heldout current implementation rejects missing expected runId even when historical evidence exists
+ok 20 - heldout current implementation rejects missing expected runId even when historical evidence exists
+  ---
+  duration_ms: 4.000371
+  type: 'test'
+  ...
+# Subtest: heldout unauthenticated failure stops before minting any proof session
+ok 21 - heldout unauthenticated failure stops before minting any proof session
+  ---
+  duration_ms: 2.057669
+  type: 'test'
+  ...
+# Subtest: heldout navigation receipt cannot acquire business or customer readiness by repeated login
+ok 22 - heldout navigation receipt cannot acquire business or customer readiness by repeated login
+  ---
+  duration_ms: 15.591383
+  type: 'test'
+  ...
+# Subtest: heldout self-asserted approval remains zero-business signed navigation: JSON
+ok 23 - heldout self-asserted approval remains zero-business signed navigation: JSON
+  ---
+  duration_ms: 24.233154
+  type: 'test'
+  ...
+# Subtest: heldout self-asserted approval remains zero-business signed navigation: malformed
+ok 24 - heldout self-asserted approval remains zero-business signed navigation: malformed
+  ---
+  duration_ms: 25.00097
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 315.986828

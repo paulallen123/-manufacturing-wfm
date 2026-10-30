@@ -1,0 +1,439 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: heldout separate authority key and exact server context produce test-only evidence
+ok 1 - heldout separate authority key and exact server context produce test-only evidence
+  ---
+  duration_ms: 5.83952
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric null
+ok 2 - heldout issuedAt rejects malformed numeric null
+  ---
+  duration_ms: 0.662592
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric true
+ok 3 - heldout issuedAt rejects malformed numeric true
+  ---
+  duration_ms: 0.727319
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric 81
+ok 4 - heldout issuedAt rejects malformed numeric 81
+  ---
+  duration_ms: 0.442828
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric 1.5
+ok 5 - heldout issuedAt rejects malformed numeric 1.5
+  ---
+  duration_ms: 0.423045
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric NaN
+ok 6 - heldout issuedAt rejects malformed numeric NaN
+  ---
+  duration_ms: 0.405622
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric Infinity
+ok 7 - heldout issuedAt rejects malformed numeric Infinity
+  ---
+  duration_ms: 0.410834
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric 9007199254740992
+ok 8 - heldout issuedAt rejects malformed numeric 9007199254740992
+  ---
+  duration_ms: 0.24532
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric null
+ok 9 - heldout expiresAt rejects malformed numeric null
+  ---
+  duration_ms: 0.699166
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric true
+ok 10 - heldout expiresAt rejects malformed numeric true
+  ---
+  duration_ms: 0.649964
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric 81
+ok 11 - heldout expiresAt rejects malformed numeric 81
+  ---
+  duration_ms: 0.331018
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric 1.5
+ok 12 - heldout expiresAt rejects malformed numeric 1.5
+  ---
+  duration_ms: 0.286969
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric NaN
+ok 13 - heldout expiresAt rejects malformed numeric NaN
+  ---
+  duration_ms: 0.280924
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric Infinity
+ok 14 - heldout expiresAt rejects malformed numeric Infinity
+  ---
+  duration_ms: 0.180599
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric 9007199254740992
+ok 15 - heldout expiresAt rejects malformed numeric 9007199254740992
+  ---
+  duration_ms: 0.204518
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric null
+ok 16 - heldout expectedVersion rejects malformed numeric null
+  ---
+  duration_ms: 0.224483
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric true
+ok 17 - heldout expectedVersion rejects malformed numeric true
+  ---
+  duration_ms: 0.193843
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric 81
+ok 18 - heldout expectedVersion rejects malformed numeric 81
+  ---
+  duration_ms: 0.327101
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric 1.5
+ok 19 - heldout expectedVersion rejects malformed numeric 1.5
+  ---
+  duration_ms: 0.233311
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric NaN
+ok 20 - heldout expectedVersion rejects malformed numeric NaN
+  ---
+  duration_ms: 0.227335
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric Infinity
+ok 21 - heldout expectedVersion rejects malformed numeric Infinity
+  ---
+  duration_ms: 0.19979
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric 9007199254740992
+ok 22 - heldout expectedVersion rejects malformed numeric 9007199254740992
+  ---
+  duration_ms: 0.21344
+  type: 'test'
+  ...
+# Subtest: heldout signature from login key remains invalid even with a matched current request
+ok 23 - heldout signature from login key remains invalid even with a matched current request
+  ---
+  duration_ms: 1.578578
+  type: 'test'
+  ...
+# Subtest: heldout same authority key in separate PEM/KeyObject representations is refused
+ok 24 - heldout same authority key in separate PEM/KeyObject representations is refused
+  ---
+  duration_ms: 1.376091
+  type: 'test'
+  ...
+# Subtest: heldout server-derived tenant cannot be replaced by a valid unrelated approval
+ok 25 - heldout server-derived tenant cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 1.264909
+  type: 'test'
+  ...
+# Subtest: heldout server-derived managerPersonId cannot be replaced by a valid unrelated approval
+ok 26 - heldout server-derived managerPersonId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 1.001517
+  type: 'test'
+  ...
+# Subtest: heldout server-derived employeePersonId cannot be replaced by a valid unrelated approval
+ok 27 - heldout server-derived employeePersonId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.925738
+  type: 'test'
+  ...
+# Subtest: heldout server-derived sourceSha cannot be replaced by a valid unrelated approval
+ok 28 - heldout server-derived sourceSha cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 2.524156
+  type: 'test'
+  ...
+# Subtest: heldout server-derived deploymentId cannot be replaced by a valid unrelated approval
+ok 29 - heldout server-derived deploymentId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.947527
+  type: 'test'
+  ...
+# Subtest: heldout server-derived runId cannot be replaced by a valid unrelated approval
+ok 30 - heldout server-derived runId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 2.121407
+  type: 'test'
+  ...
+# Subtest: heldout server-derived configurationDigest cannot be replaced by a valid unrelated approval
+ok 31 - heldout server-derived configurationDigest cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.749049
+  type: 'test'
+  ...
+# Subtest: heldout server-derived fixtureId cannot be replaced by a valid unrelated approval
+ok 32 - heldout server-derived fixtureId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.719604
+  type: 'test'
+  ...
+# Subtest: heldout server-derived fixtureDigest cannot be replaced by a valid unrelated approval
+ok 33 - heldout server-derived fixtureDigest cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.568645
+  type: 'test'
+  ...
+# Subtest: heldout server-derived requestId cannot be replaced by a valid unrelated approval
+ok 34 - heldout server-derived requestId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 1.009364
+  type: 'test'
+  ...
+# Subtest: heldout server-derived date cannot be replaced by a valid unrelated approval
+ok 35 - heldout server-derived date cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 1.195137
+  type: 'test'
+  ...
+# Subtest: heldout server-derived hours cannot be replaced by a valid unrelated approval
+ok 36 - heldout server-derived hours cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 1.242162
+  type: 'test'
+  ...
+# Subtest: heldout server-derived expectedVersion cannot be replaced by a valid unrelated approval
+ok 37 - heldout server-derived expectedVersion cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.580237
+  type: 'test'
+  ...
+# Subtest: heldout missing or substituted server approval record must refuse undefined
+not ok 38 - heldout missing or substituted server approval record must refuse undefined
+  ---
+  duration_ms: 1.389485
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:63:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:66:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout missing or substituted server approval record must refuse different-protected-review
+not ok 39 - heldout missing or substituted server approval record must refuse different-protected-review
+  ---
+  duration_ms: 1.151639
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:63:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:66:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout unapproved protected record must refuse undefined
+not ok 40 - heldout unapproved protected record must refuse undefined
+  ---
+  duration_ms: 0.924106
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:70:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:73:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout unapproved protected record must refuse pending
+not ok 41 - heldout unapproved protected record must refuse pending
+  ---
+  duration_ms: 0.963883
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:70:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:73:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout unapproved protected record must refuse revoked
+not ok 42 - heldout unapproved protected record must refuse revoked
+  ---
+  duration_ms: 1.016663
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:70:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:73:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout out-of-domain leave hours cannot form an approval: 0.1
+not ok 43 - heldout out-of-domain leave hours cannot form an approval: 0.1
+  ---
+  duration_ms: 0.525293
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:77:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:78:33)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout out-of-domain leave hours cannot form an approval: 12.5
+not ok 44 - heldout out-of-domain leave hours cannot form an approval: 12.5
+  ---
+  duration_ms: 0.52112
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:77:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:78:33)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout out-of-domain leave hours cannot form an approval: 7.511
+not ok 45 - heldout out-of-domain leave hours cannot form an approval: 7.511
+  ---
+  duration_ms: 0.413274
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:77:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-grant.test.cjs:78:33)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: heldout grant is expired at dispatch offset 90000
+ok 46 - heldout grant is expired at dispatch offset 90000
+  ---
+  duration_ms: 0.778992
+  type: 'test'
+  ...
+# Subtest: heldout grant is expired at dispatch offset 90001
+ok 47 - heldout grant is expired at dispatch offset 90001
+  ---
+  duration_ms: 0.667437
+  type: 'test'
+  ...
+# Subtest: heldout grant is expired at dispatch offset 1800000
+ok 48 - heldout grant is expired at dispatch offset 1800000
+  ---
+  duration_ms: 0.892597
+  type: 'test'
+  ...
+# Subtest: heldout proof session expires independently before grant lifetime
+ok 49 - heldout proof session expires independently before grant lifetime
+  ---
+  duration_ms: 1.137152
+  type: 'test'
+  ...
+# Subtest: heldout a signed claim cannot reopen provider or customer boundaries
+ok 50 - heldout a signed claim cannot reopen provider or customer boundaries
+  ---
+  duration_ms: 3.234738
+  type: 'test'
+  ...
+# Subtest: heldout local transaction rolls back business and audit together, then blocks committed replay
+ok 51 - heldout local transaction rolls back business and audit together, then blocks committed replay
+  ---
+  duration_ms: 6.634067
+  type: 'test'
+  ...
+1..51
+# tests 51
+# suites 0
+# pass 43
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 184.143757

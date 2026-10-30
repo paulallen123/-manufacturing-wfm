@@ -1,0 +1,441 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: the local signed fixture verifies exact scope without authorizing a hosted action
+ok 1 - the local signed fixture verifies exact scope without authorizing a hosted action
+  ---
+  duration_ms: 5.926545
+  type: 'test'
+  ...
+# Subtest: env-style self-assertions and missing protected approval key have no authority
+ok 2 - env-style self-assertions and missing protected approval key have no authority
+  ---
+  duration_ms: 1.230803
+  type: 'test'
+  ...
+# Subtest: proof login key cannot sign approvals or be registered as the approval key
+ok 3 - proof login key cannot sign approvals or be registered as the approval key
+  ---
+  duration_ms: 1.62408
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: schema
+ok 4 - every signed claim is required: schema
+  ---
+  duration_ms: 0.42753
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: issuer
+ok 5 - every signed claim is required: issuer
+  ---
+  duration_ms: 0.432108
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: audience
+ok 6 - every signed claim is required: audience
+  ---
+  duration_ms: 0.37825
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: grantId
+ok 7 - every signed claim is required: grantId
+  ---
+  duration_ms: 0.294362
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: approvalRecordId
+ok 8 - every signed claim is required: approvalRecordId
+  ---
+  duration_ms: 0.378884
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: action
+ok 9 - every signed claim is required: action
+  ---
+  duration_ms: 0.679426
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: issuedAt
+ok 10 - every signed claim is required: issuedAt
+  ---
+  duration_ms: 0.635215
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: expiresAt
+ok 11 - every signed claim is required: expiresAt
+  ---
+  duration_ms: 0.401554
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: origin
+ok 12 - every signed claim is required: origin
+  ---
+  duration_ms: 0.23228
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: tenant
+ok 13 - every signed claim is required: tenant
+  ---
+  duration_ms: 0.203911
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: managerEmail
+ok 14 - every signed claim is required: managerEmail
+  ---
+  duration_ms: 0.186078
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: managerPersonId
+ok 15 - every signed claim is required: managerPersonId
+  ---
+  duration_ms: 0.351938
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: employeeEmail
+ok 16 - every signed claim is required: employeeEmail
+  ---
+  duration_ms: 0.193193
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: employeePersonId
+ok 17 - every signed claim is required: employeePersonId
+  ---
+  duration_ms: 0.227282
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: sourceSha
+ok 18 - every signed claim is required: sourceSha
+  ---
+  duration_ms: 0.233232
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: deploymentId
+ok 19 - every signed claim is required: deploymentId
+  ---
+  duration_ms: 0.338424
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: runId
+ok 20 - every signed claim is required: runId
+  ---
+  duration_ms: 0.205038
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: configurationDigest
+ok 21 - every signed claim is required: configurationDigest
+  ---
+  duration_ms: 0.231711
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: fixtureId
+ok 22 - every signed claim is required: fixtureId
+  ---
+  duration_ms: 0.184004
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: fixtureDigest
+ok 23 - every signed claim is required: fixtureDigest
+  ---
+  duration_ms: 0.169694
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: requestId
+ok 24 - every signed claim is required: requestId
+  ---
+  duration_ms: 0.159753
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: date
+ok 25 - every signed claim is required: date
+  ---
+  duration_ms: 0.258916
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: hours
+ok 26 - every signed claim is required: hours
+  ---
+  duration_ms: 0.244004
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: periodStart
+ok 27 - every signed claim is required: periodStart
+  ---
+  duration_ms: 0.21797
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: periodEnd
+ok 28 - every signed claim is required: periodEnd
+  ---
+  duration_ms: 0.170293
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: expectedVersion
+ok 29 - every signed claim is required: expectedVersion
+  ---
+  duration_ms: 0.206479
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: decision
+ok 30 - every signed claim is required: decision
+  ---
+  duration_ms: 0.168654
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses origin
+ok 31 - server scope mismatch refuses origin
+  ---
+  duration_ms: 0.90811
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses tenant
+ok 32 - server scope mismatch refuses tenant
+  ---
+  duration_ms: 0.690105
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses managerEmail
+ok 33 - server scope mismatch refuses managerEmail
+  ---
+  duration_ms: 0.677754
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses managerPersonId
+ok 34 - server scope mismatch refuses managerPersonId
+  ---
+  duration_ms: 0.931699
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses employeeEmail
+ok 35 - server scope mismatch refuses employeeEmail
+  ---
+  duration_ms: 0.76611
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses employeePersonId
+ok 36 - server scope mismatch refuses employeePersonId
+  ---
+  duration_ms: 0.744499
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses sourceSha
+ok 37 - server scope mismatch refuses sourceSha
+  ---
+  duration_ms: 0.664183
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses deploymentId
+ok 38 - server scope mismatch refuses deploymentId
+  ---
+  duration_ms: 0.751094
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses runId
+ok 39 - server scope mismatch refuses runId
+  ---
+  duration_ms: 0.778946
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses configurationDigest
+ok 40 - server scope mismatch refuses configurationDigest
+  ---
+  duration_ms: 1.046333
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses fixtureId
+ok 41 - server scope mismatch refuses fixtureId
+  ---
+  duration_ms: 1.031258
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses fixtureDigest
+ok 42 - server scope mismatch refuses fixtureDigest
+  ---
+  duration_ms: 0.913213
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses requestId
+ok 43 - server scope mismatch refuses requestId
+  ---
+  duration_ms: 0.776369
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses date
+ok 44 - server scope mismatch refuses date
+  ---
+  duration_ms: 0.629098
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses hours
+ok 45 - server scope mismatch refuses hours
+  ---
+  duration_ms: 0.970458
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses periodStart
+ok 46 - server scope mismatch refuses periodStart
+  ---
+  duration_ms: 0.65239
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses periodEnd
+ok 47 - server scope mismatch refuses periodEnd
+  ---
+  duration_ms: 0.838469
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses expectedVersion
+ok 48 - server scope mismatch refuses expectedVersion
+  ---
+  duration_ms: 0.631193
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses approvalRecordId
+ok 49 - server scope mismatch refuses approvalRecordId
+  ---
+  duration_ms: 0.982415
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: fixtureOnly
+ok 50 - server boundary must be closed: fixtureOnly
+  ---
+  duration_ms: 1.676073
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: productionApproved
+ok 51 - server boundary must be closed: productionApproved
+  ---
+  duration_ms: 0.776636
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: providerActionsEnabled
+ok 52 - server boundary must be closed: providerActionsEnabled
+  ---
+  duration_ms: 0.972833
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: customerActionsEnabled
+ok 53 - server boundary must be closed: customerActionsEnabled
+  ---
+  duration_ms: 0.608667
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: syntheticRequest
+ok 54 - server boundary must be closed: syntheticRequest
+  ---
+  duration_ms: 0.672137
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: requestStatus
+ok 55 - server boundary must be closed: requestStatus
+  ---
+  duration_ms: 0.990126
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerRole
+ok 56 - server boundary must be closed: managerRole
+  ---
+  duration_ms: 0.553111
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerSessionIssuer
+ok 57 - server boundary must be closed: managerSessionIssuer
+  ---
+  duration_ms: 0.795602
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerSessionExpiresAt
+ok 58 - server boundary must be closed: managerSessionExpiresAt
+  ---
+  duration_ms: 0.666704
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerMayReviewRequest
+ok 59 - server boundary must be closed: managerMayReviewRequest
+  ---
+  duration_ms: 0.990672
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: approvalRecordStatus
+ok 60 - server boundary must be closed: approvalRecordStatus
+  ---
+  duration_ms: 1.094078
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: approvalRevoked
+ok 61 - server boundary must be closed: approvalRevoked
+  ---
+  duration_ms: 0.636661
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: approvalRecordExpiresAt
+ok 62 - server boundary must be closed: approvalRecordExpiresAt
+  ---
+  duration_ms: 1.028861
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: approvedGrantDigest
+ok 63 - server boundary must be closed: approvedGrantDigest
+  ---
+  duration_ms: 0.710016
+  type: 'test'
+  ...
+# Subtest: claims reject unknown fields, malformed types, newline values and invalid dates
+ok 64 - claims reject unknown fields, malformed types, newline values and invalid dates
+  ---
+  duration_ms: 1.573612
+  type: 'test'
+  ...
+# Subtest: no expiry skew or lifetime widening is allowed
+ok 65 - no expiry skew or lifetime widening is allowed
+  ---
+  duration_ms: 2.185348
+  type: 'test'
+  ...
+# Subtest: tampering, noncanonical signatures and unexpected envelope properties fail closed
+ok 66 - tampering, noncanonical signatures and unexpected envelope properties fail closed
+  ---
+  duration_ms: 1.661245
+  type: 'test'
+  ...
+# Subtest: local transaction couples consume, exact version transition and audit; response loss cannot replay
+ok 67 - local transaction couples consume, exact version transition and audit; response loss cannot replay
+  ---
+  duration_ms: 3.963677
+  type: 'test'
+  ...
+# Subtest: failed audit rolls back consumption and business state; expiry is checked at action time
+ok 68 - failed audit rolls back consumption and business state; expiry is checked at action time
+  ---
+  duration_ms: 3.054347
+  type: 'test'
+  ...
+# Subtest: a new grant cannot authorize a stale request version
+ok 69 - a new grant cannot authorize a stale request version
+  ---
+  duration_ms: 1.90922
+  type: 'test'
+  ...
+# Subtest: protected approval is reloaded inside the transaction and cannot be supplied by a caller
+ok 70 - protected approval is reloaded inside the transaction and cannot be supplied by a caller
+  ---
+  duration_ms: 1.746634
+  type: 'test'
+  ...
+# Subtest: consumption survives business-state reset and business audit is append only
+ok 71 - consumption survives business-state reset and business audit is append only
+  ---
+  duration_ms: 3.167418
+  type: 'test'
+  ...
+1..71
+# tests 71
+# suites 0
+# pass 71
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 217.770512

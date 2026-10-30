@@ -1,0 +1,519 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: the local signed fixture verifies exact scope without authorizing a hosted action
+ok 1 - the local signed fixture verifies exact scope without authorizing a hosted action
+  ---
+  duration_ms: 6.662213
+  type: 'test'
+  ...
+# Subtest: env-style self-assertions and missing protected approval key have no authority
+ok 2 - env-style self-assertions and missing protected approval key have no authority
+  ---
+  duration_ms: 1.394109
+  type: 'test'
+  ...
+# Subtest: proof login key cannot sign approvals or be registered as the approval key
+ok 3 - proof login key cannot sign approvals or be registered as the approval key
+  ---
+  duration_ms: 1.408651
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: schema
+ok 4 - every signed claim is required: schema
+  ---
+  duration_ms: 0.400457
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: issuer
+ok 5 - every signed claim is required: issuer
+  ---
+  duration_ms: 0.630294
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: audience
+ok 6 - every signed claim is required: audience
+  ---
+  duration_ms: 0.366901
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: grantId
+ok 7 - every signed claim is required: grantId
+  ---
+  duration_ms: 0.477221
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: approvalRecordId
+ok 8 - every signed claim is required: approvalRecordId
+  ---
+  duration_ms: 0.359201
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: action
+ok 9 - every signed claim is required: action
+  ---
+  duration_ms: 0.65961
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: issuedAt
+ok 10 - every signed claim is required: issuedAt
+  ---
+  duration_ms: 1.084649
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: expiresAt
+ok 11 - every signed claim is required: expiresAt
+  ---
+  duration_ms: 0.487609
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: origin
+ok 12 - every signed claim is required: origin
+  ---
+  duration_ms: 0.98997
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: tenant
+ok 13 - every signed claim is required: tenant
+  ---
+  duration_ms: 0.789021
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: managerEmail
+ok 14 - every signed claim is required: managerEmail
+  ---
+  duration_ms: 0.241512
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: managerPersonId
+ok 15 - every signed claim is required: managerPersonId
+  ---
+  duration_ms: 0.663637
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: employeeEmail
+ok 16 - every signed claim is required: employeeEmail
+  ---
+  duration_ms: 0.238461
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: employeePersonId
+ok 17 - every signed claim is required: employeePersonId
+  ---
+  duration_ms: 0.505435
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: sourceSha
+ok 18 - every signed claim is required: sourceSha
+  ---
+  duration_ms: 2.244739
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: deploymentId
+ok 19 - every signed claim is required: deploymentId
+  ---
+  duration_ms: 0.319713
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: runId
+ok 20 - every signed claim is required: runId
+  ---
+  duration_ms: 0.209642
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: configurationDigest
+ok 21 - every signed claim is required: configurationDigest
+  ---
+  duration_ms: 0.179048
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: fixtureId
+ok 22 - every signed claim is required: fixtureId
+  ---
+  duration_ms: 0.28182
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: fixtureDigest
+ok 23 - every signed claim is required: fixtureDigest
+  ---
+  duration_ms: 0.448865
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: requestId
+ok 24 - every signed claim is required: requestId
+  ---
+  duration_ms: 0.269176
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: date
+ok 25 - every signed claim is required: date
+  ---
+  duration_ms: 0.231835
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: hours
+ok 26 - every signed claim is required: hours
+  ---
+  duration_ms: 0.16695
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: periodStart
+ok 27 - every signed claim is required: periodStart
+  ---
+  duration_ms: 0.172415
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: periodEnd
+ok 28 - every signed claim is required: periodEnd
+  ---
+  duration_ms: 0.536395
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: expectedVersion
+ok 29 - every signed claim is required: expectedVersion
+  ---
+  duration_ms: 0.231663
+  type: 'test'
+  ...
+# Subtest: every signed claim is required: decision
+ok 30 - every signed claim is required: decision
+  ---
+  duration_ms: 0.172248
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses origin
+ok 31 - server scope mismatch refuses origin
+  ---
+  duration_ms: 2.646884
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses tenant
+ok 32 - server scope mismatch refuses tenant
+  ---
+  duration_ms: 1.128017
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses managerEmail
+ok 33 - server scope mismatch refuses managerEmail
+  ---
+  duration_ms: 1.259428
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses managerPersonId
+ok 34 - server scope mismatch refuses managerPersonId
+  ---
+  duration_ms: 0.985689
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses employeeEmail
+ok 35 - server scope mismatch refuses employeeEmail
+  ---
+  duration_ms: 0.935818
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses employeePersonId
+ok 36 - server scope mismatch refuses employeePersonId
+  ---
+  duration_ms: 0.956541
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses sourceSha
+ok 37 - server scope mismatch refuses sourceSha
+  ---
+  duration_ms: 0.753497
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses deploymentId
+ok 38 - server scope mismatch refuses deploymentId
+  ---
+  duration_ms: 0.840824
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses runId
+ok 39 - server scope mismatch refuses runId
+  ---
+  duration_ms: 1.179349
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses configurationDigest
+ok 40 - server scope mismatch refuses configurationDigest
+  ---
+  duration_ms: 0.990584
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses fixtureId
+ok 41 - server scope mismatch refuses fixtureId
+  ---
+  duration_ms: 1.594254
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses fixtureDigest
+ok 42 - server scope mismatch refuses fixtureDigest
+  ---
+  duration_ms: 0.978486
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses requestId
+ok 43 - server scope mismatch refuses requestId
+  ---
+  duration_ms: 1.206287
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses date
+ok 44 - server scope mismatch refuses date
+  ---
+  duration_ms: 1.179178
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses hours
+ok 45 - server scope mismatch refuses hours
+  ---
+  duration_ms: 0.820263
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses periodStart
+ok 46 - server scope mismatch refuses periodStart
+  ---
+  duration_ms: 0.84805
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses periodEnd
+ok 47 - server scope mismatch refuses periodEnd
+  ---
+  duration_ms: 4.395151
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses expectedVersion
+ok 48 - server scope mismatch refuses expectedVersion
+  ---
+  duration_ms: 0.656543
+  type: 'test'
+  ...
+# Subtest: server scope mismatch refuses approvalRecordId
+not ok 49 - server scope mismatch refuses approvalRecordId
+  ---
+  duration_ms: 1.132425
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:76:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:80:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: server boundary must be closed: fixtureOnly
+ok 50 - server boundary must be closed: fixtureOnly
+  ---
+  duration_ms: 1.521026
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: productionApproved
+ok 51 - server boundary must be closed: productionApproved
+  ---
+  duration_ms: 0.766083
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: providerActionsEnabled
+ok 52 - server boundary must be closed: providerActionsEnabled
+  ---
+  duration_ms: 0.612912
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: customerActionsEnabled
+ok 53 - server boundary must be closed: customerActionsEnabled
+  ---
+  duration_ms: 0.828408
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: syntheticRequest
+ok 54 - server boundary must be closed: syntheticRequest
+  ---
+  duration_ms: 0.945927
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: requestStatus
+ok 55 - server boundary must be closed: requestStatus
+  ---
+  duration_ms: 0.748265
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerRole
+ok 56 - server boundary must be closed: managerRole
+  ---
+  duration_ms: 0.55608
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerSessionIssuer
+ok 57 - server boundary must be closed: managerSessionIssuer
+  ---
+  duration_ms: 1.96127
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerSessionExpiresAt
+ok 58 - server boundary must be closed: managerSessionExpiresAt
+  ---
+  duration_ms: 0.982526
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: managerMayReviewRequest
+ok 59 - server boundary must be closed: managerMayReviewRequest
+  ---
+  duration_ms: 0.856166
+  type: 'test'
+  ...
+# Subtest: server boundary must be closed: approvalRecordStatus
+not ok 60 - server boundary must be closed: approvalRecordStatus
+  ---
+  duration_ms: 1.553469
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:92:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:94:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: server boundary must be closed: approvalRevoked
+not ok 61 - server boundary must be closed: approvalRevoked
+  ---
+  duration_ms: 0.945104
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:92:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:94:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: server boundary must be closed: approvalRecordExpiresAt
+not ok 62 - server boundary must be closed: approvalRecordExpiresAt
+  ---
+  duration_ms: 1.00979
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:92:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:94:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: server boundary must be closed: approvedGrantDigest
+not ok 63 - server boundary must be closed: approvedGrantDigest
+  ---
+  duration_ms: 1.884941
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:92:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:94:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: claims reject unknown fields, malformed types, newline values and invalid dates
+not ok 64 - claims reject unknown fields, malformed types, newline values and invalid dates
+  ---
+  duration_ms: 1.10751
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:98:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/proof-scope-unblock/test-only/proof-action-grant-contract.test.cjs:107:13)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: no expiry skew or lifetime widening is allowed
+ok 65 - no expiry skew or lifetime widening is allowed
+  ---
+  duration_ms: 2.4899
+  type: 'test'
+  ...
+# Subtest: tampering, noncanonical signatures and unexpected envelope properties fail closed
+ok 66 - tampering, noncanonical signatures and unexpected envelope properties fail closed
+  ---
+  duration_ms: 1.883914
+  type: 'test'
+  ...
+# Subtest: local transaction couples consume, exact version transition and audit; response loss cannot replay
+ok 67 - local transaction couples consume, exact version transition and audit; response loss cannot replay
+  ---
+  duration_ms: 4.298769
+  type: 'test'
+  ...
+# Subtest: failed audit rolls back consumption and business state; expiry is checked at action time
+ok 68 - failed audit rolls back consumption and business state; expiry is checked at action time
+  ---
+  duration_ms: 2.020771
+  type: 'test'
+  ...
+# Subtest: a new grant cannot authorize a stale request version
+ok 69 - a new grant cannot authorize a stale request version
+  ---
+  duration_ms: 3.109656
+  type: 'test'
+  ...
+1..69
+# tests 69
+# suites 0
+# pass 63
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 300.361654

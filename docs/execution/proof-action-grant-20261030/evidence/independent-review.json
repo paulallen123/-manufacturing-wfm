@@ -1,0 +1,27 @@
+{
+  "verdict": "ACCEPT_TEST_ONLY",
+  "reviewer": "/root/signed_journey_verifier",
+  "node": "v22.23.2",
+  "independentHeldouts": {
+    "pass": 63,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "primarySuiteIndependentlyRerun": {
+    "pass": 71,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "initialIndependentFindings": 8,
+  "initialIndependentPass": 43,
+  "initialIndependentFail": 8,
+  "resolved": true,
+  "limits": "Fictional in-memory SQLite model only; no issuer, protected key registration, production adapter or hosted action authority established.",
+  "reviewedSha256": {
+    "test-only/proof-action-grant-contract.cjs": "2e375bd1bc6f2d949a0ea1c9258fbcb888aeaa1f750aa3fe7db16ea537eb63a8",
+    "test-only/proof-action-grant-contract.test.cjs": "20123fbc6ea872cd03362fc18a4592a19fe51e7692b858cf7271e1b893d5a85b",
+    "README.md": "e4e32e7f11eaa550e7746fcfce2aa9efbbe614e897c80ecfd934037392f8bccf"
+  }
+}

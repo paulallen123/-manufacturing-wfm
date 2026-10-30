@@ -1,0 +1,37 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: heldout client JSON and an ordinary pending request are insufficient hosted mutation authority
+not ok 1 - heldout client JSON and an ordinary pending request are insufficient hosted mutation authority
+  ---
+  duration_ms: 26.416365
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-leave.test.mjs:161:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Unapproved hosted business mutation must never be submitted
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/signed-journey-verifier/heldout-leave.test.mjs:168:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# {"syntheticSubmissions":1,"returnedScope":"signed-synthetic-leave-decision","returnedStatus":"PARTIAL","managerUiDecided":true,"productReady":false}
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 146.423074
