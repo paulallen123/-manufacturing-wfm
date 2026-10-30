@@ -1,0 +1,61 @@
+{
+  "canonicalParent": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "canonicalTree": "3b7c62f3903f6b778afaa89fef8ccd568051733d",
+  "frozenComparison": "7ced0fe91742928235fe3be042766eec2911ed90",
+  "frozenTree": "cb3d255b3786af31d300cba8240d9661c4c2450e",
+  "baselineReportingFiles": [
+    {
+      "path": "reporting/runtime/vector-report-interchange.cjs",
+      "sha": "a28ff6e58b7d34f7ca8fa4853d57547c92a3df23",
+      "size": 11314
+    },
+    {
+      "path": "reporting/runtime/vector-report-interchange.test.cjs",
+      "sha": "39dbe87a84c0030fd4194cafdba3dd699cc8afff",
+      "size": 14310
+    },
+    {
+      "path": "reporting/runtime/vector-reporting-service.cjs",
+      "sha": "616639e58ab51abefa556a47fc26bc2cb43b2822",
+      "size": 48609
+    },
+    {
+      "path": "reporting/runtime/vector-reporting-service.test.cjs",
+      "sha": "0db8494e3eecad4d78c40864b232769119b9a631",
+      "size": 41837
+    },
+    {
+      "path": "reporting/ui/vector-reporting-ui.css",
+      "sha": "41f543d3d594d595216118ffb05579a9e6d6d229",
+      "size": 15222
+    },
+    {
+      "path": "reporting/ui/vector-reporting-ui.js",
+      "sha": "1b4543a3b64ac0507684fc348cc91b7f0e5463a2",
+      "size": 38622
+    },
+    {
+      "path": "reporting/ui/vector-reporting-ui.test.cjs",
+      "sha": "3d44d53fbfe7b8f7fb899b7dc11fe5a888ec770e",
+      "size": 18554
+    }
+  ],
+  "changedCodePaths": [
+    {
+      "path": "reporting/runtime/vector-reporting-service.cjs",
+      "mode": "100644",
+      "baselineBlob": "616639e58ab51abefa556a47fc26bc2cb43b2822",
+      "candidateBlob": "c5b402bb837d3f3fae902588ad52ec270a3c15f5",
+      "candidateBytes": 49261,
+      "candidateSha256": "a103d09b3e14d2d6da36c034f7a357bbca65e43677b02e655a31b0ad08c1d540"
+    },
+    {
+      "path": "reporting/runtime/vector-reporting-service.test.cjs",
+      "mode": "100644",
+      "baselineBlob": "0db8494e3eecad4d78c40864b232769119b9a631",
+      "candidateBlob": "53456238c9650286dc4ab2e4fce8131472270673",
+      "candidateBytes": 48882,
+      "candidateSha256": "48d4eee2f95a78f3c692ebbcdb5b377dfdad4783f451aeeac9a6f774e4c644da"
+    }
+  ]
+}
