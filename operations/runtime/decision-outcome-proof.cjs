@@ -21,6 +21,10 @@ function number(value,name){
   if(!Number.isFinite(n)) throw new Error(name+' must be numeric.');
   return n;
 }
+function actualNumber(value,name){
+  if(typeof value!=='number'||!Number.isFinite(value)) throw new Error(name+' must be a finite number.');
+  return value;
+}
 function iso(value,name){
   const raw=text(value,80),ms=Date.parse(raw);
   if(!raw||!Number.isFinite(ms)) throw new Error(name+' must be a valid ISO timestamp.');
@@ -79,8 +83,8 @@ function createDecisionOutcomeProof(input={}){
   }
 
   if(resultActual==null) throw new Error('Recorded actual result is required for verified outcomes.');
-  const baselineActual=number(input.baselineActual,'baseline actual');
-  const result=number(resultActual,'result actual');
+  const baselineActual=actualNumber(input.baselineActual,'baseline actual');
+  const result=actualNumber(resultActual,'result actual');
   if(!baselineEvidence.length||!resultEvidence.length) throw new Error('Baseline and result evidence are required for verified outcomes.');
 
   let measurementWindow=null,currency=null;

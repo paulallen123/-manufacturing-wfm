@@ -99,3 +99,135 @@ test('missing and substituted digest cannot label a proof verified for learning'
   }
 });
 
+
+// Reviewed numeric-actual regressions run through the existing admission entry point.
+{
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createDecisionEpisode, selectDecisionOption, recordDecisionOutcome } = require('./decision-episode.cjs');
+const { createDecisionOutcomeProof } = require('./decision-outcome-proof.cjs');
+
+function episode() {
+  const initial = createDecisionEpisode({
+    tenant:'alpha',site:'tamworth',decisionType:'absence-recovery',triggerId:'absence:42',
+    triggeredAt:'2026-09-22T08:00:00Z',contextRevision:'twin:abc',mode:'HUMAN_APPROVAL',
+    sourceEvidence:['absence:42'],objective:{labourCost:.25,planAttainmentPct:.55,riskScore:.2,uncertaintyPenalty:.1},
+    options:[
+      {id:'do-nothing',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:500},evidenceRefs:['sim:a']},
+      {id:'redeploy',feasible:true,policyAllowed:true,hardConstraintsPassed:true,prediction:{labourCost:300},evidenceRefs:['sim:b']}
+    ]
+  });
+  const selected = selectDecisionOption(initial,{optionId:'redeploy',selectedAt:'2026-09-22T08:05:00Z',actorRef:'manager:1',authorityDecision:'HUMAN_APPROVED'});
+  return recordDecisionOutcome(selected,{observedAt:'2026-09-22T16:00:00Z',evidenceRefs:['payroll:shift:a'],actual:{labourCost:320}});
+}
+function input(overrides={}) {
+  return {episode:episode(),metric:'labourCost',direction:'MINIMIZE',classification:'REALISED_FINANCIAL',
+    baselineActual:520,baselineEvidenceRefs:['payroll:baseline'],financeEvidenceRefs:['finance:ledger:shift-a'],
+    currency:'GBP',measurementWindow:{start:'2026-09-22T08:00:00Z',end:'2026-09-22T16:00:00Z'},...overrides};
+}
+test('absent, null and string baseline actuals cannot be presented as realised financial value',()=>{
+  for(const value of [undefined,null,'520','',false]) {
+    assert.throws(()=>createDecisionOutcomeProof(input({baselineActual:value})),/baseline actual must be a finite number/);
+  }
+});
+test('a forged nonnumeric or numeric-string result actual cannot become realised financial value',()=>{
+  for(const value of [null,undefined,'320','',false]) {
+    const mutated=structuredClone(episode());
+    mutated.outcome.actual.labourCost=value;
+    assert.throws(()=>createDecisionOutcomeProof(input({episode:mutated})),/result actual must be a finite number|Recorded actual result is required/);
+  }
+});
+test('explicit numeric zero is measured rather than treated as absent',()=>{
+  const proof=createDecisionOutcomeProof(input({baselineActual:0}));
+  assert.equal(proof.observed.baseline,0);
+  assert.equal(proof.observed.improvement,-320);
+});
+}
+
+// Independently authored boundary cases; local target makes ordinary CI portable.
+{
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+
+const modulePath = require.resolve('./decision-outcome-proof.cjs');
+const { createDecisionOutcomeProof, toAdaptiveOutcomeInput } = require(modulePath);
+
+function episode(actual = 320) {
+  return {
+    episodeId: 'decision:independent:1', tenant: 'synthetic-alpha', site: 'synthetic-site',
+    decisionType: 'absence-recovery', selection: { optionId: 'redeploy' },
+    options: [
+      { id: 'do-nothing', prediction: { labourCost: 500, planAttainmentPct: 80 } },
+      { id: 'redeploy', prediction: { labourCost: 300, planAttainmentPct: 98 } }
+    ],
+    outcome: {
+      observedAt: '2026-09-22T16:00:00Z', evidenceRefs: ['synthetic:result'],
+      actual: { labourCost: actual, planAttainmentPct: 97 }
+    }
+  };
+}
+
+function input(override = {}) {
+  return {
+    episode: episode(), metric: 'labourCost', direction: 'MINIMIZE',
+    classification: 'REALISED_FINANCIAL', baselineActual: 520,
+    baselineEvidenceRefs: ['synthetic:baseline'], financeEvidenceRefs: ['synthetic:ledger'],
+    currency: 'GBP',
+    measurementWindow: { start: '2026-09-22T08:00:00Z', end: '2026-09-22T16:00:00Z' },
+    ...override
+  };
+}
+
+test('missing baseline actual cannot silently become a zero saving', () => {
+  const candidate = input(); delete candidate.baselineActual;
+  assert.throws(() => createDecisionOutcomeProof(candidate), /baseline actual/);
+});
+
+test('coercible baseline values cannot prove financial results', () => {
+  for (const value of ['520', '', true, false, [], [520], new Number(520), NaN, Infinity, -Infinity]) {
+    assert.throws(() => createDecisionOutcomeProof(input({ baselineActual: value })), /baseline actual/, String(value));
+  }
+});
+
+test('coercible result values cannot prove financial results', () => {
+  for (const value of ['320', '', true, false, [], [320], new Number(320), NaN, Infinity, -Infinity]) {
+    assert.throws(() => createDecisionOutcomeProof(input({ episode: episode(value) })), /result actual/, String(value));
+  }
+});
+
+test('missing result and missing baseline are rejected for verified operational evidence too', () => {
+  const missing = episode(); delete missing.outcome.actual.labourCost;
+  assert.throws(() => createDecisionOutcomeProof(input({ episode: missing, classification: 'VERIFIED_OPERATIONAL' })), /result actual|Recorded actual/);
+  const noBaseline = input({ classification: 'VERIFIED_OPERATIONAL' }); delete noBaseline.baselineActual;
+  assert.throws(() => createDecisionOutcomeProof(noBaseline), /baseline actual/);
+});
+
+test('explicit numeric zero is retained at both ends', () => {
+  const zeroBaseline = createDecisionOutcomeProof(input({ baselineActual: 0 }));
+  assert.equal(zeroBaseline.observed.baseline, 0);
+  assert.equal(zeroBaseline.observed.improvement, -320);
+  const zeroResult = createDecisionOutcomeProof(input({ episode: episode(0) }));
+  assert.equal(zeroResult.observed.result, 0);
+  assert.equal(zeroResult.observed.improvement, 520);
+});
+
+test('simulation remains unverified even with missing actual measurements', () => {
+  const simulated = episode(); delete simulated.outcome.actual.labourCost;
+  const proof = createDecisionOutcomeProof(input({ episode: simulated, classification: 'SIMULATED' }));
+  assert.equal(proof.observed, null);
+  assert.equal(proof.realisedFinancialOutcome, false);
+  assert.equal(proof.learningEligible, false);
+  assert.throws(() => toAdaptiveOutcomeInput(proof), /verified decision outcome/);
+});
+
+test('valid financial value keeps exact observed improvement and learning delta', () => {
+  const proof = createDecisionOutcomeProof(input());
+  assert.equal(proof.observed.baseline, 520);
+  assert.equal(proof.observed.result, 320);
+  assert.equal(proof.observed.improvement, 200);
+  assert.equal(proof.realisedFinancialOutcome, true);
+  assert.equal(toAdaptiveOutcomeInput(proof).result - toAdaptiveOutcomeInput(proof).baseline, 200);
+});
+}
