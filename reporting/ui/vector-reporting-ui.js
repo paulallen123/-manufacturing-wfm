@@ -229,7 +229,7 @@ function factoryRows(body){
 }
 function genericRows(body,candidates){
   const rows=arr(body,candidates);
-  if(rows.length)return rows.map(flatten);
+  if(rows.length)return rows.map(row=>flatten(row));
   if(body&&typeof body==='object'&&!Array.isArray(body)){
     const out=[];
     for(const [k,v] of Object.entries(body)){
@@ -240,12 +240,15 @@ function genericRows(body,candidates){
   }
   return [];
 }
-function flatten(obj,prefix='',depth=0,out={}){
+function flatten(obj,prefix='',depth=0,out=Object.create(null)){
   if(!obj||typeof obj!=='object'||depth>2)return out;
   for(const [k,v] of Object.entries(obj)){
     const key=prefix?prefix+'.'+k:k;
-    if(v==null||['string','number','boolean'].includes(typeof v))out[key]=v;
-    else if(Array.isArray(v))out[key]=v.length;
+    if(v==null||['string','number','boolean'].includes(typeof v)||Array.isArray(v)){
+      // A flat dotted field and a nested path must not silently select a value.
+      if(Object.hasOwn(out,key))throw new TypeError('Ambiguous report source fields.');
+      out[key]=Array.isArray(v)?v.length:v;
+    }
     else if(depth<2)flatten(v,key,depth+1,out);
   }
   return out;
@@ -296,8 +299,8 @@ function renderReport(){
         <button type="button" class="secondary" data-report-save>${state.selectedReportId?'Saved':'Save'}</button>
         <button type="button" class="secondary" data-report-pin>${isPinnedReport(state.selectedReportId)?'Remove from dashboard':'Pin to dashboard'}</button>
         <button type="button" class="secondary" data-report-schedule>Schedule</button>
-        <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>CSV / Excel</button>
-        <button type="button" class="secondary" data-report-print ${state.rows.length?'':'disabled'}>Print / PDF</button>
+        <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>CSV review</button>
+        <button type="button" class="secondary" data-report-print ${state.rows.length?'':'disabled'}>Print</button>
         <button type="button" class="primary" data-report-run>${state.loading?'Running…':'Run report'}</button>
       </div>
     </div>
@@ -426,7 +429,7 @@ async function run(){
   }catch(e){
     if(e.stale)return;
     if([401,403,404].includes(e.status)){await loadCatalog();return;}
-    state.raw={error:e.message};state.rows=[];
+    state.raw={error:e.message};state.baseRows=[];state.rows=[];state.columns=[];
     const main=modal().querySelector('[data-report-main]');
     main.innerHTML='<div class="vector-reporting-error"><strong>Source could not be read</strong><span>'+esc(e.message)+'</span><button type="button" data-report-run>Try again</button></div>';
     state.loading=false;return;
@@ -489,8 +492,34 @@ async function createSchedule(){
 }
 function csv(){
   if(!state.rows.length)return;
-  const cols=availableColumns(state.rows,state.columns),quote=v=>'"'+cell(v).replace(/"/g,'""')+'"';
-  const data=[cols.map(quote).join(','),...state.rows.map(r=>cols.map(c=>quote(r[c])).join(','))].join('\r\n');
+  // A review-only representation: type tags and escaped JSON prevent raw
+  // spreadsheet formulas, links and controls from leading any CSV cell.
+  // This does not provide a typed import or an approved spreadsheet profile.
+  const token=(type,value)=>type+':'+JSON.stringify(value).replace(/[\u007f-\uffff]/g,
+    ch=>'\\u'+ch.charCodeAt(0).toString(16).padStart(4,'0'));
+  const reviewCell=value=>{
+    if(value===null)return 'null:null';
+    if(typeof value==='string')return token('text',value);
+    if(typeof value==='boolean')return token('boolean',value);
+    if(typeof value==='number'&&Number.isFinite(value))return token('number',value);
+    if(value&&typeof value==='object'){
+      const json=JSON.stringify(value);
+      if(typeof json==='string')return token('json',json);
+    }
+    throw new TypeError('Unsupported CSV review value');
+  };
+  const quote=v=>'"'+v.replace(/"/g,'""')+'"';
+  let data;
+  try{
+    const cols=availableColumns(state.rows,state.columns);
+    if(!cols.length)throw new TypeError('No exportable columns');
+    data=[cols.map(c=>quote(token('header',c))).join(','),
+      ...state.rows.map(r=>cols.map(c=>{
+        const descriptor=r&&typeof r==='object'&&Object.getOwnPropertyDescriptor(r,c);
+        if(!descriptor||!Object.hasOwn(descriptor,'value'))throw new TypeError('Missing export value');
+        return quote(reviewCell(descriptor.value));
+      }).join(','))].join('\r\n')+'\r\n';
+  }catch{toast('Could not prepare CSV review. Check the report data.');return;}
   const blob=new Blob([data],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='vector-report-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }

@@ -1,0 +1,36 @@
+{
+  "parent": "2d0f4e41e3b0463386b2887f39afa064068f9166",
+  "parent_tree": "b6e21c4afa9880c651fe0898235cd4695ce4bfca",
+  "source": [
+    {
+      "path": "reporting/ui/vector-reporting-ui.js",
+      "bytes": 40155,
+      "sha256": "b9e9d9c27a5fbb4a5fb4bb1d1f95c16890ba676d4a8533522354315aa66495da",
+      "git_blob": "02a831a59e468c4959b9166b138184ebda36279f"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-export-safety.test.cjs",
+      "bytes": 2996,
+      "sha256": "02121eba1702421c362596b9c515352778fb080283ef91d0543fdfc4b6510f9e",
+      "git_blob": "9b12ab0826b44296f587f26ae93f5c0cbd81eec2"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-export-heldout.test.cjs",
+      "bytes": 3411,
+      "sha256": "1dcf11b87fb8e516b6eb8139c2780f1b08942c845438cf6193a8e18faa3ca858",
+      "git_blob": "cb058f069eea67894a02b32eba0a1a41037162fd"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-multirow-export.test.cjs",
+      "bytes": 3785,
+      "sha256": "d988b632349b7122167dc58c0ab08f36575fe3bd80f31c0d677036dc1c4c0936",
+      "git_blob": "03a51109215fc4d1bd44c540d5167c2b3e0aa7c3"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-mapping-integrity.test.cjs",
+      "bytes": 5138,
+      "sha256": "616d0dd49cb36d491777db0437be8f30da0913985157a258eab01cbbe475eb60",
+      "git_blob": "7edff3e9cf16361ef4139bb7bf9c840548b68805"
+    }
+  ]
+}
