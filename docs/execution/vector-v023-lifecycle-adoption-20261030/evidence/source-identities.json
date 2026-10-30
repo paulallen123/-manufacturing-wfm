@@ -1,0 +1,62 @@
+[
+  {
+    "path": "integrations/staffology/canonical-runtime-bridge.cjs",
+    "baseline": {
+      "gitBlob": "19f7f451ec1db24e19f5b75bd685ebe3d6dc5e70",
+      "sha256": "cec22f1b9921f456b91c3940f76151b9669f03680dc72b748980663715a4f591"
+    },
+    "donor": {
+      "gitBlob": "87dd8a650f47a96f8bdb1b9aa82937b7614c78bd",
+      "sha256": "e8d405c6de064ef38ecb2238745c4646cfcbe0a3968684c75507320f757e2263"
+    },
+    "candidate": {
+      "gitBlob": "ebc6f4a07d4765c93f2159db214d8142843b1d44",
+      "sha256": "6fbe168e8715ff9f3813dd95c4d79a9f6c6f9db1d302f835b2b90a9acb929749"
+    }
+  },
+  {
+    "path": "integrations/staffology/canonical-runtime-bridge.test.cjs",
+    "baseline": {
+      "gitBlob": "fad628ccc2b5207af60d60e3c9935aa27e27875c",
+      "sha256": "1a9ea2822c9d187daf7e96eac52f20ec1f461a2cd582e9e87b0c69fd463064fc"
+    },
+    "donor": {
+      "gitBlob": "27dbd63d3c3f1fdd75d7e3f6828cf0ae0f77c92b",
+      "sha256": "fe9fa888445bd62799607516d6b400da67e00f6eee78506eef28030df2348eca"
+    },
+    "candidate": {
+      "gitBlob": "6d8e572bc981976c4446bb3b910579c59694ba20",
+      "sha256": "83a85f7a5638cc5a3b318aee1b0e776ae26ff44f4bd4a8475b232bded6a1c43f"
+    }
+  },
+  {
+    "path": "integrations/staffology/staffology-adapter.cjs",
+    "baseline": {
+      "gitBlob": "ec05deedeb5581a4b2f109eb108c796b0e62e59c",
+      "sha256": "efcb0341acb8bce777073778a543035ac37242c2a9775f85a1273b508f902b5f"
+    },
+    "donor": {
+      "gitBlob": "851beee81f43bdf1afdcd456e5dd0ff78759ef95",
+      "sha256": "6eb03b8902bae7074f0963c095d8e130458c3f16268f922d440a93e44b864be1"
+    },
+    "candidate": {
+      "gitBlob": "1a8242ce3fd73a95196164502629ac35e681e289",
+      "sha256": "53f724ae3e7fa9f6924677136a631ff83208e064335bbadab2f2b852c5362c09"
+    }
+  },
+  {
+    "path": "integrations/staffology/staffology-adapter.test.cjs",
+    "baseline": {
+      "gitBlob": "43b0d075f6aabef5f5e87cff31c5683fd4556a64",
+      "sha256": "8a62ca4538094d5022ad29d646afd2274d088145757f376988e0527f8616999f"
+    },
+    "donor": {
+      "gitBlob": "9140471b480f3dcfc7d33b062cbebdff888d6b0e",
+      "sha256": "a04c7ee2bc19aaacae3a492c444e80ed7b4da29d2579a71cd0e19a9c5b43c7b5"
+    },
+    "candidate": {
+      "gitBlob": "129b6019bcf8866f6ba78adb2080d16c911d54e3",
+      "sha256": "9a3dbb95c670dad27501529b0a40983b9a023f7df80357b02b6f3ef491bb429c"
+    }
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "boundary": "Retained #512 donor behavior; not accepted live provider semantics or policy",
+  "ownerSemanticsAcceptance": false,
+  "clockComparisonPerformed": false,
+  "observations": [
+    {
+      "source": "donor",
+      "status": null,
+      "hasLeft": false,
+      "effectiveTo": "2026-12-31",
+      "operation": "upsert",
+      "stagedEndDatePresent": false,
+      "applicationGuardAllows": true
+    },
+    {
+      "source": "candidate",
+      "status": null,
+      "hasLeft": false,
+      "effectiveTo": "2026-12-31",
+      "operation": "upsert",
+      "stagedEndDatePresent": false,
+      "applicationGuardAllows": true
+    }
+  ]
+}

@@ -114,7 +114,25 @@ function peopleEnvelope(acquisition,receipt){
  if(acquiredIds.has(undefined)||acquiredIds.size!==acquisition.records.length)fail('The acquired employee cohort repeats or omits an external identity.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED');
  if(acquiredIds.size!==mappings.size||[...acquiredIds].some(externalId=>!mappings.has(externalId))||[...mappings.keys()].some(externalId=>!acquiredIds.has(externalId)))
   fail('Employee-import mappings must identify the exact acquired cohort once each.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED');
- const records=acquisition.records.map(record=>{const mapping=mappings.get(record.externalId),identity=record.data?.identity,person=record.data?.person,employment=record.data?.employment;if(!mapping||identity?.employeeId!==record.externalId||mapping.payrollId!==identity?.payrollCode)fail('Every acquired employee needs an exact reviewed payroll and workforce mapping.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED');const providedEmail=reviewedEmail(mapping.email),sourceEmail=person?.email||'';if(providedEmail&&sourceEmail&&providedEmail.toLowerCase()!==sourceEmail.toLowerCase())fail('Reviewed VECTOR email cannot replace the existing provider email.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);const former=employment?.status==='Former'||Boolean(employment?.effectiveTo),data={source_id:record.externalId,payroll_id:mapping.payrollId,name:`${person?.firstName||''} ${person?.lastName||''}`.trim(),email:sourceEmail||providedEmail,manager_id:mapping.managerId,site:mapping.site,job:mapping.job,start_date:employment?.effectiveFrom,contract_type:mapping.contractType,weekly_hours:mapping.weeklyHours,language:mapping.language||'en-GB',skills:Array.isArray(mapping.skills)?mapping.skills.join('|'):''};if(!sourceEmail&&providedEmail)data.email_mapping_origin='reviewed-vector-mapping';if(former){data.employment_status='Former';data.employment_end_date=exact(employment?.effectiveTo,'Former employee end date');}return {externalId:record.externalId,revision:record.revision,operation:former?'delete':record.operation,data};});
+ const records=acquisition.records.map(record=>{
+  const mapping=mappings.get(record.externalId),identity=record.data?.identity,person=record.data?.person,employment=record.data?.employment;
+  if(!mapping||identity?.employeeId!==record.externalId||mapping.payrollId!==identity?.payrollCode)fail('Every acquired employee needs an exact reviewed payroll and workforce mapping.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED');
+  const providedEmail=reviewedEmail(mapping.email),sourceEmail=person?.email||'';
+  if(providedEmail&&sourceEmail&&providedEmail.toLowerCase()!==sourceEmail.toLowerCase())fail('Reviewed VECTOR email cannot replace the existing provider email.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED',403);
+  const status=employment?.status??null,hasLeft=employment?.hasLeft??null,effectiveTo=employment?.effectiveTo??null;
+  if(status!==null&&!['Current','Former','Upcoming'].includes(status))fail('Employee lifecycle status is invalid.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
+  if(hasLeft!==null&&typeof hasLeft!=='boolean')fail('Employee leaver status is invalid.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
+  if((['Current','Upcoming'].includes(status)&&hasLeft===true)||(status==='Former'&&hasLeft===false))
+   fail('Employee status contradicts the provider leaver status.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
+  if(effectiveTo&&(status===null||['Current','Upcoming'].includes(status))&&hasLeft===null)
+   fail('An employee end date requires explicit provider leaver status.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
+  const former=status==='Former'||hasLeft===true;
+  if(former&&!effectiveTo)fail('A provider-confirmed former employee requires an end date.','STAFFOLOGY_EMPLOYEE_LIFECYCLE_UNRESOLVED');
+  const data={source_id:record.externalId,payroll_id:mapping.payrollId,name:`${person?.firstName||''} ${person?.lastName||''}`.trim(),email:sourceEmail||providedEmail,manager_id:mapping.managerId,site:mapping.site,job:mapping.job,start_date:employment?.effectiveFrom,contract_type:mapping.contractType,weekly_hours:mapping.weeklyHours,language:mapping.language||'en-GB',skills:Array.isArray(mapping.skills)?mapping.skills.join('|'):''};
+  if(!sourceEmail&&providedEmail)data.email_mapping_origin='reviewed-vector-mapping';
+  if(former){data.employment_status='Former';data.employment_end_date=exact(effectiveTo,'Former employee end date');}
+  return {externalId:record.externalId,revision:record.revision,operation:former?'delete':record.operation,data};
+ });
  if(mappings.size!==records.length)fail('Employee-import mappings contain identities outside the acquired cohort.','STAFFOLOGY_EMPLOYEE_MAPPING_REQUIRED');
  return Object.freeze({objectType:'people',cursor:acquisition.cursor,sourceVersion:acquisition.sourceVersion,records});
 }
