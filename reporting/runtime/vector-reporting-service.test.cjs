@@ -217,6 +217,26 @@ test('unchanged creator authority survives restart and fresh login with immutabl
   }finally{restarted?.close();x.close();}
 });
 
+for(const ancestor of [false,true])test('in-app local role must authorize '+(ancestor?'every report ancestor':'the report')+' despite differing reader snapshots',async()=>{
+  let armed=false,reads=0;
+  const x=setup({currentUserReader:({email,tenant})=>({email,tenant,role:armed&&++reads===1?'manager':'payroll_admin'})});
+  try{
+    let report=await makeReport(x);
+    if(ancestor){
+      const next=await call(x.service,'POST','/api/reporting/reports','payroll-a',{definition:{title:'Fictional inherited report',sourceId:'factory-readiness'},versionOf:report.id});
+      assert.equal(next.status,201);report=next.body.report;
+    }
+    await makeSchedule(x,report.id);
+    changeRole(x,'payroll@a.example','manager');armed=true;
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(result.length,1);assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare('SELECT status FROM vector_report_deliveries').get().status,'BLOCKED_AUTHORITY_DRIFT');
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);
+    }finally{inspect.close();}
+  }finally{x.close();}
+});
+
 test('cross-tenant 404 and append-only triggers preserve every persisted artifact',async()=>{
   const x=setup();try{
     const report=await makeReport(x);await call(x.service,'POST','/api/reporting/dashboards/pin','payroll-a',{reportId:report.id});const schedule=await makeSchedule(x,report.id);await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
@@ -593,4 +613,136 @@ test('identity change on final preclaim read cannot replace the actor authorized
     armed=true;const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
     assert.equal(reads,6);assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');assert.equal(sent,0);
   }finally{x.close();}
+});
+
+// Regression: pause and READY publication must share a durable write boundary.
+function inAppPauseDeferred(){let resolve;const promise=new Promise(r=>{resolve=r;});return {promise,resolve};}
+async function inAppPauseCall(service,method,url,body){
+  const req=Readable.from(body==null?[]:[Buffer.from(JSON.stringify(body))]);
+  req.method=method;req.url=url;req.headers={cookie:'wfm_session=payroll-a'};
+  const res={statusCode:200,headersSent:false,writableEnded:false,setHeader(){},end(value=''){this.body=String(value);this.headersSent=true;this.writableEnded=true;}};
+  assert.equal(await service.handleRequest(req,res),true);
+  return {status:res.statusCode,body:res.body?JSON.parse(res.body):null};
+}
+function inAppPauseFixture(){
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-inapp-pause-'));
+  const dbPath=path.join(dir,'fixture.sqlite');
+  const db=new DatabaseSync(dbPath);
+  db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,role TEXT NOT NULL);CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,expires INTEGER NOT NULL);');
+  db.prepare('INSERT INTO users VALUES(?,?,?)').run('payroll@a.example','tenant-a','payroll_admin');
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(createHash('sha256').update('payroll-a').digest('hex'),'payroll@a.example',Date.now()+3600000);
+  db.close();
+  let armed=false,reads=0;
+  const entered=inAppPauseDeferred(),release=inAppPauseDeferred();
+  const reader=async({email,tenant})=>{
+    const store=new DatabaseSync(dbPath);let actor;
+    try{actor=store.prepare('SELECT email,tenant,role FROM users WHERE tenant=? AND email=?').get(tenant,email);}finally{store.close();}
+    // Hold the final nested report authority read at its actual async boundary.
+    if(armed&&++reads===3){entered.resolve();await release.promise;}
+    return actor;
+  };
+  const worker=Reporting.createVectorReportingService({dbPath,currentUserReader:reader});
+  const controller=Reporting.createVectorReportingService({dbPath});
+  return {dir,dbPath,worker,controller,entered,release,arm(){armed=true;},close(){release.resolve();worker.close();controller.close();fs.rmSync(dir,{recursive:true,force:true});}};
+}
+async function inAppPauseSchedule(x){
+  const created=await inAppPauseCall(x.controller,'POST','/api/reporting/reports',{definition:{title:'Fictional pause fixture',sourceId:'payroll-control'}});
+  assert.equal(created.status,201);
+  const planned=await inAppPauseCall(x.controller,'POST','/api/reporting/schedules',{reportId:created.body.report.id,cadence:'daily',hour:16,minute:5,timeZone:'UTC',delivery:'in_app'});
+  assert.equal(planned.status,201);return planned.body.schedule;
+}
+function inAppPauseCounts(x){
+  const db=new DatabaseSync(x.dbPath);try{return {
+    deliveries:db.prepare('SELECT status,delivery_key FROM vector_report_deliveries ORDER BY created_at,delivery_key').all(),
+    intents:db.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,
+    observations:db.prepare('SELECT count(*) n FROM vector_report_delivery_observations').get().n
+  };}finally{db.close();}
+}
+
+test('in-app pause during awaited authority blocks READY and survives replay/restart; explicit resume permits only the next slot',{timeout:5000},async()=>{
+  const x=inAppPauseFixture();let restarted;
+  try{
+    const planned=await inAppPauseSchedule(x);x.arm();
+    const running=x.worker.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    await x.entered.promise;
+    const paused=await inAppPauseCall(x.controller,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled:false});
+    assert.equal(paused.status,200);assert.equal(paused.body.schedule.enabled,false);
+    x.release.resolve();const result=await running;
+    assert.equal(result[0].status,'BLOCKED_SCHEDULE_PAUSED','an acknowledged pause must prevent a newly READY reference');
+    assert.equal(inAppPauseCounts(x).intents,0);assert.equal(inAppPauseCounts(x).observations,0);
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath});
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const resumed=await inAppPauseCall(x.controller,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled:true});
+    assert.equal(resumed.status,200);
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,'READY');
+    assert.equal(next[0].scheduleId,planned.id);assert.equal(next[0].slot,'2026-09-25-16-05');
+    assert.deepEqual(inAppPauseCounts(x).deliveries.map(r=>r.status).sort(),['BLOCKED_SCHEDULE_PAUSED','READY']);
+  }finally{restarted?.close();x.close();}
+});
+
+test('pausing one in-app schedule during authority lookup leaves a sibling current schedule READY',{timeout:5000},async()=>{
+  const x=inAppPauseFixture();
+  try{
+    const first=await inAppPauseSchedule(x),second=await inAppPauseSchedule(x);x.arm();
+    const running=x.worker.runDueSchedules(new Date('2026-09-24T16:05:00Z'));await x.entered.promise;
+    assert.equal((await inAppPauseCall(x.controller,'POST','/api/reporting/schedules/'+first.id+'/state',{enabled:false})).status,200);
+    x.release.resolve();const result=await running;
+    assert.equal(result.length,2);
+    assert.equal(result.find(r=>r.scheduleId===first.id).status,'BLOCKED_SCHEDULE_PAUSED');
+    assert.equal(result.find(r=>r.scheduleId===second.id).status,'READY');
+    assert.equal(inAppPauseCounts(x).intents,0);assert.equal(inAppPauseCounts(x).observations,0);
+  }finally{x.close();}
+});
+
+test('a refused in-app receipt rolls back the publication transaction and allows a subsequent pause',{timeout:5000},async()=>{
+  const x=inAppPauseFixture();
+  try{
+    const planned=await inAppPauseSchedule(x);
+    const inject=new DatabaseSync(x.dbPath);try{
+      inject.exec("CREATE TRIGGER fixture_refuse_delivery BEFORE INSERT ON vector_report_deliveries BEGIN SELECT RAISE(ABORT,'fictional receipt refusal'); END;");
+    }finally{inject.close();}
+    await assert.rejects(x.worker.runDueSchedules(new Date('2026-09-24T16:05:00Z')),/fictional receipt refusal/);
+    assert.deepEqual(inAppPauseCounts(x).deliveries,[]);
+    assert.equal((await inAppPauseCall(x.controller,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled:false})).status,200);
+    const remove=new DatabaseSync(x.dbPath);try{remove.exec('DROP TRIGGER fixture_refuse_delivery');}finally{remove.close();}
+    assert.deepEqual(await x.worker.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    assert.equal((await inAppPauseCall(x.controller,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled:true})).status,200);
+    const next=await x.worker.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,'READY');
+    assert.equal(inAppPauseCounts(x).intents,0);assert.equal(inAppPauseCounts(x).observations,0);
+  }finally{x.close();}
+});
+
+for(const [label,sql] of [
+  ['role revocation',"UPDATE users SET role='employee' WHERE email='payroll@a.example'"],
+  ['tenant transfer',"UPDATE users SET tenant='tenant-b' WHERE email='payroll@a.example'"],
+  ['user deletion',"DELETE FROM users WHERE email='payroll@a.example'"]
+])test('in-app '+label+' committed during a stale awaited reader blocks READY durably',{timeout:5000},async()=>{
+  const x=inAppPauseFixture();let restarted;
+  try{
+    const planned=await inAppPauseSchedule(x);x.arm();
+    const running=x.worker.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    await x.entered.promise;
+    const revoke=new DatabaseSync(x.dbPath);try{revoke.exec(sql);}finally{revoke.close();}
+    x.release.resolve();const result=await running;
+    assert.equal(result.length,1);assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(result[0].scheduleId,planned.id);assert.equal(result[0].externalReceipt,null);
+    const stored=inAppPauseCounts(x);
+    assert.deepEqual(stored.deliveries.map(row=>row.status),['BLOCKED_AUTHORITY_DRIFT']);
+    assert.equal(stored.intents,0);assert.equal(stored.observations,0);
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare("SELECT count(*) n FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").get().n,1);
+    }finally{inspect.close();}
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath});
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    // A restored local identity does not rewrite the already claimed slot.
+    const restore=new DatabaseSync(x.dbPath);try{
+      restore.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)').run('payroll@a.example','tenant-a','payroll_admin');
+    }finally{restore.close();}
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,'READY');
+  }finally{restarted?.close();x.close();}
 });
