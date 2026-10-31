@@ -43,12 +43,14 @@ test('fetch and streaming-body stalls hit deadline even when transport ignores a
 test('stream size counts actual bytes despite misleading content-length',async()=>{
  const stream=new ReadableStream({start(c){c.enqueue(new Uint8Array(5000));c.enqueue(new Uint8Array(4000));c.close();}});const r=new Response(stream,{headers:{'content-type':'application/json','content-length':'1'}});Object.defineProperty(r,'url',{value:URL});await assert.rejects(launcher.preflightRuntimeIdentity(env(),{fetchImpl:async()=>r}),/TOO_LARGE/);
 });
-test('full launcher fails before materialization/install/signing for every invalid identity',async t=>{
+test('locally rebound launcher fails before materialization/install/signing for every invalid identity',async t=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'runner-preflight-')),tmp=path.join(root,'tmp'),bin=path.join(root,'bin');fs.mkdirSync(tmp);fs.mkdirSync(bin);t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const marker=path.join(root,'INSTALL_OR_CHILD_WAS_CALLED');fs.writeFileSync(path.join(bin,'npm'),'#!/bin/sh\nprintf invoked > '+JSON.stringify(marker)+'\nexit 1\n',{mode:0o700});
  const original={...process.env};Object.assign(process.env,env(),{TMPDIR:tmp,PATH:bin});t.after(()=>{for(const key of Object.keys(process.env))delete process.env[key];Object.assign(process.env,original);});
- for(const [,make,error]of failures){await assert.rejects(launcher.run(bundle.payload,bundle.bundleHash,{fetchImpl:async()=>make()}),error);assert.deepEqual(fs.readdirSync(tmp),[]);assert.equal(fs.existsSync(marker),false);}
- await assert.rejects(launcher.run(bundle.payload,bundle.bundleHash,{fetchImpl:()=>new Promise(()=>{}),timeoutMs:20}),/TIMEOUT/);assert.deepEqual(fs.readdirSync(tmp),[]);assert.equal(fs.existsSync(marker),false);
+ const fixture=require('./published-source.test-fixture.cjs')(),m={exports:{}};
+ require('node:vm').runInNewContext(fixture.source,{require,module:m,exports:m.exports,process,Buffer,URL:global.URL,Uint8Array,AbortController,setTimeout,clearTimeout,console});
+ for(const [,make,error]of failures){await assert.rejects(m.exports.run(fixture.bundle.payload,fixture.bundle.bundleHash,{fetchImpl:async()=>make()}),error);assert.deepEqual(fs.readdirSync(tmp),[]);assert.equal(fs.existsSync(marker),false);}
+ await assert.rejects(m.exports.run(fixture.bundle.payload,fixture.bundle.bundleHash,{fetchImpl:()=>new Promise(()=>{}),timeoutMs:20}),/TIMEOUT/);assert.deepEqual(fs.readdirSync(tmp),[]);assert.equal(fs.existsSync(marker),false);
 });
 test('actual synthetic HTTP identity response uses no authorization and passes required fields',async t=>{
  let received;const server=http.createServer((req,res)=>{received={method:req.method,url:req.url,headers:req.headers};res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(identity()));});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));

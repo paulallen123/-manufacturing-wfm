@@ -3,6 +3,17 @@ import crypto from 'node:crypto';
 import { chromium } from 'playwright';
 import proofRunnerAuth from '../security/runtime/proof-runner-auth.cjs';
 
+export function browserProcessEnvironment(env = process.env) {
+  // Browser processes need operational/transport settings, never proof authority.
+  // An explicit allowlist also rejects unknown credentials and process-loader hooks.
+  const clean = {};
+  for (const key of ['PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TZ',
+    'SSL_CERT_FILE', 'SSL_CERT_DIR', 'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY',
+    'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'])
+    if (typeof env[key] === 'string') clean[key] = env[key];
+  return Object.freeze(clean);
+}
+
 export function createProofClient(env = process.env) {
   const mode = env.VECTOR_PROOF_AUTH_PROFILE;
   assert.ok(mode === 'signed' || mode === 'fixture-password', 'An explicit proof authentication profile is required.');
@@ -162,7 +173,7 @@ const health = await healthResponse.json();
 assert.equal(health.fixtureOnly, true);
 assert.equal(health.productionApproved, false);
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({ headless: true, env: browserProcessEnvironment() });
 const receipts = [];
 let navigationClicks = 0;
 let timeReviewActionJourneys = 0;

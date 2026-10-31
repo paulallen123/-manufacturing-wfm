@@ -14,16 +14,20 @@ const TRANSPORT_ENVIRONMENT_KEYS = Object.freeze([
   'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'
 ]);
 
+// Unpublished local repair: owner must rebind to the exact reviewed source commit.
 // Runner-code provenance is distinct from the reviewed application target.
-const SOURCE = 'ca05f1017c1e10f9b164c58a044d2cd4159d4ea3';
+const SOURCE = 'UNPUBLISHED_BROWSER_ENV_REPAIR_20261031';
 const FILES = Object.freeze({
-  'scripts/current-candidate-role-browser-proof.mjs': '5d5921f54b3e501f70004d324036e3c5fbd336b1f04550cb0ec390434252d903',
+  'scripts/current-candidate-role-browser-proof.mjs': 'ce86cfc54636d50c2a3cfddbcf6ddc9a2752976c78d8a61e5399a40508692ea4',
   'scripts/current-candidate-role-browser-proof-server.mjs': '9f945ad2e768ad0645b493015f03fd85022e79b5c1f51038dcb485d6191b9e06',
   'scripts/vector-proof-result.mjs': '6feddbe9a318eae12f79e0374d0bfa13fdace67fd610a6e26abd6a0c4a09205e',
   'security/runtime/proof-runner-auth.cjs': '0701e4d5d01a211bde865dce2256b9892475f95ae27a415a02132700f1d4fa5b'
 });
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 function requireThat(ok, code) { if (!ok) throw new Error(code); }
+function validateRunnerSource(source = SOURCE) {
+  requireThat(typeof source === 'string' && /^[0-9a-f]{40}$/.test(source) && source !== '0'.repeat(40), 'UNPUBLISHED_RUNNER_SOURCE');
+}
 function decode(value) {
   requireThat(typeof value === 'string' && value.length > 0 && value.length <= 300000, 'INVALID_BASE64');
   const bytes = Buffer.from(value, 'base64');
@@ -158,6 +162,7 @@ async function run(encoded, expectedHash, { fetchImpl = globalThis.fetch, timeou
   // Freeze reviewed inputs across the asynchronous preflight and child lifetime.
   const env = Object.freeze({ ...process.env });
   validateEnvironment(env);
+  validateRunnerSource();
   validateBundle(encoded, expectedHash);
   await preflightRuntimeIdentity(env, { fetchImpl, timeoutMs });
   require('node:sqlite');
@@ -192,4 +197,4 @@ async function run(encoded, expectedHash, { fetchImpl = globalThis.fetch, timeou
     fs.rmSync(root, { recursive: true, force: true });
   }
 }
-module.exports = { SOURCE, FILES, hash, validateBundle, materialize, validateEnvironment, preflightRuntimeIdentity, MAX_IDENTITY_BYTES, PREFLIGHT_TIMEOUT_MS, installerEnvironment, proofChildEnvironment, run };
+module.exports = { SOURCE, FILES, hash, validateRunnerSource, validateBundle, materialize, validateEnvironment, preflightRuntimeIdentity, MAX_IDENTITY_BYTES, PREFLIGHT_TIMEOUT_MS, installerEnvironment, proofChildEnvironment, run };

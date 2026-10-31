@@ -16,7 +16,7 @@ function env() {
     RAILWAY_SERVICE_ID: 'f84fe27d-af17-451c-b164-54dfef6b6a4b',
     RAILWAY_ENVIRONMENT_ID: 'eed9f097-610a-416e-83b9-6bc7bdb3eeef',
     VECTOR_PROOF_URL: 'https://vector-hardening-proof-production.up.railway.app/',
-    WFM_EXPECTED_CANDIDATE_SHA: launcher.SOURCE, VECTOR_PROOF_AUTH_PROFILE: 'signed',
+    WFM_EXPECTED_CANDIDATE_SHA: 'a'.repeat(40), VECTOR_PROOF_AUTH_PROFILE: 'signed',
     WFM_REQUIRE_VECTOR_ASSET_DIGESTS: 'true', WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE: 'true',
     VECTOR_PROOF_ACTORS_JSON: 'SYNTHETIC_TEST_ONLY', PROOF_PRIVATE_KEY_B64: 'SYNTHETIC_SECRET_NOT_TO_LOG',
     EXPECTED_DEPLOYMENT_ID: 'test-only', EXPECTED_IMPLEMENTATION_TENANT: 'test-only',
@@ -92,7 +92,7 @@ test('install failure propagates, cleans materialized files and never logs priva
   fs.writeFileSync(path.join(bin,'npm'),'#!'+process.execPath+'\nrequire("node:fs").writeFileSync('+JSON.stringify(captured)+',JSON.stringify(process.env));process.exit(7);\n',{mode:0o700});
   const preflight=path.join(root,'preflight-fixture.cjs');
   fs.writeFileSync(preflight,`global.fetch=async url=>{const response=new Response(JSON.stringify({candidateSha:process.env.WFM_EXPECTED_CANDIDATE_SHA,sourceBinding:'build-file-matched',fixtureOnly:true,productionApproved:false,pilotReady:false}),{headers:{'content-type':'application/json'}});Object.defineProperty(response,'url',{value:url});return response;};`);
-  const command=fs.readFileSync(path.join(__dirname,'generated/start-command.txt'),'utf8');
+  const { command } = require('./published-source.test-fixture.cjs')();
   const result=spawnSync('/bin/sh',['-c',command],{encoding:'utf8',env:{...env(),PATH:bin,TMPDIR:tmp,NODE_OPTIONS:'--require '+preflight,SSL_CERT_FILE:'/trusted/ca.pem',HTTPS_PROXY:'http://trusted-proxy.invalid',PROVIDER_API_TOKEN:'PROVIDER_SECRET_SENTINEL'}});
   assert.equal(result.status,1);assert.match(result.stderr,/PLAYWRIGHT_INSTALL_FAILED/);
   assert.ok(!result.stderr.includes(env().PROOF_PRIVATE_KEY_B64));assert.ok(!result.stdout.includes(env().PROOF_PRIVATE_KEY_B64));
