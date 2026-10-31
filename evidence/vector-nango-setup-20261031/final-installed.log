@@ -1,0 +1,91 @@
+# exact-hook-installed-resolver-sha256 4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b
+# exact-hook-composed-server-sha256 e3abca538b203dccba9074709a8ae97626defc0f63c362990b093c9af2415e82
+# proof-scope: exact new hook and installed module; complete composer and Docker image not executed
+✔ documented credential shape supplies netsuite with only token and actual expiry (25.200976ms)
+✔ documented credential shape supplies successfactors with only token and actual expiry (1.105894ms)
+▶ tenant, actor, profile, provider, system and credential-reference mismatches stop before network
+  ✔ tenant"tenant-b" (0.681523ms)
+  ✔ profileId"other" (0.151725ms)
+  ✔ provider"successfactors" (0.130534ms)
+  ✔ system"other" (0.110564ms)
+  ✔ credentialRef"WFM_BROKER_TOKEN_OTHER" (0.125557ms)
+  ✔ actor{"tenant":"tenant-b"} (0.119438ms)
+  ✔ tenant{} (1.316096ms)
+✔ tenant, actor, profile, provider, system and credential-reference mismatches stop before network (3.74063ms)
+▶ connection response must match every server-owned identity field
+  ✔ 0 (1.018143ms)
+  ✔ 1 (0.980697ms)
+  ✔ 2 (0.479423ms)
+  ✔ 3 (0.386644ms)
+  ✔ 4 (0.487795ms)
+  ✔ 5 (0.385403ms)
+  ✔ 6 (0.765728ms)
+  ✔ 7 (0.678539ms)
+✔ connection response must match every server-owned identity field (5.835454ms)
+▶ SuccessFactors company and API server changes are refused
+  ✔ companyId (0.487945ms)
+  ✔ apiServer (0.399744ms)
+✔ SuccessFactors company and API server changes are refused (1.090541ms)
+▶ unhealthy and unsupported credentials never become bearer tokens
+  ✔ error (0.887189ms)
+  ✔ missing errors (0.384842ms)
+  ✔ wrong type (0.347326ms)
+  ✔ missing token (0.267217ms)
+  ✔ header injection (0.2625ms)
+  ✔ no credentials scope (0.263411ms)
+✔ unhealthy and unsupported credentials never become bearer tokens (2.969473ms)
+▶ expiry must be present, real, unambiguous and bounded without inferred TTL
+  ✔ undefined (0.320136ms)
+  ✔ null (0.247639ms)
+  ✔ 0 (0.226486ms)
+  ✔ never (1.324097ms)
+  ✔ 2026-02-30T13:00:00.000Z (0.32981ms)
+  ✔ 2026-10-31T13:00:00 (0.221469ms)
+  ✔ 2026-10-31T12:00:00.000Z (0.257172ms)
+  ✔ 2026-10-31T12:00:30.000Z (0.388297ms)
+  ✔ 2026-11-07T12:00:00.001Z (0.211394ms)
+✔ expiry must be present, real, unambiguous and bounded without inferred TTL (4.643707ms)
+✔ binding snapshots cannot be retargeted while the request is pending (0.572311ms)
+▶ configuration rejects alternate hosts, ambiguous bindings and invalid paths before network
+  ✔ http://api.nango.dev (0.145757ms)
+  ✔ https://evil.example (0.116873ms)
+  ✔ https://api.nango.dev/ (0.054622ms)
+  ✔ https://api.nango.dev:444 (0.050495ms)
+  ✔ https://api.nango.dev@evil.example (0.036805ms)
+✔ configuration rejects alternate hosts, ambiguous bindings and invalid paths before network (1.038634ms)
+▶ responses and thrown failures cannot reveal upstream bodies or secrets
+  ✔ 400 (0.603647ms)
+  ✔ 401 (0.238314ms)
+  ✔ 403 (0.190153ms)
+  ✔ 404 (0.227738ms)
+  ✔ 424 (0.179948ms)
+  ✔ 429 (0.168521ms)
+  ✔ 500 (0.16863ms)
+✔ responses and thrown failures cannot reveal upstream bodies or secrets (2.30813ms)
+▶ redirects and unexpected successful response endpoints are rejected
+  ✔ status (0.349519ms)
+  ✔ redirected (0.183162ms)
+  ✔ url (0.163463ms)
+  ✔ missing-url (0.206237ms)
+✔ redirects and unexpected successful response endpoints are rejected (1.226734ms)
+✔ byte limit counts actual stream bytes independently of Content-Length (0.343991ms)
+▶ deadline covers fetch and a stalled body even when cancellation is ignored
+  ✔ fetch (20.482213ms)
+  ✔ stream (20.921735ms)
+✔ deadline covers fetch and a stalled body even when cancellation is ignored (41.975958ms)
+✔ optional loader is disabled with no bindings and refuses partial or mismatched profile coverage (0.594063ms)
+✔ actual sealed metadata broker consumes Nango netsuite credentials through existing direct transport (9.881366ms)
+✔ actual sealed metadata broker consumes Nango successfactors credentials through existing direct transport (3.341031ms)
+✔ baseline broker without callback still refuses absent credentials; no new activation is implied (0.610487ms)
+✔ disabled Nango loader preserves successful legacy server-token collection through the same broker (1.350988ms)
+✔ wrong tenant and missing permit both stop before credential retrieval (0.680542ms)
+✔ credential ownership refusal never falls back to a legacy token or contacts the provider (0.695013ms)
+✔ existing private-address egress rejection is preserved after Nango credential resolution (0.769644ms)
+ℹ tests 71
+ℹ suites 0
+ℹ pass 71
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 158.702769

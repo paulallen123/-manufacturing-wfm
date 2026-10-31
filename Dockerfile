@@ -4,6 +4,9 @@ FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317f
 ARG RAILWAY_GIT_COMMIT_SHA
 WORKDIR /proof
 COPY . ./
+RUN node integration/runtime/nango-credential-provider.test.cjs \
+ && node integration/runtime/nango-metadata-broker.test.cjs \
+ && node scripts/nango-metadata-wiring.test.cjs
 RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
@@ -108,6 +111,7 @@ COPY verification/provider-recovery-correction/operations/runtime/ /workspace/ve
 COPY verification/provider-recovery-correction/ui/ /workspace/verification/provider-recovery-correction/ui/
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
 COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/
+COPY integration/runtime/nango-credential-provider.cjs /workspace/integration/runtime/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
 COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs scripts/patch-customer-runtime-assets.mjs /tmp/
@@ -200,6 +204,11 @@ COPY operations/runtime/decision-episode.cjs operations/runtime/manufacturing-sc
 COPY security/runtime/hosted-listen-guard.cjs security/runtime/hosted-listen-guard.test.cjs security/runtime/hosted-application-user-guard.cjs security/runtime/hosted-application-user-guard.test.cjs /tmp/wfm-tests/security/runtime/
 COPY integration/runtime/three-min-feed.cjs integration/runtime/three-min-feed.test.cjs integration/runtime/autonomous-integration-hub.cjs integration/runtime/autonomous-integration-hub.test.cjs integration/runtime/gusto-company-connector.cjs integration/runtime/gusto-company-connector.test.cjs integration/runtime/gusto-oauth-landing.cjs integration/runtime/gusto-oauth-landing.test.cjs integration/runtime/gusto-integration-hub.test.cjs integration/runtime/directory-oauth-broker.cjs integration/runtime/directory-oauth-broker.test.cjs /tmp/wfm-tests/integration/runtime/
 COPY integration/worker/directory-discovery-worker.cjs integration/worker/directory-discovery-worker.test.cjs /tmp/wfm-tests/integration/worker/
+COPY integration/runtime/nango-credential-provider.test.cjs integration/runtime/nango-metadata-broker.test.cjs /tmp/wfm-nango/integration/runtime/
+COPY test-support/sealed-nango-broker.cjs /tmp/wfm-nango/test-support/sealed-nango-broker.cjs
+RUN VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime node /tmp/wfm-nango/integration/runtime/nango-credential-provider.test.cjs \
+ && VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime VECTOR_NANGO_BROKER_ROOT=/app/lib node /tmp/wfm-nango/integration/runtime/nango-metadata-broker.test.cjs \
+ && rm -rf /tmp/wfm-nango
 COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/tenant-calendar.test.cjs operations/runtime/workforce-lifecycle-guard.test.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-bridge.test.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/workflow-action-evidence-sources.test.cjs operations/runtime/decision-episode.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.cjs operations/runtime/decision-outcome-proof.test.cjs operations/runtime/realtime-event-service.cjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-expiry-readback.regression.test.cjs operations/runtime/t9-customer-guardian.cjs operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/

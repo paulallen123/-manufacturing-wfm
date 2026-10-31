@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-source-proposal; no live activation",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "parentRef": "b26bb6f0fc30e33b6f4c31e05608368a45fd00a4",
+  "targetOwnerBranch": "test/vector-empty-organisation-regression-20261020",
+  "sourceBasis": {
+    "composerGitBlob": "72552d85e6533d732cd229892338b6bb65d6f2a0",
+    "dockerGitBlob": "cc686fecf70258300214c12120f95044619d2029",
+    "sealedArchiveGitBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+    "sealedArchiveSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d"
+  },
+  "sourcePaths": [
+    {
+      "path": "integration/runtime/nango-credential-provider.cjs",
+      "sha256": "4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b",
+      "gitBlob": "a5b1015c3462ba1221782ef32bfdae6b59623b77"
+    },
+    {
+      "path": "integration/runtime/nango-credential-provider.test.cjs",
+      "sha256": "101c69423acb7719c7b493178a71413edbf81fde55fbdb6df9663f873878bbed",
+      "gitBlob": "1c06754f5eda542e4f827d9e4494e19d47058619"
+    },
+    {
+      "path": "integration/runtime/nango-metadata-broker.test.cjs",
+      "sha256": "8e13024a5cd37a54715329a8e93282c35bf8b8cf5eeaba441bc58ac578288013",
+      "gitBlob": "9d610e70f576ff231fa502c0a2ddfa8f665049d7"
+    },
+    {
+      "path": "test-support/sealed-nango-broker.cjs",
+      "sha256": "1194ac817148b8a1d7b57eb726c10e990349f089f3f53347e3dae04cef5a774c",
+      "gitBlob": "bacac524e5c62306c917c3d2daba5d09ff92a946"
+    },
+    {
+      "path": "scripts/nango-metadata-wiring.test.cjs",
+      "sha256": "46ffa06fda7982a26cac8bfb2303f9fde347d071d3374cbd432e046a7734b321",
+      "gitBlob": "51c2c4ed09479152eae8f309c2abe6914f910bfa"
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "sha256": "38e45d555be02b16165cc81073c2a70023b31c48f997e5651baaf88e12eeee0d",
+      "gitBlob": "bf842d6d493ab24c0207cc3aeebe10c0b3de233a"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "bbca9e5add3135ad49fcff3725e6f992fa767777cbb858d0a0ac4757c2930029",
+      "gitBlob": "8c11683f3d972ea0682e92fc3cc38bf05baf1537"
+    }
+  ],
+  "technicalDocument": "docs/integrations/nango-credential-provider.md",
+  "independentReview": {
+    "receipt": "independent/nango-wiring-review.md",
+    "suite": "independent/nango-boundary-heldout.test.cjs",
+    "suiteSha256": "f40b68b3214079e50a12e29564bc987fd46f7b370d03db61426949b02bfa8074",
+    "receiptSha256": "097e35e94a085143c4d0f99ad78fb96f21e6ca364b93f5e537a1428d8b82f7d8"
+  },
+  "runtime": "Node.js v24.22.1",
+  "verification": [
+    {
+      "name": "resolver",
+      "command": "node integration/runtime/nango-credential-provider.test.cjs",
+      "exitCode": 0,
+      "tests": 64,
+      "pass": 64,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/vector-nango-setup-20261031/final-resolver.log",
+      "logSha256": "7119181f80f4bbb7ed57e248a7bf05eb195d00c1633598573352b0f90ba9af46",
+      "recordedLogPath": "evidence/final-resolver.log"
+    },
+    {
+      "name": "real_sealed_broker",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node integration/runtime/nango-metadata-broker.test.cjs",
+      "exitCode": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/vector-nango-setup-20261031/final-broker.log",
+      "logSha256": "04a15a712e40e3c129d76fb6cbaf71efedaee18b6def7d58506faf84f932680f",
+      "recordedLogPath": "evidence/final-broker.log"
+    },
+    {
+      "name": "rebased_wiring",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node scripts/nango-metadata-wiring.test.cjs",
+      "exitCode": 0,
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/vector-nango-setup-20261031/final-rebased-wiring.log",
+      "logSha256": "56085506d964f6efcc3f9518889c08af85562637b46914360ccde6322b41177c",
+      "recordedLogPath": "evidence/final-rebased-wiring.log"
+    },
+    {
+      "name": "independent_boundary",
+      "command": "node independent/nango-boundary-heldout.test.cjs",
+      "exitCode": 0,
+      "tests": 16,
+      "pass": 16,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/vector-nango-setup-20261031/final-independent.log",
+      "logSha256": "b8e43e7f34d8c3a57898626968a056b7ef91a335e4c7d0d525bdeb427866581c",
+      "recordedLogPath": "evidence/final-independent.log"
+    },
+    {
+      "name": "installed_layout_replay",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node evidence/verify-installed-layout.cjs",
+      "exitCode": 0,
+      "tests": 71,
+      "pass": 71,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "log": "evidence/vector-nango-setup-20261031/final-installed.log",
+      "logSha256": "892b9b1590196309f4d4329daf23ed8eeb0c48ae8fd469fb1a83aae4006aedde",
+      "recordedLogPath": "evidence/final-installed.log",
+      "repositoryCommand": "node evidence/nango-verify-installed-layout.cjs"
+    }
+  ],
+  "distinctPassingCases": 90,
+  "replayedInstalledCases": 71,
+  "installedResolverSha256": "4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b",
+  "installedHookServerSha256": "e3abca538b203dccba9074709a8ae97626defc0f63c362990b093c9af2415e82",
+  "dockerRebase": {
+    "parentRef": "b26bb6f0fc30e33b6f4c31e05608368a45fd00a4",
+    "previousParentRef": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+    "freshDockerGitBlob": "cc686fecf70258300214c12120f95044619d2029",
+    "freshDockerSha256": "412f9189c0dba06d16f8d2371d164f48fb899a52a6a4daac04c01c349b03764b",
+    "proposedDockerSha256": "bbca9e5add3135ad49fcff3725e6f992fa767777cbb858d0a0ac4757c2930029",
+    "addedLines": 9,
+    "removedLines": 0,
+    "existingBytesPreservedExactly": true,
+    "composerGitBlobUnchanged": "72552d85e6533d732cd229892338b6bb65d6f2a0",
+    "sealedArchiveUnchanged": true
+  },
+  "patch": {
+    "path": "evidence/nango-local-review.patch",
+    "sha256": "b15d623d347caca7a7deb8667d1990663603ba51675460809caf61222375e0db",
+    "gitApplyCheckExitCode": 0,
+    "baseline": "fresh Dockerfile and unchanged composer; new source paths absent",
+    "localOnly": true,
+    "note": "Local seven-path patch check; the repository PR diff is the reviewable published change."
+  },
+  "verificationLimits": [
+    "Complete composer not run",
+    "Docker image not built",
+    "Pinned Node22 image not executed",
+    "Network boundaries synthetic",
+    "Signed-permit verifier is a fixture",
+    "No Nango or provider API/key access"
+  ],
+  "activationBlock": {
+    "action": "Selecting Nango Connections read:with_credentials",
+    "decision": "Rejected by automatic browser approval review: explicit credential-reading authorization required",
+    "keyCreated": false,
+    "deploymentPerformed": false
+  },
+  "reviewDriver": {
+    "path": "evidence/nango-verify-installed-layout.cjs",
+    "sha256": "6dc1b5325794ce9d3a4f1c80891c2e316ae255ce7a16dc7f9c3c1841a7c7870a"
+  }
+}
