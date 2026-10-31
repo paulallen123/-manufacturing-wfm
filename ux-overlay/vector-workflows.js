@@ -242,13 +242,17 @@
     const saved = LF.receipt;
     return saved ? `<p class="vw-receipt" role="status">Saved and read back from the service · ${escape(saved.action)} · ${escape(saved.id)} · ${escape(saved.status)} · version ${escape(saved.version)}.</p>` : '';
   }
+  function leaveAmount(minutes) {
+    return typeof minutes === 'number' && Number.isFinite(minutes) ? (minutes / 60).toFixed(1) + ' hours' : 'Not verified';
+  }
   function leavePage() {
     const employee = actor()?.role === 'employee';
     const requests = leaveRequests().filter(item => employee ? item.employee === actor()?.personId : item.status === 'pending');
     if (employee) {
       const leave = LF.personal?.leave;
+      const reviewNote = leave?.yearStatus === 'needs_review' && typeof leave.source === 'string' && leave.source.trim() ? `<p class="vw-warning" role="status">${escape(leave.source)}</p>` : '';
       const nextDate = LF.personal?.shifts?.find(shift => shift?.start)?.start?.slice(0, 10) || '';
-      return `<section class="vw-panel" data-vector-leave-route="employee"><h1>Absence &amp; Leave</h1><p>Request scheduled leave and track the saved manager decision.</p>${leaveReceipt()}<div class="personal-grid"><div><b>${escape((Number(leave?.availableMinutes || 0) / 60).toFixed(1))} hours</b><small>Available after pending requests</small></div><div><b>${escape((Number(leave?.pendingMinutes || 0) / 60).toFixed(1))} hours</b><small>Awaiting a manager decision</small></div></div>${control('Request leave', 'leave-request', nextDate, !nextDate || LF.busy)}<h2>My requests</h2>${requests.map(item => `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(item.kind || 'Annual leave')}</b><br>${escape(item.date || item.start)} · ${escape(item.hours)} hours</span><strong data-vector-leave-status>${escape(item.status)}</strong></div>`).join('') || '<p>No leave requests are recorded.</p>'}</section>`;
+      return `<section class="vw-panel" data-vector-leave-route="employee"><h1>Absence &amp; Leave</h1><p>Request scheduled leave and track the saved manager decision.</p>${leaveReceipt()}${reviewNote}<div class="personal-grid"><div><b>${escape(leaveAmount(leave?.availableMinutes))}</b><small>Available after pending requests</small></div><div><b>${escape(leaveAmount(leave?.pendingMinutes))}</b><small>Awaiting a manager decision</small></div></div>${control('Request leave', 'leave-request', nextDate, !nextDate || LF.busy)}<h2>My requests</h2>${requests.map(item => `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(item.kind || 'Annual leave')}</b><br>${escape(item.date || item.start)} · ${escape(item.hours)} hours</span><strong data-vector-leave-status>${escape(item.status)}</strong></div>`).join('') || '<p>No leave requests are recorded.</p>'}</section>`;
     }
     return `<section class="vw-panel" data-vector-leave-route="manager"><h1>Absence &amp; Leave</h1><p>Only source-saved requests in the authenticated scope can be decided.</p>${leaveReceipt()}<h2>Requests awaiting a decision</h2>${requests.map(item => `<div class="vw-row" data-vector-leave-id="${escape(item.id)}"><span><b>${escape(item.employeeName || item.employee)}</b><br>${escape(item.date || item.start)} · ${escape(item.hours)} hours<br><small>${escape(item.id)}</small></span><div>${control('Approve', 'leave-approve', item.id, LF.busy)}${control('Decline', 'leave-decline', item.id, LF.busy)}</div></div>`).join('') || '<p>No pending requests are visible in this reporting scope.</p>'}</section>`;
   }
