@@ -11,8 +11,7 @@ const { spawnSync } = require('node:child_process');
 // No package, browser, signer, account or hosted endpoint is used by this harness.
 const activationRoot = path.resolve(process.env.PROOF_ACTIVATION_TARGET || __dirname);
 const launcherPath = path.join(activationRoot, 'launcher.cjs');
-const source = fs.readFileSync(launcherPath, 'utf8');
-const bundle = JSON.parse(fs.readFileSync(path.join(activationRoot, 'generated/bundle.json')));
+const { source, bundle } = require('./published-source.test-fixture.cjs')(activationRoot);
 const transport = {
   PATH: '/fictional/bin', HOME: '/fictional/home', TMPDIR: '/fictional/tmp',
   LANG: 'en_GB.UTF-8', TZ: 'UTC', NODE_EXTRA_CA_CERTS: '/fictional/ca.pem',
