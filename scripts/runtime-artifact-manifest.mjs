@@ -48,7 +48,9 @@ export function createRuntimeArtifactManifest(directory,sourceSha){
  for(const name of ['source-sha.txt','auth-client-source-sha.txt','staffology/source-sha.txt'])if(files.get(name).toString('utf8').trim()!==sourceSha)refuse('SOURCE_MISMATCH');
  const runtimeImageId=inspectedImage(files.get('image-inspect.json')),authClientImageId=inspectedImage(files.get('auth-client-image-inspect.json'));
  if(files.get('runtime-container-image-id.txt').toString('utf8').trim()!==runtimeImageId)refuse('CONTAINER_IMAGE_MISMATCH');
- if(files.get('auth-client-image-node-version.txt').toString('utf8').trim()!=='v22.23.2')refuse('CLIENT_NODE_MISMATCH');
+ const authClientNodeVersion=files.get('auth-client-image-node-version.txt').toString('utf8').trim();
+ // The Playwright v1.63.0 proof-client image uses Node24; the app runtime is separately pinned to Node22.
+ if(!/^v24\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/.test(authClientNodeVersion))refuse('CLIENT_NODE_MISMATCH');
  const identity=json(files.get('runtime-identity.json'));
  if(identity?.candidateSha!==sourceSha||identity.sourceBinding!=='build-file-matched'||identity.fixtureOnly!==true||identity.productionApproved!==false||identity.pilotReady!==false)refuse('RUNTIME_IDENTITY_MISMATCH');
  header(files.get('runtime-identity.headers'),'x-wfm-source-sha',sourceSha);
@@ -56,13 +58,14 @@ export function createRuntimeArtifactManifest(directory,sourceSha){
  const smokeLines=files.get('auth-client-module-smoke.log').toString('utf8').split(/\r?\n/).filter(line=>line.startsWith('{'));
  if(smokeLines.length!==1)refuse('CLIENT_SMOKE_MISSING');
  const smoke=json(Buffer.from(smokeLines[0]));
+ if(smoke.node!==authClientNodeVersion)refuse('CLIENT_NODE_MISMATCH');
  if(smoke.scope!=='PACKAGING_MODULE_SMOKE_ONLY'||smoke.checkoutSourceSha!==sourceSha||smoke.sqliteAvailable!==true||smoke.signedSessionExecuted!==false||smoke.chromiumExecuted!==false||smoke.hostedProof!==false)refuse('CLIENT_SMOKE_MISMATCH');
  const diagnostics=files.get('hosted-http-diagnostics.log').toString('utf8').split(/\r?\n/);
  for(const check of ['health-ready','runtime-identity-build-file-matched','root-page','bootstrap-unauthenticated-401','demand-unauthenticated-401'])if(!diagnostics.includes('HOSTED_HTTP_ASSERTION=PASS check='+check))refuse('HTTP_RECEIPT_MISSING');
  if(!diagnostics.some(line=>/^VECTOR_APPLICATION_UID=PASS real=[1-9][0-9]* effective=[1-9][0-9]* saved=[1-9][0-9]* filesystem=[1-9][0-9]*$/.test(line)))refuse('UID_RECEIPT_MISSING');
  return {
   schemaVersion:1,scope:'CI_ARTIFACT_IDENTITY_MANIFEST_ONLY',sourceSha,
-  runtimeImageId,authClientImageId,imageIdKind:'Docker local image ID',
+  runtimeImageId,authClientImageId,authClientNodeVersion,imageIdKind:'Docker local image ID',
   artifacts:requiredArtifacts.map(relative=>({path:relative,bytes:files.get(relative).length,sha256:sha256(files.get(relative))})),
   signed:false,registryDigestAttested:false,testCountsVerified:false,providerAuthority:false,hostedCustomerProof:false
  };

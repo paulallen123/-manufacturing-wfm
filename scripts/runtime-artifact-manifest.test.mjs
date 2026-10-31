@@ -9,10 +9,11 @@ import {createHash} from 'node:crypto';
 import {createRuntimeArtifactManifest,requiredArtifacts} from './runtime-artifact-manifest.mjs';
 
 const source='a'.repeat(40),runtimeId='sha256:'+'b'.repeat(64),clientId='sha256:'+'c'.repeat(64);
+const clientNode='v24.22.1';
 const secret='PRIVATE_FIXTURE_NEVER_COPY_TO_MANIFEST';
 const script=fileURLToPath(new URL('./runtime-artifact-manifest.mjs',import.meta.url));
 const identity=()=>({candidateSha:source,sourceBinding:'build-file-matched',fixtureOnly:true,productionApproved:false,pilotReady:false,privateValue:secret});
-const smoke=()=>({scope:'PACKAGING_MODULE_SMOKE_ONLY',checkoutSourceSha:source,sqliteAvailable:true,signedSessionExecuted:false,chromiumExecuted:false,hostedProof:false});
+const smoke=()=>({scope:'PACKAGING_MODULE_SMOKE_ONLY',checkoutSourceSha:source,node:clientNode,sqliteAvailable:true,signedSessionExecuted:false,chromiumExecuted:false,hostedProof:false});
 function fixture(t){
  const root=mkdtempSync(path.join(tmpdir(),'runtime-artifact-fixture-'));
  t.after(()=>rmSync(root,{recursive:true,force:true}));
@@ -22,7 +23,7 @@ function fixture(t){
  put('image-inspect.json',[{Id:runtimeId,Config:{Env:[secret]},RepoDigests:[secret]}]);
  put('runtime-container-image-id.txt',runtimeId+'\n');
  put('auth-client-image-inspect.json',[{Id:clientId,Config:{Env:[secret]}}]);
- put('auth-client-image-node-version.txt','v22.23.2\n');
+ put('auth-client-image-node-version.txt',clientNode+'\n');
  put('runtime-identity.json',identity());
  put('runtime-identity.headers',`HTTP/1.1 200 OK\r\nX-WFM-Source-Sha: ${source}\r\nX-WFM-Source-Binding: build-file-matched\r\n\r\n`);
  put('auth-client-module-smoke.log','node warning\n'+JSON.stringify(smoke())+'\n');
@@ -33,6 +34,7 @@ function fixture(t){
 test('manifest binds exact source, container image and fixed artifact hashes without private values',t=>{
  const f=fixture(t);f.put('unlisted-private.json',{secret});const result=f.manifest();
  assert.equal(result.sourceSha,source);assert.equal(result.runtimeImageId,runtimeId);assert.equal(result.authClientImageId,clientId);
+ assert.equal(result.authClientNodeVersion,clientNode);
  assert.deepEqual(result.artifacts.map(x=>x.path),requiredArtifacts);
  for(const record of result.artifacts){const b=readFileSync(path.join(f.root,record.path));assert.equal(record.bytes,b.length);assert.equal(record.sha256,createHash('sha256').update(b).digest('hex'));}
  assert.equal(result.signed,false);assert.equal(result.registryDigestAttested,false);assert.equal(result.testCountsVerified,false);assert.equal(result.providerAuthority,false);assert.equal(result.hostedCustomerProof,false);
@@ -46,8 +48,16 @@ test('running container must bind to the inspected runtime image',t=>{const f=fi
 test('all exported source bindings must match',t=>{for(const name of ['source-sha.txt','auth-client-source-sha.txt','staffology/source-sha.txt']){const f=fixture(t);f.put(name,'d'.repeat(40));assert.throws(f.manifest,/SOURCE_MISMATCH/);}});
 test('runtime identity must remain exact and fixture-only',t=>{for(const delta of [{candidateSha:'d'.repeat(40)},{sourceBinding:'environment'},{fixtureOnly:false},{productionApproved:true},{pilotReady:true}]){const f=fixture(t);f.put('runtime-identity.json',{...identity(),...delta});assert.throws(f.manifest,/RUNTIME_IDENTITY_MISMATCH/);}});
 test('missing, duplicate or substituted identity headers refuse',t=>{for(const headers of ['',`X-WFM-Source-Sha: ${source}\nX-WFM-Source-Sha: ${source}\nX-WFM-Source-Binding: build-file-matched\n`,`X-WFM-Source-Sha: ${source}\nX-WFM-Source-Binding: environment\n`]){const f=fixture(t);f.put('runtime-identity.headers',headers||'HTTP/1.1 200 OK\n');assert.throws(f.manifest,/IDENTITY_HEADER_MISMATCH/);}});
-test('proof-client Node and packaging source/scope must match',t=>{
- const wrongNode=fixture(t);wrongNode.put('auth-client-image-node-version.txt','v24.22.1');assert.throws(wrongNode.manifest,/CLIENT_NODE_MISMATCH/);
+test('Node24 client versions bind captured image output to module smoke',t=>{
+ for(const node of ['v24.0.0','v24.22.1','v24.99.123']){const f=fixture(t);f.put('auth-client-image-node-version.txt',node+'\n');f.put('auth-client-module-smoke.log',JSON.stringify({...smoke(),node}));assert.equal(f.manifest().authClientNodeVersion,node);}
+});
+test('non-Node24, malformed and multiline client versions refuse',t=>{
+ for(const node of ['v22.23.2','v23.11.0','v25.0.0','24.22.1','v24.22','v24.22.1-extra','v24.022.1','v24.22.1\nv24.22.1']){const f=fixture(t);f.put('auth-client-image-node-version.txt',node);f.put('auth-client-module-smoke.log',JSON.stringify({...smoke(),node}));assert.throws(f.manifest,/CLIENT_NODE_MISMATCH/);}
+});
+test('proof-client smoke must report the exact captured image Node version',t=>{
+ for(const node of [undefined,null,24,'v24.22.0','v22.23.2','v24.22.1-extra']){const f=fixture(t);f.put('auth-client-module-smoke.log',JSON.stringify({...smoke(),node}));assert.throws(f.manifest,/CLIENT_NODE_MISMATCH/);}
+});
+test('proof-client packaging source/scope must match',t=>{
  for(const delta of [{checkoutSourceSha:'d'.repeat(40)},{sqliteAvailable:false},{signedSessionExecuted:true},{chromiumExecuted:true},{hostedProof:true}]){const f=fixture(t);f.put('auth-client-module-smoke.log',JSON.stringify({...smoke(),...delta}));assert.throws(f.manifest,/CLIENT_SMOKE_MISMATCH/);}
 });
 test('missing HTTP and nonroot receipts refuse',t=>{
