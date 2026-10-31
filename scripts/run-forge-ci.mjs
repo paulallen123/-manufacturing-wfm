@@ -25,6 +25,13 @@ const checks = [
     'implementation/runtime/implementation-work-fencing.test.cjs',
     'scripts/vector-repair-regressions.test.mjs',
     'tests/vector-payroll-release-proof.test.mjs',
+    'docs/execution/proof-runner-activation/launcher.test.cjs',
+    'docs/execution/proof-runner-activation/preflight.test.cjs',
+    'docs/execution/proof-runner-activation/child-environment.test.cjs',
+    'docs/execution/proof-runner-activation/source-binding.test.cjs',
+    'scripts/current-candidate-role-browser-proof.environment.test.mjs',
+    'scripts/current-candidate-role-browser-proof.auth.test.mjs',
+    'security/runtime/proof-runner-auth.test.cjs',
     'scripts/current-candidate-role-browser-proof-server.test.mjs'
   ]],
   ['node', ['--test',
