@@ -28,6 +28,7 @@ const checks = [
     'scripts/current-candidate-role-browser-proof-server.test.mjs'
   ]],
   ['node', ['--test',
+    'ux-overlay/vector-civil-date.test.cjs',
     'operations/runtime/decision-episode.test.cjs',
     'operations/runtime/customer-demand-intelligence.test.cjs',
     'operations/runtime/absence-recovery-shadow.test.cjs',
