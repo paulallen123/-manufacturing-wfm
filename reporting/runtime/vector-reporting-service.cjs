@@ -491,6 +491,15 @@ function createVectorReportingService(options={}){
       return actor;
     }catch{return null;}
   }
+  // In-app publication repeats the immutable report-chain checks synchronously
+  // against the local actor, so differing async snapshots cannot supply a grant.
+  function localReportAccess(actor,row,seen){
+    if(!actor||!row||row.tenant!==actor.tenant||row.created_by!==actor.email||roleLevel(actor.role)<1)return false;
+    const key='report:'+row.id;if(seen.has(key)||seen.size>=200)return false;seen.add(key);
+    const source=sourceById(row.source_id);
+    if(!source||!permitted(actor.role,source.minRole))return false;
+    return !row.version_of||localReportAccess(actor,one.get(actor.tenant,row.version_of),seen);
+  }
   // One deny-only predicate for personal artifacts and every immutable reference.
   // Current authority comes from the user store, never role_at_creation.
   async function access(c,row,kind='report',seen=new Set()){
@@ -618,16 +627,21 @@ function createVectorReportingService(options={}){
           }
         }
       }
-      // Final pause observation and READY publication share one write lock.
-      // No authority reader or external operation runs inside this transaction.
+      // Final local authority, pause and READY publication share one write lock.
+      // No asynchronous authority reader or external operation runs under it.
       const inAppReady=schedule.delivery==='in_app'&&status==='READY';
       if(inAppReady)db.exec('BEGIN IMMEDIATE');
       let receipt,inserted;
       const createdAt=new Date().toISOString();
       try{
         if(inAppReady){
+          // An awaited reader may return a snapshot captured before revocation.
+          // The local store is a deny-only fence, never a replacement grant.
+          const localActor=currentUser.get(row.tenant,row.created_by);
+          const frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(row.tenant)?.privileged_freeze)===1;
           const latestControl=scheduleState.get(row.tenant,row.id);
-          if(latestControl&&Number(latestControl.enabled)!==1)status='BLOCKED_SCHEDULE_PAUSED';
+          if(!localActor||localActor.role!==authorisedActor.role||frozen||!localReportAccess(localActor,report,new Set(['schedule:'+row.id])))status='BLOCKED_AUTHORITY_DRIFT';
+          else if(latestControl&&Number(latestControl.enabled)!==1)status='BLOCKED_SCHEDULE_PAUSED';
         }
         receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
         inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
