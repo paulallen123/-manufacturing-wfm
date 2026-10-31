@@ -217,6 +217,26 @@ test('unchanged creator authority survives restart and fresh login with immutabl
   }finally{restarted?.close();x.close();}
 });
 
+for(const ancestor of [false,true])test('in-app local role must authorize '+(ancestor?'every report ancestor':'the report')+' despite differing reader snapshots',async()=>{
+  let armed=false,reads=0;
+  const x=setup({currentUserReader:({email,tenant})=>({email,tenant,role:armed&&++reads===1?'manager':'payroll_admin'})});
+  try{
+    let report=await makeReport(x);
+    if(ancestor){
+      const next=await call(x.service,'POST','/api/reporting/reports','payroll-a',{definition:{title:'Fictional inherited report',sourceId:'factory-readiness'},versionOf:report.id});
+      assert.equal(next.status,201);report=next.body.report;
+    }
+    await makeSchedule(x,report.id);
+    changeRole(x,'payroll@a.example','manager');armed=true;
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(result.length,1);assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare('SELECT status FROM vector_report_deliveries').get().status,'BLOCKED_AUTHORITY_DRIFT');
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);
+    }finally{inspect.close();}
+  }finally{x.close();}
+});
+
 test('cross-tenant 404 and append-only triggers preserve every persisted artifact',async()=>{
   const x=setup();try{
     const report=await makeReport(x);await call(x.service,'POST','/api/reporting/dashboards/pin','payroll-a',{reportId:report.id});const schedule=await makeSchedule(x,report.id);await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
@@ -693,4 +713,36 @@ test('a refused in-app receipt rolls back the publication transaction and allows
     assert.equal(next.length,1);assert.equal(next[0].status,'READY');
     assert.equal(inAppPauseCounts(x).intents,0);assert.equal(inAppPauseCounts(x).observations,0);
   }finally{x.close();}
+});
+
+for(const [label,sql] of [
+  ['role revocation',"UPDATE users SET role='employee' WHERE email='payroll@a.example'"],
+  ['tenant transfer',"UPDATE users SET tenant='tenant-b' WHERE email='payroll@a.example'"],
+  ['user deletion',"DELETE FROM users WHERE email='payroll@a.example'"]
+])test('in-app '+label+' committed during a stale awaited reader blocks READY durably',{timeout:5000},async()=>{
+  const x=inAppPauseFixture();let restarted;
+  try{
+    const planned=await inAppPauseSchedule(x);x.arm();
+    const running=x.worker.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    await x.entered.promise;
+    const revoke=new DatabaseSync(x.dbPath);try{revoke.exec(sql);}finally{revoke.close();}
+    x.release.resolve();const result=await running;
+    assert.equal(result.length,1);assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(result[0].scheduleId,planned.id);assert.equal(result[0].externalReceipt,null);
+    const stored=inAppPauseCounts(x);
+    assert.deepEqual(stored.deliveries.map(row=>row.status),['BLOCKED_AUTHORITY_DRIFT']);
+    assert.equal(stored.intents,0);assert.equal(stored.observations,0);
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare("SELECT count(*) n FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").get().n,1);
+    }finally{inspect.close();}
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath});
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    // A restored local identity does not rewrite the already claimed slot.
+    const restore=new DatabaseSync(x.dbPath);try{
+      restore.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)').run('payroll@a.example','tenant-a','payroll_admin');
+    }finally{restore.close();}
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,'READY');
+  }finally{restarted?.close();x.close();}
 });
