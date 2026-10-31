@@ -29,6 +29,7 @@ const checks = [
   ]],
   ['node', ['--test',
     'ux-overlay/vector-civil-date.test.cjs',
+    'ux-overlay/vector-leave-balance-display.test.cjs',
     'operations/runtime/decision-episode.test.cjs',
     'operations/runtime/customer-demand-intelligence.test.cjs',
     'operations/runtime/absence-recovery-shadow.test.cjs',

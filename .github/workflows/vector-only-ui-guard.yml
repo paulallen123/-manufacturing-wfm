@@ -31,7 +31,7 @@ jobs:
           }
           echo "VECTOR_SOURCE_SHA=$actual_sha"
       - name: Prove source-owned action evidence semantics
-        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-civil-date.test.cjs
+        run: node --test operations/runtime/workflow-action-evidence-contract.test.cjs ux-overlay/vector-action-queue.test.cjs ux-overlay/vector-civil-date.test.cjs ux-overlay/vector-leave-balance-display.test.cjs
       - name: Prove retired presentation purge fails closed
         run: node --test scripts/compose-vector-presentation.regression.test.mjs
       - name: Prove marker spoof cannot satisfy built-asset provenance
