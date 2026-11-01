@@ -138,15 +138,27 @@
       RF.historicalPeriods.map(row=>control((row.start||row.id)+' – '+(row.end||''),'history',row.id)).join('')+
       (RF.periodState==='history'?control('Return to current period','current-period'):'')+'</details>';
   }
-  async function loadHistoricalPeriod(id){
+  async function loadHistoricalPeriod(id,requestedTeamId=''){
     const target=RF.historicalPeriods.find(row=>String(row.id)===String(id));
     if(!target)throw Error('Historical period is not available from the server-authoritative calendar.');
     const currentActor=actor(),canReview=reviewer(),canPayroll=permitted('payroll.view'),epoch=++RF.epoch,owner=state.owner,suffix='?period='+encodeURIComponent(target.id);
     if(currentActor?.role==='employee'||(!canReview&&!canPayroll))throw Error('Historical payroll/review requires authorised manager or payroll access.');
-    const [report,company]=await Promise.all([canReview?request('/api/weekly-review'+suffix):null,canPayroll?request('/api/payroll-run'+suffix):null]);
-    if(epoch!==RF.epoch||owner!==state.owner||owner!==ownerKey()||!F.ready)return false;
-    RF.period=target.id;RF.report=report;RF.company=company;RF.periodState='history';RF.team=report?.teams?.[0]?.id||'';
-    const body=ui.page==='vector-weekly-signoff'?weeklyPage():payrollPage();document.getElementById('root').innerHTML=shell(body);return true;
+    RF.period=target.id;RF.report=null;RF.company=null;RF.periodState='history';RF.team=requestedTeamId;
+    document.getElementById('root').innerHTML=shell('<section class="vw-panel" role="status"><h1>Loading historical review</h1></section>');
+    try{
+      const [report,company]=await Promise.all([canReview?request('/api/weekly-review'+suffix):null,canPayroll?request('/api/payroll-run'+suffix):null]);
+      if(epoch!==RF.epoch||owner!==state.owner||owner!==ownerKey()||!F.ready)return false;
+      if(canReview&&(report?.period!==target.id||!Array.isArray(report.teams)))throw Error('Historical manager review did not confirm the requested period.');
+      if(canPayroll&&company?.period!==target.id)throw Error('Historical payroll did not confirm the requested period.');
+      if(requestedTeamId&&!report?.teams?.some(team=>team?.id===requestedTeamId))throw Error('Selected historical team is no longer available from the source.');
+      RF.report=report;RF.company=company;RF.team=requestedTeamId||report?.teams?.[0]?.id||'';
+      const body=ui.page==='vector-weekly-signoff'?weeklyPage():payrollPage();document.getElementById('root').innerHTML=shell(body);return true;
+    }catch(error){
+      if(epoch!==RF.epoch||owner!==state.owner||owner!==ownerKey()||!F.ready)return false;
+      RF.team='';
+      document.getElementById('root').innerHTML=shell(`<section class="vw-panel" role="alert"><h1>Source review unavailable</h1><p>${escape(error.message)}</p>${control('Retry historical read','history',target.id)}${historyNavigation()}</section>`);
+      throw error;
+    }
   }
   function clearLeaveOwner() {
     const owner = ownerKey();
@@ -364,8 +376,8 @@
     const route = ui.page;
     try {
       if (['vector-weekly-signoff', 'payroll-run', 'payroll-intelligence'].includes(route)) {
-        await globalThis.payrollReport();
-        if (epoch !== state.epoch || route !== ui.page) return;
+        const refreshed=RF.periodState==='history'?await loadHistoricalPeriod(RF.period,RF.team):await globalThis.payrollReport();
+        if (refreshed===false || epoch !== state.epoch || route !== ui.page) return;
         const body = route === 'vector-weekly-signoff' ? weeklyPage() : globalThis.payrollPageV4();
         document.getElementById('root').innerHTML = shell(body); return;
       }

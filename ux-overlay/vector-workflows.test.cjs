@@ -517,3 +517,76 @@ test('Vector workflow controller uses real authentication, saved checks and rest
     assert.equal(manager.context.ui.page, 'vector-weekly-signoff');
   });
 });
+
+const V039_CONTROLLER_PATH=path.join(__dirname,'vector-workflows.js');
+const V039_HISTORY_PERIOD='2026-09-07',V039_CURRENT_PERIOD='2026-11-02';
+function v039HistoryFixture(t,options={}){
+ const {current=false,history=true,empty=false,payroll=false,historyFailure=false,removeTeamAfterLoad=false}=options;
+ const reportPeriod=Object.hasOwn(options,'reportPeriod')?options.reportPeriod:V039_HISTORY_PERIOD;
+ const companyPeriod=Object.hasOwn(options,'companyPeriod')?options.companyPeriod:V039_HISTORY_PERIOD;
+ const actor={tenant:'fictional-v039',email:'manager@fixture.example',personId:'fictional-manager',role:'manager',permissions:payroll?['payroll.view']:[]};
+ const calls=[],commands=[],listeners={},root={innerHTML:''};
+ const team=(id,name,canSign)=>({id,name,site:'site-a',period:V039_HISTORY_PERIOD,status:'draft',revision:1,issues:[],categories:[],employees:[],records:[],blockers:[],workedMinutes:0,holidayMinutes:0,checkedEmployees:0,canSign});
+ const reports={
+  [V039_HISTORY_PERIOD]:{period:V039_HISTORY_PERIOD,start:V039_HISTORY_PERIOD,end:'2026-09-13',teams:empty?[]:[team('team-one','Historical one',true),team('team-two','Historical two',true)]},
+  [V039_CURRENT_PERIOD]:{period:V039_CURRENT_PERIOD,start:V039_CURRENT_PERIOD,end:'2026-11-08',teams:[team('team-one','Current one',false),team('team-two','Current two',false)]}
+ };
+ const before=JSON.stringify(reports),copy=x=>JSON.parse(JSON.stringify(x));
+ const context=vm.createContext({console,URL,OFFLINE:false,F:{ready:true,actor},ui:{page:'vector-weekly-signoff'},data:{},
+  payrollActor:()=>actor,PR:{has:(who,permission)=>who.permissions.includes(permission)},
+  request:async url=>{
+   calls.push(url);
+   if(url==='/api/current-review-period')return {schemaVersion:'tenant-calendar-1',tenant:actor.tenant,timeZone:'Europe/London',asOf:'2026-11-05T12:00:00Z',localDate:'2026-11-05',period:current?{id:V039_CURRENT_PERIOD,start:V039_CURRENT_PERIOD,end:'2026-11-08'}:null,historicalPeriods:history?[{id:V039_HISTORY_PERIOD,start:V039_HISTORY_PERIOD,end:'2026-09-13'}]:[]};
+   const weekly=/^\/api\/weekly-review\?period=(.+)$/.exec(url);
+   if(weekly&&reports[decodeURIComponent(weekly[1])]){
+    const id=decodeURIComponent(weekly[1]),out=copy(reports[id]);
+    if(id===V039_HISTORY_PERIOD){const again=calls.filter(x=>x==='/api/weekly-review?period='+V039_HISTORY_PERIOD).length>1;if(historyFailure&&again)throw Error('Historical source temporarily unavailable');out.period=reportPeriod;if(removeTeamAfterLoad&&again)out.teams=out.teams.filter(x=>x.id!=='team-two');}
+    return out;
+   }
+   const company=/^\/api\/payroll-run\?period=(.+)$/.exec(url);
+   if(company){const id=decodeURIComponent(company[1]);return {period:id===V039_HISTORY_PERIOD?companyPeriod:id,teams:[],reminders:[],blockers:[],batches:[],lines:[],totals:{employees:0,workedMinutes:0},audit:[],schema:'fixture-no-export',canRelease:false};}
+   throw Error('Unexpected source read '+url);
+  },
+  command:async(...args)=>{commands.push(args);throw Error('No command is allowed by this read-only fixture');},reload:async()=>{},modal(){throw Error('No approval modal is allowed');},modalActions:()=>'',toast(){},shell:html=>html,render:async()=>{},showLogin(){},fmt:String,
+  fetch:async()=>{throw Error('No direct fetch is allowed');},document:{addEventListener:(kind,fn)=>(listeners[kind]??=[]).push(fn),querySelector:()=>null,getElementById:()=>root}
+ });
+ vm.runInContext(fs.readFileSync(V039_CONTROLLER_PATH,'utf8'),context,{filename:V039_CONTROLLER_PATH});
+ t.after(()=>{assert.equal(commands.length,0);assert.equal(JSON.stringify(reports),before);});
+ return {context,calls,commands,root,refresh:()=>context.VectorWorkflow.refresh(),history:()=>context.VectorWorkflow.action('history',V039_HISTORY_PERIOD),change:async value=>{for(const fn of listeners.change||[])await fn({target:{id:'vw-team',value}});}};
+}
+test('current-period team selection retains its source period and target team',async t=>{
+ const f=v039HistoryFixture(t,{current:true});await f.refresh();await f.change('team-two');
+ assert.equal(f.context.RF.period,V039_CURRENT_PERIOD);assert.equal(f.context.RF.periodState,'current');assert.equal(f.context.RF.team,'team-two');assert.match(f.root.innerHTML,/Current two/);
+});
+test('no-current and no-history remain explicit without a review read or command',async t=>{
+ const f=v039HistoryFixture(t,{history:false});await f.refresh();assert.equal(f.context.RF.periodState,'none');assert.match(f.context.VectorWorkflow.weeklyPage(),/No current review week/);assert.deepEqual(f.calls,['/api/current-review-period']);
+});
+test('initial historical review loads read-only even if the declared source reports canSign',async t=>{
+ const f=v039HistoryFixture(t);await f.refresh();await f.history();assert.equal(f.context.RF.period,V039_HISTORY_PERIOD);assert.equal(f.context.RF.periodState,'history');assert.match(f.root.innerHTML,/Historical review week/);assert.match(f.root.innerHTML,/data-vector-workflow="sign"[^>]*disabled/);
+});
+test('an empty historical team list remains explicit and sends no command',async t=>{
+ const f=v039HistoryFixture(t,{empty:true});await f.refresh();await f.history();assert.equal(f.context.RF.period,V039_HISTORY_PERIOD);assert.equal(f.context.RF.periodState,'history');assert.match(f.root.innerHTML,/No review team is available/);assert.doesNotMatch(f.root.innerHTML,/data-vector-workflow="sign"/);
+});
+for(const current of [false,true])test('real team-change listener preserves historical period when current period is '+(current?'available':'absent'),async t=>{
+ const f=v039HistoryFixture(t,{current});await f.refresh();await f.history();assert.equal(f.context.RF.period,V039_HISTORY_PERIOD);await f.change('team-two');
+ assert.equal(f.context.RF.period,V039_HISTORY_PERIOD,'Changing only the historical team must not select current/no period');assert.equal(f.context.RF.periodState,'history');assert.equal(f.context.RF.team,'team-two');assert.match(f.root.innerHTML,/Historical two/);assert.match(f.root.innerHTML,/data-vector-workflow="sign"[^>]*disabled/);
+});
+
+for(const reportPeriod of [undefined,null,'2026-09-14'])test('historical review refuses missing/wrong source period '+String(reportPeriod),async t=>{
+ const f=v039HistoryFixture(t,{reportPeriod});await f.refresh();await assert.rejects(f.history(),/period/i);assert.equal(f.context.RF.report,null);assert.equal(f.context.RF.company,null);assert.doesNotMatch(f.root.innerHTML,/Historical one|Historical two/);
+});
+for(const companyPeriod of [undefined,'2026-09-14'])test('historical review refuses missing/wrong paired payroll period '+String(companyPeriod),async t=>{
+ const f=v039HistoryFixture(t,{payroll:true,companyPeriod});await f.refresh();await assert.rejects(f.history(),/period/i);assert.equal(f.context.RF.report,null);assert.equal(f.context.RF.company,null);
+});
+test('paired historical source reads bind to the same explicit period without a command',async t=>{
+ const f=v039HistoryFixture(t,{payroll:true});await f.refresh();await f.history();assert.equal(f.context.RF.period,V039_HISTORY_PERIOD);assert.equal(f.context.RF.report.period,V039_HISTORY_PERIOD);assert.equal(f.context.RF.company.period,V039_HISTORY_PERIOD);assert.match(f.root.innerHTML,/data-vector-workflow="sign"[^>]*disabled/);
+});
+test('failed fresh historical team read clears previous team details',async t=>{
+ const f=v039HistoryFixture(t,{historyFailure:true});await f.refresh();await f.history();await f.change('team-two');assert.equal(f.context.RF.report,null);assert.equal(f.context.RF.company,null);assert.match(f.root.innerHTML,/Source review unavailable/);assert.doesNotMatch(f.root.innerHTML,/Historical one|Historical two/);
+});
+test('a selected team missing from fresh historical source never shows another team under it',async t=>{
+ const f=v039HistoryFixture(t,{removeTeamAfterLoad:true});await f.refresh();await f.history();await f.change('team-two');assert.equal(f.context.RF.report,null);assert.match(f.root.innerHTML,/Source review unavailable/);assert.doesNotMatch(f.root.innerHTML,/Historical one|Historical two/);
+});
+test('ordinary rerender retains an explicitly selected historical context',async t=>{
+ const f=v039HistoryFixture(t,{current:true});await f.refresh();await f.history();await f.context.render();assert.equal(f.context.RF.period,V039_HISTORY_PERIOD);assert.equal(f.context.RF.periodState,'history');assert.match(f.root.innerHTML,/Historical review week/);assert.match(f.root.innerHTML,/data-vector-workflow="sign"[^>]*disabled/);
+});
