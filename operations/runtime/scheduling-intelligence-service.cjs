@@ -467,7 +467,7 @@ function createSchedulingIntelligenceService(options = {}) {
         if (!requireInternal(req, res)) return true;
         const b = await readJson(req);
         const forecast = forecastDemand(b.input || {});
-        const labour = b.capacity ? toHeadcountForecast({ forecast, ...b.capacity }) : null;
+        const labour = b.capacity ? toHeadcountForecast({ ...b.capacity, forecast }) : null;
         return writeJson(res, 200, { forecast, labour, authority: 'NO_EXECUTION' });
       }
       if (req.method === 'POST' && path === PREFIX + '/reconcile/shadow') {
@@ -500,7 +500,7 @@ function createSchedulingIntelligenceService(options = {}) {
         const current = requireCurrentManager(req, res, c);
         if (!current) return true;
         const forecast = forecastDemand(b.input || {});
-        const labour = b.capacity ? toHeadcountForecast({ forecast, ...b.capacity }) : null;
+        const labour = b.capacity ? toHeadcountForecast({ ...b.capacity, forecast }) : null;
         const source=authority.readContext(current,branchFor(req,b));
         for(const id of workerReferences(b))authority.worker(source,id);
         return writeJson(res, 200, authority.output(source, { tenant: current.tenant, forecast, labour, scenarioOnly: true, authority: 'NO_EXECUTION' }));
