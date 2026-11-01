@@ -134,3 +134,64 @@ test('explicitly returned team can accept a valid Personal clocking link',()=>{
   assert.ok(issue.sourceFingerprint,'New Personal-session adjustment must bind its source evidence.');
   assert.equal(p.personalSessionLinks.find(item=>item.sessionId===session.id).status,'pending_review');
 });
+
+// V040: post-release adjustment decision input must be validated before mutation.
+{
+'use strict';
+// Disposable pure-domain declarations only. No server, database, provider or export.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const runtime=process.env.WFM_RUNTIME;
+assert.ok(runtime,'WFM_RUNTIME required');
+const createCalendar=require(path.join(runtime,'operations-runtime/tenant-calendar.cjs')).createTenantCalendar;
+function domain(browser){
+ if(!browser)return require(path.join(runtime,'public/payroll-control.js'));
+ const snapshot=createCalendar({env:{},now:()=>Date.parse('2026-11-01T12:00:00Z')}).snapshot();
+ const context=vm.createContext({WFMTenantCalendarSnapshot:snapshot});
+ for(const name of ['engine.js','cost-engine.js','work-rules.js','payroll-control.js'])vm.runInContext(fs.readFileSync(path.join(runtime,'public',name),'utf8'),context,{filename:name});
+ return context.WFMPayroll;
+}
+const proposer={personId:'fixture-proposer',role:'payroll_admin',permissions:['payroll.view','payroll.reopen']};
+const reviewer={personId:'fixture-independent-reviewer',role:'payroll_admin',permissions:['payroll.view','payroll.reopen']};
+const explanation='Fictional independent comparison of the recorded correction.';
+function pending(P){
+ const record={id:'observed-record',employee:'worker',team:'team',date:'2026-09-07',sourceVersion:1,raw:{kind:'worked',clockIn:'2026-09-07T09:00:00Z',clockOut:'2026-09-07T09:30:00Z',breaks:[],breaksConfirmed:true,pendingSync:false,absenceMinutes:0}};
+ const period={id:'2026-09-07',start:'2026-09-07',end:'2026-09-13',records:[record],batches:[{id:'synthetic-terminal-batch',status:'released',checksum:'synthetic-checksum'}]};
+ const state={staff:[{id:'worker',name:'Fictional worker',manager:'team',site:'Synthetic',payrollId:'SYNTHETIC'}],costing:{employeePolicies:{},rates:{worker:[{effectiveFrom:'2026-09-01',hourlyRate:20,currency:'GBP',basis:'hourly',oncostPercent:0,oncostHourly:0}]},policies:{Synthetic:[{version:'synthetic',effectiveFrom:'2026-09-01',weeklyTiers:[],dailyTiers:[],bankHolidayMultiplier:1,weekendMultiplier:1,nightMultiplier:1,stacking:'highest',region:'england-and-wales',warningPercent:90}]}},payrollControl:{version:1,periods:[period],audit:[],adjustments:[],adjustmentBatches:[]}};
+ const result=P.postReleaseAdjustment(state,proposer,{period:period.id,record:record.id,clockIn:record.raw.clockIn,clockOut:'2026-09-07T10:00:00Z',breaks:[],breaksConfirmed:true,reason:explanation});
+ assert.equal(result.status,'pending_approval');
+ const adjustment=state.payrollControl.adjustments.find(x=>x.id===result.id);
+ assert.equal(adjustment.minutesDelta,30);
+ assert.equal(adjustment.grossPenceDelta,1000);
+ return {state,period,adjustment};
+}
+function payload(adjustment,changes={}){return {id:adjustment.id,revision:adjustment.revision,checked:true,decision:'approve',reason:explanation,...changes};}
+function unchanged(P,state,fn,pattern){const before=P.canonical(state);assert.throws(fn,pattern);assert.equal(P.canonical(state),before,'Refusal must preserve adjustment revision/status, original record/batch and audit.');}
+for(const browser of [false,true]){
+ const mode=browser?'V040 browser-global':'V040 CommonJS';
+ for(const decision of ['approve','decline'])test(`${mode} valid ${decision} records exactly one independent decision`,()=>{
+  const P=domain(browser),{state,period,adjustment}=pending(P),original=P.canonical(period),audit=state.payrollControl.audit.length;
+  const result=P.approvePostReleaseAdjustment(state,reviewer,payload(adjustment,{decision}));
+  assert.equal(result.status,decision==='approve'?'approved':'declined');
+  assert.equal(adjustment.revision,2);assert.equal(adjustment.decisionBy,reviewer.personId);assert.equal(adjustment.decisionReason,explanation);
+  assert.equal(P.canonical(period),original);assert.equal(state.payrollControl.audit.length,audit+1);
+ });
+ for(const [name,decision] of [['missing',undefined],['empty',''],['typo','aprove'],['wrong case','APPROVE'],['other verb','reject'],['null',null]])test(`${mode} invalid decision ${name} refuses without mutation`,()=>{
+  const P=domain(browser),{state,adjustment}=pending(P);
+  unchanged(P,state,()=>P.approvePostReleaseAdjustment(state,reviewer,payload(adjustment,{decision})),/Approve or decline/);
+ });
+ for(const decision of ['approve','decline'])for(const [name,reason] of [['missing',undefined],['short','too short'],['long','x'.repeat(501)]])test(`${mode} ${decision} with ${name} reason refuses before mutation`,()=>{
+  const P=domain(browser),{state,adjustment}=pending(P);
+  unchanged(P,state,()=>P.approvePostReleaseAdjustment(state,reviewer,payload(adjustment,{decision,reason})),/12–500/);
+ });
+ for(const name of ['permission','same proposer','stale revision','source drift','unchecked'])test(`${mode} existing ${name} refusal remains unchanged`,()=>{
+  const P=domain(browser),{state,period,adjustment}=pending(P);let actor=reviewer,changes={},pattern;
+  if(name==='permission'){actor={...reviewer,permissions:[]};pattern=/Explicit payroll authority/;}
+  if(name==='same proposer'){actor=proposer;pattern=/different authorised/;}
+  if(name==='stale revision'){changes.revision=0;pattern=/Adjustment changed/;}
+  if(name==='source drift'){period.records[0].sourceVersion=2;pattern=/Released evidence changed/;}
+  if(name==='unchecked'){changes.checked=false;pattern=/Confirm that/;}
+  unchanged(P,state,()=>P.approvePostReleaseAdjustment(state,actor,payload(adjustment,changes)),pattern);
+ });
+}
+
+}

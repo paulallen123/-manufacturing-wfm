@@ -347,3 +347,78 @@ test('V029 single-window compatibility and mutable caller ownership are preserve
  workers[0].availability[0].end='2026-09-24T07:00:00Z';
  assert.equal(v029Open(workers).ranked[0].eligible,false);assert.equal(first.ranked[0].eligible,true);
 });
+
+// V030/#353: a supplied per-shift cap is advisory policy, with no legal default.
+function v030Worker(id,o={}){return wideWorker(id,{consecutiveShifts:0,consecutiveNights:0,...o});}
+test('V030 configured shift cap permits the exact elapsed boundary and refuses one millisecond over',()=>{
+ const exact={...early,end:'2026-09-24T18:00:00Z'},over={...exact,end:'2026-09-24T18:00:00.001Z'};
+ const args={workers:[v030Worker('a')],policy:{maxShiftHours:12}};
+ assert.equal(evaluateOpenShift({...args,requirement:exact}).ranked[0].eligible,true);
+ const denied=evaluateOpenShift({...args,requirement:over});
+ assert.equal(denied.ranked[0].eligible,false);assert.ok(denied.ranked[0].failures.includes('MAX_SHIFT_HOURS_BREACH'));
+ assert.equal(denied.mode,'EVALUATE_ONLY');assert.equal(denied.executionPermitted,false);
+ assert.equal(evaluateOpenShift({workers:args.workers,requirement:over}).ranked[0].eligible,true);
+});
+test('V030 shift cap uses absolute elapsed hours across overnight DST offsets',()=>{
+ const requirement=shift('v030-night','2026-10-24T22:00:00+01:00','2026-10-25T10:00:00Z');
+ const workers=[v030Worker('a',{availability:[{start:'2026-10-24T00:00:00Z',end:'2026-10-26T00:00:00Z'}]})];
+ assert.equal(evaluateOpenShift({requirement,workers,policy:{maxShiftHours:13}}).ranked[0].eligible,true);
+ const denied=evaluateOpenShift({requirement,workers,policy:{maxShiftHours:12}}).ranked[0];
+ assert.equal(denied.eligible,false);assert.ok(denied.failures.includes('MAX_SHIFT_HOURS_BREACH'));
+});
+test('V030 malformed supplied shift caps are refused and positive fractional hours are supported',()=>{
+ for(const maxShiftHours of [null,0,-1,NaN,Infinity,-Infinity,'12',true,false,[],{},new Number(12)])
+  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[v030Worker('a')],policy:{maxShiftHours}}),/maxShiftHours/);
+ assert.equal(evaluateOpenShift({requirement:{...early,end:'2026-09-24T06:30:00Z'},workers:[v030Worker('a')],policy:{maxShiftHours:0.5}}).ranked[0].eligible,true);
+});
+test('V030 exact and greedy planners retain overlong slots as explained shortfalls',()=>{
+ for(const exactSlotLimit of [1,10]){
+  const requirements=[early,{...early,id:'v030-long',start:'2026-09-25T06:00:00Z',end:'2026-09-25T19:00:00Z'}];
+  const plan=createSchedulingPlan(input({workers:[v030Worker('a')],requirements,policy:{maxShiftHours:12,exactSlotLimit}}));
+  assert.equal(plan.quality.filledSlots,1);assert.equal(plan.validation.valid,true);assert.equal(plan.policy.maxShiftHours,12);
+  assert.ok(plan.unfilled[0].topReasons.some(r=>r.reason==='MAX_SHIFT_HOURS_BREACH'));
+  assert.equal(plan.mode,'SHADOW');assert.equal(plan.executionPermitted,false);
+ }
+});
+test('V030 independent schedule validation refuses an assigned overlong slot',()=>{
+ const long={...early,end:'2026-09-24T19:00:00Z'};
+ const result=validate([long],[assignment(long,'a')],{maxShiftHours:12});
+ assert.equal(result.valid,false);assert.ok(result.violations[0].reasons.includes('MAX_SHIFT_HOURS_BREACH'));
+});
+test('V030 both hypothetical swap legs obey the shift cap without changing caller data',()=>{
+ for(const leg of ['requirementA','requirementB']){
+  const x=swapInput();delete x.currentAssignments;x.workerA=v030Worker('a');x.workerB=v030Worker('b');
+  x[leg].end=new Date(Date.parse(x[leg].start)+13*3600000).toISOString();x.policy.maxShiftHours=12;
+  const before=JSON.stringify(x);freezeDeep(x);const result=evaluateSwap(x);
+  assert.equal(result.eligible,false);assert.ok(result.reasons.includes('MAX_SHIFT_HOURS_BREACH'));
+  assert.equal(result.executionPermitted,false);assert.equal(JSON.stringify(x),before);
+ }
+});
+test('V030 shadow repair inherits the exact stored shift cap and never executes',()=>{
+ const prior=createSchedulingPlan(input({workers:[v030Worker('a')],policy:{maxShiftHours:12}}));
+ const result=repairSchedulingPlan({priorPlan:prior,workers:[v030Worker('a')],requirements:[{...early,end:'2026-09-24T19:00:00Z'}],
+  createdAt:'2026-09-23T13:00:00Z',event:{type:'DEMAND_CHANGE',evidenceRef:'synthetic:v030'}});
+ assert.equal(result.repairedPlan.policy.maxShiftHours,12);assert.equal(result.repairedPlan.quality.filledSlots,0);
+ assert.ok(result.repairedPlan.unfilled[0].topReasons.some(r=>r.reason==='MAX_SHIFT_HOURS_BREACH'));
+ assert.equal(result.executionPermitted,false);assert.equal(result.repairedPlan.executionPermitted,false);
+});
+test('V030 configured shift caps bind plan identity while missing and undefined policy remain identical',()=>{
+ const args=input({workers:[v030Worker('a')]}),unset=createSchedulingPlan(args);
+ const undefinedValue=createSchedulingPlan({...args,policy:{...args.policy,maxShiftHours:undefined}});
+ assert.equal(Object.hasOwn(unset.policy,'maxShiftHours'),false);assert.deepEqual(undefinedValue,unset);
+ const configured=createSchedulingPlan({...args,policy:{...args.policy,maxShiftHours:12}});
+ assert.notEqual(configured.planId,unset.planId);assert.notEqual(configured.planId,createSchedulingPlan({...args,policy:{...args.policy,maxShiftHours:10}}).planId);
+});
+test('V030 configured maximum shift hours is advertised by the existing capability contract',()=>{
+ assert.equal(capabilityContract().tableStakes.configuredMaximumShiftHours,true);
+});
+test('V030 cap preserves V029 touching availability and real-gap denials with frozen supplied data',()=>{
+ const workers=[v030Worker('a',{availability:[{start:'2026-09-24T06:00:00Z',end:'2026-09-24T10:00:00Z'},
+  {start:'2026-09-24T10:00:00Z',end:'2026-09-24T14:00:00Z'}]})];
+ const before=JSON.stringify(workers);freezeDeep(workers);
+ const exact=evaluateOpenShift({requirement:early,workers,policy:{maxShiftHours:8}});assert.equal(exact.ranked[0].eligible,true);assert.equal(exact.executionPermitted,false);
+ assert.equal(JSON.stringify(workers),before);
+ const gap=JSON.parse(before);gap[0].availability[1].start='2026-09-24T10:00:00.001Z';
+ const denied=evaluateOpenShift({requirement:early,workers:gap,policy:{maxShiftHours:8}}).ranked[0];
+ assert.equal(denied.eligible,false);assert.ok(denied.failures.includes('NOT_AVAILABLE'));
+});

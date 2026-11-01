@@ -108,6 +108,7 @@ COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz
 RUN echo "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d  /tmp/runtime.tgz" | sha256sum -c - \
  && tar -xzf /tmp/runtime.tgz -C /app \
  && rm -f /tmp/runtime.tgz
+COPY ux-overlay/kiosk-client.js /workspace/ux-overlay/
 COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/canonical-runtime-bridge.cjs integrations/staffology/canonical-production-boundaries.cjs integrations/staffology/canonical-operations.cjs integrations/staffology/configured-site-authority.cjs integrations/staffology/employee-import-previews.cjs /workspace/integrations/staffology/
 COPY verification/provider-recovery-correction/operations/runtime/ /workspace/verification/provider-recovery-correction/operations/runtime/
 COPY verification/provider-recovery-correction/ui/ /workspace/verification/provider-recovery-correction/ui/

@@ -8,7 +8,7 @@ import path from 'node:path';
 
 const runtime=path.resolve(process.env.WFM_RUNTIME||'');
 assert.ok(process.env.WFM_RUNTIME,'WFM_RUNTIME is required.');
-const expectedPayrollControl='3740eb76938b6e58d56669fea5f4a6ff232878ca950e94213e506e7b822ccbdb';
+const expectedPayrollControl='cd30aa670efa57260fad61817a7ef4c50b20fcec3aca7f0c7ff9161aa2398f21';
 const digest=value=>createHash('sha256').update(value).digest('hex');
 assert.equal(digest(fs.readFileSync(path.join(runtime,'public/payroll-control.js'))),expectedPayrollControl,'Unexpected hardened payroll-control source.');
 
