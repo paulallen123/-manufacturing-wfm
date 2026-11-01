@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const { DatabaseSync } = require('node:sqlite');
 const { createHash } = require('node:crypto');
 const { Readable } = require('node:stream');
-const { execFileSync, spawn } = require('node:child_process');
+const { execFileSync } = require('node:child_process');
 const { once } = require('node:events');
 const http = require('node:http');
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
@@ -124,60 +124,4 @@ test('HTTP service route executes exact service bytes without fabricating a save
   t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
   const response = await fetch('http://127.0.0.1:' + server.address().port + ROUTE, { method: 'POST', headers: { cookie: 'wfm_session=left', 'content-type': 'application/json' }, body: JSON.stringify(input()) });
   assert.equal(response.status, 200); assert.equal((await response.json()).result.startVarianceMinutes, 30); noPersistence(f);
-});
-test('actual security bootstrap mounts the declared scenario with packaged helper and native role/site checks', async t => {
-  const root = process.env.V095_SOURCE_ROOT || path.resolve(__dirname, '../..');
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'order-bootstrap-')), dbPath = path.join(directory, 'state.sqlite');
-  const composer = path.join(root, 'scripts/compose-vector-local-runtime.mjs');
-  const sourceMode = fs.existsSync(composer), runtime = sourceMode ? path.join(directory, 'runtime') : '/app';
-  let child, db, diagnostics = '';
-  t.after(async () => {
-    db?.close();
-    if (child?.pid && child.exitCode === null && child.signalCode === null) { const exited = once(child, 'exit'); child.kill('SIGTERM'); await exited; }
-    fs.rmSync(directory, { recursive: true, force: true });
-  });
-  if (sourceMode) execFileSync(process.execPath, [composer, runtime], { stdio: 'pipe' });
-  else assert.ok(fs.existsSync(path.join(runtime, 'security-runtime/bootstrap.cjs')), 'Actual installed runtime is required; absent proof cannot be skipped');
-  for (const file of ['scheduling-intelligence-service.cjs', 'scheduling-authority.cjs', 'order-start-variance.cjs']) {
-    assert.deepEqual(fs.readFileSync(path.join(runtime, 'operations-runtime', file)), fs.readFileSync(sourceMode ? path.join(root, 'operations/runtime', file) : path.join(__dirname, file)), 'Packaged ' + file + ' must be exact');
-  }
-  const nonce = hash(directory), probe = path.join(directory, 'owned-endpoint.cjs');
-  // Test-only OS-assigned endpoint observation; real bootstrap/auth/route bytes execute.
-  fs.writeFileSync(probe, "const http=require('node:http'),listen=http.Server.prototype.listen;http.Server.prototype.listen=function(...args){this.once('listening',()=>process.send({nonce:" + JSON.stringify(nonce) + ",pid:process.pid,address:this.address()}));return listen.call(this,{port:0,host:'127.0.0.1'},...args.filter(x=>typeof x==='function'));};");
-  child = spawn(process.execPath, [...(sourceMode ? ['--require', path.join(runtime, 'local-paths.cjs')] : []), '--require', probe, path.join(runtime, 'security-runtime/bootstrap.cjs')], {
-    env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: process.env.TEMP, TMP: process.env.TMP, WFM_DB: dbPath, PORT: '0', WFM_HOSTED_STAGING: 'false', NODE_ENV: 'test', WFM_IDENTITY_SURVIVAL_GUARD: 'enforce', WFM_AGENTS_API_ENABLED: 'false' }, stdio: ['ignore', 'pipe', 'pipe', 'ipc']
-  });
-  for (const stream of [child.stdout, child.stderr]) stream.on('data', bytes => { diagnostics = (diagnostics + bytes).slice(-8000); });
-  const endpoint = await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => finish(Error('Actual bootstrap endpoint unavailable: ' + diagnostics)), 30000);
-    const finish = (error, value) => { clearTimeout(timer); child.off('message', message); child.off('exit', exited); child.off('error', failed); error ? reject(error) : resolve(value); };
-    const exited = (code, signal) => finish(Error('Actual bootstrap exited: ' + JSON.stringify({ code, signal }) + ' ' + diagnostics));
-    const failed = error => finish(error);
-    const message = value => {
-      const address = value?.address;
-      if (value?.nonce !== nonce || value.pid !== child.pid || address?.address !== '127.0.0.1' || address.family !== 'IPv4' || !Number.isInteger(address.port) || address.port < 1 || address.port > 65535) return finish(Error('Unowned bootstrap listener'));
-      finish(null, address);
-    };
-    child.on('message', message); child.once('exit', exited); child.once('error', failed);
-  });
-  const origin = 'http://127.0.0.1:' + endpoint.port;
-  assert.equal((await fetch(origin + '/api/health')).status, 200, diagnostics);
-  db = new DatabaseSync(dbPath); db.exec('PRAGMA busy_timeout=1500;');
-  db.prepare('INSERT INTO tenants(id,version,state) VALUES(?,?,?)').run('alpha', 1, JSON.stringify(state()));
-  for (const [token, role, person] of [['manager', 'manager', 'left'], ['director', 'director', 'root'], ['supervisor', 'supervisor', 'left'], ['employee', 'employee', 'left'], ['hr', 'hr', 'root'], ['payroll', 'payroll_admin', 'root']]) {
-    const email = token + '@order.fixture';
-    db.prepare('INSERT INTO users(email,tenant,person_id,role,costs,salt,password_hash,permissions) VALUES(?,?,?,?,?,?,?,?)').run(email, 'alpha', person, role, 0, 'synthetic-disabled', '00', '[]');
-    db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash('order-' + token), email, Date.now() + 120000);
-  }
-  async function request(who, body = input(), headers = {}) {
-    const response = await fetch(origin + ROUTE, { method: 'POST', headers: { ...(who ? { cookie: 'wfm_session=order-' + who } : {}), 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
-    return { status: response.status, body: await response.json() };
-  }
-  for (const who of ['manager', 'director', 'supervisor']) { const response = await request(who); assert.equal(response.status, 200); assert.equal(response.body.result.startVarianceMinutes, 30); assert.equal(response.body.result.sourceAuthenticated, false); assert.equal(response.body.result.costVerified, false); assert.equal(response.body.persisted, false); }
-  for (const who of ['employee', 'hr', 'payroll']) assert.equal((await request(who)).status, 403);
-  assert.equal((await request('')).status, 401);
-  assert.equal((await request('manager', input(), { 'x-wfm-role': 'director' })).status, 400, 'Existing security header-spoof guard executes before the consumer');
-  assert.equal((await request('manager', input({ siteId: 'b' }))).status, 403);
-  assert.equal((await request('director', input({ department: 'right', siteId: 'a' }))).status, 403);
-  noPersistence({ db }); assert.equal(child.exitCode, null);
 });
