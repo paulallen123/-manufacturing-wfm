@@ -606,8 +606,12 @@ function createVectorReportingService(options={}){
       try{
       let status='READY',externalReceipt=null;
       const c={tenant:row.tenant,email:row.created_by};
-      const authorisedActor=await currentIdentity(c);
-      if(!authorisedActor||!await access(c,row,'schedule'))status='BLOCKED_AUTHORITY_DRIFT';
+      // A durable intent may already have dispatched. Recover uncertainty
+      // without asking current authority to authorize another provider action.
+      const pendingIntent=schedule.delivery!=='in_app'&&intentOne.get(key);
+      const authorisedActor=pendingIntent?null:await currentIdentity(c);
+      if(pendingIntent){status='UNKNOWN';externalReceipt={reconciliationRequired:true,dispatchOutcome:'UNKNOWN'};}
+      else if(!authorisedActor||!await access(c,row,'schedule'))status='BLOCKED_AUTHORITY_DRIFT';
       else if(schedule.delivery!=='in_app'){
         if(!deliveryAdapter||typeof deliveryAdapter.deliver!=='function')status='BLOCKED_NO_ADAPTER';
         else if(typeof deliveryAdapter.readback!=='function')status='BLOCKED_READBACK_REQUIRED';
@@ -651,7 +655,8 @@ function createVectorReportingService(options={}){
       // An authority-blocked receipt and its audit must also commit together.
       // No asynchronous authority reader or external operation runs under it.
       const inAppReady=schedule.delivery==='in_app'&&status==='READY';
-      const receiptTransaction=inAppReady||status==='BLOCKED_AUTHORITY_DRIFT';
+      const externalBlocked=schedule.delivery!=='in_app'&&status.startsWith('BLOCKED_');
+      const receiptTransaction=inAppReady||status==='BLOCKED_AUTHORITY_DRIFT'||externalBlocked;
       if(receiptTransaction)db.exec('BEGIN IMMEDIATE');
       let receipt,inserted;
       const createdAt=new Date().toISOString();
@@ -665,6 +670,10 @@ function createVectorReportingService(options={}){
           if(!localActor||localActor.role!==authorisedActor.role||frozen||!localReportAccess(localActor,report,new Set(['schedule:'+row.id])))status='BLOCKED_AUTHORITY_DRIFT';
           else if(latestControl&&Number(latestControl.enabled)!==1)status='BLOCKED_SCHEDULE_PAUSED';
         }
+        // Another worker may have claimed while an authority reader awaited.
+        // Serialize classification with the claim: existing uncertainty wins
+        // over a new predispatch denial, and must not create a blocked audit.
+        if(externalBlocked&&intentOne.get(key)){status='UNKNOWN';externalReceipt={reconciliationRequired:true,dispatchOutcome:'UNKNOWN'};}
         receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
         inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
         if(inserted&&status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});

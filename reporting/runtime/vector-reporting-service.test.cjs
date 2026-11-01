@@ -880,3 +880,125 @@ test(delivery+' '+authority+' rolls back a refused blocked audit and retries ato
     }
   }finally{restarted?.close();x.close();}
 });
+
+
+// A persisted intent can already have applied externally. Recovery must retain
+// UNKNOWN independently of the actor's present ability to authorize a new send.
+for(const delivery of ['email_link','sftp'])for(const failPoint of ['observation','receipt'])for(const [label,sql] of [
+  ['role revocation',"UPDATE users SET role='employee' WHERE email='payroll@a.example'"],
+  ['tenant transfer',"UPDATE users SET tenant='tenant-b' WHERE email='payroll@a.example'"],
+  ['user deletion',"DELETE FROM users WHERE email='payroll@a.example'"],
+  ['tenant freeze',"CREATE TABLE identity_tenant_control(tenant TEXT PRIMARY KEY,privileged_freeze INTEGER); INSERT INTO identity_tenant_control VALUES('tenant-a',1)"],
+  ['unchanged authority',null]
+])test(delivery+' '+failPoint+' write fault recovers attempted UNKNOWN after '+label+' without adapter I/O',async()=>{
+  let sent=0,readbacks=0,authorizations=0,restarted;
+  const adapter={authorize:()=>{authorizations++;return true;},deliver:async()=>{sent++;if(delivery==='sftp')throw Error('synthetic response lost');return {accepted:true};},readback:async()=>{readbacks++;return {observed:true,secret:'raw-synthetic-secret'};}};
+  const x=setup({deliveryAdapter:adapter});
+  try{
+    const report=await makeReport(x),planned=await makeSchedule(x,report.id,'payroll-a',{delivery,destination:'synthetic@example.test'});
+    const db=new DatabaseSync(x.dbPath);
+    const table=failPoint==='observation'?'vector_report_delivery_observations':'vector_report_deliveries';
+    try{db.exec(`CREATE TRIGGER synthetic_recovery_fault BEFORE INSERT ON ${table} BEGIN SELECT RAISE(ABORT,'synthetic recovery write fault'); END;`);}finally{db.close();}
+    await assert.rejects(x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z')),/synthetic recovery write fault/);
+    assert.equal(sent,1);assert.equal(readbacks,1);
+    let originalIntent;
+    const inspect=new DatabaseSync(x.dbPath);try{
+      originalIntent=inspect.prepare('SELECT * FROM vector_report_delivery_intents').all();assert.equal(originalIntent.length,1);
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_deliveries').get().n,0);
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_observations').get().n,failPoint==='observation'?0:1);
+      inspect.exec('DROP TRIGGER synthetic_recovery_fault');if(sql)inspect.exec(sql);
+    }finally{inspect.close();}
+    x.service.close();const previousAuthorizations=authorizations;
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    const recovered=await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(recovered.length,1);assert.equal(recovered[0].status,'UNKNOWN','durable intent must dominate a new authority denial');
+    assert.deepEqual(recovered[0].externalReceipt,{reconciliationRequired:true,dispatchOutcome:'UNKNOWN'});
+    assert.equal(sent,1);assert.equal(readbacks,1);assert.equal(authorizations,previousAuthorizations,'recovery must not request a fresh adapter grant');
+    const check=new DatabaseSync(x.dbPath);try{
+      assert.deepEqual(check.prepare('SELECT * FROM vector_report_delivery_intents').all(),originalIntent);
+      const rows=check.prepare('SELECT status,receipt_json FROM vector_report_deliveries').all();assert.equal(rows.length,1);assert.equal(rows[0].status,'UNKNOWN');
+      assert.deepEqual(JSON.parse(rows[0].receipt_json).externalReceipt,recovered[0].externalReceipt);
+      assert.equal(check.prepare('SELECT count(*) n FROM vector_report_delivery_observations').get().n,failPoint==='observation'?0:1);
+      assert.equal(check.prepare("SELECT count(*) n FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").get().n,0);
+      assert.equal(JSON.stringify(rows).includes('raw-synthetic-secret'),false);
+      assert.throws(()=>check.exec('DELETE FROM vector_report_delivery_intents'),/reviewed reconciliation/);
+      check.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)').run('payroll@a.example','tenant-a','payroll_admin');
+      if(label==='tenant freeze')check.exec("UPDATE identity_tenant_control SET privileged_freeze=0 WHERE tenant='tenant-a'");
+      check.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha('fresh-recovery-payroll'),'payroll@a.example',Date.now()+3600000);
+    }finally{check.close();}
+    const listed=await call(restarted,'GET','/api/reporting/deliveries','fresh-recovery-payroll');assert.equal(listed.status,200);assert.equal(listed.body.deliveries[0].status,'UNKNOWN');
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));assert.equal(next[0].status,'BLOCKED_RECONCILIATION_REQUIRED');
+    assert.equal(sent,1);assert.equal(readbacks,1);
+  }finally{restarted?.close();x.close();}
+});
+
+for(const recoveryAdapter of ['missing','denied'])test('persisted external intent recovers UNKNOWN with '+recoveryAdapter+' adapter',async()=>{
+  let sent=0,readbacks=0,authorizations=0,restarted;
+  const adapter={authorize:()=>{authorizations++;return true;},deliver:async()=>{sent++;return {};},readback:async()=>{readbacks++;return {};}};
+  const x=setup({deliveryAdapter:adapter});try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    const db=new DatabaseSync(x.dbPath);try{db.exec("CREATE TRIGGER synthetic_recovery_fault BEFORE INSERT ON vector_report_delivery_observations BEGIN SELECT RAISE(ABORT,'synthetic recovery write fault'); END;");}finally{db.close();}
+    await assert.rejects(x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z')),/synthetic recovery write fault/);
+    const cleanup=new DatabaseSync(x.dbPath);try{cleanup.exec('DROP TRIGGER synthetic_recovery_fault');}finally{cleanup.close();}
+    x.service.close();const before=authorizations;
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,...(recoveryAdapter==='denied'?{deliveryAdapter:{authorize:()=>{authorizations++;return false;},deliver:adapter.deliver,readback:adapter.readback}}:{})});
+    const recovered=await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z'));assert.equal(recovered[0].status,'UNKNOWN');assert.equal(recovered[0].externalReceipt.dispatchOutcome,'UNKNOWN');
+    assert.equal(authorizations,before);assert.equal(sent,1);assert.equal(readbacks,1);
+  }finally{restarted?.close();x.close();}
+});
+
+for(const delivery of ['email_link','sftp'])test('unclaimed '+delivery+' authority denial retains atomic blocked receipt audit',async()=>{
+  let sent=0,readbacks=0;const adapter={authorize:()=>true,deliver:async()=>{sent++;return {};},readback:async()=>{readbacks++;return {};}};
+  const x=setup({deliveryAdapter:adapter});try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery,destination:'synthetic@example.test'});
+    changeRole(x,'payroll@a.example','employee');
+    const inject=new DatabaseSync(x.dbPath);try{inject.exec("CREATE TRIGGER synthetic_blocked_audit_fault BEFORE INSERT ON vector_report_audit WHEN NEW.event='BLOCKED_AUTHORITY_DRIFT' BEGIN SELECT RAISE(ABORT,'synthetic blocked audit fault'); END;");}finally{inject.close();}
+    await assert.rejects(x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z')),/synthetic blocked audit fault/);
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_deliveries').get().n,0);assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);
+      inspect.exec('DROP TRIGGER synthetic_blocked_audit_fault');
+    }finally{inspect.close();}
+    const result=await x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');assert.equal(result[0].externalReceipt,null);
+    const check=new DatabaseSync(x.dbPath);try{
+      assert.equal(check.prepare('SELECT count(*) n FROM vector_report_deliveries').get().n,1);
+      assert.equal(check.prepare("SELECT count(*) n FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").get().n,1);
+      assert.equal(check.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);
+    }finally{check.close();}
+    assert.equal(sent,0);assert.equal(readbacks,0);
+  }finally{x.close();}
+});
+
+test('intent appearing during awaited actor read dominates terminal authority denial',{timeout:5000},async()=>{
+  let armed=false,held=false,release,entered,sent=0,readbacks=0,fast,running;
+  const waiting=new Promise(resolve=>{entered=resolve;}),pending=new Promise(resolve=>{release=resolve;});
+  let x;
+  const adapter={authorize:()=>true,deliver:async()=>{sent++;changeRole(x,'payroll@a.example','employee');return {accepted:true};},readback:async()=>{readbacks++;return {};}};
+  x=setup({deliveryAdapter:adapter,currentUserReader:async({email,tenant})=>{
+    const query=new DatabaseSync(x.dbPath);let actor;try{actor=query.prepare('SELECT email,tenant,role FROM users WHERE tenant=? AND email=?').get(tenant,email);}finally{query.close();}
+    if(armed&&!held){held=true;entered();await pending;}
+    return actor;
+  }});
+  try{
+    const report=await makeReport(x);await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    fast=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    const inject=new DatabaseSync(x.dbPath);try{inject.exec("CREATE TRIGGER synthetic_racing_observation_fault BEFORE INSERT ON vector_report_delivery_observations BEGIN SELECT RAISE(ABORT,'synthetic racing observation fault'); END;");}finally{inject.close();}
+    armed=true;running=x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));await waiting;
+    await assert.rejects(fast.runDueSchedules(new Date('2026-09-24T16:05:00Z')),/synthetic racing observation fault/);
+    assert.equal(sent,1);assert.equal(readbacks,0);
+    const cleanup=new DatabaseSync(x.dbPath);try{cleanup.exec('DROP TRIGGER synthetic_racing_observation_fault');}finally{cleanup.close();}
+    release();const recovered=await running;
+    assert.equal(recovered.length,1);assert.equal(recovered[0].status,'UNKNOWN');
+    assert.deepEqual(recovered[0].externalReceipt,{reconciliationRequired:true,dispatchOutcome:'UNKNOWN'});
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,1);
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_observations').get().n,0);
+      const rows=inspect.prepare('SELECT status FROM vector_report_deliveries').all();assert.deepEqual(rows.map(r=>r.status),['UNKNOWN']);
+      assert.equal(inspect.prepare("SELECT count(*) n FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").get().n,0);
+    }finally{inspect.close();}
+    changeRole(x,'payroll@a.example','payroll_admin');
+    assert.deepEqual(await fast.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await fast.runDueSchedules(new Date('2026-09-25T16:05:00Z'));assert.equal(next[0].status,'BLOCKED_RECONCILIATION_REQUIRED');
+    assert.equal(sent,1);assert.equal(readbacks,0);
+  }finally{release();if(running)await running.catch(()=>{});fast?.close();x.close();}
+});
