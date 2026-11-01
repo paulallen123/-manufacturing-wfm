@@ -179,3 +179,26 @@ test('5,000 synthetic candidates never select an ineligible worker', () => {
   }
   assert.ok(selected > 300);
 });
+
+// Alternative eligibility evidence must describe the worker, supplier and request
+// named by this response. Fixture approvals remain synthetic and grant no authority.
+for (const [name, change, failure] of [
+  ['different eligible worker', (response, context) => { context.candidate = worker('W10', 'A2'); }, 'alternative_worker_identity_mismatch'],
+  ['different dispatched supplier', response => { response.agencyId = 'A1'; }, 'alternative_agency_identity_mismatch'],
+  ['different evidence request', (response, context) => { context.request = { ...context.request, requestId: 'OTHER-REQUEST' }; }, 'alternative_request_identity_mismatch'],
+  ['missing response worker', response => { delete response.workerId; }, 'alternative_worker_identity_mismatch'],
+  ['missing evidence worker', (response, context) => { delete context.candidate.workerId; }, 'alternative_worker_identity_mismatch'],
+  ['both worker identities missing', (response, context) => { delete response.workerId; delete context.candidate.workerId; }, 'alternative_worker_identity_mismatch'],
+]) test('alternative response refuses ' + name + ' without changing evidence', () => {
+  const input = baseInput(), plan = planAgencyLabourFulfilment(input);
+  const response = { requestId: input.request.requestId, agencyId: 'A2', action: 'propose_alternative', workerId: 'W9' };
+  const context = { candidate: worker('W9', 'A2'), request: input.request, agency: input.agencies[1], policy: input.policy };
+  assert.equal(validateAgencyResponse(plan, response, context).valid, true);
+  change(response, context);
+  assert.equal(evaluateAgencyCandidate(context.candidate, context.request, context.agency, context.policy).eligible, true);
+  const before = JSON.stringify({ plan, response, context });
+  const result = validateAgencyResponse(plan, response, context);
+  assert.equal(result.valid, false);
+  assert.ok(result.failures.includes(failure));
+  assert.equal(JSON.stringify({ plan, response, context }), before);
+});
