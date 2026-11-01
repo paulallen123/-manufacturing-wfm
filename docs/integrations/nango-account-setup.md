@@ -23,11 +23,11 @@ These limits cover Nango. They do not supply NetSuite, SAP or payroll-provider a
 
 Pricing reference: <https://nango.dev/pricing>
 
-## Restricted backend permission awaiting approval
+## Restricted backend permission approved; key created
 
-No new Nango API key has been created or installed. Automatic approval review rejected selecting **Connections → `read:with_credentials`** because it grants a persistent key access to provider credentials. That rejection remains in force until the user specifically approves the scope and destination.
+The user explicitly approved the restricted credential-reading permission and storage in VECTOR's backend. The key **VECTOR production connector access** has now been created in `prod`. Read-back verified one stored scope, **Connections → `read:with_credentials`**, with ordinary connection read implied. All other permission groups remain unselected. The key's last-used status was **Never** when verified on 1 November 2026.
 
-The proposed key is named **VECTOR production connector access**, belongs to the `prod` environment, and needs this single scope for the implemented credential resolver:
+The created key has this single scope for the implemented credential resolver:
 
 ```text
 environment:connections:read_credentials
@@ -37,6 +37,8 @@ This scope can retrieve connection credentials for a known connection ID in that
 
 The resolver requests the access token without the refresh token and preserves the existing direct provider transport, DNS/origin checks, collection permits and activation controls. It does not require the default full-access key, connection-list scope, connection-write scope or account-level permissions.
 
+**Backend installation remains incomplete.** Automatic approval review rejected reading the key from the browser clipboard into a shared local transfer file. The reason was that approval covered protected backend storage, not local staging of the secret. That rejected path was not retried. A direct transfer into Railway's protected variable editor was attempted instead, but the browser required sign-in: GitHub reported that the selected account does not support password sign-in, and the subsequent secure alternative-method prompt was declined. No key was installed and no Railway deployment was triggered. The original scope/storage approval remains valid; another approval for the same permission is not required.
+
 Permission references:
 
 - <https://nango.dev/docs/reference/backend/http-api/api-keys>
@@ -45,7 +47,7 @@ Permission references:
 ## Activation sequence
 
 1. Review and integrate the bounded code change through the existing canonical VECTOR release path. It stays disabled when `WFM_NANGO_METADATA_BINDINGS_JSON` is absent or empty.
-2. Obtain the user's specific approval for the restricted credential-reading key and storage in the existing VECTOR backend. Create and transfer the key through an approved secret-handling path.
+2. Complete the approved key's direct transfer into `WFM_NANGO_API_KEY` on the existing VECTOR customer service, using the protected Railway variable editor or another approved secret-entry mechanism. Do not stage the secret in a shared local file. The user has already approved the scope and destination; key creation is complete.
 3. Configure and authorise each real provider account through Nango. Use a provider administrator and the required account permissions; the Nango dashboard login alone does not grant them.
 4. Add trusted connection tags `vector_tenant_id` and `vector_profile_id`. Populate exact server-side metadata profile bindings and provider identity configuration. No example or placeholder binding is a live connection.
 5. Verify with a read-only metadata request using the real authorised account. Check the intended tenant, account, expiry and collection permit before making any live-connection claim.

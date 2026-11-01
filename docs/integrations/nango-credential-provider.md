@@ -20,7 +20,7 @@ The canonical release base observed during the audit was `release/vector-custome
 
 ## Reviewable source changes
 
-The implementation changes these seven source and test paths:
+The implementation changes these eight source and test paths:
 
 | Path | Change |
 | --- | --- |
@@ -31,8 +31,9 @@ The implementation changes these seven source and test paths:
 | `scripts/nango-metadata-wiring.test.cjs` | New tests of the actual composer hook and emitted broker constructor |
 | `scripts/compose-vector-local-runtime.mjs` | Adds and records the resolver, imports it, supplies the existing broker callback; both current assembly paths call the hook |
 | `Dockerfile` | Copies the source before composition; adds source and installed-module checks without removing existing gates |
+| `scripts/run-forge-ci.mjs` | Adds the three Nango source suites to ordinary CI validation, preserving all prior checks and failure handling |
 
-`independent/` contains the independent review and held-out suite. `evidence/nango-verify-installed-layout.cjs` is a review driver, not a runtime entry point. Account setup records, technical documentation and test receipts accompany these seven implementation paths.
+`independent/` contains the independent review and held-out suite. `evidence/nango-verify-installed-layout.cjs` is a review driver, not a runtime entry point. Account setup records, technical documentation and test receipts accompany these eight implementation paths.
 
 The exact original broker constructor in the extracted `server.cjs` is:
 
@@ -53,7 +54,7 @@ The hook fails on missing or duplicate source anchors and on repeated applicatio
 `createForMetadataProfiles` reads two **server-only** environment settings:
 
 - `WFM_NANGO_METADATA_BINDINGS_JSON`: a JSON array of reviewed tenant/profile-to-connection mappings.
-- `WFM_NANGO_API_KEY`: a Nango environment API key capable of retrieving connection credentials. No key is included in this package, and permission to create one remains blocked as described below.
+- `WFM_NANGO_API_KEY`: a Nango environment API key capable of retrieving connection credentials. The user approved this scope and a restricted key was created in Nango; protected backend installation is still pending. No secret is included in this package.
 
 Absent or empty bindings, including `[]`, return `null` before reading a key and preserve the existing broker environment-token mode. Once nonempty bindings are configured, missing keys or incomplete/mismatched profiles are configuration errors. There is no fallback from an enabled but invalid Nango connection to a legacy token. This makes a partially configured deployment fail closed; do not set the bindings until the complete reviewed configuration is ready.
 
@@ -148,7 +149,13 @@ The independent reviewer accepted the bounded proposal; see `independent/nango-w
 
 The complete runtime composer, full Docker build, pinned Node 22 image, hosted server, actual API key permissions, real Nango response and real provider metadata collection have **not** been verified by this local task. Existing #501 build, independent verification and deployment gates still apply. Existing provider-oracle issues outside this credential seam are not resolved or recertified.
 
-The parent task reports that Nango's free plan remains unchanged and that four production integration definitions were saved, with no authenticated provider connections. Automatic browser approval review **rejected selecting Connections → `read:with_credentials`** for a proposed scoped key, because general integration authorization did not explicitly authorize that credential-reading scope. **No key was created.** There is no attempt to bypass that decision. Credential permission approval, connection authorization, trusted tags/bindings, existing collection permits and deployment review are still needed before enabling this callback against an account.
+Four production integration definitions were saved under Nango's Free plan, with no authenticated provider connections. The user subsequently approved the exact credential-reading scope and backend destination. The restricted production key is now created, with its sole stored scope verified; it has not been installed in VECTOR. Automatic review rejected temporary local-file transfer, and the direct Railway browser sign-in was not completed. See the account setup record for the exact current blocker. Protected secret installation, connection authorisation, trusted tags/bindings, existing collection permits and release review are still needed before enabling this callback.
+
+## Ordinary CI coverage follow-up
+
+The initial proposal's ordinary integration CI job did not select the new Nango tests. A reviewed three-line addition to `scripts/run-forge-ci.mjs` now selects the resolver, real broker and wiring suites. The 16 existing command definitions and their order are preserved. Fresh local execution passed 64 resolver cases, 7 broker cases, 3 wiring cases and all 11 existing freeze-gate cases on Node 24.22.1. Independent dispatcher review passed 19 command dispatches and 57 injected child-process failures. Exact source and result hashes are recorded in `evidence/vector-nango-setup-20261031/forge-followup/nango-forge-admission-receipt.json`.
+
+The frozen-candidate marker, gate and CircleCI configuration are unchanged. The core CI job on the initial proposal reported failure, while source inspection proves its freeze marker was unchanged; exact failed-job logs were unavailable, so this is not a claim about the observed log message. A successful ordinary integration job does not admit this proposal as a frozen release. The existing canonical owner must review and admit the complete source through the established image/release process.
 
 ## Primary API references
 

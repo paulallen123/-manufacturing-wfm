@@ -19,16 +19,36 @@
     }
   },
   "integrations": [
-    { "provider": "netsuite", "integrationId": "netsuite", "status": "definition_created", "authorisedConnections": 0 },
-    { "provider": "sap-odata-oauth2-cc", "integrationId": "sap-odata-oauth2-cc", "status": "definition_created", "authorisedConnections": 0 },
-    { "provider": "sap-success-factors", "integrationId": "sap-success-factors", "status": "definition_created", "authorisedConnections": 0 },
-    { "provider": "gusto", "integrationId": "gusto", "status": "definition_created", "authorisedConnections": 0 }
+    {
+      "provider": "netsuite",
+      "integrationId": "netsuite",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    },
+    {
+      "provider": "sap-odata-oauth2-cc",
+      "integrationId": "sap-odata-oauth2-cc",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    },
+    {
+      "provider": "sap-success-factors",
+      "integrationId": "sap-success-factors",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    },
+    {
+      "provider": "gusto",
+      "integrationId": "gusto",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    }
   ],
   "runtimeScope": "NetSuite and SuccessFactors metadata credential provider",
-  "newKeyCreated": false,
+  "newKeyCreated": true,
   "newKeyInstalled": false,
   "requiredScope": "environment:connections:read_credentials",
-  "scopeApprovalStatus": "automatic_review_rejected_awaiting_specific_user_approval",
+  "scopeApprovalStatus": "approved_by_user",
   "liveProviderConnectionVerified": false,
   "paidPlanActivated": false,
   "newHostingCreated": false,
@@ -36,5 +56,16 @@
     "https://nango.dev/pricing",
     "https://nango.dev/docs/reference/backend/http-api/api-keys",
     "https://nango.dev/docs/reference/backend/http-api/connections/get"
-  ]
+  ],
+  "updatedOn": "2026-11-01",
+  "keyDisplayName": "VECTOR production connector access",
+  "keyScopeVerified": true,
+  "keyLastUsedObserved": "Never",
+  "backendVariable": "WFM_NANGO_API_KEY",
+  "backendInstallationStatus": "pending_protected_secret_entry",
+  "transferBlocker": {
+    "automaticReview": "rejected browser clipboard to shared local transfer file",
+    "saferAlternative": "direct entry into Railway protected variable editor",
+    "browserSignIn": "not completed; password method unsupported and alternative-method prompt declined"
+  }
 }
