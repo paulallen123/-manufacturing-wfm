@@ -22,6 +22,11 @@ const INTERNAL_HEADER = 'x-wfm-scheduling-internal';
 
 function nowIso() { return new Date().toISOString(); }
 function sha256(v) { return createHash('sha256').update(String(v)).digest('hex'); }
+function canonicalJson(value) {
+  if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
+  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + canonicalJson(value[key])).join(',') + '}';
+  return JSON.stringify(value);
+}
 function compact(v, max = 240) { return String(v ?? '').trim().slice(0, max); }
 function secureEqual(a, b) {
   const x = Buffer.from(String(a || ''));
@@ -98,7 +103,15 @@ function createSchedulingIntelligenceService(options = {}) {
     'CREATE TRIGGER IF NOT EXISTS no_vector_schedule_reconciliation_update BEFORE UPDATE ON vector_schedule_reconciliations ' +
       "BEGIN SELECT RAISE(ABORT,'Vector schedule reconciliations are append only.'); END;" +
     'CREATE TRIGGER IF NOT EXISTS no_vector_schedule_reconciliation_delete BEFORE DELETE ON vector_schedule_reconciliations ' +
-      "BEGIN SELECT RAISE(ABORT,'Vector schedule reconciliations are append only.'); END;"
+      "BEGIN SELECT RAISE(ABORT,'Vector schedule reconciliations are append only.'); END;" +
+    'CREATE TABLE IF NOT EXISTS vector_factory_assessment_receipts(' +
+      'tenant TEXT NOT NULL,receipt_id TEXT NOT NULL,actor_email TEXT NOT NULL,person_id TEXT NOT NULL,' +
+      'department TEXT NOT NULL,site_id TEXT NOT NULL,receipt_json TEXT NOT NULL,created_at TEXT NOT NULL,' +
+      'PRIMARY KEY(tenant,receipt_id));' +
+    'CREATE TRIGGER IF NOT EXISTS no_vector_factory_assessment_update BEFORE UPDATE ON vector_factory_assessment_receipts ' +
+      "BEGIN SELECT RAISE(ABORT,'Declared factory assessment receipts are append only.'); END;" +
+    'CREATE TRIGGER IF NOT EXISTS no_vector_factory_assessment_delete BEFORE DELETE ON vector_factory_assessment_receipts ' +
+      "BEGIN SELECT RAISE(ABORT,'Declared factory assessment receipts are append only.'); END;"
   );
 
   const auth = db.prepare('SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?');
@@ -111,6 +124,8 @@ function createSchedulingIntelligenceService(options = {}) {
   const reconciliationById = db.prepare('SELECT reconciliation_json FROM vector_schedule_reconciliations WHERE tenant=? AND reconciliation_id=?');
   const insertReconciliation = db.prepare('INSERT INTO vector_schedule_reconciliations(tenant,reconciliation_id,plan_id,reconciliation_json,created_at) VALUES(?,?,?,?,?)');
   const listReconciliations = db.prepare('SELECT reconciliation_json FROM vector_schedule_reconciliations WHERE tenant=? ORDER BY created_at DESC,reconciliation_id DESC LIMIT ?');
+  const factoryReceiptById = db.prepare('SELECT department,site_id,receipt_json FROM vector_factory_assessment_receipts WHERE tenant=? AND receipt_id=? AND actor_email=? AND person_id=?');
+  const insertFactoryReceipt = db.prepare('INSERT INTO vector_factory_assessment_receipts(tenant,receipt_id,actor_email,person_id,department,site_id,receipt_json,created_at) VALUES(?,?,?,?,?,?,?,?)');
 
   function ctx(req) {
     const token = cookieToken(req);
@@ -289,10 +304,83 @@ function createSchedulingIntelligenceService(options = {}) {
       result, authority: 'NO_EXECUTION' });
   }
 
-  async function managerFactoryScenario(req, res, c, kind) {
+  function custodyUnavailable(error) {
+    if (error?.statusCode) return error;
+    const failure = new Error('Declared assessment custody is unavailable.'); failure.statusCode = 503; return failure;
+  }
+
+  function saveFactoryAssessment(req, res, initial, body, kind, scenario) {
+    let transaction = false;
+    try {
+      // Recheck native authority under the same writer lock as both durable
+      // records. A concurrent revocation must precede or follow this receipt.
+      db.exec('BEGIN IMMEDIATE'); transaction = true;
+      const current = requireCurrentManager(req, res, initial);
+      if (!current) { db.exec('ROLLBACK'); transaction = false; return true; }
+      authority.assertDepartmentSite(current.source, body.department, body.siteId);
+      const actor = current.source.actor, contractVersion = 'DECLARED_FACTORY_ASSESSMENT_RECEIPT_V1';
+      const requestDigest = sha256(canonicalJson(body));
+      const receiptId = sha256(canonicalJson([contractVersion, actor.tenant, actor.email, actor.personId, kind, requestDigest]));
+      const existing = factoryReceiptById.get(actor.tenant, receiptId, actor.email, actor.personId);
+      if (existing) {
+        const receipt = JSON.parse(existing.receipt_json);
+        db.exec('COMMIT'); transaction = false;
+        return writeJson(res, 200, { receipt, idempotent: true });
+      }
+      const createdAt = nowIso();
+      const receipt = { contractVersion, receiptId, requestDigest, tenantId: actor.tenant,
+        department: body.department, siteId: body.siteId, kind, createdAt, input: body,
+        custodyBasis: 'SERVER_RECORDED_CALLER_DECLARATION', sourceBasis: scenario.sourceBasis,
+        scenarioOnly: true, persisted: true, authority: 'DECLARATION_CUSTODY_ONLY',
+        sourceAuthenticated: false, lineOrderAuthority: false, causeVerified: false, costVerified: false,
+        scheduleAuthority: false, executionAuthority: false,
+        assessment: { asOf: scenario.asOf, result: scenario.result,
+          ...(kind === 'output' ? { periodPolicyMaxDays: 31 } : { freshnessPolicyMinutes: 15 }) } };
+      insertFactoryReceipt.run(actor.tenant, receiptId, actor.email, actor.personId, body.department, body.siteId, JSON.stringify(receipt), createdAt);
+      // Use the existing native audit store; its absence or failure must roll
+      // back custody rather than silently create a weaker substitute store.
+      db.prepare('INSERT INTO audit_events(tenant,actor,action,detail,created_at) VALUES(?,?,?,?,?)').run(
+        actor.tenant, actor.personId, 'factory-assessment-declaration-recorded',
+        JSON.stringify({ receiptId, requestDigest, kind, department: body.department, siteId: body.siteId,
+          custodyOnly: true, sourceAuthenticated: false, executionAuthority: false }), createdAt);
+      db.exec('COMMIT'); transaction = false;
+      return writeJson(res, 201, { receipt, idempotent: false });
+    } catch (error) {
+      if (transaction) { try { db.exec('ROLLBACK'); } catch {} }
+      throw custodyUnavailable(error);
+    }
+  }
+
+  function readFactoryAssessment(req, res, initial, receiptId) {
+    if ([...new URL(String(req.url), 'http://wfm.invalid').searchParams.keys()].some(key => !['scope', 'branch'].includes(key))) {
+      return writeJson(res, 400, { error: 'Receipt reads accept only native scope parameters.' });
+    }
+    let transaction = false;
+    try {
+      // The native principal, hierarchy and receipt share one read snapshot.
+      db.exec('BEGIN'); transaction = true;
+      const current = requireCurrentManager(req, res, initial);
+      if (!current) { db.exec('ROLLBACK'); transaction = false; return true; }
+      const actor = current.source.actor;
+      const row = factoryReceiptById.get(actor.tenant, receiptId, actor.email, actor.personId);
+      if (!row) { db.exec('COMMIT'); transaction = false; return writeJson(res, 404, { error: 'Declared assessment receipt was not found.' }); }
+      authority.assertDepartmentSite(current.source, row.department, row.site_id);
+      const receipt = JSON.parse(row.receipt_json);
+      db.exec('COMMIT'); transaction = false;
+      // This is the historical declaration/calculation, not a refreshed stock
+      // observation or an authenticated ERP/MES/provider readback.
+      return writeJson(res, 200, { receipt });
+    } catch (error) {
+      if (transaction) { try { db.exec('ROLLBACK'); } catch {} }
+      throw custodyUnavailable(error);
+    }
+  }
+
+  async function managerFactoryScenario(req, res, c, kind, save = false) {
     // JSON declarations cannot establish provider custody, line/order authority
     // or actual stock availability. The existing native scope is rechecked
-    // after the only awaited operation and no write/event path is invoked.
+    // after the only awaited operation. Only the explicit assessment routes
+    // persist declaration custody; the scenario routes invoke no write/event.
     const body = await readJson(req, 256 * 1024);
     c = requireCurrentManager(req, res, c);
     if (!c) return true;
@@ -326,14 +414,15 @@ function createSchedulingIntelligenceService(options = {}) {
           orderId: body.orderId, window: body.window, asOf, plan: body.plan, production: body.production })
       : assessOrderMaterialAvailability({ tenantId: c.tenant, siteId: body.siteId, orderId: body.orderId, asOf, bom: body.bom, inventory: body.inventory });
     if (kind === 'material' && result.bom.digest === result.inventory.digest) throw Error('BOM and inventory must declare distinct snapshot digests.');
-    return writeJson(res, 200, {
+    const scenario = {
       contractVersion: kind === 'output' ? 'DECLARED_PRODUCTION_OUTPUT_GAP_SCENARIO_V1' : 'DECLARED_ORDER_MATERIAL_AVAILABILITY_SCENARIO_V1',
       scenarioOnly: true, persisted: false,
       sourceBasis: kind === 'output' ? 'CALLER_DECLARED_ERP_MES_RECORDS' : 'CALLER_DECLARED_BOM_STOCK_RECORDS',
       asOf, ...(kind === 'output' ? { periodPolicyMaxDays: 31 } : { freshnessPolicyMinutes: 15 }), result,
       sourceAuthenticated: false, lineOrderAuthority: false, causeVerified: false, costVerified: false,
       scheduleAuthority: false, executionAuthority: false, authority: 'NO_EXECUTION'
-    });
+    };
+    return save ? saveFactoryAssessment(req, res, c, body, kind, scenario) : writeJson(res, 200, scenario);
   }
 
   function canReadReconciliation(source, reconciliation) {
@@ -422,6 +511,10 @@ function createSchedulingIntelligenceService(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/order-start-variance/scenario') return await managerOrderStartScenario(req, res, c);
       if (req.method === 'POST' && path === PREFIX + '/production-output-gap/scenario') return await managerFactoryScenario(req, res, c, 'output');
       if (req.method === 'POST' && path === PREFIX + '/order-material-availability/scenario') return await managerFactoryScenario(req, res, c, 'material');
+      if (req.method === 'POST' && path === PREFIX + '/production-output-gap/assessments') return await managerFactoryScenario(req, res, c, 'output', true);
+      if (req.method === 'POST' && path === PREFIX + '/order-material-availability/assessments') return await managerFactoryScenario(req, res, c, 'material', true);
+      const receiptMatch = /^\/api\/operations\/scheduling\/factory-assessments\/([a-f0-9]{64})$/.exec(path);
+      if (req.method === 'GET' && receiptMatch) return readFactoryAssessment(req, res, c, receiptMatch[1]);
       return writeJson(res, 404, { error: 'Scheduling intelligence endpoint not found.' });
     } catch (error) {
       return writeJson(res, Number(error?.statusCode || 400), {
