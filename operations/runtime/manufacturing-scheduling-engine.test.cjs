@@ -178,3 +178,48 @@ test('UTC and explicit offsets denote identical instants; reversed overnight dat
  assert.throws(()=>evaluateOpenShift({requirement:shift('bad','2026-09-24T22:00:00Z','2026-09-24T06:00:00Z'),workers:[]}));
  assert.throws(()=>evaluateOpenShift({requirement:early,workers:[],currentAssignments:null}));
 });
+
+test('swap rejects an explicitly conflicting outgoing site on either leg',()=>{
+ for(const leg of [0,1]){
+  const x=swapInput();x.currentAssignments[leg].site='birmingham';
+  assert.throws(()=>evaluateSwap(x),/outgoing.*site/i,'leg '+leg);
+ }
+});
+test('swap rejects malformed declared outgoing sites without coercion or mutation',()=>{
+ for(const leg of [0,1])for(const site of [null,'',' tamworth','tamworth ',42,{},[],undefined]){
+  const x=swapInput();x.currentAssignments[leg].site=site;freezeDeep(x);
+  assert.throws(()=>evaluateSwap(x),/outgoing.*site/i,'leg '+leg+' type '+typeof site);
+  assert.equal(x.currentAssignments[leg].site,site);
+ }
+});
+test('swap accepts matching declared sites and preserves advisory and frozen-input boundaries',()=>{
+ const x=swapInput();for(const row of x.currentAssignments)row.site='tamworth';
+ const before=JSON.stringify(x);freezeDeep(x);const r=evaluateSwap(x);
+ assert.equal(r.eligible,true);assert.equal(r.mode,'EVALUATE_ONLY');assert.equal(r.executionPermitted,false);
+ assert.equal(JSON.stringify(x),before);
+});
+test('swap checks each outgoing site against its own requirement for a valid cross-site exchange',()=>{
+ const x=swapInput();x.requirementB.site='birmingham';x.workerB.homeSite='birmingham';
+ for(const w of [x.workerA,x.workerB]){w.eligibleSites=['tamworth','birmingham'];w.travelMinutesBySite={tamworth:30,birmingham:30};}
+ x.currentAssignments[0].site='tamworth';x.currentAssignments[1].site='birmingham';
+ const r=evaluateSwap(x);assert.equal(r.eligible,true);assert.equal(r.executionPermitted,false);
+});
+test('swap preserves omitted-site and omitted-schedule legacy evaluation contracts',()=>{
+ for(const suppliedSites of [[],[0],[1],[0,1]]){
+  const x=swapInput();for(const leg of suppliedSites)x.currentAssignments[leg].site='tamworth';
+  const r=evaluateSwap(x);assert.equal(r.eligible,true);assert.equal(r.executionPermitted,false);
+ }
+ const x=swapInput();delete x.currentAssignments;const r=evaluateSwap(x);
+ assert.equal(r.eligible,true);assert.equal(r.mode,'EVALUATE_ONLY');assert.equal(r.executionPermitted,false);
+});
+test('swap canonicalizes equivalent outgoing timestamps while retaining exact declared-site checks',()=>{
+ const x=swapInput();for(const row of x.currentAssignments)row.site='tamworth';
+ x.currentAssignments[0].start='2026-09-24T07:00:00+01:00';x.currentAssignments[0].end='2026-09-24T16:00:00+02:00';
+ assert.equal(evaluateSwap(x).eligible,true);x.currentAssignments[0].site='birmingham';
+ assert.throws(()=>evaluateSwap(x),/outgoing.*site/i);
+});
+test('swap outgoing-site conflict cannot be hidden by unrelated rows or assignment order',()=>{
+ const x=swapInput();x.currentAssignments[0].site='birmingham';
+ x.currentAssignments.push({...assignment(shift('other-site','2026-09-26T06:00:00Z','2026-09-26T14:00:00Z'),'c'),site:'birmingham'});
+ for(const rows of [x.currentAssignments,x.currentAssignments.slice().reverse()])assert.throws(()=>evaluateSwap({...x,currentAssignments:rows}),/outgoing.*site/i);
+});

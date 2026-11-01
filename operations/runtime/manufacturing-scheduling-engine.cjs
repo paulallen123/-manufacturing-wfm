@@ -386,8 +386,11 @@ function evaluateSwap(input={}){
   if(input.currentAssignments!==undefined){
     for(const [worker,slot] of [[a,sa],[b,sb]]){
       const outgoing=current.find(x=>x.slotId===slot.slotId);
-      if(!outgoing||outgoing.workerId!==worker.id||outgoing.start!==slot.start||outgoing.end!==slot.end)
-        throw new Error('Swap requires matching outgoing assignment ids, owners and times.');
+      // Check any declared location before removing outgoing rows from the
+      // hypothetical exchange; omitted sites retain the legacy evaluation.
+      if(!outgoing||outgoing.workerId!==worker.id||outgoing.start!==slot.start||outgoing.end!==slot.end||
+        Object.hasOwn(outgoing,'site')&&outgoing.site!==slot.site)
+        throw new Error('Swap requires matching outgoing assignment ids, owners and times; any declared site must match its requirement.');
     }
   }
   const base=current.filter(x=>x.slotId!==sa.slotId&&x.slotId!==sb.slotId);
