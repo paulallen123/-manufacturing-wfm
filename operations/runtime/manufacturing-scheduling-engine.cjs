@@ -82,11 +82,21 @@ function normalisePolicy(input={}){
   };
 }
 function availability(v){
-  return Array.isArray(v)?v.slice(0,200).map((x,i)=>{
+  const windows=Array.isArray(v)?v.slice(0,200).map((x,i)=>{
     const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
     if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
     return {start,end};
   }):[];
+  // Merge owned, validated copies by absolute time without filling real gaps.
+  windows.sort((a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end));
+  const merged=[];
+  windows.forEach(window=>{
+    const previous=merged[merged.length-1];
+    if(previous&&ms(window.start)<=ms(previous.end)){
+      if(ms(window.end)>ms(previous.end)) previous.end=window.end;
+    }else merged.push(window);
+  });
+  return merged;
 }
 function certs(v){
   return Array.isArray(v)?v.slice(0,200).map(x=>({

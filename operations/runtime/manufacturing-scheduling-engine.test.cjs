@@ -223,3 +223,127 @@ test('swap outgoing-site conflict cannot be hidden by unrelated rows or assignme
  x.currentAssignments.push({...assignment(shift('other-site','2026-09-26T06:00:00Z','2026-09-26T14:00:00Z'),'c'),site:'birmingham'});
  for(const rows of [x.currentAssignments,x.currentAssignments.slice().reverse()])assert.throws(()=>evaluateSwap({...x,currentAssignments:rows}),/outgoing.*site/i);
 });
+
+// V029: declared availability is the union of its valid absolute intervals.
+// These controls add no source authentication or scheduling execution authority.
+function v029Touching(){return [
+ {start:'2026-09-24T06:00:00Z',end:'2026-09-24T10:00:00Z'},
+ {start:'2026-09-24T10:00:00Z',end:'2026-09-24T14:00:00Z'}
+];}
+function v029Open(workers,requirement={...baseReq},policy={}){
+ return evaluateOpenShift({requirement,workers,policy});
+}
+test('V029 touching availability covers the full open shift without execution authority',()=>{
+ const workers=[wideWorker('union',{availability:v029Touching()})];freezeDeep(workers);
+ const result=v029Open(workers);
+ assert.equal(result.ranked[0].eligible,true);
+ assert.equal(result.mode,'EVALUATE_ONLY');assert.equal(result.executionPermitted,false);
+});
+test('V029 overlapping availability chains cover a shift independently of input order',()=>{
+ const windows=[{start:'2026-09-24T06:00:00Z',end:'2026-09-24T09:00:00Z'},
+  {start:'2026-09-24T08:00:00Z',end:'2026-09-24T12:00:00Z'},
+  {start:'2026-09-24T11:00:00Z',end:'2026-09-24T14:00:00Z'}];
+ for(const order of [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]]){
+  const workers=[wideWorker('union',{availability:order.map(i=>({...windows[i]}))})];
+  const before=JSON.stringify(workers);freezeDeep(workers);
+  assert.equal(v029Open(workers).ranked[0].eligible,true,'window order '+order);
+  assert.equal(JSON.stringify(workers),before);
+ }
+});
+test('V029 explicit offset windows join by absolute instants across a clock change',()=>{
+ const requirement={...baseReq,id:'offset-union',start:'2026-10-25T01:00:00+01:00',end:'2026-10-25T02:00:00Z'};
+ const workers=[wideWorker('offset',{availability:[
+  {start:'2026-10-25T02:00:00+01:00',end:'2026-10-25T02:00:00Z'},
+  {start:'2026-10-25T01:00:00+01:00',end:'2026-10-25T01:00:00Z'}
+ ]})];freezeDeep(workers);
+ const result=v029Open(workers,requirement);
+ assert.equal(result.ranked[0].eligible,true);
+ assert.equal(result.slot.start,'2026-10-25T00:00:00.000Z');
+ assert.equal(result.slot.end,'2026-10-25T02:00:00.000Z');
+});
+test('V029 a one millisecond availability gap remains unavailable despite favorable preferences',()=>{
+ const availability=v029Touching();availability[1].start='2026-09-24T10:00:00.001Z';
+ const result=v029Open([wideWorker('gap',{availability,hourlyCost:0,
+  preferences:{preferredSites:['tamworth'],preferredLines:['line-4'],preferredTags:['DAY']}})]);
+ assert.equal(result.ranked[0].eligible,false);
+ assert.ok(result.ranked[0].failures.includes('NOT_AVAILABLE'));
+ assert.equal(result.executionPermitted,false);
+});
+test('V029 empty and partial availability never become full coverage',()=>{
+ for(const availability of [[],[v029Touching()[0]],
+  [{start:'2026-09-24T06:00:00Z',end:'2026-09-24T10:00:00Z'},
+   {start:'2026-09-24T10:00:00Z',end:'2026-09-24T13:59:59.999Z'}]]){
+  const result=v029Open([wideWorker('partial',{availability})]);
+  assert.equal(result.ranked[0].eligible,false);assert.ok(result.ranked[0].failures.includes('NOT_AVAILABLE'));
+ }
+});
+test('V029 certification valid through the exact shift end remains sufficient with union availability',()=>{
+ const result=v029Open([wideWorker('exact-expiry',{availability:v029Touching(),
+  certifications:[{name:'weld-cert',expiresAt:baseReq.end}]})]);
+ assert.equal(result.ranked[0].eligible,true);assert.equal(result.executionPermitted,false);
+});
+test('V029 hard skill and certification failures override favorable soft preferences',()=>{
+ const bad=[{skills:[],reason:'MISSING_SKILL:welding-l3'},
+  {certifications:[],reason:'CERTIFICATION_INVALID:weld-cert'},
+  {certifications:[{name:'weld-cert',expiresAt:'2026-09-24T13:59:59.999Z'}],reason:'CERTIFICATION_INVALID:weld-cert'}];
+ for(const {reason,...override} of bad){
+  const result=v029Open([wideWorker('unqualified',{availability:v029Touching(),hourlyCost:0,
+   preferences:{preferredSites:['tamworth'],preferredLines:['line-4'],preferredTags:['DAY']},...override})]);
+  assert.equal(result.ranked[0].eligible,false);assert.ok(result.ranked[0].failures.includes(reason));
+ }
+});
+test('V029 preferences rank eligible union-covered workers without admitting an unqualified favorite',()=>{
+ const workers=[wideWorker('other',{availability:v029Touching(),preferences:{avoidedTags:['DAY']}}),
+  wideWorker('wanted',{availability:v029Touching(),preferences:{preferredTags:['DAY']}}),
+  wideWorker('unqualified',{availability:v029Touching(),hourlyCost:0,skills:[],preferences:{preferredTags:['DAY']}})];
+ const result=v029Open(workers);
+ assert.equal(result.ranked[0].workerId,'wanted');assert.equal(result.ranked[0].eligible,true);
+ assert.equal(result.ranked.find(x=>x.workerId==='other').eligible,true);
+ assert.equal(result.ranked.find(x=>x.workerId==='unqualified').eligible,false);
+ assert.equal(result.executionPermitted,false);
+});
+test('V029 exact and greedy plans consume union coverage while preserving real gaps between days',()=>{
+ const next={...baseReq,id:'next-day',start:'2026-09-25T06:00:00Z',end:'2026-09-25T14:00:00Z'};
+ const availability=v029Touching().concat([
+  {start:'2026-09-25T06:00:00Z',end:'2026-09-25T10:00:00Z'},
+  {start:'2026-09-25T10:00:00Z',end:'2026-09-25T14:00:00Z'}]);
+ for(const exactSlotLimit of [1,10]){
+  const proposed=input({workers:[wideWorker('union',{availability})],requirements:[{...baseReq},next],
+   policy:{minRestHours:11,maxWeeklyHours:48,maxOvertimeHours:8,exactSlotLimit}});
+  const before=JSON.stringify(proposed);freezeDeep(proposed);const plan=createSchedulingPlan(proposed);
+  assert.equal(plan.quality.filledSlots,2);assert.equal(plan.validation.valid,true);
+  assert.equal(plan.mode,'SHADOW');assert.equal(plan.executionPermitted,false);
+  assert.equal(plan.solve.method,exactSlotLimit===1?'DETERMINISTIC_GREEDY_REPAIR':'BOUNDED_EXACT_SEARCH');
+  assert.equal(JSON.stringify(proposed),before);
+ }
+});
+test('V029 shadow repair can use a union-covered replacement without mutating input',()=>{
+ const prior=createSchedulingPlan(input({workers:[wideWorker('a')]}));
+ const proposed={priorPlan:prior,workers:[wideWorker('a'),wideWorker('b',{availability:v029Touching()})],
+  event:{type:'ABSENCE',unavailableWorkerIds:['a'],evidenceRef:'synthetic:absence'},
+  sourceEvidence:['synthetic:availability'],contextRevision:'union:repair',createdAt:'2026-09-23T13:00:00Z'};
+ const before=JSON.stringify(proposed);freezeDeep(proposed);const result=repairSchedulingPlan(proposed);
+ assert.equal(result.repairedPlan.assignments[0].workerId,'b');assert.equal(result.repairedPlan.validation.valid,true);
+ assert.equal(result.executionPermitted,false);assert.equal(result.repairedPlan.executionPermitted,false);
+ assert.equal(JSON.stringify(proposed),before);
+});
+test('V029 swaps consume union coverage and retain the V031 declared outgoing-site refusal',()=>{
+ const proposed=swapInput();const availability=v029Touching().concat([
+  {start:'2026-09-24T15:00:00Z',end:'2026-09-24T19:00:00Z'},
+  {start:'2026-09-24T19:00:00Z',end:'2026-09-24T23:00:00Z'}]);
+ proposed.workerA.availability=availability;proposed.workerB.availability=availability.map(x=>({...x}));
+ for(const row of proposed.currentAssignments)row.site='tamworth';
+ const before=JSON.stringify(proposed);freezeDeep(proposed);const result=evaluateSwap(proposed);
+ assert.equal(result.eligible,true);assert.equal(result.mode,'EVALUATE_ONLY');assert.equal(result.executionPermitted,false);
+ assert.equal(JSON.stringify(proposed),before);
+ const mismatch=structuredClone(proposed);mismatch.currentAssignments[0].site='birmingham';
+ assert.throws(()=>evaluateSwap(mismatch),/outgoing.*site/i);
+});
+test('V029 single-window compatibility and mutable caller ownership are preserved',()=>{
+ const workers=[wideWorker('single')],before=JSON.stringify(workers);
+ const first=v029Open(workers);assert.equal(first.ranked[0].eligible,true);assert.equal(JSON.stringify(workers),before);
+ assert.equal(Object.isFrozen(workers),false);assert.equal(Object.isFrozen(workers[0].availability),false);
+ assert.equal(Object.isFrozen(workers[0].availability[0]),false);
+ workers[0].availability[0].end='2026-09-24T07:00:00Z';
+ assert.equal(v029Open(workers).ranked[0].eligible,false);assert.equal(first.ranked[0].eligible,true);
+});
