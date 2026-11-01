@@ -32,6 +32,27 @@ function assertDomainPackaging(runtime, provenance) {
   }
  }
 }
+function assertCashEnergyPackaging(runtime, provenance) {
+ const root=join(__dirname,'..');
+ const docker=readFileSync(join(root,'Dockerfile'),'utf8');
+ const lines=docker.split(/\r?\n/).filter(line=>line.startsWith('COPY src/frontier/cash-to-capacity-')&&line.endsWith('/app/operations-runtime/'));
+ assert.equal(lines.length,1,'Exactly one Docker cash and energy copy declaration required');
+ const sources=lines[0].split(/\s+/).slice(1,-1);
+ assert.equal(sources.length,10,'Docker cash and energy copy set changed; update the parity contract');
+ assert.equal(new Set(sources).size,sources.length,'Docker cash and energy copy set must be unique');
+ for(const source of sources)assert.match(source,/^src\/frontier\/(?:cash-to-capacity|energy)-[a-z-]+\.mjs$/);
+ const expected=sources.map(source=>require('node:path').basename(source)).sort();
+ const actual=require('node:fs').readdirSync(join(runtime,'operations-runtime')).filter(name=>/^(?:cash-to-capacity|energy)-.*\.mjs$/.test(name)).sort();
+ assert.deepEqual(actual,expected,'Local cash and energy modules must exactly match the Docker copy set');
+ for(const source of sources) {
+  const destination=`operations-runtime/${require('node:path').basename(source)}`;
+  const bytes=readFileSync(join(root,source));
+  assert.deepEqual(readFileSync(join(runtime,destination)),bytes,destination);
+  const digest=createHash('sha256').update(bytes).digest('hex');
+  assert.deepEqual(provenance.sourceInputs.filter(entry=>entry.path===source),[{path:source,sha256:digest}],source);
+  assert.deepEqual(provenance.runtimeFiles.filter(entry=>entry.path===destination),[{path:destination,sha256:digest}],destination);
+ }
+}
 function assertLocalTimezoneConsumers(runtime) {
  const saved={NODE_ENV:process.env.NODE_ENV,WFM_TENANT_TIMEZONE:process.env.WFM_TENANT_TIMEZONE,WFM_TENANT_CLOCK_ISO:process.env.WFM_TENANT_CLOCK_ISO};
  try {
@@ -97,6 +118,7 @@ test('composer preserves the absent-directory canonical caller contract',()=>{
   assert.equal(existsSync(join(runtime,'STAFFOLOGY_ASSEMBLY.json')),true);
   const provenance=JSON.parse(readFileSync(join(runtime,'LOCAL_PROOF_PROVENANCE.json'),'utf8'));
   assertDomainPackaging(runtime,provenance);
+  assertCashEnergyPackaging(runtime,provenance);
   assert.ok(provenance.runtimeFiles.some(file=>file.path==='integrations/staffology/canonical-production-boundaries.cjs'));
   assert.ok(provenance.runtimeFiles.some(file=>file.path==='integrations/staffology/canonical-operations.cjs'));
   const assembly=JSON.parse(readFileSync(join(runtime,'STAFFOLOGY_ASSEMBLY.json'),'utf8'));

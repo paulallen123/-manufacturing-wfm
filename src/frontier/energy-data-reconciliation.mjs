@@ -18,6 +18,7 @@ export function validateTariffSnapshot(tariff){
   if(!tariff.source?.provider) errors.push('missing_tariff_provider');
   if(!tariff.source?.evidenceType) errors.push('missing_tariff_evidence_type');
   if(!tariff.currency) errors.push('missing_currency');
+  else if(tariff.currency!=='GBP') errors.push('unsupported_currency');
   if(!['fixed','variable','indexed','time_of_use','dynamic'].includes(tariff.tariffType)) errors.push('unsupported_tariff_type');
   if(!Array.isArray(tariff.unitRates)||tariff.unitRates.length===0) errors.push('missing_unit_rates');
   for(const [i,rate] of (tariff.unitRates??[]).entries()){

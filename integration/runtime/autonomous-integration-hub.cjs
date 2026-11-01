@@ -974,6 +974,7 @@ function createAutonomousIntegrationHub(options = {}) {
     const allowed = new Set(CANONICAL_FIELDS.Person);
     const cleaned = [];
     const seenSource = new Set();
+    const seenCanonical = new Set();
     for (const mapping of body.mappings) {
       const sourceField = compact(mapping.sourceField, 120);
       const canonicalField = compact(mapping.canonicalField, 80);
@@ -981,7 +982,9 @@ function createAutonomousIntegrationHub(options = {}) {
         return writeJson(res, 400, { error: 'Mapping contains an unsupported field.', sourceField, canonicalField });
       }
       if (seenSource.has(sourceField)) return writeJson(res, 400, { error: 'Each source field can only be mapped once.', sourceField });
+      if (seenCanonical.has(canonicalField)) return writeJson(res, 400, { error: 'Each canonical field can only be mapped once.', canonicalField });
       seenSource.add(sourceField);
+      seenCanonical.add(canonicalField);
       cleaned.push({ sourceField, canonicalField, confidence: Number(mapping.confidence || 1) });
     }
     if (!cleaned.some(x => x.canonicalField === 'employeeId')) {
@@ -1027,6 +1030,14 @@ function createAutonomousIntegrationHub(options = {}) {
 
     const mappings = activeMappings.all(connection.tenant, connection.id, Number(connection.mapping_version));
     if (!mappings.length) return writeJson(res, 409, { error: 'Activate mappings before validating a sync.' });
+    const seenCanonical = new Set();
+    for (const mapping of mappings) {
+      if (seenCanonical.has(mapping.canonical_field)) {
+        return writeJson(res, 409, { error: 'Active mappings contain a conflicting canonical field. Activate a unique replacement before validating a sync.',
+          code: 'AMBIGUOUS_ACTIVE_MAPPING', canonicalField: mapping.canonical_field });
+      }
+      seenCanonical.add(mapping.canonical_field);
+    }
 
     const ids = [];
     const canonicalRecords = [];

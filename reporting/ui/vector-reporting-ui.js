@@ -386,7 +386,14 @@ async function chooseTemplate(id){
 }
 async function chooseSaved(id){
   advanceEditor();const revision=editorRevision;
-  let body;try{body=await json('/api/reporting/reports/'+encodeURIComponent(id));}catch(e){if(!e.stale)await loadCatalog();return;}
+  let body;try{body=await json('/api/reporting/reports/'+encodeURIComponent(id));}catch(e){
+    if(e.stale)return;
+    const authorityDenied=[401,403,404].includes(e.status);
+    if(revision!==editorRevision&&!authorityDenied)return;
+    const refresh=loadCatalog(),epoch=authorityEpoch;await refresh;
+    if(!authorityDenied&&epoch===authorityEpoch&&!modal().hidden)toast('Could not open saved report. Choose the saved report again to retry.');
+    return;
+  }
   const d=body?.report?.definition;if(!d||body.report.id!==id||revision!==editorRevision)return;
   state.hiddenDefinition=Object.fromEntries(['limit','claimBoundary'].filter(key=>Object.hasOwn(d,key)).map(key=>[key,d[key]]));
   state.savedRevision=revision;

@@ -305,8 +305,14 @@ const groups = {
 for (const [group, files] of Object.entries(groups)) for (const file of files) {const sourceRoot=group==='integrations'?'integrations':`${group}/runtime`,targetRoot=group==='integrations'?'integrations':`${group}-runtime`;copy(`${sourceRoot}/${file}`,`${targetRoot}/${file}`);}
 copy('resilience/support-selfhelp.cjs', 'support-runtime/support-selfhelp.cjs');
 copy('resilience/support-selfhelp-service.cjs', 'support-runtime/support-selfhelp-service.cjs');
-// Mirror the existing final-image agency and attendance COPY sets. Keep relative
+// Mirror the existing final-image cash, energy, agency and attendance COPY sets. Keep relative
 // module imports intact and include every copied source in proof provenance.
+for (const name of [
+  'cash-to-capacity-engine.mjs', 'cash-to-capacity-evidence.mjs',
+  'cash-to-capacity-decision.mjs', 'cash-to-capacity-outcome.mjs',
+  'energy-bill-evidence.mjs', 'energy-data-reconciliation.mjs', 'energy-flexibility.mjs',
+  'energy-input-hardening.mjs', 'energy-profile-benchmark.mjs', 'energy-profile-binding.mjs'
+]) copy(`src/frontier/${name}`, `operations-runtime/${name}`);
 for (const name of fs.readdirSync(path.join(root, 'src/frontier')).filter(name => /^agency-.*\.mjs$/.test(name)).sort()) {
   copy(`src/frontier/${name}`, `operations-runtime/agency/${name}`);
 }

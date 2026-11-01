@@ -203,3 +203,63 @@ for(const action of ['pin','schedule'])test('authority-epoch stale committed '+a
   await committed;h.x.key({key:'Escape'});h.release();await pending;
   assert.deepEqual(h.x.notifications,[]);assert.equal(h.x.nodes.get('vector-reporting-modal').hidden,true);
 });
+
+for(const failure of ['network','unavailable'])for(const selection of ['template','saved','edited view'])test('obsolete saved-report '+failure+' failure preserves the newer '+selection,async()=>{
+  let entered,release,hold=true;const started=new Promise(resolve=>{entered=resolve;});
+  const x=fixture(1280,null,async url=>{
+    if(hold&&url==='/api/reporting/reports/private'){
+      hold=false;entered();
+      return new Promise((resolve,reject)=>{release=()=>failure==='network'
+        ?reject(Error('Fictional saved-report connection lost'))
+        :resolve({ok:false,status:503,json:async()=>({error:'Fictional saved report unavailable'})});});
+    }
+    return null;
+  });
+  await x.api.open();await x.click('[data-report-template="payroll"]');
+  const pending=x.click('[data-report-saved-id="private"]');await started;
+  if(selection==='saved')await x.click('[data-report-saved-id="private"]');
+  else if(selection==='template')await x.click('[data-report-template="payroll"]');
+  else{
+    const target=x.nodes.get('[data-report-visualisation]');target.value='bar';
+    x.nodes.get('vector-reporting-modal').listeners.change({target});
+  }
+  const current=x.nodes.get('[data-report-main]').innerHTML,refreshes=x.calls.filter(url=>url==='/api/reporting/catalog').length;
+  release();await pending;
+  assert.equal(x.nodes.get('[data-report-main]').innerHTML,current,'an obsolete ordinary read failure must not discard current work');
+  assert.equal(x.calls.filter(url=>url==='/api/reporting/catalog').length,refreshes,'no authority refresh for an obsolete ordinary failure');
+  assert.equal(x.nodes.get('[data-report-save]').textContent,selection==='saved'?'Saved':'Save');
+  assert.deepEqual(x.notifications,[]);
+});
+
+for(const status of [401,403,404])test('obsolete saved-report '+status+' denial still refreshes current authority',async()=>{
+  let entered,release,hold=true;const started=new Promise(resolve=>{entered=resolve;});
+  const x=fixture(1280,null,async url=>{
+    if(hold&&url==='/api/reporting/reports/private'){
+      hold=false;entered();return new Promise(resolve=>{release=()=>resolve({ok:false,status,json:async()=>({error:'Fictional saved report denied'})});});
+    }
+    return null;
+  });
+  await x.api.open();const pending=x.click('[data-report-saved-id="private"]');await started;
+  await x.click('[data-report-template="payroll"]');x.revoke();release();await pending;
+  assert.doesNotMatch(x.markup(),/Restricted payroll title|Private payroll question|Payroll secret/);
+  assert.match(x.nodes.get('[data-report-main]').textContent,/Choose a question/);
+  assert.equal(x.calls.filter(url=>url==='/api/reporting/catalog').length,2);
+});
+
+for(const failure of ['network','unavailable'])test('current saved-report '+failure+' failure is disclosed and can be retried',async()=>{
+  let fail=true;
+  const x=fixture(1280,null,async url=>{
+    if(fail&&url==='/api/reporting/reports/private'){
+      fail=false;
+      if(failure==='network')throw Error('Fictional saved-report connection lost');
+      return {ok:false,status:503,json:async()=>({error:'Fictional saved report unavailable'})};
+    }
+    return null;
+  });
+  await x.api.open();await x.click('[data-report-saved-id="private"]');
+  assert.match(x.notifications.join(' '),/could not open saved report.*again.*retry/i);
+  assert.ok(x.nodes.get('[data-report-saved-id="private"]'),'refreshed saved choices remain available');
+  await x.click('[data-report-saved-id="private"]');
+  assert.equal(x.nodes.get('[data-report-save]').textContent,'Saved');
+  assert.match(x.nodes.get('[data-report-main]').textContent,/Payroll secret/);
+});
