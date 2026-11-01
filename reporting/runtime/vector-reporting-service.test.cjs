@@ -746,3 +746,90 @@ for(const [label,sql] of [
     assert.equal(next.length,1);assert.equal(next[0].status,'READY');
   }finally{restarted?.close();x.close();}
 });
+
+// External dispatch must deny a stale async actor against committed local state.
+for(const [label,sql] of [
+  ['role revocation',"UPDATE users SET role='employee' WHERE email='payroll@a.example'"],
+  ['tenant transfer',"UPDATE users SET tenant='tenant-b' WHERE email='payroll@a.example'"],
+  ['user deletion',"DELETE FROM users WHERE email='payroll@a.example'"],
+  ['tenant freeze',"CREATE TABLE identity_tenant_control(tenant TEXT PRIMARY KEY,privileged_freeze INTEGER); INSERT INTO identity_tenant_control VALUES('tenant-a',1)"]
+])test('external '+label+' committed during stale final reader blocks durable claim and dispatch',{timeout:5000},async()=>{
+  let armed=false,reads=0,release,entered,sent=0,readbacks=0,restarted;
+  const pending=new Promise(resolve=>{entered=resolve;});
+  const held=new Promise(resolve=>{release=resolve;});
+  const adapter={authorize:()=>true,deliver:async()=>{sent++;return {accepted:true};},readback:async()=>{readbacks++;return {observed:true};}};
+  const x=setup({deliveryAdapter:adapter,currentUserReader:async({email,tenant})=>{
+    const actor={email,tenant,role:'payroll_admin'};
+    if(armed&&++reads===6){entered();await held;}
+    return actor;
+  }});
+  try{
+    const report=await makeReport(x),planned=await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    armed=true;const running=x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    await pending;
+    const revoke=new DatabaseSync(x.dbPath);try{revoke.exec(sql);}finally{revoke.close();}
+    release();const result=await running;
+    assert.equal(result.length,1);assert.equal(result[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(result[0].scheduleId,planned.id);assert.equal(result[0].externalReceipt,null);
+    assert.equal(sent,0);assert.equal(readbacks,0);
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_observations').get().n,0);
+      assert.equal(inspect.prepare("SELECT count(*) n FROM vector_report_deliveries WHERE schedule_id=? AND status='BLOCKED_AUTHORITY_DRIFT'").get(planned.id).n,1);
+      const audit=inspect.prepare("SELECT detail_json FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").all();
+      assert.equal(audit.length,1);assert.equal(JSON.parse(audit[0].detail_json).scheduleId,planned.id);
+    }finally{inspect.close();}
+    x.service.close();
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const restore=new DatabaseSync(x.dbPath);try{
+      restore.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)').run('payroll@a.example','tenant-a','payroll_admin');
+      if(label==='tenant freeze')restore.exec("UPDATE identity_tenant_control SET privileged_freeze=0 WHERE tenant='tenant-a'");
+      restore.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha('fresh-external-payroll'),'payroll@a.example',Date.now()+3600000);
+    }finally{restore.close();}
+    assert.equal((await call(restarted,'GET','/api/reporting/deliveries','fresh-external-payroll')).body.deliveries[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,'UNKNOWN');
+    assert.equal(sent,1);assert.equal(readbacks,1);
+  }finally{release();restarted?.close();x.close();}
+});
+
+test('external stale worker cannot dispatch a slot already blocked by another worker after authority restoration',{timeout:5000},async()=>{
+  let armed=false,reads=0,release,entered,sent=0,readbacks=0,second,restarted,running;
+  const pending=new Promise(resolve=>{entered=resolve;});
+  const held=new Promise(resolve=>{release=resolve;});
+  const adapter={authorize:()=>true,deliver:async()=>{sent++;return {accepted:true};},readback:async()=>{readbacks++;return {observed:true};}};
+  const staleReader=async({email,tenant})=>({email,tenant,role:'payroll_admin'});
+  const x=setup({deliveryAdapter:adapter,currentUserReader:async principal=>{
+    const actor=await staleReader(principal);
+    if(armed&&++reads===6){entered();await held;}
+    return actor;
+  }});
+  try{
+    const report=await makeReport(x),planned=await makeSchedule(x,report.id,'payroll-a',{delivery:'email_link',destination:'synthetic@example.test'});
+    second=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter,currentUserReader:staleReader});
+    armed=true;running=x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    await pending;
+    const revoke=new DatabaseSync(x.dbPath);try{revoke.exec("UPDATE users SET role='employee' WHERE email='payroll@a.example'");}finally{revoke.close();}
+    const blocked=await second.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    assert.equal(blocked.length,1);assert.equal(blocked[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(sent,0);assert.equal(readbacks,0);
+    const restore=new DatabaseSync(x.dbPath);try{restore.exec("UPDATE users SET role='payroll_admin' WHERE email='payroll@a.example'");}finally{restore.close();}
+    release();assert.deepEqual(await running,[]);
+    assert.equal(sent,0,'an already blocked slot must never dispatch after authority restoration');assert.equal(readbacks,0);
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_observations').get().n,0);
+      const receipt=inspect.prepare('SELECT status,receipt_json FROM vector_report_deliveries WHERE schedule_id=?').get(planned.id);
+      assert.equal(receipt.status,'BLOCKED_AUTHORITY_DRIFT');assert.equal(JSON.parse(receipt.receipt_json).status,'BLOCKED_AUTHORITY_DRIFT');
+    }finally{inspect.close();}
+    second.close();x.service.close();
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,'UNKNOWN');assert.equal(sent,1);assert.equal(readbacks,1);
+    const contained=await restarted.runDueSchedules(new Date('2026-09-26T16:05:00Z'));
+    assert.equal(contained.length,1);assert.equal(contained[0].status,'BLOCKED_RECONCILIATION_REQUIRED');assert.equal(sent,1);
+  }finally{release();if(running)await running.catch(()=>{});second?.close();restarted?.close();x.close();}
+});
