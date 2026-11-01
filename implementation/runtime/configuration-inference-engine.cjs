@@ -76,7 +76,8 @@ function mode(values) {
 
 function parseClockMinutes(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
-  const text = String(value || '');
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const text = value.trim();
   const hhmm = text.match(/^(\d{1,2}):(\d{2})$/);
   if (hhmm) {
     const h = Number(hhmm[1]);
@@ -194,6 +195,7 @@ function buildWorkforceSnapshot(source) {
   const assignments = [];
   const cohorts = new Map();
   const exceptions = source.invalid ? [{ reason: 'INVALID_WORKFORCE_SOURCE' }] : [];
+  const seenEmployeeIds = new Set();
 
   for (const person of people || []) {
     const employeeId = compact(person.employeeId);
@@ -201,6 +203,11 @@ function buildWorkforceSnapshot(source) {
       exceptions.push({ reason: 'MISSING_EMPLOYEE_ID', source: compact(person.email || person.firstName || 'unknown') });
       continue;
     }
+    if (seenEmployeeIds.has(employeeId)) {
+      exceptions.push({ employeeId, reason: 'DUPLICATE_EMPLOYEE_ID' });
+      continue;
+    }
+    seenEmployeeIds.add(employeeId);
     const location = compact(person.location);
     const department = compact(person.department);
     if (!location || !department) {
@@ -295,6 +302,7 @@ function inferShiftTemplates(punches, options = {}) {
 function inferBreakPolicy(timecards) {
   const byBand = new Map();
   for (const item of timecards || []) {
+    if (typeof item?.workedHours !== 'number' || typeof item?.breakMinutes !== 'number') continue;
     const worked = Number(item.workedHours);
     const breakMinutes = Number(item.breakMinutes);
     if (!Number.isFinite(worked) || !Number.isFinite(breakMinutes) || worked <= 0 || breakMinutes < 0) continue;
@@ -321,6 +329,7 @@ function inferBreakPolicy(timecards) {
 function inferOvertimePolicy(timecards) {
   const candidates = [];
   for (const item of timecards || []) {
+    if (typeof item?.workedHours !== 'number' || typeof item?.regularHours !== 'number' || typeof item?.overtimeHours !== 'number') continue;
     const worked = Number(item.workedHours);
     const regular = Number(item.regularHours);
     const overtime = Number(item.overtimeHours);

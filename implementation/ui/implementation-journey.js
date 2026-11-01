@@ -62,6 +62,10 @@ function stateLabel(value){
   return map[value]||String(value||'Pending').replaceAll('_',' ').toLowerCase().replace(/^./,c=>c.toUpperCase());
 }
 function stateIcon(value){return value==='complete'||value==='ACTIVE'?'✓':value==='progress'||value==='VALIDATING'?'●':'○';}
+function launchIsReady(){
+  const runtime=S.status?.runtimeIdentity||{},provider=S.status?.providerJourney||{},launch=S.status?.launchBoundary||{};
+  return S.status?.operationalReady===true&&launch.ready===true&&runtime.fixtureOnly===false&&runtime.productionApproved===true&&S.status?.wholeJourneyProven===true&&(!provider.required||provider.proven===true);
+}
 function stageMarkup(){
   const integrationStarted=(S.integrations?.connections?.length||0)>0||(S.integrations?.discovery?.candidateCount||0)>0;
   const trainingStarted=trainingProgress()>0||Number((S.status?.learningSummary||S.learning||{}).assignments||0)>0;
@@ -72,10 +76,10 @@ function stageMarkup(){
     ['Testing',['scenario-validation'],false],
     ['Clean up',['test-data-cleanup'],false],
     ['Data import',['live-data-import'],false],
-    ['Go live',[],Boolean(S.status?.operationalReady)]
+    ['Go live',[],launchIsReady()]
   ];
   return stages.map((stage,index)=>{
-    let st=stage[0]==='Go live'?(S.status?.operationalReady?'complete':'pending'):groupState(stage[1],stage[2]);
+    let st=stage[0]==='Go live'?(launchIsReady()?'complete':'pending'):groupState(stage[1],stage[2]);
     if(stage[0]==='Integrations'&&st==='complete'&&(S.status?.integrationTruth?.unifiedReady!==true||(S.status?.providerJourney?.required&&S.status?.providerJourney?.proven!==true)))st='progress';
     if(stage[0]==='Training'&&st==='complete'&&!(learningCounts().populationReady&&learningCounts().combinedReady))st='progress';
     const caption=stage[0]==='Training'&&st!=='complete'?'From day one':stateLabel(st);
@@ -121,6 +125,7 @@ function importAdvice(){
   return '<ul>'+needs.slice(0,5).map(x=>'<li>'+safe(x)+'</li>').join('')+'</ul>';
 }
 function activeWork(){
+  if(!(S.status?.requirements||[]).length)return '<div class="wfm-ij-empty"><b>Waiting for implementation control evidence.</b><span>Readiness remains unproven until the required controls are available.</span></div>';
   const missing=(S.status?.requirements||[]).filter(x=>!x.satisfied);
   if(!missing.length)return '<div class="wfm-ij-empty"><b>All implementation controls are proven.</b><span>Review the go-live readiness evidence.</span></div>';
   return '<div class="wfm-ij-work-list">'+missing.slice(0,6).map(x=>{
@@ -330,13 +335,14 @@ function launchBlockerMarkup(launch){
 }
 function liveMarkup(){
   const progress=overallProgress();
-  const state=S.status?.state||'BUILDING';
   const integrationReady=S.integrations?.readiness||{};
   const test=requirement('scenario-validation');
   const cleanup=requirement('test-data-cleanup');
   const liveImport=requirement('live-data-import');
-  const runtime=S.status?.runtimeIdentity||{},provider=S.status?.providerJourney||{},launch=S.status?.launchBoundary||{};
-  const launchReady=S.status?.operationalReady===true&&launch.ready===true&&runtime.fixtureOnly===false&&runtime.productionApproved===true&&S.status?.wholeJourneyProven===true&&(!provider.required||provider.proven===true);
+  const launch=S.status?.launchBoundary||{};
+  const launchReady=launchIsReady();
+  const sourceState=S.status?.state||'BUILDING';
+  const state=sourceState==='READY'&&!launchReady?'BUILDING':sourceState;
   return '<div class="wfm-ij-shell">'+
     '<header class="wfm-ij-header"><div><span class="wfm-ij-kicker">IMPLEMENTATION IN PROGRESS</span><h1>Your implementation</h1><p>One place to see what is happening, what has been proven and what needs you.</p></div><span class="wfm-ij-status '+(state==='READY'?'ready':state==='AT_RISK'||state==='SLA_MISSED'?'blocked':'working')+'">'+safe(stateLabel(state))+'</span></header>'+
     workspaceSetupMarkup()+
@@ -362,7 +368,7 @@ function errorMarkup(){
 }
 function renderView(force=false){
   if(currentPage()!=='onboarding'||isEmployeeRole())return;
-  if(S.setupDirty&&!force&&document.querySelector('[data-ij-setup-form]'))return;
+  if(S.setupDirty&&!force&&!S.error&&S.status&&document.querySelector('[data-ij-setup-form]'))return;
   const content=document.querySelector('.content');if(!content)return;
   content.dataset.wfmImplementationJourney=VERSION;
   if(S.error){content.innerHTML=errorMarkup();return;}
@@ -390,7 +396,7 @@ async function load(force){
     if((changedBinding||!S.setupDirty&&!S.setupSaving)&&result[3]&&(!S.setup||changedBinding||result[3].revision>=S.setup.revision))S.setup=result[3];
     if(!S.status){S.error='Your account does not have access to implementation control.';S.setupDirty=false;S.setup=null;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
     if(S.invitation?.error&&S.status?.state==='AWAITING_CUSTOMER_START')S.error=S.invitation.error;
-  }catch(error){S.error=error.message||'Implementation workspace failed to load.';}
+  }catch(error){S.status=null;S.integrations=null;S.learning=null;S.invitation=null;S.error=error.message||'Implementation workspace failed to load.';}
   finally{S.loading=false;renderView();schedule();}
 }
 function schedule(){

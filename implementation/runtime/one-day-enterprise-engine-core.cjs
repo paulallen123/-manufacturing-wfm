@@ -2527,14 +2527,14 @@ function createOneDayEnterpriseEngine(options = {}) {
       }
     }
     if (status === 'PASS' && kind === 'test-data-cleanup') {
-      if (Number(detail.remainingTestRows) !== 0 || Number(detail.liveRowsTouched) !== 0) {
+      if (detail.remainingTestRows !== 0 || detail.liveRowsTouched !== 0) {
         return writeJson(res, 409, { error: 'Cleanup PASS requires zero remaining test rows and zero live rows touched.' });
       }
     }
     if (status === 'PASS' && kind === 'live-data-import') {
-      const sourceCount = Number(detail.sourceCount);
-      const importedCount = Number(detail.importedCount);
-      if (!Number.isInteger(sourceCount) || sourceCount < 0 || importedCount !== sourceCount || Number(detail.invalidCount) !== 0 || detail.checksumMatch !== true) {
+      const sourceCount = detail.sourceCount;
+      const importedCount = detail.importedCount;
+      if (!Number.isSafeInteger(sourceCount) || sourceCount < 0 || importedCount !== sourceCount || detail.invalidCount !== 0 || detail.checksumMatch !== true) {
         return writeJson(res, 409, { error: 'Live import PASS requires reconciled counts, zero invalid rows and a matching checksum.' });
       }
     }

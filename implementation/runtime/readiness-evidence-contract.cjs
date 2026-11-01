@@ -49,7 +49,7 @@ function validEffectiveDate(value) {
 
 function zeroHuman(item, label) {
   if (item.zeroHuman !== true) return label + ' PASS requires explicit zero-human execution evidence.';
-  if (Number(item.humanInterventions) !== 0) return label + ' PASS requires zero human interventions.';
+  if (item.humanInterventions !== 0) return label + ' PASS requires zero numeric human interventions.';
   return null;
 }
 
@@ -81,10 +81,10 @@ function validatePolicyEvidence(item, label) {
   if (!text(item.sourceRef)) return label + ' PASS requires a traceable policy source reference.';
   if (item.effectiveDated !== true) return label + ' PASS requires effective-dated policy evidence.';
   if (item.effectiveDate != null && !validEffectiveDate(item.effectiveDate)) return label + ' PASS contains an invalid policy effective date.';
-  if (!Number.isInteger(Number(item.unresolvedRules)) || Number(item.unresolvedRules) !== 0) {
+  if (item.unresolvedRules !== 0) {
     return label + ' PASS requires zero unresolved policy rules.';
   }
-  if (!Number.isInteger(Number(item.unknownPolicyFields)) || Number(item.unknownPolicyFields) !== 0) {
+  if (item.unknownPolicyFields !== 0) {
     return label + ' PASS requires zero unknown policy fields.';
   }
   return null;
@@ -187,7 +187,7 @@ function validateScheduling(item) {
   if (item.availabilityVerified !== true) return 'Scheduling PASS requires availability verification.';
   if (item.ruleEvaluationVerified !== true) return 'Scheduling PASS requires time/compliance rule evaluation.';
   if (item.publishedScheduleReadbackVerified !== true) return 'Scheduling PASS requires published-schedule readback.';
-  if (Number(item.unresolvedExceptions) !== 0) return 'Scheduling PASS requires zero unresolved scheduling exceptions.';
+  if (item.unresolvedExceptions !== 0) return 'Scheduling PASS requires zero numeric unresolved scheduling exceptions.';
   return null;
 }
 
@@ -246,7 +246,7 @@ function validateResilience(item) {
     ['replaySafetyVerified','replay safety']
   ]) if (item[key] !== true) return 'Resilience PASS requires ' + label + '.';
   if (item.rollbackRequired === true && item.rollbackVerified !== true) return 'Resilience PASS requires verified rollback when rollback is required.';
-  if (Number(item.criticalFailures) !== 0) return 'Resilience PASS requires zero critical failures.';
+  if (item.criticalFailures !== 0) return 'Resilience PASS requires zero numeric critical failures.';
   return null;
 }
 
@@ -277,7 +277,7 @@ function validateGoldenJourney(item) {
     text(payroll.acceptanceEvidenceRef)!==text(acceptStep?.evidenceRef)||
     text(payroll.readbackEvidenceRef)!==text(readbackStep?.evidenceRef))
     return 'Scenario-validation PASS must bind payroll release, provider acceptance and provider readback steps to the exact payroll/provider evidence refs.';
-  if (Number(item.criticalFailures) !== 0) return 'Scenario-validation PASS requires zero critical failures.';
+  if (item.criticalFailures !== 0) return 'Scenario-validation PASS requires zero numeric critical failures.';
   return null;
 }
 
@@ -347,17 +347,27 @@ function validateStrictReadinessEvidence(kind, status, detail = {}, context = {}
     if (item.cloudRuntime !== true) return 'Security-controls PASS requires execution against the cloud runtime.';
     if (item.tenantIsolationVerified !== true) return 'Security-controls PASS requires verified tenant isolation.';
     if (!Number.isInteger(Number(item.crossTenantNegativeTests)) || Number(item.crossTenantNegativeTests) < 1) return 'Security-controls PASS requires at least one cross-tenant negative test.';
-    if (Number(item.criticalFailures) !== 0) return 'Security-controls PASS requires zero critical failures.';
+    if (item.criticalFailures !== 0) return 'Security-controls PASS requires zero numeric critical failures.';
   }
 
   if (kind === 'resilience') { const error = validateResilience(item); if (error) return error; }
   if (kind === 'scenario-validation') { const error = validateGoldenJourney(item); if (error) return error; }
+
+  if (kind === 'test-data-cleanup') {
+    if (item.remainingTestRows !== 0 || item.liveRowsTouched !== 0) {
+      return 'Cleanup PASS requires zero numeric remaining test rows and live rows touched.';
+    }
+  }
 
   if (kind === 'live-data-import') {
     if (item.fixtureOnly !== false) return 'Live-data-import PASS cannot be based on fixtures.';
     const automationError = zeroHuman(item, 'Live-data-import');
     if (automationError) return automationError;
     if (item.sourceAuthoritative !== true) return 'Live-data-import PASS requires an authoritative source receipt.';
+    if (!Number.isSafeInteger(item.sourceCount) || item.sourceCount < 0 ||
+        item.importedCount !== item.sourceCount || item.invalidCount !== 0 || item.checksumMatch !== true) {
+      return 'Live-data-import PASS requires reconciled numeric counts, zero invalid rows and a matching checksum.';
+    }
   }
 
   return null;
