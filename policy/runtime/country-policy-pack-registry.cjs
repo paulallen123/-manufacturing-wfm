@@ -8,7 +8,18 @@ const DOMAINS=new Set(['working-time','overtime','rest','absence','holiday','pay
 function stable(value){if(Array.isArray(value)) return '['+value.map(stable).join(',')+']';if(value&&typeof value==='object') return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';return JSON.stringify(value);}
 function digest(value){return createHash('sha256').update(stable(value)).digest('hex');}
 function text(v,max=240){return String(v??'').trim().slice(0,max);}
-function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error(name+' must be a valid ISO timestamp.');return new Date(ms).toISOString();}
+function iso(v,name){
+  const raw=text(v,80),ms=Date.parse(raw),date=/^([+-]\d{6}|\d{4})-(\d{1,2})-(\d{1,2})(?=\D|$)/.exec(raw);
+  let calendarValid=true;
+  if(date){
+    const year=Number(date[1]),month=Number(date[2]),day=Number(date[3]);
+    const leap=year%4===0&&(year%100!==0||year%400===0);
+    const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+    calendarValid=month>=1&&month<=12&&day>=1&&day<=days[month-1];
+  }
+  if(!raw||!Number.isFinite(ms)||!calendarValid) throw new Error(name+' must be a valid ISO timestamp.');
+  return new Date(ms).toISOString();
+}
 function list(v,max=40,maxLen=300){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
 function normaliseRule(rule={}){

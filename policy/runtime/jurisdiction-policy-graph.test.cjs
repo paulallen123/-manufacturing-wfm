@@ -3,6 +3,23 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {createJurisdictionPolicyGraph}=require('./jurisdiction-policy-graph.cjs');
 const resolution={legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'GB'}};
+// Date-only fixtures convey no country policy or execution authority.
+function dateNode(overrides={}){return baseNode({id:'synthetic-date-only',layer:'CUSTOMER_POLICY',effectiveFrom:'2026-01-01T00:00:00Z',effectiveTo:'2027-01-01T00:00:00Z',recordedAt:'2026-01-01T00:00:00Z',supersededAt:'2027-01-01T00:00:00Z',sourceRefs:['fixture:synthetic-date-only'],rules:[{id:'date-only',domain:'synthetic-date-only',key:'date-only',legalCharacter:'INFORMATIONAL',operator:'INFO',value:'No country policy supplied.'}],...overrides});}
+for(const field of ['effectiveFrom','effectiveTo','recordedAt','supersededAt'])test('node registration rejects impossible civil '+field,()=>{
+  assert.throws(()=>createJurisdictionPolicyGraph([dateNode({[field]:'2026-02-30T00:00:00Z'})]),new RegExp(field+'.*valid ISO'));
+});
+for(const field of ['legalAt','knownAt'])test('graph resolution rejects impossible civil '+field,()=>{
+  const graph=createJurisdictionPolicyGraph([dateNode()]);
+  assert.throws(()=>graph.resolve({context:{country:'GB'},legalAt:'2026-03-03T00:00:00Z',knownAt:'2026-03-03T00:00:00Z',[field]:'2026-02-30T00:00:00Z'}),new RegExp(field+'.*valid ISO'));
+});
+test('node registration rejects a non-leap century date',()=>{
+  assert.throws(()=>createJurisdictionPolicyGraph([dateNode({effectiveFrom:'1900-02-29T12:00:00Z'})]),/effectiveFrom.*valid ISO/);
+});
+for(const [input,expected] of [['2024-02-29T12:00:00Z','2024-02-29T12:00:00.000Z'],['2026-03-01T00:30:00+01:00','2026-02-28T23:30:00.000Z']])test('node registration preserves valid leap/offset instant '+input,()=>{
+  const graph=createJurisdictionPolicyGraph([dateNode({effectiveFrom:input})]),node=graph.all()[0];
+  assert.equal(node.effectiveFrom,expected);assert.equal(node.grantsExecutionAuthority,false);
+  assert.equal(graph.resolve({legalAt:'2026-06-01T00:00:00Z',knownAt:'2026-06-01T00:00:00Z',context:{country:'GB'}}).executionAuthority,false);
+});
 test('published node scope cannot change applicability under its admitted digest',()=>{
   const graph=createJurisdictionPolicyGraph([baseNode()]),node=graph.all()[0],before=graph.resolve(resolution);
   assert.throws(()=>{node.scope.country='DE';},TypeError);
