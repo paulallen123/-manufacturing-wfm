@@ -5,7 +5,7 @@ const IMPL='/api/implementation/autonomous';
 const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
 const VERSION='version-d-3';
-const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',decisionError:'',timer:null,lastLoad:0,setup:null,setupDirty:false,setupSaving:false,setupError:'',setupInput:null,setupEditGeneration:0,setupSettings:false};
+const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',decisionError:'',timer:null,lastLoad:0,setup:null,setupDirty:false,setupSaving:false,setupError:'',setupInput:null,setupEditGeneration:0,setupSettings:false,setupSaveTimer:null,setupEpoch:0,setupAutosavePaused:false};
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
 const isEmployeeRole=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
@@ -186,8 +186,6 @@ function workspaceSetupMarkup(){
   const org=a.organisation||{},workforce=a.workforce||{},capabilities=a.capabilities||{},connections=a.connections||{};
   const sites=org.sites?.length?org.sites:[{}], systems=connections.systems?.length?connections.systems:[{}];
   const applied=d.status==='APPLIED';
-  const review=d.compiled?.status==='compiled'&&d.reviewToken;
-  const questions=d.compiled?.questions||[];
   return '<section class="wfm-ij-panel wfm-ij-setup"><div class="wfm-ij-panel-head"><div><span class="wfm-ij-kicker">'+(S.setupSettings?'WORKSPACE SETTINGS':'WORKSPACE SETUP')+'</span><h2>'+ (S.setupSettings?'Workspace settings':applied?'Workspace setup applied':'Four questions to get started')+'</h2><p>'+(S.setupSettings?'Update your workspace details, then save and review the changes. Your initial questionnaire remains complete.':'Tell us about your organisation. Save your answers, review the proposed setup and apply it when ready.')+'</p></div><span class="wfm-ij-status '+(applied?'ready':'working')+'">'+(applied?'Applied':d.revision?'Draft saved':'Start here')+'</span></div>'+
     '<div role="alert" data-ij-setup-error class="wfm-ij-setup-message">'+safe(S.setupError)+'</div>'+
     (applied?'<p class="wfm-ij-note">Your workspace settings are saved. Policies, access, connected systems and operational readiness still need their own checks below.</p>':'')+
@@ -198,16 +196,48 @@ function workspaceSetupMarkup(){
     '<fieldset><legend>'+(S.setupSettings?'Capabilities and training':'3. What would you like to set up?')+'</legend><p>Select the capabilities you need and the teams who will need training.</p><div class="wfm-ij-setup-checks">'+setupChecks('module',SETUP_MODULES,capabilities.modules||[])+'</div><h3>Teams to train</h3><div class="wfm-ij-setup-checks">'+setupChecks('trainingRole',SETUP_ROLES,capabilities.trainingRoles||[])+'</div><p>Training choices do not change anyone’s access.</p></fieldset>'+
     '<fieldset><legend>'+(S.setupSettings?'Connection plan':'4. When would you like to connect your systems?')+'</legend><div class="wfm-ij-setup-checks">'+[['now','Plan connections now'],['later','Connect later']].map(([value,label])=>'<label class="wfm-ij-check"><input type="radio" name="connectionTiming" value="'+value+'" '+(connections.timing===value?'checked':'')+'><span>'+label+'</span></label>').join('')+'</div><p>You can start using the setup workspace while connections are pending.</p>'+
     '<div class="wfm-ij-setup-rows">'+systems.map((system,index)=>'<div class="wfm-ij-setup-row">'+setupInput('systemProvider','System name',system.provider,'maxlength="60" placeholder="e.g. your HR system"')+'<label><span>Connection method</span><select name="systemMode">'+[['api','Direct connection'],['file','File import'],['webhook','Event updates']].map(([value,label])=>'<option value="'+value+'" '+((system.mode||'api')===value?'selected':'')+'>'+label+'</option>').join('')+'</select></label>'+setupInput('systemObjects','Data to connect',listText(system.objectTypes),'placeholder="people, time, payroll-output, demand, production"')+'<button type="button" class="btn small" data-ij-remove-system="'+index+'" aria-label="Remove system '+(index+1)+'">Remove</button></div>').join('')+'</div><button type="button" class="btn small" data-ij-add-system>Add another system</button><p>System names describe your plan. Authorisation and connection checks happen separately.</p></fieldset>'+
-    '<div class="wfm-ij-scope-actions"><p>Save a draft at any stage. Your applied settings stay in place while you edit.</p><button type="submit" class="btn primary">Save and review</button></div></form>'+
-    (questions.length?'<div class="wfm-ij-note"><b>A few details are still needed</b><ul>'+questions.map(q=>'<li>'+safe(q.question)+'</li>').join('')+'</ul></div>':'')+
-    (d.requiresRebase?'<p class="wfm-ij-note">Your current configuration changed. Save your answers again to prepare a fresh review.</p>':'')+
-    (review?'<section class="wfm-ij-setup-review"><h3>Review your setup</h3><p>'+safe(org.name||'Your organisation')+' · '+Number(workforce.count||0)+' people · '+(org.sites?.length||0)+' sites · '+Number(workforce.shiftPatterns||0)+' shift patterns</p><p>'+safe((capabilities.modules||[]).map(code=>SETUP_MODULES.find(m=>m[0]===code)?.[1]||code).join(', '))+'</p><p>'+(connections.timing==='later'?'Connections are deferred. They remain outstanding for operational readiness.':'Connection requests will be saved for separate authorisation and validation.')+'</p><p>Policy exceptions remain below for the responsible person to confirm.</p><button type="button" class="btn primary" data-ij-setup-apply '+(S.setupDirty?'disabled':'')+'>Apply reviewed setup</button></section>':'')+
+    '<div class="wfm-ij-scope-actions"><p data-ij-setup-save-status role="status" aria-live="polite">'+safe(setupSaveStatus())+'</p><button type="submit" class="btn primary">Save and review</button></div></form>'+
+    '<div data-ij-setup-review-host>'+workspaceSetupReviewMarkup(d,a)+'</div>'+
     '<button type="button" class="btn small" data-ij-setup-reload>Discard edits and reload saved answers</button>'+(S.setupSettings?'<button type="button" class="btn small" data-ij-setup-close>Back to workspace</button>':'')+'</section>';
+}
+function workspaceSetupReviewMarkup(d,a){
+  const org=a.organisation||{},workforce=a.workforce||{},capabilities=a.capabilities||{},connections=a.connections||{};
+  const review=d.compiled?.status==='compiled'&&d.reviewToken,questions=d.compiled?.questions||[];
+  return (questions.length?'<div class="wfm-ij-note"><b>A few details are still needed</b><ul>'+questions.map(q=>'<li>'+safe(q.question)+'</li>').join('')+'</ul></div>':'')+
+    (d.requiresRebase?'<p class="wfm-ij-note">Your current configuration changed. Save your answers again to prepare a fresh review.</p>':'')+
+    (review?'<section class="wfm-ij-setup-review"><h3>Review your setup</h3><p>'+safe(org.name||'Your organisation')+' · '+Number(workforce.count||0)+' people · '+(org.sites?.length||0)+' sites · '+Number(workforce.shiftPatterns||0)+' shift patterns</p><p>'+safe((capabilities.modules||[]).map(code=>SETUP_MODULES.find(m=>m[0]===code)?.[1]||code).join(', '))+'</p><p>'+(connections.timing==='later'?'Connections are deferred. They remain outstanding for operational readiness.':'Connection requests will be saved for separate authorisation and validation.')+'</p><p>Policy exceptions remain below for the responsible person to confirm.</p><button type="button" class="btn primary" data-ij-setup-apply '+(S.setupDirty?'disabled':'')+'>Apply reviewed setup</button></section>':'');
+}
+function setupSaveStatus(){
+  if(S.setupSaving)return 'Saving your draft…';
+  if(S.setupDirty)return 'Your latest answers have not been saved yet.';
+  return S.setup?.revision?'Draft saved. Review the proposed setup before applying it.':'Answers save as you go. Review the proposed setup before applying it.';
+}
+function updateSetupFeedback(review=false){
+  if(currentPage()!=='onboarding'||!document.querySelector('[data-ij-setup-form]'))return;
+  const status=document.querySelector('[data-ij-setup-save-status]');if(status)status.textContent=setupSaveStatus();
+  if(review){const host=document.querySelector('[data-ij-setup-review-host]');if(host&&S.setup)host.innerHTML=workspaceSetupReviewMarkup(S.setup,S.setup.answers||{});}
+}
+function cancelSetupSave(){clearTimeout(S.setupSaveTimer);S.setupSaveTimer=null;}
+function resetSetupBinding(preservePause=false){
+  cancelSetupSave();S.setupEpoch++;S.setupSaving=false;if(!preservePause)S.setupAutosavePaused=false;
+}
+function currentSetupBinding(epoch,tenant,runId){
+  return epoch===S.setupEpoch&&!!S.status&&(!tenant||S.setup?.tenant===tenant)&&(!runId||!S.status.runId||S.status.runId===runId);
+}
+function scheduleSetupSave(){
+  cancelSetupSave();
+  if(!S.setupDirty||!S.setupInput||!S.status||!S.setup?.tenant||!S.setup?.runId||S.setupAutosavePaused||isEmployeeRole())return;
+  const epoch=S.setupEpoch,tenant=S.setup.tenant,runId=S.setup.runId;
+  S.setupSaveTimer=setTimeout(()=>{
+    S.setupSaveTimer=null;
+    if(currentSetupBinding(epoch,tenant,runId)&&S.setupDirty&&!S.setupSaving&&!S.setupAutosavePaused)saveSetup(null,true);
+  },500);
 }
 function openSetupSettings(){S.setupSettings=true;renderView(true);}
 function closeSetupSettings(){S.setupSettings=false;renderView(true);}
 function rememberSetupInput(form){
   S.setupInput=collectSetupAnswers(form);S.setupDirty=true;S.setupEditGeneration++;
+  updateSetupFeedback();scheduleSetupSave();
 }
 function collectSetupAnswers(form){
   const data=new FormData(form),get=name=>String(data.get(name)||'').trim(),split=value=>String(value||'').split(',').map(x=>x.trim()).filter(Boolean);
@@ -221,46 +251,72 @@ function collectSetupAnswers(form){
 function setupError(message){
   S.setupError=message;const box=document.querySelector('[data-ij-setup-error]');if(box)box.textContent=message;
 }
-async function saveSetup(form){
-  if(S.setupSaving)return;
-  const button=form.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent='Saving…';}
-  S.setupSaving=true;
+async function saveSetup(form,background=false){
+  cancelSetupSave();
+  if(!background){
+    const input=collectSetupAnswers(form);
+    if(JSON.stringify(input)!==JSON.stringify(S.setupInput)){S.setupInput=input;S.setupEditGeneration++;}
+    S.setupDirty=true;S.setupAutosavePaused=false;
+  }
+  if(S.setupSaving||!S.setupInput)return;
+  const answers=JSON.parse(JSON.stringify(S.setupInput));
+  const generation=S.setupEditGeneration,epoch=S.setupEpoch,runId=S.setup?.runId||S.status?.runId,tenant=S.setup?.tenant;
+  const currentWorkspace=()=>currentSetupBinding(epoch,tenant,runId);
+  const button=form?.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent='Saving…';}
+  S.setupSaving=true;updateSetupFeedback();let followUp=false;
   try{
-    const answers=collectSetupAnswers(form);
-    const generation=S.setupEditGeneration,runId=S.setup?.runId||S.status?.runId,tenant=S.setup?.tenant;
     const saved=await request(IMPL+'/setup',{method:'POST',body:JSON.stringify({expectedRevision:S.setup?.revision||0,answers})});
+    if(!currentWorkspace())return;
     if(!saved)throw Error('Sign in to save your workspace setup.');
-    if(!S.status||(runId&&S.status.runId&&runId!==S.status.runId)||(tenant&&S.setup?.tenant!==tenant))return;
-    if(generation!==S.setupEditGeneration||JSON.stringify(collectSetupAnswers(form))!==JSON.stringify(answers)){
-      S.setup=saved;S.setupDirty=true;S.setupError='';return;
+    if((saved.tenant&&tenant&&saved.tenant!==tenant)||(saved.runId&&runId&&saved.runId!==runId))throw Error('The workspace changed. Reload your saved answers before retrying.');
+    // Input events retain the newest model even if navigation has removed the form.
+    const currentForm=document.querySelector('[data-ij-setup-form]');
+    if(form&&currentForm===form&&generation===S.setupEditGeneration){
+      const current=collectSetupAnswers(form);
+      if(JSON.stringify(current)!==JSON.stringify(answers)){S.setupInput=current;S.setupEditGeneration++;}
     }
-    S.setup=saved;S.setupDirty=false;S.setupInput=null;S.setupError='';renderView();
-  }catch(error){setupError(error.message||'Your draft could not be saved. Your answers are still here.');}
-  finally{S.setupSaving=false;if(button){button.disabled=false;button.textContent='Save and review';}}
+    S.setup=saved;setupError('');
+    if(generation!==S.setupEditGeneration){S.setupDirty=true;followUp=true;return;}
+    S.setupDirty=false;S.setupInput=null;
+    if(background)updateSetupFeedback(true);else renderView();
+  }catch(error){
+    if(!currentWorkspace())return;
+    cancelSetupSave();
+    if([401,403,409].includes(error.status))S.setupAutosavePaused=true;
+    followUp=error.status===400&&generation!==S.setupEditGeneration;
+    setupError(error.message||'Your draft could not be saved. Your answers are still here.');
+  }finally{
+    if(currentWorkspace()){
+      S.setupSaving=false;if(button){button.disabled=false;button.textContent='Save and review';}
+      updateSetupFeedback();if(followUp)scheduleSetupSave();
+    }
+  }
 }
 async function applySetup(){
   if(S.setupDirty||S.setupSaving||!S.setup?.reviewToken)return;
-  const generation=S.setupEditGeneration,runId=S.setup.runId||S.status?.runId,tenant=S.setup.tenant;
-  const currentWorkspace=()=>!!S.status&&(!runId||!S.status.runId||runId===S.status.runId)&&(!tenant||S.setup?.tenant===tenant);
+  cancelSetupSave();
+  const generation=S.setupEditGeneration,epoch=S.setupEpoch,runId=S.setup.runId||S.status?.runId,tenant=S.setup.tenant;
+  const currentWorkspace=()=>currentSetupBinding(epoch,tenant,runId);
   S.setupSaving=true;const button=document.querySelector('[data-ij-setup-apply]');if(button)button.disabled=true;
+  let followUp=false;
   try{
     const result=await request(IMPL+'/setup/apply',{method:'POST',body:JSON.stringify({expectedRevision:S.setup.revision,reviewToken:S.setup.reviewToken})});
     if(!currentWorkspace())return;
     if(!result||result.status!=='APPLIED')throw Error('The setup was not applied. Reload the saved review and try again.');
     if(generation!==S.setupEditGeneration){
-      S.setup=result;S.setupDirty=true;S.setupSettings=true;
+      S.setup=result;S.setupDirty=true;S.setupSettings=true;followUp=true;
       S.setupError='Reviewed settings applied. Your newer edits are still here; save and review them to apply another update.';
       renderView(true);return;
     }
     S.setup=result;S.setupError='';S.setupInput=null;S.setupSettings=false;renderView();
-  }catch(error){if(currentWorkspace())setupError(error.message||'The setup could not be applied. Your saved draft is available to retry.');}
-  finally{S.setupSaving=false;if(button)button.disabled=S.setupDirty;}
+  }catch(error){if(currentWorkspace()){cancelSetupSave();setupError(error.message||'The setup could not be applied. Your saved draft is available to retry.');}}
+  finally{if(currentWorkspace()){S.setupSaving=false;if(button)button.disabled=S.setupDirty;updateSetupFeedback();if(followUp)scheduleSetupSave();}}
 }
 function changeSetupRows(kind,index){
   const form=document.querySelector('[data-ij-setup-form]');if(!form)return;
   const answers=collectSetupAnswers(form),rows=kind==='site'?answers.organisation.sites:answers.connections.systems;
   if(index==null)rows.push({});else rows.splice(index,1);
-  S.setupInput=answers;S.setupDirty=true;S.setupEditGeneration++;renderView(true);
+  S.setupInput=answers;S.setupDirty=true;S.setupEditGeneration++;renderView(true);scheduleSetupSave();
 }
 function policyCheck(name,label,required=true){
   return '<label class="wfm-ij-policy-check"><input type="checkbox" name="'+safe(name)+'" '+(required?'required':'')+'><span>'+safe(label)+'</span></label>';
@@ -392,12 +448,12 @@ async function load(force){
     const result=await Promise.all(calls);
     S.status=result[0];S.integrations=result[1];S.learning=result[2];S.invitation=result[4]||null;
     const changedBinding=S.setup&&result[3]&&(S.setup.tenant!==result[3].tenant||S.setup.runId!==result[3].runId);
-    if(changedBinding){S.setupDirty=false;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
+    if(changedBinding){resetSetupBinding();S.setupDirty=false;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
     if((changedBinding||!S.setupDirty&&!S.setupSaving)&&result[3]&&(!S.setup||changedBinding||result[3].revision>=S.setup.revision))S.setup=result[3];
-    if(!S.status){S.error='Your account does not have access to implementation control.';S.setupDirty=false;S.setup=null;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
+    if(!S.status){resetSetupBinding();S.error='Your account does not have access to implementation control.';S.setupDirty=false;S.setup=null;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
     if(S.invitation?.error&&S.status?.state==='AWAITING_CUSTOMER_START')S.error=S.invitation.error;
-  }catch(error){S.status=null;S.integrations=null;S.learning=null;S.invitation=null;S.error=error.message||'Implementation workspace failed to load.';}
-  finally{S.loading=false;renderView();schedule();}
+  }catch(error){resetSetupBinding(true);S.status=null;S.integrations=null;S.learning=null;S.invitation=null;S.error=error.message||'Implementation workspace failed to load.';}
+  finally{S.loading=false;renderView();schedule();if(S.status&&S.setupDirty&&!S.setupSaving)scheduleSetupSave();}
 }
 function schedule(){
   clearTimeout(S.timer);
@@ -530,7 +586,7 @@ document.addEventListener('click',event=>{
   if(event.target.closest('[data-ij-setup-settings]')){event.preventDefault();openSetupSettings();return;}
   if(event.target.closest('[data-ij-setup-close]')){event.preventDefault();closeSetupSettings();return;}
   const applyButton=event.target.closest('[data-ij-setup-apply]');if(applyButton){event.preventDefault();applySetup();return;}
-  const reloadSetup=event.target.closest('[data-ij-setup-reload]');if(reloadSetup){event.preventDefault();S.setupDirty=false;S.setupInput=null;S.setupError='';load(true);return;}
+  const reloadSetup=event.target.closest('[data-ij-setup-reload]');if(reloadSetup){event.preventDefault();resetSetupBinding();S.setupDirty=false;S.setupInput=null;S.setupError='';load(true);return;}
   const addSite=event.target.closest('[data-ij-add-site]');if(addSite){event.preventDefault();changeSetupRows('site');return;}
   const addSystem=event.target.closest('[data-ij-add-system]');if(addSystem){event.preventDefault();changeSetupRows('system');return;}
   const removeSite=event.target.closest('[data-ij-remove-site]');if(removeSite){event.preventDefault();changeSetupRows('site',Number(removeSite.dataset.ijRemoveSite));return;}
@@ -542,11 +598,13 @@ document.addEventListener('click',event=>{
   const accept=event.target.closest('[data-ij-decision-accept]');if(accept){event.preventDefault();acceptDecision(accept.dataset.ijDecisionAccept,accept);return;}
   const review=event.target.closest('[data-ij-decision-review]');if(review){event.preventDefault();openRoute('op-settings');return;}
 },true);
-document.addEventListener('input',event=>{
+function setupEdited(event){
   const form=event.target.closest('[data-ij-setup-form]');if(!form)return;
   rememberSetupInput(form);
   const button=document.querySelector('[data-ij-setup-apply]');if(button)button.disabled=true;
-},true);
+}
+document.addEventListener('input',setupEdited,true);
+document.addEventListener('change',setupEdited,true);
 const priorRender=window.render;
 if(typeof priorRender==='function')window.render=async function(...args){const out=await priorRender.apply(this,args);apply();return out;};
 const observer=new MutationObserver(()=>apply());
