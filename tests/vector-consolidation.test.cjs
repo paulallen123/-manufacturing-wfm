@@ -16,7 +16,7 @@ function load(extra = {}) {
     document: { querySelector: s => selectors[s] || null, querySelectorAll: () => buttons,
       addEventListener() {}, getElementById: () => null, documentElement: {}, body: { classList, dataset: {} } },
     MutationObserver: class { observe() {} disconnect() {} },
-    setTimeout() {}, queueMicrotask: fn => microtasks.push(fn),
+    setTimeout() {}, clearTimeout() {}, performance: { now: () => 0 }, queueMicrotask: fn => microtasks.push(fn),
     ui: { page: 'overview' }, history: { replaceState() {}, pushState() {} }, location: { hash: '' },
     isEmployee: () => Boolean(extra.employee), URL, Intl, Date,
     data: { requests: [] }, people: () => [], me: () => ({ id: 'manager' }),
@@ -26,8 +26,8 @@ function load(extra = {}) {
   const hook = 'window.VectorWorkforceOperations={marker:MARKER';
   assert.ok(source.includes(hook), 'existing Vector test hook is present');
   const augmented = source.replace(hook,
-    'window.VectorWorkforceOperations={NAV,labourCost,metrics,secondaryKpis,conceptKpiMarkup,loadTimeReviewEvidence,setTestCalendar(value){state.calendar={status:"ready",value};},sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
-    'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTenantCalendar=async()=>({tenant:"alpha",timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000});state.calendar={status:"ready",value:{tenant:"alpha",timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000}};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");renderEmployeeHome=()=>events.push("employee-current-personal");generalPage=()=>events.push("employee-source");if(employee())renderEmployeeHome({});else apply();},marker:MARKER');
+    'window.VectorWorkforceOperations={NAV,labourCost,metrics,secondaryKpis,conceptKpiMarkup,loadTimeReviewEvidence,setTestCalendar(value){state.calendar={status:"ready",requestedAt:0,value};},sectionItems:typeof sectionItems==="function"?sectionItems:spec=>spec.tabs.filter(([route])=>available(route)),' +
+    'exerciseHome(){ensureSidebar=()=>{};ensureTopbar=()=>{};updateNav=()=>{};loadTenantCalendar=async()=>({tenant:"alpha",timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000});state.calendar={status:"ready",requestedAt:0,value:{tenant:"alpha",timeZone:"Europe/London",asOf:"2026-10-05T12:00:00.000Z",localDate:"2026-10-05",localTime:"13:00:00",maxAgeMs:900000}};loadTimeReviewEvidence=async()=>{};renderHome=()=>events.push("manager-home");renderEmployeeHome=()=>events.push("employee-current-personal");generalPage=()=>events.push("employee-source");if(employee())renderEmployeeHome({});else apply();},marker:MARKER');
   context.events = events;
   vm.runInNewContext(augmented, context);
   return { api: context.window.VectorWorkforceOperations, context, events,
