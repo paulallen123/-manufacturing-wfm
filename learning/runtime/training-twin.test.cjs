@@ -21,3 +21,25 @@ test('explicit skip explanation routes knowledgeable user toward proving compete
   assert.equal(recommendation({score:85,status:'REFRESH_DUE',due_at_ms:Date.now()-1},0,true),'TEST_ME');
 });
 
+
+// The public profile is workflow learning, never manufacturing qualification authority.
+for (const role of ['manager', 'employee']) {
+  for (const [field, expected] of [['purpose', 'VECTOR_WORKFLOW_LEARNING'], ['productionQualificationAuthority', false]]) {
+    test('training twin '+role+' profile declares '+field+' without changing learning state',()=>{
+      const f=dbFixture(), twin=createTrainingTwin({dbPath:f.dbPath});
+      try {
+        const user={tenant:'T',email:'m@t',role};
+        const first=twin.profileForUser(user), second=twin.profileForUser(user);
+        assert.equal(first[field],expected);
+        assert.equal(second[field],expected);
+        assert.equal(first.contractVersion,'VECTOR_TRAINING_TWIN_V1');
+        assert.deepEqual(first.preferences,second.preferences);
+        // Existing DUE profiles refresh dueAt with the current clock on each read.
+        const learningValues=rows=>rows.map(({dueAt,...value})=>value);
+        for (const item of [...first.competencies,...second.competencies]) assert.ok(Number.isFinite(Date.parse(item.dueAt)));
+        assert.deepEqual(learningValues(first.competencies),learningValues(second.competencies));
+        assert.deepEqual(learningValues(first.due),learningValues(second.due));
+      } finally {twin.close();fs.rmSync(f.dir,{recursive:true,force:true});}
+    });
+  }
+}
