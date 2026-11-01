@@ -500,6 +500,27 @@ function createVectorReportingService(options={}){
     if(!source||!permitted(actor.role,source.minRole))return false;
     return !row.version_of||localReportAccess(actor,one.get(actor.tenant,row.version_of),seen);
   }
+  // A stale async actor cannot grant an external intent after local revocation.
+  // Serialize this deny-only fence, pause observation and durable claim; commit
+  // before any adapter or provider operation begins.
+  function claimCurrentDelivery(key,row,schedule,payload,actor,report){
+    db.exec('BEGIN IMMEDIATE');
+    try{
+      const localActor=currentUser.get(row.tenant,row.created_by);
+      const frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(row.tenant)?.privileged_freeze)===1;
+      const latestControl=scheduleState.get(row.tenant,row.id);
+      let result;
+      if(deliveryOne.get(key))result='ALREADY_RECORDED';
+      else if(!localActor||localActor.role!==actor.role||frozen||!localReportAccess(localActor,report,new Set(['schedule:'+row.id])))result='BLOCKED_AUTHORITY_DRIFT';
+      else if(latestControl&&Number(latestControl.enabled)!==1)result='BLOCKED_SCHEDULE_PAUSED';
+      else result=claimDelivery(key,row.tenant,schedule,payload)?true:intentOne.get(key)?'UNKNOWN':'BLOCKED_RECONCILIATION_REQUIRED';
+      db.exec('COMMIT');
+      return result;
+    }catch(error){
+      try{db.exec('ROLLBACK');}catch{}
+      throw error;
+    }
+  }
   // One deny-only predicate for personal artifacts and every immutable reference.
   // Current authority comes from the user store, never role_at_creation.
   async function access(c,row,kind='report',seen=new Set()){
@@ -593,14 +614,13 @@ function createVectorReportingService(options={}){
         else{
           const dispatchActor=await currentIdentity(c);
           const payload=Object.freeze({tenant:row.tenant,actor:row.created_by,scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,delivery:schedule.delivery,destination:schedule.destination,slot,idempotencyKey:key});
-          const latestControl=scheduleState.get(row.tenant,row.id);
+          let claim;
           if(!dispatchActor||dispatchActor.email!==authorisedActor.email||dispatchActor.tenant!==authorisedActor.tenant||dispatchActor.role!==authorisedActor.role){
             status='BLOCKED_AUTHORITY_DRIFT';
-          }else if(latestControl&&Number(latestControl.enabled)!==1){
-            status='BLOCKED_SCHEDULE_PAUSED';
-          }else if(!claimDelivery(key,row.tenant,schedule,payload)){
-            status=intentOne.get(key)?'UNKNOWN':'BLOCKED_RECONCILIATION_REQUIRED';
-            externalReceipt={reconciliationRequired:true,dispatchOutcome:'UNKNOWN'};
+          }else if((claim=claimCurrentDelivery(key,row,schedule,payload,dispatchActor,report))!==true){
+            if(claim==='ALREADY_RECORDED')continue;
+            status=claim;
+            if(status==='UNKNOWN'||status==='BLOCKED_RECONCILIATION_REQUIRED')externalReceipt={reconciliationRequired:true,dispatchOutcome:'UNKNOWN'};
           }else{
             // Neither a response nor a timeout proves the external outcome.
             // Keep the durable affected-scope hold even after an observation;
@@ -628,9 +648,11 @@ function createVectorReportingService(options={}){
         }
       }
       // Final local authority, pause and READY publication share one write lock.
+      // An authority-blocked receipt and its audit must also commit together.
       // No asynchronous authority reader or external operation runs under it.
       const inAppReady=schedule.delivery==='in_app'&&status==='READY';
-      if(inAppReady)db.exec('BEGIN IMMEDIATE');
+      const receiptTransaction=inAppReady||status==='BLOCKED_AUTHORITY_DRIFT';
+      if(receiptTransaction)db.exec('BEGIN IMMEDIATE');
       let receipt,inserted;
       const createdAt=new Date().toISOString();
       try{
@@ -645,13 +667,13 @@ function createVectorReportingService(options={}){
         }
         receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
         inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
-        if(inAppReady)db.exec('COMMIT');
+        if(inserted&&status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
+        if(receiptTransaction)db.exec('COMMIT');
       }catch(error){
-        if(inAppReady)try{db.exec('ROLLBACK');}catch{}
+        if(receiptTransaction)try{db.exec('ROLLBACK');}catch{}
         throw error;
       }
       if(inserted){
-        if(status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
         results.push({...receipt,deliveryKey:key,createdAt});
       }
       }finally{inFlight.delete(key);}

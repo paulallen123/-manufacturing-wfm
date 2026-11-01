@@ -4,7 +4,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { types } from 'node:util';
 import { AdaptiveIntelligenceEngine } from './engine.mjs';
-import { DurableOutcomeLedger } from './durable-outcome-ledger.mjs';
+import { DurableOutcomeLedger, readOutcomeReplayState } from './durable-outcome-ledger.mjs';
 
 const fields = ['schemaVersion','tenantScope','source','category','fingerprint','baseline','result','verified','evidenceRef','createdAt'];
 const bindingName = 'incidentMemoryConsumer.v1';
@@ -126,24 +126,49 @@ export function createDurableIncidentMemoryConsumer({
     return outcome;
   }
 
-  function retainedRows() {
+  function retainedState() {
     inspectStore();
     const db = new DatabaseSync(storePath,{readOnly:true});
-    try { return db.prepare('SELECT tenant,source,evidence,input_json FROM outcome_replay ORDER BY seq').all(); }
+    let state;
+    try {
+      db.exec('BEGIN');
+      state = readOutcomeReplayState(db);
+      if (state.config.find(row => row.name === bindingName)?.value !== binding || state.config.find(row => row.name === 'minRepeatedWins')?.value !== String(minRepeatedWins)) fail('MEMORY_BINDING_MISMATCH');
+      db.exec('COMMIT');
+    }
     finally { db.close(); }
+    inspectStore();
+    return state;
+  }
+
+  function assertAppendOnly(before, after) {
+    if (JSON.stringify(before.config) !== JSON.stringify(after.config) || before.rows.length > after.rows.length || before.rows.some((row,index) => JSON.stringify(row) !== JSON.stringify(after.rows[index]))) fail('MEMORY_REPLAY_CHANGED');
   }
 
   async function authenticatedEngine() {
-    const rows = retainedRows(), engine = new AdaptiveIntelligenceEngine({minRepeatedWins});
-    for (const row of rows) {
-      if (row.tenant !== tenantScope || row.source !== source) fail('MEMORY_SCOPE_INTEGRITY');
-      const expected = await authenticated(identity(row.evidence));
-      const stored = record(JSON.parse(row.input_json),fields.filter(field => field !== 'schemaVersion'));
-      if (Object.keys(expected).some(field => stored[field] !== expected[field])) fail('MEMORY_PROVENANCE_MISMATCH');
-      engine.ingestOutcome(expected);
+    let previous = null;
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const state = retainedState(), engine = new AdaptiveIntelligenceEngine({minRepeatedWins});
+      if (previous) assertAppendOnly(previous,state);
+      for (const row of state.rows) {
+        if (row.tenant !== tenantScope || row.source !== source) fail('MEMORY_SCOPE_INTEGRITY');
+        const expected = await authenticated(identity(row.evidence));
+        const stored = record(JSON.parse(row.input_json),fields.filter(field => field !== 'schemaVersion'));
+        if (Object.keys(expected).some(field => stored[field] !== expected[field])) fail('MEMORY_PROVENANCE_MISMATCH');
+        engine.ingestOutcome(expected);
+      }
+      assertOpen();
+      const current = retainedState();
+      assertAppendOnly(state,current);
+      if (state.digest === current.digest) {
+        assertFiniteAdvice(engine);
+        return {engine,state};
+      }
+      // A concurrent append is never trusted from its presence alone. Re-read
+      // and authenticate the entire extended history before returning advice.
+      previous = current;
     }
-    assertOpen(); inspectStore(); assertFiniteAdvice(engine);
-    return engine;
+    fail('MEMORY_REPLAY_BUSY');
   }
 
   async function consume(raw) {
@@ -152,18 +177,29 @@ export function createDurableIncidentMemoryConsumer({
     const outcome = await authenticated(evidenceRef);
     // No store is opened or created for unauthenticated producer data.
     const store = writableLedger();
-    const engine = await authenticatedEngine();
-    engine.ingestOutcome(outcome); assertFiniteAdvice(engine);
-    assertOpen(); inspectStore();
-    const receipt = store.ingestOutcome(outcome); // committed before acknowledgement
-    inspectStore();
-    return {outcome:receipt,authority:'none'};
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const {engine,state} = await authenticatedEngine();
+      engine.ingestOutcome(outcome); assertFiniteAdvice(engine);
+      assertOpen(); inspectStore();
+      let receipt;
+      try { receipt = store.ingestOutcome(outcome,state.digest); }
+      catch (error) {
+        if (error.message !== 'OUTCOME_REPLAY_CHANGED') throw error;
+        const current = retainedState();
+        assertAppendOnly(state,current);
+        if (state.digest === current.digest) throw error;
+        continue; // a concurrent extension must first pass source authentication
+      }
+      inspectStore();
+      return {outcome:receipt,authority:'none'}; // committed before acknowledgement
+    }
+    fail('MEMORY_REPLAY_BUSY');
   }
 
   async function recurrence(raw) {
     assertOpen();
     const query = record(raw,['fingerprint']), fingerprint = identity(query.fingerprint);
-    const authenticatedState = (await authenticatedEngine()).snapshot();
+    const authenticatedState = (await authenticatedEngine()).engine.snapshot();
     // Rebuild only after authenticating every row, so moved/invalidated fingerprints
     // cannot be concealed behind a no-known-match response.
     const engine = new AdaptiveIntelligenceEngine({minRepeatedWins});

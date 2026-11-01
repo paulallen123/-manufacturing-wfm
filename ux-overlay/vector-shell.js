@@ -486,23 +486,29 @@ async function loadTimeReviewEvidence(){
   }
   refreshActionSurfaces();return ['ready','partial'].includes(state.timeReviewEvidence.status);
 }
-function invalidateTenantCalendar(){state.calendarEpoch++;state.calendar={status:'idle',value:null};}
+let tenantCalendarTimer=null,tenantCalendarRead=null;
+function tenantCalendarElapsed(){return typeof performance!=='undefined'&&typeof performance.now==='function'?performance.now():NaN;}
+function tenantCalendarFresh(){const age=tenantCalendarElapsed()-Number(state.calendar.requestedAt),maxAgeMs=Number(state.calendar.value?.maxAgeMs);return state.calendar.status==='ready'&&(state.calendar.value?.tenant||null)===(sourceIdentity().tenant||null)&&Number.isFinite(age)&&age>=0&&Number.isFinite(maxAgeMs)&&maxAgeMs>0&&age<maxAgeMs;}
+function invalidateTenantCalendar(){if(tenantCalendarTimer!==null){clearTimeout(tenantCalendarTimer);tenantCalendarTimer=null;}tenantCalendarRead=null;state.calendarEpoch++;state.calendar={status:'idle',value:null};window.WFMTenantCalendarSnapshot=null;invalidateTimeReviewEvidence();invalidateReadinessEvidence();refreshTenantCalendarSurfaces();}
 async function loadTenantCalendar(){
  const tenant=sourceIdentity().tenant||null;
- if(state.calendar.status==='ready'&&state.calendar.value?.tenant===tenant)return state.calendar.value;
- if(state.calendar.status==='ready'&&state.calendar.value?.tenant!==tenant)invalidateTenantCalendar();
- if(state.calendar.status==='loading')return null;
- const epoch=++state.calendarEpoch;state.calendar={status:'loading',value:null};
- try{
+ if(tenantCalendarFresh()&&state.calendar.value?.tenant===tenant)return state.calendar.value;
+ if(state.calendar.status==='loading'&&tenantCalendarRead?.tenant===tenant)return tenantCalendarRead.promise;
+ if(state.calendar.status==='ready'||state.calendar.status==='loading')invalidateTenantCalendar();
+ const epoch=++state.calendarEpoch,requestedAt=tenantCalendarElapsed();state.calendar={status:'loading',value:null};window.WFMTenantCalendarSnapshot=null;
+ const pending=(async()=>{try{
   const response=await fetch('/api/tenant-calendar',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{accept:'application/json'}});
   if(!response.ok)throw Error('tenant calendar unavailable');
   const value=await response.json();
-  if(value?.schemaVersion!=='tenant-calendar-1'||!value.timeZone||!value.asOf||!/^\d{4}-\d{2}-\d{2}$/.test(String(value.localDate||''))||!Number.isFinite(Number(value.maxAgeMs)))throw Error('tenant calendar contract mismatch');
+  if(value?.schemaVersion!=='tenant-calendar-1'||value.tenant!==tenant||!value.timeZone||!value.asOf||!/^\d{4}-\d{2}-\d{2}$/.test(String(value.localDate||''))||!Number.isFinite(Number(value.maxAgeMs))||Number(value.maxAgeMs)<=0)throw Error('tenant calendar contract mismatch');
   try{new Intl.DateTimeFormat('en-GB',{timeZone:value.timeZone}).format(new Date(value.asOf));}catch{throw Error('tenant calendar timezone invalid');}
-  if(epoch!==state.calendarEpoch)return null;state.calendar={status:'ready',value};window.WFMTenantCalendarSnapshot=value;return value;
- }catch{if(epoch===state.calendarEpoch)state.calendar={status:'unavailable',value:null};return null;}
+  const elapsed=tenantCalendarElapsed()-requestedAt;if(!Number.isFinite(elapsed)||elapsed<0||elapsed>=Number(value.maxAgeMs))throw Error('tenant calendar response expired');
+  if(epoch!==state.calendarEpoch)return null;if((sourceIdentity().tenant||null)!==tenant){invalidateTenantCalendar();return null;}state.calendar={status:'ready',value,requestedAt};window.WFMTenantCalendarSnapshot=value;refreshTenantCalendarSurfaces();
+  tenantCalendarTimer=setTimeout(async()=>{if(epoch!==state.calendarEpoch)return;tenantCalendarTimer=null;invalidateTenantCalendar();apply();await loadTenantCalendar();apply();},Math.min(Number(value.maxAgeMs)-elapsed,2147483647));return value;
+ }catch{if(epoch===state.calendarEpoch)state.calendar={status:'unavailable',value:null};return null;}finally{if(tenantCalendarRead?.epoch===epoch)tenantCalendarRead=null;}})();
+ tenantCalendarRead={tenant,epoch,promise:pending};return pending;
 }
-function serverNowMs(){const value=state.calendar.value?.asOf,ms=Date.parse(value||'');return Number.isFinite(ms)?ms:null;}
+function serverNowMs(){if(!tenantCalendarFresh())return null;const value=state.calendar.value?.asOf,ms=Date.parse(value||'');return Number.isFinite(ms)?ms:null;}
 function invalidateReadinessEvidence(){state.readinessEpoch++;state.readinessEvidence={status:'idle',departments:[],summary:null,asOf:null,limitations:[]};}
 function readinessDepartment(item){
   if(!item||typeof item!=='object'||Array.isArray(item))return null;
@@ -553,12 +559,24 @@ async function loadReadinessEvidence(){
   }
   refreshReadinessSurfaces();
 }
-function authoritativeTimeZone(){return state.calendar.status==='ready'?String(state.calendar.value?.timeZone||'')||null:null;}
+function authoritativeTimeZone(){return tenantCalendarFresh()?String(state.calendar.value?.timeZone||'')||null:null;}
 function zonedDate(value,zone){if(!zone)return null;const d=new Date(value);if(!Number.isFinite(d.getTime()))return null;const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));return parts.year+'-'+parts.month+'-'+parts.day;}
 function addDateDays(day,count){if(!/^\d{4}-\d{2}-\d{2}$/.test(day||''))return null;const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+count);return d.toISOString().slice(0,10);}
 function leaveDate(value,zone){if(/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')))return String(value);return zonedDate(value,zone);}
 function leaveWhen(day,zone){if(!day||!zone)return 'Date unavailable';const d=new Date(day+'T12:00:00Z');return new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',weekday:'short',day:'2-digit',month:'short'}).format(d);}
 function leaveRows(){try{if(typeof data==='undefined'||!Array.isArray(data.requests))return [];const zone=authoritativeTimeZone(),nowMs=serverNowMs(),start=nowMs==null?null:zonedDate(nowMs,zone),end=addDateDays(start,7);if(!zone||!start||!end)return [];return data.requests.filter(r=>String(r.status||'').toLowerCase()==='approved').map(r=>({r,date:leaveDate(r.start||r.date,zone)})).filter(x=>x.date&&x.date>=start&&x.date<end).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4).map(({r,date})=>{let p=null;try{if(typeof person==='function')p=person(r.employee)||null;}catch{}const name=(typeof p?.name==='string'&&p.name.trim())?p.name.trim():(typeof r.employeeName==='string'&&r.employeeName.trim()?r.employeeName.trim():'Employee');const area=[p?.departmentName,p?.teamName,p?.areaName].find(v=>typeof v==='string'&&v.trim())?.trim()||'Source-confirmed leave';const type=(typeof r.typeLabel==='string'&&r.typeLabel.trim())?r.typeLabel.trim():(typeof r.type==='string'&&r.type.trim()?r.type.trim():'Leave');return {name,area,when:leaveWhen(date,zone),type};});}catch{return []}}
+const tenantCalendarListCache=new WeakMap();
+function refreshTenantCalendarSurfaces(){
+ if(page()!=='overview'||employee())return;
+ const stamp=document.querySelector('.vector-concept-date'),today=currentDate();
+ if(stamp){const date=stamp.querySelector('b'),week=stamp.querySelector('small');if(date&&date.textContent!==today.date)date.textContent=today.date;const text='Week '+today.week+' · '+siteName();if(week&&week.textContent!==text)week.textContent=text;}
+ const section=document.querySelector('.vector-leave'),list=section?.querySelector('.vector-leave-list'),heading=section?.querySelector('h2');if(!list)return;
+ const body=leaveListMarkup(leaveRows()),changed=tenantCalendarListCache.get(list)!==body,pending=changed&&list.contains(document.activeElement),fresh=tenantCalendarFresh();
+ if(heading){const title='Upcoming leave ('+(!fresh?'not verified':pending?'refresh pending':'next 7 days')+')';if(heading.textContent!==title)heading.textContent=title;}
+ section.setAttribute('aria-label',!fresh?'Upcoming leave is not verified against the current tenant calendar.':pending?'Upcoming leave summary is awaiting refresh. Open Absence & Leave for current evidence.':'Upcoming leave. Only approved source requests dated within the next seven days are shown.');
+ if(pending){if(list.dataset.calendarRefreshPending!=='1'){list.dataset.calendarRefreshPending='1';list.addEventListener('focusout',()=>{delete list.dataset.calendarRefreshPending;queueMicrotask(refreshTenantCalendarSurfaces);},{once:true});}return;}
+ if(changed){list.innerHTML=body;tenantCalendarListCache.set(list,body);}
+}
 function currentDate(){const zone=authoritativeTimeZone(),day=state.calendar.value?.localDate;if(!zone||!day)return {date:'Timezone not verified',week:'—'};const d=new Date(day+'T12:00:00Z');const date=new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(d);const dow=(d.getUTCDay()+6)%7,thurs=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-dow+3)),jan4=new Date(Date.UTC(thurs.getUTCFullYear(),0,4)),janThurs=new Date(Date.UTC(jan4.getUTCFullYear(),0,4-((jan4.getUTCDay()+6)%7)+3)),week=1+Math.round((thurs-janThurs)/604800000);return {date,week};}
 function greeting(){const zone=authoritativeTimeZone(),time=String(state.calendar.value?.localTime||'');if(!zone||!/^\d{2}:/.test(time))return 'Hello';const hour=Number(time.slice(0,2));return hour<12?'Good morning':hour<18?'Good afternoon':'Good evening';}
 
@@ -670,7 +688,8 @@ function productionPreviewMarkup(source){
 }
 function actionEvidenceAvailabilityMarkup(){const status=state.timeReviewEvidence.status;return status==='unavailable'?'<p class="vector-empty">Source evidence is unavailable. Open Time Review to inspect the current source work.</p>':status==='partial'?'<p class="vector-empty">Some source evidence is unavailable. Verify the remaining work in Time Review.</p>':'';}
 function alertsMarkup(rows){const groups=actionQueueGroups(rows),visibleNeeds=groups.needs.slice(0,4),visibleAwaiting=groups.awaiting.slice(0,3),needsBody=visibleNeeds.length?visibleNeeds.map(alertRowMarkup).join(''):'<div class="vector-empty">No source-confirmed items need your action.</div>',awaitingBody=groups.awaiting.length?`<details data-vector-awaiting-confirmation><summary class="vector-empty">Awaiting source confirmation · ${groups.awaiting.length}</summary><div class="vector-alert-list">${visibleAwaiting.map(alertRowMarkup).join('')}</div></details>`:'';return `<section class="vector-card vector-alerts" data-vector-review="${REVIEW_MARKER}" data-vector-action-evidence="${ACTION_MARKER}" aria-labelledby="vector-review-title"><div class="vector-card-head"><h2 id="vector-review-title"><span class="vector-alert-bell">${icon('bell')}</span>Needs my action <em>${groups.needs.length}</em></h2><button type="button" data-vector-route="time-review">Open Time Review ${icon('arrow')}</button></div>${actionEvidenceAvailabilityMarkup()}<div class="vector-alert-list">${needsBody}</div>${awaitingBody}</section>`;}
-function leaveMarkup(rows){const body=rows.length?rows.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join(''):`<button type="button" class="vector-leave-row" data-vector-route="leave" aria-label="Open Absence & Leave to review upcoming leave evidence"><span class="vector-person-badge" aria-hidden="true">i</span><span><b>Open Absence & Leave</b><small>No approved leave is available to this summary.</small></span><em>Source check</em><strong>Review</strong>${icon('chevron')}</button>`;return `<section class="vector-card vector-leave" data-vector-leave-evidence="${LEAVE_MARKER}" aria-label="Upcoming leave. Only approved source requests dated within the next seven days are shown."><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${body}</div></section>`;}
+function leaveListMarkup(rows){return rows.length?rows.slice(0,4).map((r,i)=>`<button type="button" class="vector-leave-row" data-vector-route="leave"><span class="vector-person-badge b${i}">${esc(r.name.split(/\s+/).map(x=>x[0]).join('').slice(0,2))}</span><span><b>${esc(r.name)}</b><small>${esc(r.area)}</small></span><em>${esc(r.when)}</em><strong>${esc(r.type)}</strong>${icon('chevron')}</button>`).join(''):`<button type="button" class="vector-leave-row" data-vector-route="leave" aria-label="Open Absence & Leave to review upcoming leave evidence"><span class="vector-person-badge" aria-hidden="true">i</span><span><b>Open Absence & Leave</b><small>No approved leave is available to this summary.</small></span><em>Source check</em><strong>Review</strong>${icon('chevron')}</button>`;}
+function leaveMarkup(rows){return `<section class="vector-card vector-leave" data-vector-leave-evidence="${LEAVE_MARKER}" aria-label="Upcoming leave. Only approved source requests dated within the next seven days are shown."><div class="vector-card-head"><h2>Upcoming leave (next 7 days)</h2><button type="button" data-vector-route="leave">View calendar ${icon('arrow')}</button></div><div class="vector-leave-list">${leaveListMarkup(rows)}</div></section>`;}
 function promoMarkup(){return '<aside class="vector-promo"><div><h2>A more productive<br>tomorrow starts today.</h2><p>Empowered people.<br>Stronger manufacturers.</p></div><div class="vector-promo-brand"><span class="vector-mark small"><i></i><i></i><i></i></span><b>Vector.</b></div></aside>';}
 function employeeHomeMarkup(v){
  const zone=String(authoritativeTimeZone()||''),serverTime=state.calendar.value?.asOf||v?.serverTime||null,day=zone&&serverTime?zonedDate(serverTime,zone):null;
@@ -729,7 +748,7 @@ async function renderEmployeeHome(content){
   renderEmployeeHomeError(content);
  }
 }
-function renderHome(content){clearActionContext();if(content.dataset.vectorHome==='1'){focusReturnedActionList(content);return;}
+function renderHome(content){clearActionContext();if(content.dataset.vectorHome==='1'){refreshTenantCalendarSurfaces();focusReturnedActionList(content);return;}
  const source=document.createElement('div');source.className='vector-home-source';while(content.firstChild)source.appendChild(content.firstChild);content.appendChild(source);
  const m=metrics(source),actions=structuredReviewRows(),leaves=leaveRows(),today=currentDate();const home=document.createElement('div');home.className='vector-home vector-concept-home';
  home.innerHTML=`<section class="vector-concept-heading" data-vector-identity="${IDENTITY_MARKER}"><div><span class="vector-page-kicker">Today</span><h1>What needs your attention right now</h1><p>${esc(siteSentence())}</p></div><div class="vector-concept-date"><b>${esc(today.date)}</b><small>Week ${esc(today.week)} · ${esc(siteName())}</small></div></section>
