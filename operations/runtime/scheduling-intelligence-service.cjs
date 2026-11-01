@@ -13,6 +13,7 @@ const {
 const { forecastDemand, toHeadcountForecast } = require('./manufacturing-demand-forecast.cjs');
 const { reconcileScheduleToAttendance } = require('./schedule-attendance-reconciliation.cjs');
 const { createSchedulingAuthority, branchFor, workerReferences } = require('./scheduling-authority.cjs');
+const { assessOrderStartVariance } = require('./order-start-variance.cjs');
 
 const PREFIX = '/api/operations/scheduling';
 const INTERNAL_HEADER = 'x-wfm-scheduling-internal';
@@ -256,6 +257,36 @@ function createSchedulingIntelligenceService(options = {}) {
     return writeJson(res, 200, authority.output(source, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result }));
   }
 
+  async function managerOrderStartScenario(req, res, c) {
+    // This endpoint consumes declarations only. No existing integration record
+    // authenticates ERP/MES order evidence, so no persisted/source-backed claim
+    // or execution permission may follow from a successful comparison.
+    const body = await readJson(req, 16 * 1024);
+    c = requireCurrentManager(req, res, c);
+    if (!c) return true;
+    function exactFields(value, fields) {
+      return value && typeof value === 'object' && !Array.isArray(value) &&
+        Object.keys(value).length === fields.length && fields.every(key => Object.hasOwn(value, key));
+    }
+    const recordFields = ['tenantId', 'siteId', 'lineId', 'orderId', 'source', 'recordId', 'revision', 'recordSha256', 'observedAt', 'complete', 'state'];
+    if (!exactFields(body, ['siteId', 'lineId', 'orderId', 'department', 'plan', 'actual']) ||
+        !exactFields(body.plan, [...recordFields, 'plannedStart', 'plannedEnd']) ||
+        !exactFields(body.actual, [...recordFields, 'plannedRevision', 'plannedRecordSha256', 'actualStart']) ||
+        [...new URL(String(req.url), 'http://wfm.invalid').searchParams.keys()].some(key => !['scope', 'branch'].includes(key))) {
+      return writeJson(res, 400, { error: 'A declared order-start scenario with exact fields is required.', executionPermitted: false });
+    }
+    const source = authority.readContext(c, branchFor(req));
+    authority.assertDepartmentSite(source, body.department, body.siteId);
+    const asOf = nowIso();
+    const result = assessOrderStartVariance({ tenantId: c.tenant, siteId: body.siteId, lineId: body.lineId,
+      orderId: body.orderId, plan: body.plan, actual: body.actual, asOf, maxAgeMinutes: 120 });
+    // The fixed assessor projection contains no financial data or free-form
+    // source narrative; keep every false boundary flag, including costVerified.
+    return writeJson(res, 200, { contractVersion: 'DECLARED_ORDER_START_SCENARIO_V1', scenarioOnly: true,
+      persisted: false, sourceBasis: 'CALLER_DECLARED_ERP_MES_RECORDS', asOf, freshnessPolicyMinutes: 120,
+      result, authority: 'NO_EXECUTION' });
+  }
+
   function canReadReconciliation(source, reconciliation) {
     try {
       if(reconciliation.tenant!==source.actor.tenant)return false;
@@ -339,6 +370,7 @@ function createSchedulingIntelligenceService(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/what-if') return await managerWhatIf(req, res, c);
       if (req.method === 'POST' && path === PREFIX + '/open-shift/evaluate') return await managerOpenShift(req, res, c);
       if (req.method === 'POST' && path === PREFIX + '/swap/evaluate') return await managerSwap(req, res, c);
+      if (req.method === 'POST' && path === PREFIX + '/order-start-variance/scenario') return await managerOrderStartScenario(req, res, c);
       return writeJson(res, 404, { error: 'Scheduling intelligence endpoint not found.' });
     } catch (error) {
       return writeJson(res, Number(error?.statusCode || 400), {
