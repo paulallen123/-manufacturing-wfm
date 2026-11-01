@@ -79,6 +79,8 @@ function createTrainingTwin(options={}){
     });
     return {
       contractVersion:'VECTOR_TRAINING_TWIN_V1',
+      purpose:'VECTOR_WORKFLOW_LEARNING',
+      productionQualificationAuthority:false,
       role,
       preferences:pref,
       competencies,
