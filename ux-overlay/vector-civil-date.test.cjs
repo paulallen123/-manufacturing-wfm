@@ -241,3 +241,35 @@ test('an old pending tenant read cannot overwrite the newer tenant or restore ol
 test('a response from another tenant is unavailable',async()=>{
   const h=calendarCacheFixture([{...before,tenant:'other-fictional'}]);assert.equal(await h.api.loadTenantCalendar(),null);assert.equal(h.sandbox.window.WFMTenantCalendarSnapshot,null);
 });
+
+// Calendar authority must describe one actual civil day in the returned zone.
+for(const [label,localDate] of [
+  ['non-leap February day','2027-02-29'],
+  ['invalid month','2027-13-01'],
+  ['invalid day','2027-01-99'],
+  ['valid day contradicting the returned instant','2027-01-04'],
+  ['date coerced from an array',['2027-01-03']]
+])test('malformed calendar civil date stays unavailable: '+label,async()=>{
+  const h=calendarCacheFixture([{...before,localDate}]),initialTimers=h.timers.size;
+  assert.equal(await h.api.loadTenantCalendar(),null,'inconsistent calendar authority must be rejected');
+  assert.equal(h.api.state.calendar.status,'unavailable');
+  assert.equal(h.sandbox.window.WFMTenantCalendarSnapshot,null,'rejected authority must not remain available to browser domain consumers');
+  assert.equal(h.api.currentDate().date,'Timezone not verified');
+  assert.equal(h.api.serverNowMs(),null);
+  assert.equal(h.timers.size,initialTimers,'rejected authority must not schedule renewal');
+});
+test('malformed renewal cannot retain bootstrap authority after expiry',async()=>{
+  const h=calendarCacheFixture([before,{...after,localDate:'2027-13-01'}]);
+  await h.api.loadTenantCalendar();assert.equal(h.sandbox.window.WFMTenantCalendarSnapshot.localDate,'2027-01-03');
+  h.advance(60000);assert.equal(await h.api.loadTenantCalendar(),null);
+  assert.equal(h.api.state.calendar.status,'unavailable');
+  assert.equal(h.sandbox.window.WFMTenantCalendarSnapshot,null,'rejected renewal must clear bootstrap authority');
+});
+test('calendar publication failure clears bootstrap to agree with unavailable state',async()=>{
+  const h=calendarCacheFixture([before]);
+  h.sandbox.document.querySelector=()=>{throw Error('fictional render boundary failed')};
+  assert.equal(await h.api.loadTenantCalendar(),null);
+  assert.equal(h.api.state.calendar.status,'unavailable');
+  assert.equal(h.sandbox.window.WFMTenantCalendarSnapshot,null,'failed publication must not leave separate consumers with ready authority');
+  assert.equal(h.api.serverNowMs(),null);
+});
