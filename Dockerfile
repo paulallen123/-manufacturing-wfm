@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 # Discarded Railway build stage: prove T0-T4 zero-engineer support and bounded recovery
 # against the exact candidate sources. Nothing from this stage is copied into runtime.
 FROM node:22.23.2-bookworm-slim@sha256:4d676821dff059fd00d277ee4261ef34ea712317fed0737c03941481b5760c96 AS autonomy-proof
@@ -15,7 +16,9 @@ RUN node --test implementation/runtime/customer-workspace-adoption.test.cjs impl
 RUN node --test --test-concurrency=1 verification/vector-v014-setup-containment/heldout.test.cjs integration/runtime/gusto-http-process-recovery.test.cjs operations/runtime/training-shift-collision.test.cjs operations/runtime/maintenance-permit-evidence.test.cjs
 RUN node --test scripts/patch-payroll-money.test.mjs tests/payroll-money-factor-admission.test.cjs resilience/support-selfhelp.test.cjs resilience/support-selfhelp-service.test.cjs resilience/support-selfhelp-root.test.cjs ux-overlay/vector-help.test.cjs ux-overlay/vector-help-root.test.cjs
 RUN node --test ux-overlay/vector-three-min.test.cjs ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-settings-navigation.test.cjs
-RUN npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
+RUN --mount=type=secret,id=proxy_ca \
+ if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+ npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
 # Recovery help is part of the passkey boundary, not an optional navigation fixture.
 RUN node --test security/runtime/owner-access-recovery.test.cjs security/runtime/owner-access-recovery-help.test.cjs
@@ -121,7 +124,9 @@ RUN node /tmp/retire-legacy-presentation.mjs /app/public \
 # add the defence overlay as a separately reviewable layer.
 RUN mkdir -p /app/security-runtime
 COPY security/runtime/package.json security/runtime/package-lock.json /app/security-runtime/
-RUN npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
+RUN --mount=type=secret,id=proxy_ca \
+ if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+ npm ci --prefix /app/security-runtime --omit=dev --ignore-scripts --no-audit --no-fund
 COPY security/runtime/passkey-schema.cjs security/runtime/passkey-auth.cjs security/runtime/federated-auth.cjs security/runtime/federated-ui.js /app/security-runtime/
 COPY security/runtime/passkey-entry.html security/runtime/passkey-ui.js security/runtime/passkey-ui.css /app/security-runtime/
 COPY security/runtime/passkey-session-ui.js /app/public/passkey-session-ui.js
