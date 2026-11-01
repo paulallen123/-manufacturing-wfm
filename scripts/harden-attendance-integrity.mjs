@@ -41,7 +41,10 @@ const hardenedDeclineValidation="const proposed={...r,correction:{...(r.correcti
 const declineMutation="if(!(linked&&x.decision==='decline')){r.correction=proposed.correction;r.reviewedBy=a.personId;r.evidenceNote=note;}i.status='resolved';";
 const hardenedDeclineMutation="if(!declinedAdjustment){r.correction=proposed.correction;r.reviewedBy=a.personId;r.evidenceNote=note;}i.status='resolved';";
 
-for(const [label,needle] of [['linked guard',linkedGuard],['overlap guard',overlapGuard],['issue creation',issueCreation],['personal-session issue',personalIssue],['fixture issue helper',fixtureIssue],['resolution current-scope guard',resolutionRecordGuard],['amendment current-scope guard',amendmentRecordGuard],['personal-session period lock',personalPeriodGuard],['decline validation',declineValidation],['decline mutation',declineMutation]]){
+const adjustmentDecision="q.status=x.decision==='approve'?'approved':'declined';assert(['approved','declined'].includes(q.status),'Approve or decline the adjustment.');q.revision++;q.decisionBy=a.personId;q.decisionAt=stamp();q.decisionReason=reason(x.reason);";
+const validatedAdjustmentDecision="assert(['approve','decline'].includes(x.decision),'Approve or decline the adjustment.');const decisionReason=reason(x.reason);q.status=x.decision==='approve'?'approved':'declined';q.revision++;q.decisionBy=a.personId;q.decisionAt=stamp();q.decisionReason=decisionReason;";
+
+for(const [label,needle] of [['linked guard',linkedGuard],['overlap guard',overlapGuard],['issue creation',issueCreation],['personal-session issue',personalIssue],['fixture issue helper',fixtureIssue],['resolution current-scope guard',resolutionRecordGuard],['amendment current-scope guard',amendmentRecordGuard],['personal-session period lock',personalPeriodGuard],['decline validation',declineValidation],['decline mutation',declineMutation],['post-release adjustment decision',adjustmentDecision]]){
   const count=original.split(needle).length-1;
   if(count!==1)throw Error('ATTENDANCE_INTEGRITY_PATTERN_MISMATCH:'+label+':'+count);
 }
@@ -55,7 +58,8 @@ let hardened=original
   .replace(amendmentRecordGuard,hardenedAmendmentRecordGuard)
   .replace(personalPeriodGuard,hardenedPersonalPeriodGuard)
   .replace(declineValidation,hardenedDeclineValidation)
-  .replace(declineMutation,hardenedDeclineMutation);
+  .replace(declineMutation,hardenedDeclineMutation)
+  .replace(adjustmentDecision,validatedAdjustmentDecision);
 if(hardened===original)throw Error('ATTENDANCE_INTEGRITY_NO_CHANGE');
 new Function(hardened);
 fs.writeFileSync(target,hardened);
