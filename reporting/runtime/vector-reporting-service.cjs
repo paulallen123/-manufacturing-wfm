@@ -648,9 +648,11 @@ function createVectorReportingService(options={}){
         }
       }
       // Final local authority, pause and READY publication share one write lock.
+      // An authority-blocked receipt and its audit must also commit together.
       // No asynchronous authority reader or external operation runs under it.
       const inAppReady=schedule.delivery==='in_app'&&status==='READY';
-      if(inAppReady)db.exec('BEGIN IMMEDIATE');
+      const receiptTransaction=inAppReady||status==='BLOCKED_AUTHORITY_DRIFT';
+      if(receiptTransaction)db.exec('BEGIN IMMEDIATE');
       let receipt,inserted;
       const createdAt=new Date().toISOString();
       try{
@@ -665,13 +667,13 @@ function createVectorReportingService(options={}){
         }
         receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
         inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
-        if(inAppReady)db.exec('COMMIT');
+        if(inserted&&status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
+        if(receiptTransaction)db.exec('COMMIT');
       }catch(error){
-        if(inAppReady)try{db.exec('ROLLBACK');}catch{}
+        if(receiptTransaction)try{db.exec('ROLLBACK');}catch{}
         throw error;
       }
       if(inserted){
-        if(status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
         results.push({...receipt,deliveryKey:key,createdAt});
       }
       }finally{inFlight.delete(key);}

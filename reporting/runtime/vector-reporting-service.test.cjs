@@ -833,3 +833,50 @@ test('external stale worker cannot dispatch a slot already blocked by another wo
     assert.equal(contained.length,1);assert.equal(contained[0].status,'BLOCKED_RECONCILIATION_REQUIRED');assert.equal(sent,1);
   }finally{release();if(running)await running.catch(()=>{});second?.close();restarted?.close();x.close();}
 });
+
+for(const delivery of ['in_app','email_link'])for(const authority of ['current denial','stale final snapshot'])
+test(delivery+' '+authority+' rolls back a refused blocked audit and retries atomically after restart',async()=>{
+  let sent=0,readbacks=0,restarted;
+  const adapter={authorize:()=>true,deliver:async()=>{sent++;return {accepted:true};},readback:async()=>{readbacks++;return {observed:true};}};
+  const x=setup({deliveryAdapter:adapter,...(authority==='stale final snapshot'?{currentUserReader:({email,tenant})=>({email,tenant,role:'payroll_admin'})}:{})});
+  const slot=new Date('2026-09-24T16:05:00Z');
+  try{
+    const report=await makeReport(x),planned=await makeSchedule(x,report.id,'payroll-a',{delivery,...(delivery==='email_link'?{destination:'synthetic@example.test'}:{})});
+    changeRole(x,'payroll@a.example','employee');
+    const inject=new DatabaseSync(x.dbPath);try{
+      inject.exec("CREATE TRIGGER fixture_refuse_blocked_audit BEFORE INSERT ON vector_report_audit WHEN NEW.event='BLOCKED_AUTHORITY_DRIFT' BEGIN SELECT RAISE(ABORT,'fictional blocked audit refusal'); END;");
+    }finally{inject.close();}
+    await assert.rejects(x.service.runDueSchedules(slot),/fictional blocked audit refusal/);
+    const inspect=new DatabaseSync(x.dbPath);try{
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_deliveries').get().n,0,'a refused audit must not leave an unaudited terminal receipt');
+      assert.equal(inspect.prepare("SELECT count(*) n FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").get().n,0);
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_intents').get().n,0);
+      assert.equal(inspect.prepare('SELECT count(*) n FROM vector_report_delivery_observations').get().n,0);
+      // A second connection must obtain the writer lock after rollback.
+      inspect.exec('PRAGMA busy_timeout=0; BEGIN IMMEDIATE; DROP TRIGGER fixture_refuse_blocked_audit; COMMIT;');
+    }finally{inspect.close();}
+    assert.equal(sent,0);assert.equal(readbacks,0);
+    x.service.close();restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    const retried=await restarted.runDueSchedules(slot);
+    assert.equal(retried.length,1);assert.equal(retried[0].status,'BLOCKED_AUTHORITY_DRIFT');
+    assert.equal(retried[0].scheduleId,planned.id);assert.equal(retried[0].externalReceipt,null);
+    const persisted=new DatabaseSync(x.dbPath);try{
+      const receipts=persisted.prepare('SELECT delivery_key,status FROM vector_report_deliveries').all();
+      assert.deepEqual(receipts.map(row=>row.status),['BLOCKED_AUTHORITY_DRIFT']);
+      const events=persisted.prepare("SELECT tenant,report_id,actor,detail_json FROM vector_report_audit WHERE event='BLOCKED_AUTHORITY_DRIFT'").all();
+      assert.equal(events.length,1);assert.equal(events[0].tenant,'tenant-a');assert.equal(events[0].report_id,report.id);assert.equal(events[0].actor,'payroll@a.example');
+      assert.deepEqual(JSON.parse(events[0].detail_json),{scheduleId:planned.id,slot:'2026-09-24-16-05',definitionDigest:report.definitionDigest});
+      assert.equal(receipts[0].delivery_key,planned.id+':2026-09-24-16-05');
+    }finally{persisted.close();}
+    restarted.close();restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    changeRole(x,'payroll@a.example','payroll_admin');
+    assert.deepEqual(await restarted.runDueSchedules(slot),[],'a committed blocked receipt remains terminal after authority restoration');
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,delivery==='in_app'?'READY':'UNKNOWN');
+    assert.equal(sent,delivery==='in_app'?0:1);assert.equal(readbacks,delivery==='in_app'?0:1);
+    if(delivery!=='in_app'){
+      assert.equal((await restarted.runDueSchedules(new Date('2026-09-26T16:05:00Z')))[0].status,'BLOCKED_RECONCILIATION_REQUIRED');
+      assert.equal(sent,1);assert.equal(readbacks,1);
+    }
+  }finally{restarted?.close();x.close();}
+});
