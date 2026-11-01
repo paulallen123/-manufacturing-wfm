@@ -6,7 +6,7 @@ const { createHash } = require('node:crypto');
 const { performance } = require('node:perf_hooks');
 
 const ENGINE_PATH = process.env.WFM_CONFIG_ENGINE_PATH || '/tmp/configuration-inference-engine.cjs';
-const EXPECTED_ENGINE_BLOB = process.env.WFM_CONFIG_ENGINE_GIT_BLOB_SHA || 'baa120a0c16872c9b08c3b621a63e5efcd56c4c9';
+const EXPECTED_ENGINE_BLOB = process.env.WFM_CONFIG_ENGINE_GIT_BLOB_SHA || 'c83aae130a0016e0577c8bf7f4bfff56b1d018b2';
 const PORT = Number(process.env.PORT || 3000);
 
 function gitBlobSha(content) {

@@ -289,7 +289,7 @@ RUN VECTOR_IMAGE_ADMISSION_ROOT=/app node --test --test-concurrency=1 /tmp/vecto
 # configuration and independent payroll reconciliation proof without starting a server.
 RUN WFM_PROOF_ONESHOT=true \
     WFM_CONFIG_ENGINE_PATH=/app/implementation-runtime/configuration-inference-engine.cjs \
-    WFM_CONFIG_ENGINE_GIT_BLOB_SHA=baa120a0c16872c9b08c3b621a63e5efcd56c4c9 \
+    WFM_CONFIG_ENGINE_GIT_BLOB_SHA=c83aae130a0016e0577c8bf7f4bfff56b1d018b2 \
     node /app/proof-runtime/cloud-scale-proof-runner.cjs
 
 # Vector-only presentation composition.
