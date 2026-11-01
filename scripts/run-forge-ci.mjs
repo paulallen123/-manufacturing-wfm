@@ -36,6 +36,7 @@ const checks = [
     'operations/runtime/order-start-variance.test.cjs',
     'operations/runtime/order-start-variance-inert.test.cjs',
     'operations/runtime/order-start-variance-inert-heldouts.test.cjs',
+    'operations/runtime/order-start-variance-service.test.cjs',
     'adaptive-intelligence/engine.test.mjs',
     'adaptive-intelligence/durable-outcome-ledger.test.mjs',
     'adaptive-intelligence/durable-outcome-ledger-heldouts.test.mjs',
