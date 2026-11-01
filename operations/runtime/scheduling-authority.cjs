@@ -42,6 +42,10 @@ function createSchedulingAuthority({db,nativeHelpers}={}){
   const node=context.nodes.get(department);if(!identifier(department)||!node||node.role!=='Team leader'||!context.departments.has(department))deny('Destination department is outside current reporting authority.');
   if(![...context.staff.values()].some(p=>p.site===requirement.site))deny('Destination site is unavailable.');return department;
  }
+ function assertDepartmentSite(context,department,site){
+  destination(context,{department,site},[]);
+  if(![...context.staff.values()].some(person=>person.manager===department&&person.site===site&&context.allowed.has(person.id)))deny('Department and site are outside current reporting authority.');
+ }
  function approvedFor(context,id,requirement){
   const person=worker(context,id);if(person.site===requirement.site)return true;
   const start=Date.parse(requirement.start),end=Date.parse(requirement.end);if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return false;
@@ -82,6 +86,6 @@ function createSchedulingAuthority({db,nativeHelpers}={}){
   return value;
  }
  function output(context,value){const projected=publicProjection(value);return context.actor.costs?projected:redactFinancial(projected);}
- return {readContext,assertInput,bindPlan,assertPlan,worker,output};
+ return {readContext,assertInput,assertDepartmentSite,bindPlan,assertPlan,worker,output};
 }
 module.exports={createSchedulingAuthority,branchFor,redactFinancial,workerReferences};
