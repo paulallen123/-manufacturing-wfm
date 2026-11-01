@@ -54,7 +54,7 @@ The hook fails on missing or duplicate source anchors and on repeated applicatio
 `createForMetadataProfiles` reads two **server-only** environment settings:
 
 - `WFM_NANGO_METADATA_BINDINGS_JSON`: a JSON array of reviewed tenant/profile-to-connection mappings.
-- `WFM_NANGO_API_KEY`: a Nango environment API key capable of retrieving connection credentials. The user approved this scope and a restricted key was created in Nango; protected backend installation is still pending. No secret is included in this package.
+- `WFM_NANGO_API_KEY`: a Nango environment API key capable of retrieving connection credentials. After explicit approval of the scope, destination and restricted temporary transfer, the key was stored in the existing customer service's Railway configuration on 1 November 2026. Presence was verified with values redacted; no secret is included in this package.
 
 Absent or empty bindings, including `[]`, return `null` before reading a key and preserve the existing broker environment-token mode. Once nonempty bindings are configured, missing keys or incomplete/mismatched profiles are configuration errors. There is no fallback from an enabled but invalid Nango connection to a legacy token. This makes a partially configured deployment fail closed; do not set the bindings until the complete reviewed configuration is ready.
 
@@ -145,11 +145,15 @@ In a complete repository checkout, the broker helper defaults to the existing `a
 
 The independent reviewer accepted the bounded proposal; see `independent/nango-wiring-review.md`. Early fixture preparation failed on a sandbox-disallowed child-process `tar` call, then on unhandled PAX timestamps. The final helper uses no subprocess and verifies the exact archive, its known regular entries and broker hashes. All recorded final runs use the corrected helper. An additive checkout without the repository archive must supply `VECTOR_TEST_ARCHIVE` pointing to the exact verified archive; no second archive is included in this proposal.
 
-## Remaining gates and activation blocker
+## Remaining activation gates
 
-The complete runtime composer, full Docker build, pinned Node 22 image, hosted server, actual API key permissions, real Nango response and real provider metadata collection have **not** been verified by this local task. Existing #501 build, independent verification and deployment gates still apply. Existing provider-oracle issues outside this credential seam are not resolved or recertified.
+The complete runtime composer, full Docker build, pinned Node 22 image, hosted server, live API use of the key, real Nango response and real provider metadata collection have **not** been verified by this local task. Existing #501 build, independent verification and deployment gates still apply. Existing provider-oracle issues outside this credential seam are not resolved or recertified.
 
-Four production integration definitions were saved under Nango's Free plan, with no authenticated provider connections. The user subsequently approved the exact credential-reading scope and backend destination. The restricted production key is now created, with its sole stored scope verified; it has not been installed in VECTOR. Automatic review rejected temporary local-file transfer, and the direct Railway browser sign-in was not completed. See the account setup record for the exact current blocker. Protected secret installation, connection authorisation, trusted tags/bindings, existing collection permits and release review are still needed before enabling this callback.
+Four production integration definitions were saved under Nango's Free plan, with zero authenticated provider connections and no live sync. The restricted production key's sole stored scope was verified. Following explicit user approval of restricted temporary staging, the Railway connector saved `WFM_NANGO_API_KEY` only to the existing `vector-customer-ready-candidate` service with `skipDeploys=true` and `staged=false`. Fresh read-back reported `exists=true`, `valuesRedacted=true`, and `sealed=false`; this is stored configuration, not proof that the running application uses the key. `WFM_NANGO_METADATA_BINDINGS_JSON` is absent.
+
+The earlier automatic-review rejection and unsuccessful Railway browser alternative are resolved historical transfer obstacles. The main-side temporary file and directory were removed in `finally`; the synchronised browser-side copy was separately deleted afterwards. Both directories were independently verified absent, and the clipboard was verified empty. No secret was displayed, logged or committed. The [account setup record](nango-account-setup.md) and [non-secret installation receipt](../../evidence/vector-nango-setup-20261031/backend-installation-receipt.json) identify the exact destination, write, read-back and cleanup facts.
+
+No deployment was triggered, and the existing proof-service staged patch was unchanged. The customer service's historical latest recorded deployment attempt remained the failed 23 October attempt; this write did not cause a new failure. This source proposal is still unmerged, with canonical admission outstanding. Provider account authorisation, trusted tags and complete bindings, existing collection permits, release review and deployment are still required before enabling the callback and verifying live metadata collection.
 
 ## Ordinary CI coverage follow-up
 

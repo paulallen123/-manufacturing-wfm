@@ -1,0 +1,80 @@
+{
+  "recordedAt": "2026-11-01 00:30:13 UTC",
+  "action": "install_existing_restricted_nango_key",
+  "authorization": "User approved the restricted credential-reading key and destination, then explicitly approved temporary restricted local transfer by saying Proceed.",
+  "nango": {
+    "environment": "prod",
+    "keyName": "VECTOR production connector access",
+    "keyId": "0e837309-36f2-4901-8d66-834202eec484",
+    "scope": "environment:connections:read_credentials",
+    "secretIncluded": false
+  },
+  "railway": {
+    "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+    "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+    "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+    "serviceName": "vector-customer-ready-candidate",
+    "variable": "WFM_NANGO_API_KEY",
+    "writeReceipt": {
+      "environment": {
+        "id": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "name": "production"
+      },
+      "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+      "variableNames": [
+        "WFM_NANGO_API_KEY"
+      ],
+      "skippedDeploys": true,
+      "staged": null
+    },
+    "readBack": {
+      "environment": {
+        "id": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+        "name": "production"
+      },
+      "service": {
+        "id": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+        "name": "vector-customer-ready-candidate"
+      },
+      "valuesRedacted": true,
+      "hasNangoKey": true,
+      "nangoSealed": false,
+      "hasBindings": false
+    }
+  },
+  "verification": {
+    "keyNamePresent": true,
+    "variableValueReadBack": false,
+    "variableSealed": false,
+    "deploymentTriggered": false,
+    "latestDeploymentUnchanged": {
+      "id": "d9112b19-7e46-4eab-8873-9a51826870b6",
+      "status": "FAILED",
+      "createdAt": "2026-10-23T19:45:53.348Z",
+      "url": null
+    },
+    "existingStagedPatchUnchanged": true,
+    "stagedPatch": {
+      "patchId": "3fb5eedd-a057-4924-96fd-cce42e28142f",
+      "status": "STAGED",
+      "changeCount": 2,
+      "message": null,
+      "createdAt": "2026-10-31T23:42:29.266Z",
+      "updatedAt": "2026-10-31T23:42:32.070Z"
+    },
+    "temporaryMainCopyDeleted": true,
+    "temporaryBrowserCopyDeleted": true,
+    "browserClipboardCleared": true,
+    "secretDisplayed": false,
+    "secretIncludedInRepository": false
+  },
+  "remaining": {
+    "providerConnectionsCreated": 0,
+    "metadataBindingsConfigured": false,
+    "nangoIntegrationCodeDeployed": false,
+    "liveProviderSyncVerified": false,
+    "releaseAdmissionRequired": true
+  },
+  "evidenceMethod": "Railway set_variables success receipt plus fresh list_variables, describe_service and get_staged_changes; both temporary filesystem locations and browser clipboard checked after deletion. No provider request made."
+}
+

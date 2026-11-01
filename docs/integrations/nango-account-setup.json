@@ -46,7 +46,7 @@
   ],
   "runtimeScope": "NetSuite and SuccessFactors metadata credential provider",
   "newKeyCreated": true,
-  "newKeyInstalled": false,
+  "newKeyInstalled": true,
   "requiredScope": "environment:connections:read_credentials",
   "scopeApprovalStatus": "approved_by_user",
   "liveProviderConnectionVerified": false,
@@ -62,10 +62,55 @@
   "keyScopeVerified": true,
   "keyLastUsedObserved": "Never",
   "backendVariable": "WFM_NANGO_API_KEY",
-  "backendInstallationStatus": "pending_protected_secret_entry",
-  "transferBlocker": {
-    "automaticReview": "rejected browser clipboard to shared local transfer file",
-    "saferAlternative": "direct entry into Railway protected variable editor",
-    "browserSignIn": "not completed; password method unsupported and alternative-method prompt declined"
-  }
+  "keyLastUsedObservedBeforeBackendTransfer": true,
+  "backendInstallationStatus": "stored_without_deployment",
+  "backendInstallation": {
+    "verifiedOn": "2026-11-01",
+    "mechanism": "Railway connector",
+    "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+    "environmentName": "production",
+    "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+    "serviceName": "vector-customer-ready-candidate",
+    "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+    "variableName": "WFM_NANGO_API_KEY",
+    "skipDeploys": true,
+    "staged": false,
+    "receiptVariables": [
+      "WFM_NANGO_API_KEY"
+    ],
+    "readBack": {
+      "exists": true,
+      "valuesRedacted": true,
+      "sealed": false
+    },
+    "metadataBindingsPresent": false,
+    "receipt": "evidence/vector-nango-setup-20261031/backend-installation-receipt.json"
+  },
+  "transferBlocker": null,
+  "transferHistory": {
+    "initialAutomaticReview": "rejected browser clipboard to shared local transfer file before specific staging approval",
+    "browserAlternative": "Railway variable-editor sign-in not completed; password method unsupported and alternative-method prompt declined",
+    "resolution": "user explicitly approved restricted temporary staging; Railway connector stored the key and presence was verified"
+  },
+  "temporaryTransfer": {
+    "approvalStatus": "approved_by_user",
+    "mainSideCleanup": "temporary file and directory removed in finally",
+    "browserSideCleanup": "synchronised copy separately deleted",
+    "bothDirectoriesVerifiedAbsent": true,
+    "browserClipboardVerifiedEmpty": true,
+    "secretDisplayed": false,
+    "secretLogged": false,
+    "secretCommitted": false
+  },
+  "deployment": {
+    "triggeredByThisWrite": false,
+    "historicalLatestAttemptUnchanged": {
+      "id": "d9112b19-7e46-4eab-8873-9a51826870b6",
+      "status": "FAILED",
+      "date": "2026-10-23"
+    },
+    "existingProofServiceStagedPatchChanged": false
+  },
+  "runtimeProposalStatus": "unmerged_pending_canonical_admission",
+  "liveSyncEnabled": false
 }
