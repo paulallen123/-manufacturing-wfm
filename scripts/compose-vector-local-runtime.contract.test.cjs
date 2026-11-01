@@ -7,6 +7,31 @@ const {join}=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {createHash}=require('node:crypto');
 const vm=require('node:vm');
+function assertDomainPackaging(runtime, provenance) {
+ const root=join(__dirname,'..');
+ const docker=readFileSync(join(root,'Dockerfile'),'utf8');
+ for(const domain of ['agency','attendance']) {
+  const line=docker.split(/\r?\n/).find(line=>line.startsWith('COPY ')&&line.endsWith(`/app/operations-runtime/${domain}/`));
+  assert.ok(line,`Docker ${domain} copy declaration required`);
+  const selectors=line.split(/\s+/).slice(1,-1);
+  const sources=selectors.flatMap(selector=>{
+   if(!selector.includes('*'))return [selector];
+   assert.equal(selector,'src/frontier/agency-*.mjs','Docker wildcard changed; update the parity contract');
+   return require('node:fs').readdirSync(join(root,'src/frontier')).filter(name=>/^agency-.*\.mjs$/.test(name)).map(name=>`src/frontier/${name}`);
+  });
+  assert.ok(sources.length>0);
+  const target=join(runtime,'operations-runtime',domain);
+  assert.deepEqual(require('node:fs').readdirSync(target).sort(),sources.map(source=>require('node:path').basename(source)).sort());
+  for(const source of sources) {
+   const destination=`operations-runtime/${domain}/${require('node:path').basename(source)}`;
+   const bytes=readFileSync(join(root,source));
+   assert.deepEqual(readFileSync(join(runtime,destination)),bytes,destination);
+   const digest=createHash('sha256').update(bytes).digest('hex');
+   assert.ok(provenance.sourceInputs.some(entry=>entry.path===source&&entry.sha256===digest),source);
+   assert.ok(provenance.runtimeFiles.some(entry=>entry.path===destination&&entry.sha256===digest),destination);
+  }
+ }
+}
 function assertLocalTimezoneConsumers(runtime) {
  const saved={NODE_ENV:process.env.NODE_ENV,WFM_TENANT_TIMEZONE:process.env.WFM_TENANT_TIMEZONE,WFM_TENANT_CLOCK_ISO:process.env.WFM_TENANT_CLOCK_ISO};
  try {
@@ -71,6 +96,7 @@ test('composer preserves the absent-directory canonical caller contract',()=>{
   assert.equal(existsSync(join(runtime,'security-runtime/bootstrap.cjs')),true);
   assert.equal(existsSync(join(runtime,'STAFFOLOGY_ASSEMBLY.json')),true);
   const provenance=JSON.parse(readFileSync(join(runtime,'LOCAL_PROOF_PROVENANCE.json'),'utf8'));
+  assertDomainPackaging(runtime,provenance);
   assert.ok(provenance.runtimeFiles.some(file=>file.path==='integrations/staffology/canonical-production-boundaries.cjs'));
   assert.ok(provenance.runtimeFiles.some(file=>file.path==='integrations/staffology/canonical-operations.cjs'));
   const assembly=JSON.parse(readFileSync(join(runtime,'STAFFOLOGY_ASSEMBLY.json'),'utf8'));

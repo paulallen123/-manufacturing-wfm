@@ -298,6 +298,20 @@ const groups = {
 for (const [group, files] of Object.entries(groups)) for (const file of files) {const sourceRoot=group==='integrations'?'integrations':`${group}/runtime`,targetRoot=group==='integrations'?'integrations':`${group}-runtime`;copy(`${sourceRoot}/${file}`,`${targetRoot}/${file}`);}
 copy('resilience/support-selfhelp.cjs', 'support-runtime/support-selfhelp.cjs');
 copy('resilience/support-selfhelp-service.cjs', 'support-runtime/support-selfhelp-service.cjs');
+// Mirror the existing final-image agency and attendance COPY sets. Keep relative
+// module imports intact and include every copied source in proof provenance.
+for (const name of fs.readdirSync(path.join(root, 'src/frontier')).filter(name => /^agency-.*\.mjs$/.test(name)).sort()) {
+  copy(`src/frontier/${name}`, `operations-runtime/agency/${name}`);
+}
+for (const name of [
+  'access-control-evidence.mjs', 'access-feed-supervisor.mjs', 'access-onboarding-autopilot.mjs',
+  'access-push-adapters.mjs', 'attendance-certification.mjs', 'attendance-coverage-assurance.mjs',
+  'attendance-coverage-planner.mjs', 'attendance-payroll-gate.mjs', 'attendance-release-control.mjs',
+  'attendance-source-supervisor.mjs', 'durable-attendance-journal.mjs', 'durable-source-supervisor.mjs',
+  'invisible-attendance-engine.mjs', 'signed-rollback-anchor.mjs', 'sqlite-attendance-runtime.mjs',
+  'sqlite-attendance-worker.mjs', 'telemetry-continuity-guard.mjs', 'trust-root-recovery-controller.mjs',
+  'trust-root-recovery.mjs', 'wifi-evidence-adapters.mjs', 'windows-wef-evidence.mjs'
+]) copy(`clocking-security-v2/${name}`, `operations-runtime/attendance/${name}`);
 composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);
