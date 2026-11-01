@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 export const ENERGY_FLEX_ENGINE_VERSION = 'energy-flex-shadow-v0.4.0';
 
 const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+const validConfidence=v=>(typeof v==='number'&&Number.isFinite(v)||typeof v==='string'&&v.trim()!==''&&Number.isFinite(Number(v)))&&Number(v)>=0&&Number(v)<=1;
 const ms=(v)=>{const x=typeof v==='number'?v:Date.parse(v);return Number.isFinite(x)?x:null;};
 const stable=(v)=>Array.isArray(v)?v.map(stable):(v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v);
 const hash=(v)=>crypto.createHash('sha256').update(JSON.stringify(stable(v))).digest('hex');
@@ -40,6 +41,7 @@ function signalState(signal,now,input,reduction){
   if(freshUntil===null||freshUntil<now) reasons.push('energy_signal_stale');
   if(windowEnd===null||windowEnd<=now) reasons.push('energy_window_expired');
   if(deadline!==null&&deadline<now) reasons.push('acceptance_deadline_expired');
+  if(Object.hasOwn(signal,'confidence')&&!validConfidence(signal.confidence)) reasons.push('energy_signal_confidence_invalid');
   if(num(signal.confidence,1)<0.5) reasons.push('energy_signal_low_confidence');
   if(input.latestKnownSignalRevision!==undefined&&String(signal.revision??'')!==String(input.latestKnownSignalRevision)) reasons.push('energy_signal_revision_superseded');
   return {fresh:reasons.length===0,reasons};
@@ -57,6 +59,7 @@ function scopeFailures(input,signal,process,option){
 
 function processFailures(process={},option={}){
   const reasons=[];
+  if(Object.hasOwn(process,'confidence')&&!validConfidence(process.confidence)) reasons.push('process_confidence_invalid');
   const flexKinds=new Set(['shift_earlier','shift_later','curtail','advance_production','maintenance_swap','training_swap','alternate_line']);
   const cls=process.flexibilityClass??'unknown';
   if(flexKinds.has(option.kind)&&!['shiftable','interruptible'].includes(cls)) reasons.push('process_not_shiftable');
@@ -80,6 +83,7 @@ function processFailures(process={},option={}){
 
 function workforceFailures(w={}){
   const reasons=[];
+  if(Object.hasOwn(w,'confidence')&&!validConfidence(w.confidence)) reasons.push('workforce_confidence_invalid');
   if(w.restCompliant===false) reasons.push('working_time_or_rest_violation');
   if(w.qualificationsValid===false) reasons.push('qualification_invalid');
   if(w.supervisorRequired&&!w.supervisorAvailable) reasons.push('required_supervision_missing');
@@ -144,6 +148,7 @@ export function evaluateEnergyFlexibility(input){
   const now=ms(input?.now);
   if(now===null) throw new TypeError('input.now must be an ISO timestamp or epoch milliseconds');
   if(!input?.tenantId||!input?.siteId) throw new TypeError('tenantId and siteId are required');
+  if(Object.hasOwn(input,'minimumDecisionConfidence')&&!validConfidence(input.minimumDecisionConfidence)) throw new TypeError('minimumDecisionConfidence must be between 0 and 1');
   const valueBasis=input.valueBasis==='point'?'point':'conservative';
   const eventReduction=Array.isArray(input.energyEvents)?reduceEnergySignalEventsDetailed(input.energyEvents):null;
   const energySignal=eventReduction?.signal??input.energySignal;
