@@ -880,3 +880,68 @@ test(delivery+' '+authority+' rolls back a refused blocked audit and retries ato
     }
   }finally{restarted?.close();x.close();}
 });
+
+
+// Local revocation must deny provider reads even when the final async reader
+// returns a previously captured actor. The durable attempted write stays UNKNOWN.
+for(const delivery of ['email_link','sftp'])for(const [label,sql] of [
+  ['role revocation',"UPDATE users SET role='employee' WHERE email='payroll@a.example'"],
+  ['tenant transfer',"UPDATE users SET tenant='tenant-b' WHERE email='payroll@a.example'"],
+  ['user deletion',"DELETE FROM users WHERE email='payroll@a.example'"],
+  ['tenant freeze',"CREATE TABLE identity_tenant_control(tenant TEXT PRIMARY KEY,privileged_freeze INTEGER); INSERT INTO identity_tenant_control VALUES('tenant-a',1)"]
+])test(delivery+' readback '+label+' during stale final reader preserves UNKNOWN without provider read',{timeout:5000},async()=>{
+  let afterDispatch=false,reads=0,release,entered,sent=0,readbacks=0,dispatched,restarted,running;
+  const pending=new Promise(resolve=>{entered=resolve;});
+  const held=new Promise(resolve=>{release=resolve;});
+  const adapter={authorize:()=>true,deliver:async payload=>{
+    sent++;dispatched=payload;afterDispatch=true;
+    if(delivery==='sftp')throw Error('synthetic dispatch response lost');
+    return {accepted:true};
+  },readback:async()=>{readbacks++;return {observed:true};}};
+  const x=setup({deliveryAdapter:adapter,currentUserReader:async({email,tenant})=>{
+    const actor={email,tenant,role:'payroll_admin'};
+    if(afterDispatch&&++reads===5){entered();await held;}
+    return actor;
+  }});
+  try{
+    const report=await makeReport(x),planned=await makeSchedule(x,report.id,'payroll-a',{delivery,destination:'synthetic@example.test'});
+    running=x.service.runDueSchedules(new Date('2026-09-24T16:05:00Z'));
+    await pending;
+    const revoke=new DatabaseSync(x.dbPath);try{revoke.exec(sql);}finally{revoke.close();}
+    release();const result=await running;
+    assert.equal(sent,1);assert.equal(readbacks,0,'local revocation must prevent provider readback');
+    assert.equal(result.length,1);assert.equal(result[0].status,'UNKNOWN');
+    assert.equal(result[0].externalReceipt.reconciliationRequired,true);
+    assert.equal(result[0].externalReceipt.dispatchAttempted,true);
+    assert.equal(result[0].externalReceipt.readbackAttempted,false);
+    assert.match(result[0].externalReceipt.readbackErrorDigest,/^[a-f0-9]{64}$/);
+    assert.equal(result[0].externalReceipt.readbackDigest,undefined);
+    const key=planned.id+':2026-09-24-16-05';
+    assert.deepEqual(dispatched,{tenant:'tenant-a',actor:'payroll@a.example',scheduleId:planned.id,reportId:report.id,definitionDigest:report.definitionDigest,delivery,destination:'synthetic@example.test',slot:'2026-09-24-16-05',idempotencyKey:key});
+    assert.equal(Object.isFrozen(dispatched),true);
+    const inspect=new DatabaseSync(x.dbPath);try{
+      const intent=inspect.prepare('SELECT * FROM vector_report_delivery_intents').all();
+      assert.equal(intent.length,1);assert.equal(intent[0].delivery_key,key);assert.equal(intent[0].payload_digest,sha(JSON.stringify(JSON.stringify(dispatched))));
+      const observations=inspect.prepare('SELECT delivery_key,observation_json FROM vector_report_delivery_observations').all();
+      assert.equal(observations.length,1);assert.equal(observations[0].delivery_key,key);
+      assert.deepEqual(JSON.parse(observations[0].observation_json),result[0].externalReceipt);
+      const terminal=inspect.prepare('SELECT delivery_key,status,receipt_json FROM vector_report_deliveries').all();
+      assert.equal(terminal.length,1);assert.equal(terminal[0].delivery_key,key);assert.equal(terminal[0].status,'UNKNOWN');
+      assert.deepEqual(JSON.parse(terminal[0].receipt_json).externalReceipt,result[0].externalReceipt);
+      assert.throws(()=>inspect.exec('DELETE FROM vector_report_delivery_intents'),/reviewed reconciliation/);
+    }finally{inspect.close();}
+    x.service.close();
+    const restore=new DatabaseSync(x.dbPath);try{
+      restore.prepare('INSERT OR REPLACE INTO users VALUES(?,?,?)').run('payroll@a.example','tenant-a','payroll_admin');
+      if(label==='tenant freeze')restore.exec("UPDATE identity_tenant_control SET privileged_freeze=0 WHERE tenant='tenant-a'");
+      restore.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha('fresh-readback-payroll'),'payroll@a.example',Date.now()+3600000);
+    }finally{restore.close();}
+    restarted=Reporting.createVectorReportingService({dbPath:x.dbPath,deliveryAdapter:adapter});
+    const listed=await call(restarted,'GET','/api/reporting/deliveries','fresh-readback-payroll');
+    assert.equal(listed.status,200);assert.equal(listed.body.deliveries[0].status,'UNKNOWN');
+    assert.deepEqual(await restarted.runDueSchedules(new Date('2026-09-24T16:05:00Z')),[]);
+    const next=await restarted.runDueSchedules(new Date('2026-09-25T16:05:00Z'));
+    assert.equal(next.length,1);assert.equal(next[0].status,'BLOCKED_RECONCILIATION_REQUIRED');
+    assert.equal(sent,1);assert.equal(readbacks,0);
+  }finally{release();if(running)await running.catch(()=>{});restarted?.close();x.close();}
+});

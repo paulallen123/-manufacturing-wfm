@@ -635,6 +635,11 @@ function createVectorReportingService(options={}){
               if(!await access(c,row,'schedule'))throw Error('readback authority unavailable');
               const current=await currentIdentity(c);
               if(!current||current.email!==dispatchActor.email||current.tenant!==dispatchActor.tenant||current.role!==dispatchActor.role)throw Error('readback authority changed');
+              // An awaited actor may predate local revocation. Repeat the deny-only
+              // local fence immediately before provider I/O, without another await.
+              const localActor=currentUser.get(row.tenant,row.created_by);
+              const frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(row.tenant)?.privileged_freeze)===1;
+              if(!localActor||localActor.role!==dispatchActor.role||frozen||!localReportAccess(localActor,report,new Set(['schedule:'+row.id])))throw Error('readback local authority changed');
               externalReceipt.readbackAttempted=true;
               const observation=await deliveryAdapter.readback(payload);
               // Do not persist arbitrary provider records, secrets or claims.
