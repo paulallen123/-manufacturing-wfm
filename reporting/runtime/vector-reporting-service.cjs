@@ -800,12 +800,26 @@ function createVectorReportingService(options={}){
     const scheduleStateMatch=path.match(/^\/api\/reporting\/schedules\/([^/]+)\/state$/);
     if(scheduleStateMatch&&method==='POST'){
       try{
-        const id=decodeURIComponent(scheduleStateMatch[1]),row=scheduleOne.get(c.tenant,id);
+        const id=decodeURIComponent(scheduleStateMatch[1]),row=scheduleOne.get(c.tenant,id),token=cookieToken(req);
         const body=await readJson(req);if(typeof body.enabled!=='boolean')return writeJson(res,400,{error:'enabled must be true or false.'});
         if(!await access(c,row,'schedule'))return writeJson(res,404,{error:'Schedule not found.'});
-        const createdAt=new Date().toISOString();scheduleEvent.run(c.tenant,id,body.enabled?1:0,c.email,createdAt);
-        const schedule=JSON.parse(row.schedule_json);
-        record(c,schedule.reportId,body.enabled?'REPORT_SCHEDULE_RESUMED':'REPORT_SCHEDULE_PAUSED',{scheduleId:id});
+        const schedule=JSON.parse(row.schedule_json),createdAt=new Date().toISOString();
+        db.exec('BEGIN IMMEDIATE');
+        try{
+          // Async authority can only deny; the current local session, actor and
+          // complete report ancestry must still permit this control at commit.
+          const current=context(req),frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(c.tenant)?.privileged_freeze)===1;
+          if(cookieToken(req)!==token||!current||current.email!==c.email||current.tenant!==c.tenant||current.role!==c.role||frozen||row.tenant!==current.tenant||row.created_by!==current.email||!localReportAccess(current,one.get(current.tenant,schedule.reportId),new Set(['schedule:'+id]))){
+            db.exec('ROLLBACK');
+            return writeJson(res,404,{error:'Schedule not found.'});
+          }
+          scheduleEvent.run(c.tenant,id,body.enabled?1:0,c.email,createdAt);
+          record(c,schedule.reportId,body.enabled?'REPORT_SCHEDULE_RESUMED':'REPORT_SCHEDULE_PAUSED',{scheduleId:id});
+          db.exec('COMMIT');
+        }catch(error){
+          try{db.exec('ROLLBACK');}catch{}
+          throw error;
+        }
         return writeJson(res,200,{schedule:{...scheduleRow(row),enabled:body.enabled,control:{actor:c.email,createdAt}}});
       }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to change schedule state.',300)});}
     }

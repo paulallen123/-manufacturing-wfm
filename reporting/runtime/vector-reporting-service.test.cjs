@@ -1126,3 +1126,120 @@ test(delivery+' stale readback denial plus '+failPoint+' fault recovers UNKNOWN 
     assert.equal(sent,1);assert.equal(readbacks,0);
   }finally{release();if(running)await running.catch(()=>{});restarted?.close();x.close();}
 });
+
+// Schedule-state writes retain current local authority and atomic audit custody.
+{
+'use strict';
+
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {Readable}=require('node:stream');
+const {createHash}=require('node:crypto');
+const {DatabaseSync}=require('node:sqlite');
+const {createVectorReportingService}=require('./vector-reporting-service.cjs');
+
+const ROOT=require('node:os').tmpdir();
+const sha=value=>createHash('sha256').update(value).digest('hex');
+const email='manager@fictional.invalid',tenant='fictional-a',token='fictional-session';
+function inspect(file,fn){const db=new DatabaseSync(file);try{return fn(db);}finally{db.close();}}
+function gate(){let release;const pending=new Promise(resolve=>release=resolve);return {pending,release};}
+function setup(){
+  const dir=fs.mkdtempSync(path.join(ROOT,'state-fixture-')),dbPath=path.join(dir,'fictional.sqlite');
+  inspect(dbPath,db=>{
+    db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,role TEXT NOT NULL);CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,expires INTEGER NOT NULL);');
+    db.prepare('INSERT INTO users VALUES(?,?,?)').run(email,tenant,'manager');
+    db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha(token),email,Date.now()+600000);
+  });
+  const services=[];
+  const open=options=>{const service=createVectorReportingService({dbPath,schedulerTickMs:600000,...options});services.push(service);return service;};
+  const service=open();
+  return {dir,dbPath,service,open,close(){for(const service of services)service.close();fs.rmSync(dir,{recursive:true,force:true});}};
+}
+async function call(service,method,url,body){
+  const req=Readable.from(body==null?[]:[Buffer.from(JSON.stringify(body))]);
+  Object.assign(req,{method,url,headers:{cookie:'wfm_session='+token}});
+  const res={statusCode:200,headers:{},headersSent:false,writableEnded:false,setHeader(k,v){this.headers[k]=v;},end(value){this.body=String(value);this.headersSent=this.writableEnded=true;}};
+  assert.equal(await service.handleRequest(req,res),true);
+  return {status:res.statusCode,body:JSON.parse(res.body)};
+}
+async function schedule(x){
+  const report=await call(x.service,'POST','/api/reporting/reports',{definition:{title:'Fictional factory',sourceId:'factory-readiness'}});
+  assert.equal(report.status,201);
+  const result=await call(x.service,'POST','/api/reporting/schedules',{reportId:report.body.report.id,cadence:'daily',hour:16,minute:5,timeZone:'UTC',delivery:'in_app'});
+  assert.equal(result.status,201);
+  return result.body.schedule;
+}
+function selected(x,id){return inspect(x.dbPath,db=>({
+  events:db.prepare('SELECT enabled,actor FROM vector_report_schedule_events WHERE tenant=? AND schedule_id=? ORDER BY id').all(tenant,id),
+  audits:db.prepare("SELECT event,actor,detail_json FROM vector_report_audit WHERE tenant=? AND event IN ('REPORT_SCHEDULE_PAUSED','REPORT_SCHEDULE_RESUMED') ORDER BY id").all(tenant),
+  deliveries:db.prepare('SELECT count(*) AS n FROM vector_report_deliveries').get().n,
+  intents:db.prepare('SELECT count(*) AS n FROM vector_report_delivery_intents').get().n
+}));}
+function heldReader(x){
+  const entered=gate(),release=gate();let reads=0;
+  const service=x.open({currentUserReader:async principal=>{
+    const snapshot=inspect(x.dbPath,db=>db.prepare('SELECT email,tenant,role FROM users WHERE email=? AND tenant=?').get(principal.email,principal.tenant));
+    if(++reads===3){entered.release();await release.pending;}
+    return snapshot;
+  }});
+  return {service,entered:entered.pending,release:release.release};
+}
+
+for(const enabled of [false,true])for(const change of ['role','session','freeze']){
+  test((enabled?'resume':'pause')+' refuses local '+change+' revocation during stale async access',{timeout:5000},async()=>{
+    const x=setup();let held,running;
+    try{
+      const planned=await schedule(x),before=selected(x,planned.id);
+      held=heldReader(x);
+      running=call(held.service,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled});
+      await held.entered;
+      inspect(x.dbPath,db=>{
+        if(change==='role')db.prepare('UPDATE users SET role=? WHERE email=?').run('employee',email);
+        if(change==='session')db.prepare('DELETE FROM sessions WHERE token_hash=?').run(sha(token));
+        if(change==='freeze')db.exec("CREATE TABLE identity_tenant_control(tenant TEXT PRIMARY KEY,privileged_freeze INTEGER);INSERT INTO identity_tenant_control VALUES('fictional-a',1)");
+      });
+      assert.deepEqual(selected(x,planned.id),before,'revocation itself must not create a control event');
+      held.release();
+      const result=await running;
+      assert.equal(result.status,404,'stale captured authority must not grant a schedule-state mutation');
+      assert.deepEqual(selected(x,planned.id),before,'denial must leave control and audit unchanged');
+    }finally{held?.release();if(running)await running.catch(()=>{});x.close();}
+  });
+}
+
+for(const enabled of [false,true]){
+  test((enabled?'resume':'pause')+' keeps valid stale-reader control event and audit paired',{timeout:5000},async()=>{
+    const x=setup();let held,running;
+    try{
+      const planned=await schedule(x);held=heldReader(x);
+      running=call(held.service,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled});
+      await held.entered;held.release();
+      assert.equal((await running).status,200);
+      const after=selected(x,planned.id);
+      assert.deepEqual(after.events.map(row=>[row.enabled,row.actor]),[[1,email],[Number(enabled),email]]);
+      assert.equal(after.audits.length,1);
+      assert.equal(after.audits[0].event,enabled?'REPORT_SCHEDULE_RESUMED':'REPORT_SCHEDULE_PAUSED');
+      assert.equal(JSON.parse(after.audits[0].detail_json).scheduleId,planned.id);
+      assert.equal(after.deliveries,0);assert.equal(after.intents,0);
+      const reopened=x.open(),readback=await call(reopened,'GET','/api/reporting/schedules');
+      assert.equal(readback.status,200);assert.equal(readback.body.schedules[0].enabled,enabled);
+    }finally{held?.release();if(running)await running.catch(()=>{});x.close();}
+  });
+  test((enabled?'resume':'pause')+' rolls back event when audit insert is refused',{timeout:5000},async()=>{
+    const x=setup();
+    try{
+      const planned=await schedule(x),before=selected(x,planned.id);
+      inspect(x.dbPath,db=>db.exec("CREATE TRIGGER fictional_audit_refusal BEFORE INSERT ON vector_report_audit WHEN NEW.event IN ('REPORT_SCHEDULE_PAUSED','REPORT_SCHEDULE_RESUMED') BEGIN SELECT RAISE(ABORT,'fictional audit refusal'); END;"));
+      const result=await call(x.service,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled});
+      assert.equal(result.status,400);assert.match(result.body.error,/fictional audit refusal/);
+      assert.deepEqual(selected(x,planned.id),before,'failed audit must roll back its schedule control event');
+      inspect(x.dbPath,db=>{db.exec('PRAGMA busy_timeout=0;BEGIN IMMEDIATE;ROLLBACK;DROP TRIGGER fictional_audit_refusal;');});
+      assert.equal((await call(x.service,'POST','/api/reporting/schedules/'+planned.id+'/state',{enabled})).status,200,'rollback must release the writer and permit an authorised retry');
+      const after=selected(x,planned.id);assert.equal(after.events.length,2);assert.equal(after.audits.length,1);
+    }finally{x.close();}
+  });
+}
+
+}
