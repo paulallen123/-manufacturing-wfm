@@ -20,6 +20,7 @@ RUN --mount=type=secret,id=proxy_ca \
  if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
  npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
+RUN node --test scripts/patch-kiosk-atomicity.test.mjs
 # Recovery help is part of the passkey boundary, not an optional navigation fixture.
 RUN node --test security/runtime/owner-access-recovery.test.cjs security/runtime/owner-access-recovery-help.test.cjs
 RUN node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs
@@ -113,7 +114,7 @@ COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/cano
 COPY verification/provider-recovery-correction/operations/runtime/ /workspace/verification/provider-recovery-correction/operations/runtime/
 COPY verification/provider-recovery-correction/ui/ /workspace/verification/provider-recovery-correction/ui/
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
-COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/
+COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs scripts/patch-kiosk-atomicity.mjs /workspace/scripts/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
 COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs scripts/patch-customer-runtime-assets.mjs /tmp/
