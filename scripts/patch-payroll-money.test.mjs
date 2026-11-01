@@ -94,3 +94,74 @@ test('patching fails closed on source drift or duplicate application',()=>{
   assert.throws(()=>patchPayrollMoneySources(originals['cost-engine.js'].replace('const base=pence(','const changed=pence('),originals['work-rules.js']),/ANCHOR_CHANGED/);
   const fixed=patchPayrollMoneySources(originals['cost-engine.js'],originals['work-rules.js']);assert.throws(()=>patchPayrollMoneySources(fixed.cost,fixed.rules),/ALREADY_PATCHED/);
 });
+
+// Full domain CSV compatibility is separate from a line-level money comparison.
+// These private fixtures do not start HTTP/database/provider code or submit pay.
+function literalCsvModules(browser) {
+  const fixed = patchPayrollMoneySources(originals['cost-engine.js'], originals['work-rules.js']);
+  const sources = {...originals, 'cost-engine.js':fixed.cost, 'work-rules.js':fixed.rules};
+  const clock='2026-09-21T12:00:00.000Z';
+  class FixedDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [clock])); }
+    static now() { return Date.parse(clock); }
+  }
+  const context=vm.createContext({Date:FixedDate}),cache={};
+  function load(name) {
+    name=name.replace(/^\.\//,'');
+    if(cache[name]) return cache[name].exports;
+    assert.ok(Object.hasOwn(sources,name),name);
+    const module={exports:{}};cache[name]=module;
+    vm.runInContext('(function(module,exports,require){'+sources[name]+'\n})',context,{filename:name})(module,module.exports,load);
+    return module.exports;
+  }
+  const names=['engine.js','cost-engine.js','work-rules.js','payroll-control.js'];
+  if(browser) {
+    for(const name of names) vm.runInContext(sources[name],context,{filename:name});
+    return context.WFMPayroll;
+  }
+  for(const name of names) load(name);
+  return load('payroll-control.js');
+}
+function literalCsvFixture(P,contract) {
+  const {state,period}=fixture(8.03,30);
+  // The archive's reviewed AS_OF is September14; use the preceding closed week.
+  Object.assign(period,{id:'2026-09-07',start:'2026-09-07',end:'2026-09-13'});
+  Object.assign(period.records[0],{date:'2026-09-07'});
+  Object.assign(period.records[0].raw,{clockIn:'2026-09-07T09:00:00.000Z',clockOut:'2026-09-07T09:30:00.000Z'});
+  if(!contract) delete state.workRules;
+  state.version=1;
+  state.org=[{id:'csv-manager',name:'Synthetic manager',parent:null},{id:'s1',parent:'csv-manager'}];
+  Object.assign(state.staff[0],{name:'Åsa, "工場" 🌿',payrollId:'0000042'});
+  period.teams[0].name='Assembly, East';period.teams[0].feedComplete=true;
+  period.reviews={s1:{revision:1,status:'draft',acknowledgements:{},employeeChecks:{}}};
+  period.issues=[];period.batches=[];period.reminders=[];
+  for(let day=8;day<=13;day++) period.records.push({id:'synthetic-off-'+day,employee:'e1',team:'s1',date:'2026-09-'+String(day).padStart(2,'0'),
+    raw:{kind:'off_rota',clockIn:null,clockOut:null,breaks:[],pendingSync:false}});
+  state.payrollControl={version:1,periods:[period],audit:[],adjustments:[],adjustmentBatches:[]};
+  const actor={personId:'csv-manager',role:'manager'},review={period:period.id,team:'s1',revision:1,checked:true};
+  assert.equal(P.blockers(state,period,period.teams[0]).length,0);
+  for(const category of P.CATEGORIES) P.acknowledge(state,actor,{...review,category:category.id});
+  P.acknowledge(state,actor,{...review,employee:'e1'});
+  P.sign(state,actor,{...review,attestation:'confirmed'});
+  return state;
+}
+const literalCsvHeader='"batch_id","schema_version","period_start","period_end","employee_id","payroll_id","employee_name","team","work_date","pay_code","minutes","hours","basic_hourly_rate_gbp","pay_multiplier","hourly_allowance_gbp","gross_amount_gbp","manager_approved_by","manager_approved_at","source_record_ids"';
+const literalCsvRow='"synthetic-csv-batch","reviewed-pay-v3-reconciled","2026-09-07","2026-09-13","e1","0000042","Åsa, ""工場"" 🌿","Assembly, East","2026-09-07","WORKED_BASIC","30","0.5000","8.03","1","0.00","4.02","csv-manager","2026-09-21T12:00:00.000Z","synthetic-observed-1"';
+const literalCsvBytes=Buffer.from(literalCsvHeader+'\r\n'+literalCsvRow+'\r\n','utf8');
+for(const browser of [false,true]) test(`${browser?'browser-global':'server'} payroll dispatch/readback/retry preserves all19 literalUTF8 CSV fields`,()=>{
+  const P=literalCsvModules(browser),actor={personId:'csv-payroll',permissions:['payroll.view','payroll.export']};
+  const request={period:'2026-09-07',checked:true,schemaReviewed:true};
+  for(const contract of [false,true]) {
+    const state=literalCsvFixture(P,contract);
+    const released=P.dispatch(state,actor,'payroll-release',request,'synthetic-csv-batch');
+    const batch=P.batchById(state,actor,released.id);
+    assert.deepEqual(Buffer.from(batch.csv,'utf8'),literalCsvBytes);
+    assert.equal(batch.grossPence,402);assert.equal(batch.rowCount,1);assert.equal(batch.reconciliation.ok,true);
+    const restored=JSON.parse(JSON.stringify(state)),before=JSON.stringify(restored);
+    assert.deepEqual(Buffer.from(P.batchById(restored,actor,released.id).csv,'utf8'),literalCsvBytes);
+    const retried=P.dispatch(restored,actor,'payroll-release',request,'synthetic-unused-retry');
+    assert.equal(retried.id,released.id);assert.equal(retried.reused,true);
+    assert.equal(JSON.stringify(restored),before);
+    assert.equal(restored.payrollControl.audit.filter(x=>x.type==='payroll-batch-released').length,1);
+  }
+});
