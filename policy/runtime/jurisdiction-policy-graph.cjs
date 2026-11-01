@@ -20,7 +20,18 @@ function stable(v){
 }
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function text(v,max=240){return String(v??'').trim().slice(0,max);}
-function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error((name||'timestamp')+' must be valid ISO.');return new Date(ms).toISOString();}
+function iso(v,name){
+  const raw=text(v,80),ms=Date.parse(raw),date=/^([+-]\d{6}|\d{4})-(\d{1,2})-(\d{1,2})(?=\D|$)/.exec(raw);
+  let calendarValid=true;
+  if(date){
+    const year=Number(date[1]),month=Number(date[2]),day=Number(date[3]);
+    const leap=year%4===0&&(year%100!==0||year%400===0);
+    const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+    calendarValid=month>=1&&month<=12&&day>=1&&day<=days[month-1];
+  }
+  if(!raw||!Number.isFinite(ms)||!calendarValid) throw new Error((name||'timestamp')+' must be valid ISO.');
+  return new Date(ms).toISOString();
+}
 function list(v,max=100,maxLen=240){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
 function validTenant(v){return typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[\u0000-\u001f\u007f]/.test(v);}

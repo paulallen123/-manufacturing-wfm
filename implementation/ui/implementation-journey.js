@@ -110,7 +110,11 @@ function requirementCard(key,title,description){
   let evidence='';
   if(key==='scenario-validation'&&detail.totalScenarios!=null)evidence=Number(detail.passedScenarios||0).toLocaleString()+' / '+Number(detail.totalScenarios||0).toLocaleString()+' scenarios passed';
   if(key==='test-data-cleanup'&&detail.remainingTestRows!=null)evidence=Number(detail.remainingTestRows).toLocaleString()+' test rows remaining';
-  if(key==='live-data-import'&&detail.sourceCount!=null)evidence=Number(detail.importedCount||0).toLocaleString()+' / '+Number(detail.sourceCount||0).toLocaleString()+' records reconciled';
+  if(key==='live-data-import'&&detail.sourceCount!=null){
+    const measured=Number.isSafeInteger(detail.sourceCount)&&detail.sourceCount>=0&&Number.isSafeInteger(detail.importedCount)&&detail.importedCount>=0;
+    const reconciled=measured&&item.satisfied===true&&item.status==='PASS'&&detail.importedCount===detail.sourceCount;
+    evidence=measured?detail.importedCount.toLocaleString()+' / '+detail.sourceCount.toLocaleString()+(reconciled?' records reconciled':' records reported; reconciliation needs rechecking.'):'Record counts need verification.';
+  }
   return '<section class="wfm-ij-mini '+status+'"><div class="wfm-ij-mini-icon">'+stateIcon(status)+'</div><div><small>'+safe(stateLabel(status))+'</small><h3>'+safe(title)+'</h3><p>'+safe(description)+'</p>'+(evidence?'<strong>'+safe(evidence)+'</strong>':'')+'</div></section>';
 }
 function importAdvice(){
