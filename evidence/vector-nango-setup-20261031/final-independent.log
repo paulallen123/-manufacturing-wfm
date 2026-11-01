@@ -1,0 +1,24 @@
+✔ NetSuite requests exactly one approved connection and returns only token and real expiry (35.202391ms)
+✔ SuccessFactors accepts only its documented TWO_STEP token and matching target (2.813592ms)
+✔ every tenant/profile/provider/system/credential reference mismatch refuses before fetch (0.917995ms)
+✔ connection identity, ownership tags, account and unhealthy status cannot be substituted (10.566936ms)
+✔ caller mutation after construction or while awaiting fetch cannot change the binding (0.622806ms)
+✔ concurrent tenants completing in reverse order keep their own tokens (0.768031ms)
+✔ dot path IDs and prototype provider names are refused as configuration before I/O (0.340286ms)
+✔ origin alternatives are refused without network access (0.298304ms)
+✔ request deadline wins even when fetch ignores cancellation (25.934225ms)
+✔ request deadline also covers a stuck response reader and stuck cancel (26.281602ms)
+✔ declared and streamed response limits independently prevent oversized credentials (2.278657ms)
+✔ redirects and response URL drift never yield credentials (1.202006ms)
+✔ invalid JSON, invalid UTF-8 and error responses cannot echo token-containing bodies (1.950489ms)
+✔ expiry must be real UTC time with more than 30 seconds and at most seven days remaining (2.916986ms)
+✔ expiry is checked after network/body consumption rather than at request start (0.402869ms)
+✔ profile loader preserves explicit disabled mode and refuses partial or drifted mappings (1.151501ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.327137

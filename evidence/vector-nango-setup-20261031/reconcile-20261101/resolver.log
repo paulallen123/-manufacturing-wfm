@@ -1,0 +1,81 @@
+✔ documented credential shape supplies netsuite with only token and actual expiry (56.47232ms)
+✔ documented credential shape supplies successfactors with only token and actual expiry (1.389564ms)
+▶ tenant, actor, profile, provider, system and credential-reference mismatches stop before network
+  ✔ tenant"tenant-b" (0.826638ms)
+  ✔ profileId"other" (0.23592ms)
+  ✔ provider"successfactors" (0.337711ms)
+  ✔ system"other" (0.170213ms)
+  ✔ credentialRef"WFM_BROKER_TOKEN_OTHER" (0.178956ms)
+  ✔ actor{"tenant":"tenant-b"} (0.218725ms)
+  ✔ tenant{} (1.29946ms)
+✔ tenant, actor, profile, provider, system and credential-reference mismatches stop before network (4.652342ms)
+▶ connection response must match every server-owned identity field
+  ✔ 0 (1.429593ms)
+  ✔ 1 (0.804355ms)
+  ✔ 2 (0.999435ms)
+  ✔ 3 (0.626531ms)
+  ✔ 4 (0.590718ms)
+  ✔ 5 (0.595014ms)
+  ✔ 6 (0.671047ms)
+  ✔ 7 (0.977682ms)
+✔ connection response must match every server-owned identity field (8.635859ms)
+▶ SuccessFactors company and API server changes are refused
+  ✔ companyId (0.625329ms)
+  ✔ apiServer (0.360796ms)
+✔ SuccessFactors company and API server changes are refused (1.311819ms)
+▶ unhealthy and unsupported credentials never become bearer tokens
+  ✔ error (0.414826ms)
+  ✔ missing errors (0.393585ms)
+  ✔ wrong type (0.503427ms)
+  ✔ missing token (0.401516ms)
+  ✔ header injection (0.320016ms)
+  ✔ no credentials scope (0.428587ms)
+✔ unhealthy and unsupported credentials never become bearer tokens (3.176849ms)
+▶ expiry must be present, real, unambiguous and bounded without inferred TTL
+  ✔ undefined (0.515215ms)
+  ✔ null (0.481085ms)
+  ✔ 0 (0.431701ms)
+  ✔ never (0.306075ms)
+  ✔ 2026-02-30T13:00:00.000Z (0.379704ms)
+  ✔ 2026-10-31T13:00:00 (0.331072ms)
+  ✔ 2026-10-31T12:00:00.000Z (1.940123ms)
+  ✔ 2026-10-31T12:00:30.000Z (0.938434ms)
+  ✔ 2026-11-07T12:00:00.001Z (0.314988ms)
+✔ expiry must be present, real, unambiguous and bounded without inferred TTL (7.320215ms)
+✔ binding snapshots cannot be retargeted while the request is pending (0.8219ms)
+▶ configuration rejects alternate hosts, ambiguous bindings and invalid paths before network
+  ✔ http://api.nango.dev (0.19503ms)
+  ✔ https://evil.example (0.084085ms)
+  ✔ https://api.nango.dev/ (0.119758ms)
+  ✔ https://api.nango.dev:444 (0.075843ms)
+  ✔ https://api.nango.dev@evil.example (0.077185ms)
+✔ configuration rejects alternate hosts, ambiguous bindings and invalid paths before network (1.316666ms)
+▶ responses and thrown failures cannot reveal upstream bodies or secrets
+  ✔ 400 (1.231159ms)
+  ✔ 401 (0.346405ms)
+  ✔ 403 (0.318964ms)
+  ✔ 404 (0.303941ms)
+  ✔ 424 (0.281879ms)
+  ✔ 429 (0.311983ms)
+  ✔ 500 (0.276531ms)
+✔ responses and thrown failures cannot reveal upstream bodies or secrets (3.945891ms)
+▶ redirects and unexpected successful response endpoints are rejected
+  ✔ status (0.395548ms)
+  ✔ redirected (0.287727ms)
+  ✔ url (0.250672ms)
+  ✔ missing-url (0.260587ms)
+✔ redirects and unexpected successful response endpoints are rejected (1.881646ms)
+✔ byte limit counts actual stream bytes independently of Content-Length (0.55837ms)
+▶ deadline covers fetch and a stalled body even when cancellation is ignored
+  ✔ fetch (21.093295ms)
+  ✔ stream (20.938244ms)
+✔ deadline covers fetch and a stalled body even when cancellation is ignored (43.397677ms)
+✔ optional loader is disabled with no bindings and refuses partial or mismatched profile coverage (1.469703ms)
+ℹ tests 64
+ℹ suites 0
+ℹ pass 64
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.446418

@@ -2,6 +2,9 @@
 import { spawnSync } from 'node:child_process';
 
 const checks = [
+  ['node', ['integration/runtime/nango-credential-provider.test.cjs']],
+  ['node', ['integration/runtime/nango-metadata-broker.test.cjs']],
+  ['node', ['scripts/nango-metadata-wiring.test.cjs']],
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
   ['node', ['scripts/validate-research-convergence-ledger.mjs']],

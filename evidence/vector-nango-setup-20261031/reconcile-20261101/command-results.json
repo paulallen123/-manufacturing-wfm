@@ -1,0 +1,38 @@
+[
+  {
+    "name": "resolver",
+    "command": "node integration/runtime/nango-credential-provider.test.cjs > evidence/resolver.log 2>&1",
+    "exitCode": 0,
+    "toolChunkId": "4f9490"
+  },
+  {
+    "name": "broker",
+    "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node integration/runtime/nango-metadata-broker.test.cjs > evidence/broker.log 2>&1",
+    "exitCode": 0,
+    "toolChunkId": "baf94a"
+  },
+  {
+    "name": "wiring",
+    "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node scripts/nango-metadata-wiring.test.cjs > evidence/wiring.log 2>&1",
+    "exitCode": 0,
+    "toolChunkId": "70bf19"
+  },
+  {
+    "name": "installed",
+    "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node evidence/nango-verify-installed-layout.cjs > evidence/installed-hook.log 2>&1",
+    "exitCode": 0,
+    "toolChunkId": "f1d8bf"
+  },
+  {
+    "name": "forge-selector",
+    "command": "node evidence/vector-nango-setup-20261031/forge-followup/selector-check.cjs scripts/run-forge-ci.mjs baseline/scripts/run-forge-ci.mjs > evidence/forge-selector.log 2>&1",
+    "exitCode": 0,
+    "toolChunkId": "01af93"
+  },
+  {
+    "name": "syntax",
+    "command": "node --check scripts/compose-vector-local-runtime.mjs && node --check scripts/run-forge-ci.mjs",
+    "exitCode": 0,
+    "toolChunkId": "711f96"
+  }
+]

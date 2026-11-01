@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "parentRef": "fae49a8d2420f97abb4bbf6f9a926431fce442bf",
+  "change": {
+    "path": "scripts/run-forge-ci.mjs",
+    "baselineGitBlob": "f6a262968855f9fdbf55fa1c01b17820d32e9a83",
+    "baselineSha256": "0069441a81cd78a8e2b8b5b0c994381709f20d4681c1718cb9dc29261c07170a",
+    "candidateGitBlob": "116c9248fa89dbebd3e6bb69c74a71c570b4b075",
+    "candidateSha256": "5b9d08f0aef4b347848d8c573403c1e548250e9d89c4cfed912a3b1cc15ba4b3",
+    "addedLines": 3,
+    "removedLines": 0,
+    "previousSourceRestoredExactly": true
+  },
+  "unchangedGates": [
+    {
+      "path": ".circleci/config.yml",
+      "sha256": "e0894c8b425b8c468c7849be83dfdb7a53adcb4d5b6546d4bbeb5bb02b8f8b25",
+      "gitBlob": "f92b7c457a5ed2950d2643fab83ce1c9b56b27cc"
+    },
+    {
+      "path": "scripts/require-frozen-candidate.sh",
+      "sha256": "d14c6d7b572465ccf09d226bf67117090582a743e5608babf81c6b80acebc6aa",
+      "gitBlob": "b14ccaa1f3826a579b175e20010cd5dccb95437c"
+    },
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "sha256": "03741b17a8e1b34335423eccbb553a4ef46a222b124933cdd45f6de3003277ab",
+      "gitBlob": "0581ad6fc5a44f999aa60b8d398398f79f827b63"
+    }
+  ],
+  "runtime": "v24.22.1",
+  "dispatcherProof": {
+    "baselineExitCode": 1,
+    "baselineFailure": "required Nango source suite must be dispatched once: integration/runtime/nango-credential-provider.test.cjs; actual 0, expected 1",
+    "candidateExitCode": 0,
+    "nangoSuitesDispatched": 3,
+    "priorCommandsPreserved": 16,
+    "failureCases": 3,
+    "failureExitCode": 17,
+    "prematureSuccessMarker": false,
+    "scope": "actual runner source with only spawnSync process boundary stubbed",
+    "baselineCommand": "node evidence/nango-forge-selector-check.cjs baseline/scripts/run-forge-ci.mjs baseline/scripts/run-forge-ci.mjs",
+    "candidateCommand": "node evidence/nango-forge-selector-check.cjs scripts/run-forge-ci.mjs baseline/scripts/run-forge-ci.mjs",
+    "repositoryHarness": "evidence/vector-nango-setup-20261031/forge-followup/selector-check.cjs"
+  },
+  "actualSuites": [
+    {
+      "name": "resolver",
+      "tests": 64,
+      "pass": 64,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "evidence/vector-nango-setup-20261031/forge-followup/followup-resolver.log",
+      "sha256": "4ab1f075613f79b05470de012bce07ae71af94502f806dc0a836e9e84f8c7c9f",
+      "command": "node integration/runtime/nango-credential-provider.test.cjs",
+      "recordedLogPath": "evidence/followup-resolver.log"
+    },
+    {
+      "name": "broker",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "evidence/vector-nango-setup-20261031/forge-followup/followup-broker.log",
+      "sha256": "a81a80620c233816be25699a535e21ff13a7a8168cafeb1e94108235d7ddbfe3",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node integration/runtime/nango-metadata-broker.test.cjs",
+      "recordedLogPath": "evidence/followup-broker.log"
+    },
+    {
+      "name": "wiring",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "evidence/vector-nango-setup-20261031/forge-followup/followup-wiring.log",
+      "sha256": "ebabadfda43d42a2050e9c39f016c1800d1423a911ea508664a1b69ac043e3a7",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node scripts/nango-metadata-wiring.test.cjs",
+      "recordedLogPath": "evidence/followup-wiring.log"
+    },
+    {
+      "name": "freeze",
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "evidence/vector-nango-setup-20261031/forge-followup/followup-freeze.log",
+      "sha256": "a762bda5c068db068ed02af231819a16e0e6843bd4de47b3028a620fde504eed",
+      "command": "node scripts/require-frozen-candidate.test.mjs",
+      "recordedLogPath": "evidence/followup-freeze.log"
+    }
+  ],
+  "limits": [
+    "Full Forge suite not rerun",
+    "Node22 unavailable locally; CI result pending new commit",
+    "Full image and live API proof not executed"
+  ],
+  "ciDiagnosis": {
+    "oldHead": "fae49a8d2420f97abb4bbf6f9a926431fce442bf",
+    "coreJob": 1310,
+    "coreState": "failure",
+    "integrationJob": 1311,
+    "integrationState": "success",
+    "sourceProven": "Head and parent freeze trigger are byte-identical; gate refuses unchanged_trigger",
+    "jobFailureReasonObserved": false
+  },
+  "remoteMutation": false,
+  "independentReview": {
+    "path": "evidence/vector-nango-setup-20261031/forge-followup/independent-review.md",
+    "sha256": "24f7f475c65f032f49881eb43c388d95eb235e4ba47c964d65b40f66f426b774",
+    "verdict": "PASS: no blocking findings",
+    "runtime": "Node v24.22.1",
+    "dispatches": 19,
+    "injectedFailureCases": 57,
+    "networkAndChildCommandsStubbed": true,
+    "recordedPath": "independent/forge-selector-review.md"
+  }
+}
