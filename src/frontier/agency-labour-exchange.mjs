@@ -339,8 +339,17 @@ export function validateAgencyResponse(plan, response, alternative = null) {
     if (!alternative) {
       failures.push('alternative_worker_requires_revalidation');
     } else {
-      const evaluation = evaluateAgencyCandidate(alternative.candidate, alternative.request, alternative.agency, alternative.policy);
-      if (!evaluation.eligible) failures.push(...evaluation.failures.map(failure => 'alternative_' + failure));
+      const workerMatches = typeof response.workerId === 'string' && response.workerId.trim().length > 0
+        && alternative.candidate?.workerId === response.workerId;
+      const agencyMatches = alternative.agency?.agencyId === response.agencyId;
+      const requestMatches = alternative.request?.requestId === response.requestId;
+      if (!workerMatches) failures.push('alternative_worker_identity_mismatch');
+      if (!agencyMatches) failures.push('alternative_agency_identity_mismatch');
+      if (!requestMatches) failures.push('alternative_request_identity_mismatch');
+      if (workerMatches && agencyMatches && requestMatches) {
+        const evaluation = evaluateAgencyCandidate(alternative.candidate, alternative.request, alternative.agency, alternative.policy);
+        if (!evaluation.eligible) failures.push(...evaluation.failures.map(failure => 'alternative_' + failure));
+      }
     }
   }
 
