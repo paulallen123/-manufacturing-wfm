@@ -156,6 +156,32 @@ function patchPayrollMoney(runtime) {
   recordInput('operations/runtime/payroll-money.cjs');
   execFileSync(process.execPath, [path.join(root, 'scripts/patch-payroll-money.mjs'), path.join(runtime, 'public')], {stdio:'inherit'});
 }
+function patchDatedLeaveBudget(runtime) {
+  const operationsPath=path.join(runtime,'public','operations-engine.js'),rulesPath=path.join(runtime,'public','work-rules.js');
+  const operations=fs.readFileSync(operationsPath,'utf8'),rules=fs.readFileSync(rulesPath,'utf8');
+  const budgetAnchor='function leaveBudget(s,id,exclude){if(!s.operations?.leaveOpenings[id])return null;return leaveRow(s,id,currentDate(),exclude).availableMinutes/60;}';
+  const capacityAnchor='const dated=root.WFMOps?.leaveBudget(s,p.employee,p.requestId);';
+  if(operations.split(budgetAnchor).length!==2||rules.split(capacityAnchor).length!==2)throw Error('DATED_LEAVE_BUDGET_ANCHOR_CHANGED');
+  // An existing dated opening is credit for its recorded window only. NaN keeps an
+  // inapplicable entry unavailable without reviving the undated legacy fallback.
+  const budgetReplacement=`/* VECTOR_DATED_LEAVE_BUDGET_V1 */
+function leaveBudget(s,id,exclude,interval){
+ const openings=s.operations?.leaveOpenings;if(!openings||!Object.prototype.hasOwnProperty.call(openings,id))return null;
+ const o=openings[id],calendar=requireCalendar(),asOf=calendar.localDate;
+ if(!o||![o.yearStart,o.yearEnd,o.asOf,asOf].every(C.validDate)||o.yearStart>o.asOf||o.asOf>asOf||asOf>o.yearEnd)return NaN;
+ const hasInterval=interval!==undefined&&interval!==null;
+ if(hasInterval&&(!interval||typeof interval!=='object'||typeof interval.start!=='string'||typeof interval.end!=='string'))return NaN;
+ const startMs=hasInterval?Date.parse(interval.start):null,endMs=hasInterval?Date.parse(interval.end):null;
+ if(hasInterval&&(!Number.isFinite(startMs)||!Number.isFinite(endMs)||endMs<=startMs))return NaN;
+ const formatter=new Intl.DateTimeFormat('en-GB',{timeZone:calendar.timeZone,calendar:'gregory',numberingSystem:'latn',year:'numeric',month:'2-digit',day:'2-digit'});
+ const dateAt=ms=>{const parts=Object.fromEntries(formatter.formatToParts(new Date(ms)).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return parts.year+'-'+parts.month+'-'+parts.day;};
+ const start=hasInterval?dateAt(startMs):asOf,end=hasInterval?dateAt(endMs-1):asOf;
+ if(start<o.asOf||end>o.yearEnd||start>end)return NaN;
+ return leaveRow(s,id,asOf,exclude).availableMinutes/60;
+}`;
+  fs.writeFileSync(operationsPath,operations.replace(budgetAnchor,budgetReplacement));
+  fs.writeFileSync(rulesPath,rules.replace(capacityAnchor,'const dated=root.WFMOps?.leaveBudget(s,p.employee,p.requestId,p);'));
+}
 function patchAuthoritativeCalendar(runtime){
  const indexPath=path.join(runtime,'public','index.html'),calendarScript='<script src="/api/tenant-calendar.js"></script>',coreScript='<script src="core.js"></script>';
  const index=fs.readFileSync(indexPath,'utf8');
@@ -187,7 +213,7 @@ const run = (file, args = []) => { recordInput(file); return execFileSync(proces
 recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
   run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
-  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);
+  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);patchDatedLeaveBudget(output);
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
 }
@@ -239,7 +265,7 @@ copy('resilience/support-selfhelp-service.cjs', 'support-runtime/support-selfhel
 composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);
-patchPayrollMoney(output);
+patchPayrollMoney(output);patchDatedLeaveBudget(output);
 // Copy the lockfile-installed dependency closure; never install from the proof process.
 const securityDependencies = path.join(root, 'security/runtime/node_modules');
 if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');
