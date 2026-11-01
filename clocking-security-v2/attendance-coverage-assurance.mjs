@@ -17,6 +17,9 @@ const FALLBACKS=new Set(['manager_exception','payroll_review',null]);
 export class AttendanceCoverageAssurance {
   constructor({engine,startGraceMs=5*60_000,endGraceMs=5*60_000,earlyEvidenceWindowMs=2*60*60_000}={}){
     if(!engine) throw new Error('Attendance engine required.');
+    for(const [name,value] of Object.entries({startGraceMs,endGraceMs,earlyEvidenceWindowMs})){
+      if(typeof value!=='number'||!Number.isFinite(value)||value<0) throw new Error(`Invalid ${name}: finite non-negative milliseconds required.`);
+    }
     this.engine=engine;
     this.startGraceMs=startGraceMs;
     this.endGraceMs=endGraceMs;
