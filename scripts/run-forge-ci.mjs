@@ -5,6 +5,8 @@ const checks = [
   ['node', ['integration/runtime/nango-credential-provider.test.cjs']],
   ['node', ['integration/runtime/nango-metadata-broker.test.cjs']],
   ['node', ['scripts/nango-metadata-wiring.test.cjs']],
+  ['node', ['integration/runtime/provider-metadata-review.test.cjs']],
+  ['node', ['ux-overlay/vector-provider-metadata.test.cjs']],
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
   ['node', ['scripts/validate-research-convergence-ledger.mjs']],

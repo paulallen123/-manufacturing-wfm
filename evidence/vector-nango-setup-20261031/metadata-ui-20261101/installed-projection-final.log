@@ -1,0 +1,13 @@
+✔ projects only the current actor tenant and an explicit presentation allowlist (2.458527ms)
+✔ configured depends only on owned profiles and supports both existing broker provider keys (0.303391ms)
+✔ a role name, worker identity or caller-chosen tenant cannot substitute for configure permission (0.615395ms)
+✔ rejects malformed owned status without reflecting source content or presenting empty success (1.525269ms)
+✔ other tenants cannot affect the available profile count or expose malformed private details (0.247347ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12.612489

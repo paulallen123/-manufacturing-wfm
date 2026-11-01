@@ -1,0 +1,13 @@
+{
+  "sourceRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+  "uiGitBlob": "ed90e34de2087ef6c7a223192ef36e3fc91b29f6",
+  "testSha256": "1e530445f9b232098d48ae010d999be6b0da12042489a0912aa5fdc737678fe3",
+  "command": "node ux-overlay/vector-provider-metadata.test.cjs",
+  "exitCode": 1,
+  "tests": 1,
+  "pass": 0,
+  "fail": 1,
+  "reason": "Provider metadata review card must be mounted",
+  "failureClass": "missing product action; no harness parse/runtime failure",
+  "log": "baseline-missing-action.log"
+}

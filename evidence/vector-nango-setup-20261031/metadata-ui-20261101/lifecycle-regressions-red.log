@@ -1,0 +1,170 @@
+✔ configured source has an explicit Check fields action that sends only the approved profileId (62.411051ms)
+✔ exact existing preview controller rejects extra inputs, another tenant and a worker without configure permission (30.477224ms)
+✔ missing setup, available options and successful metadata remain distinct from live sync (10.511274ms)
+✔ only server-listed profiles can be checked; identifiers and configuration are not display copy (2.690547ms)
+✔ field names are escaped and only a bounded projection of metadata is rendered (5.17028ms)
+✔ bad or mismatched metadata clears prior results and cannot claim fields are available (30.822467ms)
+✔ backend failures never display raw errors, retry automatically or retain a successful result (23.456274ms)
+✔ malformed status and denied status do not masquerade as account setup missing (17.480217ms)
+✔ current authenticated readiness and configure permission are required with no legacy identity fallback (7.293475ms)
+✔ stale completion is discarded after tenant, actor, permission, readiness, root or route changes (13.676355ms)
+✔ rerender and pagehide abort pending checks and concurrent clicks cannot duplicate collection (6.682357ms)
+✖ a current authentication or permission denial clears every result and check action until explicit authorized refresh (7.258152ms)
+✖ stale transport and JSON rejections remove and abort the old context for status and preview requests (5.214256ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 11
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 231.286045
+
+✖ failing tests:
+
+test at ux-overlay/vector-provider-metadata.test.cjs:253:1
+✖ a current authentication or permission denial clears every result and check action until explicit authorized refresh (7.258152ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /companyName|Fields available|Check fields|PRIVATE ERROR/. Input:
+  
+  '<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh >Refresh</button></div><p role="status">Choose a source to check its available fields.</p><section class="vector-card"><h3>NetSuite · Source 1</h3><p role="status">Fields available</p><p>2 fields · Last checked 01/11/2026, 12:42:27</p><details><summary>View fields</summary><ul><li>id</li><li>companyName</li></ul></details>\n' +
+    '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-a" >Check fields</button></section><section class="vector-card"><h3>NetSuite · Source 2</h3><p role="status">Sign in again to check these fields.</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n' +
+    '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-b" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:260:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: ' data-vector-metadata-check="profile-ns-a" >Check fields</button></section><section class="vector-card"><h3>NetSuite · Source 2</h3><p role="status">Sign in again to check these fields.</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-b" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>...',
+    expected: /companyName|Fields available|Check fields|PRIVATE ERROR/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:268:1
+✖ stale transport and JSON rejections remove and abort the old context for status and preview requests (5.214256ms)
+  AssertionError [ERR_ASSERTION]: status/transport
+  + actual - expected
+  
+  + <ref *1> Element {
+  +   attributes: {
+  +     'aria-label': 'NetSuite and SAP field checks'
+  +   },
+  +   children: [],
+  +   classList: {
+  +     add: [Function: add],
+  +     remove: [Function: remove],
+  +     toggle: [Function: toggle]
+  +   },
+  +   className: 'vector-card',
+  +   dataset: {
+  +     vectorMetadataCard: '1'
+  +   },
+  +   html: '<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh >Refresh</button></div><p role="status">Choose a source to check its available fields.</p><section class="vector-card"><h3>NetSuite</h3><p role="status">Ready to check</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n' +
+  +     '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>',
+  +   parentElement: <ref *2> Element {
+  +     attributes: {},
+  +     children: [
+  +       [Circular *1],
+  +       Element {
+  +         attributes: {
+  +           'aria-label': '3Min delivery receipts'
+  +         },
+  +         children: [],
+  +         classList: {
+  +           add: [Function: add],
+  +           remove: [Function: remove],
+  +           toggle: [Function: toggle]
+  +         },
+  +         className: 'vector-card vector-three-min-card',
+  +         dataset: {
+  +           vectorThreeMinCard: '1'
+  +         },
+  +         html: '<div class="vector-section-heading"><div><p class="eyebrow">Integration intake</p><h3>3Min status unavailable</h3></div><button class="btn" data-vector-three-min-refresh>Refresh deliveries</button></div><p>Delivery receipts confirm intake only. Records have not been imported into workforce data.</p><p role="alert">Delivery status could not be checked. Try refreshing again.</p><p class="muted" role="status"></p>',
+  +         parentElement: [Circular *2],
+  +         style: {
+  +           overflowWrap: 'anywhere'
+  +         },
+  +         tagName: 'SECTION'
+  +       },
+  +       Element {
+  +         attributes: {
+  +           'aria-label': 'Staffology operations'
+  +         },
+  +         children: [],
+  +         classList: {
+  +           add: [Function: add],
+  +           remove: [Function: remove],
+  +           toggle: [Function: toggle]
+  +         },
+  +         className: 'vector-card vector-staffology-card',
+  +         dataset: {
+  +           vectorStaffologyCard: '1'
+  +         },
+  +         html: '<div class="vector-section-heading"><div><p class="eyebrow">Payroll integration</p><h3>Loading Staffology status…</h3></div><button class="btn" data-vector-staffology-refresh>Refresh status</button></div><p>Reading the current authenticated operation scope.</p><p class="muted">Credentials stay on the server. Every write is current-account checked, exact-scope checked and audit recorded.</p><div class="vector-staffology-actions"><p class="muted">Payroll delivery remains dormant until an exact released-batch scope is server-held.</p></div><p class="vector-staffology-message error" role="status">Status could not be read for this signed-in account.</p>',
+  +         parentElement: [Circular *2],
+  +         style: {},
+  +         tagName: 'SECTION'
+  +       },
+  +       Element {
+  +         attributes: {
+  +           'aria-busy': 'false',
+  +           'aria-label': 'Gusto connection'
+  +         },
+  +         children: [],
+  +         classList: {
+  +           add: [Function: add],
+  +           remove: [Function: remove],
+  +           toggle: [Function: toggle]
+  +         },
+  +         className: 'vector-card',
+  +         dataset: {
+  +           vectorGustoCard: '1'
+  +         },
+  +         html: '<div class="vector-card-head"><div><h2>Gusto setup required</h2><p aria-live="polite">VECTOR’s Gusto authorization needs to be configured by an administrator.</p></div></div><div class="vector-empty"></div><div class="vector-card-head"><button type="button" class="btn primary" data-vector-gusto-connect disabled>Connect Gusto</button><button type="button" class="btn" data-vector-gusto-refresh >Check connection</button></div>',
+  +         parentElement: [Circular *2],
+  +         style: {
+  +           margin: '0 0 16px'
+  +         },
+  +         tagName: 'SECTION'
+  +       }
+  +     ],
+  +     classList: {
+  +       add: [Function: add],
+  +       remove: [Function: remove],
+  +       toggle: [Function: toggle]
+  +     },
+  +     dataset: {},
+  +     html: '',
+  +     parentElement: Element {
+  +       attributes: {},
+  +       children: [],
+  +       classList: {
+  +         add: [Function: add],
+  +         remove: [Function: remove],
+  +         toggle: [Function: toggle]
+  +       },
+  +       dataset: {},
+  +       html: '',
+  +       querySelector: [Function (anonymous)],
+  +       style: {},
+  +       tagName: 'DIV'
+  +     },
+  +     style: {},
+  +     tagName: 'MAIN'
+  +   },
+  +   style: {},
+  +   tagName: 'SECTION'
+  + }
+  - undefined
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:279:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [Element],
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

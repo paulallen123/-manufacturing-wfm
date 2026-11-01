@@ -1,0 +1,2 @@
+{"result": "PASS", "eightFrozenSourceHashesVerified": true, "fiveBaselineBlobsMatchPrimaryGitHub": true, "shellOriginalBytesRestored": true, "composerOutsideHookRestored": true, "dockerOriginalBytesRestored": true, "forgeOriginalBytesRestored": true, "otherRecoveredBaselinePathsPreserved": 12, "resolverAndArchiveUnchanged": true}
+{"result":"PASS","priorCommandsPreserved":19,"totalCommands":21,"newSuiteIndexes":[3,4],"failureCases":6,"processBoundary":"spawnSync stubbed; no full suite execution"}

@@ -29,16 +29,20 @@ function validateSealedRuntime(runtime) {
   }
 }
 function composeNangoMetadata(runtime, server) {
-  const source = 'integration/runtime/nango-credential-provider.cjs';
+  const sources = ['integration/runtime/nango-credential-provider.cjs', 'integration/runtime/provider-metadata-review.cjs'];
   const importAnchor = "const IG=require('./lib/integration-gateway.cjs')";
   const brokerAnchor = 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider})';
-  if (server.split(importAnchor).length !== 2 || server.split(brokerAnchor).length !== 2 || server.includes('const NangoCredentialProvider=')) throw Error('NANGO_METADATA_BROKER_ANCHOR_CHANGED');
-  recordInput(source);
-  const target = path.join(runtime, 'integration-runtime/nango-credential-provider.cjs');
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.copyFileSync(path.join(root, source), target);
-  return server.replace(importAnchor, "const NangoCredentialProvider=require('./integration-runtime/nango-credential-provider.cjs');\n" + importAnchor)
-    .replace(brokerAnchor, 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider,credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})})');
+  const statusAnchor = 'providerMetadataBroker:providerMetadataBroker.status()';
+  if ([importAnchor, brokerAnchor, statusAnchor].some(anchor => server.split(anchor).length !== 2) || server.includes('const NangoCredentialProvider=') || server.includes('const ProviderMetadataReview=')) throw Error('NANGO_METADATA_BROKER_ANCHOR_CHANGED');
+  for (const source of sources) {
+    recordInput(source);
+    const target = path.join(runtime, 'integration-runtime', path.basename(source));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(root, source), target);
+  }
+  return server.replace(importAnchor, "const NangoCredentialProvider=require('./integration-runtime/nango-credential-provider.cjs');\nconst ProviderMetadataReview=require('./integration-runtime/provider-metadata-review.cjs');\n" + importAnchor)
+    .replace(brokerAnchor, 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider,credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})})')
+    .replace(statusAnchor, 'providerMetadataBroker:ProviderMetadataReview.statusForActor(providerMetadataBroker.status(),a)');
 }
 function composeStaffology(runtime) {
   validateSealedRuntime(runtime);

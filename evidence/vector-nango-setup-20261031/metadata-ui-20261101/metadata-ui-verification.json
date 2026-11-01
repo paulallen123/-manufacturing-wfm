@@ -1,0 +1,228 @@
+{
+  "baseRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+  "frozenAt": "2026-11-01T20:47:12.295887+00:00",
+  "node": "v24.22.1",
+  "sourceManifest": "metadata-ui-source-manifest.json",
+  "sourceManifestSha256": "b33edb4aead8010156b258ba04c981d0471f3da140c53bb8c4a1d64bd0cd4f63",
+  "sourceBinding": [
+    {
+      "path": "integration/runtime/provider-metadata-review.cjs",
+      "sha256": "c26f7b2a5385fa8a5a328c1735313ffda0ca80265c2eeef0a6040de454bb5c04"
+    },
+    {
+      "path": "integration/runtime/provider-metadata-review.test.cjs",
+      "sha256": "cf6f1e59ed454f4fec85d5a55e657a2605b577cf4d24f3f5ff72a4dc7a54d4b7"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "sha256": "149f8d49f417c3f43aa2cb6656ec0dd8d6886b9e5c9fbc67a4da032b11e3f774"
+    },
+    {
+      "path": "ux-overlay/vector-provider-metadata.test.cjs",
+      "sha256": "5a75987f34ed77864ea3c85e16ae7759a41c7c0bb4f4ffd6fcb09e29b21626db"
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "sha256": "d3559d1499c2fbf8f444b7433e32ccbdb613b5df60902fda56713e50677cfd42"
+    },
+    {
+      "path": "scripts/nango-metadata-wiring.test.cjs",
+      "sha256": "ff81f6d39512a979559701473c9ffbfa74bdedee9d39d7ef3434b66b12f224f4"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "ce24ad1f6f0d57422435ae26666f6febe86b6b8850b8698f613de364e5d11310"
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "sha256": "f3c7f37bdf65edf418b98ff52dc8301f14bc449545f9225ab51bf807990c2cdb"
+    }
+  ],
+  "verification": [
+    {
+      "name": "projection-source",
+      "command": "node integration/runtime/provider-metadata-review.test.cjs",
+      "workingDirectory": "/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101",
+      "exitCode": 0,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "log": "projection-first-run.log",
+      "logSha256": "d99463021ce7af43d4fd5df57357c835b3ffef83997ba1e9a3ba0ca24c7a910e"
+    },
+    {
+      "name": "ui-after-lifecycle-fix-source-shell",
+      "command": "node ux-overlay/vector-provider-metadata.test.cjs",
+      "workingDirectory": "/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101",
+      "exitCode": 0,
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "log": "ui-lifecycle-fixed.log",
+      "logSha256": "656f567f4a08a14750e3d74dde6f3ff41336674f614a25343f3d7f14d8325a7f"
+    },
+    {
+      "name": "composed-page",
+      "command": "node ux-overlay/vector-provider-metadata.test.cjs",
+      "workingDirectory": "/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101",
+      "exitCode": 0,
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "log": "composed-ui-first-run.log",
+      "logSha256": "493cbe030b1100036fd2ff6cdc2a374333a464e2fbbf90fd77937a903816400a"
+    },
+    {
+      "name": "wiring",
+      "command": "node scripts/nango-metadata-wiring.test.cjs",
+      "workingDirectory": "/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101",
+      "exitCode": 0,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "log": "wiring-first-run.log",
+      "logSha256": "39f405f0b867677dd7668833e5a7a3fed58730092d355a4767dadbbc7c49b430"
+    },
+    {
+      "name": "existing-payroll-panels",
+      "command": "node --test ux-overlay/vector-gusto.test.cjs ux-overlay/vector-staffology-controls.test.cjs ux-overlay/vector-three-min.test.cjs",
+      "workingDirectory": "/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101",
+      "exitCode": 0,
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "log": "payroll-regression-first-run.log",
+      "logSha256": "17ac469107b681b50b1560473c4036ac9d1cae1b71be072d8217a3650817f270"
+    },
+    {
+      "name": "installed-projection",
+      "command": "VECTOR_NANGO_RUNTIME_ROOT=/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/evidence/installed-runtime/integration-runtime node integration/runtime/provider-metadata-review.test.cjs",
+      "workingDirectory": "/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101",
+      "exitCode": 0,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "log": "installed-projection-final.log",
+      "logSha256": "13d31243ac2b1ffe126e2e10fedcbcf8b1a6c76fd9e4eed7dc96916cb43b77b4"
+    },
+    {
+      "name": "installed-docker-assembly-page",
+      "command": "VECTOR_METADATA_UI_SOURCE=/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/evidence/installed-runtime/public/vector-ui.js VECTOR_NANGO_RUNTIME_ROOT=/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/evidence/installed-runtime/integration-runtime VECTOR_NANGO_BROKER_ROOT=/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/evidence/installed-runtime/lib node ux-overlay/vector-provider-metadata.test.cjs",
+      "workingDirectory": "/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101",
+      "exitCode": 0,
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "log": "installed-ui-final.log",
+      "logSha256": "8caabfa6a9506dc6a8cc9bb796097ad881efd20ec33cff2cb3882bbbe85efaf7"
+    },
+    {
+      "name": "syntax:ux-overlay/vector-shell.js",
+      "command": "node --check ux-overlay/vector-shell.js",
+      "exitCode": 0,
+      "output": "empty"
+    },
+    {
+      "name": "syntax:scripts/compose-vector-local-runtime.mjs",
+      "command": "node --check scripts/compose-vector-local-runtime.mjs",
+      "exitCode": 0,
+      "output": "empty"
+    },
+    {
+      "name": "syntax:scripts/run-forge-ci.mjs",
+      "command": "node --check scripts/run-forge-ci.mjs",
+      "exitCode": 0,
+      "output": "empty"
+    }
+  ],
+  "observedPriorFailures": [
+    {
+      "log": "baseline-missing-action.log",
+      "exitCode": 1,
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "classification": "Expected feature gap on exact baseline ed90e34de2087ef6c7a223192ef36e3fc91b29f6: valid backend status but no metadata card or Check fields action",
+      "logSha256": "0bd9b3675712edaa80fc8699319b300820bd3ade7d43e04dd0ff2e2f2e398ab1"
+    },
+    {
+      "log": "ui-first-run.log",
+      "exitCode": 1,
+      "tests": 11,
+      "pass": 2,
+      "fail": 9,
+      "classification": "Test-fixture defects: synthetic clicks not attached for contains(), and request-body substitution shadowed the existing controller input. Corrected to attached targets and byte-for-byte controller invocation with a body boundary function.",
+      "logSha256": "d60287e022809a962a6b8c522aace88021a3ac71f165e28c90eaf3c52d2f1a54"
+    },
+    {
+      "log": "lifecycle-regressions-red.log",
+      "exitCode": 1,
+      "tests": 13,
+      "pass": 11,
+      "fail": 2,
+      "classification": "Permission-loss regression plus stale-status fixture targeted the separate Staffology request; corrected latter selection before validating product failure.",
+      "logSha256": "51d99ca99cc4cc5fa5eaed14688f7a028a908fa0878bce1f17ddb5df531c005c"
+    },
+    {
+      "log": "lifecycle-regressions-red-corrected.log",
+      "exitCode": 1,
+      "tests": 13,
+      "pass": 11,
+      "fail": 2,
+      "classification": "Confirmed implementation defects: current 401/403 retained another profile result/actions; stale transport rejection failed to invalidate/remove/abort old identity context. Both fixed and covered for status/preview and transport/JSON.",
+      "logSha256": "a5f4731541e61c8484e8c2c36bafcfea9388fb780cf21fb80b7353fd97963194"
+    },
+    {
+      "log": "installed-assembly-first-failed.log",
+      "exitCode": 7,
+      "classification": "Local evidence-driver regex capture/backreference typo; no product defect. Corrected parser replays the exact 13 Docker printf/cat commands.",
+      "logSha256": "04c366444ac61b0b978466a04a4edb56aa2f98fb9b776c41692abd9147d21898"
+    },
+    {
+      "log": "installed-ui-first-run.log",
+      "exitCode": 1,
+      "tests": 13,
+      "pass": 11,
+      "fail": 2,
+      "classification": "Invocation error: require() needs absolute VECTOR_NANGO_BROKER_ROOT/runtime paths. Corrected command only; Docker uses absolute /app paths.",
+      "logSha256": "f480c6d2bde53b8aad3d3e2bac8c5b2842054b854e6801d233d70cfbe1d32657"
+    },
+    {
+      "log": "installed-projection-first-run.log",
+      "exitCode": 1,
+      "classification": "Same relative runtime path invocation error; no product code change.",
+      "logSha256": "21fcea75fbc4bea5b64ad0c9c6861fd8f72081cc9723ba92686b1d962e6c9f67"
+    }
+  ],
+  "installedAssembly": {
+    "command": "node evidence/prepare-installed-proof.cjs",
+    "exitCode": 0,
+    "receipt": "installed-assembly-receipt.json",
+    "log": "installed-assembly.log"
+  },
+  "positiveResponseProof": {
+    "controllerSource": "Hash-bound sealed archive server.cjs broker-preview block, also verified unchanged after hook installation",
+    "controllerSha256": "b1712ec63456e24f6aacce13b6c03a47308ba58e3e283c55b928f3eeecb6b91a",
+    "realCollaborators": [
+      "provider-metadata-broker.cjs",
+      "connector-discovery.cjs",
+      "existing preview permission/body/tenant guards and response constructor",
+      "provider-metadata-review.cjs"
+    ],
+    "syntheticBoundaries": [
+      "DOM and browser event delivery; no pixel/browser screenshot claim",
+      "provider DNS/HTTP response, short-lived credential and permit issuance/verifier",
+      "controller request body and audit/protection sinks",
+      "account profiles and actor identities are fictional; no live bindings"
+    ],
+    "netsuiteResponse": "Actual broker collection plus existing discovery draft normalizer and controller returns fields displayed by UI",
+    "successFactorsResponse": "UI provider selection/validation fixture follows same public response contract; no live SAP authorization or metadata claim"
+  },
+  "limitations": [
+    "No full Docker image build, final sanitizer run or HTTP listener; exact composer hook and actual bundle expressions were exercised in a local installed-layout fixture. Docker adds an installed UI check after final composition and sanitation.",
+    "No Node22 execution by this writer; current runtime was Node24.22.1.",
+    "No live Nango/provider calls, token/key access, extra scope, paid service, account authorization, tenant binding, sync activation or deployment.",
+    "Three existing panel test files report three Node test-runner file entries; this is not a claim of only three assertions.",
+    "No full 848 suite repetition; parent/release evidence for unaffected source stays historical."
+  ]
+}

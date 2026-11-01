@@ -15,6 +15,16 @@ Dashboard: <https://app.nango.dev/prod/integrations>
 
 The existing direct Gusto and Staffology implementation remains the payroll integration path. This change does not migrate payroll execution to Nango or introduce a SAP S/4HANA business-data adapter. The new runtime seam supplies credentials to the existing NetSuite and SuccessFactors metadata broker only. Metadata observations do not activate a connection or authorise payroll changes.
 
+## Field checks in VECTOR
+
+The source proposal now adds **NetSuite and SAP field checks** to VECTOR's existing Integrations page. It uses the existing metadata preview workflow and is available only to a current signed-in actor with `company.configure`. Before the page receives any profile options, the server constructs a response containing only that actor's own company profiles. An empty company configuration remains empty even when another company has configured profiles.
+
+The panel shows **Account setup needed** when no owned profiles are configured. A configured source shows **Ready to check** and an explicit **Check fields** button. This status means a source is configured for review; it does not establish provider access. Clicking the button submits only the server-provided profile ID. A successful verified metadata response shows **Fields available**, a check timestamp, the field count and a bounded list of field names. The panel states that the check does not import records or verify live data sync.
+
+The action uses the existing permission checks, tenant binding, collection permit, credential resolver and direct provider transport. Account, workspace, permission and navigation changes invalidate the panel and its pending response. The page neither accepts account credentials nor enables a connection. This increment is part of the same unmerged PR [#569](https://github.com/paulallen123/-manufacturing-wfm/pull/569); the customer deployment has not received it.
+
+These field checks cover the existing NetSuite and SAP SuccessFactors broker. The SAP S/4HANA definition and the separate payroll paths are not added to this panel. With zero authorised Nango connections and no metadata bindings configured, the actual account setup described below remains necessary before a provider check can succeed.
+
 ## Existing Gusto access observed — 1 November 2026
 
 A read-only check of the already connected Gusto app returned the company **Vector** (`49d3bf95-5b5b-4251-89d8-1b614e47e676`). Gusto reported the company as **Not Approved**, with the next required onboarding question asking who the business will pay. No onboarding answers, plan choices, payroll inputs or payment instructions were submitted.
@@ -78,3 +88,4 @@ Permission references:
 6. Enable downstream business-data or payroll flows only through their existing VECTOR activation and approval controls.
 
 Until those steps are complete, the truthful status is **definitions created; restricted key stored and presence verified; runtime support prepared but unmerged; no live provider connection verified**. Local tests use synthetic tokens and the actual sealed metadata broker; they do not prove production API access.
+

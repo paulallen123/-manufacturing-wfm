@@ -134,5 +134,25 @@
     "metadataBrokerScopeUnchanged": true,
     "deployed": false,
     "receipt": "evidence/vector-nango-setup-20261031/reconcile-20261101/reconciliation-manifest.json"
+  },
+  "metadataFieldReview": {
+    "sourceBasis": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+    "pullRequest": "https://github.com/paulallen123/-manufacturing-wfm/pull/569",
+    "status": "source_proposal_unmerged_pending_canonical_admission",
+    "surface": "existing VECTOR Integrations page",
+    "requiredPermission": "company.configure",
+    "providers": ["netsuite", "successfactors"],
+    "serverTenantProjection": true,
+    "requestBodyKeys": ["profileId"],
+    "explicitUserActionRequired": true,
+    "activationAvailable": false,
+    "importsRecords": false,
+    "liveSyncVerified": false,
+    "newNangoScopeAdded": false,
+    "railwayConfigurationChangedByThisIncrement": false,
+    "deployed": false,
+    "sourceManifest": "evidence/vector-nango-setup-20261031/metadata-ui-20261101/metadata-ui-source-manifest.json",
+    "verificationReceipt": "evidence/vector-nango-setup-20261031/metadata-ui-20261101/metadata-ui-verification.json"
   }
 }
+

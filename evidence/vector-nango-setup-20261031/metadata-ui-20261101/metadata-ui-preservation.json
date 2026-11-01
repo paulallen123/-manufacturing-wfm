@@ -1,0 +1,73 @@
+{
+  "baseRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+  "shellRestoredByteForByte": true,
+  "shellChange": "One isolated metadata block plus two lifecycle calls; original Gusto/Staffology/3Min bodies unchanged",
+  "composerRestoredOutsideMetadataHook": true,
+  "dockerRestoredAfterFiveDeclaredAdditiveHooks": true,
+  "forgeRestoredAfterTwoTestEntries": true,
+  "resolverUnchanged": true,
+  "sealedArchiveSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "otherRecoveredSourcesUnchanged": [
+    {
+      "path": "test-support/sealed-nango-broker.cjs",
+      "gitBlob": "bacac524e5c62306c917c3d2daba5d09ff92a946",
+      "sha256": "1194ac817148b8a1d7b57eb726c10e990349f089f3f53347e3dae04cef5a774c"
+    },
+    {
+      "path": "ux-overlay/vector-staffology-controls.test.cjs",
+      "gitBlob": "e866a051505dfee03e39c40f6d4731fdf1086d5a",
+      "sha256": "6c49e015a50a034b78d652e2ca072b74745570e3b9a5b32af4dd1bb45ff61746"
+    },
+    {
+      "path": "ux-overlay/vector-three-min.test.cjs",
+      "gitBlob": "3e27bb1ecc57f13169317d35c80ee333ed8ff197",
+      "sha256": "6024439e39a67d9e1c284a1d00fc13977165320117b1e094fe8bd52038af2f22"
+    },
+    {
+      "path": "ux-overlay/vector-gusto.test.cjs",
+      "gitBlob": "d825fff91f9a0eecbbd519cdbd964822ad6eed5d",
+      "sha256": "f5883713ccae347bbcfd4ee7af8e4076745cc657442f1c5c4b37983a2a1119ec"
+    },
+    {
+      "path": "ux-overlay/vector-demand-intelligence.js",
+      "gitBlob": "8d324182ac6e039e87c123c2c334e35276bb4bd9",
+      "sha256": "3c1588e32e03aec4bbcfb2979c486f8d2fb4c907d559bc1634576e104159409b"
+    },
+    {
+      "path": "ux-overlay/vector-realtime.js",
+      "gitBlob": "2c397fca1ee546dd8e15b37bebb1ab62baae73e9",
+      "sha256": "ec758abb5eb5775b16c3debe59ed15a823d85274aa089cb15ab4e710dd15d10f"
+    },
+    {
+      "path": "implementation/ui/implementation-journey.js",
+      "gitBlob": "7068f7ff22baf8dd4d87dc71ba29e928436e9abc",
+      "sha256": "3204afa071b64a73af8b1d9b607d189c6770192570dfd3977382c718b19ba3d4"
+    },
+    {
+      "path": "integration/runtime/nango-metadata-broker.test.cjs",
+      "gitBlob": "9d610e70f576ff231fa502c0a2ddfa8f665049d7",
+      "sha256": "8e13024a5cd37a54715329a8e93282c35bf8b8cf5eeaba441bc58ac578288013"
+    },
+    {
+      "path": "integration/runtime/nango-credential-provider.cjs",
+      "gitBlob": "a5b1015c3462ba1221782ef32bfdae6b59623b77",
+      "sha256": "4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b"
+    },
+    {
+      "path": "integration/runtime/nango-credential-provider.test.cjs",
+      "gitBlob": "1c06754f5eda542e4f827d9e4494e19d47058619",
+      "sha256": "101c69423acb7719c7b493178a71413edbf81fde55fbdb6df9663f873878bbed"
+    },
+    {
+      "path": "learning/ui/adaptive-coach.js",
+      "gitBlob": "874569a47766bdbf61969cee853fcc3027e9a4e4",
+      "sha256": "4639bc9fd33db36dc52af03dc1a700b7a53857b1aa053fb10e34947f11401117"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-ui.js",
+      "gitBlob": "2859628e02a6904a738798470d84f966d58fe08f",
+      "sha256": "f2ee0cdfa440868a81450d16ba01b638a735df8300fdfb5fa2d1e785a22d5444"
+    }
+  ],
+  "protectedReleaseControls": "No marker/gate/CircleCI paths in the eight-path write set; root holds exact full-tree baseline for publication verification"
+}

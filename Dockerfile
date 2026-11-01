@@ -7,7 +7,9 @@ WORKDIR /proof
 COPY . ./
 RUN node integration/runtime/nango-credential-provider.test.cjs \
  && node integration/runtime/nango-metadata-broker.test.cjs \
- && node scripts/nango-metadata-wiring.test.cjs
+ && node scripts/nango-metadata-wiring.test.cjs \
+ && node integration/runtime/provider-metadata-review.test.cjs \
+ && node ux-overlay/vector-provider-metadata.test.cjs
 RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
@@ -118,6 +120,7 @@ COPY verification/provider-recovery-correction/ui/ /workspace/verification/provi
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
 COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/
 COPY integration/runtime/nango-credential-provider.cjs /workspace/integration/runtime/
+COPY integration/runtime/provider-metadata-review.cjs /workspace/integration/runtime/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
  && rm -rf /workspace
 COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs scripts/patch-customer-runtime-assets.mjs /tmp/
@@ -214,8 +217,10 @@ COPY integration/runtime/three-min-feed.cjs integration/runtime/three-min-feed.t
 COPY integration/worker/directory-discovery-worker.cjs integration/worker/directory-discovery-worker.test.cjs /tmp/wfm-tests/integration/worker/
 COPY integration/runtime/nango-credential-provider.test.cjs integration/runtime/nango-metadata-broker.test.cjs /tmp/wfm-nango/integration/runtime/
 COPY test-support/sealed-nango-broker.cjs /tmp/wfm-nango/test-support/sealed-nango-broker.cjs
+COPY integration/runtime/provider-metadata-review.test.cjs /tmp/wfm-nango/integration/runtime/
 RUN VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime node /tmp/wfm-nango/integration/runtime/nango-credential-provider.test.cjs \
  && VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime VECTOR_NANGO_BROKER_ROOT=/app/lib node /tmp/wfm-nango/integration/runtime/nango-metadata-broker.test.cjs \
+ && VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime node /tmp/wfm-nango/integration/runtime/provider-metadata-review.test.cjs \
  && rm -rf /tmp/wfm-nango
 COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-core.cjs
 COPY operations/runtime/workforce-lifecycle-router.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
@@ -367,6 +372,11 @@ RUN cp /app/public/factory-control-ui.css /tmp/vector-sealed-base.css \
  && rm -rf /tmp/vector-provenance \
  && rm -f /tmp/vector-sealed-base.css /tmp/prove-vector-built-asset-provenance.mjs /tmp/compose-vector-presentation.mjs /tmp/sanitize-customer-public-bundle.mjs /tmp/validate-customer-public-bundle.mjs \
  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-reporting-ui /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
+
+COPY ux-overlay/vector-provider-metadata.test.cjs /tmp/vector-metadata/ux-overlay/
+COPY test-support/sealed-nango-broker.cjs /tmp/vector-metadata/test-support/
+RUN VECTOR_METADATA_UI_SOURCE=/app/public/vector-ui.js VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime VECTOR_NANGO_BROKER_ROOT=/app/lib node /tmp/vector-metadata/ux-overlay/vector-provider-metadata.test.cjs \
+ && rm -rf /tmp/vector-metadata
 
 # Consequential attendance admission against the exact final runtime. Reject an
 # overlapping correction before mutation, then prove valid reconciliation/export.

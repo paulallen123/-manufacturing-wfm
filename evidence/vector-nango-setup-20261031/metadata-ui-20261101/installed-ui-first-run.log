@@ -1,0 +1,61 @@
+✖ configured source has an explicit Check fields action that sends only the approved profileId (3.608322ms)
+✖ exact existing preview controller rejects extra inputs, another tenant and a worker without configure permission (0.660432ms)
+✔ missing setup, available options and successful metadata remain distinct from live sync (33.737755ms)
+✔ only server-listed profiles can be checked; identifiers and configuration are not display copy (4.194218ms)
+✔ field names are escaped and only a bounded projection of metadata is rendered (3.592843ms)
+✔ bad or mismatched metadata clears prior results and cannot claim fields are available (25.859862ms)
+✔ backend failures never display raw errors, retry automatically or retain a successful result (11.121331ms)
+✔ malformed status and denied status do not masquerade as account setup missing (6.858811ms)
+✔ current authenticated readiness and configure permission are required with no legacy identity fallback (7.402109ms)
+✔ stale completion is discarded after tenant, actor, permission, readiness, root or route changes (13.139093ms)
+✔ rerender and pagehide abort pending checks and concurrent clicks cannot duplicate collection (10.712082ms)
+✔ a current authentication or permission denial clears every result and check action until explicit authorized refresh (6.863253ms)
+✔ stale transport and JSON rejections remove and abort the old context for status and preview requests (8.19584ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 11
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.943575
+
+✖ failing tests:
+
+test at ux-overlay/vector-provider-metadata.test.cjs:150:1
+✖ configured source has an explicit Check fields action that sends only the approved profileId (3.608322ms)
+  Error: Cannot find module 'evidence/installed-runtime/lib/provider-metadata-broker.cjs'
+  Require stack:
+  - /workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+      at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+      at Module._load (node:internal/modules/cjs/loader:1341:5)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+      at Module.require (node:internal/modules/cjs/loader:1674:12)
+      at require (node:internal/modules/helpers:157:16)
+      at actualController (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:117:36)
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:151:22) {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: [ '/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs' ]
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:163:1
+✖ exact existing preview controller rejects extra inputs, another tenant and a worker without configure permission (0.660432ms)
+  Error: Cannot find module 'evidence/installed-runtime/lib/provider-metadata-broker.cjs'
+  Require stack:
+  - /workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+      at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+      at Module._load (node:internal/modules/cjs/loader:1341:5)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+      at Module.require (node:internal/modules/cjs/loader:1674:12)
+      at require (node:internal/modules/helpers:157:16)
+      at actualController (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:117:36)
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:164:13) {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: [ '/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs' ]
+  }

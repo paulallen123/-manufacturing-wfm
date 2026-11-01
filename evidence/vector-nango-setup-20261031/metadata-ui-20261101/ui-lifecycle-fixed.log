@@ -1,0 +1,21 @@
+✔ configured source has an explicit Check fields action that sends only the approved profileId (63.571183ms)
+✔ exact existing preview controller rejects extra inputs, another tenant and a worker without configure permission (20.6153ms)
+✔ missing setup, available options and successful metadata remain distinct from live sync (5.222006ms)
+✔ only server-listed profiles can be checked; identifiers and configuration are not display copy (2.505802ms)
+✔ field names are escaped and only a bounded projection of metadata is rendered (3.189367ms)
+✔ bad or mismatched metadata clears prior results and cannot claim fields are available (22.189658ms)
+✔ backend failures never display raw errors, retry automatically or retain a successful result (11.087063ms)
+✔ malformed status and denied status do not masquerade as account setup missing (9.874938ms)
+✔ current authenticated readiness and configure permission are required with no legacy identity fallback (8.852008ms)
+✔ stale completion is discarded after tenant, actor, permission, readiness, root or route changes (10.548097ms)
+✔ rerender and pagehide abort pending checks and concurrent clicks cannot duplicate collection (4.507375ms)
+✔ a current authentication or permission denial clears every result and check action until explicit authorized refresh (6.321985ms)
+✔ stale transport and JSON rejections remove and abort the old context for status and preview requests (5.809198ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181.875811
