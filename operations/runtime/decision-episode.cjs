@@ -143,7 +143,9 @@ function normaliseObjective(objective={}){
   if(total<=0) throw new Error('At least one objective weight is required.');
   return {weights,total,uncertaintyPenalty};
 }
-function rankOptions(options,objective){
+// Frozen scenario replay opts into code-unit ID ordering; legacy callers retain locale ordering.
+function compareId(a,b,deterministicOrder){return deterministicOrder===true?(a<b?-1:a>b?1:0):a.localeCompare(b);}
+function rankOptions(options,objective,deterministicOrder=false){
   const eligible=options.filter(o=>o.feasible&&o.policyAllowed&&o.hardConstraintsPassed);
   if(!eligible.length) return {ranked:[],recommendedOptionId:null,reason:'NO_ELIGIBLE_OPTIONS'};
   const weightedKeys=Object.entries(objective.weights).filter(([,w])=>w>0).map(([k])=>k);
@@ -165,11 +167,12 @@ function rankOptions(options,objective){
     const normalizedScore=raw/objective.total;
     const score=normalizedScore-(option.uncertainty*objective.uncertaintyPenalty);
     return {optionId:option.id,score:Number(score.toFixed(8)),uncertainty:option.uncertainty};
-  }).sort((a,b)=>b.score-a.score || a.uncertainty-b.uncertainty || a.optionId.localeCompare(b.optionId));
+  }).sort((a,b)=>b.score-a.score || a.uncertainty-b.uncertainty || compareId(a.optionId,b.optionId,deterministicOrder));
   return {ranked,recommendedOptionId:ranked[0]?.optionId||null,reason:'RANKED'};
 }
-function createDecisionEpisode(input={}){
+function createDecisionEpisode(input={},evaluationOptions={}){
   input=snapshotData(input,'decision input');
+  const deterministicOrder=snapshotData(evaluationOptions,'decision evaluation options')?.deterministicOrder===true;
   const tenant=text(input.tenant,120);
   const site=text(input.site,160);
   const decisionType=text(input.decisionType,120);
@@ -186,13 +189,13 @@ function createDecisionEpisode(input={}){
   if(!options.some(o=>o.id==='do-nothing')) throw new Error('Decision episode requires a do-nothing option.');
   if(new Set(options.map(o=>o.id)).size!==options.length) throw new Error('Decision option ids must be unique.');
   const objective=normaliseObjective(input.objective||{});
-  const ranking=rankOptions(options,objective);
+  const ranking=rankOptions(options,objective,deterministicOrder);
   const payload={
     contractVersion:CONTRACT_VERSION,
     tenant,site,decisionType,triggerId,triggeredAt,contextRevision,mode,
     sourceEvidence,
     objective,
-    options:options.sort((a,b)=>a.id.localeCompare(b.id)),
+    options:options.sort((a,b)=>compareId(a.id,b.id,deterministicOrder)),
     recommendation:{
       optionId:ranking.recommendedOptionId,
       reason:ranking.reason,
