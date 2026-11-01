@@ -147,7 +147,7 @@ function uniqueRows(rows,keyFor){
 
 function sourceAllowed(task,slot){
   if(!task.allowedWaterSources.length)return false;
-  const source=clean(slot.waterSource)||'fresh';
+  const source=clean(slot.waterSource);
   for(let index=0;index<task.allowedWaterSources.length;index++)if(task.allowedWaterSources[index]===source)return true;
   return false;
 }
@@ -171,6 +171,10 @@ function evaluateSnapshot({policy,workers,tasks,plan,now}){
   if(slotIndex.error)return invalidResult('blocked',slotIndex.error==='invalid'?'water_slots_invalid':'water_slot_id_duplicate');
   const slots=slotIndex.map;
   if(!slots.size)return invalidResult('blocked','water_slots_missing');
+  for(let index=0;index<policy.slots.length;index++){
+    const waterSlot=policy.slots[index];
+    if(!has(waterSlot,'waterSource'))return invalidResult('blocked','water_source_missing',{slot:slotKey(waterSlot.slot)});
+  }
 
   const workerIndex=uniqueRows(workers,worker=>referenceKey(worker.id));
   if(workerIndex.error)return invalidResult('rejected',workerIndex.error==='invalid'?'workers_invalid':'worker_id_duplicate');

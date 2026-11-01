@@ -31,7 +31,7 @@ Version `water-resilience-orchestration-v0.2.0` now:
 - binds accepted/rejected decisions and operational, observed and financial evidence to the recommendation, tenant and site, with exact role-specific source references, bounded freshness and causal recommendation → decision → evidence ordering;
 - freezes returned evidence so downstream code cannot mutate an admitted result.
 
-The compatibility deliberately retained by earlier accepted tests is narrow: raw string identifiers remain distinct; finite numeric worker references and numeric-string slot aliases remain supported; omitted/null scarcity weight still defaults to 1 and omitted/null tariff to 0; absent water source, restriction, reserve, preferred slot and lateness penalty retain their existing defaults, but malformed present values fail closed. The implementation remains advisory and performs no recipe, permit, staffing, payroll, production or control-system action.
+The compatibility deliberately retained by earlier accepted tests is narrow: raw string identifiers remain distinct; finite numeric worker references and numeric-string slot aliases remain supported; omitted/null scarcity weight still defaults to 1 and omitted/null tariff to 0; absent restriction, reserve, preferred slot and lateness penalty retain their existing defaults, but malformed present values fail closed. The historical absent-water-source default is superseded by the explicit-source repair below. The implementation remains advisory and performs no recipe, permit, staffing, payroll, production or control-system action.
 
 ## Verification and evidence class
 
@@ -48,3 +48,13 @@ This is **built and tested in isolation**. It is not yet independently verified 
 ## Exact next owner action
 
 After an independent exact-artifact review, the accepted canonical owner should reconcile this four-file candidate against the current release head, execute its unchanged tests in the final Node 22 image and shared mandatory suites, admit only that exact source/artifact, then obtain a fresh intended-role advisory journey backed by authenticated water-policy, meter, MES and applicable financial receipts through durable state, fresh login and audit. No readiness or measured-benefit claim is admissible before that chain completes.
+
+## Explicit water-source admission repair — 2026-11-01
+
+The starting donor is `6fb242a6428489c972d028aa5552728c9d336ae9`, module Git blob `4aa585662ccfc06fc977d51b9d4d891ab5e0b94e`, existing test blob `27cff1d3900967631a1124869d61fa752a084251`. The accepted PR #330 contract requires every unique policy slot to declare its water source, including unused slots. The corrected finding at PR #410 comment `6511567645` concerns an **omitted property**; a present `undefined` value already fails strict snapshot validation.
+
+The bounded repair removes the implicit fresh-water fallback and checks every engine-owned slot immediately after slot-key/duplicate/nonempty admission. Omitted sources return frozen `blocked / water_source_missing` with the normalized slot key. Present undefined, null, blank and nonstring values retain `water_slots_invalid`. The existing own-data snapshots, numeric/time validation, explicit-source compatibility, ranking, outcome identity and advisory boundaries remain unchanged. Source/test changes are confined to this module and its existing test; the original test file is preserved as a byte-for-byte prefix.
+
+Primary fail-first evidence on Node v24.22.1: the original source plus four appended public-entry regressions yielded **42 tests, 40 pass / 2 fail**, exit 1. The two failures demonstrate missing-source admission and multi-plan ranking; positive explicit-source and malformed-value controls pass. This is separate from the independent verifier's plain-data baseline of **8 tests, 5 pass / 3 fail**. Results overlap and must not be added.
+
+Final local and independent verification results are recorded in the current PR review/issue receipt. These remain source-level synthetic tests. No utility policy, reserve, meter, operational or financial authority is created by this repair, and no image, canonical adoption, deployment, OT action or customer proof is inferred. The existing sole integrator must reconcile the exact reviewed successor and the remaining consumer/source/image/customer acceptance requirements.

@@ -430,3 +430,44 @@ test('outcome status and production completion use exact admitted primitives',()
  }
 });
 
+
+test('every water policy slot requires an explicit source before plans are admitted',()=>{
+ for(const index of [0,1,2]){
+  const input=fixture();
+  delete input.policy.slots[index].waterSource;
+  assertUnsafe(input,{status:'blocked',reason:'water_source_missing',slot:input.policy.slots[index].slot});
+ }
+});
+
+test('a missing source cannot enter the safe ranking through another plan',()=>{
+ const input=fixture();
+ delete input.policy.slots[2].waterSource;
+ const first=input.plan,second={id:'alternate',assignments:[{taskId:'T1',workerId:'W1',slot:3},{taskId:'T2',workerId:'W2',slot:1}]};
+ const expected={status:'blocked',reason:'water_source_missing',slot:3};
+ for(const plans of [[first,second],[second,first]]){
+  const ranked=compareWaterResiliencePlans({...input,plans});
+  assert.deepEqual(ranked,{status:'no_safe_candidate',preferred:null,safe:[],rejected:[expected,expected]});
+ }
+});
+
+test('explicit sources retain fresh and approved reclaimed candidates without mutating inputs',()=>{
+ const input=fixture();
+ input.policy.slots[1].waterSource='reclaimed';
+ input.tasks[0].allowedWaterSources=['fresh','reclaimed'];
+ const before=structuredClone(input);
+ deepFreeze(input);
+ const result=evaluate(input);
+ assert.equal(result.status,'safe_candidate');
+ assert.equal(result.metrics.freshWaterM3,11);
+ assert.deepEqual(input,before);
+ const fresh=fixture();
+ assert.equal(evaluate(fresh).status,'safe_candidate');
+});
+
+test('present malformed sources retain the stricter snapshot rejection',()=>{
+ for(const value of [undefined,null,'',' ',false,0,[],{}]){
+  const input=fixture();
+  input.policy.slots[1].waterSource=value;
+  assertUnsafe(input,{status:'blocked',reason:'water_slots_invalid'});
+ }
+});
