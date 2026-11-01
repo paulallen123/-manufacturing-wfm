@@ -38,6 +38,7 @@ const checks = [
     'ux-overlay/vector-civil-date.test.cjs',
     'ux-overlay/vector-leave-balance-display.test.cjs',
     'operations/runtime/decision-episode.test.cjs',
+    'operations/runtime/capacity-rescue-frozen-simulation.test.cjs',
     'operations/runtime/customer-demand-intelligence.test.cjs',
     'operations/runtime/absence-recovery-shadow.test.cjs',
     'operations/runtime/demand-decision-service.test.cjs',
