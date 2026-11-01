@@ -501,11 +501,11 @@ async function loadTenantCalendar(){
   if(!response.ok)throw Error('tenant calendar unavailable');
   const value=await response.json();
   if(value?.schemaVersion!=='tenant-calendar-1'||value.tenant!==tenant||!value.timeZone||!value.asOf||!/^\d{4}-\d{2}-\d{2}$/.test(String(value.localDate||''))||!Number.isFinite(Number(value.maxAgeMs))||Number(value.maxAgeMs)<=0)throw Error('tenant calendar contract mismatch');
-  try{new Intl.DateTimeFormat('en-GB',{timeZone:value.timeZone}).format(new Date(value.asOf));}catch{throw Error('tenant calendar timezone invalid');}
+  try{if(zonedDate(value.asOf,value.timeZone)!==value.localDate)throw Error('tenant calendar civil date mismatch');}catch{throw Error('tenant calendar date/timezone invalid');}
   const elapsed=tenantCalendarElapsed()-requestedAt;if(!Number.isFinite(elapsed)||elapsed<0||elapsed>=Number(value.maxAgeMs))throw Error('tenant calendar response expired');
   if(epoch!==state.calendarEpoch)return null;if((sourceIdentity().tenant||null)!==tenant){invalidateTenantCalendar();return null;}state.calendar={status:'ready',value,requestedAt};window.WFMTenantCalendarSnapshot=value;refreshTenantCalendarSurfaces();
   tenantCalendarTimer=setTimeout(async()=>{if(epoch!==state.calendarEpoch)return;tenantCalendarTimer=null;invalidateTenantCalendar();apply();await loadTenantCalendar();apply();},Math.min(Number(value.maxAgeMs)-elapsed,2147483647));return value;
- }catch{if(epoch===state.calendarEpoch)state.calendar={status:'unavailable',value:null};return null;}finally{if(tenantCalendarRead?.epoch===epoch)tenantCalendarRead=null;}})();
+ }catch{if(epoch===state.calendarEpoch){state.calendar={status:'unavailable',value:null};window.WFMTenantCalendarSnapshot=null;}return null;}finally{if(tenantCalendarRead?.epoch===epoch)tenantCalendarRead=null;}})();
  tenantCalendarRead={tenant,epoch,promise:pending};return pending;
 }
 function serverNowMs(){if(!tenantCalendarFresh())return null;const value=state.calendar.value?.asOf,ms=Date.parse(value||'');return Number.isFinite(ms)?ms:null;}
