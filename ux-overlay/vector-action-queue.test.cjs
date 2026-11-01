@@ -27,7 +27,7 @@ function loadVectorHelpers(options={}) {
       body: { classList, dataset: {} }
     },
     MutationObserver: class { observe() {} disconnect() {} },
-    setTimeout() { return 0; },
+    setTimeout() { return 0; }, clearTimeout() {}, performance:{now:()=>0},
     queueMicrotask() {},
     sessionStorage: (() => {
       const values = new Map();
@@ -162,7 +162,7 @@ test('shell identity uses authenticated actor with the real display-only me shap
 test('employee home redraws only when content changes, allowing the mutation observer to settle',async()=>{
   const actor={tenant:'alpha',email:'employee@alpha',id:'e1',role:'employee',name:'Alex'};
   let titleWrites=0;const api=loadVectorHelpers({actor,onTitleWrite:()=>titleWrites++});
-  api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:'2026-10-11T09:00:00Z',localDate:'2026-10-11',timeZone:'Europe/London',maxAgeMs:300000}};
+  api.state.calendar={status:'ready',requestedAt:0,value:{tenant:'alpha',asOf:'2026-10-11T09:00:00Z',localDate:'2026-10-11',timeZone:'Europe/London',maxAgeMs:300000}};
   api.state.employeeHome={status:'ready',owner:'alpha:employee@alpha:e1',value:{identity:{name:'Alex'},leave:{availableMinutes:600},shifts:[],requests:[]}};
   const host=()=>({html:'',writes:0,dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;this.writes++;},querySelector(){return this.html.includes('data-vector-employee-home')?{}:null;}});
   const content=host();
@@ -181,7 +181,7 @@ test('employee home failure settles until explicit retry and recovery settles to
   let calls=0,unavailable=true;
   const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'};
   const api=loadVectorHelpers({actor,fetch:async()=>{calls++;return {ok:!unavailable,json:async()=>({identity:{name:'Worker'},leave:{availableMinutes:60},shifts:[],requests:[]})};}});
-  api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+  api.state.calendar={status:'ready',requestedAt:0,value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
   const content={html:'',writes:0,dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;this.writes++;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
   for(let i=0;i<4;i++)await api.renderEmployeeHome(content);
   assert.equal(calls,1,'observer passes must not retry an unavailable source');
@@ -202,7 +202,7 @@ test('employee home discards delayed results after navigation, account change or
     const pending=new Promise(resolve=>{release=resolve;});
     const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'},ui={page:'overview'};
     const api=loadVectorHelpers({actor,ui,fetch:async()=>{calls++;if(calls===1)return pending;return {ok:true,json:async()=>({identity:{name:'Current worker'},shifts:[],requests:[]})};}});
-    api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+    api.state.calendar={status:'ready',requestedAt:0,value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
     const content={isConnected:true,html:'',dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
     const running=api.renderEmployeeHome(content);await new Promise(resolve=>setImmediate(resolve));
     if(change.startsWith('navigation'))ui.page='leave';
@@ -223,7 +223,7 @@ test('authoritative screen render refreshes the employee personal record rather 
  let calls=0,availableMinutes=600;
  const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'};
  const api=loadVectorHelpers({actor,render:async()=>{},fetch:async()=>{calls++;return {ok:true,json:async()=>({identity:{name:'Worker'},leave:{availableMinutes},shifts:[],requests:[]})};}});
- api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+ api.state.calendar={status:'ready',requestedAt:0,value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
  const content={html:'',dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
  await api.renderEmployeeHome(content);assert.match(content.html,/10 h/);assert.equal(calls,1);
  availableMinutes=540;await api.render();await api.renderEmployeeHome(content);
@@ -235,7 +235,7 @@ test('a previous personal fetch cannot overwrite the fresh record after authorit
  let release,calls=0;const pending=new Promise(resolve=>{release=resolve;});
  const actor={tenant:'alpha',email:'worker@alpha',id:'u1',role:'employee'};
  const api=loadVectorHelpers({actor,render:async()=>{},fetch:async()=>{calls++;return calls===1?pending:{ok:true,json:async()=>({identity:{name:'Worker'},leave:{availableMinutes:540},shifts:[],requests:[]})};}});
- api.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+ api.state.calendar={status:'ready',requestedAt:0,value:{tenant:'alpha',asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
  const content={html:'',dataset:{},get innerHTML(){return this.html;},set innerHTML(value){this.html=value;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
  const first=api.renderEmployeeHome(content);await new Promise(resolve=>setImmediate(resolve));
  await api.render();await api.renderEmployeeHome(content);assert.equal(calls,2);assert.match(content.html,/9 h/);
