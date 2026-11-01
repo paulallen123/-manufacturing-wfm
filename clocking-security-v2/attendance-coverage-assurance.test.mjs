@@ -107,3 +107,57 @@ test('10,000-person shift evaluation returns exactly 10,000 rows and exposes eve
   assert.equal(r.totalScheduled,10_000); assert.equal(r.rows.length,10_000); assert.equal(r.unresolved,10_000);
   assert.equal(r.rows.every(x=>x.status==='missing_in'),true); assert.equal(r.accounted,0);
 });
+
+const V037_START=Date.parse('2026-11-04T06:00:00Z'), V037_END=Date.parse('2026-11-04T14:00:00Z');
+const v037Scope={tenant:'synthetic-v037',site:'alpha',shiftId:'day'};
+function v037Fixture(options={},present=false){
+ const engine={getState(){return present?{status:'present',openAt:V037_START,closeAt:null}:{status:'outside',openAt:null,closeAt:null};},getEvidence(){return [];}};
+ const coverage=new AttendanceCoverageAssurance({engine,...options});
+ coverage.registerShift({...v037Scope,startAt:V037_START,endAt:V037_END,assignments:[{employee:'worker-a'}]});
+ return {coverage,evaluate:nowMs=>coverage.evaluateShift({...v037Scope,nowMs})};
+}
+// Proposed duration admission contract only: no maximum, legal/policy authority,
+// clock fabrication, installed consumer, pay decision or provider is implied.
+for(const field of ['startGraceMs','endGraceMs','earlyEvidenceWindowMs']){
+ for(const [name,value] of [['numeric string','300000'],['null',null],['true',true],['false',false],['negative',-1],['NaN',NaN],['Infinity',Infinity],['negative Infinity',-Infinity]]){
+  test(field+' refuses '+name+' before any shift classification',()=>{
+   assert.throws(()=>v037Fixture({[field]:value}),/Invalid|finite|non-negative/i);
+  });
+ }
+}
+test('omitted defaults preserve explicit default classification exactly',()=>{
+ for(const present of [false,true])for(const at of [V037_START,V037_START+300000,V037_START+300001,V037_END+300000,V037_END+300001]){
+  assert.deepEqual(v037Fixture({},present).evaluate(at),v037Fixture({startGraceMs:300000,endGraceMs:300000,earlyEvidenceWindowMs:7200000},present).evaluate(at));
+ }
+});
+test('explicit undefined retains omitted defaults and produces no new policy',()=>{
+ for(const present of [false,true])assert.deepEqual(v037Fixture({startGraceMs:undefined,endGraceMs:undefined,earlyEvidenceWindowMs:undefined},present).evaluate(V037_END+300001),v037Fixture({},present).evaluate(V037_END+300001));
+});
+test('zero grace remains admitted with exact boundary and one-millisecond exception',()=>{
+ const missing=v037Fixture({startGraceMs:0,endGraceMs:0,earlyEvidenceWindowMs:0});
+ assert.equal(missing.evaluate(V037_START).rows[0].status,'awaiting_start');
+ assert.equal(missing.evaluate(V037_START+1).rows[0].status,'missing_in');
+ const open=v037Fixture({startGraceMs:0,endGraceMs:0,earlyEvidenceWindowMs:0},true);
+ assert.equal(open.evaluate(V037_END).rows[0].status,'confirmed_present');
+ assert.equal(open.evaluate(V037_END+1).rows[0].status,'missing_out');
+ assert.equal(open.evaluate(V037_END+1).rows[0].closeAt,undefined);
+ assert.equal(open.evaluate(V037_END+1).payrollReady,false);
+});
+test('finite fractional milliseconds preserve existing duration semantics',()=>{
+ const missing=v037Fixture({startGraceMs:0.5,endGraceMs:0.5,earlyEvidenceWindowMs:0.5});
+ assert.equal(missing.evaluate(V037_START+0.5).rows[0].status,'awaiting_start');
+ assert.equal(missing.evaluate(V037_START+1).rows[0].status,'missing_in');
+ const open=v037Fixture({startGraceMs:0.5,endGraceMs:0.5,earlyEvidenceWindowMs:0.5},true);
+ assert.equal(open.evaluate(V037_END+0.5).rows[0].status,'confirmed_present');
+ assert.equal(open.evaluate(V037_END+1).rows[0].status,'missing_out');
+});
+test('ordinary positive durations retain unresolved no-show and missing-OUT without changing engine state',()=>{
+ const options=Object.freeze({startGraceMs:300000,endGraceMs:300000,earlyEvidenceWindowMs:7200000});
+ for(const present of [false,true]){
+  const {coverage,evaluate}=v037Fixture(options,present),before=coverage.engine.getState();
+  const out=evaluate(V037_END+300001);
+  assert.equal(out.rows[0].status,present?'missing_out':'missing_in');
+  assert.equal(out.unresolved,1);assert.equal(out.payrollReady,false);
+  assert.deepEqual(coverage.engine.getState(),before);
+ }
+});

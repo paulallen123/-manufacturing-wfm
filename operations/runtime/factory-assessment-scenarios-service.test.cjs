@@ -27,17 +27,17 @@ function nativeHelpers() {
 function state() {
   return { version: 1, org: [{ id: 'root', parent: null, role: 'Director' }, { id: 'left', parent: 'root', role: 'Team leader' }, { id: 'right', parent: 'root', role: 'Team leader' }], staff: [{ id: 'w1', manager: 'left', site: 'a' }, { id: 'w2', manager: 'right', site: 'b' }], operations: { siteAccess: {} } };
 }
-function fixture() {
+function fixture(options = {}) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'order-consumer-')), dbPath = path.join(directory, 'db.sqlite'), db = new DatabaseSync(dbPath);
-  db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT,role TEXT,person_id TEXT,costs INTEGER,permissions TEXT);CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT,expires INTEGER);CREATE TABLE tenants(id TEXT PRIMARY KEY,version INTEGER,state TEXT);');
+  db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT,role TEXT,person_id TEXT,costs INTEGER,permissions TEXT);CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT,expires INTEGER);CREATE TABLE tenants(id TEXT PRIMARY KEY,version INTEGER,state TEXT);CREATE TABLE audit_events(id INTEGER PRIMARY KEY,tenant TEXT,actor TEXT,action TEXT,detail TEXT,created_at TEXT);');
   for (const tenant of ['alpha', 'bravo']) db.prepare('INSERT INTO tenants VALUES(?,?,?)').run(tenant, 1, JSON.stringify(state()));
   for (const [email, tenant, role, person, costs] of [['left', 'alpha', 'manager', 'left', 0], ['root', 'alpha', 'director', 'root', 1], ['supervisor', 'alpha', 'supervisor', 'left', 0], ['employee', 'alpha', 'employee', 'left', 0], ['admin', 'alpha', 'admin', 'root', 1], ['hr', 'alpha', 'hr', 'root', 1], ['payroll', 'alpha', 'payroll_admin', 'root', 1], ['unknown', 'alpha', 'unknown', 'root', 1], ['bravo', 'bravo', 'manager', 'left', 0]]) {
     db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?)').run(email, tenant, role, person, costs, '[]');
     db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash(email), email, Date.now() + 120000);
   }
   const events = [];
-  const service = createSchedulingIntelligenceService({ dbPath, internalToken: 'synthetic-worker-token', nativeHelpers: nativeHelpers(), publishEvent: event => events.push(event) });
-  return { db, service, events, close() { service.close(); db.close(); fs.rmSync(directory, { recursive: true, force: true }); } };
+  const service = createSchedulingIntelligenceService({ dbPath, internalToken: 'synthetic-worker-token', nativeHelpers: options.nativeHelpers || nativeHelpers(), publishEvent: event => events.push(event) });
+  return { directory, dbPath, db, service, events, close() { service.close(); db.close(); fs.rmSync(directory, { recursive: true, force: true }); } };
 }
 function clock(offset) { return new Date(Math.floor(Date.now() / 1000) * 1000 + offset * 60000).toISOString().replace('.000Z', 'Z'); }
 function outputInput({ tenantId = 'alpha', siteId = 'a', department = 'left' } = {}) {
@@ -68,6 +68,8 @@ async function call(f, item, body = item.input(), { who = 'left', suffix = '', m
 }
 function noPersistence(f) {
   for (const table of ['vector_schedule_plans', 'vector_schedule_repairs', 'vector_schedule_reconciliations']) assert.equal(f.db.prepare('SELECT COUNT(*) n FROM ' + table).get().n, 0);
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM audit_events').get().n, 0);
+  if (f.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='vector_factory_assessment_receipts'").get()) assert.equal(f.db.prepare('SELECT COUNT(*) n FROM vector_factory_assessment_receipts').get().n, 0);
   for (const tenant of ['alpha', 'bravo']) assert.equal(f.db.prepare('SELECT state FROM tenants WHERE id=?').get(tenant).state, JSON.stringify(state()));
   assert.deepEqual(f.events, []);
 }
@@ -146,4 +148,140 @@ test('material donor BOM, revision, component, units and fixed 15-minute stock f
   const changes = [b => b.bom.complete = false, b => b.inventory.complete = false, b => b.inventory.bomRevision = 'old', b => b.inventory.bomDigest = 'old', b => b.inventory.observedAt = clock(-16), b => b.inventory.observedAt = clock(1), b => b.inventory.observedAt = clock(-31), b => b.bom.effectiveEnd = clock(-1), b => b.bom.effectiveStart = clock(1), b => b.bom.components[0].tenantId = 'bravo', b => b.inventory.balances[0].orderId = 'foreign', b => b.inventory.balances[0].unit = 'EA', b => b.bom.components[0].requiredMilliunits = '3000', b => b.inventory.balances[0].allocatableMilliunits = -1, b => b.inventory.balances[0].evidenceRef = b.bom.components[0].evidenceRef, b => b.inventory.balances = [], b => b.bom.components.push({...b.bom.components[0]}), b => b.inventory.digest = b.bom.digest];
   for (const change of changes) { const b = item.input(); change(b); const r = await call(f, item, b); assert.equal(r.statusCode, 400); assert.equal(r.body.result, undefined); }
   const b = item.input(); b.inventory.balances[0].allocatableMilliunits = 3000; const r = await call(f, item, b); assert.equal(r.statusCode,200); assert.equal(r.body.result.shortfallCount,0); assert.equal(r.body.result.sourceAuthenticated,false); noPersistence(f);
+});
+
+const receiptsRoute = '/api/operations/scheduling/factory-assessments/';
+function saveRoute(item) { return { ...item, route: item.route.replace(/\/scenario$/, '/assessments') }; }
+async function getReceipt(f, id, options = {}) { return call(f, { route: receiptsRoute + id, input: () => undefined }, undefined, { ...options, method: 'GET' }); }
+function receiptCount(f) { return f.db.prepare('SELECT COUNT(*) n FROM vector_factory_assessment_receipts').get().n; }
+function receiptAudit(f) { return f.db.prepare("SELECT tenant,actor,action,detail FROM audit_events WHERE action='factory-assessment-declaration-recorded'").all(); }
+function assertCustody(receipt, item, input) {
+  assert.equal(receipt.contractVersion, 'DECLARED_FACTORY_ASSESSMENT_RECEIPT_V1');
+  assert.match(receipt.receiptId, /^[a-f0-9]{64}$/); assert.match(receipt.requestDigest, /^[a-f0-9]{64}$/);
+  assert.equal(receipt.tenantId, 'alpha'); assert.equal(receipt.department, 'left'); assert.equal(receipt.siteId, 'a');
+  assert.equal(receipt.kind, item.name); assert.equal(receipt.sourceBasis, item.source);
+  assert.equal(receipt.custodyBasis, 'SERVER_RECORDED_CALLER_DECLARATION'); assert.equal(receipt.authority, 'DECLARATION_CUSTODY_ONLY');
+  assert.equal(receipt.scenarioOnly, true); assert.equal(receipt.persisted, true);
+  for (const key of ['sourceAuthenticated', 'lineOrderAuthority', 'causeVerified', 'costVerified', 'scheduleAuthority', 'executionAuthority']) assert.equal(receipt[key], false, key);
+  assert.deepEqual(receipt.input, input); item.result(receipt.assessment.result);
+  assert.equal(receipt.assessment.asOf, receipt.assessment.result.asOf);
+  assert.equal(receipt.assessment.result.sourceAuthenticated, false); assert.equal(receipt.assessment.result.actionAuthority, false);
+  assert.equal(receipt.assessment.result.claimedSavingsPence, null);
+}
+function freshProcessGet(f, receiptId, who, advanceMs = 0) {
+  const modulePath = process.env.V095_FACTORY_SERVICE_MODULE || path.join(__dirname, 'scheduling-intelligence-service.cjs');
+  const archive = path.resolve(__dirname, '../../artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz');
+  const code = `
+    const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),{execFileSync}=require('node:child_process'),{Readable}=require('node:stream');
+    const args=JSON.parse(fs.readFileSync(0,'utf8'));
+    if(args.advanceMs){const RealDate=Date,now=RealDate.now()+args.advanceMs;global.Date=class extends RealDate{constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}};}
+    let directory;
+    let service;
+    (async()=>{try{
+      let publicRoot='/app/public';
+      if(!fs.existsSync(path.join(publicRoot,'engine.js'))){directory=fs.mkdtempSync(path.join(os.tmpdir(),'factory-readback-native-'));execFileSync('tar',['--no-same-owner','-xzf',args.archive,'-C',directory],{stdio:'pipe'});publicRoot=path.join(directory,'public');}
+      const engine=require(path.join(publicRoot,'engine.js')),operations=require(path.join(publicRoot,'operations-engine.js'));
+      service=require(args.modulePath).createSchedulingIntelligenceService({dbPath:args.dbPath,nativeHelpers:{allowedPeople:engine.allowedPeople,descendants:engine.descendants,approvedSite:operations.approvedSite}});
+      const req=Readable.from([]);req.method='GET';req.url=args.route;req.headers={cookie:'wfm_session='+args.who};
+      const res={statusCode:200,headersSent:false,writableEnded:false,setHeader(){},end(body){this.body=JSON.parse(body);this.writableEnded=true;}};
+      await service.handleRequest(req,res);process.stdout.write(JSON.stringify({statusCode:res.statusCode,body:res.body}));
+    }finally{service?.close();if(directory)fs.rmSync(directory,{recursive:true,force:true});}})().catch(error=>{process.stderr.write(error.stack);process.exitCode=1;});`;
+  return JSON.parse(execFileSync(process.execPath, ['-e', code], { input: JSON.stringify({ modulePath, archive, dbPath: f.dbPath, route: receiptsRoute + receiptId, who, advanceMs }), encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }));
+}
+for (const item of cases) {
+  test(item.name + ' declaration custody writes an immutable receipt and exactly one audit with stable idempotent readback', async t => {
+    const f = fixture(); t.after(() => f.close()); const input = item.input(), original = JSON.stringify(input);
+    const saved = await call(f, saveRoute(item), input); assert.equal(saved.statusCode, 201); assert.equal(saved.body.idempotent, false);
+    const receipt = saved.body.receipt; assertCustody(receipt, item, input); assert.equal(JSON.stringify(input), original);
+    const reordered = Object.fromEntries(Object.entries(input).reverse());
+    const retry = await call(f, saveRoute(item), reordered); assert.equal(retry.statusCode, 200); assert.equal(retry.body.idempotent, true); assert.deepEqual(retry.body.receipt, receipt);
+    assert.deepEqual((await getReceipt(f, receipt.receiptId)).body.receipt, receipt);
+    assert.equal(receiptCount(f), 1); const audit = receiptAudit(f); assert.equal(audit.length, 1); assert.equal(audit[0].tenant, 'alpha'); assert.equal(audit[0].actor, 'left');
+    const detail = JSON.parse(audit[0].detail); assert.equal(detail.receiptId, receipt.receiptId); assert.equal(detail.requestDigest, receipt.requestDigest);
+    assert.equal(detail.sourceAuthenticated, false); assert.equal(detail.executionAuthority, false); assert.equal(Object.hasOwn(detail, 'input'), false);
+    assert.throws(() => f.db.exec('UPDATE vector_factory_assessment_receipts SET receipt_json=receipt_json'), /append.only/i);
+    assert.throws(() => f.db.exec('DELETE FROM vector_factory_assessment_receipts'), /append.only/i);
+    for (const table of ['vector_schedule_plans', 'vector_schedule_repairs', 'vector_schedule_reconciliations']) assert.equal(f.db.prepare('SELECT COUNT(*) n FROM ' + table).get().n, 0);
+    assert.deepEqual(f.events, []); assert.equal(f.db.prepare("SELECT state FROM tenants WHERE id='alpha'").get().state, JSON.stringify(state()));
+  });
+  test(item.name + ' declaration custody survives a fresh process and fresh session without upgrading historical source authority', async t => {
+    const f = fixture(); t.after(() => f.close()); const input = item.input();
+    const saved = await call(f, saveRoute(item), input); assert.equal(saved.statusCode, 201); const receipt = saved.body.receipt;
+    f.db.exec("DELETE FROM sessions WHERE email='left'");
+    f.db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash('fresh-left'), 'left', Date.now() + 3600000);
+    f.service.close();
+    const read = freshProcessGet(f, receipt.receiptId, 'fresh-left', 20 * 60000); assert.equal(read.statusCode, 200); assert.deepEqual(read.body.receipt, receipt); assertCustody(read.body.receipt, item, input);
+    assert.equal(freshProcessGet(f, receipt.receiptId, 'bravo').statusCode, 404);
+    assert.equal(freshProcessGet(f, receipt.receiptId, 'root').statusCode, 404);
+    assert.equal(freshProcessGet(f, receipt.receiptId, 'left').statusCode, 401);
+    assert.equal(receiptCount(f), 1); assert.equal(receiptAudit(f).length, 1);
+  });
+  test(item.name + ' declaration custody reauthorizes creator identity and native department/site on every read', async t => {
+    const f = fixture(); t.after(() => f.close());
+    const saved = await call(f, saveRoute(item)); assert.equal(saved.statusCode, 201); const id = saved.body.receipt.receiptId;
+    for (const who of ['bravo', 'root', 'supervisor']) { const r = await getReceipt(f, id, { who }); assert.equal(r.statusCode, 404); assert.equal(r.body.receipt, undefined); }
+    f.db.exec("UPDATE users SET person_id='root' WHERE email='left'"); assert.equal((await getReceipt(f, id)).statusCode, 404);
+    f.db.exec("UPDATE users SET person_id='left' WHERE email='left'");
+    const changed = state(); changed.staff[0].site = 'other'; f.db.prepare('UPDATE tenants SET state=? WHERE id=?').run(JSON.stringify(changed), 'alpha');
+    const denied = await getReceipt(f, id); assert.equal(denied.statusCode, 403); assert.equal(denied.body.receipt, undefined);
+    f.db.prepare('UPDATE tenants SET state=? WHERE id=?').run(JSON.stringify(state()), 'alpha');
+    f.db.exec("UPDATE users SET role='employee' WHERE email='left'"); assert.equal((await getReceipt(f, id)).statusCode, 403);
+    f.db.exec("UPDATE users SET role='manager' WHERE email='left'; UPDATE sessions SET expires=0 WHERE email='left'"); assert.equal((await getReceipt(f, id)).statusCode, 401);
+    assert.equal(receiptCount(f), 1); assert.equal(receiptAudit(f).length, 1);
+  });
+  test(item.name + ' declaration custody rolls back on audit failure and a later retry creates one complete receipt', async t => {
+    const f = fixture(); t.after(() => f.close()); const input = item.input();
+    f.db.exec("CREATE TRIGGER fail_factory_audit BEFORE INSERT ON audit_events BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END;");
+    const failed = await call(f, saveRoute(item), input); assert.equal(failed.statusCode, 503); assert.equal(failed.body.receipt, undefined); assert.equal(receiptCount(f), 0); assert.equal(receiptAudit(f).length, 0);
+    f.db.exec('DROP TRIGGER fail_factory_audit');
+    const retry = await call(f, saveRoute(item), input); assert.equal(retry.statusCode, 201); assert.equal(receiptCount(f), 1); assert.equal(receiptAudit(f).length, 1);
+  });
+  test(item.name + ' declaration custody preserves strict validation and refuses body-time revocation without durable effects', async t => {
+    const f = fixture(); t.after(() => f.close());
+    for (const extra of [{ tenantId: 'bravo' }, { sourceAuthenticated: true }, { persisted: true }, { asOf: clock(0) }, { receiptId: 'a'.repeat(64) }]) assert.equal((await call(f, saveRoute(item), { ...item.input(), ...extra })).statusCode, 400);
+    assert.equal((await call(f, saveRoute(item), item.input({ siteId: 'b' }))).statusCode, 403);
+    const revoked = await call(f, saveRoute(item), item.input(), { mutate: f => f.db.exec("DELETE FROM sessions WHERE email='left'") }); assert.equal(revoked.statusCode, 401);
+    assert.equal(receiptCount(f), 0); assert.equal(receiptAudit(f).length, 0); assert.deepEqual(f.events, []);
+  });
+}
+test('declaration custody rejects missing native audit storage while preserving the stateless scenario', async t => {
+  const f = fixture(); t.after(() => f.close()); f.db.exec('DROP TABLE audit_events');
+  const failed = await call(f, saveRoute(cases[0])); assert.equal(failed.statusCode, 503); assert.equal(receiptCount(f), 0);
+  const scenario = await call(f, cases[0]); assert.equal(scenario.statusCode, 200); assert.equal(scenario.body.persisted, false);
+});
+test('declaration custody exact-ID reads reject malformed IDs and query overrides without exposing a record', async t => {
+  const f = fixture(); t.after(() => f.close());
+  const saved = await call(f, saveRoute(cases[0])); assert.equal(saved.statusCode, 201); const id = saved.body.receipt.receiptId;
+  for (const value of ['absent', '../plans', id.toUpperCase(), id + '/extra']) { const r = await getReceipt(f, value); assert.equal(r.statusCode, 404); assert.equal(r.body.receipt, undefined); }
+  for (const suffix of ['?tenant=bravo', '?asOf=2026-01-01', '?limit=20']) { const r = await getReceipt(f, id, { suffix }); assert.equal(r.statusCode, 400); assert.equal(r.body.receipt, undefined); }
+  assert.equal((await getReceipt(f, id, { suffix: '?scope=right' })).statusCode, 403); assert.equal(receiptCount(f), 1); assert.equal(receiptAudit(f).length, 1);
+});
+test('declaration custody rechecks revocation after the outer native read before insert and idempotent return', async t => {
+  const native = nativeHelpers(); let f, reads = 0, revokeAt = Infinity;
+  f = fixture({ nativeHelpers: { ...native, allowedPeople(...args) {
+    const people = native.allowedPeople(...args);
+    if (++reads === revokeAt) f.db.exec("DELETE FROM sessions WHERE email='left'");
+    return people;
+  } } }); t.after(() => f.close());
+  const input = cases[0].input(); revokeAt = 3;
+  const deniedInsert = await call(f, saveRoute(cases[0]), input); assert.equal(deniedInsert.statusCode, 401); assert.equal(receiptCount(f), 0); assert.equal(receiptAudit(f).length, 0);
+  f.db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash('left'), 'left', Date.now() + 120000); revokeAt = Infinity;
+  const saved = await call(f, saveRoute(cases[0]), input); assert.equal(saved.statusCode, 201);
+  reads = 0; revokeAt = 3;
+  const deniedRetry = await call(f, saveRoute(cases[0]), input); assert.equal(deniedRetry.statusCode, 401); assert.equal(deniedRetry.body.receipt, undefined);
+  assert.equal(receiptCount(f), 1); assert.equal(receiptAudit(f).length, 1);
+});
+test('declaration custody save and creator readback execute over real loopback HTTP', async t => {
+  const f = fixture(); t.after(() => f.close());
+  const server = http.createServer(async (req, res) => { if (!await f.service.handleRequest(req, res)) { res.statusCode = 404; res.end(); } });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); });
+  const origin = 'http://127.0.0.1:' + server.address().port;
+  for (const item of cases) {
+    const input = item.input(), response = await fetch(origin + saveRoute(item).route, { method: 'POST', headers: { cookie: 'wfm_session=left', 'content-type': 'application/json' }, body: JSON.stringify(input) });
+    assert.equal(response.status, 201); const receipt = (await response.json()).receipt; assertCustody(receipt, item, input);
+    const read = await fetch(origin + receiptsRoute + receipt.receiptId, { headers: { cookie: 'wfm_session=left' } });
+    assert.equal(read.status, 200); assert.deepEqual((await read.json()).receipt, receipt); assert.equal(read.headers.get('cache-control'), 'no-store');
+  }
+  assert.equal(receiptCount(f), 2); assert.equal(receiptAudit(f).length, 2);
 });

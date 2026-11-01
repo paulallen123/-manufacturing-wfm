@@ -182,6 +182,13 @@ function leaveBudget(s,id,exclude,interval){
   fs.writeFileSync(operationsPath,operations.replace(budgetAnchor,budgetReplacement));
   fs.writeFileSync(rulesPath,rules.replace(capacityAnchor,'const dated=root.WFMOps?.leaveBudget(s,p.employee,p.requestId,p);'));
 }
+function patchAnnualOnlyLeaveKind(runtime) {
+  const file=path.join(runtime,'public','work-rules.js'),text=fs.readFileSync(file,'utf8');
+  const anchor="assert(a.role==='employee','Employee access is required.',403);const v=normaliseLeave(s,{...p,employee:a.personId});";
+  const replacement="assert(a.role==='employee','Employee access is required.',403);assert(p?.kind===undefined||p.kind==='Annual leave','Only Annual leave requests are supported by this interface.',409);const v=normaliseLeave(s,{...p,employee:a.personId});";
+  if(text.split(anchor).length!==2)throw Error('ANNUAL_LEAVE_KIND_ANCHOR_CHANGED');
+  fs.writeFileSync(file,text.replace(anchor,replacement));
+}
 function patchTenantLocalTime(rules){
  const resolverAnchor="function localResolve(value,fold='reject'){\n assert(typeof value==='string'&&/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(value)&&validDate(value.slice(0,10))&&timeOK(value.slice(11)),'Invalid local date/time.');\n assert(['reject','earlier','later'].includes(fold),'Unknown clock-change choice.');\n const plain=Date.parse(value+':00Z'),fmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});\n const options=[plain-HOUR,plain].filter(ms=>fmt.format(new Date(ms)).replace(' ','T')===value);\n assert(options.length>0,'This local time does not exist when the clocks move forward.');\n assert(options.length===1||fold!=='reject','This local time occurs twice. Choose earlier or later explicitly.');\n return new Date(options[fold==='later'?options.length-1:0]).toISOString();\n}";
  const infoAnchor="const infoFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),infoCache=new Map();\nfunction localInfo(t){const key=Math.floor(t/MIN);if(infoCache.has(key))return infoCache.get(key);const p=Object.fromEntries(infoFmt.formatToParts(new Date(t)).map(x=>[x.type,x.value]));const v={date:`${p.year}-${p.month}-${p.day}`,minute:Number(p.hour)*60+Number(p.minute)};if(infoCache.size>200000)infoCache.clear();infoCache.set(key,v);return v;}\n";
@@ -248,7 +255,7 @@ const run = (file, args = []) => { recordInput(file); return execFileSync(proces
 recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
   run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
-  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);patchDatedLeaveBudget(output);
+  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);patchDatedLeaveBudget(output);patchAnnualOnlyLeaveKind(output);
   copyKioskClient(output);
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
@@ -301,7 +308,7 @@ copy('resilience/support-selfhelp-service.cjs', 'support-runtime/support-selfhel
 composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);
-patchPayrollMoney(output);patchDatedLeaveBudget(output);
+patchPayrollMoney(output);patchDatedLeaveBudget(output);patchAnnualOnlyLeaveKind(output);
 // Copy the lockfile-installed dependency closure; never install from the proof process.
 const securityDependencies = path.join(root, 'security/runtime/node_modules');
 if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');

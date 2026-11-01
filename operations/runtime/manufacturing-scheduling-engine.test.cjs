@@ -422,3 +422,76 @@ test('V030 cap preserves V029 touching availability and real-gap denials with fr
  const denied=evaluateOpenShift({requirement:early,workers:gap,policy:{maxShiftHours:8}}).ranked[0];
  assert.equal(denied.eligible,false);assert.ok(denied.failures.includes('NOT_AVAILABLE'));
 });
+
+// V032: only explicit declared-location travel feasibility; no execution or source authority.
+{
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const E=require('./manufacturing-scheduling-engine.cjs');
+const at=t=>'2026-11-03T'+t+'Z';
+const req=(id='target',site='B',start='10:00:00',end='11:00:00')=>({id,site,role:'operator',headcount:1,start:at(start),end:at(end),productionPriority:id==='origin'?100:50});
+const assignment=(site='A',start='08:00:00',end='09:00:00',id='prior',workerId='w')=>({slotId:id+'#1',workerId,site,start:at(start),end:at(end)});
+function worker(id='w'){return {id,homeSite:'A',eligibleSites:['A','B','C'],status:'ACTIVE',hoursWorkedWeek:0,contractedHours:40,consecutiveShifts:0,consecutiveNights:0,availability:[{start:at('00:00:00'),end:at('23:59:59')}],hourlyCost:20,travelMinutesBySite:{B:60},travelMinutesByRoute:{A:{B:60},B:{C:60}}};}
+const policy={minRestHours:0,maxWeeklyHours:168,maxOvertimeHours:100};
+function input(){return {requirement:req(),workers:[worker()],currentAssignments:[assignment()],policy:{...policy}};}
+function evalAt(x){const before=structuredClone(x),result=E.evaluateOpenShift(x);assert.deepEqual(x,before);assert.equal(result.mode,'EVALUATE_ONLY');assert.equal(result.executionPermitted,false);return result.ranked[0];}
+function denies(x,reason){const c=evalAt(x);assert.equal(c.eligible,false,'supplied directed journey must be feasible');assert.ok(c.failures.includes(reason),JSON.stringify(c));}
+for(const [name,mutate,reason] of [
+ ['one millisecond short',x=>x.currentAssignments[0].end=at('09:00:00.001'),'INSUFFICIENT_TRANSFER_TIME'],
+ ['return uses its own direction',x=>{x.requirement=req('target','A');x.currentAssignments[0].site='B';x.workers[0].travelMinutesByRoute={B:{A:90},A:{B:1}};},'INSUFFICIENT_TRANSFER_TIME'],
+ ['nearest prior is non-home, not distant home',x=>{x.requirement=req('target','C');x.currentAssignments=[assignment('A','06:00:00','07:00:00','distant'),assignment('B')];x.workers[0].travelMinutesByRoute={A:{C:1}};x.workers[0].travelMinutesBySite.C=1;},'CROSS_SITE_TRAVEL_UNPROVEN'],
+ ['nearest following route cannot borrow distant site',x=>{x.currentAssignments=[assignment('C','11:30:00','12:00:00','near'),assignment('A','15:00:00','16:00:00','far')];x.workers[0].travelMinutesByRoute={B:{A:1}};},'CROSS_SITE_TRAVEL_UNPROVEN'],
+ ['later journey constrains the insertion',x=>{x.currentAssignments=[assignment('C','11:30:00','12:00:00','later')];},'INSUFFICIENT_TRANSFER_TIME'],
+ ['both sides are checked',x=>x.currentAssignments.push(assignment('C','11:30:00','12:00:00','later')),'INSUFFICIENT_TRANSFER_TIME'],
+ ['owned undefined route value cannot disappear into legacy fallback',x=>x.workers[0].travelMinutesByRoute.A.B=undefined,'CROSS_SITE_TRAVEL_UNPROVEN'],
+ ['owned undefined origin branch cannot disappear into legacy fallback',x=>x.workers[0].travelMinutesByRoute.A=undefined,'CROSS_SITE_TRAVEL_UNPROVEN'],
+ ['explicit null route cannot use permissive legacy duration',x=>x.workers[0].travelMinutesByRoute.A.B=null,'CROSS_SITE_TRAVEL_UNPROVEN'],
+])test('V032 declared-location directed-route expectation: '+name,()=>{const x=input();mutate(x);denies(x,reason);});
+for(const [name,mutate] of [
+ ['exact one-hour gap',x=>{}],
+ ['omitted assignment site preserves the legacy unproven evaluation',x=>delete x.currentAssignments[0].site],
+ ['explicit zero interval',x=>{x.currentAssignments[0].end=at('10:00:00');x.workers[0].travelMinutesByRoute.A.B=0;}],
+ ['fractional minute exact boundary',x=>{x.currentAssignments[0].end=at('09:59:30');x.workers[0].travelMinutesByRoute.A.B=0.5;}],
+ ['same-site explicit adjacency needs no route',x=>{x.requirement=req('target','A');x.currentAssignments[0].end=at('10:00:00');delete x.workers[0].travelMinutesByRoute;delete x.workers[0].travelMinutesBySite;}],
+ ['unrelated worker unknown location is ignored',x=>{x.currentAssignments=[{...assignment('C','09:00:00','10:00:00','other','other'),site:undefined}];}],
+ ['no adjacent duty does not invent a route origin',x=>{x.currentAssignments=[];delete x.workers[0].travelMinutesBySite;delete x.workers[0].travelMinutesByRoute;}],
+ ['rest timestamp alone is not a location',x=>{x.currentAssignments=[];x.workers[0].previousShiftEnd=at('09:00:00');delete x.workers[0].travelMinutesBySite;delete x.workers[0].travelMinutesByRoute;}]
+])test('V032 common declared-data control: '+name,()=>{const x=input();mutate(x);assert.equal(evalAt(x).eligible,true);});
+function planArgs(exactSlotLimit=10){return {tenant:'synthetic',contextRevision:'declared-r1',sourceEvidence:['synthetic:declarations-only'],createdAt:at('00:00:00'),workers:[worker()],requirements:[req('origin','A','08:00:00','09:00:00'),req('receiving','B','09:30:00','10:30:00')],policy:{...policy,exactSlotLimit}};}
+for(const limit of [1,10])test('V032 declared-location '+(limit===1?'greedy':'exact')+' planner keeps origin coverage and explains receiving shortfall',()=>{const x=planArgs(limit),before=structuredClone(x),p=E.createSchedulingPlan(x);assert.deepEqual(x,before);assert.equal(p.executionPermitted,false);assert.equal(p.mode,'SHADOW');assert.deepEqual(p.assignments.filter(a=>a.workerId).map(a=>a.requirementId),['origin']);assert.ok(p.unfilled.find(a=>a.requirementId==='receiving').topReasons.some(x=>x.reason==='INSUFFICIENT_TRANSFER_TIME'));});
+test('V032 declared-location independent validation checks a supplied directed journey',()=>{const x=planArgs(),ws=new Map(x.workers.map(w=>[w.id,E.normaliseWorker(w)])),ss=new Map(x.requirements.map(r=>{const s=E.evaluateOpenShift({requirement:r,workers:[]}).slot;return[s.slotId,s];})),as=x.requirements.map(r=>({slotId:r.id+'#1',workerId:'w',site:r.site,start:r.start,end:r.end})),p=E.validateSchedule(as,ws,ss,E.normalisePolicy(policy));assert.equal(p.valid,false);assert.ok(p.violations.some(v=>v.reasons.includes('INSUFFICIENT_TRANSFER_TIME')));});
+test('V032 declared-location swap checks incoming worker adjacent declared duty',()=>{const a=worker('a'),b=worker('b'),ra=req('outgoing-a','A','08:00:00','09:00:00'),rb=req('outgoing-b','B','10:00:00','11:00:00'),x={workerA:a,workerB:b,requirementA:ra,requirementB:rb,policy:{...policy},currentAssignments:[{...assignment('A','08:00:00','09:00:00','outgoing-a','a')},{...assignment('B','10:00:00','11:00:00','outgoing-b','b')},assignment('A','09:00:00','09:30:00','unrelated-a','a')]},before=structuredClone(x),p=E.evaluateSwap(x);assert.deepEqual(x,before);assert.equal(p.executionPermitted,false);assert.equal(p.eligible,false);assert.ok(p.reasons.includes('INSUFFICIENT_TRANSFER_TIME'));});
+test('V032 declared-location repair retains receiving journey denial',()=>{const x=planArgs();x.requirements[1].start=at('10:00:00');x.requirements[1].end=at('11:00:00');const prior=E.createSchedulingPlan(x),requirements=planArgs().requirements,repair=E.repairSchedulingPlan({priorPlan:prior,workers:x.workers,requirements,contextRevision:'declared-r2',createdAt:at('01:00:00'),event:{type:'DEMAND_CHANGE',evidenceRef:'synthetic:changed-demand'}});assert.equal(repair.executionPermitted,false);assert.equal(repair.repairedPlan.executionPermitted,false);assert.equal(repair.repairedPlan.quality.filledSlots,1);assert.ok(repair.repairedPlan.unfilled.some(s=>s.topReasons.some(x=>x.reason==='INSUFFICIENT_TRANSFER_TIME')));});
+
+test('V032 explicit malformed location and ambiguous nearest sites deny without inference',()=>{
+ for(const site of [undefined,null,'',' A','A ',42]){const x=input();x.currentAssignments[0].site=site;denies(x,'ASSIGNMENT_SITE_UNPROVEN');}
+ const x=input();x.currentAssignments.push(assignment('C','08:00:00','09:00:00','contradictory'));denies(x,'ASSIGNMENT_SITE_UNPROVEN');
+});
+test('V032 both adjacent checks are independent of supplied row order',()=>{const x=input();x.currentAssignments.push(assignment('C','11:30:00','12:00:00','after'));denies(x,'INSUFFICIENT_TRANSFER_TIME');x.currentAssignments.reverse();denies(x,'INSUFFICIENT_TRANSFER_TIME');});
+test('V032 travel denials retain V030 optional cap and V029 coverage rules',()=>{
+ const x=input();x.policy.maxShiftHours=0.5;x.currentAssignments[0].end=at('09:30:00');const c=evalAt(x);assert.ok(c.failures.includes('MAX_SHIFT_HOURS_BREACH'));assert.ok(c.failures.includes('INSUFFICIENT_TRANSFER_TIME'));
+ const y=input();y.workers[0].availability=[{start:at('10:00:00'),end:at('10:30:00')},{start:at('10:30:00'),end:at('11:00:00')}];y.policy.maxShiftHours=1;assert.equal(evalAt(y).eligible,true);y.workers[0].availability[1].start=at('10:30:00.001');assert.ok(evalAt(y).failures.includes('NOT_AVAILABLE'));
+});
+test('V032 directed durations change eligibility only, preserving declared cost and score',()=>{
+ for(const minutes of [0,30,60]){const x=input();x.workers[0].travelCostBySite={B:12};x.workers[0].travelMinutesByRoute.A.B=minutes;const c=evalAt(x);assert.equal(c.eligible,true);assert.equal(c.score,28.6);assert.deepEqual(c.cost,{baseCost:20,overtimeHours:0,agencyPremium:0,contingentPremium:0,travelCost:12,total:32});}
+});
+
+}
+
+// V032 independent review regressions: uncertainty is local to its adjacent journey.
+{
+const E=require('./manufacturing-scheduling-engine.cjs');
+const at=t=>'2026-11-03T'+t+'Z';
+const duty=(id,start,end,site)=>({slotId:id,workerId:'w',start:at(start),end:at(end),...(site===undefined?{}:{site})});
+const worker=()=>({id:'w',homeSite:'A',eligibleSites:['A','B','C'],hoursWorkedWeek:0,contractedHours:40,consecutiveShifts:0,consecutiveNights:0,availability:[{start:at('00:00:00'),end:at('23:59:59')}],hourlyCost:20,travelMinutesBySite:{B:0},travelMinutesByRoute:{A:{B:60},B:{C:60}}});
+const input=()=>({requirement:{id:'review-target',site:'B',role:'operator',start:at('10:00:00'),end:at('11:00:00')},workers:[worker()],policy:{minRestHours:0,maxWeeklyHours:168,maxOvertimeHours:100},currentAssignments:[duty('near','08:30:00','09:30:00','A')]});
+function check(x,reason){const before=structuredClone(x),result=E.evaluateOpenShift(x);assert.deepEqual(x,before);assert.equal(result.executionPermitted,false);const c=result.ranked[0];assert.equal(c.eligible,false);assert.ok(c.failures.includes(reason),JSON.stringify(c));}
+test('V032 review: distant omitted predecessor cannot disable a known nearest denial',()=>{const x=input();x.currentAssignments.push(duty('far','05:00:00','06:00:00'));check(x,'INSUFFICIENT_TRANSFER_TIME');});
+test('V032 review: distant omitted successor cannot disable a known nearest denial',()=>{const x=input();x.currentAssignments.push(duty('far','16:00:00','17:00:00'));check(x,'INSUFFICIENT_TRANSFER_TIME');});
+test('V032 review: omitted adjacent predecessor preserves a known following denial',()=>{const x=input();x.currentAssignments=[duty('unknown-before','08:00:00','09:00:00'),duty('known-after','11:30:00','12:30:00','C')];check(x,'INSUFFICIENT_TRANSFER_TIME');});
+test('V032 review: omitted adjacent successor preserves a known preceding denial',()=>{const x=input();x.currentAssignments.push(duty('unknown-after','12:00:00','13:00:00'));check(x,'INSUFFICIENT_TRANSFER_TIME');});
+test('V032 review: tied omitted and known locations remain ambiguous in either order',()=>{const x=input();x.currentAssignments.push(duty('tied','08:00:00','09:30:00'));check(x,'ASSIGNMENT_SITE_UNPROVEN');x.currentAssignments.reverse();check(x,'ASSIGNMENT_SITE_UNPROVEN');});
+test('V032 review: owned invalid top-level route map cannot enable legacy zero fallback',()=>{for(const routes of [null,undefined,false,0,'',[],NaN,Infinity]){const x=input();x.workers[0].travelMinutesByRoute=routes;check(x,'CROSS_SITE_TRAVEL_UNPROVEN');}});
+test('V032 review: absent route map keeps explicit home-outbound legacy fallback',()=>{const x=input();delete x.workers[0].travelMinutesByRoute;const r=E.evaluateOpenShift(x);assert.equal(r.ranked[0].eligible,true);assert.equal(r.executionPermitted,false);});
+test('V032 review: an omitted-only adjacent location keeps the legacy unproven evaluation',()=>{const x=input();x.currentAssignments=[duty('unknown','08:00:00','09:30:00')];const r=E.evaluateOpenShift(x);assert.equal(r.ranked[0].eligible,true);assert.equal(r.executionPermitted,false);});
+}

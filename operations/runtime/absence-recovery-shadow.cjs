@@ -4,6 +4,15 @@ const { createDecisionEpisode } = require('./decision-episode.cjs');
 
 function text(value,max=240){ return String(value??'').trim().slice(0,max); }
 function list(value,max=30,maxLen=180){ return Array.isArray(value)?[...new Set(value.map(v=>text(v,maxLen)).filter(Boolean))].slice(0,max):[]; }
+// Only traverse the normalized owned result: createDecisionEpisode has already
+// cloned its payload, and list() creates fresh arrays. Caller data stays mutable.
+function freezeResult(value){
+  if(value&&typeof value==='object'){
+    for(const child of Object.values(value))freezeResult(child);
+    Object.freeze(value);
+  }
+  return value;
+}
 
 function buildAbsenceRecoveryShadow(input={}){
   const triggerKind=text(input.triggerKind,80).toUpperCase();
@@ -36,7 +45,7 @@ function buildAbsenceRecoveryShadow(input={}){
       reasonCodes:list(candidate.reasonCodes,20,100)
     }))
   });
-  return Object.freeze({
+  return freezeResult({
     triggerKind,
     requiredSkills,
     affectedLines:list(input.affectedLines,30,120),
