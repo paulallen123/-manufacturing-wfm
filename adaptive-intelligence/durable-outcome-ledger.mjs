@@ -1,10 +1,20 @@
 import { DatabaseSync } from 'node:sqlite';
 import { types } from 'node:util';
+import { createHash } from 'node:crypto';
 import { AdaptiveIntelligenceEngine } from './engine.mjs';
 
 // Narrow, synchronous replay ledger for an approved local SQLite state path.
 // The caller still owns source authentication, tenant binding and volume custody.
 const columns=['tenantScope','source','category','fingerprint','evidenceRef'];
+const replayDigest=(rows,config)=>createHash('sha256').update('VECTOR_OUTCOME_REPLAY_SNAPSHOT_V1\n'+JSON.stringify({rows,config})).digest('hex');
+
+// Internal shared snapshot format for the signed consumer. Callers hold a read
+// transaction or BEGIN IMMEDIATE so both queries refer to the same SQLite state.
+export function readOutcomeReplayState(db){
+  const rows=db.prepare('SELECT seq,tenant,source,evidence,input_json FROM outcome_replay ORDER BY seq').all();
+  const config=db.prepare('SELECT name,value FROM outcome_replay_config ORDER BY name').all();
+  return {rows,config,digest:replayDigest(rows,config)};
+}
 function normalize(raw){
   if(!raw||typeof raw!=='object'||types.isProxy(raw)) throw new Error('OUTCOME_INERT_RECORD_REQUIRED');
   const prototype=Object.getPrototypeOf(raw);
@@ -57,17 +67,27 @@ export class DurableOutcomeLedger {
     }
     return engine;
   }
-  ingestOutcome(raw){
+  ingestOutcome(raw,expectedReplayDigest){
     const input=normalize(raw);
+    if(expectedReplayDigest!==undefined&&(typeof expectedReplayDigest!=='string'||!/^[a-f0-9]{64}$/.test(expectedReplayDigest))) throw new Error('OUTCOME_REPLAY_DIGEST_INVALID');
     this.#db.exec('BEGIN IMMEDIATE');
     try{
+      const before=expectedReplayDigest===undefined?null:readOutcomeReplayState(this.#db);
+      if(before&&before.digest!==expectedReplayDigest) throw new Error('OUTCOME_REPLAY_CHANGED');
       const engine=this.#replay();
       const receipt=engine.ingestOutcome(input);
       const existing=this.#db.prepare('SELECT input_json FROM outcome_replay WHERE tenant=? AND source=? AND evidence=?').get(input.tenantScope,input.source,input.evidenceRef);
+      let appended=null;
       if(!existing){
         const stored={...input,createdAt:receipt.createdAt};
-        this.#db.prepare('INSERT INTO outcome_replay (tenant,source,evidence,input_json) VALUES (?,?,?,?)').run(input.tenantScope,input.source,input.evidenceRef,JSON.stringify(stored));
+        const input_json=JSON.stringify(stored);
+        const inserted=this.#db.prepare('INSERT INTO outcome_replay (tenant,source,evidence,input_json) VALUES (?,?,?,?)').run(input.tenantScope,input.source,input.evidenceRef,input_json);
+        appended={seq:Number(inserted.lastInsertRowid),tenant:input.tenantScope,source:input.source,evidence:input.evidenceRef,input_json};
       }
+      // Also catch local triggers changing authenticated rows/config or adding
+      // extra observations. A guarded append commits only its expected one-row
+      // extension (or exact deduplicated replay), otherwise all writes roll back.
+      if(before&&readOutcomeReplayState(this.#db).digest!==replayDigest(appended?[...before.rows,appended]:before.rows,before.config)) throw new Error('OUTCOME_REPLAY_CHANGED');
       this.#db.exec('COMMIT');
       return receipt;
     }catch(error){
