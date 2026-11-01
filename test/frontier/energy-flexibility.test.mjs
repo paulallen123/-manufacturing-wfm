@@ -40,3 +40,36 @@ function scenario(index,r){const fresh=r()>0.08,cancelled=r()<0.03,revisionOk=r(
 test('1,500-scenario conservative benchmark preserves safety and value thresholds',()=>{const r=lcg(0x5eed1234);let known=0,found=0,flex=0,better=0,stale=0,hard=0,badActuation=0;for(let i=0;i<1500;i++){const s=scenario(i,r),o=evaluateEnergyFlexibility(s.input);if(s.known){known++;if(o.rankedOptions.length)found++;}if(s.flexible){flex++;if(o.rankedOptions.some(x=>isParetoBetterThanBaseline(x,o.baseline)))better++;}if(!o.signalFresh&&o.rankedOptions.length)stale++;if(o.rankedOptions.some(x=>x.hardConstraintFailures.length))hard++;if(o.rankedOptions.some(x=>x.actionContract?.type!=='workflow_handoff_only'))badActuation++;}const summary={scenarios:1500,knownFeasible:known,discovery:found/known,flexible:flex,paretoBetter:better/flex,staleExecutable:stale,hardViolationRecommended:hard,directActuationOutput:badActuation};console.log('ENERGY_FLEX_BENCHMARK='+JSON.stringify(summary));assert.ok(known>100);assert.ok(found/known>=0.95);assert.equal(stale,0);assert.equal(hard,0);assert.equal(badActuation,0);assert.ok(better/flex>=0.15);});
 
 test('500 adversarial replay/permutation cases preserve effective decision state',()=>{const r=lcg(0x1d3a0707);for(let n=0;n<500;n++){const i=baseInput();const rev1={...i.energySignal,revision:1,publishedAt:'2026-09-18T05:40:00.000Z'},rev2={...i.energySignal};const canonical=structuredClone(i);canonical.energyEvents=[rev1,rev2];delete canonical.energySignal;const expected=evaluateEnergyFlexibility(canonical);const events=[];for(let k=0;k<2+Math.floor(r()*8);k++) events.push(r()<0.65?structuredClone(rev2):structuredClone(rev1));events.push(structuredClone(rev1),structuredClone(rev2));events.sort(()=>r()-0.5);const replay=structuredClone(i);replay.energyEvents=events;delete replay.energySignal;const actual=evaluateEnergyFlexibility(replay);assert.equal(actual.effectiveSignalRevision,2);assert.equal(actual.reproducibilityHash,expected.reproducibilityHash);assert.deepEqual(actual.rankedOptions,expected.rankedOptions);}});
+
+// V102 #420 confidence admission intent: declared planning values only.
+import {createHash as v102CreateHash} from 'node:crypto';
+{
+const copy=x=>structuredClone(x);
+function fixture(){return {
+ now:'2026-11-01T10:00:00.000Z',tenantId:'fictional-tenant',siteId:'fictional-site',latestKnownSignalRevision:8,
+ energySignal:{tenantId:'fictional-tenant',siteId:'fictional-site',status:'active',revision:8,publishedAt:'2026-11-01T09:50:00.000Z',freshUntil:'2026-11-01T11:00:00.000Z',windowEnd:'2026-11-01T12:00:00.000Z',acceptanceDeadline:'2026-11-01T10:30:00.000Z',confidence:0.9},
+ process:{tenantId:'fictional-tenant',siteId:'fictional-site',flexibilityClass:'shiftable',stateFresh:true,confidence:0.9},
+ options:[{id:'stay',kind:'do_nothing',workforce:{staffingCount:3,minimumStaffing:2,confidence:1},energy:{},labour:{},production:{}},
+ {id:'declared-maintenance',kind:'maintenance_swap',tenantId:'fictional-tenant',siteId:'fictional-site',approvalRequired:true,shiftMinutes:30,
+ workforce:{staffingCount:3,minimumStaffing:2,restCompliant:true,qualificationsValid:true,confidence:0.9},energy:{grossSaving:100},labour:{premiumCost:10},production:{penaltyCost:5,hardServiceBreach:false,qualityRisk:'acceptable'},scheduleChurnCost:2,controls:{}}]
+};}
+const v102GoldenCases = [
+["numeric confidence",()=>{},"cd7daa0be5af7c89e52f0e620ddcf72fbcb72f155e069469d1c52d61532ead08"],
+["valid numeric strings",x=>{x.energySignal.confidence='0.9';x.process.confidence='0.9';x.options[1].workforce.confidence='0.9';x.minimumDecisionConfidence='0.6';},"222e2e2734c139e57651ba9094061fee579358e66878afcd1f5793b1f74347bb"],
+["omitted confidence defaults",x=>{delete x.energySignal.confidence;delete x.process.confidence;delete x.options[1].workforce.confidence;},"e707d74bd3776903002b0e87a8f7adcab62246ec76530cc5d8a2ac792d414763"],
+["valid explicit zero threshold retains policy",x=>{x.minimumDecisionConfidence=0;x.process.confidence=0;},"9a29c05dac10d055aac57fe7ff1c92ae61789e6689e043da3710be6cc4320da2"]
+];
+for(const [label,change,want]of v102GoldenCases)test('V102 preserves valid serialized output: '+label,()=>{const data=fixture();change(data);const before=copy(data),result=evaluateEnergyFlexibility(data);assert.equal(v102CreateHash('sha256').update(JSON.stringify(result)).digest('hex'),want);assert.deepEqual(data,before);});
+function option(r){return [...r.rankedOptions,...r.rejectedOptions,...r.dominatedOptions].find(x=>x.id==='declared-maintenance');}
+function noAdvice(data){const before=copy(data),r=evaluateEnergyFlexibility(data),o=option(r);assert.equal(o.executable,false);assert.equal(r.rankedOptions.some(x=>x.id==='declared-maintenance'),false);assert.ok(o.hardConstraintFailures.length);assert.equal(r.authorityBoundary,'planning_and_workflow_handoff_only_no_direct_actuation');assert.deepEqual(data,before);}
+const paths=[['signal',x=>x.energySignal],['process',x=>x.process],['workforce',x=>x.options[1].workforce]];
+const invalid=[['nonnumeric string','not-confidence'],['infinite string','Infinity'],['above one',1.01],['below zero',-0.01],['null',null],['blank',''],['boolean true',true],['plain object',{}]];
+for(const [scope,select]of paths)for(const [name,value]of invalid)test('declared confidence refuses '+scope+' '+name,()=>{const data=fixture();select(data).confidence=value;noAdvice(data);});
+for(const [name,value]of [['null',null],['blank',''],['nonnumeric','not-threshold'],['boolean',true],['below zero',-0.1],['above one',1.1]])test('invalid explicit threshold refuses before evaluation: '+name,()=>{const data=fixture();data.minimumDecisionConfidence=value;const before=copy(data);assert.throws(()=>evaluateEnergyFlexibility(data));assert.deepEqual(data,before);});
+test('selected latest event cannot hide malformed confidence behind a valid root signal',()=>{const data=fixture();data.energyEvents=[copy(data.energySignal),{...data.energySignal,revision:9,publishedAt:'2026-11-01T09:55:00.000Z',confidence:'not-confidence'}];data.latestKnownSignalRevision=9;noAdvice(data);});
+test('low numeric confidence remains a refusal control',()=>{const data=fixture();data.options[1].workforce.confidence=0.3;noAdvice(data);});
+test('cancelled signal remains a refusal control',()=>{const data=fixture();data.energySignal.status='cancelled';noAdvice(data);});
+test('foreign process scope remains a refusal control',()=>{const data=fixture();data.process.siteId='other-site';noAdvice(data);});
+test('direct machine command remains forbidden',()=>{const data=fixture();data.options[1].controls.directMachineCommand=true;noAdvice(data);});
+
+}
