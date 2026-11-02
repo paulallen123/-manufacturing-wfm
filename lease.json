@@ -1,0 +1,27 @@
+{
+  "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
+  "state": "CLAIMED",
+  "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
+  "owner_execution": "current user-authorized inline source-renewal run",
+  "holder_token": "3394276e-94ce-49b8-a5dd-26679259724b",
+  "source": "86c5e1a2957fb1f52bb805c88b1bf70b70851fe9",
+  "source_tree": "349cf763b679ccb55696b2c2e6668327662f0937",
+  "target": "PR621/feature/vector-reviewed-source-union-616-620-20261101",
+  "expected_target_head": "35f86f7f986659720dc1593b2fd5536bcdf6696d",
+  "action": "PREPARE_AND_INDEPENDENTLY_REVIEW_SOURCE_BOUND_FREEZE_MARKER_ONLY",
+  "idempotency_key": "86c5e1a2957fb1f52bb805c88b1bf70b70851fe9:PR621:source-bound-marker-renewal:v1",
+  "issued_at": "2026-11-02T16:54:25.175148Z",
+  "expires_at": "2026-11-02T17:39:25.175148Z",
+  "allowed_actions": [
+    "immutable marker blob/tree/commit publication",
+    "independent marker custody/admission review",
+    "issue527 evidence publication"
+  ],
+  "public_product_ref_update_allowed": false,
+  "ci_trigger_allowed": false,
+  "merge_deployment_business_provider_write_allowed": false,
+  "source_review_comment": 6582425994,
+  "source_review_receipt_git_blob": "53b4fcabdca8666a77b9598011e8e7860506377b",
+  "source_review_receipt_sha256": "0b958c1ef690b899a4e4b67ba12956d162f9d5c562b4236b6c693db75660dfa5",
+  "no_ttl_takeover": "Expiry denies operations; a new owner must resolve prior state and acquire a fresh non-force fast-forward claim. Never force-push or steal a live lease."
+}

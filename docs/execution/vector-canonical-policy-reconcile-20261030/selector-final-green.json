@@ -1,9 +1,0 @@
-{
-  "test": "new tenant-scope regression selected by both ordinary Forge and Docker source policy commands",
-  "expected": true,
-  "actual": {
-    "scripts/run-forge-ci.mjs": true,
-    "Dockerfile": true
-  },
-  "exit": 0
-}

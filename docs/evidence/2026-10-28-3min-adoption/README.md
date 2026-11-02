@@ -1,9 +1,0 @@
-# 3Min integration compatibility
-
-Combines donor54882dc547e079a553efe7ccd3638557c1f9e39a with VECTOR candidate80ecc7475046059585609fec24fa7237932f95df; common base7fa8e4f370c5b3f8d19f862f07b67f11b4fa3ad8. All upstream paths preserved; three overlaps reconciled: Dockerfile, local composer, shell. Existing Help, reporting containment, session recovery and proof-runner preparation retained. No customer/service/credential change.
-
-Fresh Node24.22.1: focused receiver/UI/Help/packaging/composed61/61; auth/reporting/support/hub162/162; final composer/packaging replay24/24 after correcting unintended line-ending normalization. Zero failures/skips, exit0. Counts overlap across replay. TAP files record individual checks; source was fetched with Git blob checks. This is local assembled behavior, not Node22 immutable image, browser or customer proof.
-
-Independent read-only reviewer /root/review_3min_refresh accepted final merge. Removing only existing 3Min additions reconstructs independently fetched upstream bytes for all three merged files; 3Min UI block matches donor bytes. No remaining Critical/Important finding. Final SHA256: Docker a02d4a1182a077ef48d0ab898a28e29dc08a5ab082136c9a4e46a256144f7b27; composer66f1ca85ebcc949531bf5c7075b07737c54eb6b82e402330a4aca9328695ade1; shell059bf0ee3fc2c0ff9a20d21216a3b4fb5807d82a1b251d0ccdafa7aabf49c1ef.
-
-User explicitly requested inclusion in VECTOR. Adoption belongs in existing PR501 candidate, not a new release/service. Production activation still requires deployed receiver, exact tenant/site/source bindings, secure webhook authentication and delivery verification. Receipts remain RECEIVED_UNVALIDATED; provider-specific authorised import consumers remain separate incomplete work. Existing deployment action gates and canonical release approvals are not bypassed.

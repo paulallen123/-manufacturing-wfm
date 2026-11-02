@@ -1,7 +1,0 @@
-Hosted Staffology staging-boundary reproduction retained before correction
-Date: 2026-10-02
-Native source: 0238c3c88036f125f9c0a40f1ca0de9f8434fa67
-Authenticated GET /api/integrations: inbound=[]
-WFM_INTEGRATIONS_JSON Staffology connector: absent
-Pre-fix stagePeople result: Reviewed Staffology people connector is unavailable (503) before integrations.stage.
-Qualification: the operation profile remained absent/dormant and no provider request, import, application, credential creation, or state mutation occurred.

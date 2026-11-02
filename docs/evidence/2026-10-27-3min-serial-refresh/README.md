@@ -1,7 +1,0 @@
-# 3Min serial-build base refresh
-
-Base7fa8e4f370c5b3f8d19f862f07b67f11b4fa3ad8; prior donor052621819cce967a2c1ed888f3387325942a947c. Preserve only upstream one-token --test-concurrency=1 addition to Staffology proof suite. All test paths, deadlines, failure handling and five3Min Docker bindings retained. No application logic change. Full tree has same41 donor paths, no missing base leaves, before this evidence.
-
-Node24.22.1 local admission contract15/15, exit0, zero skips. Independent /root/review_3min_refresh ACCEPT; inverse five-edit comparison reconstructs upstream bytes exactly. Merged Docker SHA256c5b8f7a0c729d1b877c2c3305e5aa33069181083bda0a2e5187069a6424a11ff; blob5d5052985808b6420377a62d84d834bc0cb4d979. Upstreamblobfa29a950bed34a690e8cac9e704c45fbd5b83c60. Earlier53 checks remain attributed to prior refresh.
-
-Direct Railway readback27October: existing proof service48ee pinned7fa8; deploymenta312e44e-57f1-4672-99e5-d0089be97433 SUCCESS, stagednull. Actual log: healthcheck succeeded; bootstrap listening0.0.0.0:3000; fixture/demo only, productionApprovedfalse. Source suite1614/1614 and installed88/88 zero skips observed; broad695pass/12skip is separate. No proof transferred to this unmerged3Min donor or customer tenant. Formal current release approval, donor adoption/build, secure configuration/source authority, webhook credentials and provider/customer proof still required. No customer mutation/new resource or duplicate build.

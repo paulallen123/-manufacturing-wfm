@@ -1,8 +1,0 @@
-{
-  "report.json": "0d5cec62a34617d2de8f756f2347c7273fd7f960da99394e37e92d252786e943",
-  "consumer-search.json": "f49fded1e849a09f1b4ceed76f0fac2facfa4dfdd9302dc2c8081379178cd35b",
-  "red.tap": "b5605a967e7a800c6a6e3430f2668d281cd989923cadf666752ff1b35e6229d8",
-  "green.tap": "637951c5ead2f0e79fdcc23d27718afb411e754706bfdf15ce023fb26d6ffbf6",
-  "integration-fabric/runtime/batch-reconciliation.mjs": "a9b49edf640ec8edf3af4fe7586e3121b81a3e46f4e173d2265ad5a71a17fa72",
-  "integration-fabric/runtime/batch-reconciliation.test.mjs": "1da0dbc0e1c721200b556741ace495eda1c034f070d10d4c71b84d6ad739bbd0"
-}

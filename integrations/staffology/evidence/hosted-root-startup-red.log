@@ -1,9 +1,0 @@
-Hosted application root-startup reproduction retained before source correction
-Date: 2026-10-01
-Candidate: f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560
-Tree: 74aba749449f3f4cd68ee385b24637026ea90ec8
-Service: cded4ff7-24b1-4aaa-a7e2-67f143583bc2
-Environment: eed9f097-610a-416e-83b9-6bc7bdb3eeef
-Observed running application PID 1 UID: 0
-Observed cause boundary: Railway custom start command invoked node security-runtime/bootstrap.cjs directly and bypassed vector-entrypoint.sh.
-Qualification: this retained red records the observed process identity and caller path; it does not disclose credentials and made no provider request.

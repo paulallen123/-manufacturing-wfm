@@ -1,7 +1,0 @@
-{
-  "red.tap": "547943daddeebeca6f45640e9a2d3a7602e731d6a8d77b17fe07524c96101f89",
-  "green-exact.tap": "8d1ecd55b127503471261fbf5b13dabd4ab317bc6532bf570edb84fe3865fdca",
-  "report.json": "f9ca53f4a91c77bfdb5e6ce356f3bb22b9c72770958a5d64d5deaef3bb1a4d41",
-  "operations/runtime/scheduling-authority.cjs": "6f670869abe3c8a324316cf4cf61c6ed4efcf0be64cfb341601b0a0ed8280fd8",
-  "operations/runtime/scheduling-authority.test.cjs": "e6d132b42f49ad3fd43704ba5a1c14ddc4b9ea1744e47d0fe9ee42a13133e15c"
-}

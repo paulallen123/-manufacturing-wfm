@@ -1,7 +1,0 @@
-Hosted Settings & more navigation reproduction retained before correction
-Date: 2026-10-02
-Candidate: f32ca1a2672d47dcff8ef6cd1c3d71c77cf60560
-Deployment: 54e96e40-5fc2-428b-b96d-7453a5fa1810
-Observed after click: .content present; .vector-settings count=0; 37 source navigation buttons; no browser warning or error.
-Source cause: settings visibility existed only as a transient inserted DOM node. The authoritative content render could replace .content, and apply/generalPage had no state from which to recreate the open panel.
-Qualification: read-only browser observation; no provider request, configuration change, import, payroll mutation, or deployment occurred.

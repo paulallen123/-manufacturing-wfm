@@ -1,7 +1,0 @@
-{
-  "chunk_id": "6033dd",
-  "wall_time_seconds": 1.001315963,
-  "session_id": 54316,
-  "original_token_count": 44,
-  "output": "(node:2) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
-}
