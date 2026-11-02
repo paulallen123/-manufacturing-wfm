@@ -263,3 +263,63 @@ for(const failure of ['network','unavailable'])test('current saved-report '+fail
   assert.equal(x.nodes.get('[data-report-save]').textContent,'Saved');
   assert.match(x.nodes.get('[data-report-main]').textContent,/Payroll secret/);
 });
+
+test('closing and reopening during automatic save fences its pin continuation',async()=>{
+  let release,started;const pending=new Promise(resolve=>started=resolve),response=new Promise(resolve=>release=resolve);
+  const mutationCalls=[];
+  const x=fixture(1280,null,async(url,options)=>{
+    if(options?.method!=='POST')return null;
+    mutationCalls.push(url);
+    assert.equal(url,'/api/reporting/reports','old save must never continue into dashboard pin');
+    started();await response;
+    return {ok:true,status:201,json:async()=>({report:{id:'old-created',title:'Earlier synthetic version',sourceId:'payroll-control',definition:{sourceId:'payroll-control',columns:['team']}}})};
+  });
+  await x.api.open();await x.click('[data-report-template="payroll"]');
+  const pinning=x.click('[data-report-pin]');await pending;
+  assert.equal(x.nodes.get('[data-report-save]').textContent,'Saving…');
+  x.key({key:'Escape'});
+  assert.equal(x.nodes.get('vector-reporting-modal').hidden,true);
+  assert.equal(x.document.activeElement,x.launcher);
+  await x.api.open();await x.click('[data-report-saved-id="private"]');
+  const before=x.nodes.get('[data-report-main]').innerHTML;
+  const active=x.document.activeElement;
+  release();await pinning;
+  assert.deepEqual(mutationCalls,['/api/reporting/reports']);
+  assert.equal(x.nodes.get('[data-report-main]').innerHTML,before);
+  assert.equal(x.nodes.get('[data-report-save]').textContent,'Saved');
+  assert.equal(x.nodes.get('[data-report-save]').disabled,false);
+  assert.equal(x.document.activeElement,active);
+  assert.deepEqual(x.notifications,[]);
+  assert.equal(x.calls.filter(url=>url.endsWith('/catalog')).length,2);
+  assert.doesNotMatch(x.markup(),/Earlier synthetic version|old-created/);
+});
+
+test('close and reopen after durable automatic save fences pending pin continuation',async t=>{
+  const h=await lifecycle(t);await h.template();
+  const committed=h.holdNextSave(),pending=h.x.click('[data-report-pin]');
+  await committed;
+  const committedRows=h.rows();
+  assert.equal(committedRows.length,2,'automatic save committed before its response was released');
+  const created=committedRows.find(row=>row.id!==h.original.id);
+  const saved=await h.call('GET','/api/reporting/reports/'+created.id);
+  assert.equal(saved.status,200);assert.equal(saved.body.report.id,created.id);
+  const beforePins=await h.call('GET','/api/reporting/dashboards');
+  assert.equal(beforePins.status,200);assert.deepEqual(beforePins.body.dashboards,[]);
+  h.x.key({key:'Escape'});
+  assert.equal(h.x.nodes.get('vector-reporting-modal').hidden,true);
+  await h.x.api.open();await h.x.click('[data-report-saved-id="'+h.original.id+'"]');
+  const current=h.x.nodes.get('[data-report-main]').innerHTML;
+  const notifications=[...h.x.notifications];
+  h.release();await pending;
+  assert.equal(h.calls.filter(r=>r.method==='POST'&&r.url==='/api/reporting/reports').length,1);
+  assert.equal(h.calls.some(r=>r.method==='POST'&&r.url==='/api/reporting/dashboards/pin'),false);
+  assert.deepEqual(h.rows(),committedRows,'committed fictional report survives the stale response');
+  const readback=await h.call('GET','/api/reporting/reports/'+created.id);
+  assert.equal(readback.status,200);assert.equal(readback.body.report.id,created.id);
+  assert.equal(JSON.stringify(readback.body.report.definition),JSON.stringify(saved.body.report.definition));
+  const dashboards=await h.call('GET','/api/reporting/dashboards');
+  assert.equal(dashboards.status,200);assert.deepEqual(dashboards.body.dashboards,[],'no durable dashboard pin');
+  assert.equal(h.x.nodes.get('[data-report-main]').innerHTML,current);
+  assert.equal(h.saveLabel(),'Saved');assert.equal(h.x.nodes.get('[data-report-save]').disabled,false);
+  assert.deepEqual(h.x.notifications,notifications);
+});

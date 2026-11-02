@@ -24,7 +24,7 @@ function env() {
     VECTOR_CANONICAL_JS_SHA256: 'test-only', VECTOR_CANONICAL_CSS_SHA256: 'test-only', VECTOR_WORKFLOW_JS_SHA256: 'test-only'
   };
 }
-test('materializes exact four files in private isolated layout and loads real serializer', t => {
+test('materializes exact six files in private isolated layout and loads real serializer', t => {
   const root = launcher.materialize(bundle.payload, bundle.bundleHash);
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   assert.equal(fs.statSync(root).mode & 0o777, 0o700);

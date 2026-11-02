@@ -16,6 +16,7 @@ const allowed = ['PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL', 'LC_
   'SSL_CERT_FILE', 'SSL_CERT_DIR', 'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY',
   'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'];
 const forbidden = ['PROOF_PRIVATE_KEY_B64', 'WFM_STAGING_PASSWORD', 'VECTOR_PROOF_AUTH_PROFILE',
+  'VECTOR_PROOF_SIGNER_PORT', 'VECTOR_PROOF_SIGNER_TOKEN',
   'VECTOR_PROOF_ACTORS_JSON', 'VECTOR_PROOF_URL', 'WFM_EXPECTED_CANDIDATE_SHA', 'EXPECTED_DEPLOYMENT_ID',
   'EXPECTED_IMPLEMENTATION_TENANT', 'EXPECTED_IMPLEMENTATION_RUN_ID', 'EXPECTED_CONFIGURATION_DIGEST',
   'WFM_REQUIRE_VECTOR_ASSET_DIGESTS', 'WFM_REQUIRE_ACTION_AFFORDANCE_COVERAGE',
@@ -79,8 +80,8 @@ function processProbe(t, mode) {
     UNKNOWN_FUTURE_CREDENTIAL: 'FICTIONAL_FORBIDDEN_unknown' });
   const descriptors = [['manager', 'manager'], ['employee', 'employee'], ['payroll', 'payroll_admin'], ['company-admin', 'director'], ['isolation-manager', 'manager']];
   env.VECTOR_PROOF_ACTORS_JSON = JSON.stringify(descriptors.map(([slug, role], i) => ({ slug, role, email: slug + '@fixture.invalid', tenant: i === 4 ? 'other-tenant' : 'fixture-tenant' })));
-  const { privateKey } = crypto.generateKeyPairSync('ed25519');
-  env.PROOF_PRIVATE_KEY_B64 = Buffer.from(privateKey.export({ type: 'pkcs8', format: 'pem' })).toString('base64');
+  env.VECTOR_PROOF_SIGNER_PORT = '12345';
+  env.VECTOR_PROOF_SIGNER_TOKEN = 's'.repeat(43);
   const result = spawnSync(process.execPath, [bootstrap], { cwd: dir, env, encoding: 'utf8', timeout: 10000 });
   assert.equal(result.status, 0, 'Fictional process harness must reach launch');
   assert.equal(result.stdout, ''); assert.equal(result.stderr, '');
@@ -91,7 +92,7 @@ function processProbe(t, mode) {
   assert.equal(observed.process.fictionalUnknownPresent, false);
   assert.deepEqual(observed.process.keys, [...allowed].sort());
   for (const key of allowed) assert.equal(observed.process.allowed[key], env[key]);
-  assert.ok(!fs.readFileSync(receipt, 'utf8').includes(env.PROOF_PRIVATE_KEY_B64));
+  assert.ok(!fs.readFileSync(receipt, 'utf8').includes(env.VECTOR_PROOF_SIGNER_TOKEN));
 }
 
 test('actual signed runner excludes the ephemeral signer from a real browser-seam OS child', t => processProbe(t, 'signed'));

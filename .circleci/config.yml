@@ -48,14 +48,57 @@ jobs:
             test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
             printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/auth-client-source-sha.txt
             node --version > circleci-artifacts/auth-client-node-version.txt
+            require_exact_regression_test() {
+              local file=$1 expected=$2 entry mode prefix part
+              local -a components
+              entry=$(git --literal-pathspecs ls-tree HEAD -- "$file")
+              [[ "$entry" == "100644 blob $expected"$'\t'"$file" ]] || {
+                printf 'Required test HEAD entry mismatch: %s\n' "$file" >&2; return 1;
+              }
+              entry=$(git --literal-pathspecs ls-files --stage -- "$file")
+              [[ "$entry" == "100644 $expected 0"$'\t'"$file" ]] || {
+                printf 'Required test index entry mismatch: %s\n' "$file" >&2; return 1;
+              }
+              IFS=/ read -r -a components <<< "$file"
+              prefix=
+              for part in "${components[@]}"; do
+                prefix="${prefix:+$prefix/}$part"
+                [[ ! -L "$prefix" ]] || {
+                  printf 'Required test path contains symlink: %s\n' "$prefix" >&2; return 1;
+                }
+              done
+              [[ -f "$file" ]] || {
+                printf 'Required test is not a present regular file: %s\n' "$file" >&2; return 1;
+              }
+              mode=$(stat -c '%a' -- "$file")
+              (( (8#$mode & 8#111) == 0 )) || {
+                printf 'Required test has executable mode: %s\n' "$file" >&2; return 1;
+              }
+              [[ "$(git hash-object --no-filters -- "$file")" == "$expected" ]] || {
+                printf 'Required test working-tree blob mismatch: %s\n' "$file" >&2; return 1;
+              }
+              git --literal-pathspecs diff --no-ext-diff --quiet HEAD -- "$file" || {
+                printf 'Required test is dirty: %s\n' "$file" >&2; return 1;
+              }
+              printf '100644 %s 0\t%s\n' "$expected" "$file"
+            }
+            {
+              require_exact_regression_test docs/execution/proof-runner-activation/dependency-security.test.cjs dd9dff48d2ac4a4e753f9b6477c75634233bea56
+              require_exact_regression_test reporting/runtime/vector-reporting-create-audit-atomicity.test.cjs abc6f4e57f0e6c55a5633c93328b167c227614a3
+              require_exact_regression_test reporting/runtime/vector-reporting-version-audit-atomicity.test.cjs 17cc738ebb972d86e880a3ab21d755e91cf41b7a
+              require_exact_regression_test reporting/runtime/vector-reporting-mutation-audit-atomicity.test.cjs e30653870986f20edaf04ff62f9e6d93a5575abd
+            } > circleci-artifacts/required-regression-test-git-blobs.txt
+            cat circleci-artifacts/required-regression-test-git-blobs.txt
             git ls-files --stage -- scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/frozen-candidate-gate-git-blobs.txt
             git ls-files --stage -- .circleci/config.yml artifact/vector-proof-freeze.trigger Dockerfile.current-candidate-role-browser-proof scripts/current-candidate-role-browser-proof.mjs scripts/current-candidate-role-browser-proof.auth.test.mjs scripts/current-candidate-role-browser-proof-server.mjs scripts/current-candidate-role-browser-proof-server.test.mjs scripts/vector-proof-result.mjs security/runtime/proof-runner-auth.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/identity-survival-guard.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/runtime-identity.cjs security/runtime/runtime-identity.test.cjs security/runtime/bootstrap.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/one-day-enterprise-engine.test.cjs scripts/run-forge-ci.mjs > circleci-artifacts/auth-client-git-blobs.txt
-            git ls-files --stage -- docs/execution/proof-runner-activation/README.md docs/execution/proof-runner-activation/launcher.cjs docs/execution/proof-runner-activation/prepare.cjs docs/execution/proof-runner-activation/launcher.test.cjs docs/execution/proof-runner-activation/preflight.test.cjs docs/execution/proof-runner-activation/child-environment.test.cjs docs/execution/proof-runner-activation/source-binding.test.cjs docs/execution/proof-runner-activation/published-source.test-fixture.cjs docs/execution/proof-runner-activation/generated/bundle.json docs/execution/proof-runner-activation/generated/manifest.json docs/execution/proof-runner-activation/generated/start-command.txt scripts/current-candidate-role-browser-proof.environment.test.mjs > circleci-artifacts/cp001-unpublished-runner-git-blobs.txt
+            git ls-files --stage -- docs/execution/proof-runner-activation/README.md docs/execution/proof-runner-activation/launcher.cjs docs/execution/proof-runner-activation/prepare.cjs docs/execution/proof-runner-activation/launcher.test.cjs docs/execution/proof-runner-activation/preflight.test.cjs docs/execution/proof-runner-activation/child-environment.test.cjs docs/execution/proof-runner-activation/dependency-security.test.cjs docs/execution/proof-runner-activation/source-binding.test.cjs docs/execution/proof-runner-activation/published-source.test-fixture.cjs docs/execution/proof-runner-activation/generated/bundle.json docs/execution/proof-runner-activation/generated/manifest.json docs/execution/proof-runner-activation/generated/start-command.txt scripts/current-candidate-role-browser-proof.environment.test.mjs > circleci-artifacts/cp001-unpublished-runner-git-blobs.txt
+            git ls-files --stage -- reporting/runtime/vector-reporting-service.cjs reporting/runtime/vector-reporting-create-audit-atomicity.test.cjs reporting/runtime/vector-reporting-version-audit-atomicity.test.cjs reporting/runtime/vector-reporting-mutation-audit-atomicity.test.cjs > circleci-artifacts/reporting-audit-git-blobs.txt
             node --test \
               scripts/require-frozen-candidate.test.mjs \
               docs/execution/proof-runner-activation/launcher.test.cjs \
               docs/execution/proof-runner-activation/preflight.test.cjs \
               docs/execution/proof-runner-activation/child-environment.test.cjs \
+              docs/execution/proof-runner-activation/dependency-security.test.cjs \
               docs/execution/proof-runner-activation/source-binding.test.cjs \
               scripts/current-candidate-role-browser-proof.environment.test.mjs \
               scripts/current-candidate-role-browser-proof.auth.test.mjs \
@@ -64,6 +107,9 @@ jobs:
               security/runtime/runtime-identity.test.cjs \
               security/runtime/bootstrap-proof-runner-wiring.test.cjs \
               scripts/current-candidate-role-browser-proof-server.test.mjs \
+              reporting/runtime/vector-reporting-create-audit-atomicity.test.cjs \
+              reporting/runtime/vector-reporting-version-audit-atomicity.test.cjs \
+              reporting/runtime/vector-reporting-mutation-audit-atomicity.test.cjs \
               2>&1 | tee circleci-artifacts/auth-client-tests.tap
       - run:
           name: Current FORGE source validation

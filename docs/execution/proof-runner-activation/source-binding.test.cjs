@@ -58,21 +58,21 @@ test('unpublished command copy rejects without fetching, installing or reading s
   assert.deepEqual(fs.readdirSync(root), ['offline-only.cjs']);
 });
 
-test('prepared launcher names the immutable published four-file source', () => {
-  assert.equal(launcher.SOURCE, '0aa1a27a5fef154a63fbb4ad4a82ee3b90e4b36d');
+test('prepared launcher names the immutable published six-file source', () => {
+  assert.equal(launcher.SOURCE, '497a5b3707389dcef0bdd72cb3bad7eeb6781a11');
   assert.doesNotThrow(() => launcher.validateRunnerSource());
 });
 test('prepared manifest binds the bundle and exact command while leaving activation gated', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'generated/manifest.json'), 'utf8'));
   const bundle = JSON.parse(fs.readFileSync(path.join(__dirname, 'generated/bundle.json'), 'utf8'));
   const command = fs.readFileSync(path.join(__dirname, 'generated/start-command.txt'));
-  assert.equal(manifest.sourceCommitBinding, '0aa1a27a5fef154a63fbb4ad4a82ee3b90e4b36d');
+  assert.equal(manifest.sourceCommitBinding, '497a5b3707389dcef0bdd72cb3bad7eeb6781a11');
   assert.equal(manifest.source, launcher.SOURCE);
   assert.equal(manifest.runnerSource, launcher.SOURCE);
   assert.equal(manifest.bundleSha256, bundle.bundleHash);
   assert.equal(manifest.startCommandSha256, createHash('sha256').update(command).digest('hex'));
   assert.deepEqual(manifest.files, launcher.FILES);
-  assert.equal(launcher.validateBundle(bundle.payload, bundle.bundleHash).length, 4);
+  assert.equal(launcher.validateBundle(bundle.payload, bundle.bundleHash).length, 6);
   for (const [file, digest] of Object.entries(launcher.FILES))
     assert.equal(createHash('sha256').update(fs.readFileSync(path.resolve(__dirname, '../../..', file))).digest('hex'), digest);
   assert.equal(manifest.intendedReviewedTargetSha, null);
