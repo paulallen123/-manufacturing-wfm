@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "user-authorized inline reporting refusal intake 6c1163b2-752e-4579-b802-90ed9fa18eda",
   "holder_token": "6c1163b2-752e-4579-b802-90ed9fa18eda",
@@ -38,5 +38,22 @@
   "ci_trigger_allowed": false,
   "merge_deployment_business_provider_write_allowed": false,
   "previous_released_commit": "cecc2a90d42636d5d41446aebaef852fe38a1492",
-  "no_scope_transfer": "UI refusal containment only; no backend authority, new filter semantics, all-format export or customer readiness claim"
+  "no_scope_transfer": "UI refusal containment only; no backend authority, new filter semantics, all-format export or customer readiness claim",
+  "previous_claim_commit": "1ff2061cd60b3607ef17e5b9938a9a4e43b55f31",
+  "finished_at": "2026-11-02T18:00:17.414Z",
+  "terminal_result": "REVIEWED_REPORTING_REFUSAL_INTAKE_ACCEPTED",
+  "candidate": "a29ded2b89a915965194b32e20a5503de4d64f4e",
+  "candidate_tree": "0ae4154eb3b80867f5eee210a9195442382ac989",
+  "source_verdict": "ACCEPT_UI_REFUSAL_CONTAINMENT_AND_SELECTION_ONLY",
+  "source_review_receipt_git_blob": "1c6f53d96aa3cd36a57f26440e14f1f5fde2a6a5",
+  "source_review_receipt_sha256": "33069458b490f88f193077f6e9a4258cbb16a003ce04868b6c7f445d886bd279",
+  "primary_validation_receipt_git_blob": "23d4520bea6ede0adc30c71fe05ca5779a68c98a",
+  "primary_validation_receipt_sha256": "b7a519a62eed04336ab6fd884e97c1e348e62887a7aec59f0be4da71e7174588",
+  "completion_comment_id": 6584415242,
+  "all_mutations_and_probes_settled": true,
+  "reviewer_tasks_terminal": true,
+  "no_inflight_operation": true,
+  "admitted": false,
+  "release_readiness": "BLOCK: marker, current-ref CI/cleaninstall/imagePID1/security/recovery/authority/customer gates",
+  "next_step": "Fresh appropriate source-marker scope and exact marker review before normal eligible feature-source CI; no deployment or source status transfer"
 }
