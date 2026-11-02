@@ -302,3 +302,103 @@ test('the action surface explains unavailable and partial evidence to the signed
  vector.state.timeReviewEvidence.status='unavailable';assert.match(vector.alertsMarkup([]),/Source evidence is unavailable/);
  vector.state.timeReviewEvidence.status='partial';assert.match(vector.alertsMarkup([]),/Some source evidence is unavailable/);
 });
+
+// Reviewed personal-home balance and source-time regressions; execute the production markup.
+{
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
+const file=process.env.V068_SHELL||__dirname+'/vector-shell.js';
+const source=fs.readFileSync(file,'utf8');
+if(process.env.V068_SHA)assert.equal(crypto.createHash('sha256').update(source).digest('hex'),process.env.V068_SHA);
+// Evaluate the actual complete production function bodies, with only their environmental dependencies mocked.
+function section(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);}
+const actor={id:'fictional-person',tenant:'fictional-tenant',role:'employee'};
+const ui={page:'overview',root:'fictional-root'};
+const session=new Map([['fixture','untouched']]);
+const renders=[],historyCalls=[];
+const ctx=vm.createContext({Intl,Date,ui,actor,session,console,
+ state:{calendar:{value:null},settingsOpen:true},navigationEpoch:0,
+ authoritativeTimeZone:()=>'',zonedDate:()=>null,displayName:()=> 'Fictional employee',icon:()=>'',
+ esc:v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+ resolvedRoute:r=>r,available:r=>['personal','leave','shifts'].includes(r),routeHash:r=>'#'+r,
+ document:{getElementById:()=>null,body:{classList:{remove(){}}}},location:{hash:''},
+ history:{pushState:(...x)=>historyCalls.push(x)},window:{render:async()=>renders.push(ui.page),scrollTo(){}},apply(){}});
+vm.runInContext(section('function employeeHomeMarkup(v){','const employeeHomeRenderCache')+'\n'+section('async function go(route,','function restoreRoute'),ctx);
+function markup(leave){return ctx.employeeHomeMarkup({identity:{name:'Fictional <name>'},leave,clock:{status:'Off duty'},shifts:[],requests:[]});}
+function balance(html){const m=html.match(/<b>Available leave<\/b><strong>(.*?)<\/strong>/);assert.ok(m,'employee balance tile exists');return m[1];}
+test('employee home preserves finite numeric zero, positive and negative balances',()=>{
+ for(const [minutes,want] of [[0,'0 h'],[90,'1.5 h'],[-30,'-0.5 h']])assert.equal(balance(markup({availableMinutes:minutes})),want);
+});
+test('employee home never invents a verified balance from unknown or malformed values',async t=>{
+ for(const [label,value] of [['missing',undefined],['null',null],['empty string',''],['whitespace',' '],['numeric string','60'],['false',false],['true',true],['array',[]],['object',{}],['NaN',NaN],['Infinity',Infinity],['negative Infinity',-Infinity]])await t.test(label,()=>assert.equal(balance(markup({availableMinutes:value})),'—'));
+ assert.equal(balance(markup(null)),'—');
+});
+test('employee markup retains personal, leave and shifts navigation and escapes identity',async()=>{
+ const html=markup({availableMinutes:0});
+ assert.ok(html.includes('<h1>Fictional &lt;name&gt;</h1>'));
+ assert.ok(html.includes('<strong>Off duty</strong>'));
+ const before=JSON.stringify({actor,session:[...session],root:ui.root});
+ for(const route of ['personal','leave','shifts']){
+  assert.ok(html.includes('data-vector-route="'+route+'"'));
+  assert.equal(await ctx.go(route),true);assert.equal(ui.page,route);
+ }
+ assert.deepEqual(renders,['personal','leave','shifts']);
+ assert.deepEqual(historyCalls.map(x=>x[2]),['#personal','#leave','#shifts']);
+ assert.equal(JSON.stringify({actor,session:[...session],root:ui.root}),before);
+});
+}
+
+{
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
+const source=fs.readFileSync(process.env.V068_TIME_SHELL||__dirname+'/vector-shell.js','utf8');
+if(process.env.V068_TIME_SHA)assert.equal(crypto.createHash('sha256').update(source).digest('hex'),process.env.V068_TIME_SHA);
+const start=source.indexOf('function employeeHomeMarkup(v){'),end=source.indexOf('const employeeHomeRenderCache',start);assert.ok(start>=0&&end>start);
+// Production markup function only; no system clock fallback and no network dependency.
+const state={calendar:{value:null}};
+const ctx=vm.createContext({state,Date,Intl,authoritativeTimeZone:()=>'',zonedDate:()=>null,displayName:()=> 'Fictional person',icon:()=>'',esc:v=>String(v??'')});
+vm.runInContext(source.slice(start,end),ctx);
+const future={job:'Fictional future assignment',site:'Fixture site',start:'2032-02-03T10:00:00Z',end:'2032-02-03T18:00:00Z'};
+function assignmentSection({calendarTime,personalTime,shifts=[future]}={}){
+ state.calendar.value=calendarTime===undefined?null:{asOf:calendarTime};
+ const html=ctx.employeeHomeMarkup({identity:{name:'Fictional person'},serverTime:personalTime,leave:{availableMinutes:0},shifts,requests:[]});
+ const m=html.match(/<h2>Upcoming assignments<\/h2>([\s\S]*?)<\/section>/);assert.ok(m);return m[1];
+}
+test('unknown source time cannot establish an empty upcoming-assignment list',async t=>{
+ for(const [label,input] of [['missing',{}],['invalid personal',{personalTime:'invalid-source-time'}],['invalid calendar',{calendarTime:'invalid-source-time'}],['invalid selected calendar despite valid personal',{calendarTime:'invalid-source-time',personalTime:'2032-02-03T09:00:00Z'}]])await t.test(label,()=>{
+  const section=assignmentSection(input);
+  assert.doesNotMatch(section,/No upcoming published assignments/);
+  assert.match(section,/(?:cannot be verified|not verified|unavailable)/i);
+  assert.doesNotMatch(section,/Fictional future assignment/);
+ });
+});
+test('valid source time preserves future rows and genuine empty states',()=>{
+ for(const input of [{personalTime:'2032-02-03T09:00:00Z'},{calendarTime:'2032-02-03T09:00:00Z'}]){
+  const section=assignmentSection(input);assert.match(section,/Fictional future assignment/);assert.match(section,/>Published</);assert.doesNotMatch(section,/No upcoming published assignments/);
+ }
+ for(const shifts of [[],[{...future,end:'2032-02-02T18:00:00Z'}]]){
+  const section=assignmentSection({personalTime:'2032-02-03T09:00:00Z',shifts});assert.match(section,/No upcoming published assignments are in your current personal record\./);
+ }
+});
+}
+
+test('V068 selected fictional personal refresh distinguishes unknown from numeric zero',async()=>{
+ const actor={tenant:'fictional-refresh-tenant',email:'person@fixture.invalid',id:'fictional-refresh-person',role:'employee'};
+ const calls=[];let redraws=0;
+ const api=loadVectorHelpers({actor,render:async()=>{redraws++;},fetch:async(url,options)=>{
+  assert.equal(url,'/api/personal','only the mocked personal source is requested');
+  assert.equal(options.method,'GET');assert.equal(options.credentials,'same-origin');assert.equal(options.cache,'no-store');
+  calls.push(url);assert.ok(calls.length<=2,'unexpected mock read');
+  return {ok:true,json:async()=>({identity:{name:'Fictional refresh person'},leave:{availableMinutes:calls.length===1?null:0},shifts:[],requests:[]})};
+ }});
+ api.state.calendar={status:'ready',requestedAt:0,value:{tenant:actor.tenant,asOf:new Date().toISOString(),timeZone:'Europe/London',maxAgeMs:300000}};
+ const content={html:'',dataset:{},isConnected:true,get innerHTML(){return this.html;},set innerHTML(value){this.html=value;},querySelector(selector){return this.html.includes(selector.slice(1,-1))?{}:null;}};
+ const tile=()=>{const m=content.html.match(/<b>Available leave<\/b><strong>(.*?)<\/strong>/);assert.ok(m,'personal home balance tile rendered');return m[1];};
+ await api.renderEmployeeHome(content);
+ assert.equal(tile(),'—','mock null balance must remain unverified');assert.equal(calls.length,1);
+ await api.render();assert.equal(redraws,1,'existing host renderer is called through the shell wrapper');
+ await api.renderEmployeeHome(content);
+ assert.equal(tile(),'0 h','fresh numeric zero must render as recorded zero');
+ assert.deepEqual(calls,['/api/personal','/api/personal']);
+ assert.equal(api.state.employeeHome.value.leave.availableMinutes,0);
+});
