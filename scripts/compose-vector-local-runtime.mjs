@@ -28,6 +28,22 @@ function validateSealedRuntime(runtime) {
     if (runtimeManifest[relative] !== digest) throw Error('SEALED_MANIFEST_MISMATCH: ' + relative);
   }
 }
+function composeNangoMetadata(runtime, server) {
+  const sources = ['integration/runtime/nango-credential-provider.cjs', 'integration/runtime/provider-metadata-review.cjs'];
+  const importAnchor = "const IG=require('./lib/integration-gateway.cjs')";
+  const brokerAnchor = 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider})';
+  const statusAnchor = 'providerMetadataBroker:providerMetadataBroker.status()';
+  if ([importAnchor, brokerAnchor, statusAnchor].some(anchor => server.split(anchor).length !== 2) || server.includes('const NangoCredentialProvider=') || server.includes('const ProviderMetadataReview=')) throw Error('NANGO_METADATA_BROKER_ANCHOR_CHANGED');
+  for (const source of sources) {
+    recordInput(source);
+    const target = path.join(runtime, 'integration-runtime', path.basename(source));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(root, source), target);
+  }
+  return server.replace(importAnchor, "const NangoCredentialProvider=require('./integration-runtime/nango-credential-provider.cjs');\nconst ProviderMetadataReview=require('./integration-runtime/provider-metadata-review.cjs');\n" + importAnchor)
+    .replace(brokerAnchor, 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider,credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})})')
+    .replace(statusAnchor, 'providerMetadataBroker:ProviderMetadataReview.statusForActor(providerMetadataBroker.status(),a)');
+}
 function composeStaffology(runtime) {
   validateSealedRuntime(runtime);
   const operationsRuntimeDir=path.join(runtime,'operations-runtime');fs.mkdirSync(operationsRuntimeDir,{recursive:true});
@@ -131,6 +147,7 @@ function composeStaffology(runtime) {
   const applyReceiptAnchor="});if(result.replayed){db.exec('ROLLBACK');return json(res,200,{...result,version:state.version});}";
   if(server.split(applyReceiptAnchor).length!==2)throw Error('STAFFOLOGY_APPLY_RECEIPT_ANCHOR_CHANGED');
   server=server.replace(applyReceiptAnchor,"});staffologyEmployeePreviews.afterApply(a,input.id);if(result.replayed){db.exec('ROLLBACK');return json(res,200,{...result,version:state.version});}");
+  server = composeNangoMetadata(runtime, server);
   fs.writeFileSync(serverPath, server);
   const receipt = {
     schemaVersion: 1,
