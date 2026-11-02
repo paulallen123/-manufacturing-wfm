@@ -8,6 +8,7 @@ const checks = [
   ['node', ['integration/runtime/provider-metadata-review.test.cjs']],
   ['node', ['ux-overlay/vector-provider-metadata.test.cjs']],
   ['node', ['--test', 'integration/runtime/autonomous-integration-hub.identity-consumer.test.cjs']],
+  ['node', ['--test', 'integration/runtime/autonomous-integration-hub.audit-atomicity.test.cjs']],
   ['node', ['--test', 'ux-overlay/vector-action-queue.test.cjs', 'ux-overlay/vector-settings-navigation.test.cjs', 'ux-overlay/vector-leave-balance-display.test.cjs']],
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
