@@ -28,7 +28,12 @@ function browserEnvironment(env) {
 }
 
 function requireBlocked(env, field) {
-  assert.throws(() => createProofClient(browserEnvironment(env)), 'Actual client must reject the shared invalid binding without a signer key masking the failure.');
+  const invokeClient = () => createProofClient(browserEnvironment(env));
+  if (['EXPECTED_DEPLOYMENT_ID', 'EXPECTED_IMPLEMENTATION_TENANT', 'EXPECTED_IMPLEMENTATION_RUN_ID'].includes(field)) {
+    assert.throws(invokeClient, { message: 'Explicit proof binding required: ' + field });
+  } else {
+    assert.throws(invokeClient, 'Actual client must reject the shared invalid binding without a signer key masking the failure.');
+  }
   const result = inspectProofAccess(env);
   assert.equal(result.status, 'BLOCKED');
   assert.ok(result.invalid.includes(field), 'Expected invalid field: ' + field);
@@ -55,7 +60,13 @@ test('preflight accepts the same HTTPS origin spellings as the signed client', (
 for (const field of ['EXPECTED_DEPLOYMENT_ID', 'EXPECTED_IMPLEMENTATION_TENANT', 'EXPECTED_IMPLEMENTATION_RUN_ID']) {
   test('preflight enforces trimmed bounded client binding: ' + field, () => {
     for (const value of [' ', ' leading', 'trailing ', 'x'.repeat(161), 7]) {
-      requireBlocked({ ...valid(), [field]: value }, field);
+      const env = { ...valid(), [field]: value };
+      if (field === 'EXPECTED_IMPLEMENTATION_TENANT' && typeof value === 'string') {
+        const actors = JSON.parse(env.VECTOR_PROOF_ACTORS_JSON);
+        for (const actor of actors) if (actor.slug !== 'isolation-manager') actor.tenant = value;
+        env.VECTOR_PROOF_ACTORS_JSON = JSON.stringify(actors);
+      }
+      requireBlocked(env, field);
     }
     const env = valid();
     env[field] = 'x'.repeat(160);
