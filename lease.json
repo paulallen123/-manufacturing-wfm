@@ -1,59 +1,38 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "user-authorized inline reporting refusal intake 6c1163b2-752e-4579-b802-90ed9fa18eda",
-  "holder_token": "6c1163b2-752e-4579-b802-90ed9fa18eda",
-  "source": "6a799ce78caae60958a87231fb919b6c84a9f32b",
-  "source_tree": "72f3a2393c147b2fbb180eeb51b6b4fca4f65af6",
+  "owner_execution": "user-authorized combined-source marker renewal ab72450d-2833-4f74-a6a5-d61428733720",
+  "holder_token": "ab72450d-2833-4f74-a6a5-d61428733720",
+  "source": "a29ded2b89a915965194b32e20a5503de4d64f4e",
+  "source_tree": "0ae4154eb3b80867f5eee210a9195442382ac989",
   "target": "PR621/feature/vector-reviewed-source-union-616-620-20261101",
   "expected_target_head": "35f86f7f986659720dc1593b2fd5536bcdf6696d",
-  "action": "PRIVATE_REVIEWED_V079_REPORTING_REFUSAL_INTAKE_AND_DISTINCT_SOURCE_REVIEW",
-  "idempotency_key": "6a799ce78caae60958a87231fb919b6c84a9f32b:22d62de81f4d3da966c3745faf44c21c8503aea0:PR621:reporting-refusal-v1",
-  "issued_at": "2026-11-02T17:44:09.188308Z",
-  "expires_at": "2026-11-02T18:29:09.188308Z",
+  "action": "PRIVATE_COMBINED_SOURCE_BOUND_MARKER_RENEWAL_AND_DISTINCT_REVIEW",
+  "idempotency_key": "a29ded2b89a915965194b32e20a5503de4d64f4e:PR621:source-bound-marker-v1",
+  "issued_at": "2026-11-02T18:05:12.500776Z",
+  "expires_at": "2026-11-02T18:50:12.500776Z",
   "allowed_paths": [
-    "reporting/ui/vector-reporting-ui.js",
-    "reporting/ui/vector-reporting-saved-filter-refusal.test.cjs",
-    "Dockerfile",
-    "scripts/run-forge-ci.mjs"
-  ],
-  "reviewed_patch_git_blob": "5a809aa15391fc031cdd0a85544b007390ff9769",
-  "reviewed_fixture_git_blob": "bd9689a9a88a3578eed5e30ff574099189bb7b1d",
-  "expected_ui_blob": "22d62de81f4d3da966c3745faf44c21c8503aea0",
-  "reviewed_evidence_comments": [
-    6583641372,
-    6583754479
+    "artifact/vector-proof-freeze.trigger"
   ],
   "allowed_actions": [
-    "private exact reviewed patch composition",
-    "mechanical fixture default-path adaptation to checked-in source",
-    "owned Docker and standalone Forge test selection",
-    "source validation",
-    "immutable candidate/receipt publication",
-    "distinct source review",
-    "issue527 evidence publication"
+    "append-only source-bound marker preparation",
+    "immutable marker blob/tree/commit publication",
+    "local exact-marker admission validation",
+    "distinct marker review",
+    "immutable receipt and issue527 evidence publication"
   ],
   "public_product_ref_update_allowed": false,
   "ci_trigger_allowed": false,
   "merge_deployment_business_provider_write_allowed": false,
-  "previous_released_commit": "cecc2a90d42636d5d41446aebaef852fe38a1492",
-  "no_scope_transfer": "UI refusal containment only; no backend authority, new filter semantics, all-format export or customer readiness claim",
-  "previous_claim_commit": "1ff2061cd60b3607ef17e5b9938a9a4e43b55f31",
-  "finished_at": "2026-11-02T18:00:17.414Z",
-  "terminal_result": "REVIEWED_REPORTING_REFUSAL_INTAKE_ACCEPTED",
-  "candidate": "a29ded2b89a915965194b32e20a5503de4d64f4e",
-  "candidate_tree": "0ae4154eb3b80867f5eee210a9195442382ac989",
-  "source_verdict": "ACCEPT_UI_REFUSAL_CONTAINMENT_AND_SELECTION_ONLY",
-  "source_review_receipt_git_blob": "1c6f53d96aa3cd36a57f26440e14f1f5fde2a6a5",
-  "source_review_receipt_sha256": "33069458b490f88f193077f6e9a4258cbb16a003ce04868b6c7f445d886bd279",
-  "primary_validation_receipt_git_blob": "23d4520bea6ede0adc30c71fe05ca5779a68c98a",
-  "primary_validation_receipt_sha256": "b7a519a62eed04336ab6fd884e97c1e348e62887a7aec59f0be4da71e7174588",
-  "completion_comment_id": 6584415242,
-  "all_mutations_and_probes_settled": true,
-  "reviewer_tasks_terminal": true,
-  "no_inflight_operation": true,
-  "admitted": false,
-  "release_readiness": "BLOCK: marker, current-ref CI/cleaninstall/imagePID1/security/recovery/authority/customer gates",
-  "next_step": "Fresh appropriate source-marker scope and exact marker review before normal eligible feature-source CI; no deployment or source status transfer"
+  "previous_released_commit": "0bab58ddcb459e3bdc46838e44898f3e4b3ab47c",
+  "source_review_receipts": [
+    "7d5c17b6068b02dac2d146a1f56cf22a27b1d662",
+    "1c6f53d96aa3cd36a57f26440e14f1f5fde2a6a5"
+  ],
+  "known_release_blocks": [
+    "exact-image no-init PID1 cleanup failure6584309848",
+    "current-ref CI/cleaninstall/security/recovery/authority/customer proof remains"
+  ],
+  "no_scope_transfer": "Marker review alone gives no productref,CI,canonical adoption, deployment or signer/provider authority; any later operation needs an appropriate fresh scope."
 }
