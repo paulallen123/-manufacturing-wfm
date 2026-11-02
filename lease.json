@@ -1,54 +1,50 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "user-authorized combined-source marker renewal ab72450d-2833-4f74-a6a5-d61428733720",
-  "holder_token": "ab72450d-2833-4f74-a6a5-d61428733720",
-  "source": "a29ded2b89a915965194b32e20a5503de4d64f4e",
-  "source_tree": "0ae4154eb3b80867f5eee210a9195442382ac989",
+  "owner_execution": "user-authorized normal existing feature-source CI d06f58c1-91e7-495a-a941-263d457275e2",
+  "holder_token": "d06f58c1-91e7-495a-a941-263d457275e2",
+  "source": "0aef545a1885a371df0e13fff5be154a0546dd54",
+  "source_tree": "2dd8bc4ecc9032ee3e823f4d9c764e3e59c02f49",
   "target": "PR621/feature/vector-reviewed-source-union-616-620-20261101",
   "expected_target_head": "35f86f7f986659720dc1593b2fd5536bcdf6696d",
-  "action": "PRIVATE_COMBINED_SOURCE_BOUND_MARKER_RENEWAL_AND_DISTINCT_REVIEW",
-  "idempotency_key": "a29ded2b89a915965194b32e20a5503de4d64f4e:PR621:source-bound-marker-v1",
-  "issued_at": "2026-11-02T18:05:12.500776Z",
-  "expires_at": "2026-11-02T18:50:12.500776Z",
-  "allowed_paths": [
-    "artifact/vector-proof-freeze.trigger"
-  ],
+  "action": "NORMAL_EXISTING_FEATURE_SOURCE_CAS_AND_CI_READBACK",
+  "idempotency_key": "0aef545a1885a371df0e13fff5be154a0546dd54:PR621:ordinary-feature-source-CI:v1",
+  "issued_at": "2026-11-02T18:20:13.750285Z",
+  "expires_at": "2026-11-02T19:35:13.750285Z",
+  "previous_released_commit": "cd5f9461d8278b41b3225f06dbd793fc5d66c2b5",
+  "allowed_paths": [],
   "allowed_actions": [
-    "append-only source-bound marker preparation",
-    "immutable marker blob/tree/commit publication",
-    "local exact-marker admission validation",
-    "distinct marker review",
-    "immutable receipt and issue527 evidence publication"
+    "fresh read exact current source/marker/review/target/workflow effects and ownership",
+    "one normal non-force expected-head CAS of existing PR621 feature branch from35f to0aef after distinct pre-mutation review",
+    "read back actual branch/PR head and resulting existing CircleCI checks",
+    "immutable exact action/status/review receipts and issue527 evidence publication",
+    "update existing PR621 description to reviewed final scope if source head readback matches; keep DRAFT"
   ],
-  "public_product_ref_update_allowed": false,
-  "ci_trigger_allowed": false,
+  "public_product_ref_update_allowed": true,
+  "allowed_product_branch": "feature/vector-reviewed-source-union-616-620-20261101",
+  "allowed_ref_update": {
+    "from": "35f86f7f986659720dc1593b2fd5536bcdf6696d",
+    "to": "0aef545a1885a371df0e13fff5be154a0546dd54",
+    "expected_sha_required": true,
+    "force": false,
+    "provider_policy_bypass_allowed": false
+  },
+  "ci_trigger_allowed": true,
+  "ci_trigger_scope": "Only ordinary existing CircleCI pipeline as consequence of the single feature branch CAS; no workflow dispatch/rerun/filter/config changes, no new services/resources, no Vercel/sandbox transfer or image-security reroute",
   "merge_deployment_business_provider_write_allowed": false,
-  "previous_released_commit": "0bab58ddcb459e3bdc46838e44898f3e4b3ab47c",
   "source_review_receipts": [
     "7d5c17b6068b02dac2d146a1f56cf22a27b1d662",
     "1c6f53d96aa3cd36a57f26440e14f1f5fde2a6a5"
   ],
+  "marker_review_receipt": "8e412f676bb71d0c0a010d7bdeb333250121a765",
+  "terminal_marker_comment": "https://github.com/paulallen123/-manufacturing-wfm/issues/527#issuecomment-6584794126",
+  "workflow_effect_inspection_sha256": "bd1e844c62f65ee8bd0cb07fbbabc86753ff34271fa080ea2e3fb8a0a88a5fd6",
+  "policy_limits": "Repository rulesets read[]; legacy branch-protection not readable by managed App; ordinary provider-enforced non-force action only, no explicit bypass. Ref/policy failure denies and must be recorded, never force-retried.",
   "known_release_blocks": [
-    "exact-image no-init PID1 cleanup failure6584309848",
-    "current-ref CI/cleaninstall/security/recovery/authority/customer proof remains"
+    "exact-image no-init PID1 cleanup failure and effective Railway reaper parity, terminal receipt45a7c89858ea486867c7ecc885d610dc3b7e58bf",
+    "current-source full integration/core/runtime CI and clean install still unproven at acquisition",
+    "separate formal policy/review, image/security/recovery, actual signer/tenant/run/configuration and serving intended-role durable customer/provider acceptance"
   ],
-  "no_scope_transfer": "Marker review alone gives no productref,CI,canonical adoption, deployment or signer/provider authority; any later operation needs an appropriate fresh scope.",
-  "released_at": "2026-11-02T18:18:38.842Z",
-  "released_claim_commit": "68f46e1400403a571053e6b5e6383781ea725ef6",
-  "terminal_outcome": {
-    "marker_commit": "0aef545a1885a371df0e13fff5be154a0546dd54",
-    "marker_tree": "2dd8bc4ecc9032ee3e823f4d9c764e3e59c02f49",
-    "pool_p_verdict": "ACCEPT_MARKER_ONLY",
-    "independent_receipt": "8e412f676bb71d0c0a010d7bdeb333250121a765",
-    "receipt_sha256": "a6c6a80a7ca367dc1145515f35cf336034df30424a8b02640265a7809b6100a8",
-    "terminal_comment": "https://github.com/paulallen123/-manufacturing-wfm/issues/527#issuecomment-6584794126",
-    "all_primary_and_review_processes_settled": true,
-    "product_ref_and_CI_unchanged": true,
-    "release_verdict": "BLOCK",
-    "retained_updated_image_receipt": "45a7c89858ea486867c7ecc885d610dc3b7e58bf",
-    "no_init_PID1_cleanup_failure_retained": true
-  },
-  "next_scope_requirement": "A later normal feature-source ref/CI operation requires a fresh appropriate claim from this RELEASED commit, exact source0aef/current target and applicable provider controls; no permission transfers."
+  "no_scope_transfer": "Source-ref/normal CI preparation is not canonical adoption, main/#501 update, merge, Railway config/apply/deploy, Vercel disclosure, image security acceptance, signer activation or customer/provider business authority; staged proof patch untouched."
 }
