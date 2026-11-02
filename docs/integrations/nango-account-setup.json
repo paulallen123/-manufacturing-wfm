@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "observedOn": "2026-10-31",
+  "environment": "prod",
+  "dashboardUrl": "https://app.nango.dev/prod/integrations",
+  "plan": {
+    "name": "Free",
+    "monthlySubscriptionUsd": 0,
+    "hardCapped": true,
+    "limits": {
+      "connections": 10,
+      "monthlyComputeHours": 10,
+      "monthlyDataTransferGb": 10
+    },
+    "observedUsage": {
+      "connections": 0,
+      "computeHours": 0,
+      "dataTransferGb": 0
+    }
+  },
+  "integrations": [
+    {
+      "provider": "netsuite",
+      "integrationId": "netsuite",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    },
+    {
+      "provider": "sap-odata-oauth2-cc",
+      "integrationId": "sap-odata-oauth2-cc",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    },
+    {
+      "provider": "sap-success-factors",
+      "integrationId": "sap-success-factors",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    },
+    {
+      "provider": "gusto",
+      "integrationId": "gusto",
+      "status": "definition_created",
+      "authorisedConnections": 0
+    }
+  ],
+  "runtimeScope": "NetSuite and SuccessFactors metadata credential provider",
+  "newKeyCreated": true,
+  "newKeyInstalled": true,
+  "requiredScope": "environment:connections:read_credentials",
+  "scopeApprovalStatus": "approved_by_user",
+  "liveProviderConnectionVerified": false,
+  "paidPlanActivated": false,
+  "newHostingCreated": false,
+  "sources": [
+    "https://nango.dev/pricing",
+    "https://nango.dev/docs/reference/backend/http-api/api-keys",
+    "https://nango.dev/docs/reference/backend/http-api/connections/get"
+  ],
+  "updatedOn": "2026-11-01",
+  "keyDisplayName": "VECTOR production connector access",
+  "keyScopeVerified": true,
+  "keyLastUsedObserved": "Never",
+  "backendVariable": "WFM_NANGO_API_KEY",
+  "keyLastUsedObservedBeforeBackendTransfer": true,
+  "backendInstallationStatus": "stored_without_deployment",
+  "backendInstallation": {
+    "verifiedOn": "2026-11-01",
+    "mechanism": "Railway connector",
+    "projectId": "43367a88-2233-4c6b-9018-0ce234dd73ca",
+    "environmentName": "production",
+    "environmentId": "eed9f097-610a-416e-83b9-6bc7bdb3eeef",
+    "serviceName": "vector-customer-ready-candidate",
+    "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+    "variableName": "WFM_NANGO_API_KEY",
+    "skipDeploys": true,
+    "staged": false,
+    "receiptVariables": [
+      "WFM_NANGO_API_KEY"
+    ],
+    "readBack": {
+      "exists": true,
+      "valuesRedacted": true,
+      "sealed": false
+    },
+    "metadataBindingsPresent": false,
+    "receipt": "evidence/vector-nango-setup-20261031/backend-installation-receipt.json"
+  },
+  "transferBlocker": null,
+  "transferHistory": {
+    "initialAutomaticReview": "rejected browser clipboard to shared local transfer file before specific staging approval",
+    "browserAlternative": "Railway variable-editor sign-in not completed; password method unsupported and alternative-method prompt declined",
+    "resolution": "user explicitly approved restricted temporary staging; Railway connector stored the key and presence was verified"
+  },
+  "temporaryTransfer": {
+    "approvalStatus": "approved_by_user",
+    "mainSideCleanup": "temporary file and directory removed in finally",
+    "browserSideCleanup": "synchronised copy separately deleted",
+    "bothDirectoriesVerifiedAbsent": true,
+    "browserClipboardVerifiedEmpty": true,
+    "secretDisplayed": false,
+    "secretLogged": false,
+    "secretCommitted": false
+  },
+  "deployment": {
+    "triggeredByThisWrite": false,
+    "historicalLatestAttemptUnchanged": {
+      "id": "d9112b19-7e46-4eab-8873-9a51826870b6",
+      "status": "FAILED",
+      "date": "2026-10-23"
+    },
+    "existingProofServiceStagedPatchChanged": false
+  },
+  "runtimeProposalStatus": "unmerged_pending_canonical_admission",
+  "liveSyncEnabled": false,
+  "existingGustoAccessObservation": {
+    "observedOn": "2026-11-01",
+    "accessContext": "existing ChatGPT Gusto connector",
+    "companyName": "Vector",
+    "companyUuid": "49d3bf95-5b5b-4251-89d8-1b614e47e676",
+    "companyStatus": "Not Approved",
+    "nextRequiredOnboardingQuestion": "Who will the business pay?",
+    "onboardingAnswersSubmitted": false,
+    "planChoiceSubmitted": false,
+    "payrollActionSubmitted": false,
+    "nangoConnectionEstablished": false,
+    "vectorBackendGustoCredentialsVerified": false
+  },
+  "integrationsVerifiedOn": "2026-11-01",
+  "integrationsVerificationMethod": "Fresh production dashboard read: four definitions, each showing zero connections.",
+  "runtimeReconciliation": {
+    "canonicalCheckpoint": "ca6e36b4efd1099b56250fb790943db4b533fee5",
+    "previousDonorCheckpoint": "e2cf7f7295e783abaf6d6464e70331dc71368c98",
+    "metadataBrokerScopeUnchanged": true,
+    "deployed": false,
+    "receipt": "evidence/vector-nango-setup-20261031/reconcile-20261101/reconciliation-manifest.json"
+  },
+  "metadataFieldReview": {
+    "sourceBasis": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+    "pullRequest": "https://github.com/paulallen123/-manufacturing-wfm/pull/569",
+    "status": "source_proposal_unmerged_pending_canonical_admission",
+    "surface": "existing VECTOR Integrations page",
+    "requiredPermission": "company.configure",
+    "providers": ["netsuite", "successfactors"],
+    "serverTenantProjection": true,
+    "requestBodyKeys": ["profileId"],
+    "explicitUserActionRequired": true,
+    "activationAvailable": false,
+    "importsRecords": false,
+    "liveSyncVerified": false,
+    "newNangoScopeAdded": false,
+    "railwayConfigurationChangedByThisIncrement": false,
+    "deployed": false,
+    "sourceManifest": "evidence/vector-nango-setup-20261031/metadata-ui-20261101/metadata-ui-source-manifest.json",
+    "verificationReceipt": "evidence/vector-nango-setup-20261031/metadata-ui-20261101/metadata-ui-verification.json"
+  }
+}
+

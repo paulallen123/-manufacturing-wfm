@@ -1,0 +1,12 @@
+✔ actual composer hook installs resolver and presentation projection without changing provider transport or preview authority (24.450949ms)
+✔ the emitted status expression projects only the trusted actor tenant before HTTP exposure (7.68111ms)
+✔ composer refuses drift, duplicate anchors and repeat application (5.88412ms)
+✔ both assembly entry paths invoke the hook before server write, and Docker admits source plus installed tests (0.424721ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85.109581

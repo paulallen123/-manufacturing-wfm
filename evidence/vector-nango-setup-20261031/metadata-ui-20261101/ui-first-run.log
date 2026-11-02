@@ -1,0 +1,290 @@
+✖ configured source has an explicit Check fields action that sends only the approved profileId (45.090721ms)
+✖ exact existing preview controller rejects extra inputs, another tenant and a worker without configure permission (20.48456ms)
+✖ missing setup, available options and successful metadata remain distinct from live sync (5.785304ms)
+✖ only server-listed profiles can be checked; identifiers and configuration are not display copy (2.554465ms)
+✖ field names are escaped and only a bounded projection of metadata is rendered (3.317628ms)
+✖ bad or mismatched metadata clears prior results and cannot claim fields are available (3.04327ms)
+✖ backend failures never display raw errors, retry automatically or retain a successful result (2.588105ms)
+✔ malformed status and denied status do not masquerade as account setup missing (9.215901ms)
+✔ current authenticated readiness and configure permission are required with no legacy identity fallback (8.956275ms)
+✖ stale completion is discarded after tenant, actor, permission, readiness, root or route changes (3.556032ms)
+✖ rerender and pagehide abort pending checks and concurrent clicks cannot duplicate collection (2.12051ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 2
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.913654
+
+✖ failing tests:
+
+test at ux-overlay/vector-provider-metadata.test.cjs:150:1
+✖ configured source has an explicit Check fields action that sends only the approved profileId (45.090721ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:155:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:163:1
+✖ exact existing preview controller rejects extra inputs, another tenant and a worker without configure permission (20.48456ms)
+  AssertionError [ERR_ASSERTION]: The validation function is expected to return "true". Received false
+  
+  Caught error:
+  
+  ReferenceError: Cannot access 'input' before initialization
+      at async TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:165:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: ReferenceError: Cannot access 'input' before initialization
+        at <anonymous>:2:123
+        at <anonymous>:7:3
+        at Object.collect (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:146:66)
+        at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:165:26)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+        at Test.postRun (node:internal/test_runner/test:1542:19)
+        at Test.run (node:internal/test_runner/test:1467:12)
+        at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3),
+    expected: [Function (anonymous)],
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:171:1
+✖ missing setup, available options and successful metadata remain distinct from live sync (5.785304ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Fields available/. Input:
+  
+  '<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh >Refresh</button></div><p role="status">Choose a source to check its available fields.</p><section class="vector-card"><h3>NetSuite</h3><p role="status">Ready to check</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n' +
+    '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:178:31)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'e-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>...',
+    expected: /Fields available/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:182:1
+✖ only server-listed profiles can be checked; identifiers and configuration are not display copy (2.554465ms)
+  TypeError: Cannot read properties of undefined (reading 'body')
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:189:64)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at ux-overlay/vector-provider-metadata.test.cjs:192:1
+✖ field names are escaped and only a bounded projection of metadata is rendered (3.317628ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /55 fields/. Input:
+  
+  '<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh >Refresh</button></div><p role="status">Choose a source to check its available fields.</p><section class="vector-card"><h3>NetSuite</h3><p role="status">Ready to check</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n' +
+    '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:196:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'e-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>...',
+    expected: /55 fields/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:200:1
+✖ bad or mismatched metadata clears prior results and cannot claim fields are available (3.04327ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Fields available/. Input:
+  
+  '<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh >Refresh</button></div><p role="status">Choose a source to check its available fields.</p><section class="vector-card"><h3>NetSuite</h3><p role="status">Ready to check</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n' +
+    '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:209:46)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'e-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>...',
+    expected: /Fields available/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:215:1
+✖ backend failures never display raw errors, retry automatically or retain a successful result (2.588105ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Sign in|not available|could not be checked/. Input:
+  
+  '<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh >Refresh</button></div><p role="status">Choose a source to check its available fields.</p><section class="vector-card"><h3>NetSuite</h3><p role="status">Ready to check</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n' +
+    '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:221:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'e-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>...',
+    expected: /Sign in|not available|could not be checked/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:241:1
+✖ stale completion is discarded after tenant, actor, permission, readiness, root or route changes (3.556032ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + <ref *1> Element {
+  +   attributes: {
+  +     'aria-label': 'NetSuite and SAP field checks'
+  +   },
+  +   children: [],
+  +   classList: {
+  +     add: [Function: add],
+  +     remove: [Function: remove],
+  +     toggle: [Function: toggle]
+  +   },
+  +   className: 'vector-card',
+  +   dataset: {
+  +     vectorMetadataCard: '1'
+  +   },
+  +   html: '<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh >Refresh</button></div><p role="status">Choose a source to check its available fields.</p><section class="vector-card"><h3>NetSuite</h3><p role="status">Ready to check</p><p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>\n' +
+  +     '   <button type="button" class="btn secondary" data-vector-metadata-check="profile-ns-a" >Check fields</button></section><p class="muted">This check does not import records or verify live data sync.</p>',
+  +   parentElement: <ref *2> Element {
+  +     attributes: {},
+  +     children: [
+  +       [Circular *1],
+  +       Element {
+  +         attributes: {
+  +           'aria-label': '3Min delivery receipts'
+  +         },
+  +         children: [],
+  +         classList: {
+  +           add: [Function: add],
+  +           remove: [Function: remove],
+  +           toggle: [Function: toggle]
+  +         },
+  +         className: 'vector-card vector-three-min-card',
+  +         dataset: {
+  +           vectorThreeMinCard: '1'
+  +         },
+  +         html: '<div class="vector-section-heading"><div><p class="eyebrow">Integration intake</p><h3>3Min status unavailable</h3></div><button class="btn" data-vector-three-min-refresh>Refresh deliveries</button></div><p>Delivery receipts confirm intake only. Records have not been imported into workforce data.</p><p role="alert">Delivery status could not be checked. Try refreshing again.</p><p class="muted" role="status"></p>',
+  +         parentElement: [Circular *2],
+  +         style: {
+  +           overflowWrap: 'anywhere'
+  +         },
+  +         tagName: 'SECTION'
+  +       },
+  +       Element {
+  +         attributes: {
+  +           'aria-label': 'Staffology operations'
+  +         },
+  +         children: [],
+  +         classList: {
+  +           add: [Function: add],
+  +           remove: [Function: remove],
+  +           toggle: [Function: toggle]
+  +         },
+  +         className: 'vector-card vector-staffology-card',
+  +         dataset: {
+  +           vectorStaffologyCard: '1'
+  +         },
+  +         html: '<div class="vector-section-heading"><div><p class="eyebrow">Payroll integration</p><h3>Staffology setup required</h3></div><button class="btn" data-vector-staffology-refresh>Refresh status</button></div><p>Operations are dormant until an exact server-held employer and employee cohort are configured.</p><p class="muted">Credentials stay on the server. Every write is current-account checked, exact-scope checked and audit recorded.</p><div class="vector-staffology-actions"><p class="muted">Payroll delivery remains dormant until an exact released-batch scope is server-held.</p></div><p class="vector-staffology-message success" role="status">Status refreshed. Review the exact cohort mappings before acquisition.</p>',
+  +         parentElement: [Circular *2],
+  +         style: {},
+  +         tagName: 'SECTION'
+  +       },
+  +       Element {
+  +         attributes: {
+  +           'aria-busy': 'false',
+  +           'aria-label': 'Gusto connection'
+  +         },
+  +         children: [],
+  +         classList: {
+  +           add: [Function: add],
+  +           remove: [Function: remove],
+  +           toggle: [Function: toggle]
+  +         },
+  +         className: 'vector-card',
+  +         dataset: {
+  +           vectorGustoCard: '1'
+  +         },
+  +         html: '<div class="vector-card-head"><div><h2>Gusto setup required</h2><p aria-live="polite">VECTOR’s Gusto authorization needs to be configured by an administrator.</p></div></div><div class="vector-empty"></div><div class="vector-card-head"><button type="button" class="btn primary" data-vector-gusto-connect disabled>Connect Gusto</button><button type="button" class="btn" data-vector-gusto-refresh >Check connection</button></div>',
+  +         parentElement: [Circular *2],
+  +         style: {
+  +           margin: '0 0 16px'
+  +         },
+  +         tagName: 'SECTION'
+  +       }
+  +     ],
+  +     classList: {
+  +       add: [Function: add],
+  +       remove: [Function: remove],
+  +       toggle: [Function: toggle]
+  +     },
+  +     dataset: {},
+  +     html: '',
+  +     parentElement: Element {
+  +       attributes: {},
+  +       children: [],
+  +       classList: {
+  +         add: [Function: add],
+  +         remove: [Function: remove],
+  +         toggle: [Function: toggle]
+  +       },
+  +       dataset: {},
+  +       html: '',
+  +       querySelector: [Function (anonymous)],
+  +       style: {},
+  +       tagName: 'DIV'
+  +     },
+  +     style: {},
+  +     tagName: 'MAIN'
+  +   },
+  +   style: {},
+  +   tagName: 'SECTION'
+  + }
+  - undefined
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:248:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [Element],
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ux-overlay/vector-provider-metadata.test.cjs:252:1
+✖ rerender and pagehide abort pending checks and concurrent clicks cannot duplicate collection (2.12051ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:254:80)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

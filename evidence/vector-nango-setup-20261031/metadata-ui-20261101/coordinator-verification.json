@@ -1,0 +1,84 @@
+{
+  "recordedAt": "2026-11-01T20:48:08.548485+00:00",
+  "sourceBase": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+  "node": "v24.22.1",
+  "command": [
+    "node",
+    "--test",
+    "integration/runtime/provider-metadata-review.test.cjs",
+    "ux-overlay/vector-provider-metadata.test.cjs",
+    "scripts/nango-metadata-wiring.test.cjs",
+    "ux-overlay/vector-gusto.test.cjs",
+    "ux-overlay/vector-staffology-controls.test.cjs",
+    "ux-overlay/vector-three-min.test.cjs"
+  ],
+  "exitCode": 0,
+  "sourceHashesMatchedBeforeAndAfter": true,
+  "log": "coordinator-verification.log",
+  "logSha256": "9d0a0dd5f827914fed0c865cb2d96ab7c493f03a98d758ab944f48331a3655ac",
+  "summary": [
+    "\u2139 tests 6",
+    "\u2139 pass 6",
+    "\u2139 fail 0",
+    "\u2139 cancelled 0",
+    "\u2139 skipped 0",
+    "\u2139 todo 0"
+  ],
+  "scope": "Combined focused projection, actual composer-bundle UI and wiring cases plus the three existing Gusto/Staffology/intake regression script entries. Synthetic provider and permit boundaries; no full image, running service or live account proof.",
+  "aggregateRunnerEntries": 6,
+  "directCaseConfirmationReason": "The combined Node --test invocation reported six file entries. Direct execution confirms individual cases and avoids inflating that aggregate into a case count.",
+  "directCaseConfirmation": [
+    {
+      "command": [
+        "node",
+        "integration/runtime/provider-metadata-review.test.cjs"
+      ],
+      "exitCode": 0,
+      "log": "coordinator-projection.log",
+      "logSha256": "d81a9a25087be587c9248654087ecec0207feca2d26df0339682c7f907ae98f2",
+      "summary": [
+        "\u2139 tests 5",
+        "\u2139 pass 5",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ]
+    },
+    {
+      "command": [
+        "node",
+        "ux-overlay/vector-provider-metadata.test.cjs"
+      ],
+      "exitCode": 0,
+      "log": "coordinator-ui.log",
+      "logSha256": "c11e4df9d3779e3cdb57f7ff552582ba28ecda9985c57e83a779bf3d14bbfa15",
+      "summary": [
+        "\u2139 tests 13",
+        "\u2139 pass 13",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ]
+    },
+    {
+      "command": [
+        "node",
+        "scripts/nango-metadata-wiring.test.cjs"
+      ],
+      "exitCode": 0,
+      "log": "coordinator-wiring.log",
+      "logSha256": "5cb45ba43e56e1075951b196c78e5a769feea9934919fc377af296d0a4f22bc0",
+      "summary": [
+        "\u2139 tests 4",
+        "\u2139 pass 4",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0"
+      ]
+    }
+  ],
+  "frozenSourceHashesStillMatched": true
+}

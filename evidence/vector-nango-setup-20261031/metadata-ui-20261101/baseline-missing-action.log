@@ -1,0 +1,26 @@
+✖ configured source has an explicit Check fields action that sends only the approved profileId (11.474256ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16.272766
+
+✖ failing tests:
+
+test at ux-overlay/vector-provider-metadata.test.cjs:104:1
+✖ configured source has an explicit Check fields action that sends only the approved profileId (11.474256ms)
+  AssertionError [ERR_ASSERTION]: Provider metadata review card must be mounted
+      at Object.click (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:92:14)
+      at TestContext.<anonymous> (/workspace/scratch/9c262827f7fd/vector-nango-metadata-ui-20261101/ux-overlay/vector-provider-metadata.test.cjs:107:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -1,0 +1,676 @@
+--- /dev/null
++++ b/integration/runtime/provider-metadata-review.cjs
+@@ -0,0 +1,38 @@
++'use strict';
++
++// Presentation of existing broker status only. No credential or collection authority.
++const PROVIDERS = new Set(['netsuite', 'successfactors']);
++function refuse(status) {
++  const error = new Error(status === 403 ? 'Company configuration permission required.' : 'Provider field checks are unavailable.');
++  error.status = status;
++  error.code = status === 403 ? 'WFM_METADATA_REVIEW_FORBIDDEN' : 'WFM_METADATA_REVIEW_UNAVAILABLE';
++  throw error;
++}
++function boundedText(value, maximum) {
++  return typeof value === 'string' && value.length > 0 && value.length <= maximum &&
++    value.trim() === value && !/[\u0000-\u001f\u007f]/.test(value);
++}
++
++function statusForActor(brokerStatus, actor) {
++  if (!actor || !boundedText(actor.tenant, 120) || !Array.isArray(actor.permissions) ||
++      !actor.permissions.includes('company.configure')) refuse(403);
++  if (!brokerStatus || !Array.isArray(brokerStatus.profiles)) refuse(503);
++  const own = brokerStatus.profiles.filter(row => row && row.tenant === actor.tenant);
++  if (own.length > 100) refuse(503);
++  const ids = new Set();
++  const profiles = own.map(row => {
++    if (!boundedText(row.id, 100) || !/^[A-Za-z0-9_.:-]{3,100}$/.test(row.id) || ids.has(row.id) ||
++        !PROVIDERS.has(row.provider) || !boundedText(row.system, 120) || row.activationAuthority !== false) refuse(503);
++    ids.add(row.id);
++    return Object.freeze({ id: row.id, provider: row.provider, system: row.system });
++  });
++  return Object.freeze({
++    schemaVersion: 'vector-provider-metadata-review-v1',
++    configured: profiles.length > 0,
++    profiles: Object.freeze(profiles),
++    reviewOnly: true,
++    liveSyncVerified: false
++  });
++}
++
++module.exports = { statusForActor };
+--- /dev/null
++++ b/integration/runtime/provider-metadata-review.test.cjs
+@@ -0,0 +1,50 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const path = require('node:path');
++const { statusForActor } = require(path.join(process.env.VECTOR_NANGO_RUNTIME_ROOT || __dirname, 'provider-metadata-review.cjs'));
++const actor = { tenant: 'tenant-a', role: 'manager', permissions: ['company.configure'] };
++const row = (tenant = 'tenant-a', id = 'profile-a', provider = 'netsuite') => ({
++  tenant, id, provider, system: provider === 'netsuite' ? 'NetSuite' : 'SAP SuccessFactors',
++  activationAuthority: false, credentialSource: 'short-lived-provider-callback', allowedOriginSha256: 'a'.repeat(64),
++  credentialRef: 'DO_NOT_EXPOSE', tags: { secret: 'DO_NOT_EXPOSE' }, arbitrary: 'DO_NOT_EXPOSE'
++});
++
++test('projects only the current actor tenant and an explicit presentation allowlist', () => {
++  const source = { configured: true, profiles: [row(), row('tenant-b', 'hidden-profile')],
++    apiKey: 'DO_NOT_EXPOSE', credentialMode: 'short-lived-provider-callback', arbitrary: 'DO_NOT_EXPOSE' };
++  const before = JSON.stringify(source), result = statusForActor(source, actor);
++  assert.deepEqual(result, { schemaVersion: 'vector-provider-metadata-review-v1', configured: true,
++    profiles: [{ id: 'profile-a', provider: 'netsuite', system: 'NetSuite' }], reviewOnly: true, liveSyncVerified: false });
++  assert.equal(JSON.stringify(source), before);
++  assert.doesNotMatch(JSON.stringify(result), /tenant-a|tenant-b|hidden-profile|DO_NOT_EXPOSE|credential|Origin|tags|arbitrary/);
++  assert.ok(Object.isFrozen(result) && Object.isFrozen(result.profiles) && Object.isFrozen(result.profiles[0]));
++});
++
++test('configured depends only on owned profiles and supports both existing broker provider keys', () => {
++  assert.equal(statusForActor({ configured: true, profiles: [row('another-tenant')] }, actor).configured, false);
++  const result = statusForActor({ configured: false, profiles: [row(), row('tenant-a', 'sf-profile', 'successfactors')] }, actor);
++  assert.equal(result.configured, true); assert.equal(result.profiles.length, 2);
++});
++
++test('a role name, worker identity or caller-chosen tenant cannot substitute for configure permission', () => {
++  for (const denied of [null, {}, { tenant: 'tenant-a', role: 'admin' }, { tenant: 'tenant-a', role: 'worker', permissions: [] },
++    { tenant: 'tenant-a', permissions: 'company.configure' }, { tenant: '', permissions: ['company.configure'] }]) {
++    assert.throws(() => statusForActor({ profiles: [row()] }, denied), error => error.status === 403 && error.code === 'WFM_METADATA_REVIEW_FORBIDDEN');
++  }
++});
++
++test('rejects malformed owned status without reflecting source content or presenting empty success', () => {
++  const invalid = [null, {}, { profiles: {} }, { profiles: [row(), row()] },
++    { profiles: [{ ...row(), id: '../outside' }] }, { profiles: [{ ...row(), provider: 'constructor' }] },
++    { profiles: [{ ...row(), provider: 'sap-s4hana' }] }, { profiles: [{ ...row(), system: 'PRIVATE\nDETAIL' }] },
++    { profiles: [{ ...row(), activationAuthority: true }] },
++    { profiles: Array.from({ length: 101 }, (_, i) => row('tenant-a', 'profile-' + i)) }];
++  for (const value of invalid) assert.throws(() => statusForActor(value, actor), error =>
++    error.status === 503 && error.code === 'WFM_METADATA_REVIEW_UNAVAILABLE' && !error.message.includes('PRIVATE'));
++});
++
++test('other tenants cannot affect the available profile count or expose malformed private details', () => {
++  const result = statusForActor({ profiles: [null, { tenant: 'tenant-b', system: 'PRIVATE DETAILS', activationAuthority: true }, row()] }, actor);
++  assert.equal(result.profiles.length, 1); assert.doesNotMatch(JSON.stringify(result), /PRIVATE/);
++});
+--- a/ux-overlay/vector-shell.js
++++ b/ux-overlay/vector-shell.js
+@@ -255,6 +255,119 @@
+ window.addEventListener('pagehide',invalidateThreeMinPanel);
+ 
+ let staffologyPanel=null,staffologyEpoch=0;
++const METADATA_PROVIDERS=Object.freeze({netsuite:'NetSuite',successfactors:'SAP SuccessFactors'});
++let metadataPanel=null,metadataEpoch=0;
++function metadataIdentity(){
++ try{
++  if(typeof F==='undefined'||F.ready!==true||!F.actor||!available('integrations'))return null;
++  const actor=F.actor;
++  if(typeof actor.tenant!=='string'||!actor.tenant||!(actor.email||actor.personId||actor.id)||
++   !Array.isArray(actor.permissions)||!actor.permissions.includes('company.configure'))return null;
++  return JSON.stringify([actor.tenant,actor.email||'',actor.personId||actor.id||'',actor.role||'',
++   [...new Set(actor.permissions)].sort()]);
++ }catch{return null;}
++}
++function metadataRoot(){return typeof ui==='undefined'?null:ui.root;}
++function invalidateMetadataPanel(){metadataEpoch++;metadataPanel?.controller.abort();metadataPanel?.card.remove();metadataPanel=null;}
++function metadataCurrent(panel){return metadataPanel===panel&&panel.epoch===metadataEpoch&&page()==='integrations'&&
++ panel.identity===metadataIdentity()&&panel.root===metadataRoot()&&panel.card.isConnected;}
++function metadataStale(panel){if(metadataPanel===panel)invalidateMetadataPanel();const error=new Error('Field check context changed.');error.stale=true;return error;}
++async function metadataRequest(panel,path,body){
++ if(!metadataCurrent(panel))throw metadataStale(panel);
++ const response=await fetch(path,{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',
++  headers:{Accept:'application/json',...(body===undefined?{}:{'Content-Type':'application/json'})},
++  ...(body===undefined?{}:{body:JSON.stringify(body)}),signal:panel.controller.signal});
++ if(!metadataCurrent(panel))throw metadataStale(panel);
++ if(!response.ok){const error=new Error('Field check unavailable.');error.status=response.status;throw error;}
++ const value=await response.json();
++ if(!metadataCurrent(panel))throw metadataStale(panel);
++ return value;
++}
++function metadataText(value,max){return typeof value==='string'&&value.length>0&&value.length<=max&&value.trim()===value&&!/[\u0000-\u001f\u007f]/.test(value);}
++function metadataProfiles(value){
++ const status=value?.providerMetadataBroker;
++ if(status?.schemaVersion!=='vector-provider-metadata-review-v1'||status.reviewOnly!==true||status.liveSyncVerified!==false||
++  !Array.isArray(status.profiles)||status.profiles.length>100||status.configured!==(status.profiles.length>0))throw Error('Field check options unavailable.');
++ const ids=new Set();
++ return status.profiles.map(row=>{
++  if(!row||!metadataText(row.id,100)||!/^[A-Za-z0-9_.:-]{3,100}$/.test(row.id)||ids.has(row.id)||
++   !Object.hasOwn(METADATA_PROVIDERS,row.provider)||!metadataText(row.system,120))throw Error('Field check options unavailable.');
++  ids.add(row.id);return {id:row.id,provider:row.provider,system:row.system};
++ });
++}
++function metadataResult(value,profile,startedAt){
++ const draft=value?.draft,evidence=value?.brokerEvidence,at=Date.parse(evidence?.retrievedAt||'');
++ if(value?.authority!=='server-broker-read-review-only'||value.networkFetchPerformed!==true||value.activationAvailable!==false||
++  draft?.status!=='draft_review_required'||draft.provider!==profile.provider||draft.system!==profile.system||
++  draft.metadataSource!=='server-broker:'+profile.id||draft.activation?.allowed!==false||
++  !/^[a-f0-9]{64}$/.test(draft.schemaDigest||'')||evidence?.sourceArtifactSha256!==draft.schemaDigest||
++  evidence.provider!==profile.provider||evidence.metadataValidated!==true||evidence.networkFetchPerformed!==true||
++  evidence.dnsPinned!==true||evidence.redirectsAllowed!==false||evidence.credentialExposed!==false||evidence.rawMetadataReturned!==false||
++  evidence.collectionPermit?.verified!==true||!Number.isFinite(at)||at<startedAt-60000||at>Date.now()+60000||
++  !Array.isArray(draft.fields)||draft.fields.length<1||draft.fields.length>5000)throw Error('Field check result unavailable.');
++ const names=new Set();
++ for(const field of draft.fields){
++  if(!field||!metadataText(field.name,160)||names.has(field.name)||field.readable!==true||field.writable!==false)throw Error('Field check result unavailable.');
++  names.add(field.name);
++ }
++ return {checkedAt:new Date(at).toISOString(),count:draft.fields.length,fields:draft.fields.slice(0,50).map(field=>field.name)};
++}
++function metadataError(error){
++ if(error?.status===401)return 'Sign in again to check these fields.';
++ if(error?.status===403)return 'These field checks are not available for your account.';
++ return 'Fields could not be checked. Ask an administrator to check account access, or try again.';
++}
++function renderMetadataPanel(panel){
++ if(!metadataCurrent(panel))return;
++ const profiles=panel.profiles,busy=Boolean(panel.busy),counts=new Map(),positions=new Map();
++ for(const profile of profiles||[])counts.set(profile.provider,(counts.get(profile.provider)||0)+1);
++ const rows=(profiles||[]).map(profile=>{
++  const position=(positions.get(profile.provider)||0)+1;positions.set(profile.provider,position);
++  const label=METADATA_PROVIDERS[profile.provider]+(counts.get(profile.provider)>1?' · Source '+position:'');
++  const result=panel.results.get(profile.id),error=panel.errors.get(profile.id),checking=panel.busy===profile.id;
++  return `<section class="vector-card"><h3>${esc(label)}</h3><p role="status">${checking?'Checking fields…':error?esc(error):result?'Fields available':'Ready to check'}</p>${result?
++   `<p>${result.count} fields · Last checked ${esc(new Date(result.checkedAt).toLocaleString('en-GB'))}</p><details><summary>View fields${result.count>50?' (first 50)':''}</summary><ul>${result.fields.map(name=>`<li>${esc(name)}</li>`).join('')}</ul></details>`:
++   '<p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>'}
++   <button type="button" class="btn secondary" data-vector-metadata-check="${esc(profile.id)}" ${busy?'disabled':''}>Check fields</button></section>`;
++ }).join('');
++ const message=panel.busy==='refresh'?'Loading available sources…':panel.error?panel.error:profiles===null?'Field checks are unavailable.':profiles.length?'Choose a source to check its available fields.':'Account setup needed. Ask an administrator to finish setting up a NetSuite or SAP SuccessFactors account for this workspace.';
++ panel.card.innerHTML=`<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh ${busy?'disabled':''}>Refresh</button></div><p role="status">${esc(message)}</p>${rows}<p class="muted">This check does not import records or verify live data sync.</p>`;
++}
++async function refreshMetadataPanel(panel){
++ if(!metadataCurrent(panel)||panel.busy)return;
++ panel.busy='refresh';panel.profiles=null;panel.results.clear();panel.errors.clear();panel.error='';renderMetadataPanel(panel);
++ try{panel.profiles=metadataProfiles(await metadataRequest(panel,'/api/integrations'));}
++ catch(error){if(!metadataCurrent(panel)){metadataStale(panel);return;}panel.error=metadataError(error);}
++ finally{if(metadataCurrent(panel)){panel.busy='';renderMetadataPanel(panel);}}
++}
++async function checkMetadataFields(panel,id){
++ if(!metadataCurrent(panel)||panel.busy)return;
++ const profile=panel.profiles?.find(row=>row.id===id);if(!profile)return;
++ panel.results.delete(id);panel.errors.delete(id);panel.busy=id;const startedAt=Date.now();renderMetadataPanel(panel);
++ try{const result=await metadataRequest(panel,'/api/integrations/discovery/broker-preview',{profileId:profile.id});panel.results.set(id,metadataResult(result,profile,startedAt));}
++ catch(error){
++  if(!metadataCurrent(panel)){metadataStale(panel);return;}
++  if(error?.status===401||error?.status===403){panel.profiles=null;panel.results.clear();panel.errors.clear();panel.error=metadataError(error);}
++  else{panel.results.delete(id);panel.errors.set(id,metadataError(error));}
++ }
++ finally{if(metadataCurrent(panel)){panel.busy='';renderMetadataPanel(panel);}}
++}
++function syncMetadataPanel(content){
++ const identity=page()==='integrations'?metadataIdentity():null;
++ if(!identity){if(metadataPanel)invalidateMetadataPanel();return;}
++ if(metadataPanel&&metadataPanel.identity===identity&&metadataPanel.root===metadataRoot()&&metadataPanel.card.parentElement===content)return;
++ invalidateMetadataPanel();const card=document.createElement('section');card.className='vector-card';card.dataset.vectorMetadataCard='1';card.setAttribute('aria-label','NetSuite and SAP field checks');content.prepend(card);
++ const panel={card,identity,root:metadataRoot(),epoch:metadataEpoch,controller:new AbortController(),profiles:null,results:new Map(),errors:new Map(),error:'',busy:''};
++ metadataPanel=panel;renderMetadataPanel(panel);void refreshMetadataPanel(panel);
++}
++document.addEventListener('click',event=>{
++ const panel=metadataPanel;if(!panel||!metadataCurrent(panel)||!panel.card.contains(event.target))return;
++ const check=event.target.closest('[data-vector-metadata-check]');
++ if(check){event.preventDefault();void checkMetadataFields(panel,check.dataset.vectorMetadataCheck);return;}
++ if(event.target.closest('[data-vector-metadata-refresh]')){event.preventDefault();void refreshMetadataPanel(panel);}
++});
++window.addEventListener('pagehide',invalidateMetadataPanel);
++
+ const STAFFOLOGY_PREFIX='/api/integrations/staffology';
+ function invalidateStaffologyPanel(){staffologyEpoch++;staffologyPanel?.controller.abort();staffologyPanel?.card.remove();staffologyPanel=null;}
+ function staffologyIdentity(){const actor=sourceIdentity();return `${actor.tenant||''}:${actor.email||actor.id||''}`;}
+@@ -791,11 +904,11 @@
+  const panel=document.createElement('section');panel.className='vector-card vector-settings';panel.dataset.vectorSettingsPanel='1';panel.setAttribute('aria-label','Settings and more');panel.innerHTML='<div class="vector-card-head"><h2>Settings & more</h2><button type="button" data-vector-settings>Close</button></div><div class="vector-settings-links">'+links.map(button=>`<button type="button" data-vector-route="${esc(button.dataset.page)}">${esc(text(button))}</button>`).join('')+'</div>';content.prepend(panel);return panel;
+ }
+ function settingsMenu(){const content=document.querySelector('.content');if(!content)return;state.settingsOpen=!state.settingsOpen;const panel=syncSettingsMenu(content);if(panel)panel.scrollIntoView({block:'start'});}
+-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{syncTimeReviewEvidenceOwner();const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content){void loadTimeReviewEvidence();return;}document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(state.calendar.status==='idle')void loadTenantCalendar().then(value=>{if(value&&page()==='overview')queueMicrotask(apply);});syncGustoPanel(content);syncStaffologyPanel(content);syncThreeMinPanel(content);if(page()==='overview'&&employee())void renderEmployeeHome(content);else if(page()==='overview')renderHome(content);else generalPage(content);syncSettingsMenu(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
++function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{syncTimeReviewEvidenceOwner();const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content){void loadTimeReviewEvidence();return;}document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(state.calendar.status==='idle')void loadTenantCalendar().then(value=>{if(value&&page()==='overview')queueMicrotask(apply);});syncGustoPanel(content);syncStaffologyPanel(content);syncThreeMinPanel(content);syncMetadataPanel(content);if(page()==='overview'&&employee())void renderEmployeeHome(content);else if(page()==='overview')renderHome(content);else generalPage(content);syncSettingsMenu(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+ document.addEventListener('click',e=>{if(e.target.closest('[data-vector-close-review]')){document.getElementById('modal').close();return;}const review=e.target.closest('[data-vector-review-coverage]');if(review){const id=review.dataset.vectorReviewCoverage;const r=data.requests?.find(r=>String(r.id)===id);if(r&&visiblePeople().some(p=>String(p.id)===String(r.employee)))void approveRequest(id);return;}if(e.target.closest('[data-vector-settings]')){settingsMenu();return;}const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec){const r=firstRoute(spec.routes);if(r)go(r);}return;}if(e.target.closest('[data-vector-return-context]')){clearActionContext();state.returnFocus=true;go('overview');return;}const actionButton=e.target.closest('[data-vector-source-id][data-vector-workflow][data-vector-route]');if(actionButton){if(actionButton.dataset.vectorWorkflow==='leave'){openLeaveReview(actionButton.dataset.vectorSourceId);return;}rememberActionContext({sourceId:actionButton.dataset.vectorSourceId,workflow:actionButton.dataset.vectorWorkflow,route:actionButton.dataset.vectorRoute,title:actionButton.closest('.vector-alert-row')?.querySelector('b')?.textContent||'Time Review item'});go(actionButton.dataset.vectorRoute);return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){openVectorHelp();return;}if(e.target.closest('[data-vector-alerts]')){go('attendance');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
+ const previousRender=window.render;
+-if(typeof previousRender==='function')window.render=async function(...args){invalidateEmployeeHome();invalidateGustoPanel();invalidateStaffologyPanel();invalidateThreeMinPanel();invalidateTimeReviewEvidence();invalidateReadinessEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);syncTimeReviewEvidenceOwner();document.body.classList.remove('vector-menu-open');void loadTimeReviewEvidence();queueMicrotask(apply);return result;};
++if(typeof previousRender==='function')window.render=async function(...args){invalidateEmployeeHome();invalidateGustoPanel();invalidateStaffologyPanel();invalidateThreeMinPanel();invalidateMetadataPanel();invalidateTimeReviewEvidence();invalidateReadinessEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);syncTimeReviewEvidenceOwner();document.body.classList.remove('vector-menu-open');void loadTimeReviewEvidence();queueMicrotask(apply);return result;};
+ window.nav=go;
+ document.addEventListener('input',e=>{if(e.target.matches('[aria-label="Search people"]')){const q=e.target.value.trim().toLowerCase();let count=0;document.querySelectorAll('[data-vector-person-row]').forEach(r=>{r.hidden=!r.dataset.search.includes(q);if(!r.hidden)count++;});const empty=document.querySelector('.vector-no-results');if(empty)empty.hidden=count>0;}});
+ shellObserver=new MutationObserver(()=>apply());
+--- /dev/null
++++ b/ux-overlay/vector-provider-metadata.test.cjs
+@@ -0,0 +1,290 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const vm = require('node:vm');
++const { createHash } = require('node:crypto');
++const { loadLibrary } = require('../test-support/sealed-nango-broker.cjs');
++const sourcePath = process.env.VECTOR_METADATA_UI_SOURCE || 'composed-public/vector-ui.js';
++const source = (() => {
++  if (process.env.VECTOR_METADATA_UI_SOURCE) return fs.readFileSync(sourcePath, 'utf8');
++  const root = path.resolve(__dirname, '..');
++  const composer = fs.readFileSync(path.join(root, 'scripts/compose-vector-local-runtime.mjs'), 'utf8');
++  const assembly = composer.match(/^const js = [^\r\n]+;/gm);
++  assert.equal(assembly?.length, 1, 'Use the actual unique composer bundle expression');
++  return vm.runInNewContext(assembly[0] + '\njs;', { read: file => fs.readFileSync(path.join(root, file), 'utf8') });
++})();
++const STATUS = '/api/integrations';
++const PREVIEW = '/api/integrations/discovery/broker-preview';
++const clone = value => JSON.parse(JSON.stringify(value));
++const flush = async () => { for (let i = 0; i < 8; i++) await new Promise(resolve => setImmediate(resolve)); };
++const deferred = () => { let resolve, reject; const promise = new Promise((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; };
++const profile = { id: 'profile-ns-a', provider: 'netsuite', system: 'NetSuite' };
++const status = (profiles = [profile]) => ({ providerMetadataBroker: {
++  schemaVersion: 'vector-provider-metadata-review-v1', configured: profiles.length > 0,
++  profiles, reviewOnly: true, liveSyncVerified: false
++} });
++function preview(p = profile) {
++  return { authority: 'server-broker-read-review-only', networkFetchPerformed: true, activationAvailable: false,
++    draft: { status: 'draft_review_required', provider: p.provider, system: p.system,
++      metadataSource: 'server-broker:' + p.id, schemaDigest: 'a'.repeat(64),
++      fields: [{ name: 'id', type: 'integer', key: true, readable: true, writable: false }, { name: 'companyName', type: 'string', key: false, readable: true, writable: false }],
++      activation: { allowed: false, requiresHumanReview: true } },
++    brokerEvidence: { provider: p.provider, retrievedAt: new Date().toISOString(), metadataValidated: true,
++      networkFetchPerformed: true, dnsPinned: true, redirectsAllowed: false, sourceArtifactSha256: 'a'.repeat(64),
++      credentialExposed: false, rawMetadataReturned: false, collectionPermit: { verified: true } } };
++}
++
++function harness(respond, initial = {}) {
++  const calls = [], listeners = new Map();
++  const identity = { id: 'admin-a', email: 'admin@example.test', tenant: 'tenant-a', role: 'admin', permissions: ['company.configure'] };
++  Object.assign(identity, initial);
++  const F = { ready: true, actor: identity };
++  const classList = { add() {}, remove() {}, toggle() {} };
++  class Element {
++    constructor(tag = 'div') { this.tagName = tag.toUpperCase(); this.dataset = {}; this.style = {}; this.classList = classList; this.children = []; this.attributes = {}; this.html = ''; }
++    set innerHTML(value) { this.html = String(value); }
++    get innerHTML() { return this.html; }
++    setAttribute(key, value) { this.attributes[key] = String(value); }
++    getAttribute(key) { return this.attributes[key] ?? null; }
++    prepend(node) { node.parentElement = this; this.children.unshift(node); }
++    append(node) { node.parentElement = this; this.children.push(node); }
++    remove() { if (this.parentElement) this.parentElement.children = this.parentElement.children.filter(x => x !== this); this.parentElement = null; }
++    contains(node) { return node === this || this.children.some(x => x.contains(node)); }
++    get isConnected() { return content.contains(this); }
++    querySelector(selector) {
++      if (selector.includes('data-vector-metadata-card')) return this.children.find(x => x.dataset.vectorMetadataCard != null) || null;
++      return null;
++    }
++    querySelectorAll() { return []; }
++    closest(selector) {
++      const keys = { '[data-vector-metadata-check]': 'vectorMetadataCheck', '[data-vector-metadata-refresh]': 'vectorMetadataRefresh', '[data-vector-metadata-card]': 'vectorMetadataCard' };
++      if (keys[selector] && this.dataset[keys[selector]] != null) return this;
++      return this.parentElement?.closest(selector) || null;
++    }
++    matches() { return false; }
++    focus() {}
++  }
++  let content = new Element('main');
++  const app = new Element(), sidebar = new Element(), topbar = new Element(), parent = new Element();
++  content.parentElement = parent; parent.querySelector = () => topbar;
++  app.querySelector = selector => selector.includes('vector-sidebar') ? sidebar : selector === '.content' ? content : null;
++  const nav = ['integrations', 'overview'].map(route => ({ dataset: { page: route }, textContent: route }));
++  const addListener = (name, fn) => { if (!listeners.has(name)) listeners.set(name, []); listeners.get(name).push(fn); };
++  const document = {
++    body: new Element('body'), documentElement: {}, readyState: 'loading',
++    querySelector(selector) { if (selector === '.app') return app; if (selector === '.content') return content; if (selector === '.vector-sidebar') return sidebar; return content.querySelector(selector); },
++    querySelectorAll(selector) { return selector.includes('.navbtn[data-page]') ? nav : []; },
++    createElement(tag) { return new Element(tag); }, getElementById() { return null; }, addEventListener: addListener
++  };
++  const location = { href: 'https://vector.example.test/#vector/integrations', origin: 'https://vector.example.test', hash: '#vector/integrations' };
++  const ui = { page: 'integrations', root: null };
++  const window = { document, location, addEventListener: addListener, scrollTo() {}, render: async () => { content = new Element('main'); content.parentElement = parent; } };
++  const sandbox = { window, document, location, ui, F, me: () => identity, isEmployee: () => identity.role === 'employee',
++    history: { pushState() {}, replaceState() {} }, sessionStorage: { getItem() { return null; }, removeItem() {}, setItem() { throw Error('Metadata review must not persist browser state'); } },
++    MutationObserver: class { observe() {} disconnect() {} }, setTimeout() { return 0; }, clearTimeout() {}, queueMicrotask,
++    AbortController, URL, Intl, Date, console,
++    fetch: async (url, options = {}) => {
++      if (![STATUS, PREVIEW].includes(String(url))) return { ok: true, status: 200, json: async () => ({}) };
++      const request = { path: String(url), method: options.method || 'GET', body: options.body ? JSON.parse(options.body) : null, options };
++      calls.push(request); const answer = await respond(request, calls); const code = answer?.status || 200;
++      return { ok: code >= 200 && code < 300, status: code, json: answer?.json || (async () => clone(answer?.body ?? answer ?? {})) };
++    }
++  };
++  window.window = window;
++  vm.runInNewContext(source, sandbox, { filename: sourcePath });
++  const card = () => content.children.find(x => x.dataset.vectorMetadataCard != null);
++  const fire = (name, target) => { const event = { target, preventDefault() {} }; for (const fn of listeners.get(name) || []) fn(event); };
++  return { calls, identity, F, ui, window, card,
++    async mount() { window.VectorWorkforceOperations.apply(); await flush(); },
++    async click(id = profile.id) {
++      assert.ok(card(), 'Provider metadata review card must be mounted');
++      assert.match(card().innerHTML, /Check fields/, 'An actual labelled Check fields action is required');
++      const button = new Element('button'); button.dataset.vectorMetadataCheck = id; card().append(button); fire('click', button); await flush();
++    },
++    async refresh() { assert.ok(card()); const button = new Element('button'); button.dataset.vectorMetadataRefresh = ''; card().append(button); fire('click', button); await flush(); },
++    hide() { for (const fn of listeners.get('pagehide') || []) fn(); },
++    async render() { await window.render(); await flush(); },
++    text() { return card()?.innerHTML || ''; },
++    previews() { return calls.filter(x => x.path === PREVIEW); }
++  };
++}
++
++// Derive the positive response from the exact sealed controller and broker.
++// Only provider I/O, credential/permit issuance and the controller's audit sink are fixtures.
++function actualController() {
++  const lib = loadLibrary(), PMB = require(path.join(lib, 'provider-metadata-broker.cjs'));
++  const CD = require(path.join(lib, 'connector-discovery.cjs'));
++  const review = require(path.join(process.env.VECTOR_NANGO_RUNTIME_ROOT || path.resolve(__dirname, '../integration/runtime'), 'provider-metadata-review.cjs'));
++  const server = fs.readFileSync(path.join(path.dirname(lib), 'server.cjs'), 'utf8');
++  const start = "if(url.pathname==='/api/integrations/discovery/broker-preview'&&req.method==='POST'){";
++  const end = "if(url.pathname==='/api/integrations/discovery/preview'&&req.method==='POST'){";
++  assert.equal(server.split(start).length, 2); assert.equal(server.split(end).length, 2);
++  const block = server.slice(server.indexOf(start), server.indexOf(end));
++  const actor = { tenant: 'tenant-a', email: 'admin@example.test', personId: 'admin-a', permissions: ['company.configure'] };
++  const profiles = PMB.parseProfiles([{ id: profile.id, tenant: actor.tenant, provider: profile.provider, system: profile.system,
++    credentialEnv: 'WFM_BROKER_TOKEN_FIXTURE', accountId: '1234567_SB1', query: 'SELECT id, companyName FROM customer ORDER BY id',
++    uniqueOrderColumns: ['id'], methods: [{ method: 'rest' }], objectTypes: ['demand'] }]);
++  let providerCalls = 0;
++  const broker = PMB.createBroker({ profiles, lookupImpl: async () => [{ address: '8.8.8.8', family: 4 }],
++    credentialProvider: async () => ({ accessToken: 'fictional-provider-token-for-field-review', expiresAt: new Date(Date.now() + 3600000).toISOString() }),
++    permitProvider: async () => 'fictional-collection-permit', permitVerifier: { verifyAndConsume() {
++      return { keyId: 'fixture-key', permitSha256: 'b'.repeat(64), jtiSha256: 'c'.repeat(64), issuedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 60000).toISOString() };
++    } }, transport: async request => {
++      providerCalls++; assert.equal(request.url.origin, profiles[0].allowedOrigin); assert.equal(request.pinnedAddress.address, '8.8.8.8');
++      return { status: 200, elapsedMs: 1, headers: {}, text: JSON.stringify({ properties: { id: { type: 'integer' }, companyName: { type: 'string' } } }) };
++    } });
++  // The request body is a boundary fixture; the controller source is executed byte-for-byte.
++  const invoke = vm.compileFunction('return (async()=>{' + block + '})();', ['a', 'body'], {
++    parsingContext: vm.createContext({ req: { method: 'POST' }, res: {}, url: { pathname: PREVIEW },
++      E: { assert(value, message, code = 400) { if (!value) throw Object.assign(Error(message), { status: code }); } },
++      providerMetadataBroker: broker, CD, connectorDiscoveryReviewKey: 'fictional-review-signing-key-1234567890',
++      protection: { observe() {} }, tokenHash: value => createHash('sha256').update(value).digest('hex'),
++      db: { prepare: () => ({ run() {} }) }, json: (_res, _status, result) => result }) });
++  return { status: { providerMetadataBroker: review.statusForActor(broker.status(), actor) },
++    collect: (input = { profileId: profile.id }, who = actor) => invoke(who, async () => input),
++    calls: () => providerCalls, actor, controllerSha256: createHash('sha256').update(block).digest('hex') };
++}
++
++test('configured source has an explicit Check fields action that sends only the approved profileId', async () => {
++  const controller = actualController();
++  const h = harness(request => request.path === STATUS ? controller.status : controller.collect(request.body));
++  await h.mount(); assert.equal(h.previews().length, 0, 'Page entry must not fetch provider metadata');
++  await h.click();
++  assert.equal(h.previews().length, 1); assert.deepEqual(h.previews()[0].body, { profileId: profile.id });
++  assert.equal(h.previews()[0].method, 'POST');
++  assert.equal(h.previews()[0].options.credentials, 'same-origin'); assert.equal(h.previews()[0].options.cache, 'no-store');
++  assert.equal(controller.calls(), 1);
++  assert.match(h.text(), /Fields available/); assert.match(h.text(), /companyname/);
++  assert.doesNotMatch(h.text(), /Connected|Live sync active|WFM_|api\.nango\.dev/);
++});
++
++test('exact existing preview controller rejects extra inputs, another tenant and a worker without configure permission', async () => {
++  const c = actualController();
++  await assert.rejects(c.collect({ profileId: profile.id, tenant: 'tenant-a' }), error => error.status === 400);
++  await assert.rejects(c.collect({ profileId: profile.id }, { ...c.actor, tenant: 'another-tenant' }), error => error.status === 404);
++  await assert.rejects(c.collect({ profileId: profile.id }, { ...c.actor, role: 'worker', permissions: [] }), error => error.status === 403);
++  assert.equal(c.calls(), 0);
++});
++
++test('missing setup, available options and successful metadata remain distinct from live sync', async () => {
++  const empty = harness(() => status([])); await empty.mount();
++  assert.match(empty.text(), /Account setup needed/); assert.doesNotMatch(empty.text(), /Check fields|Fields available|Connected/);
++  const ready = harness(request => request.path === STATUS ? status() : preview()); await ready.mount();
++  assert.match(ready.text(), /Ready to check/); assert.match(ready.text(), /Account access has not been confirmed/);
++  for (let i = 0; i < 4; i++) await ready.mount();
++  await ready.refresh(); assert.equal(ready.previews().length, 0);
++  await ready.click(); assert.match(ready.text(), /Fields available/); assert.match(ready.text(), /does not import records or verify live data sync/);
++  await ready.refresh(); assert.doesNotMatch(ready.text(), /companyName|Fields available/); assert.equal(ready.previews().length, 1);
++});
++
++test('only server-listed profiles can be checked; identifiers and configuration are not display copy', async () => {
++  const profiles = [profile, { id: 'secret-profile-id-b', provider: 'netsuite', system: 'private-config-name' },
++    { id: 'sf-profile', provider: 'successfactors', system: 'SAP SuccessFactors' }];
++  const h = harness(request => request.path === STATUS ? status(profiles) : preview(profiles.find(p => p.id === request.body.profileId)));
++  await h.mount(); assert.match(h.text(), /NetSuite · Source 1|NetSuite · Source 2/); assert.match(h.text(), /SAP SuccessFactors/);
++  assert.doesNotMatch(h.text().replace(/data-vector-metadata-check="[^"]*"/g, ''), /secret-profile-id|private-config-name|tenant-a|credential|WFM_|<input|<select/);
++  await h.click('unlisted-profile'); assert.equal(h.previews().length, 0);
++  await h.click('sf-profile'); assert.deepEqual(h.previews()[0].body, { profileId: 'sf-profile' }); assert.match(h.text(), /Fields available/);
++});
++
++test('field names are escaped and only a bounded projection of metadata is rendered', async () => {
++  const value = preview(); value.draft.fields = Array.from({ length: 55 }, (_, i) => ({ name: i === 0 ? '<img src=x onerror=bad()>' : 'field-' + i, readable: true, writable: false }));
++  value.draft.raw = 'PRIVATE RAW'; value.reviewSeal = 'PRIVATE SEAL'; value.brokerEvidence.credential = 'PRIVATE TOKEN';
++  const h = harness(request => request.path === STATUS ? status() : value); await h.mount(); await h.click();
++  assert.match(h.text(), /55 fields/); assert.match(h.text(), /first 50/); assert.match(h.text(), /&lt;img/);
++  assert.doesNotMatch(h.text(), /<img|PRIVATE RAW|PRIVATE SEAL|PRIVATE TOKEN|field-54/);
++});
++
++test('bad or mismatched metadata clears prior results and cannot claim fields are available', async () => {
++  const changes = [v => { v.networkFetchPerformed = false; }, v => { v.draft.provider = 'successfactors'; },
++    v => { v.draft.metadataSource = 'server-broker:someone-else'; }, v => { v.draft.activation.allowed = true; },
++    v => { v.brokerEvidence.sourceArtifactSha256 = 'd'.repeat(64); }, v => { v.brokerEvidence.collectionPermit.verified = false; },
++    v => { v.brokerEvidence.dnsPinned = false; }, v => { v.brokerEvidence.retrievedAt = 'bad-date'; },
++    v => { v.draft.fields[0].writable = true; }, v => { v.draft.fields = []; }, v => { v.draft.fields.push(v.draft.fields[0]); }];
++  for (const change of changes) {
++    let count = 0;
++    const h = harness(request => { if (request.path === STATUS) return status(); const value = preview(); if (++count > 1) change(value); return value; });
++    await h.mount(); await h.click(); assert.match(h.text(), /Fields available/);
++    await h.click(); assert.match(h.text(), /Fields could not be checked/); assert.doesNotMatch(h.text(), /Fields available|companyName/);
++    assert.equal(h.previews().length, 2);
++  }
++});
++
++test('backend failures never display raw errors, retry automatically or retain a successful result', async () => {
++  for (const code of [401, 403, 404, 500, 503]) {
++    let count = 0;
++    const h = harness(request => request.path === STATUS ? status() : ++count === 1 ? preview() : { status: code, body: { error: 'WFM_SECRET=PRIVATE' } });
++    await h.mount(); await h.click(); await h.click();
++    assert.doesNotMatch(h.text(), /PRIVATE|WFM_|Fields available|companyName/);
++    assert.match(h.text(), /Sign in|not available|could not be checked/); await flush(); assert.equal(h.previews().length, 2);
++  }
++});
++
++test('malformed status and denied status do not masquerade as account setup missing', async () => {
++  for (const answer of [{}, { status: 403, body: { error: 'PRIVATE' } }, status([{ ...profile, provider: 'constructor' }]),
++    { providerMetadataBroker: { ...status().providerMetadataBroker, reviewOnly: false } }, status([profile, profile])]) {
++    const h = harness(() => answer); await h.mount();
++    assert.match(h.text(), /not available|could not be checked/); assert.doesNotMatch(h.text(), /Account setup needed|Check fields|PRIVATE/);
++    assert.equal(h.previews().length, 0);
++  }
++});
++
++test('current authenticated readiness and configure permission are required with no legacy identity fallback', async () => {
++  for (const change of [h => { h.F.ready = false; }, h => { h.F.actor = null; },
++    h => { h.F.actor = { ...h.identity, role: 'worker', permissions: [] }; }, h => { delete h.F.actor.permissions; }]) {
++    const h = harness(() => status()); change(h); await h.mount(); assert.equal(h.card(), undefined); assert.equal(h.previews().length, 0);
++  }
++});
++
++test('stale completion is discarded after tenant, actor, permission, readiness, root or route changes', async () => {
++  const changes = [h => { h.F.actor = { ...h.identity, tenant: 'other-tenant' }; }, h => { h.F.actor = { ...h.identity, email: 'other@example.test' }; },
++    h => { h.F.actor = { ...h.identity, role: 'worker', permissions: [] }; }, h => { h.F.ready = false; },
++    h => { h.ui.root = {}; }, h => { h.ui.page = 'overview'; }];
++  for (const change of changes) {
++    const pending = deferred(), h = harness(request => request.path === STATUS ? status() : pending.promise);
++    await h.mount(); await h.click(); change(h); pending.resolve(preview()); await flush();
++    assert.equal(h.card(), undefined); assert.equal(h.previews()[0].options.signal.aborted, true);
++  }
++});
++
++test('rerender and pagehide abort pending checks and concurrent clicks cannot duplicate collection', async () => {
++  const pending = deferred(), h = harness(request => request.path === STATUS ? status() : pending.promise);
++  await h.mount(); await h.click(); await h.click(); await h.refresh(); assert.equal(h.previews().length, 1);
++  const rendering = h.window.render(); assert.equal(h.previews()[0].options.signal.aborted, true);
++  await rendering; await flush(); pending.resolve(preview()); await flush(); assert.doesNotMatch(h.text(), /Fields available|companyName/);
++  const second = harness(request => request.path === STATUS ? status() : deferred().promise); await second.mount(); await second.click();
++  second.hide(); assert.equal(second.card(), undefined); assert.equal(second.previews()[0].options.signal.aborted, true);
++});
++
++test('a current authentication or permission denial clears every result and check action until explicit authorized refresh', async () => {
++  const second = { ...profile, id: 'profile-ns-b' };
++  for (const code of [401, 403]) {
++    const h = harness(request => request.path === STATUS ? status([profile, second]) :
++      request.body.profileId === second.id ? { status: code, body: { error: 'PRIVATE ERROR' } } : preview());
++    await h.mount(); await h.click(); assert.match(h.text(), /companyName/);
++    await h.click(second.id);
++    assert.doesNotMatch(h.text(), /companyName|Fields available|Check fields|PRIVATE ERROR/);
++    assert.match(h.text(), /Sign in|not available/);
++    await h.mount(); assert.doesNotMatch(h.text(), /Check fields/); assert.equal(h.previews().length, 2);
++    await h.refresh(); assert.match(h.text(), /Check fields/); assert.doesNotMatch(h.text(), /companyName/);
++    assert.equal(h.previews().length, 2, 'Authorized status refresh must not retry collection');
++  }
++});
++
++test('stale transport and JSON rejections remove and abort the old context for status and preview requests', async () => {
++  for (const phase of ['status', 'preview']) for (const failure of ['transport', 'json']) {
++    const pending = deferred();
++    const h = harness(request => {
++      if (request.path === STATUS && request.options.headers?.Accept !== 'application/json') return status(); // Existing Staffology status read.
++      if (phase === 'preview' && request.path === STATUS) return status();
++      return failure === 'transport' ? pending.promise : { json: () => pending.promise };
++    });
++    await h.mount(); if (phase === 'preview') await h.click();
++    const request = phase === 'preview' ? h.previews()[0] : h.calls.find(x => x.options.headers?.Accept === 'application/json');
++    h.F.actor = { ...h.identity, tenant: 'other-tenant' }; pending.reject(Error('PRIVATE TRANSPORT DETAIL')); await flush();
++    assert.equal(h.card(), undefined, phase + '/' + failure);
++    assert.equal(request.options.signal.aborted, true, phase + '/' + failure);
++  }
++});
+--- a/scripts/compose-vector-local-runtime.mjs
++++ b/scripts/compose-vector-local-runtime.mjs
+@@ -29,16 +29,20 @@
+   }
+ }
+ function composeNangoMetadata(runtime, server) {
+-  const source = 'integration/runtime/nango-credential-provider.cjs';
++  const sources = ['integration/runtime/nango-credential-provider.cjs', 'integration/runtime/provider-metadata-review.cjs'];
+   const importAnchor = "const IG=require('./lib/integration-gateway.cjs')";
+   const brokerAnchor = 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider})';
+-  if (server.split(importAnchor).length !== 2 || server.split(brokerAnchor).length !== 2 || server.includes('const NangoCredentialProvider=')) throw Error('NANGO_METADATA_BROKER_ANCHOR_CHANGED');
+-  recordInput(source);
+-  const target = path.join(runtime, 'integration-runtime/nango-credential-provider.cjs');
+-  fs.mkdirSync(path.dirname(target), { recursive: true });
+-  fs.copyFileSync(path.join(root, source), target);
+-  return server.replace(importAnchor, "const NangoCredentialProvider=require('./integration-runtime/nango-credential-provider.cjs');\n" + importAnchor)
+-    .replace(brokerAnchor, 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider,credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})})');
++  const statusAnchor = 'providerMetadataBroker:providerMetadataBroker.status()';
++  if ([importAnchor, brokerAnchor, statusAnchor].some(anchor => server.split(anchor).length !== 2) || server.includes('const NangoCredentialProvider=') || server.includes('const ProviderMetadataReview=')) throw Error('NANGO_METADATA_BROKER_ANCHOR_CHANGED');
++  for (const source of sources) {
++    recordInput(source);
++    const target = path.join(runtime, 'integration-runtime', path.basename(source));
++    fs.mkdirSync(path.dirname(target), { recursive: true });
++    fs.copyFileSync(path.join(root, source), target);
++  }
++  return server.replace(importAnchor, "const NangoCredentialProvider=require('./integration-runtime/nango-credential-provider.cjs');\nconst ProviderMetadataReview=require('./integration-runtime/provider-metadata-review.cjs');\n" + importAnchor)
++    .replace(brokerAnchor, 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider,credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})})')
++    .replace(statusAnchor, 'providerMetadataBroker:ProviderMetadataReview.statusForActor(providerMetadataBroker.status(),a)');
+ }
+ function composeStaffology(runtime) {
+   validateSealedRuntime(runtime);
+--- a/scripts/nango-metadata-wiring.test.cjs
++++ b/scripts/nango-metadata-wiring.test.cjs
+@@ -18,10 +18,12 @@
+ });
+ const hash = value => createHash('sha256').update(value).digest('hex');
+ 
+-test('actual composer hook adds the source file and the existing broker callback without changing provider transport', () => {
++test('actual composer hook installs resolver and presentation projection without changing provider transport or preview authority', () => {
+   const result=invoke(runtime,original),installed=path.join(runtime,'integration-runtime/nango-credential-provider.cjs');
+   assert.equal(hash(fs.readFileSync(installed)),hash(fs.readFileSync(path.join(root,'integration/runtime/nango-credential-provider.cjs'))));
+-  assert.deepEqual(recorded,['integration/runtime/nango-credential-provider.cjs']);
++  const reviewPath=path.join(runtime,'integration-runtime/provider-metadata-review.cjs');
++  assert.equal(hash(fs.readFileSync(reviewPath)),hash(fs.readFileSync(path.join(root,'integration/runtime/provider-metadata-review.cjs'))));
++  assert.deepEqual(recorded,['integration/runtime/nango-credential-provider.cjs','integration/runtime/provider-metadata-review.cjs']);
+   assert.equal(result.includes("const NangoCredentialProvider=require('./integration-runtime/nango-credential-provider.cjs');"),true);
+   assert.equal(result.includes('credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})'),true);
+   assert.equal(result.includes('transport:Nango'),false);
+@@ -40,10 +42,34 @@
+   const enabled=instantiate(profiles,{WFM_NANGO_METADATA_BINDINGS_JSON:JSON.stringify([binding]),WFM_NANGO_API_KEY:'fictional-nango-environment-key'});
+   assert.equal(enabled.status().credentialMode,'short-lived-provider-callback');
+   assert.equal(enabled.status().profiles[0].activationAuthority,false);
++  const controllerStart="if(url.pathname==='/api/integrations/discovery/broker-preview'&&req.method==='POST'){";
++  const controllerEnd="if(url.pathname==='/api/integrations/discovery/preview'&&req.method==='POST'){";
++  const controller=server=>server.slice(server.indexOf(controllerStart),server.indexOf(controllerEnd));
++  assert.equal(controller(result),controller(original),'Existing configure/body/tenant/permit/preview contract is unchanged');
++});
++
++test('the emitted status expression projects only the trusted actor tenant before HTTP exposure',()=>{
++  const result=invoke(runtime,original),PMB=require(path.join(runtime,'lib/provider-metadata-broker.cjs'));
++  const ProviderMetadataReview=require(path.join(runtime,'integration-runtime/provider-metadata-review.cjs'));
++  const expression=result.match(/providerMetadataBroker:(ProviderMetadataReview\.statusForActor\(providerMetadataBroker\.status\(\),a\))/);
++  assert.ok(expression,'Projection must wrap the existing response field using authenticated actor a');
++  const base={provider:'netsuite',system:'NetSuite',credentialEnv:'WFM_BROKER_TOKEN_PRIVATE',accountId:'1234567_SB1',
++    query:'SELECT id FROM customer ORDER BY id',uniqueOrderColumns:['id'],methods:[{method:'rest'}]};
++  const providerMetadataBroker=PMB.createBroker({profiles:PMB.parseProfiles([
++    {...base,id:'own-profile',tenant:'own-tenant'},{...base,id:'foreign-profile',tenant:'foreign-tenant'}])});
++  const run=a=>vm.runInNewContext(expression[1],{ProviderMetadataReview,providerMetadataBroker,a});
++  const value=run({tenant:'own-tenant',permissions:['company.configure']});
++  assert.deepEqual(JSON.parse(JSON.stringify(value.profiles)),[{id:'own-profile',provider:'netsuite',system:'NetSuite'}]);
++  assert.equal(value.configured,true);
++  assert.doesNotMatch(JSON.stringify(value),/foreign|tenant|credential|origin|WFM_/i);
++  assert.equal(run({tenant:'empty-tenant',permissions:['company.configure']}).configured,false);
++  assert.throws(()=>run({tenant:'own-tenant',role:'admin',permissions:[]}),error=>error.status===403);
++  assert.equal(providerMetadataBroker.status().profiles.length,2,'Private broker state and existing internal consumers stay unchanged');
+ });
+ 
+ test('composer refuses drift, duplicate anchors and repeat application',()=>{
+   assert.throws(()=>invoke(runtime,original.replace('providerMetadataBroker=PMB.createBroker','renamedBroker=PMB.createBroker')),/NANGO_METADATA_BROKER_ANCHOR_CHANGED/);
++  assert.throws(()=>invoke(runtime,original.replace('providerMetadataBroker:providerMetadataBroker.status()','providerMetadataBroker:{}')),/NANGO_METADATA_BROKER_ANCHOR_CHANGED/);
+   assert.throws(()=>invoke(runtime,original+'\n'+original),/NANGO_METADATA_BROKER_ANCHOR_CHANGED/);
+   assert.throws(()=>invoke(runtime,invoke(runtime,original)),/NANGO_METADATA_BROKER_ANCHOR_CHANGED/);
+ });
+@@ -61,4 +87,14 @@
+   assert.ok(docker.includes('node scripts/nango-metadata-wiring.test.cjs'));
+   assert.ok(docker.includes('VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime node /tmp/wfm-nango/integration/runtime/nango-credential-provider.test.cjs'));
+   assert.ok(docker.includes('VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime VECTOR_NANGO_BROKER_ROOT=/app/lib node /tmp/wfm-nango/integration/runtime/nango-metadata-broker.test.cjs'));
++  assert.ok(docker.includes('COPY integration/runtime/provider-metadata-review.cjs /workspace/integration/runtime/'));
++  assert.ok(docker.includes('node integration/runtime/provider-metadata-review.test.cjs'));
++  assert.ok(docker.includes('node ux-overlay/vector-provider-metadata.test.cjs'));
++  assert.ok(docker.includes('VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime node /tmp/wfm-nango/integration/runtime/provider-metadata-review.test.cjs'));
++  const installed='RUN VECTOR_METADATA_UI_SOURCE=/app/public/vector-ui.js VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime VECTOR_NANGO_BROKER_ROOT=/app/lib node /tmp/vector-metadata/ux-overlay/vector-provider-metadata.test.cjs';
++  assert.ok(docker.includes(installed));
++  assert.ok(docker.indexOf(installed)>docker.indexOf('&& node /tmp/sanitize-customer-public-bundle.mjs /app/public'),'Installed UI test follows final public bundle composition and sanitation');
++  const forge=fs.readFileSync(path.join(root,'scripts/run-forge-ci.mjs'),'utf8');
++  assert.ok(forge.includes("['node', ['integration/runtime/provider-metadata-review.test.cjs']]"));
++  assert.ok(forge.includes("['node', ['ux-overlay/vector-provider-metadata.test.cjs']]"));
+ });
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -7,7 +7,9 @@
+ COPY . ./
+ RUN node integration/runtime/nango-credential-provider.test.cjs \
+  && node integration/runtime/nango-metadata-broker.test.cjs \
+- && node scripts/nango-metadata-wiring.test.cjs
++ && node scripts/nango-metadata-wiring.test.cjs \
++ && node integration/runtime/provider-metadata-review.test.cjs \
++ && node ux-overlay/vector-provider-metadata.test.cjs
+ RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
+ RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
+ RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
+@@ -118,6 +120,7 @@
+ COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
+ COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/
+ COPY integration/runtime/nango-credential-provider.cjs /workspace/integration/runtime/
++COPY integration/runtime/provider-metadata-review.cjs /workspace/integration/runtime/
+ RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \
+  && rm -rf /workspace
+ COPY scripts/retire-legacy-presentation.mjs scripts/harden-attendance-integrity.mjs scripts/patch-customer-runtime-assets.mjs /tmp/
+@@ -214,8 +217,10 @@
+ COPY integration/worker/directory-discovery-worker.cjs integration/worker/directory-discovery-worker.test.cjs /tmp/wfm-tests/integration/worker/
+ COPY integration/runtime/nango-credential-provider.test.cjs integration/runtime/nango-metadata-broker.test.cjs /tmp/wfm-nango/integration/runtime/
+ COPY test-support/sealed-nango-broker.cjs /tmp/wfm-nango/test-support/sealed-nango-broker.cjs
++COPY integration/runtime/provider-metadata-review.test.cjs /tmp/wfm-nango/integration/runtime/
+ RUN VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime node /tmp/wfm-nango/integration/runtime/nango-credential-provider.test.cjs \
+  && VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime VECTOR_NANGO_BROKER_ROOT=/app/lib node /tmp/wfm-nango/integration/runtime/nango-metadata-broker.test.cjs \
++ && VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime node /tmp/wfm-nango/integration/runtime/provider-metadata-review.test.cjs \
+  && rm -rf /tmp/wfm-nango
+ COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-core.cjs
+ COPY operations/runtime/workforce-lifecycle-router.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
+@@ -368,6 +373,11 @@
+  && rm -f /tmp/vector-sealed-base.css /tmp/prove-vector-built-asset-provenance.mjs /tmp/compose-vector-presentation.mjs /tmp/sanitize-customer-public-bundle.mjs /tmp/validate-customer-public-bundle.mjs \
+  && rm -rf /tmp/wfm-ux-overlay /tmp/wfm-reporting-ui /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
+ 
++COPY ux-overlay/vector-provider-metadata.test.cjs /tmp/vector-metadata/ux-overlay/
++COPY test-support/sealed-nango-broker.cjs /tmp/vector-metadata/test-support/
++RUN VECTOR_METADATA_UI_SOURCE=/app/public/vector-ui.js VECTOR_NANGO_RUNTIME_ROOT=/app/integration-runtime VECTOR_NANGO_BROKER_ROOT=/app/lib node /tmp/vector-metadata/ux-overlay/vector-provider-metadata.test.cjs \
++ && rm -rf /tmp/vector-metadata
++
+ # Consequential attendance admission against the exact final runtime. Reject an
+ # overlapping correction before mutation, then prove valid reconciliation/export.
+ COPY verification/vector-repair-20260921/attendance-overlap-regression.mjs verification/vector-repair-20260921/attendance-payroll-acceptance.mjs verification/vector-repair-20260921/attendance-guardrails.test.cjs /tmp/wfm-attendance-tests/
+--- a/scripts/run-forge-ci.mjs
++++ b/scripts/run-forge-ci.mjs
+@@ -5,6 +5,8 @@
+   ['node', ['integration/runtime/nango-credential-provider.test.cjs']],
+   ['node', ['integration/runtime/nango-metadata-broker.test.cjs']],
+   ['node', ['scripts/nango-metadata-wiring.test.cjs']],
++  ['node', ['integration/runtime/provider-metadata-review.test.cjs']],
++  ['node', ['ux-overlay/vector-provider-metadata.test.cjs']],
+   ['node', ['scripts/validate-deployment.mjs']],
+   ['node', ['scripts/validate-proof-lane-policy.mjs']],
+   ['node', ['scripts/validate-research-convergence-ledger.mjs']],

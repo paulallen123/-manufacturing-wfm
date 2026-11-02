@@ -1,0 +1,14 @@
+✔ integration/runtime/provider-metadata-review.test.cjs (76.274743ms)
+✔ scripts/nango-metadata-wiring.test.cjs (151.978263ms)
+✔ ux-overlay/vector-gusto.test.cjs (155.976533ms)
+✔ ux-overlay/vector-provider-metadata.test.cjs (287.352692ms)
+✔ ux-overlay/vector-staffology-controls.test.cjs (94.806937ms)
+✔ ux-overlay/vector-three-min.test.cjs (136.03335ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 305.567088

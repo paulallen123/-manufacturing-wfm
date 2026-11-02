@@ -1,0 +1,244 @@
+{
+  "schemaVersion": 1,
+  "scope": "Bounded local reconciliation of Nango PR569 to a fixed canonical PR501 checkpoint",
+  "repository": "paulallen123/-manufacturing-wfm",
+  "canonicalCheckpoint": "ca6e36b4efd1099b56250fb790943db4b533fee5",
+  "canonicalTree": "a41002fd2ee0846f5229b9c26118d3cbd3d2f626",
+  "donorCheckpoint": "e2cf7f7295e783abaf6d6464e70331dc71368c98",
+  "intendedFirstParent": "ca6e36b4efd1099b56250fb790943db4b533fee5",
+  "intendedAdditionalParent": "e2cf7f7295e783abaf6d6464e70331dc71368c98",
+  "publicationPrefix": "evidence/vector-nango-setup-20261031/reconcile-20261101/",
+  "sourceChanges": [
+    {
+      "path": "Dockerfile",
+      "baselineGitBlob": "b8370243a1dedd0b22dfa8943734ea8515337791",
+      "baselineSha256": "15027610db056b6af398dcfcf9d48058fdae3476d0d05401bbdb5bf29f660afe",
+      "candidateGitBlob": "42da319ca83461546cee6fef1149fcf30a801ef1",
+      "candidateSha256": "337e129e2b1b2e84e3d61e81c9e02de916401cd5c74c2aa9e984dfc62ce64ab7",
+      "addedLines": 9,
+      "removedLines": 0,
+      "replacedLines": 0,
+      "allCanonicalBytesRestoredAfterRemovingAdditions": true
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "baselineGitBlob": "84ee795c35434faea2a22c8aaa539b7a5842247f",
+      "baselineSha256": "0f419e8a375ba5615ee2646907e42ab66e5274821abf4b04554f6f1580c429e1",
+      "candidateGitBlob": "cf9d2e05ad8eeb76d74cc3ddddfe3ad70cabd519",
+      "candidateSha256": "756626eee69a6924991ddf269a041104151ffdd78809e94f32c2fff729710d28",
+      "addedLines": 13,
+      "removedLines": 0,
+      "replacedLines": 0,
+      "allCanonicalBytesRestoredAfterRemovingAdditions": true
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "baselineGitBlob": "2b8ada2ef7c454e900f2401f23ac6d70937e61ee",
+      "baselineSha256": "0f7fb90ac8167c5ad1b2aaaacce6610410e08053fd3594f071887ee74121f6e3",
+      "candidateGitBlob": "2994e733d73d770130c6c6b16dd0d832548485d1",
+      "candidateSha256": "91e2d8f54778a9abdb36d932d324cf8036dcb03baf8367d11916ae409276045d",
+      "addedLines": 3,
+      "removedLines": 0,
+      "replacedLines": 0,
+      "allCanonicalBytesRestoredAfterRemovingAdditions": true
+    }
+  ],
+  "sourceReceipt": {
+    "localPath": "evidence/reconciliation-source-receipt.json",
+    "publishedPath": "reconciliation-source-receipt.json",
+    "sha256": "1e3954df1118f4b5c4e24ae2da66c7d8aeabcb7c7d505b376f9e5670a2332113"
+  },
+  "protectedCanonicalFiles": [
+    {
+      "path": ".circleci/config.yml",
+      "gitBlob": "65f5647b94271f9bed8649aff9791b8d7e2273fa",
+      "sha256": "a87171ec0fd071c6a335901d386c4927c3793c0974cd1a87e04e2d26da02ea39",
+      "changeRequested": false
+    },
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "gitBlob": "31981cef7e79ebf505b477316393995a4d442490",
+      "sha256": "a3b0a9f52b65523d68dd3a9277195bdd94c2eda0356db29bde710fbb5961f98c",
+      "changeRequested": false
+    },
+    {
+      "path": "scripts/require-frozen-candidate.sh",
+      "gitBlob": "b14ccaa1f3826a579b175e20010cd5dccb95437c",
+      "sha256": "d14c6d7b572465ccf09d226bf67117090582a743e5608babf81c6b80acebc6aa",
+      "changeRequested": false
+    },
+    {
+      "path": "scripts/require-frozen-candidate.test.mjs",
+      "gitBlob": "671792fa420d4dbe3ea03d47aefb92b75d0d77d1",
+      "sha256": "0edda9ad3c75c104d1ce6f20725902632cd84b8a7ff57bfe6bd89954640b7bd6",
+      "changeRequested": false
+    }
+  ],
+  "unchangedCanonicalContracts": [
+    {
+      "path": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "sha": "0c8bb0251d207ec0af0808dd2627360a946a2cb3"
+    },
+    {
+      "path": "verification/provider-recovery-correction/operations/runtime/provider-adapter-contract.cjs",
+      "sha": "027b1150148b705f2f920b0eb45e1b472cd23f80"
+    }
+  ],
+  "carriedDonorFiles": [
+    {
+      "path": "integration/runtime/nango-credential-provider.cjs",
+      "gitBlob": "a5b1015c3462ba1221782ef32bfdae6b59623b77",
+      "sha256": "4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b",
+      "donorBytesUnchanged": true
+    },
+    {
+      "path": "integration/runtime/nango-credential-provider.test.cjs",
+      "gitBlob": "1c06754f5eda542e4f827d9e4494e19d47058619",
+      "sha256": "101c69423acb7719c7b493178a71413edbf81fde55fbdb6df9663f873878bbed",
+      "donorBytesUnchanged": true
+    },
+    {
+      "path": "integration/runtime/nango-metadata-broker.test.cjs",
+      "gitBlob": "9d610e70f576ff231fa502c0a2ddfa8f665049d7",
+      "sha256": "8e13024a5cd37a54715329a8e93282c35bf8b8cf5eeaba441bc58ac578288013",
+      "donorBytesUnchanged": true
+    },
+    {
+      "path": "test-support/sealed-nango-broker.cjs",
+      "gitBlob": "bacac524e5c62306c917c3d2daba5d09ff92a946",
+      "sha256": "1194ac817148b8a1d7b57eb726c10e990349f089f3f53347e3dae04cef5a774c",
+      "donorBytesUnchanged": true
+    },
+    {
+      "path": "scripts/nango-metadata-wiring.test.cjs",
+      "gitBlob": "51c2c4ed09479152eae8f309c2abe6914f910bfa",
+      "sha256": "46ffa06fda7982a26cac8bfb2303f9fde347d071d3374cbd432e046a7734b321",
+      "donorBytesUnchanged": true
+    },
+    {
+      "path": "independent/nango-boundary-heldout.test.cjs",
+      "gitBlob": "923f2fe2a561711688917829e68175ce4fbe4403",
+      "sha256": "f40b68b3214079e50a12e29564bc987fd46f7b370d03db61426949b02bfa8074",
+      "donorBytesUnchanged": true
+    },
+    {
+      "path": "evidence/nango-verify-installed-layout.cjs",
+      "gitBlob": "21a7f49a96e4f366d1177dc02f8010853ef83b03",
+      "sha256": "6dc1b5325794ce9d3a4f1c80891c2e316ae255ce7a16dc7f9c3c1841a7c7870a",
+      "donorBytesUnchanged": true
+    },
+    {
+      "path": "evidence/vector-nango-setup-20261031/forge-followup/selector-check.cjs",
+      "gitBlob": "097038d29998db3349de2aa999a741c8bf6c56e9",
+      "sha256": "3c0f4f8b624223ad87e316bc21639618e8318cc2374a422e9ef16a9bf83370cd",
+      "donorBytesUnchanged": true
+    }
+  ],
+  "canonicalTreeComplete": true,
+  "canonicalTreeEntries": 1998,
+  "canonicalNangoPathCount": 0,
+  "semanticAdaptationRequired": false,
+  "runtime": "Node.js v24.22.1",
+  "focusedVerification": [
+    {
+      "name": "resolver",
+      "command": "node integration/runtime/nango-credential-provider.test.cjs > evidence/resolver.log 2>&1",
+      "exitCode": 0,
+      "toolChunkId": "4f9490",
+      "tests": 64,
+      "pass": 64,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "localLog": "evidence/resolver.log",
+      "publishedLog": "resolver.log",
+      "logSha256": "75d99aa1b4e4e1f94e8993cf4cae9d6c939413d104ee16bc5cae77421a29d5fb"
+    },
+    {
+      "name": "broker",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node integration/runtime/nango-metadata-broker.test.cjs > evidence/broker.log 2>&1",
+      "exitCode": 0,
+      "toolChunkId": "baf94a",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "localLog": "evidence/broker.log",
+      "publishedLog": "broker.log",
+      "logSha256": "d5ecac08f19def98fe7ea28948a05c84bcad026e25efc67478191549ee23357e"
+    },
+    {
+      "name": "wiring",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node scripts/nango-metadata-wiring.test.cjs > evidence/wiring.log 2>&1",
+      "exitCode": 0,
+      "toolChunkId": "70bf19",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "localLog": "evidence/wiring.log",
+      "publishedLog": "wiring.log",
+      "logSha256": "441a6ac62bff4bd2dd4a413a38e869eb8109b5035c67e88264c51892773cdc3c"
+    },
+    {
+      "name": "installed",
+      "command": "VECTOR_TEST_ARCHIVE=/tmp/vector-nango-audit-archive.tar.gz node evidence/nango-verify-installed-layout.cjs > evidence/installed-hook.log 2>&1",
+      "exitCode": 0,
+      "toolChunkId": "f1d8bf",
+      "tests": 71,
+      "pass": 71,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "localLog": "evidence/installed-hook.log",
+      "publishedLog": "installed-hook.log",
+      "logSha256": "4c41130ebec7ac4c1636a841df5bcfe269a998be7c51e0d3ca34cf1a9aa8d89d"
+    },
+    {
+      "name": "forge-selector",
+      "command": "node evidence/vector-nango-setup-20261031/forge-followup/selector-check.cjs scripts/run-forge-ci.mjs baseline/scripts/run-forge-ci.mjs > evidence/forge-selector.log 2>&1",
+      "exitCode": 0,
+      "toolChunkId": "01af93",
+      "details": {
+        "scope": "actual Forge dispatcher with only child-process execution stubbed",
+        "requiredSuites": [
+          "integration/runtime/nango-credential-provider.test.cjs",
+          "integration/runtime/nango-metadata-broker.test.cjs",
+          "scripts/nango-metadata-wiring.test.cjs"
+        ],
+        "requiredSuiteCalls": 3,
+        "priorCommandsPreserved": 16,
+        "failureCases": 3,
+        "failureExitCode": 17,
+        "successMarkerWithFailure": false,
+        "result": "PASS"
+      },
+      "localLog": "evidence/forge-selector.log",
+      "publishedLog": "forge-selector.log",
+      "logSha256": "cf1b504af9e284729e416cbf0035c0b2d15dfb762de2ccd4c0c018525510f6cc"
+    },
+    {
+      "name": "syntax",
+      "command": "node --check scripts/compose-vector-local-runtime.mjs && node --check scripts/run-forge-ci.mjs",
+      "exitCode": 0,
+      "toolChunkId": "711f96"
+    }
+  ],
+  "distinctSourceTestCases": 74,
+  "installedReplayCases": 71,
+  "installedResolverSha256": "4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b",
+  "installedHookServerSha256": "e3abca538b203dccba9074709a8ae97626defc0f63c362990b093c9af2415e82",
+  "freezeExpectation": "Marker must retain canonical blob 31981cef7e79ebf505b477316393995a4d442490 and equal HEAD^1; existing gate therefore refuses unchanged_trigger.",
+  "limits": [
+    "No full composer or Docker image execution",
+    "No pinned Node22 execution",
+    "Forge child-process dispatch stubbed; full check list not executed",
+    "Synthetic network and permit verifier fixtures",
+    "No live API/credential access, deployment, merge or remote mutation"
+  ],
+  "reviewStatus": "Ready for designated independent reviewer; no new reviewer spawned",
+  "priorEvidenceUnchanged": true,
+  "documentationEdited": false
+}

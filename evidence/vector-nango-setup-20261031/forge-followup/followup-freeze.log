@@ -1,0 +1,19 @@
+✔ changed authentic trigger admits the exact committed candidate (66.902464ms)
+✔ existing repository freeze contract remains compatible when renewed (58.740939ms)
+✔ unchanged freeze trigger refuses success instead of halting a required job green (57.797897ms)
+✔ deleted trigger is refused even though its path changed (49.408623ms)
+✔ symlink trigger is refused even when its target has valid marker bytes (57.937434ms)
+✔ arbitrary changed trigger text is not a freeze contract (49.858131ms)
+✔ freeze marker with weakened safety contract is refused (47.209884ms)
+✔ missing comparison parent refuses admission (22.766059ms)
+✔ missing and mismatched CI source bindings refuse admission (31.804297ms)
+✔ uncommitted trigger edits cannot supply freeze authority (42.563194ms)
+✔ both CircleCI proof jobs use the fail-closed gate and core executes its tests (0.424001ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 493.896047

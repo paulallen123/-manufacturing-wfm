@@ -1,0 +1,48 @@
+{
+  "sourceRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+  "node": "v24.22.1",
+  "scope": "Exact composer metadata hook plus actual composer and Docker printf/cat bundle expressions; no full build, sanitation, HTTP listener, live provider or credentials",
+  "originalServerSha256": "1792f544d0fea25577f683f3df957b4f74b6a086cd0479b24b1fe77f58587dd0",
+  "composedServerSha256": "4be1d6c42a64098ffbdb1476b7da41da49e6e01acffbdaf3378cd6faa12132a5",
+  "previewControllerSha256": "b1712ec63456e24f6aacce13b6c03a47308ba58e3e283c55b928f3eeecb6b91a",
+  "previewControllerBytesUnchanged": true,
+  "installedInputs": [
+    {
+      "path": "integration/runtime/nango-credential-provider.cjs",
+      "sha256": "4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b"
+    },
+    {
+      "path": "integration/runtime/provider-metadata-review.cjs",
+      "sha256": "c26f7b2a5385fa8a5a328c1735313ffda0ca80265c2eeef0a6040de454bb5c04"
+    }
+  ],
+  "bundleInputs": [
+    {
+      "path": "learning/ui/adaptive-coach.js",
+      "sha256": "4639bc9fd33db36dc52af03dc1a700b7a53857b1aa053fb10e34947f11401117"
+    },
+    {
+      "path": "implementation/ui/implementation-journey.js",
+      "sha256": "3204afa071b64a73af8b1d9b607d189c6770192570dfd3977382c718b19ba3d4"
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "sha256": "149f8d49f417c3f43aa2cb6656ec0dd8d6886b9e5c9fbc67a4da032b11e3f774"
+    },
+    {
+      "path": "ux-overlay/vector-demand-intelligence.js",
+      "sha256": "3c1588e32e03aec4bbcfb2979c486f8d2fb4c907d559bc1634576e104159409b"
+    },
+    {
+      "path": "ux-overlay/vector-realtime.js",
+      "sha256": "ec758abb5eb5775b16c3debe59ed15a823d85274aa089cb15ab4e710dd15d10f"
+    },
+    {
+      "path": "reporting/ui/vector-reporting-ui.js",
+      "sha256": "f2ee0cdfa440868a81450d16ba01b638a735df8300fdfb5fa2d1e785a22d5444"
+    }
+  ],
+  "composerBundleSha256": "4e581bcf0e51f2eee7cd9a0528fb48ef553d553b8c1e19c6d37145a4ae09ec4c",
+  "dockerAssemblyBundleSha256": "c83471c311235c93c83bb793019ad02f525e53f3bc3ad2b3df073dfb47e23f2f",
+  "output": "evidence/installed-runtime"
+}

@@ -1,0 +1,89 @@
+{
+  "repository": "paulallen123/-manufacturing-wfm",
+  "baseRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+  "canonicalRef": "ca6e36b4efd1099b56250fb790943db4b533fee5",
+  "frozenAt": "2026-11-01T20:47:12.295887+00:00",
+  "sourcePaths": [
+    {
+      "path": "integration/runtime/provider-metadata-review.cjs",
+      "change": "new",
+      "baselineRef": null,
+      "baselineGitBlob": null,
+      "baselineSha256": null,
+      "gitBlob": "c8b090d375e81ef420d63d8416d942d252e2a9c3",
+      "sha256": "c26f7b2a5385fa8a5a328c1735313ffda0ca80265c2eeef0a6040de454bb5c04",
+      "bytes": 1710
+    },
+    {
+      "path": "integration/runtime/provider-metadata-review.test.cjs",
+      "change": "new",
+      "baselineRef": null,
+      "baselineGitBlob": null,
+      "baselineSha256": null,
+      "gitBlob": "c3027be271364deb46a94ade2f212e1a9d2d5f21",
+      "sha256": "cf6f1e59ed454f4fec85d5a55e657a2605b577cf4d24f3f5ff72a4dc7a54d4b7",
+      "bytes": 3729
+    },
+    {
+      "path": "ux-overlay/vector-shell.js",
+      "change": "modified",
+      "baselineRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+      "baselineGitBlob": "ed90e34de2087ef6c7a223192ef36e3fc91b29f6",
+      "baselineSha256": "6fed322208bf78267fe3086c2a476c91bddb1b7d79beb4b5b09ff15cd55de2cb",
+      "gitBlob": "3941e00ec1de7a6055ed8cae226ae26633cd8bd9",
+      "sha256": "149f8d49f417c3f43aa2cb6656ec0dd8d6886b9e5c9fbc67a4da032b11e3f774",
+      "bytes": 125923
+    },
+    {
+      "path": "ux-overlay/vector-provider-metadata.test.cjs",
+      "change": "new",
+      "baselineRef": null,
+      "baselineGitBlob": null,
+      "baselineSha256": null,
+      "gitBlob": "40501fde62775c22eb5bfd0d6fc5203d2163c260",
+      "sha256": "5a75987f34ed77864ea3c85e16ae7759a41c7c0bb4f4ffd6fcb09e29b21626db",
+      "bytes": 22258
+    },
+    {
+      "path": "scripts/compose-vector-local-runtime.mjs",
+      "change": "modified",
+      "baselineRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+      "baselineGitBlob": "cf9d2e05ad8eeb76d74cc3ddddfe3ad70cabd519",
+      "baselineSha256": "756626eee69a6924991ddf269a041104151ffdd78809e94f32c2fff729710d28",
+      "gitBlob": "65f9f66e684bc23fcb00d97e54fd97a1b39e691e",
+      "sha256": "d3559d1499c2fbf8f444b7433e32ccbdb613b5df60902fda56713e50677cfd42",
+      "bytes": 49576
+    },
+    {
+      "path": "scripts/nango-metadata-wiring.test.cjs",
+      "change": "modified",
+      "baselineRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+      "baselineGitBlob": "51c2c4ed09479152eae8f309c2abe6914f910bfa",
+      "baselineSha256": "46ffa06fda7982a26cac8bfb2303f9fde347d071d3374cbd432e046a7734b321",
+      "gitBlob": "b07fbf779c0157ba0c55ecd9ec4329b348903f4d",
+      "sha256": "ff81f6d39512a979559701473c9ffbfa74bdedee9d39d7ef3434b66b12f224f4",
+      "bytes": 9172
+    },
+    {
+      "path": "Dockerfile",
+      "change": "modified",
+      "baselineRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+      "baselineGitBlob": "42da319ca83461546cee6fef1149fcf30a801ef1",
+      "baselineSha256": "337e129e2b1b2e84e3d61e81c9e02de916401cd5c74c2aa9e984dfc62ce64ab7",
+      "gitBlob": "96bf2c732ba09a9dcfaadf7a37dbd424c0dd0699",
+      "sha256": "ce24ad1f6f0d57422435ae26666f6febe86b6b8850b8698f613de364e5d11310",
+      "bytes": 56743
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "change": "modified",
+      "baselineRef": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+      "baselineGitBlob": "2994e733d73d770130c6c6b16dd0d832548485d1",
+      "baselineSha256": "91e2d8f54778a9abdb36d932d324cf8036dcb03baf8367d11916ae409276045d",
+      "gitBlob": "2d66aee046d62ea140098401e3aeae3ac3430fbd",
+      "sha256": "f3c7f37bdf65edf418b98ff52dc8301f14bc449545f9225ab51bf807990c2cdb",
+      "bytes": 5525
+    }
+  ],
+  "publicationScope": "Exactly these eight source paths plus root-owned docs and selected non-secret evidence; no remote changes by author"
+}

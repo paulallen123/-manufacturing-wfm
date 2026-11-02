@@ -1,0 +1,14 @@
+{"verification":"independent-review-heldouts","node":"v24.22.1","shellSha256":"149f8d49f417c3f43aa2cb6656ec0dd8d6886b9e5c9fbc67a4da032b11e3f774","fixtureSha256":"5a75987f34ed77864ea3c85e16ae7759a41c7c0bb4f4ffd6fcb09e29b21626db","fixtureBoundary":"author fake-DOM fixture only; author tests suppressed; no native browser, real authentication, or provider I/O"}
+✔ tenant projection does not inspect secret fields and an unconfigured tenant cannot distinguish foreign profiles (5.565825ms)
+✔ current 401 and 403 clear every cached profile result and require explicit authorized status before another preview (34.799506ms)
+✔ transport rejection after tenant or readiness change removes the stale card and aborts its request (7.818534ms)
+✔ JSON consumption rejection after current actor changes also removes and aborts the stale panel (2.440118ms)
+✔ an obsolete authorization failure cannot clear or downgrade the newly mounted tenant panel (5.360369ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.731617

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "repository": "paulallen123/-manufacturing-wfm",
+  "pullRequest": 569,
+  "branch": "integration/vector-nango-free-setup-20261031",
+  "expectedParent": "cbc5bce85e8a380e89d3b1e670e86a73a50890c2",
+  "expectedParentCount": 1,
+  "baseTree": "870108ad243dd63cb3026f6f375bb00dc875c906",
+  "observedCanonicalOwner": {
+    "pullRequest": 501,
+    "branch": "test/vector-empty-organisation-regression-20261020",
+    "head": "ca6e36b4efd1099b56250fb790943db4b533fee5",
+    "observationMethod": "Explicit Git ref; embedded PR base SHA can be stale."
+  },
+  "requiredPreservedBlobs": [
+    {
+      "path": ".circleci/config.yml",
+      "gitBlob": "65f5647b94271f9bed8649aff9791b8d7e2273fa",
+      "mode": "100644"
+    },
+    {
+      "path": "artifact/vector-proof-freeze.trigger",
+      "gitBlob": "31981cef7e79ebf505b477316393995a4d442490",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/require-frozen-candidate.sh",
+      "gitBlob": "b14ccaa1f3826a579b175e20010cd5dccb95437c",
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/require-frozen-candidate.test.mjs",
+      "gitBlob": "671792fa420d4dbe3ea03d47aefb92b75d0d77d1",
+      "mode": "100644"
+    },
+    {
+      "path": "artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz",
+      "gitBlob": "0c8bb0251d207ec0af0808dd2627360a946a2cb3",
+      "mode": "100644"
+    },
+    {
+      "path": "integration/runtime/nango-credential-provider.cjs",
+      "gitBlob": "a5b1015c3462ba1221782ef32bfdae6b59623b77",
+      "mode": "100644"
+    },
+    {
+      "path": "verification/provider-recovery-correction/operations/runtime/provider-adapter-contract.cjs",
+      "gitBlob": "027b1150148b705f2f920b0eb45e1b472cd23f80",
+      "mode": "100644"
+    }
+  ],
+  "publicationMethod": "Additive commit, existing donor branch, expected-head lease, force false; no canonical branch mutation",
+  "admissionCreated": false,
+  "deploymentRequested": false,
+  "railwayMutationByThisIncrement": false,
+  "nangoPermissionAdded": false,
+  "limits": [
+    "This receipt specifies the publication boundary; remote tree and parent verification are separately checked before branch update.",
+    "The existing release owner must admit and deploy the reviewed source. Local focused proof does not establish a live provider connection."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "parentRef": "b26bb6f0fc30e33b6f4c31e05608368a45fd00a4",
+  "previousParentRef": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "freshDockerGitBlob": "cc686fecf70258300214c12120f95044619d2029",
+  "freshDockerSha256": "412f9189c0dba06d16f8d2371d164f48fb899a52a6a4daac04c01c349b03764b",
+  "proposedDockerSha256": "bbca9e5add3135ad49fcff3725e6f992fa767777cbb858d0a0ac4757c2930029",
+  "addedLines": 9,
+  "removedLines": 0,
+  "existingBytesPreservedExactly": true,
+  "composerGitBlobUnchanged": "72552d85e6533d732cd229892338b6bb65d6f2a0",
+  "sealedArchiveUnchanged": true
+}

@@ -1,0 +1,15 @@
+✔ actual sealed metadata broker consumes Nango netsuite credentials through existing direct transport (32.295129ms)
+✔ actual sealed metadata broker consumes Nango successfactors credentials through existing direct transport (3.628252ms)
+✔ baseline broker without callback still refuses absent credentials; no new activation is implied (1.593713ms)
+✔ disabled Nango loader preserves successful legacy server-token collection through the same broker (0.756734ms)
+✔ wrong tenant and missing permit both stop before credential retrieval (1.038874ms)
+✔ credential ownership refusal never falls back to a legacy token or contacts the provider (1.276307ms)
+✔ existing private-address egress rejection is preserved after Nango credential resolution (2.440998ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.182188

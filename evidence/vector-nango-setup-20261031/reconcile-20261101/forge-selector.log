@@ -1,0 +1,14 @@
+{
+  "scope": "actual Forge dispatcher with only child-process execution stubbed",
+  "requiredSuites": [
+    "integration/runtime/nango-credential-provider.test.cjs",
+    "integration/runtime/nango-metadata-broker.test.cjs",
+    "scripts/nango-metadata-wiring.test.cjs"
+  ],
+  "requiredSuiteCalls": 3,
+  "priorCommandsPreserved": 16,
+  "failureCases": 3,
+  "failureExitCode": 17,
+  "successMarkerWithFailure": false,
+  "result": "PASS"
+}

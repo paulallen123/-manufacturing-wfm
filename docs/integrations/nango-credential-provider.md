@@ -1,0 +1,247 @@
+# Nango credential integration proposal
+
+This package adds a server-side Nango credential resolver to VECTOR's existing provider metadata broker for NetSuite and SAP SuccessFactors. It uses the supported runtime composer to install the resolver and supply the broker's existing `credentialProvider` callback. Provider metadata requests continue through the existing direct transport and its origin, DNS and collection-permit checks. The subsequent field-check increment exposes the existing review action in VECTOR's Integrations page and projects broker status to the current tenant on the server.
+
+**Status:** implemented and independently reviewed as a source proposal for the existing VECTOR release. It has not been deployed or tested against live provider accounts. Nango account configuration and activation are separate from this source proposal; see [the account setup record](nango-account-setup.md).
+
+## Exact source basis and ownership
+
+The current proposal is reconciled to the fixed integration PR [#501](https://github.com/paulallen123/-manufacturing-wfm/pull/501) checkpoint `ca6e36b4efd1099b56250fb790943db4b533fee5`, branch `test/vector-empty-organisation-regression-20261020`. It carries the Nango donor at `e2cf7f7295e783abaf6d6464e70331dc71368c98` forward without changing its resolver contract. This is a bounded checkpoint, not a claim that a concurrently advancing owner branch remains at that revision.
+
+Implementation began on `61718e1862fa650136e1952f622c9d8dd4c22af8` and was first refreshed to `b26bb6f0fc30e33b6f4c31e05608368a45fd00a4`. The table and initial Docker receipt below identify that historical verification basis; the newer reconciliation receipt identifies the current combined source.
+
+| Source | Verified Git blob / digest |
+| --- | --- |
+| `scripts/compose-vector-local-runtime.mjs` original | Git blob `72552d85e6533d732cd229892338b6bb65d6f2a0` |
+| `Dockerfile` refreshed original | Git blob `cc686fecf70258300214c12120f95044619d2029` |
+| `artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz` | Git blob `0c8bb0251d207ec0af0808dd2627360a946a2cb3`; SHA-256 `3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d` |
+
+The archive is unchanged. Tests extract and verify that exact archive; the supported hook modifies an extracted runtime only. The original source bytes are identifiable by the Git blobs above. `evidence/vector-nango-setup-20261031/Dockerfile-rebase.json` records that removing only the nine added Nango lines restores the complete refreshed Dockerfile byte for byte. All of the new parent revision's build gates are preserved.
+
+The canonical release base observed during the audit was `release/vector-customer-ready-candidate-20260925` at `48dce8f697825c8cd5f99b3e5aeea3953647f8c2`. PR #501 remains its existing integration owner. Provider helper PR [#142](https://github.com/paulallen123/-manufacturing-wfm/pull/142) was open/draft at `b9698ec0816ba6286a29af3174987bc77a9602c3`; its newest visible comment was a terminal #556 handoff. These observations do not establish the absence of an external writer lease. Neither owner's branch was changed. No applicable `AGENTS.md` was found in the inspected repository trees or workspace ancestry. The existing `docs/execution/STATE.md` and lane register [#527](https://github.com/paulallen123/-manufacturing-wfm/issues/527) remain authoritative for integration sequencing; this package does not supersede them.
+
+## Reconciliation to the 1 November checkpoint
+
+All three shared files changed in the canonical branch after the original donor was prepared. The current proposal reapplies exactly the existing Nango insertions to checkpoint `ca6e36b4efd1099b56250fb790943db4b533fee5`: nine Docker lines, thirteen composer lines and three Forge entries, with no canonical line removed or replaced. Removing those six insertion blocks restores every checkpoint byte. All 26 donor-added paths are disjoint from the intervening canonical changes. The resolver, sealed runtime archive and provider adapter contract are unchanged.
+
+| Shared file | Canonical Git blob | Combined Git blob |
+| --- | --- | --- |
+| `Dockerfile` | `b8370243a1dedd0b22dfa8943734ea8515337791` | `42da319ca83461546cee6fef1149fcf30a801ef1` |
+| `scripts/compose-vector-local-runtime.mjs` | `84ee795c35434faea2a22c8aaa539b7a5842247f` | `cf9d2e05ad8eeb76d74cc3ddddfe3ad70cabd519` |
+| `scripts/run-forge-ci.mjs` | `2b8ada2ef7c454e900f2401f23ac6d70937e61ee` | `2994e733d73d770130c6c6b16dd0d832548485d1` |
+
+Fresh local checks on Node.js 24.22.1 passed 64 resolver cases, 7 real-broker cases, 3 wiring cases and 71 installed-module replay cases. The current Forge dispatcher retained all 16 existing commands and dispatched each of the three Nango suites exactly once; injected failures stopped it without emitting a success marker. The coordinator separately reran the broker and wiring scripts, passing 7 and 3 cases. These checks use synthetic external responses; they do not establish live provider access or a full image build.
+
+The refresh commit uses the canonical checkpoint as its first parent and the previous Nango donor as its additional parent. It retains the checkpoint's current CircleCI configuration, freeze marker and freeze gate. The marker is identical to the first parent's marker, so this refresh does not create release admission. The existing canonical owner must admit and deploy the reviewed source through the established process.
+
+The [reconciliation manifest](../../evidence/vector-nango-setup-20261031/reconcile-20261101/reconciliation-manifest.json), [source preservation receipt](../../evidence/vector-nango-setup-20261031/reconcile-20261101/reconciliation-source-receipt.json), and [coordinator verification log](../../evidence/vector-nango-setup-20261031/reconcile-20261101/coordinator-verification.log) bind these claims to exact source and commands. Earlier receipts remain historical and unchanged. The [independent reconciliation review](../../evidence/vector-nango-setup-20261031/reconcile-20261101/independent-review.md) accepted the exact three-file union, reran wiring successfully, and verified all 19 dispatch positions with 57 injected failures; acceptance is conditional on the parent order and protected-file preservation above.
+
+## Original credential-resolver source changes
+
+The implementation changes these eight source and test paths:
+
+| Path | Change |
+| --- | --- |
+| `integration/runtime/nango-credential-provider.cjs` | New resolver and optional metadata-profile loader |
+| `integration/runtime/nango-credential-provider.test.cjs` | New focused resolver tests |
+| `integration/runtime/nango-metadata-broker.test.cjs` | New tests through the real sealed broker |
+| `test-support/sealed-nango-broker.cjs` | Exact archive / installed broker verification helper |
+| `scripts/nango-metadata-wiring.test.cjs` | New tests of the actual composer hook and emitted broker constructor |
+| `scripts/compose-vector-local-runtime.mjs` | Adds and records the resolver, imports it, supplies the existing broker callback; both current assembly paths call the hook |
+| `Dockerfile` | Copies the source before composition; adds source and installed-module checks without removing existing gates |
+| `scripts/run-forge-ci.mjs` | Adds the three Nango source suites to ordinary CI validation, preserving all prior checks and failure handling |
+
+`independent/` contains the independent review and held-out suite. `evidence/nango-verify-installed-layout.cjs` is a review driver, not a runtime entry point. Account setup records, technical documentation and test receipts accompany these eight implementation paths.
+
+The exact original broker constructor in the extracted `server.cjs` is:
+
+```js
+providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider})
+```
+
+The composer supplies one additional option:
+
+```js
+credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})
+```
+
+The hook fails on missing or duplicate source anchors and on repeated application. It does not replace the broker, its provider transport, collection permits, the provider adapter contract, the Gusto authorization flow, or Staffology authority rules.
+
+## Runtime configuration contract
+
+`createForMetadataProfiles` reads two **server-only** environment settings:
+
+- `WFM_NANGO_METADATA_BINDINGS_JSON`: a JSON array of reviewed tenant/profile-to-connection mappings.
+- `WFM_NANGO_API_KEY`: a Nango environment API key capable of retrieving connection credentials. After explicit approval of the scope, destination and restricted temporary transfer, the key was stored in the existing customer service's Railway configuration on 1 November 2026. Presence was verified with values redacted; no secret is included in this package.
+
+Absent or empty bindings, including `[]`, return `null` before reading a key and preserve the existing broker environment-token mode. Once nonempty bindings are configured, missing keys or incomplete/mismatched profiles are configuration errors. There is no fallback from an enabled but invalid Nango connection to a legacy token. This makes a partially configured deployment fail closed; do not set the bindings until the complete reviewed configuration is ready.
+
+Every configured metadata profile must have exactly one mapping. This complete-coverage requirement follows from the broker's single callback seam. Mixed Nango and legacy profiles in the same configured broker are not supported by this proposal.
+
+Each mapping has exactly these keys; these values are fictional examples:
+
+```json
+[
+  {
+    "tenant": "example-tenant",
+    "profileId": "example-netsuite-metadata",
+    "provider": "netsuite",
+    "system": "NetSuite",
+    "credentialRef": "WFM_BROKER_TOKEN_EXAMPLE_NETSUITE",
+    "integrationId": "netsuite",
+    "connectionId": "example-nango-connection",
+    "expectedConnectionConfig": { "accountId": "1234567_SB1" }
+  }
+]
+```
+
+The tenant, profile, provider, system and credential reference must match the existing server metadata profile. `credentialRef` is the existing opaque profile reference; this loader does not read a provider token under that name. Bindings must come from trusted server provisioning, never from a browser request. Duplicate local profiles and duplicate remote integration/connection pairs are rejected.
+
+The actual Nango connection must have both exact server-provisioned tags:
+
+```json
+{
+  "vector_tenant_id": "example-tenant",
+  "vector_profile_id": "example-netsuite-metadata"
+}
+```
+
+Those tags are checked in addition to the connection ID, integration ID, provider and provider-specific configuration; they do not replace the existing VECTOR tenant and collection-permit checks.
+
+| VECTOR broker provider | Nango provider | Expected connection configuration | Credential fields |
+| --- | --- | --- | --- |
+| `netsuite` | `netsuite` | Exact `accountId`, also checked against the VECTOR account and allowed REST origin | `type: "OAUTH2"`, `access_token`, `expires_at` |
+| `successfactors` | `sap-success-factors` | Exact `apiServer` hostname and `companyId`; hostname must match the VECTOR allowed origin | `type: "TWO_STEP"`, `token`, `expires_at` |
+
+VECTOR's existing broker uses `successfactors` as its provider key, while the wider integration hub uses `sap-successfactors`; the mapping above is intentional. SAP ERP OData (`sap-odata-oauth2-cc`) and Gusto definitions are outside this resolver's supported provider set. Their definition creation is not an authenticated account connection or a completed product adapter.
+
+## Credential boundary
+
+The resolver calls only:
+
+```text
+GET https://api.nango.dev/connections/{connectionId}?provider_config_key={integrationId}&refresh_token=false
+```
+
+It accepts only the exact HTTPS origin `https://api.nango.dev`, refuses redirects and an unexpected final response URL, and does not force token refresh. The default request deadline is 10 seconds, including response consumption; declared and streamed responses are limited to 256 KiB. The response must be valid UTF-8 JSON, be the documented bare connection object, match the approved binding, and contain an empty error list.
+
+Provider tokens must have the documented credential type and field. Their expiry must be a real UTC ISO timestamp more than 30 seconds and at most seven days ahead when response parsing finishes. Missing or malformed expiry is rejected; no expiry is invented from `raw.expires_in` or local read time. No token cache, connection enumeration, logs, raw error bodies or secret-bearing exception causes are added. The callback returns only `{accessToken, expiresAt}`.
+
+Nango's connection response does not include an environment identifier. Using the correct production environment key remains a provisioning responsibility; the resolver does not claim to infer that from response fields.
+
+The provider HTTP request still goes directly from VECTOR through the existing broker. The Nango call supplies credentials only, so the broker's direct-origin and DNS evidence remains meaningful. Tests use synthetic transports and do not certify real provider reachability.
+
+## Initial implementation verification
+
+Runtime used locally: Node.js `v24.22.1`. Final logs are under `evidence/vector-nango-setup-20261031/`; its `verification-manifest.json` records commands, source hashes and results.
+
+| Check | Result | Scope |
+| --- | ---: | --- |
+| Focused resolver suite | 64 / 64 | Ownership, tenant/profile/context, token type, expiry, malformed responses, origin/redirect restrictions, deadlines, response limits, sanitized failures, disabled/invalid loader modes |
+| Real sealed broker suite | 7 / 7 | NetSuite and SuccessFactors collection; permit-before-credential ordering; no-credential refusal; positive disabled legacy-token collection; wrong tenant/permit; ownership failure without fallback; private-IP refusal |
+| Actual composer hook suite | 3 / 3 | Installed bytes, emitted constructor, disabled/enabled modes, drift refusal, both assembly paths and Docker copy/test settings; rerun after the Docker rebase |
+| Independent held-out boundary suite | 16 / 16 | Separately authored adversarial credential-boundary cases |
+| Hook-installed module replay | 71 / 71 | Repeats the resolver and sealed-broker suites against the module actually copied by the new hook, with exact installed broker hashes |
+
+There are **90 distinct passing test cases** across the authored and independent suites; the additional 71 are a replay against the installed layout. There are no skipped cases. The resolver source and installed module both have SHA-256:
+
+```text
+4a9959044cfc350b09b5f163a8032346c9c6d3f6b71836421303e4abab3fa15b
+```
+
+Run from a complete repository checkout, which includes the verified archive:
+
+```sh
+node integration/runtime/nango-credential-provider.test.cjs
+node integration/runtime/nango-metadata-broker.test.cjs
+node scripts/nango-metadata-wiring.test.cjs
+node independent/nango-boundary-heldout.test.cjs
+node evidence/nango-verify-installed-layout.cjs
+```
+
+In a complete repository checkout, the broker helper defaults to the existing `artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz` path. The installed-layout driver extracts that hash-bound archive, runs the exact new hook, verifies copied bytes, and points the tests at the installed files. It does not execute the full composer or start the server. All provider and Nango responses are synthetic. The permit verifier in the broker suite is an explicit test fixture, so these tests do not establish a real signed-permit lifecycle.
+
+The independent reviewer accepted the bounded proposal; see `independent/nango-wiring-review.md`. Early fixture preparation failed on a sandbox-disallowed child-process `tar` call, then on unhandled PAX timestamps. The final helper uses no subprocess and verifies the exact archive, its known regular entries and broker hashes. All recorded final runs use the corrected helper. An additive checkout without the repository archive must supply `VECTOR_TEST_ARCHIVE` pointing to the exact verified archive; no second archive is included in this proposal.
+
+## Remaining activation gates
+
+The full Docker build, pinned Node 22 image, hosted server, live API use of the key, real Nango response and real provider metadata collection have **not** been verified by this local task. Later independent Node 22 source evidence is recorded below; it is not image or live-account evidence. Existing #501 build, independent verification and deployment gates still apply. Existing provider-oracle issues outside this credential seam are not resolved or recertified.
+
+Four production integration definitions were saved under Nango's Free plan, with zero authenticated provider connections and no live sync. The restricted production key's sole stored scope was verified. Following explicit user approval of restricted temporary staging, the Railway connector saved `WFM_NANGO_API_KEY` only to the existing `vector-customer-ready-candidate` service with `skipDeploys=true` and `staged=false`. Fresh read-back reported `exists=true`, `valuesRedacted=true`, and `sealed=false`; this is stored configuration, not proof that the running application uses the key. `WFM_NANGO_METADATA_BINDINGS_JSON` is absent.
+
+The earlier automatic-review rejection and unsuccessful Railway browser alternative are resolved historical transfer obstacles. The main-side temporary file and directory were removed in `finally`; the synchronised browser-side copy was separately deleted afterwards. Both directories were independently verified absent, and the clipboard was verified empty. No secret was displayed, logged or committed. The [account setup record](nango-account-setup.md) and [non-secret installation receipt](../../evidence/vector-nango-setup-20261031/backend-installation-receipt.json) identify the exact destination, write, read-back and cleanup facts.
+
+No deployment was triggered, and the existing proof-service staged patch was unchanged. The customer service's historical latest recorded deployment attempt remained the failed 23 October attempt; this write did not cause a new failure. This source proposal is still unmerged, with canonical admission outstanding. Provider account authorisation, trusted tags and complete bindings, existing collection permits, release review and deployment are still required before enabling the callback and verifying live metadata collection.
+
+## Ordinary CI coverage follow-up
+
+The initial proposal's ordinary integration CI job did not select the new Nango tests. A reviewed three-line addition to `scripts/run-forge-ci.mjs` now selects the resolver, real broker and wiring suites. The 16 existing command definitions and their order are preserved. Fresh local execution passed 64 resolver cases, 7 broker cases, 3 wiring cases and all 11 existing freeze-gate cases on Node 24.22.1. Independent dispatcher review passed 19 command dispatches and 57 injected child-process failures. Exact source and result hashes are recorded in `evidence/vector-nango-setup-20261031/forge-followup/nango-forge-admission-receipt.json`.
+
+The frozen-candidate marker, gate and CircleCI configuration are unchanged. The core CI job on the initial proposal reported failure, while source inspection proves its freeze marker was unchanged; exact failed-job logs were unavailable, so this is not a claim about the observed log message. A successful ordinary integration job does not admit this proposal as a frozen release. The existing canonical owner must review and admit the complete source through the established image/release process.
+
+## Later independent baseline verification
+
+An [independent receipt on PR #569](https://github.com/paulallen123/-manufacturing-wfm/pull/569#issuecomment-6555992597) binds additional local verification to commit `cbc5bce85e8a380e89d3b1e670e86a73a50890c2`. Node.js 22.23.2 passed 64 resolver, 7 broker and 3 wiring cases, followed by 848 source checks with zero skips and `VECTOR_FORGE_CORE_CI=PASS`. The full source run used `TAR_OPTIONS=--no-same-owner`; its log SHA-256 is `e1e275f1cc2de56d9e25a23a1f7f2e1e28e22be3a1e9cd3b2f04e8be180442e7`. A separate verifier checked the exact source hashes and results.
+
+The same receipt separately reproduces a local frozen-candidate refusal with `reason=unchanged_trigger`. Hosted integration job 1548 passed and core job 1549 failed on that checkpoint. The hosted core failure's step logs were unavailable, so the local refusal is not asserted as the observed hosted failure. These are historical baseline results; they do not certify the field-check increment, a built image, live provider access or canonical admission.
+
+## Field-check increment
+
+This additive change starts at the exact reviewed donor checkpoint `cbc5bce85e8a380e89d3b1e670e86a73a50890c2` and remains in the same PR #569. It does not introduce a second Integrations entry point. The current canonical owner remains PR #501 at the observed `ca6e36b4efd1099b56250fb790943db4b533fee5` checkpoint.
+
+| Path | Increment |
+| --- | --- |
+| `integration/runtime/provider-metadata-review.cjs` | New explicit, permission-checked tenant projection of existing broker status |
+| `integration/runtime/provider-metadata-review.test.cjs` | New tenant-isolation, malformed-input and disclosure cases |
+| `ux-overlay/vector-shell.js` | Adds the bounded field-check panel to the existing active presentation layer |
+| `ux-overlay/vector-provider-metadata.test.cjs` | New behavioral cases for the actual panel, request, response and lifecycle |
+| `scripts/compose-vector-local-runtime.mjs` | Installs the projection helper and replaces the existing status expression at its exact supported anchor |
+| `scripts/nango-metadata-wiring.test.cjs` | Extends installed-module, emitted-status and assembly verification |
+| `Dockerfile` | Includes the helper and relevant checks in the existing build path |
+| `scripts/run-forge-ci.mjs` | Selects the new focused suites through the existing dispatcher |
+
+### Tenant and authority boundary
+
+The original broker's `status()` returns all configured profiles. The new helper constructs an explicit response for the authenticated server actor, allowlisting only profile `id`, `provider` and `system` plus minimal review status. The `configured` flag derives only from those owned profiles. Foreign profile identifiers, tenant identifiers, origin configuration, credential references and Nango bindings are not returned. Missing company-configuration permission or malformed input fails closed. The original broker status method remains internal and unchanged.
+
+The supported composer changes only the status expression in the existing `GET /api/integrations` handler. The existing actor resolution and `integrations.report(a)` authorization remain in place. The existing `POST /api/integrations/discovery/broker-preview` handler remains the review action: it independently checks `company.configure`, accepts only `{profileId}`, rejects a foreign-tenant profile before requesting credentials, and consumes the existing signed collection permit before provider access.
+
+The returned `providerMetadataBroker` object now has a versioned review schema and intentionally omits the former global and private fields. Inspection found no shipped VECTOR UI consumer of those removed fields; Staffology uses its separate response property. External clients were not audited and must use the new allowlisted review shape if they consume this property.
+
+### Customer behavior
+
+The page loads the current company's profile choices. Provider review happens only after a deliberate **Check fields** action. Requests in progress disable duplicate actions; failures do not start automatic previews or retries. Results show only a validated timestamp, field count and a bounded, escaped list of field names. Raw backend errors, raw configuration and the review seal are not rendered.
+
+Readiness, actor, tenant, role, permissions, page, workspace-root and card-lifecycle changes invalidate the panel. Late successful or failed responses cannot update a replacement context. A successful result remains a review draft with activation unavailable; the panel makes no connection, import, payroll or live-sync claim.
+
+The original resolver, sealed archive, provider transport, preview handler, collection-permit checks, freeze marker, release gate, CircleCI configuration and existing Gusto, Staffology and intake panel bodies are preserved. The increment adds no Nango permission and makes no Railway configuration or deployment change.
+
+### Increment verification
+
+The [source manifest](../../evidence/vector-nango-setup-20261031/metadata-ui-20261101/metadata-ui-source-manifest.json), [author's verification receipt](../../evidence/vector-nango-setup-20261031/metadata-ui-20261101/metadata-ui-verification.json), and [coordinator verification](../../evidence/vector-nango-setup-20261031/metadata-ui-20261101/coordinator-verification.json) bind the following results to the frozen eight-path change. These checks ran under Node.js 24.22.1.
+
+| Check | Passing result |
+| --- | ---: |
+| Server tenant projection | 5 / 5 cases |
+| Actual composer-generated page bundle | 13 / 13 cases |
+| Composer, emitted status and build wiring | 4 / 4 cases |
+| Existing Gusto, Staffology and intake regressions | 3 script entries |
+| Replay against the installed projection helper | 5 / 5 cases |
+| Replay against the six-component Docker assembly bundle | 13 / 13 cases |
+
+There are 22 focused source cases and 18 installed-layout replays. The coordinator separately reran the affected scripts and confirmed the 22 individual cases; reruns are not counted as additional cases. The existing three regression scripts are reported as script entries, not as their internal assertion count.
+
+The successful NetSuite UI response is produced through the actual hash-bound broker, discovery normalizer and unchanged preview controller block. Provider HTTP/DNS, credentials, permit issuance and browser/DOM delivery are synthetic. SuccessFactors selection and response validation use the same public response shape; this is not a live SAP check. The independent lifecycle review reproduced two defects before their correction: permission denial retained an earlier profile's results, and a rejected stale request retained its old context. Both have focused regression coverage.
+
+The local installed-layout check executes the exact metadata hook and the actual composer/Docker bundle expressions. It does not execute the full Docker build, final sanitizer or an HTTP server. The Docker change adds the installed UI check after final composition and sanitation so the normal image build must exercise it there. Fresh Node 22 image validation, canonical admission and real account verification remain outstanding for this increment. The [handoff](../../evidence/vector-nango-setup-20261031/metadata-ui-20261101/HANDOFF.md) records reproducible commands, independent review and the release boundary.
+
+## Primary API references
+
+- [Nango GET connection API](https://nango.dev/docs/reference/backend/http-api/connections/get): exact endpoint, response object, refresh behavior and credential response.
+- [Nango environment API keys](https://nango.dev/docs/reference/backend/http-api/api-keys): environment scope and credential-reading permissions.
+- [Nango backend SDK connection credentials](https://nango.dev/docs/reference/backend/backend-sdk/node#get-a-connection-with-credentials): OAuth2 access token and ISO expiry response.
+- [Nango provider definitions](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml): NetSuite and SAP SuccessFactors provider names, account/host/company configuration and two-step token mapping.
+- [Nango authentication types](https://github.com/NangoHQ/nango/blob/master/packages/types/lib/auth/api.ts): `OAuth2Credentials`, `TwoStepCredentials` and public Date-to-string conversion.
+
+These external contracts were inspected during this task. Nango master documentation is not a release pin; a real approved connection still needs a bounded end-to-end check before activation.
+
