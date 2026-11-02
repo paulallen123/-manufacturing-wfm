@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "user-authorized combined-source marker renewal ab72450d-2833-4f74-a6a5-d61428733720",
   "holder_token": "ab72450d-2833-4f74-a6a5-d61428733720",
@@ -34,5 +34,21 @@
     "exact-image no-init PID1 cleanup failure6584309848",
     "current-ref CI/cleaninstall/security/recovery/authority/customer proof remains"
   ],
-  "no_scope_transfer": "Marker review alone gives no productref,CI,canonical adoption, deployment or signer/provider authority; any later operation needs an appropriate fresh scope."
+  "no_scope_transfer": "Marker review alone gives no productref,CI,canonical adoption, deployment or signer/provider authority; any later operation needs an appropriate fresh scope.",
+  "released_at": "2026-11-02T18:18:38.842Z",
+  "released_claim_commit": "68f46e1400403a571053e6b5e6383781ea725ef6",
+  "terminal_outcome": {
+    "marker_commit": "0aef545a1885a371df0e13fff5be154a0546dd54",
+    "marker_tree": "2dd8bc4ecc9032ee3e823f4d9c764e3e59c02f49",
+    "pool_p_verdict": "ACCEPT_MARKER_ONLY",
+    "independent_receipt": "8e412f676bb71d0c0a010d7bdeb333250121a765",
+    "receipt_sha256": "a6c6a80a7ca367dc1145515f35cf336034df30424a8b02640265a7809b6100a8",
+    "terminal_comment": "https://github.com/paulallen123/-manufacturing-wfm/issues/527#issuecomment-6584794126",
+    "all_primary_and_review_processes_settled": true,
+    "product_ref_and_CI_unchanged": true,
+    "release_verdict": "BLOCK",
+    "retained_updated_image_receipt": "45a7c89858ea486867c7ecc885d610dc3b7e58bf",
+    "no_init_PID1_cleanup_failure_retained": true
+  },
+  "next_scope_requirement": "A later normal feature-source ref/CI operation requires a fresh appropriate claim from this RELEASED commit, exact source0aef/current target and applicable provider controls; no permission transfers."
 }
