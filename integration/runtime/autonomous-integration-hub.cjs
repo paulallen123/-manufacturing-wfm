@@ -13,6 +13,10 @@ const setupPolicyPath = path.basename(__dirname) === 'integration-runtime'
   ? '../implementation-runtime/setup-only-policy.cjs'
   : '../../implementation/runtime/setup-only-policy.cjs';
 const { createSetupOnlyPolicy } = require(setupPolicyPath);
+const batchReconciliationPath = path.basename(__dirname) === 'integration-runtime'
+  ? '../integration-fabric-runtime/batch-reconciliation.mjs'
+  : '../../integration-fabric/runtime/batch-reconciliation.mjs';
+const { makeScopedExternalIdentity } = require(batchReconciliationPath);
 
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
@@ -1041,6 +1045,8 @@ function createAutonomousIntegrationHub(options = {}) {
 
     const ids = [];
     const canonicalRecords = [];
+    const identityScope = Object.freeze({ providerId: connection.product_key,
+      connectionId: connection.id, tenant: connection.tenant, resource: 'people' });
     let invalid = 0;
     const seen = new Set();
     let duplicateCount = 0;
@@ -1052,14 +1058,19 @@ function createAutonomousIntegrationHub(options = {}) {
         if (value === undefined || value === null) continue;
         canonical[mapping.canonical_field] = typeof value === 'string' ? value.trim() : value;
       }
-      const employeeId = canonical.employeeId === undefined || canonical.employeeId === null ? '' : String(canonical.employeeId).trim();
+      const declaredId = canonical.employeeId;
+      if (typeof declaredId !== 'string' && (typeof declaredId !== 'number' || !Number.isFinite(declaredId))) { invalid++; continue; }
+      const employeeId = String(declaredId).trim();
       if (!employeeId) { invalid++; continue; }
       const hashedId = sha256(employeeId);
-      if (seen.has(hashedId)) {
+      // Scope local deduplication without changing stored keys or claiming source completeness.
+      const scopedIdentity = makeScopedExternalIdentity({ provider: connection.product_key,
+        connector: connection.id, scope: identityScope, recordId: hashedId });
+      if (seen.has(scopedIdentity)) {
         duplicateCount++;
         continue;
       }
-      seen.add(hashedId);
+      seen.add(scopedIdentity);
       ids.push(hashedId);
       const normalized = {};
       for (const field of CANONICAL_FIELDS.Person) {
