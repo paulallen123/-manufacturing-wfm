@@ -4,11 +4,10 @@ const path = require('node:path');
 const zlib = require('node:zlib');
 const crypto = require('node:crypto');
 
-// Test-only local rebind keeps downstream boundary tests executable while the
-// actual candidate and generated command remain blocked as unpublished.
+// Test-only local rebind keeps downstream boundary tests deterministic and
+// supplies deliberately unpublished copies for negative source checks.
 // No environment option or production runtime bypass selects this fixture.
-module.exports = function publishedSourceFixture(root = __dirname) {
-  const sha = 'f'.repeat(40);
+module.exports = function publishedSourceFixture(root = __dirname, sha = 'f'.repeat(40)) {
   const original = fs.readFileSync(path.join(root, 'launcher.cjs'), 'utf8');
   const source = original.replace(/^const SOURCE = '[^']+';$/m, "const SOURCE = '" + sha + "';");
   const originalBundle = JSON.parse(fs.readFileSync(path.join(root, 'generated/bundle.json')));

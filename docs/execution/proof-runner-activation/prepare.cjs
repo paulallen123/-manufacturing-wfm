@@ -6,6 +6,7 @@ const launcher = require('./launcher.cjs');
 
 const sourceRoot = path.resolve(process.argv[2] || process.cwd());
 const out = path.resolve(process.argv[3] || path.join(__dirname, 'generated'));
+launcher.validateRunnerSource();
 const files = Object.keys(launcher.FILES).map(file => ({ path: file, base64: fs.readFileSync(path.join(sourceRoot, file)).toString('base64') }));
 const compressed = zlib.gzipSync(Buffer.from(JSON.stringify({ schema: 1, source: launcher.SOURCE, files })), { level: 9 });
 const payload = compressed.toString('base64');
@@ -21,8 +22,8 @@ fs.writeFileSync(path.join(out, 'start-command.txt'), command + '\n');
 fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify({ schema: 1, source: launcher.SOURCE,
   scope: 'existing isolated signed browser runner; prepared, not activated',
   runnerSource: launcher.SOURCE, intendedReviewedTargetSha: null,
-  sourceCommitBinding: null, reviewedBaseSha: '76c5f4d32910d6cac6d347cfff9917dd93301ffb',
-  activationBlocked: 'Unpublished browser environment repair; exact reviewed source-commit rebind and regenerated artifacts required before hosted activation',
+  sourceCommitBinding: launcher.SOURCE, reviewedBaseSha: '76c5f4d32910d6cac6d347cfff9917dd93301ffb',
+  activationBlocked: 'Published source binding only; artifact review, approved target, protected signer/actor/tenant/run/configuration and asset bindings remain required before hosted activation',
   runnerSourceValidation: 'run rejects unpublished, non-lowercase-40-hex and all-zero SOURCE before identity fetch, materialization, SQLite, npm or child startup; review and exact commit/file matching remain owner gates',
   targetSelection: 'explicit WFM_EXPECTED_CANDIDATE_SHA from reviewed deployment configuration; never inferred from response or runner source',
   preflight: { endpoint: '/api/runtime-identity', unauthenticated: true, beforeInstallAndSigner: true, timeoutMs: launcher.PREFLIGHT_TIMEOUT_MS, maximumBytes: launcher.MAX_IDENTITY_BYTES, redirects: 'error', requires: ['exact configured target SHA', 'build-file-matched', 'fixtureOnly:true', 'productionApproved:false', 'pilotReady:false'] },

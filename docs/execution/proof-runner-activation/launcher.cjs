@@ -14,9 +14,9 @@ const TRANSPORT_ENVIRONMENT_KEYS = Object.freeze([
   'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'
 ]);
 
-// Unpublished local repair: owner must rebind to the exact reviewed source commit.
+// Published immutable source contains the four exact pinned files below.
 // Runner-code provenance is distinct from the reviewed application target.
-const SOURCE = 'UNPUBLISHED_BROWSER_ENV_REPAIR_20261031';
+const SOURCE = '0aa1a27a5fef154a63fbb4ad4a82ee3b90e4b36d';
 const FILES = Object.freeze({
   'scripts/current-candidate-role-browser-proof.mjs': 'ce86cfc54636d50c2a3cfddbcf6ddc9a2752976c78d8a61e5399a40508692ea4',
   'scripts/current-candidate-role-browser-proof-server.mjs': '9f945ad2e768ad0645b493015f03fd85022e79b5c1f51038dcb485d6191b9e06',
