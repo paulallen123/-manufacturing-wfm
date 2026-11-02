@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "user-authorized normal existing feature-source CI d06f58c1-91e7-495a-a941-263d457275e2",
   "holder_token": "d06f58c1-91e7-495a-a941-263d457275e2",
@@ -46,5 +46,37 @@
     "current-source full integration/core/runtime CI and clean install still unproven at acquisition",
     "separate formal policy/review, image/security/recovery, actual signer/tenant/run/configuration and serving intended-role durable customer/provider acceptance"
   ],
-  "no_scope_transfer": "Source-ref/normal CI preparation is not canonical adoption, main/#501 update, merge, Railway config/apply/deploy, Vercel disclosure, image security acceptance, signer activation or customer/provider business authority; staged proof patch untouched."
+  "no_scope_transfer": "Source-ref/normal CI preparation is not canonical adoption, main/#501 update, merge, Railway config/apply/deploy, Vercel disclosure, image security acceptance, signer activation or customer/provider business authority; staged proof patch untouched.",
+  "released_at": "2026-11-02T18:49:29.799Z",
+  "released_claim_commit": "47f78e5ade4ecb36941c2c68509686bceb23da6e",
+  "terminal_outcome": {
+    "action_result": "PARTIAL_BLOCKED_HAND_BACK_NOT_CI_COMPLETION",
+    "source_CAS": "APPLIED_NONREPEATABLE",
+    "source_CAS_at": "2026-11-02T18:35:40.203Z",
+    "actual_source_head": "0aef545a1885a371df0e13fff5be154a0546dd54",
+    "actual_tree": "2dd8bc4ecc9032ee3e823f4d9c764e3e59c02f49",
+    "actual_PR_state": "OPEN_DRAFT_UNMERGED_BASE_UNCHANGED",
+    "CI_gate": "BLOCK_NOT_OBSERVED",
+    "CI_provider_execution": "UNKNOWN_POSSIBLY_IN_FLIGHT;not_claimed_idle_or_finished",
+    "CI_job_ids_test_counts_and_exit_status": "UNKNOWN_NOT_AVAILABLE_NO_SUCCESS_OR_FAILURE_CREDIT",
+    "last_primary_status_at": "2026-11-02T18:47:52.526Z",
+    "last_primary_statuses": [],
+    "whole_CI_idempotency_key_passed_or_complete": false,
+    "repeat_source_CAS_allowed": false,
+    "controlled_primary_writer_API_probe_commands_settled": true,
+    "independent_reviewer_and_subreviewer_terminal": true,
+    "independent_source_action_review": "ACCEPT_BOUNDED_SOURCE_PR_READBACK_ONLY",
+    "independent_postcondition_receipt": "2d2b9af91421a5133bb30436bd146b5e3daffbff",
+    "receipt_sha256": "b2e379d23dfef69efd2859118f556b45a85edffed7affafadec71543a52f441f",
+    "dispatch_checkpoint": "0edb2ab28a918164d41b2dfa61e5cd6222bae1c2",
+    "terminal_comment": "https://github.com/paulallen123/-manufacturing-wfm/issues/527#issuecomment-6585426415",
+    "merge_deployment_provider_customer_write": false,
+    "release_customer_DONE": "BLOCK_0"
+  },
+  "pending_subaction": {
+    "owner": "Existing sole release/CI owner",
+    "action": "Obtain existing CircleCI pipeline/event/job readback for exact0aef under normal provider controls and record attributable terminal commands/results/evidence.",
+    "no_inference": "Empty GitHub statuses neither prove inactivity nor permit retry. No duplicate sourceCAS, empty push, manual dispatch/rerun or gate transfer is authorized by this handback."
+  },
+  "next_scope_requirement": "Fresh-read this RELEASED result and actualsource/status before new actions. SuccessfulsourceCAS must not repeat; same-source CI readback remains unresolved. Mutating action requiringCIcompletion remains denied until actualrequiredresults, and any newmutation requires separateappropriateclaim. Allimage/security/recovery/policy/formalauthority/servingprovider/customerproofgates persist."
 }
