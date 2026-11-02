@@ -5,8 +5,9 @@ function inspectProofAccess(env = process.env) {
   const required = ['VECTOR_PROOF_AUTH_PROFILE','VECTOR_PROOF_URL','WFM_EXPECTED_CANDIDATE_SHA','EXPECTED_DEPLOYMENT_ID','EXPECTED_IMPLEMENTATION_TENANT','EXPECTED_IMPLEMENTATION_RUN_ID','EXPECTED_CONFIGURATION_DIGEST','VECTOR_PROOF_ACTORS_JSON','PROOF_PRIVATE_KEY_B64'];
   for (const name of required) if (!env[name]) missing.push(name);
   const check = (name, predicate) => { if (env[name] && !predicate(env[name])) invalid.push(name); };
-  // Match createProofClient's offline input contract. This never exchanges a
-  // session or verifies that the configured signer/actors are authorized.
+  // Validate parent signer configuration and the shared browser bindings. The
+  // browser client rejects the private key; this never exchanges a session or
+  // verifies that the configured signer/actors are authorized.
   const bounded = (value, limit) => typeof value === 'string' && value.trim() === value && value.length > 0 && value.length <= limit;
   check('VECTOR_PROOF_AUTH_PROFILE', value => value === 'signed');
   check('VECTOR_PROOF_URL', value => { try { const u = new URL(value); return u.protocol === 'https:' && u.pathname === '/' && !u.search && !u.hash && !u.username && !u.password; } catch { return false; } });

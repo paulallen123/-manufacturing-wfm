@@ -7,7 +7,8 @@ test('valid offline configuration is not a hosted-proof claim',()=>{const r=insp
 test('wrong isolation tenant and password mode fail closed',()=>{const e=valid();const a=JSON.parse(e.VECTOR_PROOF_ACTORS_JSON);a[4].tenant='fixture';e.VECTOR_PROOF_ACTORS_JSON=JSON.stringify(a);e.VECTOR_PROOF_AUTH_PROFILE='fixture-password';assert.deepEqual(inspectProofAccess(e).invalid,['VECTOR_PROOF_AUTH_PROFILE','VECTOR_PROOF_ACTORS_JSON']);});
 
 // Exercise the existing public client factory without importing Playwright or
-// executing the runner body. This is offline configuration parity, not login.
+// executing the runner body. Shared bindings have offline configuration parity;
+// the signer belongs only to parent preflight, never to the browser client.
 const fs = require('node:fs');
 const vm = require('node:vm');
 const crypto = require('node:crypto');
@@ -21,17 +22,29 @@ const clientPrefix = clientSource.slice(0, boundary)
 const createProofClient = vm.runInNewContext(clientPrefix + '\n;createProofClient',
   { assert, crypto, URL, Buffer, process: { env: {} } });
 
+function browserEnvironment(env) {
+  const { PROOF_PRIVATE_KEY_B64, ...browserEnv } = env;
+  return browserEnv;
+}
+
 function requireBlocked(env, field) {
-  assert.throws(() => createProofClient(env), 'Actual client must reject the same input.');
+  assert.throws(() => createProofClient(browserEnvironment(env)), 'Actual client must reject the shared invalid binding without a signer key masking the failure.');
   const result = inspectProofAccess(env);
   assert.equal(result.status, 'BLOCKED');
   assert.ok(result.invalid.includes(field), 'Expected invalid field: ' + field);
 }
 
+test('parent signer configuration is rejected by the browser client', () => {
+  const env = valid();
+  assert.equal(inspectProofAccess(env).status, 'CONFIGURATION_VALID');
+  assert.throws(() => createProofClient(env), /Browser proof process must not receive the private signer/);
+  assert.doesNotThrow(() => createProofClient(browserEnvironment(env)));
+});
+
 test('preflight accepts the same HTTPS origin spellings as the signed client', () => {
   for (const origin of ['https://vector.test', 'https://vector.test/', 'https://vector.test:443/', 'https://vector.test:8443/']) {
     const env = { ...valid(), VECTOR_PROOF_URL: origin };
-    assert.equal(createProofClient(env).origin, new URL(origin).origin);
+    assert.equal(createProofClient(browserEnvironment(env)).origin, new URL(origin).origin);
     assert.equal(inspectProofAccess(env).status, 'CONFIGURATION_VALID');
   }
   for (const origin of ['http://vector.test/', 'https://user:pass@vector.test/', 'https://vector.test/path', 'https://vector.test/?q=1', 'https://vector.test/#part']) {
@@ -51,12 +64,12 @@ for (const field of ['EXPECTED_DEPLOYMENT_ID', 'EXPECTED_IMPLEMENTATION_TENANT',
       for (const actor of actors) if (actor.slug !== 'isolation-manager') actor.tenant = env[field];
       env.VECTOR_PROOF_ACTORS_JSON = JSON.stringify(actors);
     }
-    assert.doesNotThrow(() => createProofClient(env));
+    assert.doesNotThrow(() => createProofClient(browserEnvironment(env)));
     assert.equal(inspectProofAccess(env).status, 'CONFIGURATION_VALID');
   });
 }
 
-test('preflight rejects noncanonical base64, invalid PEM envelopes and wrong key types', () => {
+test('parent preflight rejects noncanonical base64, invalid PEM envelopes and wrong key types', () => {
   const env = valid();
   const pem = Buffer.from(env.PROOF_PRIVATE_KEY_B64, 'base64').toString('utf8');
   const values = [
@@ -68,11 +81,18 @@ test('preflight rejects noncanonical base64, invalid PEM envelopes and wrong key
     Buffer.from(pem.replace('\n', '\n' + '\n'.repeat(7000))).toString('base64'),
     Buffer.from(generateKeyPairSync('ec', { namedCurve: 'prime256v1' }).privateKey.export({ type: 'pkcs8', format: 'pem' })).toString('base64')
   ];
-  for (const value of values) requireBlocked({ ...env, PROOF_PRIVATE_KEY_B64: value }, 'PROOF_PRIVATE_KEY_B64');
+  for (const value of values) {
+    const config = { ...env, PROOF_PRIVATE_KEY_B64: value };
+    const result = inspectProofAccess(config);
+    assert.equal(result.status, 'BLOCKED');
+    assert.ok(result.invalid.includes('PROOF_PRIVATE_KEY_B64'));
+    assert.throws(() => createProofClient(config), /Browser proof process must not receive the private signer/);
+  }
   for (const value of [pem, pem.trimEnd(), pem.replaceAll('\n', '\r\n')]) {
     const config = { ...env, PROOF_PRIVATE_KEY_B64: Buffer.from(value).toString('base64') };
-    assert.doesNotThrow(() => createProofClient(config));
     assert.equal(inspectProofAccess(config).status, 'CONFIGURATION_VALID');
+    assert.throws(() => createProofClient(config), /Browser proof process must not receive the private signer/);
+    assert.doesNotThrow(() => createProofClient(browserEnvironment(config)));
   }
 });
 
@@ -96,7 +116,7 @@ test('preflight rejects actor shape and length drift before runner startup', () 
   actors.reverse();
   for (const actor of actors) actor.email = actor.email.toUpperCase();
   env.VECTOR_PROOF_ACTORS_JSON = JSON.stringify(actors);
-  assert.doesNotThrow(() => createProofClient(env));
+  assert.doesNotThrow(() => createProofClient(browserEnvironment(env)));
   assert.equal(inspectProofAccess(env).status, 'CONFIGURATION_VALID');
 });
 
