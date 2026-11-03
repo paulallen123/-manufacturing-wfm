@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "current authorised recovery invocation 74ed3f39-9ce0-4c1a-bbc7-716a03e15eb5",
   "holder_token": "74ed3f39-9ce0-4c1a-bbc7-716a03e15eb5",
@@ -40,5 +40,41 @@
     "6997009330bceda8d20283f8f2b286890219cfaf",
     "9a6cd9f453d69d89a37f10d39f92f9f96526fe5c"
   ],
-  "no_scope_transfer": "No PR501/main/customer/proof/runner ref/config/deployment/signer/provider/customer action; no marker renewal or CI dispatch/rerun; all gates retained"
+  "no_scope_transfer": "No PR501/main/customer/proof/runner ref/config/deployment/signer/provider/customer action; no marker renewal or CI dispatch/rerun; all gates retained",
+  "released_at": "2026-11-03T04:44:50.694Z",
+  "released_claim_commit": "5429e741a45ae3a55f6eceb43d63585aa903cdfc",
+  "terminal_outcome": {
+    "action_result": "PRIVATE_SOURCE_COMPOSITION_PREPARED_AND_STATIC_PEER_ACCEPTED;VALIDATION_PARTIAL",
+    "source_commit": "baf4d8e145a3f771619440b52bba844bb59fac9c",
+    "source_tree": "71f95cbb3845d1d0e13021227ff4ea1b6f738617",
+    "source_ref_update": false,
+    "source_marker_unchanged": true,
+    "source_admission": "NOT_ADMITTED",
+    "receipt_blob": "53f14ae6c76cf233dd0ad4ceae49e70c7c394259",
+    "receipt_sha256": "d1fe7d4bad6a02a69a87d62879520cd24854ba9ef7a25d8e33da7615a53c8717",
+    "changed_paths": 5,
+    "prior_blob_tuples_preserved": 1799,
+    "controlled_writer_API_probe_processes_settled": true,
+    "independent_reviewer_terminal": true,
+    "independent_review": "ACCEPT_PRIVATE_SOURCE_SELECTION_COMPOSITION_ONLY",
+    "independent_reviewer": "/root/v083_private_source_peer_0442",
+    "local_static_node": "v24.22.1",
+    "local_static_exit": 0,
+    "product_tests_this_phase": 0,
+    "Node22_combined_execution": "NOT_EXECUTED",
+    "hosted_CI": "NO_NEW_TRIGGER_OR_CREDIT;exact0aef remains UNKNOWN",
+    "image_execution": false,
+    "railway_mutation": false,
+    "provider_customer_write": false,
+    "lane_DONE": false,
+    "source_composition_idempotency_key_completed": true,
+    "repeat_private_composition_allowed": false,
+    "entrypoints_paused": false,
+    "entrypoints_restoration": "NOT_NEEDED; schedules/subscription unchanged"
+  },
+  "pending_subaction": {
+    "owner": "Existing sole integration/release owner",
+    "action": "Obtain exact-child baf4d8e1 Node22 validation in approved disjoint scope; if eligible, separately claim source-bound marker renewal and distinct marker review. Existing0aef CircleCI provider pipeline readback remains separately unresolved.",
+    "gates": "No product ref/CI trigger/merge/deploy or signer/provider/customer authority transferred."
+  }
 }
