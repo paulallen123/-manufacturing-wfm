@@ -1,50 +1,28 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole R V013 reviewed private source composition20261103T1823Z",
-  "holder_token": "v013-2026-11-03T18:21:59.412Z-3de6ff8bfd623-b83a8b0fb78fe8",
-  "source": "bf5d9864d0b0873e622368fb950df662897d8fad",
-  "source_tree": "cc184cac3dca2c791a0974f4cfff5ce15a62af6a",
+  "owner_execution": "existingsoleR correctiveDockerselectedtestfixture invocation20261103T1827Z",
+  "holder_token": "v013-fixture-2026-11-03T18:25:29.904Z-942d007c130f28",
+  "source": "d14786e03fc0744b483aee361eff452ab3e4a549",
+  "source_tree": "e4287838466ec2e656680290ab9f1bc19328a0cc",
   "target": "private unreferenced sevenpath V013 source child only",
   "expected_target_head": "bf5d9864d0b0873e622368fb950df662897d8fad",
-  "action": "PRIVATE_REVIEWED_V013_ORDERED_PATCH_COMPOSITION_ONLY",
-  "idempotency_key": "bf5d9864:V013:private-reviewed-packaging-dirty-tenant-composition:v1",
-  "issued_at": "2026-11-03T18:21:59.412Z",
+  "action": "PRIVATE_DOCKER_SELECTED_TEST_FACTORY_COPY_CORRECTION_ONLY",
+  "idempotency_key": "d14786e03fc0744b483aee361eff452ab3e4a549:V013:private-docker-selected-test-factory-copy:v1",
+  "issued_at": "2026-11-03T18:25:29.904Z",
   "expires_at": "2026-11-03T19:10:00Z",
-  "previous_released_commit": "7fd75dd7a06828c0f7397c06e4fd07a29f3e39bf",
+  "previous_released_commit": "c43956adbbfa0c9822d6863eddeeb8c96d5e270a",
   "allowed_operations": [
-    "Apply exact reviewed ce59142a then6b84a116 patches locally to exactbf5 inputs; no reauthoring",
-    "Create exact7output blobs/private tree/soleparentchild preservingallotherbf5tuples andmarker; distinctfullinventory/sourcecompositionreview anddurablereceipts",
-    "Checked ownrelease afterallcontrolledsource/API/reviewprocessesterminal"
+    "Add exactunchangedfactorysource to existingtemporaryimplementationtestCOPYlineONLY; preserveallotherbytes/tuples; privateblob/tree/soleparentchild",
+    "BoundedstaticDockerCOPY/module-resolutionnegativepositivecheck WITHOUTproductmoduleexecution; distinctreview/durablereceipt/checkedownrelease"
   ],
   "excluded_operations": [
-    "No marker change/publicproductref/PRbody/CI kick/tests/build/install/image/registry/newresource/source-transfer/Railway/signers/actors/provider/payroll/customer business write",
-    "No retry unavailableafbdcommit; no invented customerauthority/adapters"
+    "No marker/publicproductref/PR/CI/install/build/resource/registry/Railway/provider/customerwrite; no unchangedproducttests"
   ],
   "prerequisites": {
-    "prior_release_result_consumed": true,
-    "controlled_prior_operations_terminal": true,
-    "external_CI": "UNKNOWNpossiblyinflight_notidle_notsettled",
-    "source_reviews": "6610240737 orderedcurrent01receiving7outputs;6609066263 guard7/7; packaging17/17+installed16 datedonly",
-    "AGENTS": "nonecompletecurrenttree",
-    "distinct_current_composition_review": "IN_PROGRESS_REQUIRED_BEFORE_ACCEPT"
-  },
-  "released_at": "2026-11-03T18:25:24.377Z",
-  "released_claim_commit": "4a6f9e09b24e53dc98827f85c91dcd9737445439",
-  "terminal_outcome": {
-    "result": "EXACT_REVIEWED_PATCHES_RECOVERED_PRIVATE_CHILD_BLOCKED_UNCHANGED_FOR_DOCKER_TEST_CLOSURE",
-    "child": "d14786e03fc0744b483aee361eff452ab3e4a549",
-    "tree": "e4287838466ec2e656680290ab9f1bc19328a0cc",
-    "receipt": "7d5d95db37fcfefa9fadd9bb7e0fb12847bc144c",
-    "receipt_sha256": "fb0dd1556a2e4b8411ae20854cef3a97a0a8fe9b2bfd6beddda1ab8710456d46",
-    "controlled_source_API_review_processes": "ALL_TERMINAL",
-    "key": "COMPLETE_NONREPEATABLE_PRIVATE_COMPOSITION_ONLY",
-    "finding": "SelectedDockerengine.testrelativeclean-customer-state.cjs omittedfromtemporarytestCOPY;unchangedpublicadmissionBLOCKED",
-    "product_tests": 0,
-    "public_mutations": 0,
-    "external_CI": "UNKNOWNnotidle",
-    "entrypoints_paused": false
-  },
-  "next": "FreshseparatecorrectivescopeaddsunchangedfactorytoDockerselectedtestfixtureCOPYonly;distinctreview;nomarker/publicationscopeborrowed"
+    "partial_receipt": "7d5d95db37fcfefa9fadd9bb7e0fb12847bc144c",
+    "finding": "missing relative module in selectedDocker testfixture",
+    "all_prior_controlled_processes_terminal": true
+  }
 }
