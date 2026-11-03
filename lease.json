@@ -1,73 +1,33 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole release recovery; new source action fencing91b1c89c-d50d-4e07-9d19-c2e235f72d26",
-  "holder_token": "91b1c89c-d50d-4e07-9d19-c2e235f72d26",
+  "owner_execution": "existing sole release owner private V069 selection",
+  "holder_token": "5e31644a-6606-41a2-8f86-c3dc6629d1f0",
   "source": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec",
   "source_tree": "17a56ecbd8dae5e93ff990f8eac23d6c41976842",
-  "target": "PR621/feature/vector-reviewed-source-union-616-620-20261101",
-  "expected_target_head": "0aef545a1885a371df0e13fff5be154a0546dd54",
-  "action": "NORMAL_EXISTING_FEATURE_SOURCE_CAS_AND_CI_READBACK_V083",
-  "idempotency_key": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec:PR621:ordinary-feature-source-CI:v1",
-  "issued_at": "2026-11-03T05:29:37.672Z",
-  "expires_at": "2026-11-03T06:15:00Z",
-  "previous_released_commit": "1f6cc972e39e47b1ae2dd6dd9469c9bbd7e66f63",
-  "allowed_paths": [],
-  "allowed_actions": [
-    "Fresh exact source/marker/current review/branch/policy/workflow/Railwayeffects reads and distinct action-specific pre-mutation review",
-    "Only after durable distinct pre-mutation ACCEPT, one normal existing feature branch force:false expected0aef→25cd CAS and exact branch/PR readback; keep PR OPEN/DRAFT/baseunchanged",
-    "Read only existing provider CI as consequence of legitimate new V083 source; no manual dispatch/rerun/filter/config change, empty or duplicate push",
-    "Publish immutable scoped status/review/action evidence and settle/release exact-holder CAS"
+  "target": "PRIVATE_UNREFERENCED_V069_CHILD;PR621_UNCHANGED",
+  "expected_target_head": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec",
+  "action": "PRIVATE_V069_THREE_PATH_SOURCE_TEST_SELECTION",
+  "idempotency_key": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec:V069:private-reviewed-test-selection:v1",
+  "issued_at": "2026-11-03T07:20:23.768Z",
+  "expires_at": "2026-11-03T08:15:00Z",
+  "previous_released_commit": "22c5e216edbb39cac1aa755ff3be695552ff6995",
+  "allowed_paths": [
+    "ux-overlay/vector-leave-review-boundary.test.cjs",
+    "scripts/run-forge-ci.mjs",
+    "Dockerfile"
   ],
-  "public_product_ref_update_allowed": true,
-  "allowed_product_branch": "feature/vector-reviewed-source-union-616-620-20261101",
-  "allowed_ref_update": {
-    "from": "0aef545a1885a371df0e13fff5be154a0546dd54",
-    "to": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec",
-    "expected_sha_required": true,
-    "force": false,
-    "provider_policy_bypass_allowed": false
-  },
-  "ci_trigger_allowed": true,
-  "ci_trigger_scope": "Ordinary existing CircleCI pipeline only as a consequence of the single legitimate V083 source CAS. No workflow dispatch, retry, rerun, duplicate/empty push, filter/config bypass, new resource or transfer.",
-  "merge_deployment_business_provider_write_allowed": false,
-  "source_review_receipt": "53f14ae6c76cf233dd0ad4ceae49e70c7c394259",
-  "Node22_bounded_receipts": [
-    "c7d7edc0d1777b78931443accfd87fc0fcc9614a",
-    "951c910b0c8982e4741bac457ea01de6f392cf93"
+  "allowed_operations": [
+    "Create unreferenced exact author test plus owned Forge and Docker autonomy-proof selection child only, preserving other bytes and tuples",
+    "Static custody/syntax/inverse-edit checks; no product tests or held operations",
+    "Distinct exact-child read-only composition review and immutable receipt publication",
+    "Exact-holder RELEASED sole-parent coordination CAS after all controlled processes terminal"
   ],
-  "marker_review_receipt": "a42bf11c0d1689efa7279ed08c5e7bf3d7da129b",
-  "marker_review_sha256": "813731e391e05d5c81a1ebf6c91f323ea83de7bb0f622da794beae3a2cf15966",
-  "policy_limits": "Managed App legacy effective branch protection remains unreadable; ordinary provider-enforced nonforce action only. Any policy/ref rejection denies; no explicit bypass/force retry.",
-  "no_scope_transfer": "No PR501/main/canonical merge, Railway config/apply/deploy, Vercel/sandbox transfer/new resource, signer/actor/tenant/run activation, provider/payroll/customer business write or DONE. Full exact-current CI/image/security/recovery/policy/formal/serving intended-role durable customer/provider gates stay OPEN.",
-  "prior0aef_CI_result": "UNKNOWN_NO_TRANSFER_NO_REPEAT_OLD_CAS",
-  "released_at": "2026-11-03T05:38:04.135Z",
-  "released_claim_commit": "7bd2bb7b1d78dd7e232766591b72697984f4682a",
-  "terminal_outcome": {
-    "action_result": "SOURCE_CAS_APPLIED_CI_BLOCK_NOT_OBSERVED",
-    "source_CAS": "APPLIED_NONREPEATABLE",
-    "actual_target_head": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec",
-    "expected_pre_mutation_target_head": "0aef545a1885a371df0e13fff5be154a0546dd54",
-    "attempts": 1,
-    "receipt_blob": "a5567fb9854f82625b199e4f3f98cdb8ec35473b",
-    "receipt_sha256": "d36ba93765accb7c665fbc097f0f07990d6fd582beffa755b805d2d25536dea4",
-    "pre_mutation_review": "ACCEPT",
-    "postcondition_review": "ACCEPT_SCOPED_STATE_CI_UNRESOLVED",
-    "independent_reviewer_terminal": true,
-    "controlled_writer_API_probe_processes_settled": true,
-    "CI": "BLOCK_NOT_OBSERVED:pending/statuses0/checkruns0/Actions0",
-    "provider_execution": "UNKNOWN_POSSIBLY_INFLIGHT; not declared idle or complete; only holder-controlled calls settled",
-    "whole_CI_key_passed": false,
-    "repeat_source_CAS_allowed": false,
-    "manual_dispatch_rerun_allowed": false,
-    "PR621": "OPEN/DRAFT/unmerged/baseca6",
-    "merge_Railway_provider_customer_write": false,
-    "entrypoints_paused": false,
-    "lane_DONE": false
-  },
-  "pending_subaction": {
-    "owner": "Existing sole release/CI owner",
-    "action": "Obtain existing ordinary CircleCI pipeline/event/job readback for exact25cd via authorized read-only capability. No repeated CAS/push/manualdispatch/rerun/status transfer. Conditional P startup/cleanup only on approved materially changed runner or authoritative exact-deployment process evidence."
-  }
+  "public_source_ref_or_marker_update_allowed": false,
+  "CI_dispatch_or_rerun_allowed": false,
+  "Railway_config_deploy_provider_customer_write_allowed": false,
+  "owner_intake_comment": 6597220998,
+  "prior_result_read": true,
+  "no_overlapping_source_writer_basis": "Prior exact release holder-controlled writer/API/probe/reviewer processes terminal; Pool B latest6597767587 no continuing shared writers; externalCIUNKNOWN not touched"
 }
