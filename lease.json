@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "Existing sole R role; interactive /root continuation in workspace b0c572395e60 under current user's remove-blockers delivery instruction; not a claim that the scheduled task is running",
   "holder_token": "df160071-d8c3-46d6-b540-0fc5803ad4d7",
@@ -45,6 +45,20 @@
     "image": "Independent terminal82/82 accepted only tested unchanged-helper configuration; incomplete unpublished OCI means artifact/serving gate remains",
     "provider_CI": "UNKNOWN, no current hosted credit",
     "all146_scope": "preserved",
+    "DONE": 0
+  },
+  "released_at": "2026-11-03T15:06:07.156Z",
+  "terminal_outcome": {
+    "result": "REVIEWED_V005_SOURCE_PUBLISHED_TO_EXISTING_DRAFT_ONLY",
+    "published_head": "a1223f6e1867474c18c8ea1ad4e2e6d675be34c4",
+    "tree": "e1945a67f76427549acd187bb9d7d556ab36218c",
+    "receipt": "7a479813fdfa86f9ff393323cdc395d49da204e5",
+    "independent_review": "dfc2a170efa540dacb2e6d3b00f582764cd940f5",
+    "controlled_source_API_review_processes_terminal": true,
+    "repeat_publication_allowed": false,
+    "external_CI": "UNKNOWN_NOT_DECLARED_TERMINAL_OR_GREEN",
+    "canonical_customer_runner_mutations": 0,
+    "all146ScopePreserved": true,
     "DONE": 0
   }
 }
