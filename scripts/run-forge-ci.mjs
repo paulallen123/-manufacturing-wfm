@@ -11,6 +11,7 @@ const checks = [
   ['node', ['ux-overlay/vector-provider-metadata.test.cjs']],
   ['node', ['--test', 'integration/runtime/autonomous-integration-hub.identity-consumer.test.cjs']],
   ['node', ['--test', 'integration/runtime/autonomous-integration-hub.audit-atomicity.test.cjs']],
+  ['node', ['--test', '--test-timeout=30000', '--test-concurrency=1', 'verification/vector-v017-source-handoff/source-to-implementation.test.cjs', 'verification/vector-v019-source-change/source-change.test.cjs']],
   ['node', ['--test', 'reporting/ui/vector-reporting-saved-filter-refusal.test.cjs']],
   ['node', ['--test', 'ux-overlay/vector-action-queue.test.cjs', 'ux-overlay/vector-settings-navigation.test.cjs', 'ux-overlay/vector-leave-balance-display.test.cjs']],
   ['node', ['scripts/validate-deployment.mjs']],
