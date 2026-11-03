@@ -1,43 +1,32 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existingsoleR PR542 privateisolatedrunnercorrection20261103T2113Z",
-  "holder_token": "pr542-isolated-2026-11-03T21:10:32.504Z-02a77d4005c4f8",
-  "source": "df0ecc30820b71b1693758cb6db39b8158058499",
-  "source_tree": "b64342f554052569a271070529bdd4e571e8c8f1",
-  "target": "privatecorrectivechildnewpairrunner+ONEForgeentryONLY",
+  "owner_execution": "existing sole R PR542 private source-bound marker renewal 20261103T2128Z",
+  "holder_token": "r-pr542-marker-1793741321502-166p30fvlrw",
+  "source": "bfd7806803bf07af687d3512e23c18a1bac667f0",
+  "source_tree": "b8b6f42068b6f94c7f2ee0e40f075f34f979b982",
+  "target": "PR621 private marker child only",
   "expected_target_head": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
-  "action": "PRIVATE_PR542_SELECTED_PAIR_ENVIRONMENT_ISOLATION_CORRECTION",
-  "idempotency_key": "df0ecc30820b71b1693758cb6db39b8158058499:PR542:private-selected-pair-environment-isolation:v1",
-  "issued_at": "2026-11-03T21:10:32.505Z",
-  "expires_at": "2026-11-03T22:10:00Z",
-  "previous_released_commit": "82e9325c757bf01201e4b02ca242ca52018e4e2a",
+  "action": "PRIVATE_PR542_SOURCE_BOUND_MARKER_RENEWAL",
+  "idempotency_key": "bfd7806803bf07af687d3512e23c18a1bac667f0:PR621:private-source-bound-marker-renewal:v1",
+  "issued_at": "2026-11-03T21:28:41.503Z",
+  "expires_at": "2026-11-03T22:15:00Z",
+  "previous_released_commit": "cbaa7061233ea34253f3a0f5f30dcb8fbc3c0747",
   "allowed_operations": [
-    "AddsmallNodebuiltinrunnerforONLYexacttwoPR542tests:clearedchildenv/private0700TMPDIR/timeouts/explicitcleanupresult; existingNode24boundedrunnerverificationundernonauthorpreflight",
-    "ReplaceONLYnewForgeentrywithisolatedrunnerinvocation;allolddonorbytes/Forgechecksrunnertopology/globalenvsemanticsunchanged;privateblob/tree/soleparentchild",
-    "Distinctwrapper/preflight/input-output/source/fullinventoryreview;durablereceipts;owncheckedreleaseaftercontrolledprocessesterminal"
+    "Append bounded truthful source/evidence record ONLY to artifact/vector-proof-freeze.trigger; preserve all63947prefix bytes/all1811nonmarker tuples/all1812modes; private blob/tree/soleparentchild",
+    "Distinct exact source-child inventory/native HEAD-CIRCLE/wrongSHA/dirty/restored admission review; no product suite rerun",
+    "Durable receipts; own checked release after all controlled operations terminal"
   ],
   "excluded_operations": [
-    "No oldcheckenv/testassertionchange/fullForge/Node22PASSclaim/install/download/publicref/marker/PRbody/CIkick/provider/customer/resource/image/Railwaywrite"
+    "No public product ref/PRbody/CIkick/fullForge/Node22PASS/install/build/resource/registry/source-transfer/Railway/provider/customer write"
   ],
   "prerequisites": {
-    "partial_receipt": "f04b3336ddf60305c3b8373fc6b88b985a6a31db",
+    "source_review": "b187f8b1afa6884c358179cb5e334acf98efd2fc",
+    "source_review_sha256": "5c4b1e9f22c66eb51dc89517eadf5055239860820c583ae297b5443f96078975",
+    "terminal": "6c9a5c8d22ea79a97d4f8b8a1d90eebd42ae09e8",
+    "terminal_sha256": "1e71fbd60103f81909246cc08cfb1371d461349609df690b6bae19cc35d2425a",
     "all_previous_controlled_processes_terminal": true,
-    "Node22": "OPEN_unavailable",
-    "current_public": "3d0 unchanged"
-  },
-  "released_at": "2026-11-03T21:27:44.630Z",
-  "result": {
-    "status": "ACCEPT_PRIVATE_CORRECTED_SOURCE_ONLY_NOT_MARKER_ADMITTED_OR_PUBLIC",
-    "candidate": "bfd7806803bf07af687d3512e23c18a1bac667f0",
-    "tree": "b8b6f42068b6f94c7f2ee0e40f075f34f979b982",
-    "receipt": "6c9a5c8d22ea79a97d4f8b8a1d90eebd42ae09e8",
-    "independent_review": "b187f8b1afa6884c358179cb5e334acf98efd2fc",
-    "evidence": "fd22e2684564ae351cac0a1889f33376d2908a2c",
-    "controlled_processes": "ALL_TERMINAL",
-    "source_action": "COMPLETE_NONREPEATABLE_PRIVATE_ONLY",
-    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_COMPLETE",
-    "repeat": false
+    "Node22": "OPEN unavailable, bounded draft source custody only"
   }
 }
