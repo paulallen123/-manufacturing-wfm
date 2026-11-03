@@ -1,51 +1,30 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole R reviewed PR542 ordinary draft source publication 20261103T2135Z",
-  "holder_token": "r-pr542-publication-1793741669986-toxc5ukr5ra",
+  "owner_execution": "existing sole R V084 reviewed test append private intake 20261103T2255Z",
+  "holder_token": "r-v084-1793746394828-pvd6n0gpx8",
   "source": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2",
   "source_tree": "57785b1304f7e753b5b37428889c2003fc0a0cd6",
-  "target": "existing OPEN DRAFT PR621 feature/vector-reviewed-source-union-616-620-20261101",
-  "expected_target_head": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
-  "action": "REVIEWED_PR542_SOURCE_ORDINARY_DRAFT_PUBLICATION",
-  "idempotency_key": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2:PR621:ordinary-feature-source-CI:v1",
-  "issued_at": "2026-11-03T21:34:29.986Z",
-  "expires_at": "2026-11-03T22:30:00Z",
-  "previous_released_commit": "6772ee5f3034757721acd72f831a76e8a525206f",
+  "expected_target_head": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2",
+  "target": "private V084 selected reporting test child only",
+  "action": "PRIVATE_REVIEWED_V084_TEST_APPEND_COMPOSITION",
+  "idempotency_key": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2:V084:private-reviewed-selected-test-append:v1",
+  "issued_at": "2026-11-03T22:53:14.828Z",
+  "expires_at": "2026-11-03T23:35:00Z",
+  "previous_released_commit": "aa58ac5dbbcb4b94444ea1bb5d3b64fbd3d2eedf",
   "allowed_operations": [
-    "Distinct precondition review of exact source/marker ancestry/inventory, current target head/DRAFT/base, all unchanged workflow/CircleCI trigger mappings and Railway watchers/configs; honest exact PRbody before any publication",
-    "After published exact-readback precondition ACCEPT: ONE nonforce expected3d0 source CAS to existing feature ref; reconcile resulting actual ref/PR; ONE reviewed body update only; preserve OPEN DRAFT/base/auto_merge null",
-    "Bounded ordinary existing CI READ only no kick/rerun; distinct postcondition result-state review; durable receipt; settle all controlled operations and own checked release"
+    "Apply exact reviewed7f69patch to existingc46test; verify exacte49postimage/prefix/currentclosure/selector/fullinventory; privateblob/tree/soleparentchild",
+    "Distinct exact child/source/evidence review without unchanged producttest rerun; durable terminal receipt; settle and own checkedrelease"
   ],
   "excluded_operations": [
-    "No canonical/main merge/deploy/newresources/funds/registry/source-transfer/Railway config/provider/customer/signer writes; no manual CIkick/rerun/duplicatepush/filterweakening; no Node24-to-Node22/fullCI PASS; prior sourceCAS keys NONREPEATABLE"
+    "No marker/publicref/PRbody/producttest rerun/CIkick/install/build/resource/funds/registry/source-transfer/Railway/provider/customer writes"
   ],
   "prerequisites": {
-    "marker_review": "b9f4814b10d4fd5db655ce290a49d6c232fb4a97",
-    "marker_review_sha256": "a4b83418e7307a12def5f76f9bd37e186970210df3a436e20be7b423d56008a1",
-    "marker_terminal": "e915100ef5e97bc1552dde45782b09552d3df134",
-    "marker_terminal_sha256": "aaf126da44c61496056b82cbb991d23ad3a72539a7103f2a89cf635450eab40d",
-    "source_review": "b187f8b1afa6884c358179cb5e334acf98efd2fc",
-    "all_previous_controlled_processes_terminal": true,
-    "current_fullCI_Node22_image_security_recovery_customer_provider_gates": "OPEN separate from bounded DRAFT source custody"
-  },
-  "released_at": "2026-11-03T21:41:53.649Z",
-  "result": {
-    "status": "REVIEWED_PR542_ISOLATED_TEST_SELECTOR_SOURCE_PUBLISHED_TO_EXISTING_DRAFT_CI_UNRESOLVED",
-    "source_action": "CAS_APPLIED_NONREPEATABLE",
-    "candidate": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2",
-    "tree": "57785b1304f7e753b5b37428889c2003fc0a0cd6",
-    "receipt": "e26df7235185a52daa8a1dc7ce770f5a525240b7",
-    "receipt_sha256": "a4e245d6328facd7de343f010a9ec6abca90383c94c9eb5567061c01996c89ab",
-    "precondition_review": "b43dbda36be2273a8e228c5b1a6802ebdb9a7db6",
-    "postcondition_review": "3c1d8aa248ecac6912e36bc2fd2517d436d98b63",
-    "controlled_processes": "ALL_TERMINAL",
-    "completed_source_key": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2:PR621:ordinary-feature-source-CI:v1",
-    "repeat": false,
-    "whole_CI_key": "NOT_PASS_NOT_COMPLETE",
-    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_IDLE_OR_SETTLED",
-    "canonical_serving_customer": "UNCHANGED_NO_PROMOTION",
-    "all146_original_scope_owners_schedules": "PRESERVED"
+    "released_result_consumed": true,
+    "all_previous_controlled_operations_terminal": true,
+    "reviewed_patch": "7f69c624d2669c7685e1d4f21ed7148e0f13fa5b",
+    "patch_sha256": "8d0fe1238383d647b44f1d88461f4b308d8830c27f498f0b5564e911c615563e",
+    "dated_execution": "52/52 Node22 original evidence only; no new execution or CI credit"
   }
 }
