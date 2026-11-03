@@ -1,43 +1,32 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole R private V084 source-bound marker renewal 20261103T2347Z",
-  "holder_token": "r-v084marker-1793749580651-7gqg6sxc3oa",
-  "source": "23db3d1157a8044d479cfcce5f83a4cbad421c9d",
-  "source_tree": "4a3f134ab75af752ec45c39ec297e849fc65a48c",
-  "target": "private source-bound marker child only",
+  "owner_execution": "existing sole R V084 selected test ordinary draft publication 20261103T2351Z",
+  "holder_token": "r-v084pub-1793749892243-ft007ub4n9n",
+  "source": "13bba034a7daa81292b0252e924a2840fc402015",
+  "source_tree": "9658026ba4c96d4f23c1c1ec8908b3b8e9c885ff",
   "expected_target_head": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2",
-  "action": "PRIVATE_V084_SELECTED_TEST_SOURCE_BOUND_MARKER",
-  "idempotency_key": "23db3d1157a8044d479cfcce5f83a4cbad421c9d:PR621:private-source-bound-marker-renewal:v1",
-  "issued_at": "2026-11-03T23:46:20.651Z",
-  "expires_at": "2026-11-04T00:20:00Z",
-  "previous_released_commit": "e1631f0380699641666fe0b5b7cea8049268360e",
+  "target": "existing OPEN DRAFT PR621 feature/vector-reviewed-source-union-616-620-20261101",
+  "action": "REVIEWED_V084_SELECTED_TEST_ORDINARY_DRAFT_PUBLICATION",
+  "idempotency_key": "13bba034a7daa81292b0252e924a2840fc402015:PR621:ordinary-feature-source-CI:v1",
+  "issued_at": "2026-11-03T23:51:32.243Z",
+  "expires_at": "2026-11-04T00:30:00Z",
+  "previous_released_commit": "dac58248123d6c3f22f545be7d5ae4cb97aede73",
   "allowed_operations": [
-    "Append truthful evidence record ONLY artifact/vector-proof-freeze.trigger preserving1811nonmarker tuples/all1812modes/all66875priorbytes; privateblob/tree/soleparentchild",
-    "Distinct exactchild/nativeHEAD-CIRCLE/wrongSHA/dirty/restored review only no productrerun; durableterminal receipts; settleandowncheckedrelease"
+    "Distinct exactsource/marker/ancestry/inventory/currentPR/triggerfilters/Railwaywatchers/body precondition review; publish/readbackACCEPT before ANY sourceCAS",
+    "ONE force:false expected9d5→13bba existingfeature ref CAS; readresultref/PRreconcile without replay; ONE exactreviewed bodyupdate preserving OPEN DRAFT/base/auto_merge null",
+    "Distinct postconditionresultstate review; durableterminal receipts; settlecontrolledprocesses and owncheckedrelease"
   ],
   "excluded_operations": [
-    "No publicref/PRbody/canonical/deploy/CIkick/producttest/install/build/resources/funds/registry/source-transfer/provider/customerwrite"
+    "No canonical/main merge/deploy/CIkick/rerun/duplicatepush/filterweakening/newfunds/resources/registry/sourcetransfer/Railwayconfig/signer/provider/customerwrite; no datedtest→fullCI/customercredit"
   ],
   "prerequisites": {
-    "source_review": "35d1ae0e6945b710938f9dcaf017d332dfd4eed1",
-    "review_sha256": "06e94f033a9852e6e22d6f6b71f03c41637c6cd3ada7192baa72d29dd8e5f0a7",
-    "source_terminal": "13343882fab14610219b7eed6d72c1fcee297c54",
-    "source_terminal_sha256": "da2df291c6c7cec106f50a53b36013d53da9f32e34a1fa00efb62843c247bbcf",
-    "previous_operations": "ALL_TERMINAL"
-  },
-  "released_at": "2026-11-03T23:50:37.699Z",
-  "result": {
-    "status": "ACCEPT_PRIVATE_SOURCE_BOUND_MARKER_ONLY",
-    "candidate": "13bba034a7daa81292b0252e924a2840fc402015",
-    "tree": "9658026ba4c96d4f23c1c1ec8908b3b8e9c885ff",
-    "receipt": "d3bf2d2368b2cd0142d69941b56654ed3c65f854",
-    "receipt_sha256": "b266d9fcc29c2107b790596e83c9b2acd3ea1c35c03a91b6127e2eebb3a8c40f",
-    "review": "35e08dc8f56d62a36689ea6717169f71d7e07a53",
-    "controlled_processes": "ALL_TERMINAL",
-    "completed_key": "23db3d1157a8044d479cfcce5f83a4cbad421c9d:PR621:private-source-bound-marker-renewal:v1",
-    "repeat": false,
-    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_COMPLETE"
+    "previous_operations": "ALL_TERMINAL",
+    "marker_review": "35e08dc8f56d62a36689ea6717169f71d7e07a53",
+    "marker_review_sha256": "925fccaf105a78f7f8ff64b62b6faa009da13e92cdb063b7de7110b9e3886d54",
+    "marker_terminal": "d3bf2d2368b2cd0142d69941b56654ed3c65f854",
+    "marker_terminal_sha256": "b266d9fcc29c2107b790596e83c9b2acd3ea1c35c03a91b6127e2eebb3a8c40f",
+    "Node22fullCI_image_customer_gates": "OPEN; bounded DRAFT source custody ONLY"
   }
 }
