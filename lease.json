@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R private reviewed V005 image source intake",
   "holder_token": "9f269d3a-6b7b-4346-9d27-5640fbf95a36",
@@ -30,5 +30,29 @@
   "donor_comment": 6601267189,
   "donor_receipt": "1f8933de9367166675b6f0b4d7246f580e36e963",
   "preserved_new_failed_native_receipt": "298259f5931261ed49e14e192b3c6b605e204127; timeout124/procnamespace mismatch/residualcleanupUNRESOLVED; no retry",
-  "prior_controlled_processes": "Prior R sourcepreparation released641b allprocessesterminal; imageauthor/reviewerterminalsource-only. ExternalCIUNKNOWNnot touched."
+  "prior_controlled_processes": "Prior R sourcepreparation released641b allprocessesterminal; imageauthor/reviewerterminalsource-only. ExternalCIUNKNOWNnot touched.",
+  "released_at": "2026-11-03T10:41:06.921Z",
+  "released_claim_commit": "a55d03f78b0c093f3aab53f680823482917c1b13",
+  "terminal_outcome": {
+    "result": "PRIVATE_PINNED_IMAGE_SOURCE_PRESERVED_DISTINCT_REVIEW_ACCEPTED_NO_BUILD_RUNTIME_ADOPTION",
+    "child": "a1ffb2b15bb7aecedf754b452351d2f0228c6dcf",
+    "tree": "458c1d7d3173ceffd09eee74ac89f3934e98fef9",
+    "receipt": "1988d87d6ffdc375dfd38be2ad686c4cf7328c42",
+    "receipt_sha256": "0cde7c8cda4f4af4937f36b6866cfd69f0b44bc9abfe572bb2fd8f021de8509c",
+    "independent_review_terminal": true,
+    "controlled_writer_API_probe_reviewer_processes_settled": true,
+    "key_complete": true,
+    "repeat_private_image_source_intake_allowed": false,
+    "build_install_runtime_UID_PID_sandbox_source_transfer_operations": 0,
+    "publicref_marker_CI_Railway_deploy_signer_provider_customer_business_mutation": false,
+    "public_PR621": "e795OPEN/DRAFTunchanged",
+    "prior_failed_native_cleanup": "UNRESOLVED_NOT_RETRIED",
+    "external_CI": "UNKNOWN_NOT_TOUCHED",
+    "entrypoints_paused": false,
+    "DONE": 0
+  },
+  "pending_subaction": {
+    "owner": "Existing V005/security and P proof owners with sole R",
+    "action": "Obtain newly authorized bounded capability/explicitscope for exact reviewedimagebuild and independently observed noDockerinit helper/process/expiry/revocation/UID proof, retain priorfailedreceipt; no reusecompletedVercelauthority/no unauthorizedsource transfer. Only after independentimageaccept assessseparateexistingf84config/deployment/effectivestartreadback."
+  }
 }
