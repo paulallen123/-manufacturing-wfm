@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existingsoleR PR542 privateisolatedrunnercorrection20261103T2113Z",
   "holder_token": "pr542-isolated-2026-11-03T21:10:32.504Z-02a77d4005c4f8",
@@ -26,5 +26,18 @@
     "all_previous_controlled_processes_terminal": true,
     "Node22": "OPEN_unavailable",
     "current_public": "3d0 unchanged"
+  },
+  "released_at": "2026-11-03T21:27:44.630Z",
+  "result": {
+    "status": "ACCEPT_PRIVATE_CORRECTED_SOURCE_ONLY_NOT_MARKER_ADMITTED_OR_PUBLIC",
+    "candidate": "bfd7806803bf07af687d3512e23c18a1bac667f0",
+    "tree": "b8b6f42068b6f94c7f2ee0e40f075f34f979b982",
+    "receipt": "6c9a5c8d22ea79a97d4f8b8a1d90eebd42ae09e8",
+    "independent_review": "b187f8b1afa6884c358179cb5e334acf98efd2fc",
+    "evidence": "fd22e2684564ae351cac0a1889f33376d2908a2c",
+    "controlled_processes": "ALL_TERMINAL",
+    "source_action": "COMPLETE_NONREPEATABLE_PRIVATE_ONLY",
+    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_COMPLETE",
+    "repeat": false
   }
 }
