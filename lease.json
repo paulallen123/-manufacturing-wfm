@@ -1,63 +1,34 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole R owner consumes A reviewed V005 exact private patch for source preparation only",
-  "holder_token": "8cdb5122-9472-4a74-96df-61d3e9981b6d",
-  "source": "e7956099753f9b83d3f6d997cacd747bc5f8943d",
-  "source_tree": "62baa0bb8ae42960570bfea192b23bf903b84b20",
-  "target": "PRIVATE_UNREFERENCED_V005_SOURCE_CHILD;PR621_AND_RUNNER_UNCHANGED",
+  "owner_execution": "existing sole R private reviewed V005 image source intake",
+  "holder_token": "9f269d3a-6b7b-4346-9d27-5640fbf95a36",
+  "source": "bc43364a3cef6b11129b8dcea0b461b8f3b417bf",
+  "source_tree": "d188fa1ffab4fe9271f6c388b95ba5a63b2027b2",
+  "target": "PRIVATE_UNREFERENCED_V005_IMAGE_SOURCE_CHILD;PUBLIC_PR621_F84_UNCHANGED",
   "expected_target_head": "e7956099753f9b83d3f6d997cacd747bc5f8943d",
-  "action": "PRIVATE_V005_EXACT_REVIEWED_EXEC_FORM_PATCH_PREPARATION",
-  "idempotency_key": "e7956099753f9b83d3f6d997cacd747bc5f8943d:V005:private-reviewed-exec-form-patch:v1",
-  "issued_at": "2026-11-03T10:26:33.730Z",
-  "expires_at": "2026-11-03T11:45:00Z",
-  "previous_released_commit": "61655120fd582e09b61f69e0596b1238c5c4b457",
+  "action": "PRIVATE_V005_PINNED_TINI_IMAGE_SOURCE_INTAKE_ONLY",
+  "idempotency_key": "bc43364a3cef6b11129b8dcea0b461b8f3b417bf:V005:private-reviewed-tini-image-source:v1",
+  "issued_at": "2026-11-03T10:35:54.640Z",
+  "expires_at": "2026-11-03T12:00:00Z",
+  "previous_released_commit": "641b8b5c995828a281164426a56cca68802ce34b",
   "allowed_paths": [
-    "docs/execution/proof-runner-activation/prepare.cjs",
-    "docs/execution/proof-runner-activation/launcher.test.cjs",
-    "docs/execution/proof-runner-activation/source-binding.test.cjs",
-    "docs/execution/proof-runner-activation/generated/start-command.txt",
-    "docs/execution/proof-runner-activation/generated/manifest.json"
+    "docs/execution/proof-runner-activation/runner-image/Dockerfile",
+    "docs/execution/proof-runner-activation/runner-image/README.md"
   ],
   "allowed_operations": [
-    "Apply exact original A reviewed patche362 without substitutions to local copies/current source fivepaths; gitapplycheck+inversecheck and static syntax/custody only",
-    "Create unreferenced blobs/tree/sole-parent child preserving every unrelated path/mode/blob",
-    "Distinct exact-child source composition review and immutable receipt publication",
-    "Exact holder RELEASED soleparent coordination CAS after all controlled processes terminal"
+    "Read/reuse exact reviewed two immutable Gitblobs e46f/9b94; add onlythese two100644files to unreferencedchild ofbc433, preserveeverypriorleaf tuple",
+    "Static custody and shellsyntax/sourcecomposition checks only, distinct exact-child review and immutable receipts",
+    "Exactholder RELEASED soleparentcoordinationCASafterallcontrolledprocessesterminal"
   ],
   "excluded_operations": [
-    "No product tests/old84suite/UID/image/noinit/recovery/fault probes",
-    "No marker/publicref/CI/Railwayconfig/apply/deploy/newsource transfer/signer/provider/customerbusiness mutation",
-    "No runtime/reaper/image/authority/customer acceptance inferred"
+    "No imagebuild/download/install/pull, nativeprocess/runtime/UID/noinithelperprobe, numericPID/groupkill, sandbox/resource/source transfer",
+    "No publicref/marker/CI/Railwayconfig/apply/deploy/signer/provider/customerbusinesswrite or acceptance"
   ],
-  "source_intake_decision": "R ACCEPT_PRIVATE_SOURCE_PREPARATION_ONLY; original A independent6587254248 command-context source ACCEPT reused; runtime/security adoption BLOCK pending approved attested exactimage/trustedTini/effectiveargv/proctree tuple",
-  "donor_patch": "e3626d32c2f2998364906ad031c051001e4955fa",
-  "donor_sha256": "08fb5e79b5d47a2defb049bd71dbbc259dd6164a9bde85117600b7bca4e4d083",
-  "no_overlapping_source_writer_basis": "Exact priorRELEASED controlledprocessesterminal; A originalprivatewriter/reviewerterminal, currentPoolB UIprivatewriterdifferentpaths/no sharedwriter; externalCIUNKNOWN untouched",
-  "released_at": "2026-11-03T10:32:44.467Z",
-  "released_claim_commit": "6e89b6f7e666114b326426c828fed6656a8c009c",
-  "terminal_outcome": {
-    "result": "PRIVATE_EXACT_V005_SOURCE_PATCH_PREPARED_DISTINCT_REVIEW_ACCEPTED_RUNTIME_ADOPTION_BLOCKED",
-    "child": "bc43364a3cef6b11129b8dcea0b461b8f3b417bf",
-    "tree": "d188fa1ffab4fe9271f6c388b95ba5a63b2027b2",
-    "receipt": "c1526759a9ceb023fcf27b33990f791bc229a2da",
-    "receipt_sha256": "de32073eaecf1834815f47e3620cab7f834f8d77d62dc1281336d8869e96a105",
-    "independent_review_terminal": true,
-    "controlled_writer_API_probe_reviewer_processes_settled": true,
-    "product_runtime_UID_image_tests_executed": 0,
-    "initial_static_failure_retained": "f1770b wrong trimmedSHA oracle correctedtoc50ae5 fullfilecontractPASS;donorbytesunchanged",
-    "key_complete": true,
-    "repeat_private_preparation_allowed": false,
-    "publicref_marker_CI_Railway_deploy_signer_business_write": false,
-    "public_PR621": "e795OPEN/DRAFTunchanged",
-    "runtime_security_adoption": "BLOCKED pending approvedattestedcompatibleimage/trustedTini/effectiveargv/PID/process tuple",
-    "entrypoints_paused": false,
-    "external_CI": "UNKNOWN_NOT_TOUCHED",
-    "DONE": 0
-  },
-  "pending_subaction": {
-    "owner": "Existing V005/security owner with sole R",
-    "action": "Approve exact attested compatible image/reaper/effective start-chain tuple for privatebc433 before any activation/admission; P only verifies qualifyingapprovedeffectiveinit orauthoritativeexactdeploymentprocess evidence under sufficientscope. No unchangeddeniedpull/UID/noinit/sandboxtransferretry."
-  }
+  "owner_intake": "ACCEPT_PRIVATE_IMAGE_SOURCE_PRESERVATION_ONLY; runtime/adoption stillBLOCKEDpendingnew approvedbuild/proofcapabilityandimage/effectiveprocess evidence",
+  "donor_comment": 6601267189,
+  "donor_receipt": "1f8933de9367166675b6f0b4d7246f580e36e963",
+  "preserved_new_failed_native_receipt": "298259f5931261ed49e14e192b3c6b605e204127; timeout124/procnamespace mismatch/residualcleanupUNRESOLVED; no retry",
+  "prior_controlled_processes": "Prior R sourcepreparation released641b allprocessesterminal; imageauthor/reviewerterminalsource-only. ExternalCIUNKNOWNnot touched."
 }
