@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existingsoleR PR542 privatecurrent-source receiving/selectorscope20261103T2106Z",
   "holder_token": "pr542-2026-11-03T21:04:20.572Z-f7d0ad3347c0c",
@@ -30,5 +30,23 @@
     "preflight_sha256": "3c6b7b83134707a1f1e5d3b06ceb073b012c453cb629aa29792a442536e46b3e",
     "current_changed_module": "one-day-enterprise-engine-coref704c8c5",
     "CircleCI": "existingNEEDS_AUTH_FAILED unchanged; no repeatalert/emptyCIscan"
-  }
+  },
+  "released_at": "2026-11-03T21:10:26.310Z",
+  "released_claim_commit": "69fee5eaa105d5f08efaeb1ca8c28526f40b0cef",
+  "terminal_outcome": {
+    "result": "PRIVATE_TWO_TEST_RECEIVING_PASS_NODE24_SELECTOR_ADMISSION_BLOCKED_UNCHANGED",
+    "child": "df0ecc30820b71b1693758cb6db39b8158058499",
+    "tree": "b64342f554052569a271070529bdd4e571e8c8f1",
+    "receipt": "f04b3336ddf60305c3b8373fc6b88b985a6a31db",
+    "receipt_sha256": "a23a6d03c47abfb456c6db2941539a8888998cc60d8a64b0dae7b1ab8ebbe950",
+    "Node24": "2PASS0FAIL0SKIP;input21hashes;privateTMPDIRempty/removed",
+    "Node22": "OPEN_UNAVAILABLE",
+    "all_controlled_source_API_test_review_processes_terminal": true,
+    "finding": "NewForgeentryinheritsparentenv;approvedreceivingrequiredemptyenv/privateTMPDIR;noactualCIcredential/networkattemptclaimed",
+    "key": "COMPLETE_NONREPEATABLE_PRIVATE_RECEIVING_ONLY",
+    "public_mutations": 0,
+    "external_CI": "UNKNOWNnotidle",
+    "entrypoints_paused": false
+  },
+  "next": "Freshcorrectivescope bindsONLYnewpairentrytocredential-freeenv/privateTMPDIRviareviewedwrapper;preserveoldchecks/donorbytes"
 }
