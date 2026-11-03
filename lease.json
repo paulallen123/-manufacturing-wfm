@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R V084 ordinary draft-source publication invocation 20261103T1611Z",
   "holder_token": "v084pub-2026-11-03T16:11:16.943Z-797b4cc0537548-b620a059bbfb",
@@ -32,5 +32,27 @@
     "current_legacy_branch_policy": "Unreadable retained blocker for full release; normal provider enforcement only, no bypass",
     "external_existing_CI": "a122UNKNOWNpossiblyinflight; sourcekeyCIunresolved notpermissiontomanualdispatch",
     "pre_mutation_distinct_review": "REQUIRED_BEFORE_SOURCE_CAS_NOT_YET_COMPLETE"
-  }
+  },
+  "released_at": "2026-11-03T16:21:06.574Z",
+  "released_claim_commit": "6a0deec0f5210b5ce1419b194e0a225efdd852d4",
+  "terminal_outcome": {
+    "result": "REVIEWED_V084_SOURCE_PUBLISHED_TO_EXISTING_DRAFT_CI_UNRESOLVED",
+    "published_head": "01d74186df2f85f693319a7d28b3179c57e72a52",
+    "tree": "32806d4af35311b7279dd975a05645b85b49c47b",
+    "receipt": "a2bf8a51537438bc945da6d56f6f940554f76d9b",
+    "receipt_sha256": "5c8936824b15317478ae42a91a8238206b9cb3d90e8cd73358710d147b51248d",
+    "pre_mutation_review": "f57f44b89816cd4d89f45d0bf88a3d78d03a43a6",
+    "postcondition_review": "7d6525d577e10c44f71dfe8208077f721e7a7699",
+    "all_controlled_source_API_probe_review_processes_terminal": true,
+    "source_CAS": "APPLIED_NONREPEATABLE",
+    "repeat_publication_allowed": false,
+    "CI": "BLOCK_NOT_OBSERVED_PROVIDER_UNKNOWN_POSSIBLY_INFLIGHT",
+    "whole_CI_key_complete": false,
+    "manual_CI_actions": 0,
+    "canonical_Railway_provider_customer_mutations": 0,
+    "entrypoints_paused": false,
+    "DONE": 0,
+    "customer": "0/6"
+  },
+  "pending_subaction": "Existing R/CI owner ordinary exact01d741pipeline/event/jobreadback and R/security complete immutable image/admission bridge; no repeatCAS/push/manualdispatch. Existing reviewedUI projection may be integrated serially under fresh scopedclaim/currentbase review, no permission transfer."
 }
