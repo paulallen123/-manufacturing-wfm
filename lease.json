@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole release owner V069 normal feature source action",
   "holder_token": "52e32818-86d3-4e73-8b25-fdf0cde7da78",
@@ -34,5 +34,31 @@
   "policy_limit": "Legacy effective protection unreadable bymanagedApp; ordinary provider-enforced nonforce action only; rejection/error/unexpectedhead denies, inspectonce no blindretry/bypass",
   "no_merge_Railway_deploy_signer_provider_customer_business_authority": true,
   "prior25cd_CI": "UNKNOWN_NO_TRANSFER_NO_REPEAT_CAS",
-  "no_other_writer_basis": "Prior exactrelease all holder-controlled processes terminal; externalproviderCIUNKNOWN remains read-only and untouched"
+  "no_other_writer_basis": "Prior exactrelease all holder-controlled processes terminal; externalproviderCIUNKNOWN remains read-only and untouched",
+  "released_at": "2026-11-03T08:56:13.236Z",
+  "released_claim_commit": "1805cf9162f73d0cf622cbb2571e6cd8a4a527d3",
+  "terminal_outcome": {
+    "result": "SOURCE_CAS_APPLIED_NONREPEATABLE_CI_BLOCK_NOT_OBSERVED",
+    "source": "e7956099753f9b83d3f6d997cacd747bc5f8943d",
+    "source_tree": "62baa0bb8ae42960570bfea192b23bf903b84b20",
+    "expected_pre_target": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec",
+    "attempts": 1,
+    "receipt": "07e25b8aec549dd68001393952de8f458d976c03",
+    "receipt_sha256": "1780c482a55e84f9b5f8c2f90ac8bf9dfbbc2605b19cadab10ced080c88b12dd",
+    "pre_mutation_review": "b679eb14828c62b845e7bd9b15b9095b4c223e9f",
+    "distinct_pre_and_post_reviews_terminal": true,
+    "controlled_writer_API_probe_reviewer_processes_settled": true,
+    "external_CI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_DECLARED_IDLE_SETTLED_OR_COMPLETE",
+    "CI": "e795pending/statuses0/checkruns0/Actions0/BLOCK_NOT_OBSERVED",
+    "whole_CI_key_passed": false,
+    "repeat_CAS_push_dispatch_rerun_allowed": false,
+    "PR621": "e795 OPEN/DRAFT/unmerged/baseca6",
+    "merge_Railway_deploy_signer_provider_customer_business_mutation": false,
+    "entrypoints_paused": false,
+    "DONE": 0
+  },
+  "pending_subaction": {
+    "owner": "Existing sole release/CI owner",
+    "action": "Obtain ordinary existing CircleCI pipeline/event/job readback for exacte795 viaauthorizedread-onlycapability, recordattributableterminal evidence. Never repeat successful CAS or manualdispatch/rerun/push/status transfer. Pcleanup only onqualifyingapprovedrunner/config/process input; other gates separate."
+  }
 }
