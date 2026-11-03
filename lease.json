@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existingsoleR V013 private marker renewal20261103T1952Z",
   "holder_token": "v013-marker-2026-11-03T19:51:26.288Z-f3c5a10e6262b",
@@ -28,5 +28,30 @@
     "AGENTS": "nonecomplete1809leafsourceinventory",
     "CircleCI": "existingconnectionNEEDS_AUTH_FAILEDawaiting_input_timeout; no private read obtained; externalexecutionUNKNOWN",
     "source_tests": "prior17/17+nested16+7/7datedonly; resolutionnegativepositiveNOTproductexecution; focusednewpackagingtestnotordinaryCIselected"
-  }
+  },
+  "released_at": "2026-11-03T19:56:03.496Z",
+  "released_claim_commit": "511673abb8cdb234f0edf85b40e6fd8cfea393d4",
+  "terminal_outcome": {
+    "result": "ACCEPT_PRIVATE_V013_SOURCE_BOUND_MARKER_ONLY",
+    "child": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
+    "tree": "9666669d20069e879e1dd8cc936f2a1bebe8755d",
+    "marker": "d6eef10d495af394798f0d50a4698cec26877dd9",
+    "marker_hash": {
+      "bytes": 63947,
+      "sha256": "2093819866b90689d60743decf8da8e5dc14274926f137b548991d1f5a56f53c",
+      "git": "d6eef10d495af394798f0d50a4698cec26877dd9"
+    },
+    "receipt": "1d44d92eebe615b5a211753dc1857185d30c5996",
+    "receipt_sha256": "ed3fe8e6da5aee3606e2de73dad2ac0a4050131badbc49836f05c5df12ae6d8b",
+    "independent_native_command": "03d408 exit0 exact225trees per sourcechild;HEADPASS_wrongSHADENY_dirtyDENY_restoredPASS;fixture_removed",
+    "all_controlled_source_API_probe_review_processes_terminal": true,
+    "key": "COMPLETE_NONREPEATABLE",
+    "public_mutations": 0,
+    "product_tests": 0,
+    "external_CI": "UNKNOWNnotidle",
+    "entrypoints_paused": false,
+    "DONE": 0,
+    "customer": "0/6"
+  },
+  "next": "Separatefresh ordinaryexistingDRAFTpublicationclaim/prepostreviewrequired; no permissiontransfer"
 }
