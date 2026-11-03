@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R V084 reviewed test append private intake 20261103T2255Z",
   "holder_token": "r-v084-1793746394828-pvd6n0gpx8",
@@ -26,5 +26,20 @@
     "reviewed_patch": "7f69c624d2669c7685e1d4f21ed7148e0f13fa5b",
     "patch_sha256": "8d0fe1238383d647b44f1d88461f4b308d8830c27f498f0b5564e911c615563e",
     "dated_execution": "52/52 Node22 original evidence only; no new execution or CI credit"
+  },
+  "released_at": "2026-11-03T22:58:19.477Z",
+  "result": {
+    "status": "ACCEPT_PRIVATE_REVIEWED_V084_TEST_APPEND_NOT_MARKER_ADMITTED_OR_PUBLIC",
+    "candidate": "23db3d1157a8044d479cfcce5f83a4cbad421c9d",
+    "tree": "4a3f134ab75af752ec45c39ec297e849fc65a48c",
+    "receipt": "13343882fab14610219b7eed6d72c1fcee297c54",
+    "receipt_sha256": "da2df291c6c7cec106f50a53b36013d53da9f32e34a1fa00efb62843c247bbcf",
+    "review": "35d1ae0e6945b710938f9dcaf017d332dfd4eed1",
+    "review_sha256": "06e94f033a9852e6e22d6f6b71f03c41637c6cd3ada7192baa72d29dd8e5f0a7",
+    "controlled_processes": "ALL_TERMINAL",
+    "completed_key": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2:V084:private-reviewed-selected-test-append:v1",
+    "repeat": false,
+    "public_source": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2_UNCHANGED",
+    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_IDLE_OR_COMPLETE"
   }
 }
