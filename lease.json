@@ -1,57 +1,33 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existingsoleR V013 private marker renewal20261103T1952Z",
-  "holder_token": "v013-marker-2026-11-03T19:51:26.288Z-f3c5a10e6262b",
-  "source": "42be7950663560b6eb1a9f4038f306e232071472",
-  "source_tree": "a726ead0045e43f997e9092292f2a8bc19b8f6d4",
-  "target": "privateunreferencedmarkerchildONLY;existingPR621publicationSEPARATEscope",
+  "owner_execution": "existingsoleR ordinaryreviewedV013draftpublication20261103T2000Z",
+  "holder_token": "v013-pub-2026-11-03T19:56:11.117Z-46d49b2083213",
+  "source": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
+  "source_tree": "9666669d20069e879e1dd8cc936f2a1bebe8755d",
+  "target": "refs/heads/feature/vector-reviewed-source-union-616-620-20261101 existingOPEN_DRAFT_PR621ONLY",
   "expected_target_head": "bf5d9864d0b0873e622368fb950df662897d8fad",
-  "action": "PRIVATE_SOURCE_BOUND_MARKER_RENEWAL_ONLY",
-  "idempotency_key": "42be7950663560b6eb1a9f4038f306e232071472:PR621:private-source-bound-marker-renewal:v1",
-  "issued_at": "2026-11-03T19:51:26.288Z",
-  "expires_at": "2026-11-03T20:50:00Z",
-  "previous_released_commit": "6aa2933620228e347869be03da41fe54271e2988",
+  "action": "ONE_ORDINARY_DRAFT_FEATURE_SOURCE_CAS_AND_PR_BODY_ONLY",
+  "idempotency_key": "3d0cb3fa0743185b31deb6d40446656a96d06f31:PR621:ordinary-feature-source-CI:v1",
+  "issued_at": "2026-11-03T19:56:11.117Z",
+  "expires_at": "2026-11-03T20:55:00Z",
+  "previous_released_commit": "06b1fa803752a4e95cd652d595fd124c12b188cd",
   "allowed_operations": [
-    "AppendtruthfulV013sourceevidencerecordpreservingall61080prior markerbytes/all1808nonmarkertuples/all1809modes;privateblob/tree/soleparentchildONLY",
-    "DistinctnativeGitHEAD-CIRCLE/wrongSHA/dirty/restoredadmissionreview,durablereceipts,owncheckedreleaseafterallcontrolledprocessesterminal"
+    "Onlyafterdistinctpreconditionpublishedandexactreadback,ONEforce:falseexpectedbf5→exact3d0existingfeaturebranchCAS;ordinaryCIreactiononlynomanualdispatch",
+    "Afteractualheadreadback,ONEreviewedPR621bodyonlyupdatepreserveDRAFT/base/open/unmerged/auto_merge",
+    "Distinctprepostresultstate reviews,durablereceipts,owncheckedreleaseallcontrolledoperationsterminal"
   ],
   "excluded_operations": [
-    "No source reauthoring/publicproductref/PRbody/producttests/build/install/image/resource/registry/source-transfer/Railway/provider/customerwrites",
-    "No CItrigger/rerun/duplicatepush/authflowrecreation/tokencreation/scopeexpansion"
+    "No canonical/main/PR501merge/ref/force/deniedoruncertainwritereplay/duplicatepush/manualCI/filterweakening",
+    "No build/install/image/resource/registry/source-transfer/Railway/signer/actor/provider/payroll/customerbusinesswrites orduplicateauthresources"
   ],
   "prerequisites": {
-    "source_receipt": "be75b9c47e1bbc4954f610c8f29d48836cc8ac8f",
-    "corrective_independent_review": "b33af413608986d2f111992a6eb26b20f52818f1",
-    "prior_all_controlled_processes_terminal": true,
-    "AGENTS": "nonecomplete1809leafsourceinventory",
-    "CircleCI": "existingconnectionNEEDS_AUTH_FAILEDawaiting_input_timeout; no private read obtained; externalexecutionUNKNOWN",
-    "source_tests": "prior17/17+nested16+7/7datedonly; resolutionnegativepositiveNOTproductexecution; focusednewpackagingtestnotordinaryCIselected"
-  },
-  "released_at": "2026-11-03T19:56:03.496Z",
-  "released_claim_commit": "511673abb8cdb234f0edf85b40e6fd8cfea393d4",
-  "terminal_outcome": {
-    "result": "ACCEPT_PRIVATE_V013_SOURCE_BOUND_MARKER_ONLY",
-    "child": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
-    "tree": "9666669d20069e879e1dd8cc936f2a1bebe8755d",
-    "marker": "d6eef10d495af394798f0d50a4698cec26877dd9",
-    "marker_hash": {
-      "bytes": 63947,
-      "sha256": "2093819866b90689d60743decf8da8e5dc14274926f137b548991d1f5a56f53c",
-      "git": "d6eef10d495af394798f0d50a4698cec26877dd9"
-    },
-    "receipt": "1d44d92eebe615b5a211753dc1857185d30c5996",
-    "receipt_sha256": "ed3fe8e6da5aee3606e2de73dad2ac0a4050131badbc49836f05c5df12ae6d8b",
-    "independent_native_command": "03d408 exit0 exact225trees per sourcechild;HEADPASS_wrongSHADENY_dirtyDENY_restoredPASS;fixture_removed",
-    "all_controlled_source_API_probe_review_processes_terminal": true,
-    "key": "COMPLETE_NONREPEATABLE",
-    "public_mutations": 0,
-    "product_tests": 0,
-    "external_CI": "UNKNOWNnotidle",
-    "entrypoints_paused": false,
-    "DONE": 0,
-    "customer": "0/6"
-  },
-  "next": "Separatefresh ordinaryexistingDRAFTpublicationclaim/prepostreviewrequired; no permissiontransfer"
+    "marker_complete": true,
+    "marker_receipt": "1d44d92eebe615b5a211753dc1857185d30c5996",
+    "previous_controlled_processes_terminal": true,
+    "precondition_review": "REQUIRED_BEFORE_CAS_NOT_YET_COMPLETE",
+    "external_CI": "UNKNOWNpossiblyinflight; secureconnectionNEEDS_AUTH_failedawaiting_input_timeout",
+    "effective_legacy_policy": "Unreadablefullreleaseblockerretained;normalproviderenforcementonlynobypass"
+  }
 }
