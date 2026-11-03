@@ -1,0 +1,13 @@
+# V005 pinned reaper image intake
+
+This private image proposal supplies the executable required by corrected launcher patch `e3626d32c2f2998364906ad031c051001e4955fa`. It preserves the already tested Playwright linux/amd64 base digest and installs the independently verified Tini package, including its license and package inventory. Package and binary SHA256 checks, architecture, package version, root ownership and mode checks fail the build on drift. No VECTOR source, signer, tenant or credentials are copied into the image. Downloads occur at build time only.
+
+Railway replaces an image ENTRYPOINT when a custom start command is set. The existing owner must therefore use the corrected direct executable command `/usr/bin/tini -s -- node -e ...`, bound to the reviewed immutable launcher; keeping the legacy bare-Node command would bypass this ENTRYPOINT. The Node launcher retains its detached proof-group termination and fail-closed cleanup checks. No extra signal-group flag or cleanup relaxation is proposed.
+
+Before admission, build this exact file with an approved existing capability and record the resulting image digest. Run the actual unchanged proof helper and source-bound security checks in the derived image without Docker `--init`, retaining the original no-init failure and conditional 82/82 baseline. Required observations include orphan reaping and group disappearance, TERM deadline, wall-clock expiry and in-flight revocation, UID/read-only/proc isolation, and browser execution. Separate original fixture mount restrictions from runtime guarantees.
+
+The builder must support Dockerfile frontend 1.6 or later for `ADD --checksum`; an older builder must fail rather than remove the checksum guard. The image requires an explicit application command because defining ENTRYPOINT clears the base image's inherited CMD. Proof runs must supply the reviewed Node command, and Railway must retain the explicit corrected start command described above.
+
+After independent image acceptance, the sole release owner may assess a separately scoped update to the existing isolated browser-proof runner, preserving unrelated staged changes. Verify the actual serving digest, trusted Tini binary and sanitized effective PID/argv/process-tree via an already authorized exact-instance connection. Customer/provider writes, signer activation, release acceptance and DONE remain separate.
+
+This directory is a private source proposal, not a built, admitted or deployed image. Prior approval of one completed Vercel sandbox does not authorize another sandbox or transfer of changed private source. The existing release/security owners retain shared source, CI and Railway custody.
