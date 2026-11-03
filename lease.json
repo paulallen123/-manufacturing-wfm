@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R V084 source-bound marker renewal invocation 20261103T1604Z",
   "holder_token": "v084-2026-11-03T16:04:37.176Z-4e7d5a88feef4-f305a2d70a1db8",
@@ -28,5 +28,33 @@
   ],
   "prior_result": "b19d913f RELEASED source publicationa122 complete, allcontrolledprocessesterminal; externalCIUNKNOWNnot touched",
   "reviewer": "/root/v084_marker_review_1604 independent read-only",
-  "process_state": "Only this markerwriter and its distinct read-only reviewer; no overlapping shared writer observed in native record"
+  "process_state": "Only this markerwriter and its distinct read-only reviewer; no overlapping shared writer observed in native record",
+  "released_at": "2026-11-03T16:10:07.440Z",
+  "released_claim_commit": "6c9e3fdbd9e075878e69b992b2b62990deeff9cc",
+  "terminal_outcome": {
+    "result": "V084_PRIVATE_SOURCE_BOUND_MARKER_COMPLETE_INDEPENDENT_NATIVE_ADMISSION_ACCEPT",
+    "child": "01d74186df2f85f693319a7d28b3179c57e72a52",
+    "tree": "32806d4af35311b7279dd975a05645b85b49c47b",
+    "marker": "fef9c927fec4b06485c0c9b0d2edd00ad48c6b8b",
+    "marker_sha256": "0fb362a050e9c508ad1d408028b0fc7e4bc44513fec44ef68b351ced324cb9ad",
+    "previous_marker_bytes_preserved": 56124,
+    "append_bytes": 2407,
+    "nonmarker_tuples_preserved": 1806,
+    "modes_preserved": 1807,
+    "primary_custody": "65bafa exit0;081dd4 receipt read/hash exit0",
+    "independent_review": "8085f970ffb6e5cf37dd9be646d0631602a744f8",
+    "review_sha256": "18ec7cbfb39d820bbe840ee59be0620e492cc05c3c393257a3479d7dabb8fc0a",
+    "independent_review_terminal": true,
+    "native_exactHEAD_PASS_wrongSHA_FAIL_dirty_FAIL_restored_PASS": true,
+    "all_controlled_writer_API_probe_reviewer_processes_terminal": true,
+    "product_tests_rerun": 0,
+    "public_head_unchanged": "a1223f6e1867474c18c8ea1ad4e2e6d675be34c4",
+    "key_complete": true,
+    "repeat_marker_renewal_allowed": false,
+    "CI": "externalUNKNOWNnotcontrolledorpassed",
+    "public_ref_CI_runtime_provider_customer_mutation": false,
+    "entrypoints_paused": false,
+    "DONE": 0
+  },
+  "pending_subaction": "Later ordinary DRAFT publication requires separately scoped claim, fresh source/ref/policy/config review and independent pre/postcondition evidence; no marker permission transfer"
 }
