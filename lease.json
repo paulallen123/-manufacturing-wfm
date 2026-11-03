@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R reviewed reporting composite marker invocation 20261103T1743Z",
   "holder_token": "reporting-marker-2026-11-03T17:41:25.480Z-c52967376bc68-150994e6a0972",
@@ -30,5 +30,24 @@
     "intake_review": "Distinct read-only reporting_intake_review_1738 in progress; required before private marker creation",
     "AGENTS": "Fresh full1808leaf composite inventory none; parent1807leaf none",
     "source_tests": "Prior UI51/51 and selected reporting group5/5 only exact respective closures; not fullForgeCIimagecustomer"
-  }
+  },
+  "released_at": "2026-11-03T17:46:55.886Z",
+  "released_claim_commit": "1731aec4d0196acb35d8f0ce795cec55f894f99a",
+  "terminal_outcome": {
+    "result": "REVIEWED_REPORTING_COMPOSITE_PRIVATE_MARKER_ACCEPTED_ONLY",
+    "receipt": "f16127e6247fc30f07d763d9cc53afc320edb941",
+    "receipt_sha256": "8cee500301baf343b60cf76f58198c1a62bf883b90bac77c32ba94754aff3866",
+    "child": "bf5d9864d0b0873e622368fb950df662897d8fad",
+    "tree": "cc184cac3dca2c791a0974f4cfff5ce15a62af6a",
+    "independent_intake": "76a8ebe63b28658f267b6e60834cc59498b6bbb5",
+    "independent_marker": "af9976d25d34ee4b48c8c0789d2c5085d4f4ae35",
+    "all_controlled_writer_API_probe_review_processes_terminal": true,
+    "key": "COMPLETE_NONREPEATABLE",
+    "public_product_ref_mutations": 0,
+    "external_existing_CI": "UNKNOWNpossiblyinflight_notidle_notsettled",
+    "entrypoints_paused": false,
+    "DONE": 0,
+    "customer": "0/6"
+  },
+  "pending_subaction": "Separate fresh-scoped ordinary draftpublication after independent pre/postreview; exactcurrentCI andcompleteimmutableimageadmission separate; V013orderedseries eligible later"
 }
