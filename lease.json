@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R reviewed reporting composite ordinary draft publication invocation20261103T1749Z",
   "holder_token": "reporting-pub-2026-11-03T17:47:31.350Z-0d040cf59592a-db69c3c07a32",
@@ -32,5 +32,31 @@
     "all_previous_controlled_operations_terminal": true,
     "external_existing_CI": "01dUNKNOWNpossiblyinflight; wholeCIkeyunresolved; nomanualkick",
     "effective_legacy_policy": "Unreadable scopedblocker retained; normalproviderenforcementonly nobypass"
-  }
+  },
+  "released_at": "2026-11-03T17:55:43.913Z",
+  "released_claim_commit": "bfc67d78c0279d0caad99bb6b2dc9bc4c990286d",
+  "terminal_outcome": {
+    "result": "REVIEWED_REPORTING_PROJECTION_V079_TEST_SELECTOR_PUBLISHED_TO_EXISTING_DRAFT_CI_UNRESOLVED",
+    "published_head": "bf5d9864d0b0873e622368fb950df662897d8fad",
+    "tree": "cc184cac3dca2c791a0974f4cfff5ce15a62af6a",
+    "receipt": "0dcbabf7f7dcec0534e25045a94eac1ff772a256",
+    "receipt_sha256": "3ed698393c0fb60abee04774f4fc01712f2cb5036663cd9cc2842206b32b8410",
+    "independent_source_intake": "76a8ebe63b28658f267b6e60834cc59498b6bbb5",
+    "independent_marker": "af9976d25d34ee4b48c8c0789d2c5085d4f4ae35",
+    "pre_mutation_review": "ada5745090a97aaa4a24746a5cdf93cecfca0f1d",
+    "postcondition_review": "3bffe3f7b890c9bf8d080dd382d764319d9d169e",
+    "all_controlled_source_API_probe_review_processes_terminal": true,
+    "source_CAS": "APPLIED_NONREPEATABLE",
+    "repeat_publication_allowed": false,
+    "PRbody": "ONE_REVIEWED_BODYONLY_UPDATE_EXACT5150B_SHA_db66c22a089579fe3ccf69cde7bd94078e0cd1db21a4b8d82568cac78d001d12",
+    "stale_PR_reads": "generic+narrowstale01thenbranchfilteredLISTreconciledbf5_noCASreplay",
+    "CI": "BLOCK_NOT_OBSERVED_PROVIDER_UNKNOWN_POSSIBLY_INFLIGHT",
+    "whole_CI_key_complete": false,
+    "manual_CI_actions": 0,
+    "canonical_Railway_image_resource_provider_customer_mutations": 0,
+    "entrypoints_paused": false,
+    "DONE": 0,
+    "customer": "0/6"
+  },
+  "pending_subaction": "ExistingR/CIownerordinaryexactbf5pipeline/event/jobreadback and R/securitycompleteimmutableimage/admission/generatorbinding; norepeatCAS/push/manualdispatch. Nexteligible serialsource V013exactorderedpatchesce59142a then6b84a116 undernewscope/currentbase/distinctreview. All146originalowners/schedules/holdsretained."
 }
