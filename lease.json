@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "authorised recovery invocation5a2bc879-8fed-43bb-b8eb-7c7b59bb3063",
   "holder_token": "5a2bc879-8fed-43bb-b8eb-7c7b59bb3063",
@@ -36,5 +36,31 @@
   "prior_release_result_read": true,
   "no_inflight_source_writer_basis": "Prior release controlled source/API/probe/reviewer processes settled and private composition terminal; provider0aefCI remains UNKNOWN and is not touched",
   "retained_gates": "Full current-source eligible CI/clean install/effectivepolicy/formalreview/imageUID/process/reaping/security/recovery/signer/tenant/run/config/independentdurablecustomer/provider readback all remain separate OPEN",
-  "no_scope_transfer": "No PR621/PR501/main source ref, workflow dispatch/rerun, new resource, Railway config/apply/deploy, signer activation, provider/payroll/customer business write or DONE."
+  "no_scope_transfer": "No PR621/PR501/main source ref, workflow dispatch/rerun, new resource, Railway config/apply/deploy, signer activation, provider/payroll/customer business write or DONE.",
+  "released_at": "2026-11-03T05:28:50.007Z",
+  "released_claim_commit": "f53c1c4936e206dcbb3a268aaab461d94dbf826b",
+  "terminal_outcome": {
+    "action_result": "PRIVATE_SOURCE_BOUND_MARKER_RENEWED_AND_DISTINCT_REVIEW_ACCEPTED",
+    "source": "baf4d8e145a3f771619440b52bba844bb59fac9c",
+    "marker_child": "25cd1723d32fa2e763ee3b1bbf9ae53aa77477ec",
+    "marker_tree": "17a56ecbd8dae5e93ff990f8eac23d6c41976842",
+    "receipt_blob": "a42bf11c0d1689efa7279ed08c5e7bf3d7da129b",
+    "receipt_sha256": "813731e391e05d5c81a1ebf6c91f323ea83de7bb0f622da794beae3a2cf15966",
+    "scope_key_complete": true,
+    "repeat_marker_allowed": false,
+    "actual_HEAD_CIRCLE_admission": "PASS",
+    "wrongSHA_dirty_controls": "DENY",
+    "controlled_writer_API_probe_processes_settled": true,
+    "independent_reviewer_terminal": true,
+    "independent_marker_review": "ACCEPT_MARKER_ONLY",
+    "source_ref_update": false,
+    "CI_trigger": false,
+    "merge_Railway_provider_customer_write": false,
+    "lane_DONE": false,
+    "entrypoints_paused": false
+  },
+  "pending_subaction": {
+    "owner": "Existing sole integration/release owner",
+    "action": "Assess separately scoped normal existing PR621 feature-source CAS/CI action for25cd from exact-current0aef, with distinct pre-mutation review and preserved ordinary provider enforcement. No source-ref permission transferred by this handback; all release/runtime/customer gates remain open."
+  }
 }
