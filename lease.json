@@ -1,60 +1,36 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole R V084 source-bound marker renewal invocation 20261103T1604Z",
-  "holder_token": "v084-2026-11-03T16:04:37.176Z-4e7d5a88feef4-f305a2d70a1db8",
-  "source": "2f334314a0c2c50645b97a0e5b9c72c3583d3c7f",
-  "source_tree": "3b1c4a0093ed7c6ff14ff1801df24dda74d28da5",
-  "target": "PRIVATE_UNREFERENCED_V084_MARKER_CHILD_ONLY",
+  "owner_execution": "existing sole R V084 ordinary draft-source publication invocation 20261103T1611Z",
+  "holder_token": "v084pub-2026-11-03T16:11:16.943Z-797b4cc0537548-b620a059bbfb",
+  "source": "01d74186df2f85f693319a7d28b3179c57e72a52",
+  "source_tree": "32806d4af35311b7279dd975a05645b85b49c47b",
+  "target": "refs/heads/feature/vector-reviewed-source-union-616-620-20261101; existing OPEN/DRAFT PR621 only",
   "expected_target_head": "a1223f6e1867474c18c8ea1ad4e2e6d675be34c4",
-  "action": "PRIVATE_V084_SOURCE_BOUND_MARKER_RENEWAL_ONLY",
-  "idempotency_key": "2f334314a0c2c50645b97a0e5b9c72c3583d3c7f:PR621:private-source-bound-marker-renewal:v1",
-  "issued_at": "2026-11-03T16:04:37.176Z",
+  "action": "ONE_ORDINARY_DRAFT_FEATURE_SOURCE_CAS_AND_PR_DESCRIPTION_ONLY",
+  "idempotency_key": "01d74186df2f85f693319a7d28b3179c57e72a52:PR621:ordinary-feature-source-CI:v1",
+  "issued_at": "2026-11-03T16:11:16.943Z",
   "expires_at": "2026-11-03T17:00:00Z",
-  "previous_released_commit": "b19d913fa1d2d2703169b8e9fad2420a2abde388",
-  "authority": "Existing user source-integration mandate and exact R intake6608339522, user requested next scoped marker/review phase; no public publication authority in this phase",
-  "allowed_paths": [
-    "artifact/vector-proof-freeze.trigger"
-  ],
+  "previous_released_commit": "10be1ddf0e49879de8667c7f79502f15e540a83a",
+  "authority": "Existing user full source-integration mandate, R selected exact V084 intake6608339522 and distinct marker admission8085f970; genuinely changed code/test, not duplicate or emptyCIpush",
   "allowed_operations": [
-    "Create one append-only source-bound marker blob and one unreferenced sole-parent child of exact selected2f334, preserve prior marker bytes/all nonmarker tuples/modes",
-    "Bounded local native Git admission fixture and distinct exact-child independent review; durable receipts/readback",
-    "Exact current holder release coordination CAS after all controlled writer/API/reviewer processes terminal"
+    "One normal force:false expecteda122 to exact01d741 update existing featurebranch; normal CI may react without manual dispatch",
+    "After actual head readback, update ONLY existing PR621 body to describe final source and bounded evidence, preserve DRAFT/base/state/auto_merge",
+    "Independent read-only pre/postcondition review and durable receipts; exact current holder release after controlled source/API/review processes terminal"
   ],
   "excluded_operations": [
-    "No changes to code/tests/CI/Docker/composer or public application refs/PR publication",
-    "No CI trigger/rerun/push, image/resource/registry/Railway mutation, runtime/UID/security/heldfault/provider/customer execution"
+    "No canonical/main/PR501 merge/ref, force/retry after uncertain or denied result, duplicatepush/CI dispatch/rerun/filterweakening",
+    "No imagebuild/registry/resource/Railway config/apply/deploy/restart, signer/actor/provider/payroll/customer business action"
   ],
-  "prior_result": "b19d913f RELEASED source publicationa122 complete, allcontrolledprocessesterminal; externalCIUNKNOWNnot touched",
-  "reviewer": "/root/v084_marker_review_1604 independent read-only",
-  "process_state": "Only this markerwriter and its distinct read-only reviewer; no overlapping shared writer observed in native record",
-  "released_at": "2026-11-03T16:10:07.440Z",
-  "released_claim_commit": "6c9e3fdbd9e075878e69b992b2b62990deeff9cc",
-  "terminal_outcome": {
-    "result": "V084_PRIVATE_SOURCE_BOUND_MARKER_COMPLETE_INDEPENDENT_NATIVE_ADMISSION_ACCEPT",
-    "child": "01d74186df2f85f693319a7d28b3179c57e72a52",
-    "tree": "32806d4af35311b7279dd975a05645b85b49c47b",
-    "marker": "fef9c927fec4b06485c0c9b0d2edd00ad48c6b8b",
-    "marker_sha256": "0fb362a050e9c508ad1d408028b0fc7e4bc44513fec44ef68b351ced324cb9ad",
-    "previous_marker_bytes_preserved": 56124,
-    "append_bytes": 2407,
-    "nonmarker_tuples_preserved": 1806,
-    "modes_preserved": 1807,
-    "primary_custody": "65bafa exit0;081dd4 receipt read/hash exit0",
-    "independent_review": "8085f970ffb6e5cf37dd9be646d0631602a744f8",
-    "review_sha256": "18ec7cbfb39d820bbe840ee59be0620e492cc05c3c393257a3479d7dabb8fc0a",
-    "independent_review_terminal": true,
-    "native_exactHEAD_PASS_wrongSHA_FAIL_dirty_FAIL_restored_PASS": true,
-    "all_controlled_writer_API_probe_reviewer_processes_terminal": true,
-    "product_tests_rerun": 0,
-    "public_head_unchanged": "a1223f6e1867474c18c8ea1ad4e2e6d675be34c4",
-    "key_complete": true,
-    "repeat_marker_renewal_allowed": false,
-    "CI": "externalUNKNOWNnotcontrolledorpassed",
-    "public_ref_CI_runtime_provider_customer_mutation": false,
-    "entrypoints_paused": false,
-    "DONE": 0
-  },
-  "pending_subaction": "Later ordinary DRAFT publication requires separately scoped claim, fresh source/ref/policy/config review and independent pre/postcondition evidence; no marker permission transfer"
+  "prerequisites": {
+    "marker_key_complete": true,
+    "source_review": "6607966694 distinctnonauthor ACCEPT source/test/selected55/55",
+    "R_intake": "6608339522",
+    "marker_review": "8085f970ffb6e5cf37dd9be646d0631602a744f8",
+    "marker_review_sha256": "18ec7cbfb39d820bbe840ee59be0620e492cc05c3c393257a3479d7dabb8fc0a",
+    "current_legacy_branch_policy": "Unreadable retained blocker for full release; normal provider enforcement only, no bypass",
+    "external_existing_CI": "a122UNKNOWNpossiblyinflight; sourcekeyCIunresolved notpermissiontomanualdispatch",
+    "pre_mutation_distinct_review": "REQUIRED_BEFORE_SOURCE_CAS_NOT_YET_COMPLETE"
+  }
 }
