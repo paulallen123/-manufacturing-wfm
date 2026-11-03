@@ -11,6 +11,7 @@ RUN node integration/runtime/nango-credential-provider.test.cjs \
  && node integration/runtime/provider-metadata-review.test.cjs \
  && node ux-overlay/vector-provider-metadata.test.cjs
 RUN node --test --test-timeout=30000 --test-concurrency=1 reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs reporting/runtime/vector-reporting-resume-no-adapter.test.cjs
+RUN node --test --test-timeout=10000 --test-concurrency=1 ux-overlay/vector-leave-review-boundary.test.cjs
 RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
