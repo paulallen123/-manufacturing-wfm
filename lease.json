@@ -1,52 +1,30 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existingsoleR PR542 privatecurrent-source receiving/selectorscope20261103T2106Z",
-  "holder_token": "pr542-2026-11-03T21:04:20.572Z-f7d0ad3347c0c",
-  "source": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
-  "source_tree": "9666669d20069e879e1dd8cc936f2a1bebe8755d",
-  "target": "private unreferenced PR542 twoexacttests+oneForge-selector candidateONLY",
+  "owner_execution": "existingsoleR PR542 privateisolatedrunnercorrection20261103T2113Z",
+  "holder_token": "pr542-isolated-2026-11-03T21:10:32.504Z-02a77d4005c4f8",
+  "source": "df0ecc30820b71b1693758cb6db39b8158058499",
+  "source_tree": "b64342f554052569a271070529bdd4e571e8c8f1",
+  "target": "privatecorrectivechildnewpairrunner+ONEForgeentryONLY",
   "expected_target_head": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
-  "action": "PRIVATE_CURRENT_SOURCE_TWO_TEST_RECEIVING_AND_SELECTOR_COMPOSITION_ONLY",
-  "idempotency_key": "3d0cb3fa:PR542:private-two-test-receiving-selector-composition:v1",
-  "issued_at": "2026-11-03T21:04:20.572Z",
-  "expires_at": "2026-11-03T22:00:00Z",
-  "previous_released_commit": "5fd6e23c2374c46d57f59a30dbbc9b3bd0510ad0",
+  "action": "PRIVATE_PR542_SELECTED_PAIR_ENVIRONMENT_ISOLATION_CORRECTION",
+  "idempotency_key": "df0ecc30820b71b1693758cb6db39b8158058499:PR542:private-selected-pair-environment-isolation:v1",
+  "issued_at": "2026-11-03T21:10:32.505Z",
+  "expires_at": "2026-11-03T22:10:00Z",
+  "previous_released_commit": "82e9325c757bf01201e4b02ca242ca52018e4e2a",
   "allowed_operations": [
-    "ONE boundedfictionalexacttwo-testreceiving afterdistinctpreflight; current19sources/2tests/privateTMPDIR/emptyenv/Node24.22.1ONLY; Node22 remainsOPEN",
-    "Private exacttwo-test blobs+one existingForge verification selector entry; preserveotherchecks/source/modes/marker; distinctcurrentclosure/TAP/cleanup/fullinventory/selectorreview",
-    "DurableGitreceipts/owncheckedreleaseafterallcontrolledsource/API/test/reviewerprocessesterminal"
+    "AddsmallNodebuiltinrunnerforONLYexacttwoPR542tests:clearedchildenv/private0700TMPDIR/timeouts/explicitcleanupresult; existingNode24boundedrunnerverificationundernonauthorpreflight",
+    "ReplaceONLYnewForgeentrywithisolatedrunnerinvocation;allolddonorbytes/Forgechecksrunnertopology/globalenvsemanticsunchanged;privateblob/tree/soleparentchild",
+    "Distinctwrapper/preflight/input-output/source/fullinventoryreview;durablereceipts;owncheckedreleaseaftercontrolledprocessesterminal"
   ],
   "excluded_operations": [
-    "No donor reauthoring/publicref/PRbody/markerchange/CIkick/install/build/resource/registry/Railway/provider/customerwrite",
-    "No Node22PASSinference/newdownload/infrastructure/authflow/credentialorheldV040/V051/V065faultoperations"
+    "No oldcheckenv/testassertionchange/fullForge/Node22PASSclaim/install/download/publicref/marker/PRbody/CIkick/provider/customer/resource/image/Railwaywrite"
   ],
   "prerequisites": {
-    "prior_own_release_consumed": true,
-    "prior_all_controlled_processes_terminal": true,
-    "AGENTS": "nonefull1809leafcurrenttree",
-    "preflight": "3a6850ccaa945802472da6a947a3a293ba7b78e0",
-    "preflight_sha256": "3c6b7b83134707a1f1e5d3b06ceb073b012c453cb629aa29792a442536e46b3e",
-    "current_changed_module": "one-day-enterprise-engine-coref704c8c5",
-    "CircleCI": "existingNEEDS_AUTH_FAILED unchanged; no repeatalert/emptyCIscan"
-  },
-  "released_at": "2026-11-03T21:10:26.310Z",
-  "released_claim_commit": "69fee5eaa105d5f08efaeb1ca8c28526f40b0cef",
-  "terminal_outcome": {
-    "result": "PRIVATE_TWO_TEST_RECEIVING_PASS_NODE24_SELECTOR_ADMISSION_BLOCKED_UNCHANGED",
-    "child": "df0ecc30820b71b1693758cb6db39b8158058499",
-    "tree": "b64342f554052569a271070529bdd4e571e8c8f1",
-    "receipt": "f04b3336ddf60305c3b8373fc6b88b985a6a31db",
-    "receipt_sha256": "a23a6d03c47abfb456c6db2941539a8888998cc60d8a64b0dae7b1ab8ebbe950",
-    "Node24": "2PASS0FAIL0SKIP;input21hashes;privateTMPDIRempty/removed",
-    "Node22": "OPEN_UNAVAILABLE",
-    "all_controlled_source_API_test_review_processes_terminal": true,
-    "finding": "NewForgeentryinheritsparentenv;approvedreceivingrequiredemptyenv/privateTMPDIR;noactualCIcredential/networkattemptclaimed",
-    "key": "COMPLETE_NONREPEATABLE_PRIVATE_RECEIVING_ONLY",
-    "public_mutations": 0,
-    "external_CI": "UNKNOWNnotidle",
-    "entrypoints_paused": false
-  },
-  "next": "Freshcorrectivescope bindsONLYnewpairentrytocredential-freeenv/privateTMPDIRviareviewedwrapper;preserveoldchecks/donorbytes"
+    "partial_receipt": "f04b3336ddf60305c3b8373fc6b88b985a6a31db",
+    "all_previous_controlled_processes_terminal": true,
+    "Node22": "OPEN_unavailable",
+    "current_public": "3d0 unchanged"
+  }
 }
