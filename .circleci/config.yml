@@ -87,6 +87,8 @@ jobs:
               require_exact_regression_test reporting/runtime/vector-reporting-create-audit-atomicity.test.cjs abc6f4e57f0e6c55a5633c93328b167c227614a3
               require_exact_regression_test reporting/runtime/vector-reporting-version-audit-atomicity.test.cjs 17cc738ebb972d86e880a3ab21d755e91cf41b7a
               require_exact_regression_test reporting/runtime/vector-reporting-mutation-audit-atomicity.test.cjs e30653870986f20edaf04ff62f9e6d93a5575abd
+              require_exact_regression_test reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs b5ff75774c65e2bc0c2ee53a00921dc4713b016f
+              require_exact_regression_test reporting/runtime/vector-reporting-resume-no-adapter.test.cjs 2e97fc52267da6aa7e9500a78f8ed850b0e7f8a2
             } > circleci-artifacts/required-regression-test-git-blobs.txt
             cat circleci-artifacts/required-regression-test-git-blobs.txt
             git ls-files --stage -- scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/frozen-candidate-gate-git-blobs.txt

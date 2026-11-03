@@ -2,6 +2,7 @@
 import { spawnSync } from 'node:child_process';
 
 const checks = [
+  ['node', ['--test', '--test-timeout=30000', '--test-concurrency=1', 'reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs', 'reporting/runtime/vector-reporting-resume-no-adapter.test.cjs']],
   ['node', ['integration/runtime/nango-credential-provider.test.cjs']],
   ['node', ['integration/runtime/nango-metadata-broker.test.cjs']],
   ['node', ['scripts/nango-metadata-wiring.test.cjs']],

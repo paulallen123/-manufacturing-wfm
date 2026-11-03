@@ -10,6 +10,7 @@ RUN node integration/runtime/nango-credential-provider.test.cjs \
  && node scripts/nango-metadata-wiring.test.cjs \
  && node integration/runtime/provider-metadata-review.test.cjs \
  && node ux-overlay/vector-provider-metadata.test.cjs
+RUN node --test --test-timeout=30000 --test-concurrency=1 reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs reporting/runtime/vector-reporting-resume-no-adapter.test.cjs
 RUN node --test integration/runtime/gusto-webhook-receiver.test.mjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-authority-restore.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/independent-historical-acceptance.test.cjs verification/provider-recovery-correction/autonomy-correction/tests/authority-witness-loss.test.cjs
 RUN node --test verification/provider-recovery-correction/autonomy-correction/tests/independent-detector-outage.test.cjs
@@ -227,6 +228,8 @@ COPY operations/runtime/workforce-lifecycle-guard.cjs /tmp/wfm-tests/operations/
 COPY operations/runtime/workforce-lifecycle-router.cjs /tmp/wfm-tests/operations/runtime/workforce-lifecycle-guard.cjs
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/tenant-calendar.test.cjs operations/runtime/workforce-lifecycle-guard.test.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-contract.test.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-bridge.test.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/workflow-action-evidence-sources.test.cjs operations/runtime/decision-episode.cjs operations/runtime/decision-episode.test.cjs operations/runtime/customer-demand-intelligence.cjs operations/runtime/customer-demand-intelligence.test.cjs operations/runtime/absence-recovery-shadow.cjs operations/runtime/absence-recovery-shadow.test.cjs operations/runtime/demand-decision-service.cjs operations/runtime/demand-decision-service.test.cjs operations/runtime/decision-outcome-proof.cjs operations/runtime/decision-outcome-proof.test.cjs operations/runtime/realtime-event-service.cjs operations/runtime/realtime-event-service.test.cjs operations/runtime/autopilot-execution-engine.cjs operations/runtime/autopilot-execution-engine.test.cjs operations/runtime/autopilot-expiry-readback.regression.test.cjs operations/runtime/t9-customer-guardian.cjs operations/runtime/t9-customer-guardian.test.cjs /tmp/wfm-tests/operations/runtime/
 COPY reporting/runtime/vector-reporting-service.cjs reporting/runtime/vector-reporting-service.test.cjs /tmp/wfm-tests/reporting/runtime/
+COPY reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs reporting/runtime/vector-reporting-resume-no-adapter.test.cjs /tmp/wfm-tests/reporting/runtime/
+RUN node --test --test-timeout=30000 --test-concurrency=1 /tmp/wfm-tests/reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs /tmp/wfm-tests/reporting/runtime/vector-reporting-resume-no-adapter.test.cjs
 COPY trust/runtime/vector-trust-spine.cjs trust/runtime/vector-trust-spine.test.cjs /tmp/wfm-tests/trust/runtime/
 COPY implementation/simulation/one-day-enterprise-simulation.mjs /tmp/wfm-tests/one-day-enterprise-simulation.mjs
 RUN node /tmp/wfm-tests/one-day-enterprise-simulation.mjs --assert-target \
