@@ -1,64 +1,32 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "Existing sole R role; interactive /root continuation in workspace b0c572395e60 under current user's remove-blockers delivery instruction; not a claim that the scheduled task is running",
-  "holder_token": "df160071-d8c3-46d6-b540-0fc5803ad4d7",
-  "source": "a1ffb2b15bb7aecedf754b452351d2f0228c6dcf",
-  "source_tree": "458c1d7d3173ceffd09eee74ac89f3934e98fef9",
-  "target": "feature/vector-reviewed-source-union-616-620-20261101; existing DRAFT PR621 only",
-  "expected_target_head": "e7956099753f9b83d3f6d997cacd747bc5f8943d",
-  "action": "PUBLISH_GENUINELY_CHANGED_REVIEWED_V005_DRAFT_SOURCE_WITH_SOURCE_BOUND_MARKER",
-  "idempotency_key": "a1ffb2b15bb7aecedf754b452351d2f0228c6dcf:reviewed-draft-publication:20261103:v1",
-  "issued_at": "2026-11-03T14:53:28.814Z",
-  "expires_at": "2026-11-03T15:23:28.814Z",
-  "previous_released_commit": "22f6ab220c2f82b3208a98d6dafbed492de0b707",
-  "authority": "Current user instruction: Remove all blockers asap, lets start to see lanes being completed by end of today. Existing source integration/release mandate, actual source changes with distinct source review; no reuse of completed resource scope.",
+  "owner_execution": "existing sole R V084 source-bound marker renewal invocation 20261103T1604Z",
+  "holder_token": "v084-2026-11-03T16:04:37.176Z-4e7d5a88feef4-f305a2d70a1db8",
+  "source": "2f334314a0c2c50645b97a0e5b9c72c3583d3c7f",
+  "source_tree": "3b1c4a0093ed7c6ff14ff1801df24dda74d28da5",
+  "target": "PRIVATE_UNREFERENCED_V084_MARKER_CHILD_ONLY",
+  "expected_target_head": "a1223f6e1867474c18c8ea1ad4e2e6d675be34c4",
+  "action": "PRIVATE_V084_SOURCE_BOUND_MARKER_RENEWAL_ONLY",
+  "idempotency_key": "2f334314a0c2c50645b97a0e5b9c72c3583d3c7f:PR621:private-source-bound-marker-renewal:v1",
+  "issued_at": "2026-11-03T16:04:37.176Z",
+  "expires_at": "2026-11-03T17:00:00Z",
+  "previous_released_commit": "b19d913fa1d2d2703169b8e9fad2420a2abde388",
+  "authority": "Existing user source-integration mandate and exact R intake6608339522, user requested next scoped marker/review phase; no public publication authority in this phase",
   "allowed_paths": [
-    "docs/execution/proof-runner-activation/prepare.cjs",
-    "docs/execution/proof-runner-activation/launcher.test.cjs",
-    "docs/execution/proof-runner-activation/source-binding.test.cjs",
-    "docs/execution/proof-runner-activation/generated/start-command.txt",
-    "docs/execution/proof-runner-activation/generated/manifest.json",
-    "docs/execution/proof-runner-activation/runner-image/Dockerfile",
-    "docs/execution/proof-runner-activation/runner-image/README.md",
     "artifact/vector-proof-freeze.trigger"
   ],
   "allowed_operations": [
-    "Verify unchanged seven-path source sequence a1ff<-bc433<-e795 against full Git trees; reuse existing distinct source composition reviews and new21/21 generator/launcher tests",
-    "Create one marker-only child of a1ff preserving all prior marker bytes; distinct independent exact source/tree/marker/HEAD-CIRCLE admission review and immutable receipts before public ref",
-    "One non-force expected-head CAS of existing PR621 feature branch from e795 to reviewed marker child; ordinary existing CI may react to actual changed source; no manual dispatch/rerun/duplicate push",
-    "Read back exact adopted source/ref; preserve DRAFT state and all current CI/artifact/image/security/recovery/provider/customer gates",
-    "Release this native lease with exact holder and sole-parent CAS after all controlled operations and reviewers terminal"
+    "Create one append-only source-bound marker blob and one unreferenced sole-parent child of exact selected2f334, preserve prior marker bytes/all nonmarker tuples/modes",
+    "Bounded local native Git admission fixture and distinct exact-child independent review; durable receipts/readback",
+    "Exact current holder release coordination CAS after all controlled writer/API/reviewer processes terminal"
   ],
   "excluded_operations": [
-    "No canonical PR501/release-branch/main merge or force push",
-    "No CI bypass/filter change/manual trigger/rerun or status fabrication",
-    "No resource/sandbox creation, restore, extension, private source transfer or paid allocation",
-    "No image build/pull/publication/adoption or deployment of unpublished dc270",
-    "No Railway configuration/apply/restart/deploy or signer/actor/tenant/run binding changes",
-    "No provider/payroll/customer business writes or lane DONE/customer-ready claim"
+    "No changes to code/tests/CI/Docker/composer or public application refs/PR publication",
+    "No CI trigger/rerun/push, image/resource/registry/Railway mutation, runtime/UID/security/heldfault/provider/customer execution"
   ],
-  "prerequisites": {
-    "source_reviews": "Existing6601285788/6601480953 private source composition; fresh runner_admission found no source-specific publication BLOCK",
-    "changed_generator_focused_tests": "Node24.22.1 21PASS0FAIL0SKIP; actual prepare regenerates bundle/start/manifest exactly; receipt SHA2568c00a5d6d2ace23739b5d207a0e74325af5e98842842a63d07d21e40f887fa77",
-    "image": "Independent terminal82/82 accepted only tested unchanged-helper configuration; incomplete unpublished OCI means artifact/serving gate remains",
-    "provider_CI": "UNKNOWN, no current hosted credit",
-    "all146_scope": "preserved",
-    "DONE": 0
-  },
-  "released_at": "2026-11-03T15:06:07.156Z",
-  "terminal_outcome": {
-    "result": "REVIEWED_V005_SOURCE_PUBLISHED_TO_EXISTING_DRAFT_ONLY",
-    "published_head": "a1223f6e1867474c18c8ea1ad4e2e6d675be34c4",
-    "tree": "e1945a67f76427549acd187bb9d7d556ab36218c",
-    "receipt": "7a479813fdfa86f9ff393323cdc395d49da204e5",
-    "independent_review": "dfc2a170efa540dacb2e6d3b00f582764cd940f5",
-    "controlled_source_API_review_processes_terminal": true,
-    "repeat_publication_allowed": false,
-    "external_CI": "UNKNOWN_NOT_DECLARED_TERMINAL_OR_GREEN",
-    "canonical_customer_runner_mutations": 0,
-    "all146ScopePreserved": true,
-    "DONE": 0
-  }
+  "prior_result": "b19d913f RELEASED source publicationa122 complete, allcontrolledprocessesterminal; externalCIUNKNOWNnot touched",
+  "reviewer": "/root/v084_marker_review_1604 independent read-only",
+  "process_state": "Only this markerwriter and its distinct read-only reviewer; no overlapping shared writer observed in native record"
 }
