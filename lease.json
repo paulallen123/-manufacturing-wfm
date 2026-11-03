@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole owner V069 marker renewal",
   "holder_token": "87bc2ac2-a93d-45d1-908e-7ce461efb854",
@@ -26,5 +26,31 @@
   "prior_source_receipt": "27bf23d9d048e137c2ad95850965632be54b5ead",
   "Node22_receipt": "a216d2d7d1f5d15dc763586607909c560851643e",
   "Node22_sha256": "f8051dcf596aef97725f968fc30eeaa524b8ee5bd414d8bdb77af07306329ea5",
-  "no_inflight_source_writer_basis": "Exact prior RELEASED terminal holder processes; PoolB6598733175 all4workers terminal/no sharedwriter. External25cdCIUNKNOWN not touched."
+  "no_inflight_source_writer_basis": "Exact prior RELEASED terminal holder processes; PoolB6598733175 all4workers terminal/no sharedwriter. External25cdCIUNKNOWN not touched.",
+  "released_at": "2026-11-03T08:50:53.333Z",
+  "released_claim_commit": "aec3c903060b830eb1645dc01b9991ebaa7af409",
+  "terminal_outcome": {
+    "result": "PRIVATE_MARKER_RENEWAL_DISTINCT_REVIEW_ACCEPTED",
+    "child": "e7956099753f9b83d3f6d997cacd747bc5f8943d",
+    "tree": "62baa0bb8ae42960570bfea192b23bf903b84b20",
+    "marker": "c429136825f15ea9f52d24bcf8f72d43263cf10b",
+    "receipt": "07c615246d856b3fdcade91a9f66df09d85724de",
+    "receipt_sha256": "42cd296bcfbc2f28c3b944fae614bb54dc15b91b3da93252282c280193d60a95",
+    "source_Node22_scope": "selected4pass+Forge syntax only",
+    "actual_HEAD_CIRCLE_admission": "PASS",
+    "wrongSHA_dirty_controls": "DENY",
+    "independent_reviewer_terminal": true,
+    "controlled_writer_API_probe_reviewer_processes_settled": true,
+    "repeat_marker_allowed": false,
+    "key_complete": true,
+    "public_source_ref_CI_deploy_business_mutation": false,
+    "public_PR621": "25cd OPEN/DRAFT",
+    "external_CI": "UNKNOWN_NOT_TOUCHED",
+    "entrypoints_paused": false,
+    "DONE": 0
+  },
+  "pending_subaction": {
+    "owner": "Existing sole integration/release owner",
+    "action": "Assess separate normal existing PR621 feature-source expected25cd→e795 CAS and ordinary CI readback under fresh appropriate lease, exact-current action-specific review and ordinary provider-enforced controls. Marker release transfers no public ref or CI permission."
+  }
 }
