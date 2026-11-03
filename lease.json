@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existingsoleR ordinaryreviewedV013draftpublication20261103T2000Z",
   "holder_token": "v013-pub-2026-11-03T19:56:11.117Z-46d49b2083213",
@@ -29,5 +29,28 @@
     "precondition_review": "REQUIRED_BEFORE_CAS_NOT_YET_COMPLETE",
     "external_CI": "UNKNOWNpossiblyinflight; secureconnectionNEEDS_AUTH_failedawaiting_input_timeout",
     "effective_legacy_policy": "Unreadablefullreleaseblockerretained;normalproviderenforcementonlynobypass"
-  }
+  },
+  "released_at": "2026-11-03T20:04:45.869Z",
+  "released_claim_commit": "73c0197b6b568960fdc3f0daebb911f5690940df",
+  "terminal_outcome": {
+    "result": "REVIEWED_V013_CORRECTED_SOURCE_PUBLISHED_TO_EXISTING_DRAFT_CI_UNRESOLVED",
+    "published_head": "3d0cb3fa0743185b31deb6d40446656a96d06f31",
+    "tree": "9666669d20069e879e1dd8cc936f2a1bebe8755d",
+    "receipt": "5ff87b827ea2a6796cd2da104e745dfe9c3b18ac",
+    "receipt_sha256": "6d477f7d71d2c735803c6318df06c14a17be9f23df7ba1b547c6258191e761cf",
+    "precondition": "0365eb8d8a2c9dd6cd8956a577ba4171c1bfa42d",
+    "postcondition": "03ad5620d7f9a5a5ec6d9b217e4a249ad107661e",
+    "all_controlled_source_API_probe_review_processes_terminal": true,
+    "source_CAS": "APPLIED_NONREPEATABLE",
+    "repeat_publication_allowed": false,
+    "body": "ONE_REVIEWED_BODY_ONLY_UPDATE",
+    "CI": "UNKNOWNpossiblyinflight_authNEEDS_AUTH_FAILED",
+    "whole_CI_key_complete": false,
+    "manual_CI_actions": 0,
+    "canonical_image_resource_Railway_provider_customer_mutations": 0,
+    "entrypoints_paused": false,
+    "DONE": 0,
+    "customer": "0/6"
+  },
+  "next": "Release ownpublicationclaim. ExistingPR542V007/V017/V019exacttwo-testdonorcurrent-sourceaffectedreceiving+selectorintakeunderfreshappropriateRscope/distinctreview; verifychangedV013engine-coreimportbeforeanyboundedrerun. Bappend7f69reviewed52/52sourceevidencequeuedownerintake,nodomainapprovalborrowed."
 }
