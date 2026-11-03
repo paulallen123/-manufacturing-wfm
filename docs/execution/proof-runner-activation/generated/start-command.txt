@@ -1,4 +1,4 @@
-node -e ''\''use strict'\'';
+/usr/bin/tini -s -- node -e ''\''use strict'\'';
 // Deployment preparation for the EXISTING isolated browser runner; no product claims.
 const fs = require('\''node:fs'\'');
 const os = require('\''node:os'\'');

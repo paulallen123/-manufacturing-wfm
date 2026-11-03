@@ -71,6 +71,7 @@ test('prepared manifest binds the bundle and exact command while leaving activat
   assert.equal(manifest.runnerSource, launcher.SOURCE);
   assert.equal(manifest.bundleSha256, bundle.bundleHash);
   assert.equal(manifest.startCommandSha256, createHash('sha256').update(command).digest('hex'));
+  assert.match(command.toString('utf8'), /^\/usr\/bin\/tini -s -- node -e '/);
   assert.deepEqual(manifest.files, launcher.FILES);
   assert.equal(launcher.validateBundle(bundle.payload, bundle.bundleHash).length, 6);
   for (const [file, digest] of Object.entries(launcher.FILES))
@@ -79,6 +80,54 @@ test('prepared manifest binds the bundle and exact command while leaving activat
   assert.match(manifest.targetSelection, /explicit WFM_EXPECTED_CANDIDATE_SHA/);
   assert.match(manifest.activationBlocked, /protected|signer|actor|authority|review/i);
   assert.deepEqual(manifest.proof, { materializationOnly: true, hosted: false, provider: false, customer: false });
+});
+
+test('missing reaper refuses startup before Node can read proof authority', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'missing-proof-reaper-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const command = fs.readFileSync(path.join(__dirname, 'generated/start-command.txt'), 'utf8');
+  assert.match(command, /^\/usr\/bin\/tini -s -- node -e '/);
+  const missing = path.join(root, 'missing-tini');
+  const marker = path.join(root, 'node-started');
+  const guard = path.join(root, 'mark-node.cjs');
+  fs.writeFileSync(guard, `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'started');`);
+  const result = spawnSync('/bin/sh', ['-c', command.replace('/usr/bin/tini', missing)], {
+    encoding: 'utf8', timeout: 10000,
+    env: { ...env(), NODE_OPTIONS: '--require ' + guard }
+  });
+  assert.notEqual(result.status, 0);
+  assert.equal(fs.existsSync(marker), false);
+  assert.ok(!result.stdout.includes(env().PROOF_PRIVATE_KEY_B64));
+  assert.ok(!result.stderr.includes(env().PROOF_PRIVATE_KEY_B64));
+});
+
+test('prepared image command has an executable first token and intact direct argv', t => {
+  const command = fs.readFileSync(path.join(__dirname, 'generated/start-command.txt'), 'utf8');
+  const prefix = '/usr/bin/tini -s -- node -e ';
+  assert.ok(command.startsWith(prefix), 'image exec form must start with the reaper executable');
+  const encoded = command.slice(prefix.length).trimEnd();
+  assert.ok(encoded.startsWith("'") && encoded.endsWith("'"));
+  const script = encoded.slice(1, -1).replaceAll("'\\''", "'");
+  assert.equal("'" + script.replaceAll("'", "'\\''") + "'", encoded, 'single-quoted payload round-trips');
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'proof-image-argv-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const shim = path.join(root, 'tini-argv-fixture');
+  fs.writeFileSync(shim, '#!' + process.execPath + '\n' +
+    'const cp=require("node:child_process");const crypto=require("node:crypto");' +
+    'const args=process.argv.slice(2);const child=cp.spawnSync(process.execPath,["-e",args[4]],{encoding:"utf8",env:{PATH:process.env.PATH}});' +
+    'process.stdout.write(JSON.stringify({head:args.slice(0,4),argc:args.length,hash:crypto.createHash("sha256").update(args[4]||"").digest("hex"),childStatus:child.status,childStderr:child.stderr}));',
+    { mode: 0o700 });
+  const result = spawnSync(shim, ['-s', '--', 'node', '-e', script], {
+    encoding: 'utf8', timeout: 10000, env: { PATH: path.dirname(process.execPath) }
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const seen = JSON.parse(result.stdout);
+  assert.deepEqual(seen.head, ['-s', '--', 'node', '-e']);
+  assert.equal(seen.argc, 5);
+  assert.equal(seen.hash, createHash('sha256').update(script).digest('hex'));
+  assert.equal(seen.childStatus, 1);
+  assert.match(seen.childStderr, /WRONG_EXISTING_RUNNER/);
 });
 
 test('preparation rejects an unbound source before reading inputs or writing artifacts', () => {
@@ -105,7 +154,11 @@ test('exact published command rejects a wrong target before materialization or i
     fixtureOnly: true, productionApproved: false, pilotReady: false };
   fs.writeFileSync(guard, 'const fs=require("node:fs");const stop=()=>{fs.writeFileSync(' + JSON.stringify(forbidden) + ',"called");throw Error("unexpected boundary");};fs.mkdtempSync=stop;require("node:child_process").spawnSync=stop;global.fetch=async url=>{fs.writeFileSync(' + JSON.stringify(fetched) + ',String(url));const response=new Response(' + JSON.stringify(JSON.stringify(identity)) + ',{status:200,headers:{"content-type":"application/json"}});Object.defineProperty(response,"url",{value:String(url)});return response;};');
   const command = fs.readFileSync(path.join(__dirname, 'generated/start-command.txt'), 'utf8');
-  const result = spawnSync('/bin/sh', ['-c', command], { encoding: 'utf8', timeout: 10000,
+  assert.match(command, /^\/usr\/bin\/tini -s -- node -e '/);
+  // Exercise the launcher logic in this host-only test. The actual reaper
+  // contract needs the separately gated pinned-image process test.
+  const hostCommand = command.replace(/^\/usr\/bin\/tini -s -- /, '');
+  const result = spawnSync('/bin/sh', ['-c', hostCommand], { encoding: 'utf8', timeout: 10000,
     env: { ...env(), PATH: path.dirname(process.execPath), TMPDIR: root, NODE_OPTIONS: '--require ' + guard } });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /RUNTIME_IDENTITY_TARGET_MISMATCH/);

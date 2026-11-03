@@ -80,7 +80,10 @@ test('environment requirements are exact; no presence check is treated as proof'
 });
 test('generated shell command fails closed before installing when bindings are missing', () => {
   const command = fs.readFileSync(path.join(__dirname,'generated/start-command.txt'),'utf8');
-  const result = spawnSync('/bin/sh',['-c',command],{encoding:'utf8',env:{PATH:path.dirname(process.execPath)}});
+  assert.match(command, /^\/usr\/bin\/tini -s -- node -e '/);
+  // Host-only binding test; image execution must separately verify the reaper.
+  const hostCommand = command.replace(/^\/usr\/bin\/tini -s -- /, '');
+  const result = spawnSync('/bin/sh',['-c',hostCommand],{encoding:'utf8',env:{PATH:path.dirname(process.execPath)}});
   assert.equal(result.status,1); assert.match(result.stderr,/WRONG_EXISTING_RUNNER/);
   assert.ok(Buffer.byteLength(command) < 90000);
 });

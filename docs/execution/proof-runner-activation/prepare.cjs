@@ -14,7 +14,13 @@ const bundleHash = launcher.hash(compressed);
 launcher.validateBundle(payload, bundleHash);
 const script = fs.readFileSync(path.join(__dirname, 'launcher.cjs'), 'utf8') + '\nmodule.exports.run(' + JSON.stringify(payload) + ',' + JSON.stringify(bundleHash) + ').catch(error=>{console.error("VECTOR_PROOF_RUNNER_START_FAILED="+error.message);process.exitCode=1;});\n';
 const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
-const command = 'node -e ' + quote(script);
+// The launcher must not become PID 1: its detached proof descendants need a
+// subreaper to collect orphans before process-group disappearance is asserted.
+// An absent binary fails before Node reads proof authority. Binary trust is
+// an exact-image review prerequisite.
+// Railway image start commands use exec form, so the first token must be the
+// executable itself, not a shell builtin that requires an implicit shell.
+const command = '/usr/bin/tini -s -- node -e ' + quote(script);
 if (Buffer.byteLength(command) > 90000) throw new Error('START_COMMAND_TOO_LARGE');
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(path.join(out, 'bundle.json'), JSON.stringify({ payload, bundleHash }) + '\n');
@@ -23,7 +29,7 @@ fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify({ schema: 1, so
   scope: 'existing isolated signed browser runner; prepared, not activated',
   runnerSource: launcher.SOURCE, intendedReviewedTargetSha: null,
   sourceCommitBinding: launcher.SOURCE, reviewedBaseSha: '76c5f4d32910d6cac6d347cfff9917dd93301ffb',
-  activationBlocked: 'Published source binding only; exact-image different-UID proc denial, in-flight capability expiry/revocation and cleanup review plus independent code/security/artifact review, approved target and protected bindings remain required before hosted activation',
+  activationBlocked: 'Published source binding only; exact-image different-UID proc denial, in-flight capability expiry/revocation and cleanup review, /usr/bin/tini availability and trust, no-init orphan reaping, effective Railway start-chain parity, independent code/security/artifact review, approved target and protected bindings remain required before hosted activation',
   runnerSourceValidation: 'run rejects unpublished, non-lowercase-40-hex and all-zero SOURCE before identity fetch, materialization, SQLite, npm or child startup; review and exact commit/file matching remain owner gates',
   targetSelection: 'explicit WFM_EXPECTED_CANDIDATE_SHA from reviewed deployment configuration; never inferred from response or runner source',
   preflight: { endpoint: '/api/runtime-identity', unauthenticated: true, beforeInstallAndSigner: true, timeoutMs: launcher.PREFLIGHT_TIMEOUT_MS, maximumBytes: launcher.MAX_IDENTITY_BYTES, redirects: 'error', requires: ['exact configured target SHA', 'build-file-matched', 'fixtureOnly:true', 'productionApproved:false', 'pilotReady:false'] },
