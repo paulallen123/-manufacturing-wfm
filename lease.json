@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R PR542 private source-bound marker renewal 20261103T2128Z",
   "holder_token": "r-pr542-marker-1793741321502-166p30fvlrw",
@@ -28,5 +28,20 @@
     "terminal_sha256": "1e71fbd60103f81909246cc08cfb1371d461349609df690b6bae19cc35d2425a",
     "all_previous_controlled_processes_terminal": true,
     "Node22": "OPEN unavailable, bounded draft source custody only"
+  },
+  "released_at": "2026-11-03T21:33:28.122Z",
+  "result": {
+    "status": "ACCEPT_PRIVATE_PR542_SOURCE_BOUND_MARKER_ONLY",
+    "candidate": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2",
+    "tree": "57785b1304f7e753b5b37428889c2003fc0a0cd6",
+    "receipt": "e915100ef5e97bc1552dde45782b09552d3df134",
+    "receipt_sha256": "aaf126da44c61496056b82cbb991d23ad3a72539a7103f2a89cf635450eab40d",
+    "review": "b9f4814b10d4fd5db655ce290a49d6c232fb4a97",
+    "review_sha256": "a4b83418e7307a12def5f76f9bd37e186970210df3a436e20be7b423d56008a1",
+    "controlled_processes": "ALL_TERMINAL",
+    "completed_key": "bfd7806803bf07af687d3512e23c18a1bac667f0:PR621:private-source-bound-marker-renewal:v1",
+    "repeat": false,
+    "public_source": "3d0cb3fa0743185b31deb6d40446656a96d06f31_UNCHANGED",
+    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_COMPLETE"
   }
 }
