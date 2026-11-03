@@ -1,58 +1,34 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole R V084 ordinary draft-source publication invocation 20261103T1611Z",
-  "holder_token": "v084pub-2026-11-03T16:11:16.943Z-797b4cc0537548-b620a059bbfb",
-  "source": "01d74186df2f85f693319a7d28b3179c57e72a52",
-  "source_tree": "32806d4af35311b7279dd975a05645b85b49c47b",
-  "target": "refs/heads/feature/vector-reviewed-source-union-616-620-20261101; existing OPEN/DRAFT PR621 only",
-  "expected_target_head": "a1223f6e1867474c18c8ea1ad4e2e6d675be34c4",
-  "action": "ONE_ORDINARY_DRAFT_FEATURE_SOURCE_CAS_AND_PR_DESCRIPTION_ONLY",
-  "idempotency_key": "01d74186df2f85f693319a7d28b3179c57e72a52:PR621:ordinary-feature-source-CI:v1",
-  "issued_at": "2026-11-03T16:11:16.943Z",
-  "expires_at": "2026-11-03T17:00:00Z",
-  "previous_released_commit": "10be1ddf0e49879de8667c7f79502f15e540a83a",
-  "authority": "Existing user full source-integration mandate, R selected exact V084 intake6608339522 and distinct marker admission8085f970; genuinely changed code/test, not duplicate or emptyCIpush",
+  "owner_execution": "existing sole R reviewed reporting composite marker invocation 20261103T1743Z",
+  "holder_token": "reporting-marker-2026-11-03T17:41:25.480Z-c52967376bc68-150994e6a0972",
+  "source": "61dbf777c80a7b835e1a7baa2defaa3907a08233",
+  "source_tree": "b7e3773cdc35e0542b6be1c7b7d449ce06d7fab6",
+  "target": "private unreferenced source-bound marker child only; subsequent PR621 publication separate scope",
+  "expected_target_head": "01d74186df2f85f693319a7d28b3179c57e72a52",
+  "action": "PRIVATE_REVIEWED_REPORTING_COMPOSITE_SOURCE_BOUND_MARKER_ONLY",
+  "idempotency_key": "61dbf777c80a7b835e1a7baa2defaa3907a08233:PR621:private-source-bound-marker-renewal:v1",
+  "issued_at": "2026-11-03T17:41:25.480Z",
+  "expires_at": "2026-11-03T18:30:00Z",
+  "previous_released_commit": "9d0a16091d6e8c684ff7fb23867f8ad814758190",
+  "authority": "Original sole R source integration mandate; terminal reviewed reporting composite6610534461/6610593766, exact UI projection6609487748 and atomic selector6609540905; R receiving check exact4paths1804unrelatedtuples preserved; no new domain/customer approval inferred",
   "allowed_operations": [
-    "One normal force:false expecteda122 to exact01d741 update existing featurebranch; normal CI may react without manual dispatch",
-    "After actual head readback, update ONLY existing PR621 body to describe final source and bounded evidence, preserve DRAFT/base/state/auto_merge",
-    "Independent read-only pre/postcondition review and durable receipts; exact current holder release after controlled source/API/review processes terminal"
+    "Read-only exact current source and native control checks; select exact reviewed61db composite for source custody only",
+    "After distinct current-base intake review, append bounded source/evidence record preserving58531prior marker bytes and all1807nonmarker tuples; create private unreferenced marker blob/tree/soleparent child only",
+    "Distinct exact-tree/ancestry/marker/nativeHEAD-CIRCLE/wrongSHA/dirty/restored admission review; durable Git receipts; own holder checked release after all controlled processes terminal"
   ],
   "excluded_operations": [
-    "No canonical/main/PR501 merge/ref, force/retry after uncertain or denied result, duplicatepush/CI dispatch/rerun/filterweakening",
-    "No imagebuild/registry/resource/Railway config/apply/deploy/restart, signer/actor/provider/payroll/customer business action"
+    "No public product ref/PRbody/canonical/main/PR501 mutation, source reauthoring or product test rerun",
+    "No manualCI dispatch/rerun/duplicatepush/filterweakening or CI credit transfer",
+    "No imagebuild/install/registry/resource/source-transfer/Railway config/apply/deploy/restart, signer/actor/provider/payroll/customer business action"
   ],
   "prerequisites": {
-    "marker_key_complete": true,
-    "source_review": "6607966694 distinctnonauthor ACCEPT source/test/selected55/55",
-    "R_intake": "6608339522",
-    "marker_review": "8085f970ffb6e5cf37dd9be646d0631602a744f8",
-    "marker_review_sha256": "18ec7cbfb39d820bbe840ee59be0620e492cc05c3c393257a3479d7dabb8fc0a",
-    "current_legacy_branch_policy": "Unreadable retained blocker for full release; normal provider enforcement only, no bypass",
-    "external_existing_CI": "a122UNKNOWNpossiblyinflight; sourcekeyCIunresolved notpermissiontomanualdispatch",
-    "pre_mutation_distinct_review": "REQUIRED_BEFORE_SOURCE_CAS_NOT_YET_COMPLETE"
-  },
-  "released_at": "2026-11-03T16:21:06.574Z",
-  "released_claim_commit": "6a0deec0f5210b5ce1419b194e0a225efdd852d4",
-  "terminal_outcome": {
-    "result": "REVIEWED_V084_SOURCE_PUBLISHED_TO_EXISTING_DRAFT_CI_UNRESOLVED",
-    "published_head": "01d74186df2f85f693319a7d28b3179c57e72a52",
-    "tree": "32806d4af35311b7279dd975a05645b85b49c47b",
-    "receipt": "a2bf8a51537438bc945da6d56f6f940554f76d9b",
-    "receipt_sha256": "5c8936824b15317478ae42a91a8238206b9cb3d90e8cd73358710d147b51248d",
-    "pre_mutation_review": "f57f44b89816cd4d89f45d0bf88a3d78d03a43a6",
-    "postcondition_review": "7d6525d577e10c44f71dfe8208077f721e7a7699",
-    "all_controlled_source_API_probe_review_processes_terminal": true,
-    "source_CAS": "APPLIED_NONREPEATABLE",
-    "repeat_publication_allowed": false,
-    "CI": "BLOCK_NOT_OBSERVED_PROVIDER_UNKNOWN_POSSIBLY_INFLIGHT",
-    "whole_CI_key_complete": false,
-    "manual_CI_actions": 0,
-    "canonical_Railway_provider_customer_mutations": 0,
-    "entrypoints_paused": false,
-    "DONE": 0,
-    "customer": "0/6"
-  },
-  "pending_subaction": "Existing R/CI owner ordinary exact01d741pipeline/event/jobreadback and R/security complete immutable image/admission bridge; no repeatCAS/push/manualdispatch. Existing reviewedUI projection may be integrated serially under fresh scopedclaim/currentbase review, no permission transfer."
+    "all_previous_controlled_processes_terminal": true,
+    "external_CI": "UNKNOWNpossiblyinflight_notidle_notsettled",
+    "intake_review": "Distinct read-only reporting_intake_review_1738 in progress; required before private marker creation",
+    "AGENTS": "Fresh full1808leaf composite inventory none; parent1807leaf none",
+    "source_tests": "Prior UI51/51 and selected reporting group5/5 only exact respective closures; not fullForgeCIimagecustomer"
+  }
 }
