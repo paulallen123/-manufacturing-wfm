@@ -1,47 +1,32 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existingsoleR correctiveDockerselectedtestfixture invocation20261103T1827Z",
-  "holder_token": "v013-fixture-2026-11-03T18:25:29.904Z-942d007c130f28",
-  "source": "d14786e03fc0744b483aee361eff452ab3e4a549",
-  "source_tree": "e4287838466ec2e656680290ab9f1bc19328a0cc",
-  "target": "private unreferenced sevenpath V013 source child only",
+  "owner_execution": "existingsoleR V013 private marker renewal20261103T1952Z",
+  "holder_token": "v013-marker-2026-11-03T19:51:26.288Z-f3c5a10e6262b",
+  "source": "42be7950663560b6eb1a9f4038f306e232071472",
+  "source_tree": "a726ead0045e43f997e9092292f2a8bc19b8f6d4",
+  "target": "privateunreferencedmarkerchildONLY;existingPR621publicationSEPARATEscope",
   "expected_target_head": "bf5d9864d0b0873e622368fb950df662897d8fad",
-  "action": "PRIVATE_DOCKER_SELECTED_TEST_FACTORY_COPY_CORRECTION_ONLY",
-  "idempotency_key": "d14786e03fc0744b483aee361eff452ab3e4a549:V013:private-docker-selected-test-factory-copy:v1",
-  "issued_at": "2026-11-03T18:25:29.904Z",
-  "expires_at": "2026-11-03T19:10:00Z",
-  "previous_released_commit": "c43956adbbfa0c9822d6863eddeeb8c96d5e270a",
+  "action": "PRIVATE_SOURCE_BOUND_MARKER_RENEWAL_ONLY",
+  "idempotency_key": "42be7950663560b6eb1a9f4038f306e232071472:PR621:private-source-bound-marker-renewal:v1",
+  "issued_at": "2026-11-03T19:51:26.288Z",
+  "expires_at": "2026-11-03T20:50:00Z",
+  "previous_released_commit": "6aa2933620228e347869be03da41fe54271e2988",
   "allowed_operations": [
-    "Add exactunchangedfactorysource to existingtemporaryimplementationtestCOPYlineONLY; preserveallotherbytes/tuples; privateblob/tree/soleparentchild",
-    "BoundedstaticDockerCOPY/module-resolutionnegativepositivecheck WITHOUTproductmoduleexecution; distinctreview/durablereceipt/checkedownrelease"
+    "AppendtruthfulV013sourceevidencerecordpreservingall61080prior markerbytes/all1808nonmarkertuples/all1809modes;privateblob/tree/soleparentchildONLY",
+    "DistinctnativeGitHEAD-CIRCLE/wrongSHA/dirty/restoredadmissionreview,durablereceipts,owncheckedreleaseafterallcontrolledprocessesterminal"
   ],
   "excluded_operations": [
-    "No marker/publicproductref/PR/CI/install/build/resource/registry/Railway/provider/customerwrite; no unchangedproducttests"
+    "No source reauthoring/publicproductref/PRbody/producttests/build/install/image/resource/registry/source-transfer/Railway/provider/customerwrites",
+    "No CItrigger/rerun/duplicatepush/authflowrecreation/tokencreation/scopeexpansion"
   ],
   "prerequisites": {
-    "partial_receipt": "7d5d95db37fcfefa9fadd9bb7e0fb12847bc144c",
-    "finding": "missing relative module in selectedDocker testfixture",
-    "all_prior_controlled_processes_terminal": true
-  },
-  "released_at": "2026-11-03T18:28:59.150Z",
-  "released_claim_commit": "b7fc0de882fad5246ab113a1c5ac8af345291b32",
-  "terminal_outcome": {
-    "result": "ACCEPT_PRIVATE_CORRECTED_SOURCE_ONLY_NOT_MARKER_ADMITTED_OR_PUBLIC",
-    "child": "42be7950663560b6eb1a9f4038f306e232071472",
-    "tree": "a726ead0045e43f997e9092292f2a8bc19b8f6d4",
-    "receipt": "be75b9c47e1bbc4954f610c8f29d48836cc8ac8f",
-    "receipt_sha256": "49a653a5d8c2b87ebea1f1b86f91400d97c2ef9006bad34b0145c437ced82f64",
-    "independent_review": "b33af413608986d2f111992a6eb26b20f52818f1",
-    "all_controlled_source_API_probe_review_processes_terminal": true,
-    "key": "COMPLETE_NONREPEATABLE_PRIVATE_CORRECTION_ONLY",
-    "marker_admitted": false,
-    "public_mutations": 0,
-    "external_CI": "UNKNOWNpossiblyinflight_notidle",
-    "entrypoints_paused": false,
-    "DONE": 0,
-    "customer": "0/6"
-  },
-  "next": "FreshappropriatesoleRclaimforcorrected42be sourceboundmarkerrenewal/distinctnativeadmission; laterordinarypublicationSEPARATEscope. No unchangedd147admission/oldCASrepeat."
+    "source_receipt": "be75b9c47e1bbc4954f610c8f29d48836cc8ac8f",
+    "corrective_independent_review": "b33af413608986d2f111992a6eb26b20f52818f1",
+    "prior_all_controlled_processes_terminal": true,
+    "AGENTS": "nonecomplete1809leafsourceinventory",
+    "CircleCI": "existingconnectionNEEDS_AUTH_FAILEDawaiting_input_timeout; no private read obtained; externalexecutionUNKNOWN",
+    "source_tests": "prior17/17+nested16+7/7datedonly; resolutionnegativepositiveNOTproductexecution; focusednewpackagingtestnotordinaryCIselected"
+  }
 }
