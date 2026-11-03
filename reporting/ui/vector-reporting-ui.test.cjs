@@ -150,3 +150,45 @@ for(const status of [401,403])test('delivery-only authority denial '+status+' cl
 test('confirmed empty delivery history remains distinct from unavailable and can recover on refresh',async()=>{
  const x=fixture();x.setDeliveryReply({status:503});await x.api.open();x.setDeliveryReply({status:200,body:{deliveries:[]}});await x.focus();assert.match(x.nodes.get('[data-report-deliveries]').textContent,/No scheduled deliveries yet/);assert.doesNotMatch(x.nodes.get('[data-report-status]').textContent,/unavailable/);
 });
+
+// V084 declared episode projection regressions.
+function loadProjection(){
+ let exported='';const window={};
+ let source=fs.readFileSync(path.join(__dirname,process.env.PROJECTION_BASELINE?'baseline-ui.js':'vector-reporting-ui.js'),'utf8');
+ // Expose shipped consumer/render/export functions only in this test. Skip DOM
+ // installation; production requests, authority and session code stay untouched.
+ source=source.slice(0,source.indexOf('const observer=new MutationObserver'))+'window.probe={rowsFor,state,tableMarkup,chartMarkup,csv};})();';
+ vm.runInNewContext(source,{window,document:{createElement:()=>({click(){}})},Blob:class{constructor(parts){exported=parts.join('');}},URL:{createObjectURL:()=>'',revokeObjectURL(){}},setTimeout(){},Intl,Date,Map,Set});
+ return {...window.probe,exported:()=>exported};
+}
+const {createDecisionEpisode}=require('../../operations/runtime/decision-episode.cjs');
+function episode(){return createDecisionEpisode({tenant:'fictional',site:'fictional-site',decisionType:'fictional-recovery',triggerId:'fixture',contextRevision:'fixture-r1',mode:'SHADOW',triggeredAt:'2026-01-01T00:00:00.000Z',sourceEvidence:['=fictional\tref'],objective:{throughputUnits:1},options:[{id:'do-nothing',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0,prediction:{throughputUnits:0}},{id:'candidate',label:'=Candidate <action>\t',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0,prediction:{throughputUnits:50}}]});}
+test('actual helper-produced unselected shadow exposes recommendation estimate without selection or verification',()=>{
+ const h=loadProjection(),e=episode(),r=h.rowsFor('decision-outcomes',{episodes:[e]})[0];
+ assert.match(r.selectedOption,/Unknown/);assert.match(r.predictedImpact,/Recommendation only/);assert.match(r.predictedImpact,/50/);assert.match(r.actualImpact,/Unknown/);assert.match(r.verification,/Unknown/);assert.match(r.evidenceRef,/fictional/);
+});
+test('selected estimate, zero/null recorded values and provenance render/export without numeric chart authority',()=>{
+ const h=loadProjection(),e=JSON.parse(JSON.stringify(episode()));
+ e.selection={optionId:'do-nothing',authorityDecision:'SHADOW_OBSERVED'};
+ const selected=e.options.find(option=>option.id==='do-nothing');selected.label='=Selected <action>\t';selected.prediction={throughputUnits:0,overtimeCost:null,blank:'',numericString:'44',nonfinite:Infinity};
+ e.outcome={actual:{throughputUnits:0,overtimeCost:null,blank:'',numericString:'55',nonfinite:Infinity},evidenceRefs:['=outcome\nref']};
+ const rows=h.rowsFor('decision-outcomes',{episodes:[e]});const r=rows[0];
+ assert.equal(r.selectedOption,selected.label);assert.match(r.predictedImpact,/Selected-option estimate/);assert.match(r.predictedImpact,/"throughputUnits":0/);assert.match(r.predictedImpact,/"overtimeCost":null/);assert.doesNotMatch(r.predictedImpact,/50|44|blank|nonfinite/);
+ assert.match(r.actualImpact,/Recorded, unverified/);assert.match(r.actualImpact,/"throughputUnits":0/);assert.match(r.actualImpact,/"overtimeCost":null/);assert.doesNotMatch(r.actualImpact,/55|blank|nonfinite/);assert.match(r.verification,/Unknown/);assert.match(r.evidenceRef,/source/);assert.match(r.evidenceRef,/outcome/);
+ assert.deepEqual(Object.keys(r).sort(),['site','decisionType','status','selectedOption','verification','predictedImpact','actualImpact','evidenceRef'].sort());
+ h.state.rows=rows;h.state.raw={episodes:[e]};h.state.columns=Object.keys(r);
+ const html=h.tableMarkup();assert.match(html,/&lt;action&gt;/);assert.match(html,/unverified/);
+ for(const kind of ['kpi','bar','line'])assert.match(h.chartMarkup(kind),/No numeric measure/);
+ h.csv();assert.match(h.exported(),/Selected-option estimate/);assert.match(h.exported(),/Recorded, unverified/);assert.match(h.exported(),/text:/);assert.doesNotMatch(h.exported(),/SHADOW_OBSERVED/);
+});
+test('flat legacy episodes use generic mapping per row and empty/null rows remain safe',()=>{
+ const h=loadProjection(),flat={decisionType:'legacy',selectedOption:'explicit',actualImpact:'Legacy supplied field'},e=episode();
+ const rows=h.rowsFor('decision-outcomes',{episodes:[flat,e,null,{}]});assert.equal(rows[0].actualImpact,flat.actualImpact);assert.equal(rows[0].selectedOption,'explicit');assert.match(rows[1].predictedImpact,/Recommendation only/);assert.equal(Object.keys(rows[2]).length,0);assert.equal(Object.keys(rows[3]).length,0);
+ assert.equal(h.rowsFor('decision-outcomes',{episodes:[]}).length,0);assert.equal(h.rowsFor('decision-outcomes',{decisions:[flat]})[0].actualImpact,flat.actualImpact);
+});
+
+test('absent and invalid recorded selections are distinct and recommendation stays advisory',()=>{
+ const h=loadProjection(),e=episode();
+ {const r=h.rowsFor('decision-outcomes',{episodes:[e]})[0];assert.match(r.selectedOption,/no recorded selection/);assert.match(r.predictedImpact,/Recommendation only/);}
+ for(const selection of [null,undefined,{optionId:'missing'},{},'',false,0,{optionId:0}]){const r=h.rowsFor('decision-outcomes',{episodes:[{...e,selection}]})[0];assert.match(r.selectedOption,/invalid recorded selection/);assert.match(r.predictedImpact,/Recommendation only/);assert.match(r.verification,/Unknown/);}
+});

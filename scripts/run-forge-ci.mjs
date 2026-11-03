@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 
 const checks = [
   ['node', ['--test', '--test-timeout=10000', '--test-concurrency=1', 'ux-overlay/vector-leave-review-boundary.test.cjs']],
-  ['node', ['--test', '--test-timeout=30000', '--test-concurrency=1', 'reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs', 'reporting/runtime/vector-reporting-resume-no-adapter.test.cjs']],
+  ['node', ['--test', '--test-timeout=30000', '--test-concurrency=1', 'reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs', 'reporting/runtime/vector-reporting-resume-no-adapter.test.cjs', 'reporting/runtime/v079-schedule-role-drift.test.cjs']],
   ['node', ['integration/runtime/nango-credential-provider.test.cjs']],
   ['node', ['integration/runtime/nango-metadata-broker.test.cjs']],
   ['node', ['scripts/nango-metadata-wiring.test.cjs']],

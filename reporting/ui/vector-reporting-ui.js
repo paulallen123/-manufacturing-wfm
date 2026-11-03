@@ -273,6 +273,35 @@ function flatten(obj,prefix='',depth=0,out=Object.create(null)){
   }
   return out;
 }
+function decisionEpisodeRows(body){
+  if(!Array.isArray(body?.episodes))return genericRows(body,['decisions','items','problems','rows']);
+  return body.episodes.map(episode=>{
+    // Native episode contract only; legacy flat rows keep their existing mapping.
+    if(episode?.contractVersion!=='VECTOR_DECISION_EPISODE_V1'||
+      !Array.isArray(episode.options)||episode.options.length<2||
+      !episode.options.every(option=>option&&typeof option.id==='string')||
+      !episode.options.some(option=>option.id==='do-nothing'))return flatten(episode);
+    const selectionPresent=Object.hasOwn(episode,'selection');
+    const selected=selectionPresent&&episode.selection&&typeof episode.selection==='object'&&typeof episode.selection.optionId==='string'
+      ?episode.options.find(option=>option.id===episode.selection.optionId):null;
+    const recommended=episode.options.find(option=>option.id===episode.recommendation?.optionId);
+    const values=input=>input&&typeof input==='object'&&!Array.isArray(input)
+      ?Object.fromEntries(Object.entries(input).filter(([,value])=>value===null||(typeof value==='number'&&Number.isFinite(value)))):null;
+    const refs=input=>Array.isArray(input)&&input.every(ref=>typeof ref==='string')?input:null;
+    const predicted=values((selected||recommended)?.prediction),actual=values(episode.outcome?.actual);
+    const basis=selected?'Selected-option estimate':recommended?'Recommendation only ('+String(recommended.label||recommended.id)+'), estimate':'Unknown';
+    return {
+      site:typeof episode.site==='string'?episode.site:'Unknown',
+      decisionType:typeof episode.decisionType==='string'?episode.decisionType:'Unknown',
+      status:typeof episode.mode==='string'?'Mode: '+episode.mode:'Unknown',
+      selectedOption:selected?String(selected.label||selected.id):selectionPresent?'Unknown (invalid recorded selection)':'Unknown (no recorded selection)',
+      verification:'Unknown (not established by this source)',
+      predictedImpact:predicted&&Object.keys(predicted).length?basis+': '+JSON.stringify(predicted):basis+' (no estimate supplied)',
+      actualImpact:actual&&Object.keys(actual).length?'Recorded, unverified: '+JSON.stringify(actual):'Unknown (no recorded actual)',
+      evidenceRef:'Declared, unverified references: '+JSON.stringify({source:refs(episode.sourceEvidence),outcome:refs(episode.outcome?.evidenceRefs)})
+    };
+  });
+}
 function rowsFor(id,body){
   if(id==='factory-readiness')return factoryRows(body);
   if(id==='weekly-review')return genericRows(body,['teams','reviews','items','rows']);
@@ -280,7 +309,7 @@ function rowsFor(id,body){
   if(id==='time-review')return genericRows(body,['items','exceptions','teams','rows']);
   if(id==='payroll-control')return genericRows(body,['teams','items','runs','rows']);
   if(id==='value-realisation')return genericRows(body,['items','results','realizations','realisation','rows']);
-  if(id==='decision-outcomes')return genericRows(body,['episodes','decisions','items','problems','rows']);
+  if(id==='decision-outcomes')return decisionEpisodeRows(body);
   if(id==='audit-evidence')return genericRows(body,['events','proofs','items','rows']);
   return [];
 }
