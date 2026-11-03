@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existingsoleR correctiveDockerselectedtestfixture invocation20261103T1827Z",
   "holder_token": "v013-fixture-2026-11-03T18:25:29.904Z-942d007c130f28",
@@ -24,5 +24,24 @@
     "partial_receipt": "7d5d95db37fcfefa9fadd9bb7e0fb12847bc144c",
     "finding": "missing relative module in selectedDocker testfixture",
     "all_prior_controlled_processes_terminal": true
-  }
+  },
+  "released_at": "2026-11-03T18:28:59.150Z",
+  "released_claim_commit": "b7fc0de882fad5246ab113a1c5ac8af345291b32",
+  "terminal_outcome": {
+    "result": "ACCEPT_PRIVATE_CORRECTED_SOURCE_ONLY_NOT_MARKER_ADMITTED_OR_PUBLIC",
+    "child": "42be7950663560b6eb1a9f4038f306e232071472",
+    "tree": "a726ead0045e43f997e9092292f2a8bc19b8f6d4",
+    "receipt": "be75b9c47e1bbc4954f610c8f29d48836cc8ac8f",
+    "receipt_sha256": "49a653a5d8c2b87ebea1f1b86f91400d97c2ef9006bad34b0145c437ced82f64",
+    "independent_review": "b33af413608986d2f111992a6eb26b20f52818f1",
+    "all_controlled_source_API_probe_review_processes_terminal": true,
+    "key": "COMPLETE_NONREPEATABLE_PRIVATE_CORRECTION_ONLY",
+    "marker_admitted": false,
+    "public_mutations": 0,
+    "external_CI": "UNKNOWNpossiblyinflight_notidle",
+    "entrypoints_paused": false,
+    "DONE": 0,
+    "customer": "0/6"
+  },
+  "next": "FreshappropriatesoleRclaimforcorrected42be sourceboundmarkerrenewal/distinctnativeadmission; laterordinarypublicationSEPARATEscope. No unchangedd147admission/oldCASrepeat."
 }
