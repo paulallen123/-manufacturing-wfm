@@ -702,6 +702,77 @@ function registeredOrder(overrides={}) {return {orderId:'vector-order-alpha',exp
   envelopeId:'registered-envelope-1',contractRef:'registered-contract-1',relationship:'initial',nominatedSuperUserEmail:'manager@alpha',nominationAuthorityRef:'customer-nomination/alpha-1',profile:{organisationName:'Alpha Factory'},...overrides};}
 function verifiedOrderCompletion(overrides={}) {return {verified:true,provider:'DocuSign',status:'completed',eventId:'registered-completion-1',envelopeId:'registered-envelope-1',
   signerEmail:'signer@different.company',tenant:'bravo',ownerEmail:'manager@bravo',...overrides};}
+
+test('V013: missing canonical tenant or first-owner adapter refuses and rolls back the complete signing transaction', async t => {
+  const { createSetupCustomerState } = require('./clean-customer-state.cjs');
+  for (const missing of ['canonical-tenant', 'first-owner']) {
+    const tenant = 'synthetic-v013-new-tenant';
+    const setupInput = { tenant, customerId: 'synthetic-v013-customer', authority: {
+      tenant, customerId: 'synthetic-v013-customer', purpose: 'construct-setup-customer-state', reference: 'synthetic-v013-customer-authority'
+    } };
+    let creations = 0;
+    const f = fixture({ verifySignedContract: () => verifiedOrderCompletion(),
+      ...(missing === 'first-owner' ? { createCanonicalTenant({ db, binding }) {
+        // Test-only tenant adapter for a single explicit fictional binding. No
+        // owner, workforce, credentials, policy or external authority is created.
+        assert.equal(db.isTransaction, true);
+        assert.equal(binding.tenant, tenant);
+        assert.equal(binding.customerId, setupInput.customerId);
+        assert.equal(binding.customerAuthorityRef, setupInput.authority.reference);
+        const state = createSetupCustomerState(setupInput, {
+          authorize: value => JSON.stringify(value) === JSON.stringify(setupInput)
+        });
+        assert.deepEqual(state.staff, []);
+        assert.deepEqual(state.org, []);
+        db.prepare('INSERT INTO tenants VALUES(?,?,?)').run(tenant, state.version, JSON.stringify(state));
+        assert.deepEqual(JSON.parse(db.prepare('SELECT state FROM tenants WHERE id=?').get(tenant).state), state);
+        creations++;
+      } } : {}) });
+    const db = new DatabaseSync(f.dbPath);
+    t.after(() => { db.close(); f.close(); });
+    f.engine.recordCustomerOrder(registeredOrder({ tenant, customerId: setupInput.customerId,
+      customerAuthorityRef: setupInput.authority.reference, nominatedSuperUserEmail: 'synthetic-owner@v013.invalid' }));
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all();
+    const snapshot = () => tables.map(({ name }) => [name, db.prepare('SELECT * FROM "' + name.replaceAll('"', '""') + '"').all()]);
+    const before = snapshot();
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const result = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed',
+        { tenant: 'bravo', ownerEmail: 'request-controlled@bravo.invalid' }, f.contractWebhook);
+      assert.equal(result.status, 503, JSON.stringify(result.body));
+      assert.match(result.body.error, missing === 'canonical-tenant' ? /Clean customer workspace creation is not configured/ : /Authorised initial-owner access is not configured/);
+      assert.deepEqual(snapshot(), before, missing + ': canonical state, identities, setup, workspace and every audit table must roll back');
+      assert.equal(db.prepare('SELECT count(*) AS n FROM tenants WHERE id=?').get(tenant).n, 0);
+      assert.equal(f.invitationAttempts, 0);
+    }
+    assert.equal(creations, missing === 'first-owner' ? 2 : 0);
+  }
+});
+
+test('V013: configured new-customer adapter refuses an existing tenant without resetting or adopting its state', async t => {
+  for (const malformed of [false, true]) {
+    let creations = 0;
+    const f = fixture({ verifySignedContract: () => verifiedOrderCompletion(),
+      createCanonicalTenant: malformed ? {} : () => { creations++; throw Error('Existing tenant must never reach new-customer adapter'); } });
+    const db = new DatabaseSync(f.dbPath);
+    t.after(() => { db.close(); f.close(); });
+    // Fictional pre-existing demo state is evidence to preserve, never clean or reset.
+    const existing = { version: 1, staff: [{ id: 'synthetic-existing-demo-person' }],
+      costing: { policies: { synthetic: { source: 'synthetic-existing-policy' } } } };
+    db.prepare('UPDATE tenants SET state=? WHERE id=?').run(JSON.stringify(existing), 'alpha');
+    f.engine.recordCustomerOrder(registeredOrder());
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all();
+    const snapshot = () => tables.map(({ name }) => [name, db.prepare('SELECT * FROM "' + name.replaceAll('"', '""') + '"').all()]);
+    const before = snapshot();
+    const result = await call(f.engine, null, 'POST', '/api/implementation/autonomous/contract-signed', {}, f.contractWebhook);
+    assert.equal(result.status, 409, JSON.stringify(result.body));
+    assert.match(result.body.error, /existing tenant requires an explicit customer workspace association/);
+    assert.deepEqual(snapshot(), before);
+    assert.deepEqual(JSON.parse(db.prepare('SELECT state FROM tenants WHERE id=?').get('alpha').state), existing);
+    assert.equal(creations, 0);
+    assert.equal(f.invitationAttempts, 0);
+  }
+});
+
 test('stored order HTTP completion uses its nominee and permanent workspace through setup, duplicate and renewal',async t=>{
   let event=verifiedOrderCompletion();const f=fixture({configurationCompiler:require('./test-support/sealed-compiler.cjs')(t),verifySignedContract:()=>event});
   const db=new DatabaseSync(f.dbPath);t.after(()=>{db.close();f.close();});

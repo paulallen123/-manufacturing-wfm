@@ -175,7 +175,7 @@ COPY integration-fabric/protocol-profiles.json integration-fabric/opportunity-pr
 # One-day implementation and adaptive learning overlays. These remain additive,
 # tenant-scoped, fail-closed control planes using Node built-ins and the existing SQLite state.
 RUN mkdir -p /app/implementation-runtime /app/learning-runtime /app/operations-runtime /tmp/wfm-learning-ui /tmp/wfm-implementation-ui
-COPY implementation/runtime/workspace-setup.cjs implementation/runtime/organisation-access-setup.cjs implementation/runtime/customer-workspace.cjs implementation/runtime/setup-only-policy.cjs implementation/runtime/organisation-access-lifecycle.cjs /app/implementation-runtime/
+COPY implementation/runtime/clean-customer-state.cjs implementation/runtime/workspace-setup.cjs implementation/runtime/organisation-access-setup.cjs implementation/runtime/customer-workspace.cjs implementation/runtime/setup-only-policy.cjs implementation/runtime/organisation-access-lifecycle.cjs /app/implementation-runtime/
 COPY scripts/patch-workspace-compiler.mjs /tmp/patch-workspace-compiler.mjs
 RUN node /tmp/patch-workspace-compiler.mjs /app/lib/configuration-compiler.cjs && rm /tmp/patch-workspace-compiler.mjs
 COPY implementation/runtime/one-day-enterprise-engine.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/agents-api-adapter.cjs implementation/runtime/agents-api-bootstrap-route.cjs implementation/runtime/implementation-work-controller.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/configuration-inference-engine.cjs implementation/runtime/implementation-digital-twin.cjs implementation/runtime/tenant-environment-provisioner.cjs /app/implementation-runtime/

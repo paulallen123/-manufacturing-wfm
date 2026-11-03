@@ -460,7 +460,12 @@ function createOneDayEnterpriseEngine(options = {}) {
   installOrganisationAccessLifecycle(db);
   const customerWorkspaces = createCustomerWorkspaceRegistry({db,createInitialWorkspace(binding){
     if(!publicOrigin.startsWith('https://')||!dedicatedInvitationRecoverySecret)throw Object.assign(Error('Secure workspace invitation delivery is not configured.'),{statusCode:503});
-    if(!db.prepare('SELECT id FROM tenants WHERE id=?').get(binding.tenant)){
+    const existingTenant=db.prepare('SELECT id FROM tenants WHERE id=?').get(binding.tenant);
+    // Opting into new-customer construction cannot implicitly adopt or reset an
+    // existing tenant. Registry replay/renewal and explicit adoption bypass this
+    // creation callback and retain their established association checks.
+    if(existingTenant&&options.createCanonicalTenant!=null)throw Object.assign(Error('An existing tenant requires an explicit customer workspace association.'),{statusCode:409,code:'EXISTING_TENANT_REQUIRES_WORKSPACE_ASSOCIATION'});
+    if(!existingTenant){
       if(typeof options.createCanonicalTenant!=='function')throw Object.assign(Error('Clean customer workspace creation is not configured.'),{statusCode:503});
       const result=options.createCanonicalTenant({db,binding});
       if(result&&typeof result.then==='function')throw Error('Canonical tenant creation must be synchronous.');
