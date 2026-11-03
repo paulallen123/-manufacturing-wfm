@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R reviewed PR542 ordinary draft source publication 20261103T2135Z",
   "holder_token": "r-pr542-publication-1793741669986-toxc5ukr5ra",
@@ -29,5 +29,23 @@
     "source_review": "b187f8b1afa6884c358179cb5e334acf98efd2fc",
     "all_previous_controlled_processes_terminal": true,
     "current_fullCI_Node22_image_security_recovery_customer_provider_gates": "OPEN separate from bounded DRAFT source custody"
+  },
+  "released_at": "2026-11-03T21:41:53.649Z",
+  "result": {
+    "status": "REVIEWED_PR542_ISOLATED_TEST_SELECTOR_SOURCE_PUBLISHED_TO_EXISTING_DRAFT_CI_UNRESOLVED",
+    "source_action": "CAS_APPLIED_NONREPEATABLE",
+    "candidate": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2",
+    "tree": "57785b1304f7e753b5b37428889c2003fc0a0cd6",
+    "receipt": "e26df7235185a52daa8a1dc7ce770f5a525240b7",
+    "receipt_sha256": "a4e245d6328facd7de343f010a9ec6abca90383c94c9eb5567061c01996c89ab",
+    "precondition_review": "b43dbda36be2273a8e228c5b1a6802ebdb9a7db6",
+    "postcondition_review": "3c1d8aa248ecac6912e36bc2fd2517d436d98b63",
+    "controlled_processes": "ALL_TERMINAL",
+    "completed_source_key": "9d5a94c34fc4501342ce5c04d4e0dc852db0b9e2:PR621:ordinary-feature-source-CI:v1",
+    "repeat": false,
+    "whole_CI_key": "NOT_PASS_NOT_COMPLETE",
+    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_IDLE_OR_SETTLED",
+    "canonical_serving_customer": "UNCHANGED_NO_PROMOTION",
+    "all146_original_scope_owners_schedules": "PRESERVED"
   }
 }
