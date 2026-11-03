@@ -1,0 +1,125 @@
+{
+  "files": [
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/README.md",
+      "bytes": 7144,
+      "sha256": "60680ef77d6b4f7de7a8f31251e6ec3e41424afdc3b7e5f4e8fc14fd302d2183",
+      "gitBlob": "e42c700ccee7979d521058572b75cf03e7813d6f"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/affected-receipt.json",
+      "bytes": 2678,
+      "sha256": "bf7758500e17624a213aa7aaf2f0546f8bcfea40b35c2dbe2281d45217864ce7",
+      "gitBlob": "7fac096f58597d74dfeb53924cc8256048333563"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/author-owner-green.tap.gz",
+      "bytes": 1499,
+      "sha256": "be057cbd3cc26e389ecb68b74ff38032a27611069490f8cf8013058a95b542e0",
+      "gitBlob": "7db69e9f017e0d89f254eb552d2573b30608bf5c"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/author-owner-red.tap.gz",
+      "bytes": 1049,
+      "sha256": "3ec8f6b4a7ae19d51985e1ddcba497dab236c13a56b5b4b2a41d19b0d4daebca",
+      "gitBlob": "4defd55caf3fac230832ac37ce6a1c048b6374e0"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/author-union-green.tap.gz",
+      "bytes": 1493,
+      "sha256": "4805b9e5ffd64ea23b37c6ad3636681d24737bfc6be575a4f110bfe802a93c01",
+      "gitBlob": "98229a387011a239a67045930822c5b4fbaaad96"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/author-union-red.tap.gz",
+      "bytes": 1047,
+      "sha256": "cd8c88ba2ca2a33637bc116277615137761decc682cbc1986fd6f06d1ec2848f",
+      "gitBlob": "42849095d0279dc8bb5cdda8f1ba43432dd30b7e"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/composed-affected.tap.gz",
+      "bytes": 14455,
+      "sha256": "818429935feafa3fffe128b268020c1add50c7cee8ccbd2d4203e7fc873fc0c1",
+      "gitBlob": "d5f1f7edff479daaa3a623feaacdcf1b5869a6c1"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/composition-summary.json",
+      "bytes": 719,
+      "sha256": "001a72ad2ebf2bcdf8308a78810802d79acb7ba8dbe7672bbcaa3a55553ebe3e",
+      "gitBlob": "55ddbe7866078f35c591f3c40eb9dd7dc5df341a"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/composition.log",
+      "bytes": 2112,
+      "sha256": "11ad36d395a20408dde7eaa6d360d61cb254f3f32fee6173cfe0f703a0778d8d",
+      "gitBlob": "ff95b39be8ea03ee302a8dc1add316d1606b353b"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/owner-heldout-rerun.tap.gz",
+      "bytes": 965,
+      "sha256": "1a1e56745b8d00ee830e6907eb74766f0aa1bf55495f7da734f7befc36d6ad72",
+      "gitBlob": "7f0a7f5b0674f35ab37fa5a299e68082d1a86c85"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/peer-compatibility.tap.gz",
+      "bytes": 4279,
+      "sha256": "7a35891edb146ac6999fb6bf1eef619c1756036a4c01082e05ebcf7986498851",
+      "gitBlob": "bbca6b52239b82546c283f8fe5160c2c39d216f3"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/peer-green.tap.gz",
+      "bytes": 967,
+      "sha256": "04c97a6891aeb4c46dea9d84ae75cd6b4e8a4e7471f92fcf785bb99ca27a5eda",
+      "gitBlob": "366b00d578e0414d1f201378233ca48cc797a406"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/peer-heldout.test.cjs",
+      "bytes": 11204,
+      "sha256": "26d630373e8790d5f4b4ddceb5c02ba2357c2bca5116b554405622e048b32a1c",
+      "gitBlob": "6fe4c6886f848d4a94d6ed57fee6ae7ca7c69178"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/peer-red.tap.gz",
+      "bytes": 1759,
+      "sha256": "015e0f2b45f51532fc390b33c7be7d4be3813943b6a9d103d9b9725a8e87fac5",
+      "gitBlob": "9ced7ca640619e683b44c2c5ba9618c2e0a29d69"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/source-hashes.json",
+      "bytes": 1784,
+      "sha256": "09ed272ac5b282e861c5a4f9537f4d0eb44fad544e6e918d947acb0c0933bcd3",
+      "gitBlob": "ad812055a98d685feeba8e8ecc31da77afcbd08e"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/state-probe.json",
+      "bytes": 1174,
+      "sha256": "ced5e739589b2656fd01fdc63d04c9368722cb8c6649fc85abc11e0221c3537a",
+      "gitBlob": "6dd6890ddf76d86667f02489fe5d38919be5a3ce"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/evidence/test-receipts.json",
+      "bytes": 4572,
+      "sha256": "488fde3a8af349801c0832a4e297bd66afa56e2ce789128908495bb28b362f53",
+      "gitBlob": "88f522ae3373a2e080c354f796f78b80edb24c11"
+    },
+    {
+      "path": "docs/execution/vector-v054-consumed-permit-retry-20261030/independent-review.md",
+      "bytes": 6499,
+      "sha256": "7ec3f2540d67d314260d798d64b26c37fd2bb0fe3bf937ec1f4f032d311f1277",
+      "gitBlob": "31630125d9935f00ceeec9cb166ba62e5c7ce8d4"
+    },
+    {
+      "path": "integrations/staffology/canonical-production-boundaries.cjs",
+      "bytes": 26678,
+      "sha256": "6268ae1a5185f7e43b9e2bf84841b2a64c3d0f8303a6859a15963f6b410b6b64",
+      "gitBlob": "51ee7c8345405c54e774c3775a326586fc9c6de6"
+    },
+    {
+      "path": "integrations/staffology/consumed-permit-retry.test.cjs",
+      "bytes": 7592,
+      "sha256": "f34ba5df156df473e5d1df00306968a68f4017be6b11244e1cbd2c9b92af573a",
+      "gitBlob": "125cb36d6a51d0ddf35c2a834f04feb896e8473a"
+    }
+  ],
+  "claimBoundary": "Narrow unmerged owner-review donor; no provider/customer or deployment proof."
+}

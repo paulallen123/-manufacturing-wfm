@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": null,
+  "purpose": "Actual local composition bytes; no inferred commit identity. Docker admission stages are not rerun. Not hosted proof.",
+  "node": "v22.23.2",
+  "artifactSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "sourceSetSha256": "2a6e485a44221992e7a8ac417a49dc96eedbce65659d74581597f863dbb10292",
+  "runtimeSetSha256": "1b45bb48212f8d8602b5b7aab0736962352ccc73c209cbfbc72202c015e901ac",
+  "testedBoundarySha256": "6268ae1a5185f7e43b9e2bf84841b2a64c3d0f8303a6859a15963f6b410b6b64",
+  "fixtureBuildBinding": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "containerAdmissionPerformed": false,
+  "actualProviderRequestsPerformed": false
+}
