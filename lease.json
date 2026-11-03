@@ -1,53 +1,36 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "existing sole R reviewed reporting composite marker invocation 20261103T1743Z",
-  "holder_token": "reporting-marker-2026-11-03T17:41:25.480Z-c52967376bc68-150994e6a0972",
-  "source": "61dbf777c80a7b835e1a7baa2defaa3907a08233",
-  "source_tree": "b7e3773cdc35e0542b6be1c7b7d449ce06d7fab6",
-  "target": "private unreferenced source-bound marker child only; subsequent PR621 publication separate scope",
+  "owner_execution": "existing sole R reviewed reporting composite ordinary draft publication invocation20261103T1749Z",
+  "holder_token": "reporting-pub-2026-11-03T17:47:31.350Z-0d040cf59592a-db69c3c07a32",
+  "source": "bf5d9864d0b0873e622368fb950df662897d8fad",
+  "source_tree": "cc184cac3dca2c791a0974f4cfff5ce15a62af6a",
+  "target": "refs/heads/feature/vector-reviewed-source-union-616-620-20261101; existingOPEN/DRAFT PR621 only",
   "expected_target_head": "01d74186df2f85f693319a7d28b3179c57e72a52",
-  "action": "PRIVATE_REVIEWED_REPORTING_COMPOSITE_SOURCE_BOUND_MARKER_ONLY",
-  "idempotency_key": "61dbf777c80a7b835e1a7baa2defaa3907a08233:PR621:private-source-bound-marker-renewal:v1",
-  "issued_at": "2026-11-03T17:41:25.480Z",
-  "expires_at": "2026-11-03T18:30:00Z",
-  "previous_released_commit": "9d0a16091d6e8c684ff7fb23867f8ad814758190",
-  "authority": "Original sole R source integration mandate; terminal reviewed reporting composite6610534461/6610593766, exact UI projection6609487748 and atomic selector6609540905; R receiving check exact4paths1804unrelatedtuples preserved; no new domain/customer approval inferred",
+  "action": "ONE_ORDINARY_DRAFT_FEATURE_SOURCE_CAS_AND_PR_DESCRIPTION_ONLY",
+  "idempotency_key": "bf5d9864d0b0873e622368fb950df662897d8fad:PR621:ordinary-feature-source-CI:v1",
+  "issued_at": "2026-11-03T17:47:31.350Z",
+  "expires_at": "2026-11-03T18:35:00Z",
+  "previous_released_commit": "f1f885fee02fccc12528289c88ff2f4c2d287fd8",
+  "authority": "OriginalsoleR sourceintegrationmandate; reviewedcurrentbase composite6610534461/6610593766 and distinctintake76a8ebe6+nativeadmissionaf9976d2, priorprivatephase terminalf16127e6; genuinelychangedUI/test/Forge source notduplicateemptyCIpush",
   "allowed_operations": [
-    "Read-only exact current source and native control checks; select exact reviewed61db composite for source custody only",
-    "After distinct current-base intake review, append bounded source/evidence record preserving58531prior marker bytes and all1807nonmarker tuples; create private unreferenced marker blob/tree/soleparent child only",
-    "Distinct exact-tree/ancestry/marker/nativeHEAD-CIRCLE/wrongSHA/dirty/restored admission review; durable Git receipts; own holder checked release after all controlled processes terminal"
+    "Only after distinctpreconditionreview published+exactreadback, ONE normalforce:false exactexpected01d741 to exactbf5d9864 update of existingfeaturebranch; ordinary CI may react withoutmanualdispatch",
+    "Afteractualheadreadback, updateONLYexistingPR621body toreviewedfinaldescription; preserveDRAFT/base/open/unmerged/auto_merge",
+    "Distinctread-onlypre/postconditionreview, durableGitreceipts andowncheckedreleaseafterallcontrolledoperations terminal"
   ],
   "excluded_operations": [
-    "No public product ref/PRbody/canonical/main/PR501 mutation, source reauthoring or product test rerun",
-    "No manualCI dispatch/rerun/duplicatepush/filterweakening or CI credit transfer",
-    "No imagebuild/install/registry/resource/source-transfer/Railway config/apply/deploy/restart, signer/actor/provider/payroll/customer business action"
+    "No canonical/main/PR501merge/ref, force/retryafteruncertainordeniedwrite, duplicatepush/CI dispatch/rerun/filterweakening",
+    "No imagebuild/install/registry/resource/source-transfer/Railwayconfig/apply/deploy/restart, signer/actor/provider/payroll/customerbusinessaction"
   ],
   "prerequisites": {
-    "all_previous_controlled_processes_terminal": true,
-    "external_CI": "UNKNOWNpossiblyinflight_notidle_notsettled",
-    "intake_review": "Distinct read-only reporting_intake_review_1738 in progress; required before private marker creation",
-    "AGENTS": "Fresh full1808leaf composite inventory none; parent1807leaf none",
-    "source_tests": "Prior UI51/51 and selected reporting group5/5 only exact respective closures; not fullForgeCIimagecustomer"
-  },
-  "released_at": "2026-11-03T17:46:55.886Z",
-  "released_claim_commit": "1731aec4d0196acb35d8f0ce795cec55f894f99a",
-  "terminal_outcome": {
-    "result": "REVIEWED_REPORTING_COMPOSITE_PRIVATE_MARKER_ACCEPTED_ONLY",
-    "receipt": "f16127e6247fc30f07d763d9cc53afc320edb941",
-    "receipt_sha256": "8cee500301baf343b60cf76f58198c1a62bf883b90bac77c32ba94754aff3866",
-    "child": "bf5d9864d0b0873e622368fb950df662897d8fad",
-    "tree": "cc184cac3dca2c791a0974f4cfff5ce15a62af6a",
-    "independent_intake": "76a8ebe63b28658f267b6e60834cc59498b6bbb5",
-    "independent_marker": "af9976d25d34ee4b48c8c0789d2c5085d4f4ae35",
-    "all_controlled_writer_API_probe_review_processes_terminal": true,
-    "key": "COMPLETE_NONREPEATABLE",
-    "public_product_ref_mutations": 0,
-    "external_existing_CI": "UNKNOWNpossiblyinflight_notidle_notsettled",
-    "entrypoints_paused": false,
-    "DONE": 0,
-    "customer": "0/6"
-  },
-  "pending_subaction": "Separate fresh-scoped ordinary draftpublication after independent pre/postreview; exactcurrentCI andcompleteimmutableimageadmission separate; V013orderedseries eligible later"
+    "marker_key_complete": true,
+    "private_marker_terminal": "f16127e6247fc30f07d763d9cc53afc320edb941",
+    "marker_review": "af9976d25d34ee4b48c8c0789d2c5085d4f4ae35",
+    "source_intake_review": "76a8ebe63b28658f267b6e60834cc59498b6bbb5",
+    "pre_mutation_distinct_review": "REQUIRED_NOT_YET_COMPLETE",
+    "all_previous_controlled_operations_terminal": true,
+    "external_existing_CI": "01dUNKNOWNpossiblyinflight; wholeCIkeyunresolved; nomanualkick",
+    "effective_legacy_policy": "Unreadable scopedblocker retained; normalproviderenforcementonly nobypass"
+  }
 }
