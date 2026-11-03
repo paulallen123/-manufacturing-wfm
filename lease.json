@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "existing sole R V013 reviewed private source composition20261103T1823Z",
   "holder_token": "v013-2026-11-03T18:21:59.412Z-3de6ff8bfd623-b83a8b0fb78fe8",
@@ -29,5 +29,22 @@
     "source_reviews": "6610240737 orderedcurrent01receiving7outputs;6609066263 guard7/7; packaging17/17+installed16 datedonly",
     "AGENTS": "nonecompletecurrenttree",
     "distinct_current_composition_review": "IN_PROGRESS_REQUIRED_BEFORE_ACCEPT"
-  }
+  },
+  "released_at": "2026-11-03T18:25:24.377Z",
+  "released_claim_commit": "4a6f9e09b24e53dc98827f85c91dcd9737445439",
+  "terminal_outcome": {
+    "result": "EXACT_REVIEWED_PATCHES_RECOVERED_PRIVATE_CHILD_BLOCKED_UNCHANGED_FOR_DOCKER_TEST_CLOSURE",
+    "child": "d14786e03fc0744b483aee361eff452ab3e4a549",
+    "tree": "e4287838466ec2e656680290ab9f1bc19328a0cc",
+    "receipt": "7d5d95db37fcfefa9fadd9bb7e0fb12847bc144c",
+    "receipt_sha256": "fb0dd1556a2e4b8411ae20854cef3a97a0a8fe9b2bfd6beddda1ab8710456d46",
+    "controlled_source_API_review_processes": "ALL_TERMINAL",
+    "key": "COMPLETE_NONREPEATABLE_PRIVATE_COMPOSITION_ONLY",
+    "finding": "SelectedDockerengine.testrelativeclean-customer-state.cjs omittedfromtemporarytestCOPY;unchangedpublicadmissionBLOCKED",
+    "product_tests": 0,
+    "public_mutations": 0,
+    "external_CI": "UNKNOWNnotidle",
+    "entrypoints_paused": false
+  },
+  "next": "FreshseparatecorrectivescopeaddsunchangedfactorytoDockerselectedtestfixtureCOPYonly;distinctreview;nomarker/publicationscopeborrowed"
 }
