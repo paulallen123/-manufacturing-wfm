@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "Existing sole R private V013 packaging test selection; no public or production action",
   "run_invocation_id": "r-v013-packaging-selector-20261104T002339000Z-imgz0lz0kq",
@@ -36,5 +36,27 @@
     "reviewer": "/root/pr542_receiving_review_2101",
     "static_preflight": "GO_DOCKER_AFTER_EXISTING_DEPENDENCIES; Forge append BLOCKED",
     "production_approval": "REQUIRED_EXACT_PLAN_THEN_REQUEST_AND_WAIT"
+  },
+  "released_at": "2026-11-04T00:33:43Z",
+  "result": {
+    "status": "ACCEPT_PRIVATE_V013_PACKAGING_SELECTOR_SOURCE_EXECUTION_BLOCKED",
+    "source_action": "PRIVATE_CHILD_CREATED_NONREPEATABLE",
+    "candidate": "fbf7a8b23f8128dc29bacfa04c7a5ba80753083c",
+    "tree": "3dfaef29397d3e5a4dd25cf6896540f2dd2b6609",
+    "public_head_unchanged": "13bba034a7daa81292b0252e924a2840fc402015",
+    "receipt": "2291a1af8b93784524c8e31e0b6a6885468d4a42",
+    "receipt_sha256": "41effd48aeb7dbe00bedd1f94bb81667e61cee888443ad037b1f88a903845d5e",
+    "distinct_review": "2882c7bcbf4659d3f6e19f8f88a9fb8b71cdb2af",
+    "review_scope": "PRIVATE_SELECTOR_SOURCE_ONLY",
+    "controlled_processes": "ALL_TERMINAL",
+    "completed_source_key": "13bba034a7daa81292b0252e924a2840fc402015:V013:private-existing-packaging-selector:v1",
+    "repeat": false,
+    "product_tests": "NOT_STARTED_DEPENDENCY_PRECONDITION_FAILED",
+    "wholeCIkey": "NOTPASS_NOTCOMPLETE",
+    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_IDLE_OR_SETTLED",
+    "production_approval": "EXACT_PLAN_THEN_REQUEST_APPROVAL_AND_WAIT_REQUIRED",
+    "DONE": 0,
+    "customer": "0of6",
+    "original146_owners_holds_schedules": "PRESERVED"
   }
 }
