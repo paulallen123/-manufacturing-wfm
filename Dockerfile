@@ -27,6 +27,7 @@ RUN --mount=type=secret,id=proxy_ca \
  if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
  npm ci --prefix security/runtime --omit=dev --ignore-scripts --no-audit --no-fund \
  && node --test security/runtime/federated-auth.test.cjs security/runtime/federated-session-boundary.test.cjs security/runtime/federated-ui.test.cjs security/runtime/passkey-auth.test.cjs security/runtime/sign-workspace-journey.test.cjs security/runtime/passkey-session-ui.test.cjs security/runtime/bootstrap-passkey-assets.test.cjs
+RUN --network=none node --test --test-timeout=270000 --test-concurrency=1 scripts/clean-customer-packaging.test.cjs
 # Recovery help is part of the passkey boundary, not an optional navigation fixture.
 RUN node --test security/runtime/owner-access-recovery.test.cjs security/runtime/owner-access-recovery-help.test.cjs
 RUN node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs
