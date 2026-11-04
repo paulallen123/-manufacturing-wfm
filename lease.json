@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "Existing sole R ordinary DRAFT source publication of reviewed V013 offline packaging selector",
   "run_invocation_id": "r-v013-draft-publication-20261104T004101000Z-r3mm43wetv",
@@ -39,5 +39,27 @@
     "independent_postcondition": "REQUIRED_BEFORE_RELEASE",
     "production_approval": "EXACT_PLAN_REQUEST_APPROVAL_AND_WAIT_REQUIRED",
     "previous_controlled_processes": "ALL_TERMINAL"
+  },
+  "released_at": "2026-11-04T00:52:00Z",
+  "result": {
+    "status": "REVIEWED_V013_OFFLINE_PACKAGING_SELECTOR_PUBLISHED_TO_EXISTING_DRAFT_CI_UNRESOLVED",
+    "source_action": "CAS_APPLIED_NONREPEATABLE",
+    "candidate": "53e4ea66261ba34920a2b8127368e5836da49bb0",
+    "tree": "4551831218503f429cdec4b585549e88db437481",
+    "previous_public": "13bba034a7daa81292b0252e924a2840fc402015",
+    "receipt": "ca173befd2224a60d26abab24bd73bf305305827",
+    "receipt_sha256": "862c6685a193dfd1b0078a9cec8eabccca9b3ab86044fec477263c587eb1838d",
+    "precondition_review": "f032a4c1b05cc7439a2d2e4a52020ef19fa20015",
+    "postcondition_review": "bbec6db989ee03b74b863af4240ecac9b304db6c",
+    "controlled_processes": "ALL_TERMINAL",
+    "completed_source_key": "53e4ea66261ba34920a2b8127368e5836da49bb0:PR621:ordinary-feature-source-CI:v1",
+    "repeat": false,
+    "wholeCIkey": "NOTPASS_NOTCOMPLETE",
+    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_IDLE_OR_SETTLED",
+    "packaging_tests": "NOT_EXECUTED_LOCAL_DEPENDENCY_PRECONDITION_FAILED",
+    "production_approval": "EXACT_PLAN_THEN_EXPLICIT_APPROVAL_AND_WAIT_REQUIRED",
+    "DONE": 0,
+    "customer": "0of6",
+    "original146_owners_holds_schedules": "PRESERVED"
   }
 }
