@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "Existing sole R private V013 packaging selector source-bound marker renewal",
   "run_invocation_id": "r-v013-marker-20261104T003448000Z-5hr3jur648x",
@@ -32,5 +32,25 @@
     "source_scope": "ACCEPT_PRIVATE_SELECTOR_SOURCE_ONLY_EXECUTION_BLOCKED",
     "previous_controlled_operations": "ALL_TERMINAL",
     "production_approval": "EXACT_PLAN_REQUEST_AND_WAIT_REQUIRED"
+  },
+  "released_at": "2026-11-04T00:39:48Z",
+  "result": {
+    "status": "REVIEWED_V013_PACKAGING_SELECTOR_MARKER_PRIVATE_NOT_PUBLIC",
+    "candidate": "53e4ea66261ba34920a2b8127368e5836da49bb0",
+    "tree": "4551831218503f429cdec4b585549e88db437481",
+    "receipt": "25b2fe73485ba57326a4dbdb45d533744839487e",
+    "receipt_sha256": "96a90ecb2aab004c5ae7750e166278b96785a8c48586f3d4ba8e374a9ad71697",
+    "distinct_review": "02f4e4a7ebd50873cb302905ea75cf6153d2fb06",
+    "source_marker_action": "COMPLETE_NONREPEATABLE",
+    "completed_source_key": "fbf7a8b23f8128dc29bacfa04c7a5ba80753083c:PR621:private-source-bound-marker-renewal:v1",
+    "public_head_unchanged": "13bba034a7daa81292b0252e924a2840fc402015",
+    "controlled_processes": "ALL_TERMINAL",
+    "wholeCIkey": "NOTPASS_NOTCOMPLETE",
+    "externalCI": "UNKNOWN_POSSIBLY_INFLIGHT_NOT_IDLE_OR_SETTLED",
+    "product_tests": "NOT_STARTED_DEPENDENCY_PRECONDITION_FAILED",
+    "production_approval": "EXACT_PLAN_REQUEST_APPROVAL_AND_WAIT_REQUIRED",
+    "DONE": 0,
+    "customer": "0of6",
+    "original146_owners_holds_schedules": "PRESERVED"
   }
 }
