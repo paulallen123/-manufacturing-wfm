@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "laneIds": [
+    "CP-001",
+    "V133",
+    "V134",
+    "V135",
+    "V136",
+    "V137"
+  ],
+  "observedAt": "2026-10-30T16:12:22.382Z",
+  "readOnly": true,
+  "publicBrowserObservationBoundary": "Visible JSON bodies only; no HTTP status or source header inferred.",
+  "services": [
+    {
+      "serviceId": "cded4ff7-24b1-4aaa-a7e2-67f143583bc2",
+      "serviceName": "vector-customer-ready-candidate",
+      "activeDeployments": [
+        {
+          "id": "057e19a2-7d49-4390-8705-63e71ea79a89",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-17T15:13:17.130Z",
+          "statusUpdatedAt": "2026-10-17T15:23:22.890Z"
+        }
+      ],
+      "replicaStatus": {
+        "running": 1,
+        "crashed": 0,
+        "total": 1
+      },
+      "hasVolume": true,
+      "issues": {
+        "warningCount": 1,
+        "criticalCount": 0
+      }
+    },
+    {
+      "serviceId": "48ee3ceb-9cfc-4399-b3a1-3628e3603815",
+      "serviceName": "vector-hardening-proof",
+      "activeDeployments": [
+        {
+          "id": "c95e7a37-2504-437c-9edb-495178a88935",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-29T22:18:57.384Z",
+          "statusUpdatedAt": "2026-10-29T22:31:20.913Z"
+        }
+      ],
+      "replicaStatus": {
+        "running": 1,
+        "crashed": 0,
+        "total": 1
+      },
+      "hasVolume": true,
+      "issues": {
+        "warningCount": 0,
+        "criticalCount": 0
+      }
+    }
+  ],
+  "pendingWork": [],
+  "proof": {
+    "url": "https://vector-hardening-proof-production.up.railway.app/",
+    "identity": {
+      "candidateSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "sourceBinding": "build-file-matched",
+      "fixtureOnly": true,
+      "productionApproved": false,
+      "pilotReady": false
+    },
+    "health": {
+      "status": "ok",
+      "mode": "hosted-staging",
+      "release": "0.6.76-hosted-staging-rc1"
+    },
+    "authVariableNames": [
+      {
+        "name": "WFM_PROOF_RUNNER_AUTH",
+        "listed": false
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_PUBLIC_KEY_B64",
+        "listed": false
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_ALLOWED_EMAILS",
+        "listed": false
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_SESSION_TTL_MS",
+        "listed": false
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_AUDIT_STDOUT",
+        "listed": false
+      }
+    ],
+    "valuesRedacted": true
+  },
+  "customer": {
+    "url": "https://vector-customer-ready-candidate-production.up.railway.app/",
+    "identity": {
+      "candidateSha": "90ad90fcf60adaca9abacdd4ad14bf392f95e585",
+      "sourceBinding": "build-file-matched",
+      "fixtureOnly": true,
+      "productionApproved": false,
+      "pilotReady": false
+    },
+    "health": {
+      "status": "ok",
+      "mode": "hosted-staging",
+      "release": "0.6.76-hosted-staging-rc1"
+    },
+    "latestAttempt": {
+      "id": "d9112b19-7e46-4eab-8873-9a51826870b6",
+      "status": "FAILED",
+      "commit": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2"
+    },
+    "authVariableNames": [
+      {
+        "name": "WFM_PROOF_RUNNER_AUTH",
+        "listed": true
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_PUBLIC_KEY_B64",
+        "listed": true
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_ALLOWED_EMAILS",
+        "listed": true
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_SESSION_TTL_MS",
+        "listed": true
+      },
+      {
+        "name": "WFM_PROOF_RUNNER_AUDIT_STDOUT",
+        "listed": true
+      }
+    ],
+    "valuesRedacted": true
+  },
+  "inferences": [
+    "Matching protected signer and current actor/tenant/run/configuration are unverified; variable-name presence does not establish valid values, active authentication or authority.",
+    "Signer variable names are not listed on current proof service; listed customer auth names belong to older serving source90ad.",
+    "Existing signed runner remains navigation-only; no signed hosted business action accepted."
+  ],
+  "hostedBusinessActions": 0,
+  "liveMutations": 0,
+  "customerComplete": false,
+  "lanesDone": 0,
+  "requiredAuthorityPacket": "https://github.com/paulallen123/-manufacturing-wfm/blob/1b8f30222f12332fb4b8ad9f957e3b8a7a3ba32d/docs/execution/proof-action-grant-20261030/README.md"
+}

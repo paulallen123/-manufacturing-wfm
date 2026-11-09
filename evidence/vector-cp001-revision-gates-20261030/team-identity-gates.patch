@@ -1,0 +1,10 @@
+--- a/scripts/vector-proof-result.mjs
++++ b/scripts/vector-proof-result.mjs
+@@ -37,6 +37,7 @@
+   const expectedTeamSet = new Set(expectedTeamIds);
+   const signedTeamSet = new Set(teamSignOffs.map(item => item?.teamId));
+   const allTeamWeeklySignOffBound = expectedTeamIds.length > 0
++    && expectedTeamIds.every(teamId => typeof teamId === 'string' && teamId.trim().length > 0)
+     && expectedTeamSet.size === expectedTeamIds.length
+     && signedTeamSet.size === teamSignOffs.length
+     && signedTeamSet.size === expectedTeamSet.size

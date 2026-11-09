@@ -20,7 +20,8 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     'payrollReleaseStillBlocked'
   ];
   const signOffEvidence = attendanceJourney?.weeklySignOffEvidence;
-  const weeklySignOffVersionBound = Number.isInteger(signOffEvidence?.submittedRevision)
+  const weeklySignOffVersionBound = Number.isSafeInteger(signOffEvidence?.submittedRevision)
+    && signOffEvidence.submittedRevision >= 0
     && signOffEvidence.submittedRevision === signOffEvidence.signatureRevision
     && signOffEvidence.submittedRevision === signOffEvidence.auditRevision
     && signOffEvidence.refreshedStatus === 'signed';
@@ -41,7 +42,8 @@ export function roleProofResult(assetBinding, leaveJourney = null, attendanceJou
     && signedTeamSet.size === teamSignOffs.length
     && signedTeamSet.size === expectedTeamSet.size
     && [...expectedTeamSet].every(teamId => signedTeamSet.has(teamId))
-    && teamSignOffs.every(item => Number.isInteger(item?.submittedRevision)
+    && teamSignOffs.every(item => Number.isSafeInteger(item?.submittedRevision)
+      && item.submittedRevision >= 0
       && item.submittedRevision === item.signatureRevision
       && item.submittedRevision === item.auditRevision
       && item.refreshedStatus === 'signed');

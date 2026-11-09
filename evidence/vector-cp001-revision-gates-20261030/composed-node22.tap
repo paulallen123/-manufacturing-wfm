@@ -1,0 +1,748 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: wrapper preserves complete scoped payroll evidence without promoting customer readiness
+ok 1 - wrapper preserves complete scoped payroll evidence without promoting customer readiness
+  ---
+  duration_ms: 107.570875
+  type: 'test'
+  ...
+# Subtest: absent payroll evidence stays unverified through the wrapper
+ok 2 - absent payroll evidence stays unverified through the wrapper
+  ---
+  duration_ms: 64.2516
+  type: 'test'
+  ...
+# Subtest: malformed request target returns generic400 and preserves partial proof and readiness denial
+ok 3 - malformed request target returns generic400 and preserves partial proof and readiness denial
+  ---
+  duration_ms: 72.469609
+  type: 'test'
+  ...
+# Subtest: a persisted payroll batch mismatch remains unverified through the wrapper
+ok 4 - a persisted payroll batch mismatch remains unverified through the wrapper
+  ---
+  duration_ms: 90.002673
+  type: 'test'
+  ...
+# Subtest: duplicate team signatures cannot substitute for distinct scoped team sign offs
+ok 5 - duplicate team signatures cannot substitute for distinct scoped team sign offs
+  ---
+  duration_ms: 89.165599
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: signed client uses actual handler cookie and persisted actor rather than password login
+ok 6 - signed client uses actual handler cookie and persisted actor rather than password login
+  ---
+  duration_ms: 69.496865
+  type: 'test'
+  ...
+# Subtest: all explicit roles and every fresh same-role context receive separate signed assertions
+ok 7 - all explicit roles and every fresh same-role context receive separate signed assertions
+  ---
+  duration_ms: 89.937097
+  type: 'test'
+  ...
+# Subtest: signed client refuses signature and never falls back to password
+ok 8 - signed client refuses signature and never falls back to password
+  ---
+  duration_ms: 53.4764
+  type: 'test'
+  ...
+# Subtest: signed client refuses origin and never falls back to password
+ok 9 - signed client refuses origin and never falls back to password
+  ---
+  duration_ms: 41.680845
+  type: 'test'
+  ...
+# Subtest: signed client refuses expired and never falls back to password
+ok 10 - signed client refuses expired and never falls back to password
+  ---
+  duration_ms: 31.374167
+  type: 'test'
+  ...
+# Subtest: signed client refuses actor and never falls back to password
+ok 11 - signed client refuses actor and never falls back to password
+  ---
+  duration_ms: 41.233295
+  type: 'test'
+  ...
+# Subtest: signed client refuses roleDrift and never falls back to password
+ok 12 - signed client refuses roleDrift and never falls back to password
+  ---
+  duration_ms: 36.231188
+  type: 'test'
+  ...
+# Subtest: signed client refuses tenantDrift and never falls back to password
+ok 13 - signed client refuses tenantDrift and never falls back to password
+  ---
+  duration_ms: 36.373889
+  type: 'test'
+  ...
+# Subtest: signed client refuses source and never falls back to password
+ok 14 - signed client refuses source and never falls back to password
+  ---
+  duration_ms: 26.073129
+  type: 'test'
+  ...
+# Subtest: signed client refuses header and never falls back to password
+ok 15 - signed client refuses header and never falls back to password
+  ---
+  duration_ms: 28.346933
+  type: 'test'
+  ...
+# Subtest: actual nonce replay is rejected on a fresh page without password fallback
+ok 16 - actual nonce replay is rejected on a fresh page without password fallback
+  ---
+  duration_ms: 34.810343
+  type: 'test'
+  ...
+# Subtest: a previously authenticated page is refused rather than clearing or replacing its cookie
+ok 17 - a previously authenticated page is refused rather than clearing or replacing its cookie
+  ---
+  duration_ms: 33.263613
+  type: 'test'
+  ...
+# Subtest: an explicitly requested actor outside the existing server allowlist cannot mint a session
+ok 18 - an explicitly requested actor outside the existing server allowlist cannot mint a session
+  ---
+  duration_ms: 27.240179
+  type: 'test'
+  ...
+# Subtest: current manager context deployment mismatch stops auth/navigation proof
+ok 19 - current manager context deployment mismatch stops auth/navigation proof
+  ---
+  duration_ms: 31.154172
+  type: 'test'
+  ...
+# Subtest: current manager context run mismatch stops auth/navigation proof
+ok 20 - current manager context run mismatch stops auth/navigation proof
+  ---
+  duration_ms: 31.988973
+  type: 'test'
+  ...
+# Subtest: current manager context tenant mismatch stops auth/navigation proof
+ok 21 - current manager context tenant mismatch stops auth/navigation proof
+  ---
+  duration_ms: 31.351503
+  type: 'test'
+  ...
+# Subtest: current manager context configuration mismatch stops auth/navigation proof
+ok 22 - current manager context configuration mismatch stops auth/navigation proof
+  ---
+  duration_ms: 32.043023
+  type: 'test'
+  ...
+# Subtest: current manager context absent mismatch stops auth/navigation proof
+ok 23 - current manager context absent mismatch stops auth/navigation proof
+  ---
+  duration_ms: 33.089796
+  type: 'test'
+  ...
+# Subtest: historical evidence observed identity is never treated as current deployment authority
+ok 24 - historical evidence observed identity is never treated as current deployment authority
+  ---
+  duration_ms: 31.275171
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when VECTOR_PROOF_AUTH_PROFILE is absent
+ok 25 - signed constructor fails before transport when VECTOR_PROOF_AUTH_PROFILE is absent
+  ---
+  duration_ms: 24.139558
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when VECTOR_PROOF_ACTORS_JSON is absent
+ok 26 - signed constructor fails before transport when VECTOR_PROOF_ACTORS_JSON is absent
+  ---
+  duration_ms: 23.516159
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_DEPLOYMENT_ID is absent
+ok 27 - signed constructor fails before transport when EXPECTED_DEPLOYMENT_ID is absent
+  ---
+  duration_ms: 26.061041
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_IMPLEMENTATION_TENANT is absent
+ok 28 - signed constructor fails before transport when EXPECTED_IMPLEMENTATION_TENANT is absent
+  ---
+  duration_ms: 32.618972
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_IMPLEMENTATION_RUN_ID is absent
+ok 29 - signed constructor fails before transport when EXPECTED_IMPLEMENTATION_RUN_ID is absent
+  ---
+  duration_ms: 30.459948
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_CONFIGURATION_DIGEST is absent
+ok 30 - signed constructor fails before transport when EXPECTED_CONFIGURATION_DIGEST is absent
+  ---
+  duration_ms: 24.877856
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when PROOF_PRIVATE_KEY_B64 is absent
+ok 31 - signed constructor fails before transport when PROOF_PRIVATE_KEY_B64 is absent
+  ---
+  duration_ms: 24.10091
+  type: 'test'
+  ...
+# Subtest: malformed actor JSON, missing roles, duplicate emails and wrong isolation tenant reject
+ok 32 - malformed actor JSON, missing roles, duplicate emails and wrong isolation tenant reject
+  ---
+  duration_ms: 24.395405
+  type: 'test'
+  ...
+# Subtest: signer accepts declared base64 PEM Ed25519 only and never appears in returned profile
+ok 33 - signer accepts declared base64 PEM Ed25519 only and never appears in returned profile
+  ---
+  duration_ms: 39.36487
+  type: 'test'
+  ...
+# Subtest: signed runner emits distinct partial receipt and excludes the fixed business branch
+ok 34 - signed runner emits distinct partial receipt and excludes the fixed business branch
+  ---
+  duration_ms: 31.449096
+  type: 'test'
+  ...
+# Subtest: faithful source-layout image files load the same canonical serializer without duplicate authority
+ok 35 - faithful source-layout image files load the same canonical serializer without duplicate authority
+  ---
+  duration_ms: 28.454081
+  type: 'test'
+  ...
+# Subtest: actual unchanged wrapper keeps partial auth child business checks false and readiness503
+ok 36 - actual unchanged wrapper keeps partial auth child business checks false and readiness503
+  ---
+  duration_ms: 106.066542
+  type: 'test'
+  ...
+# Subtest: legacy password profile requires explicit loopback origin and retains fixture actor expectations
+ok 37 - legacy password profile requires explicit loopback origin and retains fixture actor expectations
+  ---
+  duration_ms: 0.772279
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: complete scoped synthetic journeys and bound assets still cannot claim whole-product readiness
+ok 38 - complete scoped synthetic journeys and bound assets still cannot claim whole-product readiness
+  ---
+  duration_ms: 1.879943
+  type: 'test'
+  ...
+# Subtest: absent business evidence remains navigation-only even with bound assets
+ok 39 - absent business evidence remains navigation-only even with bound assets
+  ---
+  duration_ms: 0.205623
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing employeeUiSubmitted
+ok 40 - leave journey rejects missing employeeUiSubmitted
+  ---
+  duration_ms: 0.206815
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing pendingStateReadBack
+ok 41 - leave journey rejects missing pendingStateReadBack
+  ---
+  duration_ms: 0.235216
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing overlapRefusedInUi
+ok 42 - leave journey rejects missing overlapRefusedInUi
+  ---
+  duration_ms: 0.328605
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing refreshedUiRetainedPending
+ok 43 - leave journey rejects missing refreshedUiRetainedPending
+  ---
+  duration_ms: 0.173235
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing managerUiDecided
+ok 44 - leave journey rejects missing managerUiDecided
+  ---
+  duration_ms: 0.268386
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing managerStateReadBack
+ok 45 - leave journey rejects missing managerStateReadBack
+  ---
+  duration_ms: 0.271581
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing freshEmployeeLoginSawDecision
+ok 46 - leave journey rejects missing freshEmployeeLoginSawDecision
+  ---
+  duration_ms: 0.492366
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing requestAuditLinked
+ok 47 - leave journey rejects missing requestAuditLinked
+  ---
+  duration_ms: 0.468831
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing freshBalanceReconciled
+ok 48 - leave journey rejects missing freshBalanceReconciled
+  ---
+  duration_ms: 0.179805
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing managerUiApproved
+ok 49 - attendance journey rejects missing managerUiApproved
+  ---
+  duration_ms: 0.195048
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing exactCorrectionReadBack
+ok 50 - attendance journey rejects missing exactCorrectionReadBack
+  ---
+  duration_ms: 0.112836
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing rawPunchesPreserved
+ok 51 - attendance journey rejects missing rawPunchesPreserved
+  ---
+  duration_ms: 0.098114
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing domainAuditReadBack
+ok 52 - attendance journey rejects missing domainAuditReadBack
+  ---
+  duration_ms: 0.149631
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing refreshedUiRetainedCorrection
+ok 53 - attendance journey rejects missing refreshedUiRetainedCorrection
+  ---
+  duration_ms: 0.18321
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing weeklySignStillBlocked
+ok 54 - attendance journey rejects missing weeklySignStillBlocked
+  ---
+  duration_ms: 0.125085
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing payrollReleaseStillBlocked
+ok 55 - attendance journey rejects missing payrollReleaseStillBlocked
+  ---
+  duration_ms: 0.130903
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing weeklySignOffCompleted
+ok 56 - attendance journey rejects missing weeklySignOffCompleted
+  ---
+  duration_ms: 0.099507
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing submittedRevision
+ok 57 - attendance sign-off rejects missing submittedRevision
+  ---
+  duration_ms: 0.138224
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing signatureRevision
+ok 58 - attendance sign-off rejects missing signatureRevision
+  ---
+  duration_ms: 0.097895
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing auditRevision
+ok 59 - attendance sign-off rejects missing auditRevision
+  ---
+  duration_ms: 0.096813
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing refreshedStatus
+ok 60 - attendance sign-off rejects missing refreshedStatus
+  ---
+  duration_ms: 0.095962
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.responseStatus
+ok 61 - payroll journey rejects missing release.responseStatus
+  ---
+  duration_ms: 0.141138
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.batchId
+ok 62 - payroll journey rejects missing release.batchId
+  ---
+  duration_ms: 0.137763
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.status
+ok 63 - payroll journey rejects missing release.status
+  ---
+  duration_ms: 0.182379
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.rowCount
+ok 64 - payroll journey rejects missing release.rowCount
+  ---
+  duration_ms: 0.136692
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.computedChecksum
+ok 65 - payroll journey rejects missing release.computedChecksum
+  ---
+  duration_ms: 0.100288
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.checksumHeader
+ok 66 - payroll journey rejects missing release.checksumHeader
+  ---
+  duration_ms: 0.100408
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.persistedBatchId
+ok 67 - payroll journey rejects missing release.persistedBatchId
+  ---
+  duration_ms: 0.105706
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.auditBatchId
+ok 68 - payroll journey rejects missing release.auditBatchId
+  ---
+  duration_ms: 0.099436
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.freshLoginBatchId
+ok 69 - payroll journey rejects missing release.freshLoginBatchId
+  ---
+  duration_ms: 0.117163
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.reconciliationOk
+ok 70 - payroll journey rejects missing release.reconciliationOk
+  ---
+  duration_ms: 0.149831
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects conflicting persistedBatchId
+ok 71 - payroll journey rejects conflicting persistedBatchId
+  ---
+  duration_ms: 0.132766
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects conflicting auditBatchId
+ok 72 - payroll journey rejects conflicting auditBatchId
+  ---
+  duration_ms: 0.177612
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects conflicting freshLoginBatchId
+ok 73 - payroll journey rejects conflicting freshLoginBatchId
+  ---
+  duration_ms: 0.177101
+  type: 'test'
+  ...
+# Subtest: payroll cannot count null as an identified team
+ok 74 - payroll cannot count null as an identified team
+  ---
+  duration_ms: 0.227676
+  type: 'test'
+  ...
+# Subtest: payroll cannot count missing as an identified team
+ok 75 - payroll cannot count missing as an identified team
+  ---
+  duration_ms: 0.09444
+  type: 'test'
+  ...
+# Subtest: payroll cannot count empty as an identified team
+ok 76 - payroll cannot count empty as an identified team
+  ---
+  duration_ms: 0.098896
+  type: 'test'
+  ...
+# Subtest: payroll cannot count spaces as an identified team
+ok 77 - payroll cannot count spaces as an identified team
+  ---
+  duration_ms: 1.27551
+  type: 'test'
+  ...
+# Subtest: payroll cannot count tab as an identified team
+ok 78 - payroll cannot count tab as an identified team
+  ---
+  duration_ms: 0.098055
+  type: 'test'
+  ...
+# Subtest: payroll cannot count number as an identified team
+ok 79 - payroll cannot count number as an identified team
+  ---
+  duration_ms: 0.100578
+  type: 'test'
+  ...
+# Subtest: payroll cannot count boolean as an identified team
+ok 80 - payroll cannot count boolean as an identified team
+  ---
+  duration_ms: 0.128589
+  type: 'test'
+  ...
+# Subtest: payroll rejects duplicate expected identities and duplicate signatures
+ok 81 - payroll rejects duplicate expected identities and duplicate signatures
+  ---
+  duration_ms: 0.175518
+  type: 'test'
+  ...
+# Subtest: payroll rejects missing expected team, extra signed team and replacement signed identity
+ok 82 - payroll rejects missing expected team, extra signed team and replacement signed identity
+  ---
+  duration_ms: 0.199994
+  type: 'test'
+  ...
+# Subtest: ordinary distinct identifiers remain valid independent of signature ordering
+ok 83 - ordinary distinct identifiers remain valid independent of signature ordering
+  ---
+  duration_ms: 0.133206
+  type: 'test'
+  ...
+# Subtest: only exact BOUND assets satisfy exact asset evidence, while readiness always remains false
+ok 84 - only exact BOUND assets satisfy exact asset evidence, while readiness always remains false
+  ---
+  duration_ms: 0.204302
+  type: 'test'
+  ...
+# (node:21) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: attendance cannot verify sign-off with negative revision
+ok 85 - attendance cannot verify sign-off with negative revision
+  ---
+  duration_ms: 1.194692
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with negative revision
+ok 86 - payroll cannot verify sign-offs with negative revision
+  ---
+  duration_ms: 0.197662
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with minimum-safe-negative revision
+ok 87 - attendance cannot verify sign-off with minimum-safe-negative revision
+  ---
+  duration_ms: 0.104063
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with minimum-safe-negative revision
+ok 88 - payroll cannot verify sign-offs with minimum-safe-negative revision
+  ---
+  duration_ms: 0.085186
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with unsafe-positive revision
+ok 89 - attendance cannot verify sign-off with unsafe-positive revision
+  ---
+  duration_ms: 0.173366
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with unsafe-positive revision
+ok 90 - payroll cannot verify sign-offs with unsafe-positive revision
+  ---
+  duration_ms: 0.082852
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with unsafe-negative revision
+ok 91 - attendance cannot verify sign-off with unsafe-negative revision
+  ---
+  duration_ms: 0.161808
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with unsafe-negative revision
+ok 92 - payroll cannot verify sign-offs with unsafe-negative revision
+  ---
+  duration_ms: 0.091244
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with fraction revision
+ok 93 - attendance cannot verify sign-off with fraction revision
+  ---
+  duration_ms: 0.233164
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with fraction revision
+ok 94 - payroll cannot verify sign-offs with fraction revision
+  ---
+  duration_ms: 0.39999
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with NaN revision
+ok 95 - attendance cannot verify sign-off with NaN revision
+  ---
+  duration_ms: 0.135049
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with NaN revision
+ok 96 - payroll cannot verify sign-offs with NaN revision
+  ---
+  duration_ms: 0.066528
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with infinity revision
+ok 97 - attendance cannot verify sign-off with infinity revision
+  ---
+  duration_ms: 0.098725
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with infinity revision
+ok 98 - payroll cannot verify sign-offs with infinity revision
+  ---
+  duration_ms: 0.083282
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with numeric-string revision
+ok 99 - attendance cannot verify sign-off with numeric-string revision
+  ---
+  duration_ms: 0.084735
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with numeric-string revision
+ok 100 - payroll cannot verify sign-offs with numeric-string revision
+  ---
+  duration_ms: 0.059287
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with null revision
+ok 101 - attendance cannot verify sign-off with null revision
+  ---
+  duration_ms: 0.045627
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with null revision
+ok 102 - payroll cannot verify sign-offs with null revision
+  ---
+  duration_ms: 0.067269
+  type: 'test'
+  ...
+# Subtest: attendance cannot verify sign-off with absent revision
+ok 103 - attendance cannot verify sign-off with absent revision
+  ---
+  duration_ms: 0.048241
+  type: 'test'
+  ...
+# Subtest: payroll cannot verify sign-offs with absent revision
+ok 104 - payroll cannot verify sign-offs with absent revision
+  ---
+  duration_ms: 0.043094
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 0 retains scoped proof only
+ok 105 - nonnegative safe revision 0 retains scoped proof only
+  ---
+  duration_ms: 0.08786
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 1 retains scoped proof only
+ok 106 - nonnegative safe revision 1 retains scoped proof only
+  ---
+  duration_ms: 0.049242
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 3 retains scoped proof only
+ok 107 - nonnegative safe revision 3 retains scoped proof only
+  ---
+  duration_ms: 0.043655
+  type: 'test'
+  ...
+# Subtest: nonnegative safe revision 9007199254740991 retains scoped proof only
+ok 108 - nonnegative safe revision 9007199254740991 retains scoped proof only
+  ---
+  duration_ms: 0.042823
+  type: 'test'
+  ...
+# (node:22) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:22) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: exact candidate exposes the signed proof runner authentication boundary
+ok 109 - exact candidate exposes the signed proof runner authentication boundary
+  ---
+  duration_ms: 0.936882
+  type: 'test'
+  ...
+# Subtest: signed proof identity mints a short-lived audited session without a password
+ok 110 - signed proof identity mints a short-lived audited session without a password
+  ---
+  duration_ms: 53.120374
+  type: 'test'
+  ...
+# Subtest: ambiguous normalized proof identity fails closed before session issuance
+ok 111 - ambiguous normalized proof identity fails closed before session issuance
+  ---
+  duration_ms: 18.436518
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent add-ambiguous-user until issuance commits
+ok 112 - principal selection locks out concurrent add-ambiguous-user until issuance commits
+  ---
+  duration_ms: 18.625186
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent change-tenant until issuance commits
+ok 113 - principal selection locks out concurrent change-tenant until issuance commits
+  ---
+  duration_ms: 17.340331
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent change-role until issuance commits
+ok 114 - principal selection locks out concurrent change-role until issuance commits
+  ---
+  duration_ms: 16.380665
+  type: 'test'
+  ...
+# Subtest: principal lookup failure rolls back and refuses without issuing credentials
+ok 115 - principal lookup failure rolls back and refuses without issuing credentials
+  ---
+  duration_ms: 22.552698
+  type: 'test'
+  ...
+# Subtest: signed assertion is single use and replay fails closed
+ok 116 - signed assertion is single use and replay fails closed
+  ---
+  duration_ms: 16.721889
+  type: 'test'
+  ...
+# Subtest: tampered signature and expired assertion are rejected
+ok 117 - tampered signature and expired assertion are rejected
+  ---
+  duration_ms: 17.420319
+  type: 'test'
+  ...
+# Subtest: proof runner refuses non-staging activation
+ok 118 - proof runner refuses non-staging activation
+  ---
+  duration_ms: 1.453764
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back session issuance and permits a clean retry after repair
+ok 119 - audit failure rolls back session issuance and permits a clean retry after repair
+  ---
+  duration_ms: 20.288798
+  type: 'test'
+  ...
+# Subtest: proof session refuses tenant drift before first product request
+ok 120 - proof session refuses tenant drift before first product request
+  ---
+  duration_ms: 48.522094
+  type: 'test'
+  ...
+# Subtest: proof session refuses role drift before first product request
+ok 121 - proof session refuses role drift before first product request
+  ---
+  duration_ms: 33.667368
+  type: 'test'
+  ...
+1..121
+# tests 121
+# suites 0
+# pass 121
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1270.152509
