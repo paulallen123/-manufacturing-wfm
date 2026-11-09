@@ -1,0 +1,49 @@
+{
+  "parent": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "baseTree": "3b7c62f3903f6b778afaa89fef8ccd568051733d",
+  "files": [
+    {
+      "path": "docs/execution/vector-v042-display-20261030/README.md",
+      "bytes": 6717,
+      "sha256": "2c5133767d1ad5d1bd6fbcc4dce3b1d25e4fa26d3ea3735ae33d88fe98c85e87",
+      "gitBlob": "6daf96db6a3755d78e72022fd88cf7e478feebab"
+    },
+    {
+      "path": "docs/execution/vector-v042-display-20261030/baseline-node22.tap",
+      "bytes": 8726,
+      "sha256": "128033f30c7bf53c27a6da20af5a9480db7d313e125d7f591ab1d3813e422b7e",
+      "gitBlob": "d243c25d3b8ca6caf1ad6a7e91b11d9b02e1a260"
+    },
+    {
+      "path": "docs/execution/vector-v042-display-20261030/candidate-node22.tap",
+      "bytes": 2533,
+      "sha256": "be4dcdf49f0f468cb6bed6ad9343ad33af9b3b67a428bd807152c7e2970e866a",
+      "gitBlob": "88e457b3b177441f0ae59c0fbfb008adbeb8451e"
+    },
+    {
+      "path": "docs/execution/vector-v042-display-20261030/frozen552-compatibility-node22.tap",
+      "bytes": 13124,
+      "sha256": "7b8aaaf1921fe7ac88e9a74437fc3be270462d7f5fa9d6b02f37cd36eb1f01f1",
+      "gitBlob": "cca97f07b249e9e14db1f46f752da62325c1671b"
+    },
+    {
+      "path": "docs/execution/vector-v042-display-20261030/syntax-node22.log",
+      "bytes": 174,
+      "sha256": "eee8171ef45783c39992f132c234e10ec6135d5d4050e4383a9fbcb6e4665972",
+      "gitBlob": "0135290d291b586037e791c791a39450d7b20f82"
+    },
+    {
+      "path": "ux-overlay/vector-leave-balance-display.test.cjs",
+      "bytes": 5491,
+      "sha256": "2cbfd67252f0e5ed73f598338ad74dc13b70eb287762bf2c43f7680f79842338",
+      "gitBlob": "17833c369c5de02950baa184eba7c09990690fa4"
+    },
+    {
+      "path": "ux-overlay/vector-workflows.js",
+      "bytes": 47819,
+      "sha256": "7540abc8b0efc30443ebbf595a3ced9780d38e9fd389c7bacf40702942d18e88",
+      "gitBlob": "a109ef3e0bb0b01b2800e8273a4b5e427e04fed6"
+    }
+  ],
+  "scope": "display-only draft source plus standalone regression and local evidence; no image/browser/customer proof"
+}

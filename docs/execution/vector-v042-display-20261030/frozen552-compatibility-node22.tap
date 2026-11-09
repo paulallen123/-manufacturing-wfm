@@ -1,0 +1,324 @@
+(node:2) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:11) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Time Review action context uses the canonical attendance route end to end
+ok 1 - Time Review action context uses the canonical attendance route end to end
+  ---
+  duration_ms: 4.277939
+  type: 'test'
+  ...
+# Subtest: approved Improve navigation exposes payroll reports without reviving the retired Reports top-level nav
+ok 2 - approved Improve navigation exposes payroll reports without reviving the retired Reports top-level nav
+  ---
+  duration_ms: 0.424867
+  type: 'test'
+  ...
+# Subtest: source lifecycle is partitioned without presentation-word inference
+ok 3 - source lifecycle is partitioned without presentation-word inference
+  ---
+  duration_ms: 1.027746
+  type: 'test'
+  ...
+# Subtest: awaiting confirmation remains present but does not inflate action-needed count
+ok 4 - awaiting confirmation remains present but does not inflate action-needed count
+  ---
+  duration_ms: 2.057725
+  type: 'test'
+  ...
+# Subtest: rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work
+ok 5 - rendered action queue keeps source-confirming work collapsed, visible and passive without hiding actionable work
+  ---
+  duration_ms: 2.337887
+  type: 'test'
+  ...
+# Subtest: action ordering cannot create synthetic urgency styling
+ok 6 - action ordering cannot create synthetic urgency styling
+  ---
+  duration_ms: 0.559305
+  type: 'test'
+  ...
+# Subtest: shell identity uses authenticated actor with the real display-only me shape and clears after sign-out
+ok 7 - shell identity uses authenticated actor with the real display-only me shape and clears after sign-out
+  ---
+  duration_ms: 1.100994
+  type: 'test'
+  ...
+# Subtest: employee home redraws only when content changes, allowing the mutation observer to settle
+ok 8 - employee home redraws only when content changes, allowing the mutation observer to settle
+  ---
+  duration_ms: 21.748373
+  type: 'test'
+  ...
+# Subtest: employee home failure settles until explicit retry and recovery settles too
+ok 9 - employee home failure settles until explicit retry and recovery settles too
+  ---
+  duration_ms: 2.96361
+  type: 'test'
+  ...
+# Subtest: employee home discards delayed results after navigation, account change or host removal and can recover
+ok 10 - employee home discards delayed results after navigation, account change or host removal and can recover
+  ---
+  duration_ms: 14.594172
+  type: 'test'
+  ...
+# Subtest: authoritative screen render refreshes the employee personal record rather than retaining old balances
+ok 11 - authoritative screen render refreshes the employee personal record rather than retaining old balances
+  ---
+  duration_ms: 2.817976
+  type: 'test'
+  ...
+# Subtest: a previous personal fetch cannot overwrite the fresh record after authoritative redraw
+ok 12 - a previous personal fetch cannot overwrite the fresh record after authoritative redraw
+  ---
+  duration_ms: 3.590645
+  type: 'test'
+  ...
+# Subtest: payroll and employee screens do not request unavailable manager Time Review evidence
+ok 13 - payroll and employee screens do not request unavailable manager Time Review evidence
+  ---
+  duration_ms: 2.283458
+  type: 'test'
+  ...
+# Subtest: authorised manager screens still load source-confirmed action evidence
+ok 14 - authorised manager screens still load source-confirmed action evidence
+  ---
+  duration_ms: 1.110808
+  type: 'test'
+  ...
+# Subtest: losing access while the calendar loads prevents the manager evidence request
+ok 15 - losing access while the calendar loads prevents the manager evidence request
+  ---
+  duration_ms: 0.804306
+  type: 'test'
+  ...
+# Subtest: denied UI roles make zero evidence requests even when navigation is present
+ok 16 - denied UI roles make zero evidence requests even when navigation is present
+  ---
+  duration_ms: 3.956645
+  type: 'test'
+  ...
+# Subtest: manager director and supervisor retain permitted UI evidence reads
+ok 17 - manager director and supervisor retain permitted UI evidence reads
+  ---
+  duration_ms: 2.592193
+  type: 'test'
+  ...
+# Subtest: source-unavailable evidence is retained as unavailable rather than a successful empty action list
+ok 18 - source-unavailable evidence is retained as unavailable rather than a successful empty action list
+  ---
+  duration_ms: 1.174823
+  type: 'test'
+  ...
+# Subtest: partially available source evidence keeps admitted items and its incomplete status
+ok 19 - partially available source evidence keeps admitted items and its incomplete status
+  ---
+  duration_ms: 0.884355
+  type: 'test'
+  ...
+# Subtest: other-tenant or other-person response envelopes cannot enter a manager action queue
+ok 20 - other-tenant or other-person response envelopes cannot enter a manager action queue
+  ---
+  duration_ms: 1.751743
+  type: 'test'
+  ...
+# Subtest: a later request epoch discards an old evidence body even when the account name is unchanged
+ok 21 - a later request epoch discards an old evidence body even when the account name is unchanged
+  ---
+  duration_ms: 3.102255
+  type: 'test'
+  ...
+# Subtest: the action surface explains unavailable and partial evidence to the signed-in reviewer
+ok 22 - the action surface explains unavailable and partial evidence to the signed-in reviewer
+  ---
+  duration_ms: 2.790305
+  type: 'test'
+  ...
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: Vector keeps Time Review source-bound inside registered Attendance navigation
+ok 23 - Vector keeps Time Review source-bound inside registered Attendance navigation
+  ---
+  duration_ms: 0.831106
+  type: 'test'
+  ...
+# Subtest: authorised manager and payroll startup fail closed when no current period exists without loading history
+ok 24 - authorised manager and payroll startup fail closed when no current period exists without loading history
+  ---
+  duration_ms: 18.025413
+  type: 'test'
+  ...
+# Subtest: Vector workflow controller uses real authentication, saved checks and restart recovery
+    # Subtest: real HTTP serves the workflow controller before its payroll consumer
+    ok 1 - real HTTP serves the workflow controller before its payroll consumer
+      ---
+      duration_ms: 7.435776
+      type: 'test'
+      ...
+    # Subtest: authenticated calendar loads before browser domain modules and stays tenant scoped
+    ok 2 - authenticated calendar loads before browser domain modules and stays tenant scoped
+      ---
+      duration_ms: 331.51736
+      type: 'test'
+      ...
+    # Subtest: baseline surviving Time Review action fails without its removed owner
+    ok 3 - baseline surviving Time Review action fails without its removed owner
+      ---
+      duration_ms: 1.344622
+      type: 'test'
+      ...
+    # Subtest: new workflow reads real team and evidence before individual confirmation
+    ok 4 - new workflow reads real team and evidence before individual confirmation
+      ---
+      duration_ms: 287.998533
+      type: 'test'
+      ...
+    # Subtest: concurrent duplicate submission is bounded in the UI controller
+    ok 5 - concurrent duplicate submission is bounded in the UI controller
+      ---
+      duration_ms: 539.93942
+      type: 'test'
+      ...
+    # Subtest: unfinished weekly sign-off and unprivileged payroll are rejected
+    ok 6 - unfinished weekly sign-off and unprivileged payroll are rejected
+      ---
+      duration_ms: 61.284588
+      type: 'test'
+      ...
+    # Subtest: employee cannot acquire manager review or mutate a team check
+    ok 7 - employee cannot acquire manager review or mutate a team check
+      ---
+      duration_ms: 170.991306
+      type: 'test'
+      ...
+    # Subtest: personal shift and leave evidence uses the same authoritative calendar as weekly review
+    ok 8 - personal shift and leave evidence uses the same authoritative calendar as weekly review
+      ---
+      duration_ms: 94.703016
+      type: 'test'
+      ...
+    # Subtest: leave request cannot show success when the saved balance was not reserved
+    ok 9 - leave request cannot show success when the saved balance was not reserved
+      ---
+      duration_ms: 338.088218
+      type: 'test'
+      ...
+    # Subtest: missing or blank saved balances cannot be interpreted as a valid zero
+    ok 10 - missing or blank saved balances cannot be interpreted as a valid zero
+      ---
+      duration_ms: 850.123101
+      type: 'test'
+      ...
+    # Subtest: employee leave route saves a real request and reads back reserved balance
+    ok 11 - employee leave route saves a real request and reads back reserved balance
+      ---
+      duration_ms: 377.293992
+      type: 'test'
+      ...
+    # Subtest: employee leave route surfaces authoritative overlap refusal without remounting the active modal
+    ok 12 - employee leave route surfaces authoritative overlap refusal without remounting the active modal
+      ---
+      duration_ms: 226.024378
+      type: 'test'
+      ...
+    # Subtest: a rejected stale leave write refreshes the next action context without replaying it
+    ok 13 - a rejected stale leave write refreshes the next action context without replaying it
+      ---
+      duration_ms: 148.957963
+      type: 'test'
+      ...
+    # Subtest: manager leave route renders source request and saves an authorised decision
+    ok 14 - manager leave route renders source request and saves an authorised decision
+      ---
+      duration_ms: 312.893543
+      type: 'test'
+      ...
+    # Subtest: a synthetic saved result without its matching correction cannot produce a success receipt
+    ok 15 - a synthetic saved result without its matching correction cannot produce a success receipt
+      ---
+      duration_ms: 351.398131
+      type: 'test'
+      ...
+    # Subtest: a stale attendance exception cannot leave the workflow permanently busy
+    ok 16 - a stale attendance exception cannot leave the workflow permanently busy
+      ---
+      duration_ms: 323.13384
+      type: 'test'
+      ...
+    # Subtest: a corrected punch with an unchanged worked total cannot produce a success receipt
+    ok 17 - a corrected punch with an unchanged worked total cannot produce a success receipt
+      ---
+      duration_ms: 346.209181
+      type: 'test'
+      ...
+    # Subtest: the same attendance identifiers remain isolated to the signed-in tenant
+    ok 18 - the same attendance identifiers remain isolated to the signed-in tenant
+      ---
+      duration_ms: 695.325005
+      type: 'test'
+      ...
+    # Subtest: manager attendance correction preserves raw punches and reads back the exact reviewed result
+    ok 19 - manager attendance correction preserves raw punches and reads back the exact reviewed result
+      ---
+      duration_ms: 616.427067
+      type: 'test'
+      ...
+    # Subtest: failed manager decision clears an earlier success message
+    ok 20 - failed manager decision clears an earlier success message
+      ---
+      duration_ms: 80.596417
+      type: 'test'
+      ...
+    # Subtest: fresh employee login sees the manager decision and durable audit
+    ok 21 - fresh employee login sees the manager decision and durable audit
+      ---
+      duration_ms: 313.187262
+      type: 'test'
+      ...
+    # Subtest: saved verification survives controlled restart and a fresh login
+    ok 22 - saved verification survives controlled restart and a fresh login
+      ---
+      duration_ms: 899.170978
+      type: 'test'
+      ...
+    # Subtest: payroll source is readable by explicit payroll authority
+    ok 23 - payroll source is readable by explicit payroll authority
+      ---
+      duration_ms: 479.487426
+      type: 'test'
+      ...
+    # Subtest: accepted command without observed saved result cannot produce success receipt
+    ok 24 - accepted command without observed saved result cannot produce success receipt
+      ---
+      duration_ms: 713.595835
+      type: 'test'
+      ...
+    # Subtest: account change during a command suppresses old-account readback and receipt
+    ok 25 - account change during a command suppresses old-account readback and receipt
+      ---
+      duration_ms: 306.785669
+      type: 'test'
+      ...
+    # Subtest: unsaved Attendance review is protected when entering weekly sign-off
+    ok 26 - unsaved Attendance review is protected when entering weekly sign-off
+      ---
+      duration_ms: 125.464741
+      type: 'test'
+      ...
+    1..26
+ok 25 - Vector workflow controller uses real authentication, saved checks and restart recovery
+  ---
+  duration_ms: 12206.431774
+  type: 'test'
+  ...
+1..25
+# tests 51
+# suites 0
+# pass 51
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12302.522921

@@ -1,0 +1,182 @@
+(node:2) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:11) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: synthetic leave presentation accepts finite numbers and rejects absent or malformed values
+    # Subtest: numeric zero and positive/negative finite values preserve hour formatting
+    ok 1 - numeric zero and positive/negative finite values preserve hour formatting
+      ---
+      duration_ms: 1.574853
+      type: 'test'
+      ...
+    # Subtest: null and independently missing fields never become zero
+    not ok 2 - null and independently missing fields never become zero
+      ---
+      duration_ms: 1.205909
+      type: 'test'
+      location: '/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:28:10'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly deep-equal:
+        + actual - expected
+        
+          [
+        -   'Not verified',
+            '0.0 hours',
+        +   '0.0 hours'
+          ]
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected:
+        0: 'Not verified'
+        1: '0.0 hours'
+      actual:
+        0: '0.0 hours'
+        1: '0.0 hours'
+      operator: 'deepStrictEqual'
+      stack: |-
+        TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:29:10)
+        process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:28:2)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: nonfinite, string, boolean and object values are not treated as minutes
+    not ok 3 - nonfinite, string, boolean and object values are not treated as minutes
+      ---
+      duration_ms: 0.567727
+      type: 'test'
+      location: '/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:33:10'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly deep-equal:
+        + actual - expected
+        
+          [
+        +   '0.0 hours',
+        +   'Infinity hours'
+        -   'Not verified',
+        -   'Not verified'
+          ]
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected:
+        0: 'Not verified'
+        1: 'Not verified'
+      actual:
+        0: '0.0 hours'
+        1: 'Infinity hours'
+      operator: 'deepStrictEqual'
+      stack: |-
+        TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:34:84)
+        process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:33:2)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: needs-review source is escaped as text and absent for empty or nonprimitive source
+    not ok 4 - needs-review source is escaped as text and absent for empty or nonprimitive source
+      ---
+      duration_ms: 4.308705
+      type: 'test'
+      location: '/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:36:10'
+      failureType: 'testCodeFailure'
+      error: |-
+        The expression evaluated to a falsy value:
+        
+          assert.ok(html.includes('<p class="vw-warning" role="status">&lt;img src=x onerror=&quot;x&quot;&gt; &amp; &lt;script&gt;test&lt;/script&gt;</p>'))
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: true
+      actual: false
+      operator: '=='
+      stack: |-
+        TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:39:10)
+        process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:36:2)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: needs-review source is a warning status, not a saved-result receipt
+    not ok 5 - needs-review source is a warning status, not a saved-result receipt
+      ---
+      duration_ms: 0.558193
+      type: 'test'
+      location: '/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:45:10'
+      failureType: 'testCodeFailure'
+      error: |-
+        The expression evaluated to a falsy value:
+        
+          assert.ok(html.includes('<p class="vw-warning" role="status">'+note+'</p>'))
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: true
+      actual: false
+      operator: '=='
+      stack: |-
+        TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:48:10)
+        process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:45:2)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: refresh from unknown to numeric removes prior review text
+    not ok 6 - refresh from unknown to numeric removes prior review text
+      ---
+      duration_ms: 0.551042
+      type: 'test'
+      location: '/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:51:10'
+      failureType: 'testCodeFailure'
+      error: |-
+        The expression evaluated to a falsy value:
+        
+          assert.ok((await display({yearStatus:'needs_review',source:'Prior fictional review note',availableMinutes:null,pendingMinutes:null})).includes('Prior fictional review note'))
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: true
+      actual: false
+      operator: '=='
+      stack: |-
+        TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:52:10)
+        process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:51:2)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: programmatic request with missing numeric balance is held before a mock POST
+    ok 7 - programmatic request with missing numeric balance is held before a mock POST
+      ---
+      duration_ms: 0.838196
+      type: 'test'
+      ...
+    1..7
+not ok 1 - synthetic leave presentation accepts finite numbers and rejects absent or malformed values
+  ---
+  duration_ms: 13.990753
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v042-reconcile-20261030/candidate/ux-overlay/vector-leave-balance-display.test.cjs:13:1'
+  failureType: 'subtestsFailed'
+  error: '5 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Mocked in-memory personal response only; nonfinite values are not valid JSON numbers. No real login, backend entitlement, leave submission, customer, provider or hosted proof.
+1..1
+# tests 8
+# suites 0
+# pass 2
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 102.579026

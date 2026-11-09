@@ -1,0 +1,64 @@
+(node:2) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:11) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: synthetic leave presentation accepts finite numbers and rejects absent or malformed values
+    # Subtest: numeric zero and positive/negative finite values preserve hour formatting
+    ok 1 - numeric zero and positive/negative finite values preserve hour formatting
+      ---
+      duration_ms: 1.78403
+      type: 'test'
+      ...
+    # Subtest: null and independently missing fields never become zero
+    ok 2 - null and independently missing fields never become zero
+      ---
+      duration_ms: 0.43419
+      type: 'test'
+      ...
+    # Subtest: nonfinite, string, boolean and object values are not treated as minutes
+    ok 3 - nonfinite, string, boolean and object values are not treated as minutes
+      ---
+      duration_ms: 0.49529
+      type: 'test'
+      ...
+    # Subtest: needs-review source is escaped as text and absent for empty or nonprimitive source
+    ok 4 - needs-review source is escaped as text and absent for empty or nonprimitive source
+      ---
+      duration_ms: 0.468982
+      type: 'test'
+      ...
+    # Subtest: needs-review source is a warning status, not a saved-result receipt
+    ok 5 - needs-review source is a warning status, not a saved-result receipt
+      ---
+      duration_ms: 0.159395
+      type: 'test'
+      ...
+    # Subtest: refresh from unknown to numeric removes prior review text
+    ok 6 - refresh from unknown to numeric removes prior review text
+      ---
+      duration_ms: 0.251371
+      type: 'test'
+      ...
+    # Subtest: programmatic request with missing numeric balance is held before a mock POST
+    ok 7 - programmatic request with missing numeric balance is held before a mock POST
+      ---
+      duration_ms: 0.690829
+      type: 'test'
+      ...
+    1..7
+ok 1 - synthetic leave presentation accepts finite numbers and rejects absent or malformed values
+  ---
+  duration_ms: 7.979047
+  type: 'test'
+  ...
+# Mocked in-memory personal response only; nonfinite values are not valid JSON numbers. No real login, backend entitlement, leave submission, customer, provider or hosted proof.
+1..1
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 98.625431
