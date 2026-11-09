@@ -1,0 +1,443 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: complete scoped synthetic journeys and bound assets still cannot claim whole-product readiness
+ok 1 - complete scoped synthetic journeys and bound assets still cannot claim whole-product readiness
+  ---
+  duration_ms: 1.593943
+  type: 'test'
+  ...
+# Subtest: absent business evidence remains navigation-only even with bound assets
+ok 2 - absent business evidence remains navigation-only even with bound assets
+  ---
+  duration_ms: 0.182074
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing employeeUiSubmitted
+ok 3 - leave journey rejects missing employeeUiSubmitted
+  ---
+  duration_ms: 0.457707
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing pendingStateReadBack
+ok 4 - leave journey rejects missing pendingStateReadBack
+  ---
+  duration_ms: 0.168659
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing overlapRefusedInUi
+ok 5 - leave journey rejects missing overlapRefusedInUi
+  ---
+  duration_ms: 0.21156
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing refreshedUiRetainedPending
+ok 6 - leave journey rejects missing refreshedUiRetainedPending
+  ---
+  duration_ms: 0.114512
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing managerUiDecided
+ok 7 - leave journey rejects missing managerUiDecided
+  ---
+  duration_ms: 0.207419
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing managerStateReadBack
+ok 8 - leave journey rejects missing managerStateReadBack
+  ---
+  duration_ms: 0.182187
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing freshEmployeeLoginSawDecision
+ok 9 - leave journey rejects missing freshEmployeeLoginSawDecision
+  ---
+  duration_ms: 0.32449
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing requestAuditLinked
+ok 10 - leave journey rejects missing requestAuditLinked
+  ---
+  duration_ms: 0.395693
+  type: 'test'
+  ...
+# Subtest: leave journey rejects missing freshBalanceReconciled
+ok 11 - leave journey rejects missing freshBalanceReconciled
+  ---
+  duration_ms: 0.183194
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing managerUiApproved
+ok 12 - attendance journey rejects missing managerUiApproved
+  ---
+  duration_ms: 0.130613
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing exactCorrectionReadBack
+ok 13 - attendance journey rejects missing exactCorrectionReadBack
+  ---
+  duration_ms: 0.059731
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing rawPunchesPreserved
+ok 14 - attendance journey rejects missing rawPunchesPreserved
+  ---
+  duration_ms: 0.053247
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing domainAuditReadBack
+ok 15 - attendance journey rejects missing domainAuditReadBack
+  ---
+  duration_ms: 0.088755
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing refreshedUiRetainedCorrection
+ok 16 - attendance journey rejects missing refreshedUiRetainedCorrection
+  ---
+  duration_ms: 0.048638
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing weeklySignStillBlocked
+ok 17 - attendance journey rejects missing weeklySignStillBlocked
+  ---
+  duration_ms: 0.049275
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing payrollReleaseStillBlocked
+ok 18 - attendance journey rejects missing payrollReleaseStillBlocked
+  ---
+  duration_ms: 0.097708
+  type: 'test'
+  ...
+# Subtest: attendance journey rejects missing weeklySignOffCompleted
+ok 19 - attendance journey rejects missing weeklySignOffCompleted
+  ---
+  duration_ms: 0.05799
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing submittedRevision
+ok 20 - attendance sign-off rejects missing submittedRevision
+  ---
+  duration_ms: 0.092306
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing signatureRevision
+ok 21 - attendance sign-off rejects missing signatureRevision
+  ---
+  duration_ms: 0.056507
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing auditRevision
+ok 22 - attendance sign-off rejects missing auditRevision
+  ---
+  duration_ms: 0.053822
+  type: 'test'
+  ...
+# Subtest: attendance sign-off rejects missing refreshedStatus
+ok 23 - attendance sign-off rejects missing refreshedStatus
+  ---
+  duration_ms: 0.049628
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.responseStatus
+ok 24 - payroll journey rejects missing release.responseStatus
+  ---
+  duration_ms: 0.071818
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.batchId
+ok 25 - payroll journey rejects missing release.batchId
+  ---
+  duration_ms: 0.051174
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.status
+ok 26 - payroll journey rejects missing release.status
+  ---
+  duration_ms: 0.051352
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.rowCount
+ok 27 - payroll journey rejects missing release.rowCount
+  ---
+  duration_ms: 0.048709
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.computedChecksum
+ok 28 - payroll journey rejects missing release.computedChecksum
+  ---
+  duration_ms: 0.133666
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.checksumHeader
+ok 29 - payroll journey rejects missing release.checksumHeader
+  ---
+  duration_ms: 0.055752
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.persistedBatchId
+ok 30 - payroll journey rejects missing release.persistedBatchId
+  ---
+  duration_ms: 0.113853
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.auditBatchId
+ok 31 - payroll journey rejects missing release.auditBatchId
+  ---
+  duration_ms: 0.056616
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.freshLoginBatchId
+ok 32 - payroll journey rejects missing release.freshLoginBatchId
+  ---
+  duration_ms: 0.054243
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects missing release.reconciliationOk
+ok 33 - payroll journey rejects missing release.reconciliationOk
+  ---
+  duration_ms: 0.052534
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects conflicting persistedBatchId
+ok 34 - payroll journey rejects conflicting persistedBatchId
+  ---
+  duration_ms: 0.098448
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects conflicting auditBatchId
+ok 35 - payroll journey rejects conflicting auditBatchId
+  ---
+  duration_ms: 0.103941
+  type: 'test'
+  ...
+# Subtest: payroll journey rejects conflicting freshLoginBatchId
+ok 36 - payroll journey rejects conflicting freshLoginBatchId
+  ---
+  duration_ms: 0.060068
+  type: 'test'
+  ...
+# Subtest: payroll cannot count null as an identified team
+not ok 37 - payroll cannot count null as an identified team
+  ---
+  duration_ms: 0.896446
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:84:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing or malformed team identity is not a scoped sign-off
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot count missing as an identified team
+not ok 38 - payroll cannot count missing as an identified team
+  ---
+  duration_ms: 0.192776
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:84:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing or malformed team identity is not a scoped sign-off
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot count empty as an identified team
+not ok 39 - payroll cannot count empty as an identified team
+  ---
+  duration_ms: 1.364976
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:84:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing or malformed team identity is not a scoped sign-off
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot count spaces as an identified team
+not ok 40 - payroll cannot count spaces as an identified team
+  ---
+  duration_ms: 0.217292
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:84:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing or malformed team identity is not a scoped sign-off
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot count tab as an identified team
+not ok 41 - payroll cannot count tab as an identified team
+  ---
+  duration_ms: 0.198037
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:84:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing or malformed team identity is not a scoped sign-off
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot count number as an identified team
+not ok 42 - payroll cannot count number as an identified team
+  ---
+  duration_ms: 0.154238
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:84:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing or malformed team identity is not a scoped sign-off
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll cannot count boolean as an identified team
+not ok 43 - payroll cannot count boolean as an identified team
+  ---
+  duration_ms: 0.153365
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:84:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Missing or malformed team identity is not a scoped sign-off
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/2ea1ba0f2164/cp001-proof/source/scripts/vector-proof-result.journey-gates.test.mjs:88:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: payroll rejects duplicate expected identities and duplicate signatures
+ok 44 - payroll rejects duplicate expected identities and duplicate signatures
+  ---
+  duration_ms: 0.126434
+  type: 'test'
+  ...
+# Subtest: payroll rejects missing expected team, extra signed team and replacement signed identity
+ok 45 - payroll rejects missing expected team, extra signed team and replacement signed identity
+  ---
+  duration_ms: 0.143524
+  type: 'test'
+  ...
+# Subtest: ordinary distinct identifiers remain valid independent of signature ordering
+ok 46 - ordinary distinct identifiers remain valid independent of signature ordering
+  ---
+  duration_ms: 0.068674
+  type: 'test'
+  ...
+# Subtest: only exact BOUND assets satisfy exact asset evidence, while readiness always remains false
+ok 47 - only exact BOUND assets satisfy exact asset evidence, while readiness always remains false
+  ---
+  duration_ms: 0.109998
+  type: 'test'
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 40
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 136.3234
