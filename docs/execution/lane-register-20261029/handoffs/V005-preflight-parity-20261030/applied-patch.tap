@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: preflight identifies missing setup without printing credentials or implying authorization
+ok 1 - preflight identifies missing setup without printing credentials or implying authorization
+  ---
+  duration_ms: 7.005794
+  type: 'test'
+  ...
+# Subtest: valid offline configuration is not a hosted-proof claim
+ok 2 - valid offline configuration is not a hosted-proof claim
+  ---
+  duration_ms: 1.446811
+  type: 'test'
+  ...
+# Subtest: wrong isolation tenant and password mode fail closed
+ok 3 - wrong isolation tenant and password mode fail closed
+  ---
+  duration_ms: 0.67921
+  type: 'test'
+  ...
+# Subtest: preflight accepts the same HTTPS origin spellings as the signed client
+ok 4 - preflight accepts the same HTTPS origin spellings as the signed client
+  ---
+  duration_ms: 9.180279
+  type: 'test'
+  ...
+# Subtest: preflight enforces trimmed bounded client binding: EXPECTED_DEPLOYMENT_ID
+ok 5 - preflight enforces trimmed bounded client binding: EXPECTED_DEPLOYMENT_ID
+  ---
+  duration_ms: 4.428168
+  type: 'test'
+  ...
+# Subtest: preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_TENANT
+ok 6 - preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_TENANT
+  ---
+  duration_ms: 2.061021
+  type: 'test'
+  ...
+# Subtest: preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_RUN_ID
+ok 7 - preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_RUN_ID
+  ---
+  duration_ms: 2.657969
+  type: 'test'
+  ...
+# Subtest: preflight rejects noncanonical base64, invalid PEM envelopes and wrong key types
+ok 8 - preflight rejects noncanonical base64, invalid PEM envelopes and wrong key types
+  ---
+  duration_ms: 4.397898
+  type: 'test'
+  ...
+# Subtest: preflight rejects actor shape and length drift before runner startup
+ok 9 - preflight rejects actor shape and length drift before runner startup
+  ---
+  duration_ms: 8.898123
+  type: 'test'
+  ...
+# Subtest: preflight rejects non-string source and configuration digests without coercion
+ok 10 - preflight rejects non-string source and configuration digests without coercion
+  ---
+  duration_ms: 2.713526
+  type: 'test'
+  ...
+# Subtest: CLI fails closed with field names only and preserves the offline claim boundary
+ok 11 - CLI fails closed with field names only and preserves the offline claim boundary
+  ---
+  duration_ms: 71.288966
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 265.258232

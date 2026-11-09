@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "packetKind": "DOCUMENTATION_AND_TEST_ONLY_BLOCKER_CONTRACT",
+  "baseSourceSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "runnerGitBlob": "b736e153d621daeec4915fbe8627885b6496ff00",
+  "runnerSha256": "5d5921f54b3e501f70004d324036e3c5fbd336b1f04550cb0ec390434252d903",
+  "documentationParent": "152482629f8930096b7eafe5923e420d7e0bfae4",
+  "publicationPath": "docs/execution/proof-action-grant-20261030",
+  "primary": "/root/proof_scope_unblock",
+  "businessJourneyBuilder": "/root/customer_proof_unblock",
+  "independentReviewer": "/root/signed_journey_verifier",
+  "requestedModelPolicy": "Sol xhigh; actual runtime model identifier not independently exposed",
+  "node": "v22.23.2",
+  "productSourceChanged": false,
+  "runtimeHookAdded": false,
+  "protectedIssuerAvailable": false,
+  "hostedActionsAuthorized": 0,
+  "hostedMutations": 0,
+  "customerComplete": false,
+  "proofStage": "BLOCKED_EXTERNAL_AUTHORITY",
+  "primaryReviewRed": {
+    "tests": 69,
+    "pass": 63,
+    "fail": 6,
+    "skip": 0,
+    "exitCode": 1
+  },
+  "primaryFinal": {
+    "tests": 71,
+    "pass": 71,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "independentFirst": {
+    "tests": 51,
+    "pass": 43,
+    "fail": 8,
+    "skip": 0,
+    "exitCode": 1
+  },
+  "independentFinal": {
+    "tests": 63,
+    "pass": 63,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "currentRunnerEvidence": "evidence/signed-navigation-manifest.json",
+  "blockers": [
+    "independent protected approval issuer and registration policy",
+    "server-held synthetic tenant/employee/request provenance",
+    "durable current protected approval record with exact digest and revocation state",
+    "owner-reviewed native command adapter with same-database atomic consumption/decision/audit",
+    "independent hosted persistence/fresh-login/readback proof after authorization"
+  ],
+  "fileSha256": {
+    "README.md": "e4e32e7f11eaa550e7746fcfce2aa9efbbe614e897c80ecfd934037392f8bccf",
+    "evidence/baseline-auth-node22.tap": "26ed6000f640dede35b30f7a3793f2e02a31a2d768164bed6824954b09ac81b2",
+    "evidence/grant-final-model-author-suite-node22.tap": "02c434e901e3e5a795a42a4f8f604c7ca8936f0d396b30018c154ad6594ad98e",
+    "evidence/grant-final-model-review-node22.tap": "e0a1dba9cc7fdc396e2837b882474994a55d4be23dffaaebf521221d37139a52",
+    "evidence/grant-first-review-node22.tap": "bfb777d52db6f1eda1b0246051be9c533f560fe2f06edc5711000577d213e43e",
+    "evidence/green-node22.tap": "c3939d19d51e447d66cdc164b7fb2fa182e45a21f020b407b58daf371f8b322c",
+    "evidence/heldout-auth.test.mjs": "8a6b5e089e2bd7946c728545f96d1705f69cd4feaca2c1e63efbbee029916dac",
+    "evidence/heldout-grant.test.cjs": "16181c8d0f2ce4f83eac3bbcb573377708544ee32ee384d1600a4b7d32b110f4",
+    "evidence/independent-review.json": "5cf827917e278bc5839d7b0d8ebdace9eaaad0f5d970982bf151a11482ac86f5",
+    "evidence/rejected-prototype-no-authority-node22.tap": "29c5f77acb6cfa493844e1747396679e2447349c543547d4a305d8d6da467e2f",
+    "evidence/restored-auth-node22.tap": "21e9101600b8e8ea1867b60849395a3114c4ca043f1473e2ef56c497a22a9909",
+    "evidence/restored-existing50-node22.tap": "179328c4b22bef7a8f5cc8beb629c2cd0308c77ae5eeb9bda5db7a3a1a0b48b2",
+    "evidence/review-red-node22.tap": "7988bb6c485663c28be32d062f489ff4e21b6a0e30a5a7b960e0683c7897106e",
+    "evidence/signed-navigation-manifest.json": "c7b1e19659485b226a9010917cb930d1b1f9471ecd324e7d02e236ae6eae515d",
+    "test-only/proof-action-grant-contract.cjs": "2e375bd1bc6f2d949a0ea1c9258fbcb888aeaa1f750aa3fe7db16ea537eb63a8",
+    "test-only/proof-action-grant-contract.test.cjs": "20123fbc6ea872cd03362fc18a4592a19fe51e7692b858cf7271e1b893d5a85b"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "sourceCommit": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "path": "operations/runtime/tenant-calendar.cjs",
+  "sha256": "970257349017a2b2eeb71ba7a7e545bec93606cc0c9c0bd41579c01b4ea0921e",
+  "gitBlob": "7a0ef87512fc4113171f4c988df8377706a33332",
+  "retrieval": "GitHub fetch exact commit contents"
+}

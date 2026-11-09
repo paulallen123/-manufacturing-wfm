@@ -1,0 +1,27 @@
+{
+  "group": "Training and competency",
+  "original_bullet": "Prove multilingual, voice and accessible delivery.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    232,
+    241
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/232",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/241"
+  ],
+  "next_action": "Use existing accepted delivery contract; test actual configured locale/provider/browser/accessibility combinations after source reconciliation. Research only an evidenced provider-capability gap.",
+  "blocker": [],
+  "observed_evidence": "PR232 has authored media/voice/publication contracts, but states BUILT source only. PR241 requires configured speech provider, microphone/TTS matrix and hosted multilingual journeys.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V062",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V062.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

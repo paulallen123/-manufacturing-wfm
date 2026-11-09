@@ -1,0 +1,186 @@
+diff --git a/policy/runtime/global-site-policy-preflight.cjs b/policy/runtime/global-site-policy-preflight.cjs
+index 4f18cff..d41c093 100644
+--- a/policy/runtime/global-site-policy-preflight.cjs
++++ b/policy/runtime/global-site-policy-preflight.cjs
+@@ -7,6 +7,7 @@ function list(v,max=100,maxLen=160){return Array.isArray(v)?[...new Set(v.map(x=
+ function createGlobalSitePolicyPreflight({graph}={}){
+   if(!graph||typeof graph.resolve!=='function') throw new Error('Global site preflight requires jurisdiction policy graph.');
+   function assess(input={}){
++    if(typeof input.tenant!=='string'||input.tenant.length>120||/[\u0000-\u001f\u007f]/.test(input.tenant)) throw new Error('tenant must be a string of at most 120 characters without control characters.');
+     const tenant=text(input.tenant,120),site=input.site||{},workers=Array.isArray(input.workers)?input.workers:[];
+     if(!tenant||!text(site.id,120)) throw new Error('tenant and site.id are required.');
+     const country=text(site.country,2).toUpperCase(),baseQuestions=[];
+@@ -16,7 +17,7 @@ function createGlobalSitePolicyPreflight({graph}={}){
+     for(const worker of workers){
+       const workerId=text(worker.id,160); if(!workerId) continue;
+       const workCountry=text(worker.workLocationCountry||country,2).toUpperCase();
+-      const context={country:workCountry,subdivision:text(worker.workLocationSubdivision||site.subdivision,80)||null,sector:text(worker.sector||site.sector,120)||null,legalEntityId:text(worker.legalEntityId||site.legalEntityId,160)||null,siteId:text(site.id,120),employmentCategory:text(worker.employmentCategory,120)||null,workerClass:text(worker.workerClass,120)||null,collectiveAgreements:list(worker.collectiveAgreements||site.collectiveAgreements,20,160),workLocationCountry:workCountry,workLocationSubdivision:text(worker.workLocationSubdivision,80)||null};
++      const context={tenant,country:workCountry,subdivision:text(worker.workLocationSubdivision||site.subdivision,80)||null,sector:text(worker.sector||site.sector,120)||null,legalEntityId:text(worker.legalEntityId||site.legalEntityId,160)||null,siteId:text(site.id,120),employmentCategory:text(worker.employmentCategory,120)||null,workerClass:text(worker.workerClass,120)||null,collectiveAgreements:list(worker.collectiveAgreements||site.collectiveAgreements,20,160),workLocationCountry:workCountry,workLocationSubdivision:text(worker.workLocationSubdivision,80)||null};
+       if(!context.employmentCategory) baseQuestions.push({code:'EMPLOYMENT_CATEGORY_REQUIRED',scope:'worker',workerId});
+       const resolved=/^[A-Z]{2}$/.test(workCountry)?graph.resolve({legalAt:input.legalAt,knownAt:input.knownAt,context}):null;
+       results.push({workerId,context,policyContext:resolved,ready:Boolean(resolved?.verifiedCoverage),requiresReview:Boolean(resolved?.review?.length)});
+diff --git a/policy/runtime/jurisdiction-policy-graph.cjs b/policy/runtime/jurisdiction-policy-graph.cjs
+index 7f58c8a..37cca4a 100644
+--- a/policy/runtime/jurisdiction-policy-graph.cjs
++++ b/policy/runtime/jurisdiction-policy-graph.cjs
+@@ -23,6 +23,8 @@ function text(v,max=240){return String(v??'').trim().slice(0,max);}
+ function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error((name||'timestamp')+' must be valid ISO.');return new Date(ms).toISOString();}
+ function list(v,max=100,maxLen=240){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
+ function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
++function validTenant(v){return typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[\u0000-\u001f\u007f]/.test(v);}
++function validTenantScope(v){return Array.isArray(v)?v.length>0&&v.every(validTenant):validTenant(v);}
+ function exactOrListMatch(expected,actual){
+   if(expected==null||expected===''||(Array.isArray(expected)&&expected.length===0)) return true;
+   const values=Array.isArray(expected)?expected:[expected];
+@@ -55,7 +57,11 @@ function normaliseNode(node={}){
+   if(supersededAt&&Date.parse(supersededAt)<Date.parse(recordedAt)) throw new Error('supersededAt cannot precede recordedAt.');
+   const sourceRefs=list(node.sourceRefs,40,300);
+   if(node.verified!==true||!sourceRefs.length) throw new Error('Policy node must be verified and provenance-backed.');
+-  const scope=clone(node.scope||{});
++  const suppliedScope=node.scope||{},hasTenantScope=Object.hasOwn(suppliedScope,'tenant');
++  if(hasTenantScope&&!validTenantScope(suppliedScope.tenant)) throw new Error('Policy tenant scope must name a tenant or a nonempty list of tenants.');
++  const scope=clone(suppliedScope);
++  if(hasTenantScope&&(!scope||!Object.hasOwn(scope,'tenant'))) throw new Error('Policy tenant scope cannot disappear during serialization.');
++  if(scope&&Object.hasOwn(scope,'tenant')&&!validTenantScope(scope.tenant)) throw new Error('Serialized policy tenant scope is invalid.');
+   const rules=(node.rules||[]).map(rule=>normaliseRule(rule,{sourceRefs}));
+   if(!rules.length) throw new Error('Policy node requires at least one rule.');
+   if(new Set(rules.map(x=>x.id)).size!==rules.length) throw new Error('Policy rule ids must be unique within a node.');
+@@ -65,6 +71,7 @@ function normaliseNode(node={}){
+ 
+ function nodeMatchesContext(node,context={}){
+   const s=node.scope||{};
++  if(Object.hasOwn(s,'tenant')&&(!validTenant(context.tenant)||!exactOrListMatch(s.tenant,context.tenant))) return false;
+   for(const f of ['supranationalRegime','country','subdivision','sector','legalEntityId','siteId','employmentCategory','workerClass','workLocationCountry','workLocationSubdivision']) if(!exactOrListMatch(s[f],context[f])) return false;
+   if(!exactOrListMatch(s.collectiveAgreements,context.collectiveAgreements||[])) return false;
+   return true;
+diff --git a/policy/runtime/v026-tenant-policy-scope.test.cjs b/policy/runtime/v026-tenant-policy-scope.test.cjs
+new file mode 100644
+index 0000000..9532276
+--- /dev/null
++++ b/policy/runtime/v026-tenant-policy-scope.test.cjs
+@@ -0,0 +1,125 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const {createJurisdictionPolicyGraph} = require('./jurisdiction-policy-graph.cjs');
++const {createGlobalSitePolicyPreflight} = require('./global-site-policy-preflight.cjs');
++
++const at = {legalAt: '2026-06-01T00:00:00Z', knownAt: '2026-06-01T00:00:00Z'};
++function node(id, scope, value = 44) {
++  return {
++    id, layer: 'SITE', scope, verified: true,
++    effectiveFrom: '2026-01-01T00:00:00Z', recordedAt: '2025-12-01T00:00:00Z',
++    sourceRefs: ['synthetic:tenant-policy'],
++    rules: [{id: id + '-weekly-max', domain: 'working-time', key: 'weekly-hours',
++      legalCharacter: 'MANDATORY_CEILING', operator: 'MAX', value, unit: 'hours'}]
++  };
++}
++function resolve(graph, context) {return graph.resolve({...at, context});}
++function preflight(graph, tenant) {
++  return createGlobalSitePolicyPreflight({graph}).assess({
++    ...at, tenant, site: {id: 'shared-site', country: 'GB', legalEntityId: 'shared-entity'},
++    workers: [{id: 'worker-1', employmentCategory: 'employee'}]
++  });
++}
++
++test('same site and legal entity IDs do not cross an explicit tenant scope', () => {
++  const graph = createJurisdictionPolicyGraph([
++    node('tenant-a', {tenant: 'tenant-a', country: 'GB', siteId: 'shared-site'}, 36),
++    node('tenant-b', {tenant: 'tenant-b', country: 'GB', siteId: 'shared-site'}, 44)
++  ]);
++  for (const [tenant, value] of [['tenant-a', 36], ['tenant-b', 44]]) {
++    const result = resolve(graph, {tenant, country: 'GB', siteId: 'shared-site'});
++    assert.deepEqual(result.applicableNodes.map(x => x.id), [tenant]);
++    assert.equal(result.constraints[0].value, value);
++    assert.equal(result.executionAuthority, false);
++  }
++});
++
++test('missing or malformed tenant context cannot match an explicitly scoped node', () => {
++  const graph = createJurisdictionPolicyGraph([
++    node('tenant-a', {tenant: 'tenant-a', country: 'GB', siteId: 'shared-site'})
++  ]);
++  for (const tenant of [undefined, null, '', ' ', ['tenant-a'], {toString: 'tenant-a'}, 1]) {
++    const result = resolve(graph, {tenant, country: 'GB', siteId: 'shared-site'});
++    assert.equal(result.verifiedCoverage, false);
++    assert.deepEqual(result.constraints, []);
++  }
++});
++
++test('an explicit list of tenant scopes admits only exact named tenants', () => {
++  const graph = createJurisdictionPolicyGraph([
++    node('shared-approved', {tenant: ['tenant-a', 'tenant-b'], country: 'GB'})
++  ]);
++  for (const tenant of ['tenant-a', 'tenant-b']) {
++    assert.equal(resolve(graph, {tenant, country: 'GB'}).verifiedCoverage, true);
++  }
++  for (const tenant of ['tenant-c', 'tenant-a-suffix', 'TENANT-A', ['tenant-a', 'tenant-c']]) {
++    assert.equal(resolve(graph, {tenant, country: 'GB'}).verifiedCoverage, false);
++  }
++});
++
++test('explicitly malformed tenant scopes are rejected instead of becoming global', () => {
++  for (const tenant of [null, '', ' ', [], ['tenant-a', ''], ['tenant-a', 1], {}, 1]) {
++    assert.throws(() => createJurisdictionPolicyGraph([
++      node('invalid', {tenant, country: 'GB'})
++    ]), /tenant/i);
++  }
++});
++
++test('an explicit tenant scope cannot disappear during JSON cloning', () => {
++  for (const scope of [
++    {tenant: undefined, country: 'GB'},
++    Object.assign([], {tenant: 'tenant-a'}),
++    {tenant: 'tenant-a', toJSON() {return {country: 'GB'};}},
++    {tenant: 'tenant-a', toJSON() {return {tenant: null, country: 'GB'};}},
++    {tenant: 'tenant-a', toJSON() {return {tenant: [], country: 'GB'};}}
++  ]) {
++    assert.throws(() => createJurisdictionPolicyGraph([node('invalid', scope)]), /tenant/i);
++  }
++});
++
++test('unscoped public rules remain available with or without a tenant', () => {
++  const graph = createJurisdictionPolicyGraph([
++    node('public-country', {country: 'GB'}, 48),
++    node('tenant-a', {tenant: 'tenant-a', country: 'GB'}, 36)
++  ]);
++  for (const context of [{country: 'GB'}, {country: 'GB', tenant: 'tenant-b'}]) {
++    const result = resolve(graph, context);
++    assert.deepEqual(result.applicableNodes.map(x => x.id), ['public-country']);
++    assert.equal(result.constraints[0].value, 48);
++  }
++});
++
++test('preflight forwards its tenant so only that tenant gains scoped coverage', () => {
++  const graph = createJurisdictionPolicyGraph([
++    node('tenant-a', {tenant: 'tenant-a', country: 'GB', siteId: 'shared-site'})
++  ]);
++  const own = preflight(graph, 'tenant-a');
++  const other = preflight(graph, 'tenant-b');
++  assert.equal(own.status, 'READY_ADVISORY');
++  assert.equal(own.coverage.covered, 1);
++  assert.equal(other.status, 'BLOCKED_POLICY_COVERAGE');
++  assert.deepEqual(other.coverage.missing, ['worker-1']);
++  assert.equal(own.automation.executionAuthority, false);
++  assert.equal(other.automation.customerMutation, false);
++});
++
++test('preflight context digest binds exact tenant while leaving caller input unchanged', () => {
++  const graph = createJurisdictionPolicyGraph([
++    node('public-country', {country: 'GB'}, 48)
++  ]);
++  const before = JSON.stringify(graph.all());
++  const a = preflight(graph, 'tenant-a');
++  const b = preflight(graph, 'tenant-b');
++  assert.notEqual(a.workers[0].contextDigest, b.workers[0].contextDigest);
++  assert.equal(JSON.stringify(graph.all()), before);
++});
++
++test('preflight rejects tenant inputs that would coerce or truncate into another binding', () => {
++  const graph = createJurisdictionPolicyGraph([
++    node('tenant-a', {tenant: 'tenant-a', country: 'GB', siteId: 'shared-site'})
++  ]);
++  for (const tenant of [['tenant-a'], {id: 'tenant-a'}, 1, 'a'.repeat(121), 'tenant-a\u0000']) {
++    assert.throws(() => preflight(graph, tenant), /tenant/i);
++  }
++});

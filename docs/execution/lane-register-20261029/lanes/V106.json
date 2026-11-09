@@ -1,0 +1,33 @@
+{
+  "group": "Decision Twin and Factory Autopilot",
+  "original_bullet": "Quantify overtime, agency, redeployment and resequencing options.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing Capacity Rescue/scheduling/payroll costing owners",
+  "existing_prs": [
+    240,
+    333,
+    496,
+    508,
+    511
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/333",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/496",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/508",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/511"
+  ],
+  "next_action": "Compose approved wage/rate/policy sources with one economic engine; test exact pence, overtime authority, constraints and baseline tradeoffs; retain unknowns for missing cost evidence.",
+  "blocker": [],
+  "observed_evidence": "Shadow economic components and wage/premium/absence-cover repairs exist; estimates are explicitly not actual payroll spend or realised savings.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V106",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V106.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,29 @@
+{
+  "group": "Absence and leave",
+  "original_bullet": "Complete entitlement, accrual, carryover and balance calculations.",
+  "stage": "STATUS_RECONCILIATION",
+  "research_needed": "unknown",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    271,
+    220,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/271",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/220",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Inspect existing entitlement engine/tests and exact customer policy coverage; route missing rule implementation directly to development; use independent expected calculations.",
+  "blocker": "Authoritative effective-dated entitlement policy and opening balances; research only identified jurisdiction-policy gaps.",
+  "observed_evidence": "Authoritative time/absence evidence gate exists; broad leave depth is recorded, but per-rule implementation/proof coverage not established by current searches.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V042",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V042.json",
+  "research_route": "RECONCILE_EVIDENCE_OR_SCOPE_FIRST_NO_AUTOMATIC_RESEARCH_RESTART",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

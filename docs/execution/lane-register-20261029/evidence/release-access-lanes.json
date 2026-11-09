@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 1,
+  "agent": "release_access_audit",
+  "observedAt": "2026-10-29T22:35:38Z",
+  "scope": "20 original leaf bullets in release/access/implementation; read-only audit, not implementation completion",
+  "source": {
+    "pr": 501,
+    "head": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+    "canonicalBase": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+    "applicableAgentsMd": "None found in recursive exact-head tree (not truncated)"
+  },
+  "ownership": "Prior canonical integration owner retained; visible task liveness unavailable. Railway cloud-agent tasks unavailable for this user.",
+  "lanes": [
+    {
+      "id": "RA-001",
+      "group": "Release and deployment",
+      "bullet": "Finish integrating the reviewed repairs into one canonical version.",
+      "stage": "INTEGRATION",
+      "furtherResearch": "No",
+      "observedEvidence": "PR501 includes many repairs; PR369 source still absent at exact61718; Dockerfile conflicts diagnosed, disposable combined164/164 only.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6469898020"
+      ],
+      "existingOwner": "Existing sole PR501 integration owner; PR369 donor owner retained",
+      "nextAction": "Reconcile donor369 without dropping current Docker/federated/authority tests; test and independently review actual integrated SHA.",
+      "completion": false
+    },
+    {
+      "id": "RA-002",
+      "group": "Release and deployment",
+      "bullet": "Complete independent review and exact-version build admission.",
+      "stage": "TEST",
+      "furtherResearch": "No",
+      "observedEvidence": "Codex review6460520015 found no major issues on61718. Actual61718 proof deployment succeeded; installed archive88/88,0skip. One source suite observed724pass/12skip, not universal zero-skip evidence.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6460520015"
+      ],
+      "existingOwner": "Existing sole PR501 integration/release owner",
+      "nextAction": "Retain exact61718 build receipts and examine full gate/skip policy; after any integration rerun exact resulting source/image admission.",
+      "completion": false
+    },
+    {
+      "id": "RA-003",
+      "group": "Release and deployment",
+      "bullet": "Resolve the hosted startup/build gate and apply the prepared Railway configuration.",
+      "stage": "CUSTOMER_PROOF",
+      "furtherResearch": "No",
+      "observedEvidence": "Previous blocker superseded: existing proof service now61718 deploymentc95e7a37 SUCCESS, no staged patch; writable-volume, UID-drop, durable-state runtime guards PASS.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "existingOwner": "Existing sole PR501 integration/release owner",
+      "nextAction": "Do not reapply stale patch/redeploy healthy artifact. Advance protected authenticated proof after actual configuration/actor binding.",
+      "completion": false
+    },
+    {
+      "id": "RA-004",
+      "group": "Release and deployment",
+      "bullet": "Verify the resulting version is healthy in the customer environment.",
+      "stage": "DEPLOYMENT",
+      "furtherResearch": "No",
+      "observedEvidence": "Proof service healthy at61718; customer-designated service healthy but still serves90ad90f. Both fixtureOnlytrue, productionApprovedfalse,pilotReadyfalse.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "existingOwner": "Existing sole PR501 integration/release owner",
+      "nextAction": "Complete admission/customer gates then promote through existing owner to current customer service; independently verify new serving SHA.",
+      "completion": false
+    },
+    {
+      "id": "RA-005",
+      "group": "Release and deployment",
+      "bullet": "Activate the existing signed browser proof runner.",
+      "stage": "BLOCKED",
+      "furtherResearch": "No",
+      "observedEvidence": "Runner preparation tested in61718; actual proof target lacks signer/public-key/actor/run variable names; no authenticated runner activation verified.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/docs/execution/STATE.md",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/evidence/vector-execution-progress-20261028/manifest.json"
+      ],
+      "existingOwner": "Existing sole PR501 proof owner",
+      "nextAction": "Bind protected matching signer/public key and persisted synthetic actor/tenant/run/configuration; verify least-privilege child environment then activate existing runner.",
+      "completion": false
+    },
+    {
+      "id": "RA-006",
+      "group": "Release and deployment",
+      "bullet": "Prove persistence, restart, recovery and rollback.",
+      "stage": "TEST",
+      "furtherResearch": "No",
+      "observedEvidence": "Current proof startup shows durable mount guard PASS; this is not write/restart/readback or rollback proof.3Min migration adds forward-fix/restore caveat.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501#discussion_r4396817332",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/docs/execution/STATE.md"
+      ],
+      "existingOwner": "Existing sole PR501 proof/release owner",
+      "nextAction": "Use approved synthetic state and exact image, prove restart/readback/recovery and reviewed rollback; never blindly roll pre-fix binary onto migrated feed state.",
+      "completion": false
+    },
+    {
+      "id": "RA-007",
+      "group": "Release and deployment",
+      "bullet": "Reconcile overlapping PRs and retire superseded implementations.",
+      "stage": "INTEGRATION",
+      "furtherResearch": "No",
+      "observedEvidence": "Oct28 recorded290 open PRs271drafts (historical count); latest369 diagnostics show real content conflicts and missing fix in501.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6469898020",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/docs/execution/STATE.md"
+      ],
+      "existingOwner": "Existing sole integration owner, domain donors",
+      "nextAction": "Map each requirement to exact reviewed donor and consumer; adopt verified deltas and close superseded records only with retained behavior/proof.",
+      "completion": false
+    },
+    {
+      "id": "RA-008",
+      "group": "Sign-in and customer onboarding",
+      "bullet": "Complete the signing → nominated super user → permanent workspace journey.",
+      "stage": "BLOCKED",
+      "furtherResearch": "No",
+      "observedEvidence": "Customer-workspace registry includes stored order/nomination/revocation bindings. Bootstrap explicitly keeps signing disabled pending reviewed provider verifier, clean tenant factory, first-owner adapter.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/customer-workspace.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/security/runtime/bootstrap.cjs"
+      ],
+      "existingOwner": "Existing PR501 onboarding/register owner",
+      "nextAction": "Bind real authorised order writer, DocuSign verifier and first-owner/clean-workspace adapters; run complete synthetic signing journey before customer enablement.",
+      "completion": false
+    },
+    {
+      "id": "RA-009",
+      "group": "Sign-in and customer onboarding",
+      "bullet": "Prove passkey registration, invitation expiry, revocation and account recovery.",
+      "stage": "CUSTOMER_PROOF",
+      "furtherResearch": "No",
+      "observedEvidence": "Passkey source/tests and secure browser sign-in visible on both services. No fresh authenticated registration/invitation/recovery journey executed; prior recovery URL lacked grant.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/security/runtime/passkey-auth.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6460500669"
+      ],
+      "existingOwner": "Existing PR501 access/proof owner",
+      "nextAction": "Use approved persisted synthetic invited user and genuine credential ceremony; prove expiry/revocation/recovery/fresh-login state independently.",
+      "completion": false
+    },
+    {
+      "id": "RA-010",
+      "group": "Sign-in and customer onboarding",
+      "bullet": "Configure and verify Google/Apple sign-in; both remain disabled pending provider setup.",
+      "stage": "BLOCKED",
+      "furtherResearch": "No",
+      "observedEvidence": "Federated implementation present and reviewed. Source requires clients/secrets and explicit provider-subject→local-tenant/user mapping. Neither service's variable-name inventory includes provider clients/mappings.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/security/runtime/federated-auth.cjs"
+      ],
+      "existingOwner": "Existing PR501 access owner; provider account owner for registrations",
+      "nextAction": "Provision official provider registrations/redirects and protected secrets/subject mappings; then execute real OAuth with deny/revoke/session isolation proof.",
+      "completion": false
+    },
+    {
+      "id": "RA-011",
+      "group": "Sign-in and customer onboarding",
+      "bullet": "Complete the one-time questionnaire, autosave, resume and later configuration changes.",
+      "stage": "CUSTOMER_PROOF",
+      "furtherResearch": "No",
+      "observedEvidence": "workspace-setup source persists drafts/revisions/completed_at and SQL triggers forbid resetting initial completion; actual build log includes nomination-change cannot restart questionnaire test.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/workspace-setup.cjs"
+      ],
+      "existingOwner": "Existing PR501 onboarding owner",
+      "nextAction": "Prove actual authenticated wizard save/resume/review/apply/relogin and later updates on same tenant/run; revalidate changed dependencies.",
+      "completion": false
+    },
+    {
+      "id": "RA-012",
+      "group": "Sign-in and customer onboarding",
+      "bullet": "Ensure renewals reuse the existing workspace.",
+      "stage": "CUSTOMER_PROOF",
+      "furtherResearch": "No",
+      "observedEvidence": "Permanent customer-workspace/contracts associations and append-only bindings exist; source/test evidence is not real renewal proof.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/customer-workspace.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/customer-workspace-adoption.test.cjs"
+      ],
+      "existingOwner": "Existing PR501 onboarding/register owner",
+      "nextAction": "Exercise approved renewal event against existing workspace and verify unchanged tenant/run identity and completed questionnaire.",
+      "completion": false
+    },
+    {
+      "id": "RA-013",
+      "group": "Sign-in and customer onboarding",
+      "bullet": "Prove a new customer starts without demo people or invented policies.",
+      "stage": "CUSTOMER_PROOF",
+      "furtherResearch": "No",
+      "observedEvidence": "Public serving identity on BOTH services is fixtureOnlytrue; clean customer factory/authority remains prerequisite; fixtures cannot establish clean-customer readiness.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/security/runtime/bootstrap.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/customer-workspace.cjs"
+      ],
+      "existingOwner": "Existing PR501 onboarding/data owner",
+      "nextAction": "Provision through supported approved clean synthetic customer workflow, verify zero demo identities and absent policies remain unknown until customer-authorised inputs.",
+      "completion": false
+    },
+    {
+      "id": "RA-014",
+      "group": "Sign-in and customer onboarding",
+      "bullet": "Keep setup-only customers contained from operational/provider actions.",
+      "stage": "CUSTOMER_PROOF",
+      "furtherResearch": "No",
+      "observedEvidence": "Customer-workspace uses setup-only-policy. Comprehensive runtime/provider/outbound negative hosted proof not established by current landing page.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/customer-workspace.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/setup-only-policy.cjs"
+      ],
+      "existingOwner": "Existing PR501 onboarding/security owner",
+      "nextAction": "Run role/tenant/setup-state negative journey across UI, API, background workers and outbound dispatch; verify no side effects and durable audit.",
+      "completion": false
+    },
+    {
+      "id": "RA-015",
+      "group": "Implementation automation",
+      "bullet": "Bind the existing execution worker to the correct customer, implementation run and authority.",
+      "stage": "BLOCKED",
+      "furtherResearch": "No",
+      "observedEvidence": "Controller has durable state/authority blockers; customer service variable names include worker/Agents bindings but names do not prove valid values/current run. Proof target has no equivalent bindings.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/implementation-work-controller.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/docs/execution/STATE.md"
+      ],
+      "existingOwner": "Existing sole canonical execution owner; do not create second controller",
+      "nextAction": "Inspect signed authorised controller status and actual existing lease/run before binding; prove fencing/duplicate-owner/cancel semantics on approved synthetic scope.",
+      "completion": false
+    },
+    {
+      "id": "RA-016",
+      "group": "Implementation automation",
+      "bullet": "Resolve protected credentials and signer/configuration bindings.",
+      "stage": "BLOCKED",
+      "furtherResearch": "No",
+      "observedEvidence": "Proof target has only9 env-name entries, missing signed proof actor/signer configuration. Customer service has protected variable names includingOPENAI_API_KEY but actual readiness was not read.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/docs/execution/STATE.md"
+      ],
+      "existingOwner": "Existing secure operator and sole proof owner",
+      "nextAction": "Validate protected references through supported secret-binding route without revealing values; bind matching public key/current actor/run and test minimal scope.",
+      "completion": false
+    },
+    {
+      "id": "RA-017",
+      "group": "Implementation automation",
+      "bullet": "Connect discovered source data to the actual implementation workflow.",
+      "stage": "INTEGRATION",
+      "furtherResearch": "No",
+      "observedEvidence": "Existing discovery/hub and controller code/tests; actual authorised provider-to-current-run handoff remains unproven.3Min inbox only RECEIVED_UNVALIDATED.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6460500669",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/implementation-work-controller.cjs"
+      ],
+      "existingOwner": "Existing integration/data + canonical owner",
+      "nextAction": "Wire authenticated current source acquisition/reconciliation receipt into existing run; retain unvalidated inbox semantics and prove consumer readback.",
+      "completion": false
+    },
+    {
+      "id": "RA-018",
+      "group": "Implementation automation",
+      "bullet": "Obtain and apply genuine customer policies.",
+      "stage": "BLOCKED",
+      "furtherResearch": "No",
+      "observedEvidence": "Controller explicitly requires CUSTOMER_POLICY_AUTHORITY_REQUIRED, not generated completion. No genuine customer policy package inspected this turn.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/implementation-work-controller.cjs"
+      ],
+      "existingOwner": "Existing customer-authorised policy owner + canonical integrator",
+      "nextAction": "Identify missing approved effective-dated source fields, obtain exact authority package, compile and independently calculate acceptance results; no invented rules.",
+      "completion": false
+    },
+    {
+      "id": "RA-019",
+      "group": "Implementation automation",
+      "bullet": "Complete automatic mapping, configuration, validation and selective revalidation.",
+      "stage": "CUSTOMER_PROOF",
+      "furtherResearch": "No",
+      "observedEvidence": "Current build logs include mapping/people-grant/schema-drift/reconciliation tests; actual current-provider/configuration journey not proven.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/workspace-setup.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/implementation-work-controller.cjs"
+      ],
+      "existingOwner": "Existing integration/onboarding owners",
+      "nextAction": "Use authenticated source and approved answers to run map→review/apply→validate→source-change→targeted revalidation; verify current state after fresh login.",
+      "completion": false
+    },
+    {
+      "id": "RA-020",
+      "group": "Implementation automation",
+      "bullet": "Remove misleading readiness labels and unsupported configuration inference.",
+      "stage": "TEST",
+      "furtherResearch": "No",
+      "observedEvidence": "PR501 includes unsupported-inference/readiness corrections, and dependent blockers remain explicit; stale STATE/body must not override fresh actual platform state.",
+      "evidenceLinks": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/implementation-work-controller.cjs",
+        "https://github.com/paulallen123/-manufacturing-wfm/blob/61718e1862fa650136e1952f622c9d8dd4c22af8/implementation/runtime/workspace-setup.cjs"
+      ],
+      "existingOwner": "Existing PR501 implementation UI/trust owner",
+      "nextAction": "Review current label/authority matrix on exact61718 and run independent browser heldouts for missing/conflicting inputs, false-zero/readiness and later revocation.",
+      "completion": false
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "group": "Scheduling",
+  "original_bullet": "Prove cross-site loans, donor-site impact and travel costs.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    352,
+    431
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/431"
+  ],
+  "next_action": "Adopt exact repaired travel engine on current base, supply directed source routes and both-site policies, prove donor coverage and cost readback.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR352 reviewed directed travel feasibility at5a3aea6; canonical adoption and full consumer/image proof pending; donor-site actual operation unproven.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V032",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V032.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

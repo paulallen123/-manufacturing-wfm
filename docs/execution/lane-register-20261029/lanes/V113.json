@@ -1,0 +1,33 @@
+{
+  "group": "Costs, savings and cash",
+  "original_bullet": "Separate projected, realised, avoided and at-risk values.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing Savings Engine/finance UX owner",
+  "existing_prs": [
+    205,
+    210,
+    240,
+    502,
+    503
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/210",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/240",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/502",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/503"
+  ],
+  "next_action": "Map all APIs/cards/report outputs to canonical value taxonomy; test source classifications and ensure caller-declared costs or synthetic unit gaps never become realised savings.",
+  "blocker": [],
+  "observed_evidence": "Existing kernels separate projected/realised or cash timing from economic value; isolated assessors explicitly set claimedSavingsPence:null.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V113",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V113.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

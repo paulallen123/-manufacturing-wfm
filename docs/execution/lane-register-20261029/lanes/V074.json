@@ -1,0 +1,25 @@
+{
+  "group": "Vecta assistant",
+  "original_bullet": "Connect text and voice requests to registered product workflows.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    241
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/241"
+  ],
+  "next_action": "Reconcile existing bot with canonical action registry; implement missing explicitly authorised workflow adapters without generic free-form mutation.",
+  "blocker": [],
+  "observed_evidence": "Fresh PR241: registered typed actions, scoped expiring plans and gateway exist; first executable mutation is leave; Time Review/Agency/factory currently safe navigation.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V074",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V074.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

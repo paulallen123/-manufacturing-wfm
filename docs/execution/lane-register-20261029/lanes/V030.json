@@ -1,0 +1,31 @@
+{
+  "group": "Scheduling",
+  "original_bullet": "Enforce explicit overtime authority, rest, fatigue, breaks and maximum shifts.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    352,
+    499,
+    454,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/499",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/454",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Reconcile existing fatigue/overtime/max-shift/break deltas; wire trusted histories and policy; run missing/invalid/stale/overlap denials.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR499 prevents unknown shift history becoming zero; PR454 read-only break gaps; no evidence all source-shaped guards are consumed live.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V030",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V030.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

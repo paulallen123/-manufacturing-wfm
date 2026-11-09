@@ -1,0 +1,363 @@
+TAP version 13
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: tenant-bound policy applies only to its exact tenant, including same site identifier
+not ok 1 - tenant-bound policy applies only to its exact tenant, including same site identifier
+  ---
+  duration_ms: 3.46066
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:21:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+  ...
+# Subtest: tenant-bound policy does not match missing tenant context
+not ok 2 - tenant-bound policy does not match missing tenant context
+  ---
+  duration_ms: 0.631181
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:28:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: tenant-bound policy does not coerce non-string tenant context into authority
+not ok 3 - tenant-bound policy does not coerce non-string tenant context into authority
+  ---
+  duration_ms: 0.678691
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:32:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    non-string tenant must fail closed: null
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:36:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit malformed tenant scopes fail closed rather than turning into global policy
+not ok 4 - explicit malformed tenant scopes fail closed rather than turning into global policy
+  ---
+  duration_ms: 1.002476
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:40:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    malformed explicit tenant scope must fail closed: null
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:45:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: an explicit undefined tenant scope cannot disappear during JSON normalization and become global
+not ok 5 - an explicit undefined tenant scope cannot disappear during JSON normalization and become global
+  ---
+  duration_ms: 0.56079
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:49:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:55:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: scope serialization cannot remove or wildcard an explicitly named tenant
+not ok 6 - scope serialization cannot remove or wildcard an explicitly named tenant
+  ---
+  duration_ms: 0.416304
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:58:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:69:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tenant scope preserves existing exact-or-list match semantics
+not ok 7 - tenant scope preserves existing exact-or-list match semantics
+  ---
+  duration_ms: 1.080459
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:73:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    true !== false
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:76:70)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: same tenant cannot inherit a different site policy
+ok 8 - same tenant cannot inherit a different site policy
+  ---
+  duration_ms: 0.806955
+  type: 'test'
+  ...
+# Subtest: unscoped public policy stays applicable while a foreign tenant policy is excluded
+not ok 9 - unscoped public policy stays applicable while a foreign tenant policy is excluded
+  ---
+  duration_ms: 1.293713
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:86:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        'public-country',
+    +   'tenant-a-site-policy'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'public-country'
+  actual:
+    0: 'public-country'
+    1: 'tenant-a-site-policy'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:90:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: preflight forwards tenant so bound policy covers only the intended tenant population
+not ok 10 - preflight forwards tenant so bound policy covers only the intended tenant population
+  ---
+  duration_ms: 1.783625
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:95:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'READY_ADVISORY'
+    - 'BLOCKED_POLICY_COVERAGE'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED_POLICY_COVERAGE'
+  actual: 'READY_ADVISORY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:103:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: preflight does not coerce malformed tenant identity into an authorized tenant
+not ok 11 - preflight does not coerce malformed tenant identity into an authorized tenant
+  ---
+  duration_ms: 0.59884
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:109:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    malformed tenant identity must not be authorized by coercion
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:115:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: preflight does not truncate a distinct overlength tenant into an authorized tenant
+not ok 12 - preflight does not truncate a distinct overlength tenant into an authorized tenant
+  ---
+  duration_ms: 0.678885
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:119:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    a distinct tenant must not alias by truncation
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:126:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tenant scope cannot bypass legal effective and knowledge boundaries
+ok 13 - tenant scope cannot bypass legal effective and knowledge boundaries
+  ---
+  duration_ms: 0.33673
+  type: 'test'
+  ...
+# Subtest: currency-bearing synthetic policy values preserve JSON and do not cross tenant or site boundaries
+not ok 14 - currency-bearing synthetic policy values preserve JSON and do not cross tenant or site boundaries
+  ---
+  duration_ms: 9.140381
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:138:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs:143:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: missing policy fails closed for every worker while output remains JSON compatible
+ok 15 - missing policy fails closed for every worker while output remains JSON compatible
+  ---
+  duration_ms: 0.840087
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 3
+# fail 12
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 145.848426
+(node:8) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)

@@ -1,0 +1,34 @@
+{
+  "group": "Security and enterprise readiness",
+  "original_bullet": "Prove tenant, role, site and payroll-data isolation throughout.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    396,
+    398,
+    399,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/396",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/398",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/399",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Integrate existing denial/revocation probes; run two approved synthetic tenants, current roles, fresh-session denials, audit/effect readback and exact response-source binding.",
+  "blocker": [
+    "Approved synthetic actor/tenant bindings",
+    "Current target identity"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V127",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V127.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

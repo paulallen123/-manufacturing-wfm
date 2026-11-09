@@ -1,0 +1,25 @@
+{
+  "group": "User experience and mobile",
+  "original_bullet": "Complete native iOS/Android security, recovery and distribution.",
+  "stage": "INTEGRATION",
+  "research_needed": "targeted_only",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    242
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/242"
+  ],
+  "next_action": "Resolve existing mobile branch conflicts through owner; verify current platform SDK/store requirements only where needed, then device security/recovery/Golden Journey and distribution gates.",
+  "blocker": [],
+  "observed_evidence": "Fresh PR242 fetch: open/draft, mergeable:false, headfb491e2,48commits/28files; initial Expo57 client/biometric approval broker exists; store/recovery/security proof remains required.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V073",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V073.json",
+  "research_route": "REFRESH_ONLY_UNRESOLVED_PROVIDER_OR_PLATFORM_CONTRACT",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,29 @@
+{
+  "group": "Factory and production intelligence",
+  "original_bullet": "Integrate output-gap, order-start variance and material-availability assessments.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Sole canonical integration/release owner",
+  "existing_prs": [
+    503,
+    524,
+    518
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/503",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/524",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/518"
+  ],
+  "next_action": "Review exact executable heads, authenticate distinct ERP/MES/stock snapshots, compose shared consumer, and run exact-image plus role/site readback.",
+  "blocker": [],
+  "observed_evidence": "#503 repaired snapshot handling; #524 reported 2/2 focused and 375/375 operations; #518 reported 4/4 and 377/377. All remain open isolated drafts.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V095",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V095.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

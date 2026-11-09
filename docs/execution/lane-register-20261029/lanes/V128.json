@@ -1,0 +1,27 @@
+{
+  "group": "Security and enterprise readiness",
+  "original_bullet": "Complete enterprise identity/account lifecycle requirements, including OIDC/SCIM.",
+  "stage": "STATUS_RECONCILIATION",
+  "research_needed": "unknown",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Inspect accepted enterprise SSO/provisioning contract and actual identity interfaces; search found no dedicated OIDC+SCIM PR, which is not proof of absence. Separate Google/Apple OAuth from enterprise provisioning.",
+  "blocker": [
+    "Verified OIDC/SCIM scope and provider/tenant configuration"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V128",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V128.json",
+  "research_route": "RECONCILE_EVIDENCE_OR_SCOPE_FIRST_NO_AUTOMATIC_RESEARCH_RESTART",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

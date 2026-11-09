@@ -1,0 +1,32 @@
+{
+  "group": "Autonomous support and learning",
+  "original_bullet": "Prove detection → diagnosis → containment → repair → verification → recovery.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    86,
+    238,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/86",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/238",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Reconcile existing support controller and provider recovery onto actual current candidate; run independent end-to-end failure/recovery scenario without a new controller.",
+  "blocker": [
+    "Current-source consumer integration",
+    "Approved synthetic failure target"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V122",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V122.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

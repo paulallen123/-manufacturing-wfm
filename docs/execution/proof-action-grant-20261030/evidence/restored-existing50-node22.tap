@@ -1,0 +1,320 @@
+(node:10) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:17) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: wrapper preserves complete scoped payroll evidence without promoting customer readiness
+ok 1 - wrapper preserves complete scoped payroll evidence without promoting customer readiness
+  ---
+  duration_ms: 522.615616
+  type: 'test'
+  ...
+# Subtest: absent payroll evidence stays unverified through the wrapper
+ok 2 - absent payroll evidence stays unverified through the wrapper
+  ---
+  duration_ms: 213.755497
+  type: 'test'
+  ...
+# Subtest: malformed request target returns generic400 and preserves partial proof and readiness denial
+ok 3 - malformed request target returns generic400 and preserves partial proof and readiness denial
+  ---
+  duration_ms: 485.170965
+  type: 'test'
+  ...
+# Subtest: a persisted payroll batch mismatch remains unverified through the wrapper
+ok 4 - a persisted payroll batch mismatch remains unverified through the wrapper
+  ---
+  duration_ms: 328.789694
+  type: 'test'
+  ...
+# Subtest: duplicate team signatures cannot substitute for distinct scoped team sign offs
+ok 5 - duplicate team signatures cannot substitute for distinct scoped team sign offs
+  ---
+  duration_ms: 303.308456
+  type: 'test'
+  ...
+# (node:18) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:18) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: signed client uses actual handler cookie and persisted actor rather than password login
+ok 6 - signed client uses actual handler cookie and persisted actor rather than password login
+  ---
+  duration_ms: 642.240819
+  type: 'test'
+  ...
+# Subtest: all explicit roles and every fresh same-role context receive separate signed assertions
+ok 7 - all explicit roles and every fresh same-role context receive separate signed assertions
+  ---
+  duration_ms: 907.119985
+  type: 'test'
+  ...
+# Subtest: signed client refuses signature and never falls back to password
+ok 8 - signed client refuses signature and never falls back to password
+  ---
+  duration_ms: 889.057137
+  type: 'test'
+  ...
+# Subtest: signed client refuses origin and never falls back to password
+ok 9 - signed client refuses origin and never falls back to password
+  ---
+  duration_ms: 1250.506861
+  type: 'test'
+  ...
+# Subtest: signed client refuses expired and never falls back to password
+ok 10 - signed client refuses expired and never falls back to password
+  ---
+  duration_ms: 142.331056
+  type: 'test'
+  ...
+# Subtest: signed client refuses actor and never falls back to password
+ok 11 - signed client refuses actor and never falls back to password
+  ---
+  duration_ms: 861.837616
+  type: 'test'
+  ...
+# Subtest: signed client refuses roleDrift and never falls back to password
+ok 12 - signed client refuses roleDrift and never falls back to password
+  ---
+  duration_ms: 134.82783
+  type: 'test'
+  ...
+# Subtest: signed client refuses tenantDrift and never falls back to password
+ok 13 - signed client refuses tenantDrift and never falls back to password
+  ---
+  duration_ms: 3330.611166
+  type: 'test'
+  ...
+# Subtest: signed client refuses source and never falls back to password
+ok 14 - signed client refuses source and never falls back to password
+  ---
+  duration_ms: 1206.017287
+  type: 'test'
+  ...
+# Subtest: signed client refuses header and never falls back to password
+ok 15 - signed client refuses header and never falls back to password
+  ---
+  duration_ms: 7091.234372
+  type: 'test'
+  ...
+# Subtest: actual nonce replay is rejected on a fresh page without password fallback
+ok 16 - actual nonce replay is rejected on a fresh page without password fallback
+  ---
+  duration_ms: 10093.049291
+  type: 'test'
+  ...
+# Subtest: a previously authenticated page is refused rather than clearing or replacing its cookie
+ok 17 - a previously authenticated page is refused rather than clearing or replacing its cookie
+  ---
+  duration_ms: 1433.73819
+  type: 'test'
+  ...
+# Subtest: an explicitly requested actor outside the existing server allowlist cannot mint a session
+ok 18 - an explicitly requested actor outside the existing server allowlist cannot mint a session
+  ---
+  duration_ms: 638.300315
+  type: 'test'
+  ...
+# Subtest: current manager context deployment mismatch stops auth/navigation proof
+ok 19 - current manager context deployment mismatch stops auth/navigation proof
+  ---
+  duration_ms: 616.899874
+  type: 'test'
+  ...
+# Subtest: current manager context run mismatch stops auth/navigation proof
+ok 20 - current manager context run mismatch stops auth/navigation proof
+  ---
+  duration_ms: 1656.331401
+  type: 'test'
+  ...
+# Subtest: current manager context tenant mismatch stops auth/navigation proof
+ok 21 - current manager context tenant mismatch stops auth/navigation proof
+  ---
+  duration_ms: 1522.732478
+  type: 'test'
+  ...
+# Subtest: current manager context configuration mismatch stops auth/navigation proof
+ok 22 - current manager context configuration mismatch stops auth/navigation proof
+  ---
+  duration_ms: 1057.5321
+  type: 'test'
+  ...
+# Subtest: current manager context absent mismatch stops auth/navigation proof
+ok 23 - current manager context absent mismatch stops auth/navigation proof
+  ---
+  duration_ms: 184.961158
+  type: 'test'
+  ...
+# Subtest: historical evidence observed identity is never treated as current deployment authority
+ok 24 - historical evidence observed identity is never treated as current deployment authority
+  ---
+  duration_ms: 558.08317
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when VECTOR_PROOF_AUTH_PROFILE is absent
+ok 25 - signed constructor fails before transport when VECTOR_PROOF_AUTH_PROFILE is absent
+  ---
+  duration_ms: 117.129141
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when VECTOR_PROOF_ACTORS_JSON is absent
+ok 26 - signed constructor fails before transport when VECTOR_PROOF_ACTORS_JSON is absent
+  ---
+  duration_ms: 316.915208
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_DEPLOYMENT_ID is absent
+ok 27 - signed constructor fails before transport when EXPECTED_DEPLOYMENT_ID is absent
+  ---
+  duration_ms: 111.493113
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_IMPLEMENTATION_TENANT is absent
+ok 28 - signed constructor fails before transport when EXPECTED_IMPLEMENTATION_TENANT is absent
+  ---
+  duration_ms: 86.976811
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_IMPLEMENTATION_RUN_ID is absent
+ok 29 - signed constructor fails before transport when EXPECTED_IMPLEMENTATION_RUN_ID is absent
+  ---
+  duration_ms: 132.404381
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when EXPECTED_CONFIGURATION_DIGEST is absent
+ok 30 - signed constructor fails before transport when EXPECTED_CONFIGURATION_DIGEST is absent
+  ---
+  duration_ms: 82.720343
+  type: 'test'
+  ...
+# Subtest: signed constructor fails before transport when PROOF_PRIVATE_KEY_B64 is absent
+ok 31 - signed constructor fails before transport when PROOF_PRIVATE_KEY_B64 is absent
+  ---
+  duration_ms: 90.572361
+  type: 'test'
+  ...
+# Subtest: malformed actor JSON, missing roles, duplicate emails and wrong isolation tenant reject
+ok 32 - malformed actor JSON, missing roles, duplicate emails and wrong isolation tenant reject
+  ---
+  duration_ms: 84.289729
+  type: 'test'
+  ...
+# Subtest: signer accepts declared base64 PEM Ed25519 only and never appears in returned profile
+ok 33 - signer accepts declared base64 PEM Ed25519 only and never appears in returned profile
+  ---
+  duration_ms: 385.027625
+  type: 'test'
+  ...
+# Subtest: signed runner emits distinct partial receipt and excludes the fixed business branch
+ok 34 - signed runner emits distinct partial receipt and excludes the fixed business branch
+  ---
+  duration_ms: 122.589146
+  type: 'test'
+  ...
+# Subtest: faithful source-layout image files load the same canonical serializer without duplicate authority
+ok 35 - faithful source-layout image files load the same canonical serializer without duplicate authority
+  ---
+  duration_ms: 317.295712
+  type: 'test'
+  ...
+# Subtest: actual unchanged wrapper keeps partial auth child business checks false and readiness503
+ok 36 - actual unchanged wrapper keeps partial auth child business checks false and readiness503
+  ---
+  duration_ms: 983.759335
+  type: 'test'
+  ...
+# Subtest: legacy password profile requires explicit loopback origin and retains fixture actor expectations
+ok 37 - legacy password profile requires explicit loopback origin and retains fixture actor expectations
+  ---
+  duration_ms: 18.714114
+  type: 'test'
+  ...
+# (node:24) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:24) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: exact candidate exposes the signed proof runner authentication boundary
+ok 38 - exact candidate exposes the signed proof runner authentication boundary
+  ---
+  duration_ms: 1.337989
+  type: 'test'
+  ...
+# Subtest: signed proof identity mints a short-lived audited session without a password
+ok 39 - signed proof identity mints a short-lived audited session without a password
+  ---
+  duration_ms: 534.297264
+  type: 'test'
+  ...
+# Subtest: ambiguous normalized proof identity fails closed before session issuance
+ok 40 - ambiguous normalized proof identity fails closed before session issuance
+  ---
+  duration_ms: 97.809413
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent add-ambiguous-user until issuance commits
+ok 41 - principal selection locks out concurrent add-ambiguous-user until issuance commits
+  ---
+  duration_ms: 90.455624
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent change-tenant until issuance commits
+ok 42 - principal selection locks out concurrent change-tenant until issuance commits
+  ---
+  duration_ms: 294.037152
+  type: 'test'
+  ...
+# Subtest: principal selection locks out concurrent change-role until issuance commits
+ok 43 - principal selection locks out concurrent change-role until issuance commits
+  ---
+  duration_ms: 407.36657
+  type: 'test'
+  ...
+# Subtest: principal lookup failure rolls back and refuses without issuing credentials
+ok 44 - principal lookup failure rolls back and refuses without issuing credentials
+  ---
+  duration_ms: 84.03252
+  type: 'test'
+  ...
+# Subtest: signed assertion is single use and replay fails closed
+ok 45 - signed assertion is single use and replay fails closed
+  ---
+  duration_ms: 64.131682
+  type: 'test'
+  ...
+# Subtest: tampered signature and expired assertion are rejected
+ok 46 - tampered signature and expired assertion are rejected
+  ---
+  duration_ms: 232.269574
+  type: 'test'
+  ...
+# Subtest: proof runner refuses non-staging activation
+ok 47 - proof runner refuses non-staging activation
+  ---
+  duration_ms: 3.197174
+  type: 'test'
+  ...
+# Subtest: audit failure rolls back session issuance and permits a clean retry after repair
+ok 48 - audit failure rolls back session issuance and permits a clean retry after repair
+  ---
+  duration_ms: 260.723087
+  type: 'test'
+  ...
+# Subtest: proof session refuses tenant drift before first product request
+ok 49 - proof session refuses tenant drift before first product request
+  ---
+  duration_ms: 382.496673
+  type: 'test'
+  ...
+# Subtest: proof session refuses role drift before first product request
+ok 50 - proof session refuses role drift before first product request
+  ---
+  duration_ms: 915.621473
+  type: 'test'
+  ...
+1..50
+# tests 50
+# suites 0
+# pass 50
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 38090.387426

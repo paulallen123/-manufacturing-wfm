@@ -1,0 +1,29 @@
+{
+  "group": "Payroll",
+  "original_bullet": "Resolve payroll receipt and aggregate-variance findings.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    495,
+    506
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/495#issuecomment-6378173927",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/495#issuecomment-6378211681",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/495#issuecomment-6379331408",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/506"
+  ],
+  "next_action": "Run supported Node22 affected suite against repaired exact5f30507, authenticate receipts/export bytes at existing consumer, then integrate and image-test; do not reimplement superseded b644 defects.",
+  "blocker": [],
+  "observed_evidence": "PR495 body and PR506 old defect wording stale. New5f30507 repair7/7 focused and17/17 oracle+suite on Node24; exact code/security reviews completed no findings. Node22/image/adoption/customer proof open.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V050",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V050.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,29 @@
+{
+  "group": "Maintenance",
+  "original_bullet": "Complete work orders, inspections, checklists, spares and tools.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing maintenance/canonical integration owner",
+  "existing_prs": [
+    394,
+    430,
+    519
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/430",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/519"
+  ],
+  "next_action": "Review exact checklist/preflight heads, authenticate CMMS/parts/tool inventory and reconcile into one work-order workflow; test missing/withdrawn checklist and unavailable stock.",
+  "blocker": [],
+  "observed_evidence": "Workforce/parts preflight, checklist evidence and spare-parts cost packages are built locally; no actual work-order execution or inventory reservation authority.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V098",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V098.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

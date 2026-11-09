@@ -1,0 +1,579 @@
+{
+  "schema": "vector-lane-triage/v1",
+  "checked_on": "2026-10-29",
+  "scope": "27 original leaf bullets across people, scheduling, time, absence",
+  "method": "Fresh GitHub PR search plus latest comment reads for352/369/501. Evidence counts are reported in repository receipts, not rerun by this agent. No current live extraction, provider call, production mutation or code execution.",
+  "findings": [
+    "PR501 body stale; latest comments pin61718e1862fa650136e1952f622c9d8dd4c22af8.",
+    "PR369 current source absent from PR501; canonical donor diagnostic6/27 vs27/27, combined temporary tree164/164 with unresolved Dockerfile conflicts.",
+    "PR369 independent exact local image completed28Oct; not customer proof.",
+    "PR352 latest repaired5a3aea6 focused110/110 Node22.23.3; old overtime/truncation findings should not be blindly re-reported as current without exact-source check."
+  ],
+  "rows": [
+    {
+      "group": "People and organisation",
+      "text": "Reconcile source, onboarding and operating populations at individual identity level.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        385,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/385",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR385 records tested independent workforce input validation but explicitly not canonical adopted; current PR501 remains isolated candidate.",
+      "next_action": "Read authenticated source/onboarding/operating snapshots and map IDs; integrate exact reviewed population validator. No count-only reconciliation.",
+      "blocking_dependency": "Authenticated complete snapshots and namespace/identity crosswalk; current live extraction unavailable to this lane.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "People and organisation",
+      "text": "Resolve missing, duplicate, conflicting and unbound identities.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        385,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/385",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "Existing validator rejects incomplete/duplicate populations; actual customer bindings remain unproven.",
+      "next_action": "Use existing reconciliation diagnostics against authoritative snapshots, resolve only source-backed mappings, retain exceptions.",
+      "blocking_dependency": "Source-authoritative identity edges, customer scope and actual population evidence.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "People and organisation",
+      "text": "Complete joiner, mover and leaver handling with effective dates.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        501,
+        512
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/512"
+      ],
+      "observed_evidence": "Current inventory shows Staffology lifecycle repair PR512 remains open; source-level lifecycle handling is not hosted proof.",
+      "next_action": "Adopt reviewed provider-authoritative lifecycle correction, then test effective-date transitions and independent provider readback.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "People and organisation",
+      "text": "Verify legal entities, sites, departments, lines and reporting hierarchies.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        501,
+        385
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/385"
+      ],
+      "observed_evidence": "Source/domain foundations exist; no fresh authenticated whole-hierarchy journey observed in this audit.",
+      "next_action": "Capture current role-scoped hierarchy from UI/API/source, verify exact entity/site/line bindings and persistent reload; create bounded defects for mismatches.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "People and organisation",
+      "text": "Prove manager permissions, cross-site authority and role changes.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        365,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/365",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR365 source review covers malformed plan scope and public entry filtering; full image and hosted current-role/revocation proof explicitly pending.",
+      "next_action": "Run current integrated negative matrix across manager/site/role changes and fresh sessions, then hosted proof.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "People and organisation",
+      "text": "Complete multi-country, timezone, currency and policy configuration.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        385,
+        395,
+        435,
+        436,
+        429
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/385",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/395",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/435",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/436",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/429"
+      ],
+      "observed_evidence": "Policy stack includes tested source/image packages, but isolated evidence is not release adoption nor legal policy authentication.",
+      "next_action": "Reconcile ordered policy stack retaining population/provenance guards; bind approved customer policies, then DST/currency/country consumer tests.",
+      "blocking_dependency": "Effective-dated customer policy evidence and qualified source authority; no external legal research needed unless actual target policy gap appears.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Reconcile the overlapping scheduler repairs into one implementation.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        352,
+        356,
+        357,
+        365,
+        369,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/356",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/357",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/365",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/369",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR352 latest head5a3aea6 focused110/110 Node22.23.3; PR369 donor image now independently admitted; PR501 lacks PR369 repair and Docker conflicts remain.",
+      "next_action": "Canonical owner preserve reviewed deltas and both authority/reconciliation tests; resolve Dockerfile conflicts then run actual merged SHA gates.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Complete visual schedules, rotations and demand-based planning.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        233,
+        357,
+        489,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/357",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/489",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR233 supplies shadow planning foundation; PR357 tested169/169 malformed demand translation; whole visual published scheduling workflow not established.",
+      "next_action": "Inspect current integrated UI/consumer against existing spec, reuse engine, close only missing vertical slice; test source-bound forecast-to-plan.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Verify availability, preferences, skills and certification validity.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        352,
+        418,
+        359
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/418",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/359"
+      ],
+      "observed_evidence": "PR352 latest110/110 source tests; PR418 preferences/fairness31/31 isolated; these do not prove complete fair allocation or authoritative preference capture.",
+      "next_action": "Run combined current-candidate eligibility/preference/certification boundary suite, then role-scoped real source/readback proof.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Enforce explicit overtime authority, rest, fatigue, breaks and maximum shifts.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        352,
+        499,
+        454,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/499",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/454",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR499 prevents unknown shift history becoming zero; PR454 read-only break gaps; no evidence all source-shaped guards are consumed live.",
+      "next_action": "Reconcile existing fatigue/overtime/max-shift/break deltas; wire trusted histories and policy; run missing/invalid/stale/overlap denials.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Complete open shifts, bids, swaps and employee acceptance.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        233,
+        515,
+        352
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/515",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352"
+      ],
+      "observed_evidence": "PR233 engine has advisory opens/swaps; PR515 only exact published-revision response assessor, no execution authority.",
+      "next_action": "Reuse existing service/approval route; implement any missing bid/acceptance transition with revision fencing and persist+readback tests.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Prove cross-site loans, donor-site impact and travel costs.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        352,
+        431
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/431"
+      ],
+      "observed_evidence": "PR352 reviewed directed travel feasibility at5a3aea6; canonical adoption and full consumer/image proof pending; donor-site actual operation unproven.",
+      "next_action": "Adopt exact repaired travel engine on current base, supply directed source routes and both-site policies, prove donor coverage and cost readback.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Validate stored assignments, publication revisions and safe replay.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        365,
+        517,
+        515,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/365",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/517",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/515",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR365 source scope filtering reviewed; PR517/515 revision assessors isolated. No new algorithm research required.",
+      "next_action": "Compose current authority bindings with exact publication/replay checks; test stale revisions, tenant/site changes, duplicate and tampered requests.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Scheduling",
+      "text": "Integrate the newer roster-change, scarce-skill and order-staffing assessments.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        517,
+        523,
+        514
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/517",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/523",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/514"
+      ],
+      "observed_evidence": "All three appear as separate current open packages; supplied source evidence remains advisory, not authenticated customer actions.",
+      "next_action": "Review exact heads, bind authenticated complete inputs and existing scheduling queue consumers, then combined image and hosted readback.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Time and attendance",
+      "text": "Prove personal/mobile and shared-kiosk clocking.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        83,
+        242,
+        220
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/83",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/242",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/220"
+      ],
+      "observed_evidence": "Existing clocking and native-client packages are recorded; no current authenticated kiosk/mobile end-to-end result observed.",
+      "next_action": "Inventory actually deployed supported surfaces; exercise authorised synthetic clock-in/out, same worker identity and durable readback, report unsupported surfaces explicitly.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Time and attendance",
+      "text": "Complete device/identity confidence, offline queues and replay.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        83,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/83",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "PR83 has local durable journal, continuity and cross-process proof; production datastore, provider and hosted integration explicitly open.",
+      "next_action": "Adopt existing confidence/queue implementation into actual clock consumer; test offline/reconnect/revocation/tamper and exactly-once persistence.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Time and attendance",
+      "text": "Verify breaks, lateness, missing punches and no-shows.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        83,
+        454,
+        369,
+        352
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/83",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/454",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/369",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352"
+      ],
+      "observed_evidence": "Existing signal uncertainty/break and no-show repair components are built; combined current-version proof absent.",
+      "next_action": "Derive independent expected time cases including no-show, missing OUT and uncertain signals; test no silent pay-stop plus explicit unresolved exceptions.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Time and attendance",
+      "text": "Prove independently approved corrections and their payroll consequences.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        416,
+        501,
+        369
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/416",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/369"
+      ],
+      "observed_evidence": "PR416 oracle111/111 local, independent/full-image/hosted handoff pending; PR369 is reconciliation guard not correction workflow completion.",
+      "next_action": "Adopt oracle guards and run authorised rejected+nonzero applied correction; compare raw/effective time, distinct actors, revisions, payroll invalidation and fresh-login audit.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Time and attendance",
+      "text": "Complete weekly review and sign-off.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        220,
+        80,
+        277
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/220",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/80",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/277"
+      ],
+      "observed_evidence": "Existing Time Review/weekly action-queue repairs and immutable leave/workflow evidence exist; no current complete signed journey read in this audit.",
+      "next_action": "Exercise existing manager weekly sign-off with current policy, persist/readback/audit and downstream payroll effects; implement only reproduced gaps.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Time and attendance",
+      "text": "Verify period import, close, rollover and locked-period adjustments.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "unknown",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        220,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/220",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "Recorded accepted scope exists, but this search did not establish a distinct current consumer/period-import owner or proof.",
+      "next_action": "Locate current authoritative period route and accepted operational-period package before selecting any code; verify current source, then test close/rollover/adjustment.",
+      "blocking_dependency": "Identify authoritative operational-period source and current active owner; never create replacement side table.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Time and attendance",
+      "text": "Prove clocking survives crashes/restarts with an intact audit trail.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        83,
+        369
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/83",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/369"
+      ],
+      "observed_evidence": "PR83 local crash/restart/authenticated antirollback journal is reference proof; no current customer datastore/hosted proof. PR369 exact local image independently built28Oct.",
+      "next_action": "Wire/admit existing durable path; run isolated process restart and failure injection, then hosted recovery against authorised test profile, independently verify audit and pay boundary.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Absence and leave",
+      "text": "Complete entitlement, accrual, carryover and balance calculations.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "unknown",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        271,
+        220,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/271",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/220",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "Authoritative time/absence evidence gate exists; broad leave depth is recorded, but per-rule implementation/proof coverage not established by current searches.",
+      "next_action": "Inspect existing entitlement engine/tests and exact customer policy coverage; route missing rule implementation directly to development; use independent expected calculations.",
+      "blocking_dependency": "Authoritative effective-dated entitlement policy and opening balances; research only identified jurisdiction-policy gaps.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Absence and leave",
+      "text": "Verify shutdowns, blackouts, delegation and different leave types.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        271,
+        220,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/271",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/220",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "Time/absence gates demand source-backed leave year/delegation/types; final current hosted matrix not observed.",
+      "next_action": "Execute scoped negative/positive cases on current consumer, including delegate revocation and typed overlapping leave, then fresh-login proof.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Absence and leave",
+      "text": "Complete joiner/leaver and irregular-hours treatment.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        271,
+        512,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/271",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/512",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "Provider lifecycle correction has separate open PR512; absence accrual parity to provider effective-date evidence remains unproven.",
+      "next_action": "Map existing source lifecycle to entitlement calculations, implement only uncovered joiner/leaver/irregular-hours cases with approved policy fixtures.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Absence and leave",
+      "text": "Prove holiday-pay effects, corrections and source reconciliation.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        271,
+        220,
+        501
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/271",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/220",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "observed_evidence": "Existing policy/payroll integration foundations; no fresh actual holiday-pay source-to-export reconciliation proof read.",
+      "next_action": "Use independent approved payroll oracle, compare leave correction and pay effects by period; prove export/provider readback and discrepancy hold.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Absence and leave",
+      "text": "Verify return-to-work readiness.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        441
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/441"
+      ],
+      "observed_evidence": "PR441 pure evaluator5/5 Node22 final; returns EVIDENCE_COMPLETE_UNVERIFIED/assignmentPermitted:false; trusted source and runtime integration open.",
+      "next_action": "Wire current authorised task/restriction/approver evidence into existing scheduling/absence consumer; preserve no automatic suitability inference and prove role denial/readback.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    },
+    {
+      "group": "Absence and leave",
+      "text": "Integrate absence-cover cost comparisons and recovery advice.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+      "existing_prs": [
+        500,
+        511,
+        352,
+        431
+      ],
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/500",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/511",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/352",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/431"
+      ],
+      "observed_evidence": "PR500 freezes nested shadow advice; PR511 compares approved cover to published slot costs; isolated packages not live outcomes.",
+      "next_action": "Compose exact reviewed advice and variance packages with existing scheduling/decision episode, authenticated costs and immutable receipts; test stale/unknown data then hosted readback.",
+      "blocking_dependency": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+      "execution": "READ_ONLY_STATUS_TRIAGE_COMPLETE; no product changes/tests executed by this audit"
+    }
+  ]
+}

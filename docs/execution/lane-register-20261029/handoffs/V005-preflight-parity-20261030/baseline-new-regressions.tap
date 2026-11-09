@@ -1,0 +1,250 @@
+TAP version 13
+# Subtest: preflight identifies missing setup without printing credentials or implying authorization
+ok 1 - preflight identifies missing setup without printing credentials or implying authorization
+  ---
+  duration_ms: 7.055797
+  type: 'test'
+  ...
+# Subtest: valid offline configuration is not a hosted-proof claim
+ok 2 - valid offline configuration is not a hosted-proof claim
+  ---
+  duration_ms: 2.088072
+  type: 'test'
+  ...
+# Subtest: wrong isolation tenant and password mode fail closed
+ok 3 - wrong isolation tenant and password mode fail closed
+  ---
+  duration_ms: 0.699964
+  type: 'test'
+  ...
+# Subtest: preflight accepts the same HTTPS origin spellings as the signed client
+not ok 4 - preflight accepts the same HTTPS origin spellings as the signed client
+  ---
+  duration_ms: 3.136795
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:31:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'BLOCKED'
+    - 'CONFIGURATION_VALID'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'CONFIGURATION_VALID'
+  actual: 'BLOCKED'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:35:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: preflight enforces trimmed bounded client binding: EXPECTED_DEPLOYMENT_ID
+not ok 5 - preflight enforces trimmed bounded client binding: EXPECTED_DEPLOYMENT_ID
+  ---
+  duration_ms: 2.158379
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:43:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'CONFIGURATION_VALID'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'CONFIGURATION_VALID'
+  operator: 'strictEqual'
+  stack: |-
+    requireBlocked (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:27:10)
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:45:7)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_TENANT
+not ok 6 - preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_TENANT
+  ---
+  duration_ms: 1.639866
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:43:3'
+  failureType: 'testCodeFailure'
+  error: 'Expected invalid field: EXPECTED_IMPLEMENTATION_TENANT'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    requireBlocked (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:28:10)
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:45:7)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_RUN_ID
+not ok 7 - preflight enforces trimmed bounded client binding: EXPECTED_IMPLEMENTATION_RUN_ID
+  ---
+  duration_ms: 0.934312
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:43:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'CONFIGURATION_VALID'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'CONFIGURATION_VALID'
+  operator: 'strictEqual'
+  stack: |-
+    requireBlocked (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:27:10)
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:45:7)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: preflight rejects noncanonical base64, invalid PEM envelopes and wrong key types
+not ok 8 - preflight rejects noncanonical base64, invalid PEM envelopes and wrong key types
+  ---
+  duration_ms: 2.893514
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:59:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'CONFIGURATION_VALID'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'CONFIGURATION_VALID'
+  operator: 'strictEqual'
+  stack: |-
+    requireBlocked (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:27:10)
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:71:31)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: preflight rejects actor shape and length drift before runner startup
+not ok 9 - preflight rejects actor shape and length drift before runner startup
+  ---
+  duration_ms: 3.969944
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:79:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'CONFIGURATION_VALID'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'CONFIGURATION_VALID'
+  operator: 'strictEqual'
+  stack: |-
+    requireBlocked (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:27:10)
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:93:5)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: preflight rejects non-string source and configuration digests without coercion
+not ok 10 - preflight rejects non-string source and configuration digests without coercion
+  ---
+  duration_ms: 1.781955
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:103:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'CONFIGURATION_VALID'
+    - 'BLOCKED'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'BLOCKED'
+  actual: 'CONFIGURATION_VALID'
+  operator: 'strictEqual'
+  stack: |-
+    requireBlocked (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:27:10)
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:107:7)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: CLI fails closed with field names only and preserves the offline claim boundary
+not ok 11 - CLI fails closed with field names only and preserves the offline claim boundary
+  ---
+  duration_ms: 60.706801
+  type: 'test'
+  location: '/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:112:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/2ea1ba0f2164/v005-preflight/verify-red/scripts/proof-access-preflight.test.cjs:117:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 3
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 258.034457

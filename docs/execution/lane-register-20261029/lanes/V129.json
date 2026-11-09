@@ -1,0 +1,34 @@
+{
+  "group": "Security and enterprise readiness",
+  "original_bullet": "Verify revocation, retention, erasure and minimum disclosure.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    398,
+    399,
+    194,
+    82
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/398",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/399",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/82"
+  ],
+  "next_action": "Run supported-runtime revocation suite and existing retention/erasure/minimum-disclosure checks against current consumers; fill evidence matrix and isolate missing implementation.",
+  "blocker": [
+    "Current-source coverage matrix",
+    "Provider deletion/retention authority where applicable"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V129",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V129.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

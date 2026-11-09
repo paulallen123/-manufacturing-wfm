@@ -1,0 +1,30 @@
+{
+  "/workspace/scratch/2ea1ba0f2164/v009-builder/candidate/security/runtime/owner-access-recovery.cjs": {
+    "sha256": "a7211fe3f6ad85f94be2d469eccd0adc6d2e5613c17fe2439d16bc697fa4463e",
+    "bytes": 16095
+  },
+  "/workspace/scratch/2ea1ba0f2164/v009-builder/candidate/security/runtime/owner-access-recovery-help.test.cjs": {
+    "sha256": "b667599c7c306716b82e9724e437738982e0ff1c7ab562572d1afad8339d275a",
+    "bytes": 5409
+  },
+  "/workspace/scratch/2ea1ba0f2164/v009-builder/candidate/security/runtime/owner-access-recovery.test.cjs": {
+    "sha256": "e3b342086d557aa419423ca4fcf2662a8015ae7832d0a8f4fade613bd93cff38",
+    "bytes": 14501
+  },
+  "/workspace/scratch/2ea1ba0f2164/v009-verifier/authority-http.test.cjs": {
+    "sha256": "b59e48e6593c51f43bdedb8b040e3c3fb04dd11ab821cd2596119eb1df9efb34",
+    "bytes": 8232
+  },
+  "/workspace/scratch/2ea1ba0f2164/v009-verifier/baseline-http.tap": {
+    "sha256": "0c8706b7e4da335ea2079402d4f3925a08d92c41024b1e3030da2ffc83965fc9",
+    "bytes": 10095
+  },
+  "/workspace/scratch/2ea1ba0f2164/v009-verifier/candidate-http.tap": {
+    "sha256": "3fabc96e868d7711b01754bdba7af996c0972f3eda8f150c902f6d17cf9b1463",
+    "bytes": 2435
+  },
+  "/workspace/scratch/2ea1ba0f2164/v009-verifier/candidate-affected.tap": {
+    "sha256": "f570b7069bf8259ea02ad55ff7f84a358365172c3d7621594c2a4a40431f3bb4",
+    "bytes": 3831
+  }
+}

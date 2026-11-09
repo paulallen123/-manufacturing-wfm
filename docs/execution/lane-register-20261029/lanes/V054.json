@@ -1,0 +1,27 @@
+{
+  "group": "Payroll",
+  "original_bullet": "Verify uncertain submissions, retries and duplicate prevention.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    506,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/506",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Use existing durable intent/current-authority path; run lost-ack, restart and concurrent retry scenarios in isolated approved fixture; assert single provider effect and independent UNKNOWN reconciliation.",
+  "blocker": [],
+  "observed_evidence": "Synthetic dispatch/readback/JSON reload/retry exists; real transport/process/store/provider proof remains open. Do not blindly replay uncertain writes.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V054",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V054.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

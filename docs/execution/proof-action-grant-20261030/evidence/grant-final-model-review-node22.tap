@@ -1,0 +1,391 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: heldout separate authority key and exact server context produce test-only evidence
+ok 1 - heldout separate authority key and exact server context produce test-only evidence
+  ---
+  duration_ms: 7.39062
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric null
+ok 2 - heldout issuedAt rejects malformed numeric null
+  ---
+  duration_ms: 1.032375
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric true
+ok 3 - heldout issuedAt rejects malformed numeric true
+  ---
+  duration_ms: 0.579825
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric 81
+ok 4 - heldout issuedAt rejects malformed numeric 81
+  ---
+  duration_ms: 0.880898
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric 1.5
+ok 5 - heldout issuedAt rejects malformed numeric 1.5
+  ---
+  duration_ms: 0.484431
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric NaN
+ok 6 - heldout issuedAt rejects malformed numeric NaN
+  ---
+  duration_ms: 0.407007
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric Infinity
+ok 7 - heldout issuedAt rejects malformed numeric Infinity
+  ---
+  duration_ms: 0.467966
+  type: 'test'
+  ...
+# Subtest: heldout issuedAt rejects malformed numeric 9007199254740992
+ok 8 - heldout issuedAt rejects malformed numeric 9007199254740992
+  ---
+  duration_ms: 0.338951
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric null
+ok 9 - heldout expiresAt rejects malformed numeric null
+  ---
+  duration_ms: 0.88994
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric true
+ok 10 - heldout expiresAt rejects malformed numeric true
+  ---
+  duration_ms: 0.678426
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric 81
+ok 11 - heldout expiresAt rejects malformed numeric 81
+  ---
+  duration_ms: 0.53464
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric 1.5
+ok 12 - heldout expiresAt rejects malformed numeric 1.5
+  ---
+  duration_ms: 0.29283
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric NaN
+ok 13 - heldout expiresAt rejects malformed numeric NaN
+  ---
+  duration_ms: 0.546219
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric Infinity
+ok 14 - heldout expiresAt rejects malformed numeric Infinity
+  ---
+  duration_ms: 0.278571
+  type: 'test'
+  ...
+# Subtest: heldout expiresAt rejects malformed numeric 9007199254740992
+ok 15 - heldout expiresAt rejects malformed numeric 9007199254740992
+  ---
+  duration_ms: 0.216012
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric null
+ok 16 - heldout expectedVersion rejects malformed numeric null
+  ---
+  duration_ms: 0.320735
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric true
+ok 17 - heldout expectedVersion rejects malformed numeric true
+  ---
+  duration_ms: 0.264448
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric 81
+ok 18 - heldout expectedVersion rejects malformed numeric 81
+  ---
+  duration_ms: 0.215569
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric 1.5
+ok 19 - heldout expectedVersion rejects malformed numeric 1.5
+  ---
+  duration_ms: 0.207034
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric NaN
+ok 20 - heldout expectedVersion rejects malformed numeric NaN
+  ---
+  duration_ms: 1.216911
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric Infinity
+ok 21 - heldout expectedVersion rejects malformed numeric Infinity
+  ---
+  duration_ms: 0.346902
+  type: 'test'
+  ...
+# Subtest: heldout expectedVersion rejects malformed numeric 9007199254740992
+ok 22 - heldout expectedVersion rejects malformed numeric 9007199254740992
+  ---
+  duration_ms: 0.237163
+  type: 'test'
+  ...
+# Subtest: heldout signature from login key remains invalid even with a matched current request
+ok 23 - heldout signature from login key remains invalid even with a matched current request
+  ---
+  duration_ms: 0.957599
+  type: 'test'
+  ...
+# Subtest: heldout same authority key in separate PEM/KeyObject representations is refused
+ok 24 - heldout same authority key in separate PEM/KeyObject representations is refused
+  ---
+  duration_ms: 1.024715
+  type: 'test'
+  ...
+# Subtest: heldout server-derived tenant cannot be replaced by a valid unrelated approval
+ok 25 - heldout server-derived tenant cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.871029
+  type: 'test'
+  ...
+# Subtest: heldout server-derived managerPersonId cannot be replaced by a valid unrelated approval
+ok 26 - heldout server-derived managerPersonId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.726611
+  type: 'test'
+  ...
+# Subtest: heldout server-derived employeePersonId cannot be replaced by a valid unrelated approval
+ok 27 - heldout server-derived employeePersonId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.594485
+  type: 'test'
+  ...
+# Subtest: heldout server-derived sourceSha cannot be replaced by a valid unrelated approval
+ok 28 - heldout server-derived sourceSha cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.671358
+  type: 'test'
+  ...
+# Subtest: heldout server-derived deploymentId cannot be replaced by a valid unrelated approval
+ok 29 - heldout server-derived deploymentId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.839494
+  type: 'test'
+  ...
+# Subtest: heldout server-derived runId cannot be replaced by a valid unrelated approval
+ok 30 - heldout server-derived runId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.71053
+  type: 'test'
+  ...
+# Subtest: heldout server-derived configurationDigest cannot be replaced by a valid unrelated approval
+ok 31 - heldout server-derived configurationDigest cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.746636
+  type: 'test'
+  ...
+# Subtest: heldout server-derived fixtureId cannot be replaced by a valid unrelated approval
+ok 32 - heldout server-derived fixtureId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.701045
+  type: 'test'
+  ...
+# Subtest: heldout server-derived fixtureDigest cannot be replaced by a valid unrelated approval
+ok 33 - heldout server-derived fixtureDigest cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.731726
+  type: 'test'
+  ...
+# Subtest: heldout server-derived requestId cannot be replaced by a valid unrelated approval
+ok 34 - heldout server-derived requestId cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.713466
+  type: 'test'
+  ...
+# Subtest: heldout server-derived date cannot be replaced by a valid unrelated approval
+ok 35 - heldout server-derived date cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.736063
+  type: 'test'
+  ...
+# Subtest: heldout server-derived hours cannot be replaced by a valid unrelated approval
+ok 36 - heldout server-derived hours cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.646947
+  type: 'test'
+  ...
+# Subtest: heldout server-derived expectedVersion cannot be replaced by a valid unrelated approval
+ok 37 - heldout server-derived expectedVersion cannot be replaced by a valid unrelated approval
+  ---
+  duration_ms: 0.679781
+  type: 'test'
+  ...
+# Subtest: heldout missing or substituted server approval record must refuse undefined
+ok 38 - heldout missing or substituted server approval record must refuse undefined
+  ---
+  duration_ms: 1.252898
+  type: 'test'
+  ...
+# Subtest: heldout missing or substituted server approval record must refuse different-protected-review
+ok 39 - heldout missing or substituted server approval record must refuse different-protected-review
+  ---
+  duration_ms: 0.886836
+  type: 'test'
+  ...
+# Subtest: heldout unapproved protected record must refuse undefined
+ok 40 - heldout unapproved protected record must refuse undefined
+  ---
+  duration_ms: 1.129608
+  type: 'test'
+  ...
+# Subtest: heldout unapproved protected record must refuse pending
+ok 41 - heldout unapproved protected record must refuse pending
+  ---
+  duration_ms: 0.946705
+  type: 'test'
+  ...
+# Subtest: heldout unapproved protected record must refuse revoked
+ok 42 - heldout unapproved protected record must refuse revoked
+  ---
+  duration_ms: 0.743746
+  type: 'test'
+  ...
+# Subtest: heldout protected approval revocation boundary refuses undefined
+ok 43 - heldout protected approval revocation boundary refuses undefined
+  ---
+  duration_ms: 1.412209
+  type: 'test'
+  ...
+# Subtest: heldout protected approval revocation boundary refuses true
+ok 44 - heldout protected approval revocation boundary refuses true
+  ---
+  duration_ms: 0.961491
+  type: 'test'
+  ...
+# Subtest: heldout protected approval revocation boundary refuses null
+ok 45 - heldout protected approval revocation boundary refuses null
+  ---
+  duration_ms: 1.501608
+  type: 'test'
+  ...
+# Subtest: heldout protected approval revocation boundary refuses false
+ok 46 - heldout protected approval revocation boundary refuses false
+  ---
+  duration_ms: 0.903671
+  type: 'test'
+  ...
+# Subtest: heldout protected approval digest is required and exact: undefined
+ok 47 - heldout protected approval digest is required and exact: undefined
+  ---
+  duration_ms: 0.958721
+  type: 'test'
+  ...
+# Subtest: heldout protected approval digest is required and exact: 0000000000000000000000000000000000000000000000000000000000000000
+ok 48 - heldout protected approval digest is required and exact: 0000000000000000000000000000000000000000000000000000000000000000
+  ---
+  duration_ms: 0.862521
+  type: 'test'
+  ...
+# Subtest: heldout protected approval digest is required and exact: 
+ok 49 - heldout protected approval digest is required and exact: 
+  ---
+  duration_ms: 0.618203
+  type: 'test'
+  ...
+# Subtest: heldout protected approval expiry is exact and live: undefined
+ok 50 - heldout protected approval expiry is exact and live: undefined
+  ---
+  duration_ms: 1.198614
+  type: 'test'
+  ...
+# Subtest: heldout protected approval expiry is exact and live: 1793385000000
+ok 51 - heldout protected approval expiry is exact and live: 1793385000000
+  ---
+  duration_ms: 1.540637
+  type: 'test'
+  ...
+# Subtest: heldout protected approval expiry is exact and live: 1793385090001
+ok 52 - heldout protected approval expiry is exact and live: 1793385090001
+  ---
+  duration_ms: 1.110875
+  type: 'test'
+  ...
+# Subtest: heldout protected approval expiry is exact and live: 1793385090000
+ok 53 - heldout protected approval expiry is exact and live: 1793385090000
+  ---
+  duration_ms: 0.98367
+  type: 'test'
+  ...
+# Subtest: heldout maximum safe version cannot approve an unrepresentable next revision
+ok 54 - heldout maximum safe version cannot approve an unrepresentable next revision
+  ---
+  duration_ms: 0.397675
+  type: 'test'
+  ...
+# Subtest: heldout out-of-domain leave hours cannot form an approval: 0.1
+ok 55 - heldout out-of-domain leave hours cannot form an approval: 0.1
+  ---
+  duration_ms: 0.370691
+  type: 'test'
+  ...
+# Subtest: heldout out-of-domain leave hours cannot form an approval: 12.5
+ok 56 - heldout out-of-domain leave hours cannot form an approval: 12.5
+  ---
+  duration_ms: 0.276891
+  type: 'test'
+  ...
+# Subtest: heldout out-of-domain leave hours cannot form an approval: 7.511
+ok 57 - heldout out-of-domain leave hours cannot form an approval: 7.511
+  ---
+  duration_ms: 0.578628
+  type: 'test'
+  ...
+# Subtest: heldout grant is expired at dispatch offset 90000
+ok 58 - heldout grant is expired at dispatch offset 90000
+  ---
+  duration_ms: 0.829696
+  type: 'test'
+  ...
+# Subtest: heldout grant is expired at dispatch offset 90001
+ok 59 - heldout grant is expired at dispatch offset 90001
+  ---
+  duration_ms: 1.159225
+  type: 'test'
+  ...
+# Subtest: heldout grant is expired at dispatch offset 1800000
+ok 60 - heldout grant is expired at dispatch offset 1800000
+  ---
+  duration_ms: 0.617756
+  type: 'test'
+  ...
+# Subtest: heldout proof session expires independently before grant lifetime
+ok 61 - heldout proof session expires independently before grant lifetime
+  ---
+  duration_ms: 1.344833
+  type: 'test'
+  ...
+# Subtest: heldout a signed claim cannot reopen provider or customer boundaries
+ok 62 - heldout a signed claim cannot reopen provider or customer boundaries
+  ---
+  duration_ms: 5.38557
+  type: 'test'
+  ...
+# Subtest: heldout local transaction rolls back business and audit together, then blocks committed replay
+ok 63 - heldout local transaction rolls back business and audit together, then blocks committed replay
+  ---
+  duration_ms: 9.292198
+  type: 'test'
+  ...
+1..63
+# tests 63
+# suites 0
+# pass 63
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 221.168874

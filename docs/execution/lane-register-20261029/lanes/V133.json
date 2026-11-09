@@ -1,0 +1,30 @@
+{
+  "group": "Customer proof",
+  "original_bullet": "Run the complete Golden Journey on one identified live version.",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "no",
+  "pool": "P",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+    "https://github.com/paulallen123/-manufacturing-wfm/issues/265"
+  ],
+  "next_action": "Use dedicated CP lane to verify actual serving SHA then execute secure entry, discovery/import, time/absence, scheduling/approval, payroll, provider readback, recovery and value journey.",
+  "blocker": [
+    "Protected signed session and customer configuration",
+    "Exact tenant/run/actor identity",
+    "Relevant accepted feature integration"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V133",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V133.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

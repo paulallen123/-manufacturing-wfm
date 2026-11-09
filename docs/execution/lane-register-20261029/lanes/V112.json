@@ -1,0 +1,31 @@
+{
+  "group": "Costs, savings and cash",
+  "original_bullet": "Integrate the Savings/Outcome Ledger.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing Savings Ledger/canonical owner",
+  "existing_prs": [
+    205,
+    475,
+    507,
+    502
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/475",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/507",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/502"
+  ],
+  "next_action": "Adopt reviewed exact-ref guard and implement persistent transactional ledger with tenant/entity/currency/period/source custody; reconcile existing decision/outcome storage rather than creating another ledger.",
+  "blocker": [],
+  "observed_evidence": "#205 ledger is source-level; #475 exact-ref duplication guard remains in-memory only and explicitly lacks durable transactional attribution.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V112",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V112.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

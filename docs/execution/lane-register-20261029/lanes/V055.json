@@ -1,0 +1,27 @@
+{
+  "group": "Payroll",
+  "original_bullet": "Prove the complete payroll journey in the customer environment.",
+  "stage": "BLOCKED",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    501,
+    309
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6460500669",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/309"
+  ],
+  "next_action": "After exact integrated deployment and protected sessions are ready, execute full Golden Journey with independent payroll oracle and approved provider readback; retain screenshots/audit and fresh-session persistence evidence.",
+  "blocker": [],
+  "observed_evidence": "Parentbf7 hosted sign-in evidence is fixtureOnly=true and productionApproved/pilotReady=false; successor/current authenticated payroll customer journey unproven.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V055",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V055.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,33 @@
+{
+  "group": "Costs, savings and cash",
+  "original_bullet": "Complete whole-period labour, premium, agency and travel costing.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing economic/payroll/scheduling and canonical integration owners",
+  "existing_prs": [
+    496,
+    508,
+    511,
+    488,
+    352
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/496",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/508",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/511",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/488",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/352"
+  ],
+  "next_action": "Map current costing consumers and adopt exact reviewed wage/premium/travel deltas; prove whole-period coverage, currencies, rounding and denied/missing evidence.",
+  "blocker": [],
+  "observed_evidence": "Wage, shift-premium, cover, maintenance labour and cross-site travel slices exist separately; their scopes and money contracts must be reconciled.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V109",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V109.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

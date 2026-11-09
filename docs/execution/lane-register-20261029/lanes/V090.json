@@ -1,0 +1,29 @@
+{
+  "group": "Integrations",
+  "original_bullet": "Complete source-to-product and product-to-provider read/write proof across the required ERP, HCM, payroll, LMS, MES, PLM, QMS, CMMS, access-control and energy systems.",
+  "stage": "BLOCKED",
+  "research_needed": "targeted_only",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    194,
+    142,
+    501
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/142",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+  ],
+  "next_action": "Create provider-specific subproofs under this lane with real scope/consent/source mappings; take read-only paths first, gate writes to separately approved non-production action/rollback/readback; never count platform connector access as product certification.",
+  "blocker": [],
+  "observed_evidence": "Wide provider family scope exceeds one live contract; no genuine all-provider certification returned. Requires actual authorized environments and exact integrated consumer paths, not more general research.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V090",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V090.json",
+  "research_route": "REFRESH_ONLY_UNRESOLVED_PROVIDER_OR_PLATFORM_CONTRACT",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

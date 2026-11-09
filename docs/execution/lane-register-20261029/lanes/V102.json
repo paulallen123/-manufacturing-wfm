@@ -1,0 +1,31 @@
+{
+  "group": "Maintenance",
+  "original_bullet": "Coordinate maintenance with production, staffing and energy.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing maintenance/Capacity Rescue/canonical owner",
+  "existing_prs": [
+    477,
+    498,
+    394,
+    420
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/477",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/498",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/394",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/420"
+  ],
+  "next_action": "Compose current CMMS/MES/WFM/energy evidence into existing Capacity Rescue; keep advisories separated from approval/execution, and verify constraint-preserving alternatives on exact candidate.",
+  "blocker": [],
+  "observed_evidence": "#477 overlap assessor and #498 maintenance-energy wrapper are isolated; no production/maintenance schedule writer or automatic actuation authority.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V102",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V102.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

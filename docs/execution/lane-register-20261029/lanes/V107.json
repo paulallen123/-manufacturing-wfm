@@ -1,0 +1,33 @@
+{
+  "group": "Decision Twin and Factory Autopilot",
+  "original_bullet": "Enforce safety constraints and current execution authority.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing Trust and canonical owner; independent verifier",
+  "existing_prs": [
+    269,
+    314,
+    388,
+    444,
+    240
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/269",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/314",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/388",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/444",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/240"
+  ],
+  "next_action": "Test current actor/tenant/site/policy/revision checks at actual consumer boundary, revoke authority between proposal and execution, and prove no unsafe dispatch occurs.",
+  "blocker": [],
+  "observed_evidence": "Trust chronology/current-binding guards and uncertain-write containment exist in open packages. #240 explicitly grants no new machine/material/maintenance authority.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V107",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V107.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,29 @@
+{
+  "group": "Training and competency",
+  "original_bullet": "Complete role-specific onboarding and contextual coaching.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    79,
+    232,
+    516
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/79",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/232",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/516"
+  ],
+  "next_action": "Reconcile current learning modules and reviewed PR232 deltas against PR501; retain current curricula and run integrated training-route/browser checks.",
+  "blocker": [],
+  "observed_evidence": "Current source at PR516 head defines employee/manager/payroll/admin curricula and scoring. Fresh exact-head reconstructed adaptive suite independently passed 18/18 on Node24.22.1.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V061",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V061.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

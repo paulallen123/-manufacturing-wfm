@@ -1,0 +1,33 @@
+{
+  "group": "Costs, savings and cash",
+  "original_bullet": "Reconcile calculated costs with payroll and operational actuals.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing payroll variance/economic owner",
+  "existing_prs": [
+    495,
+    497,
+    506,
+    520,
+    502
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/495",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/497",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/506",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/520",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/502"
+  ],
+  "next_action": "Resolve owned receipt regressions then bind final payroll export/provider readback and operational ledger identities to exact period/batch/site; test independent totals and atomic failure.",
+  "blocker": [],
+  "observed_evidence": "Multiple receipt/serialization/variance/economic modules exist; #506 explicitly records failing pinned #495 receipt regressions. No authoritative end-to-end actual-cost reconciliation.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V110",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V110.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

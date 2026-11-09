@@ -1,0 +1,29 @@
+{
+  "group": "Time and attendance",
+  "original_bullet": "Complete weekly review and sign-off.",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    220,
+    80,
+    277
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/220",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/80",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/277"
+  ],
+  "next_action": "Exercise existing manager weekly sign-off with current policy, persist/readback/audit and downstream payroll effects; implement only reproduced gaps.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "Existing Time Review/weekly action-queue repairs and immutable leave/workflow evidence exist; no current complete signed journey read in this audit.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V039",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V039.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

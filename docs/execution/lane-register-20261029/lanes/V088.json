@@ -1,0 +1,29 @@
+{
+  "group": "Integrations",
+  "original_bullet": "Prove schema changes, outages, revocation and recovery.",
+  "stage": "TEST",
+  "research_needed": "no",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    505,
+    408,
+    142
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/505",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/408",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/142"
+  ],
+  "next_action": "Adopt existing Gusto durable denial and reconnect oracles; run real HTTP/session/process-restart fixture followed by approved provider revocation/recovery and exact schema-drift reconciliation.",
+  "blocker": [],
+  "observed_evidence": "PR505 current f54cf28 evidence-only successor has Node22 affected40/40; three synthetic handler cases do not establish real HTTP/restart/fresh login. PR40821/21 oracle+19/19 hub historical only.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V088",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V088.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

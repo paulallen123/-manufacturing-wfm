@@ -1,0 +1,29 @@
+{
+  "group": "Vecta assistant",
+  "original_bullet": "Verify accents, background noise, languages and device fallback.",
+  "stage": "TEST",
+  "research_needed": "targeted_only",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    241,
+    232,
+    242
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/241",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/232",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/242"
+  ],
+  "next_action": "Test real target devices/locale/noise/fallback matrix against chosen provider. Research only unsupported device/provider combinations; preserve text fallback and no unclear confirmation.",
+  "blocker": [],
+  "observed_evidence": "PR241 remaining gates explicitly include microphone/TTS matrix, multilingual provider config; no real audio/browser evidence was retrieved.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V077",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V077.json",
+  "research_route": "REFRESH_ONLY_UNRESOLVED_PROVIDER_OR_PLATFORM_CONTRACT",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,31 @@
+{
+  "group": "Agency workforce",
+  "original_bullet": "Prove expiry, revocation, replacement and supplier outcomes.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    88,
+    470,
+    472,
+    239
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/88",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/470",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/472",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+  ],
+  "next_action": "Adopt reviewed expiry/continuity/delivery reconciliation without resends; exercise stale/revoked/replaced identities and provider UNKNOWN→verified outcome with durable readback.",
+  "blocker": [],
+  "observed_evidence": "PR88 has12/12 historical isolated deterministic checks, no PostgreSQL migration/provider callback/hosted proof. PR470 final16/16+8/8 synthetic; image/hosted gates open.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V060",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V060.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,2216 @@
+{
+  "date": "2026-10-29",
+  "lanes": [
+    {
+      "lane_id": "V001",
+      "original_action": "Finish integrating the reviewed repairs into one canonical version.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V002",
+      "original_action": "Complete independent review and exact-version build admission.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V003",
+      "original_action": "Resolve the hosted startup/build gate and apply the prepared Railway configuration.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V004",
+      "original_action": "Verify the resulting version is healthy in the customer environment.",
+      "stage_at_initial_triage": "DEPLOYMENT",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V005",
+      "original_action": "Activate the existing signed browser proof runner.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V006",
+      "original_action": "Prove persistence, restart, recovery and rollback.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V007",
+      "original_action": "Reconcile overlapping PRs and retire superseded implementations.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V008",
+      "original_action": "Complete the signing → nominated super user → permanent workspace journey.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V009",
+      "original_action": "Prove passkey registration, invitation expiry, revocation and account recovery.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "COMPLETED_BOUNDED_STEP",
+        "agent": "/root/release_access_audit"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "COMPLETED_BOUNDED_STEP",
+        "agent": "/root/support_security_extensions_audit"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution",
+      "team_state": "PATCH_REVIEWED_AWAITING_CANONICAL_ADOPTION",
+      "source_commit": null,
+      "existing_pr": 501,
+      "customer_complete": false
+    },
+    {
+      "lane_id": "V010",
+      "original_action": "Configure and verify Google/Apple sign-in; both remain disabled pending provider setup.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V011",
+      "original_action": "Complete the one-time questionnaire, autosave, resume and later configuration changes.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V012",
+      "original_action": "Ensure renewals reuse the existing workspace.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V013",
+      "original_action": "Prove a new customer starts without demo people or invented policies.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V014",
+      "original_action": "Keep setup-only customers contained from operational/provider actions.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V015",
+      "original_action": "Bind the existing execution worker to the correct customer, implementation run and authority.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V016",
+      "original_action": "Resolve protected credentials and signer/configuration bindings.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V017",
+      "original_action": "Connect discovered source data to the actual implementation workflow.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V018",
+      "original_action": "Obtain and apply genuine customer policies.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V019",
+      "original_action": "Complete automatic mapping, configuration, validation and selective revalidation.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V020",
+      "original_action": "Remove misleading readiness labels and unsupported configuration inference.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V021",
+      "original_action": "Reconcile source, onboarding and operating populations at individual identity level.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V022",
+      "original_action": "Resolve missing, duplicate, conflicting and unbound identities.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V023",
+      "original_action": "Complete joiner, mover and leaver handling with effective dates.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V024",
+      "original_action": "Verify legal entities, sites, departments, lines and reporting hierarchies.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V025",
+      "original_action": "Prove manager permissions, cross-site authority and role changes.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V026",
+      "original_action": "Complete multi-country, timezone, currency and policy configuration.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V027",
+      "original_action": "Reconcile the overlapping scheduler repairs into one implementation.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V028",
+      "original_action": "Complete visual schedules, rotations and demand-based planning.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V029",
+      "original_action": "Verify availability, preferences, skills and certification validity.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V030",
+      "original_action": "Enforce explicit overtime authority, rest, fatigue, breaks and maximum shifts.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V031",
+      "original_action": "Complete open shifts, bids, swaps and employee acceptance.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V032",
+      "original_action": "Prove cross-site loans, donor-site impact and travel costs.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V033",
+      "original_action": "Validate stored assignments, publication revisions and safe replay.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V034",
+      "original_action": "Integrate the newer roster-change, scarce-skill and order-staffing assessments.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V035",
+      "original_action": "Prove personal/mobile and shared-kiosk clocking.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V036",
+      "original_action": "Complete device/identity confidence, offline queues and replay.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V037",
+      "original_action": "Verify breaks, lateness, missing punches and no-shows.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V038",
+      "original_action": "Prove independently approved corrections and their payroll consequences.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V039",
+      "original_action": "Complete weekly review and sign-off.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V040",
+      "original_action": "Verify period import, close, rollover and locked-period adjustments.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V041",
+      "original_action": "Prove clocking survives crashes/restarts with an intact audit trail.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V042",
+      "original_action": "Complete entitlement, accrual, carryover and balance calculations.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V043",
+      "original_action": "Verify shutdowns, blackouts, delegation and different leave types.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V044",
+      "original_action": "Complete joiner/leaver and irregular-hours treatment.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V045",
+      "original_action": "Prove holiday-pay effects, corrections and source reconciliation.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V046",
+      "original_action": "Verify return-to-work readiness.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V047",
+      "original_action": "Integrate absence-cover cost comparisons and recovery advice.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V048",
+      "original_action": "Integrate the Staffology lifecycle repair, including authoritative leaver status.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V049",
+      "original_action": "Complete safe first import and employee/provider identity mapping.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V050",
+      "original_action": "Resolve payroll receipt and aggregate-variance findings.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V051",
+      "original_action": "Verify exact calculations, premiums, factors and export serialization.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V052",
+      "original_action": "Prove rejected releases leave state unchanged.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V053",
+      "original_action": "Complete authorised submission → provider acceptance → independent readback.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V054",
+      "original_action": "Verify uncertain submissions, retries and duplicate prevention.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V055",
+      "original_action": "Prove the complete payroll journey in the customer environment.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V056",
+      "original_action": "Complete requisitions, supplier selection and responses.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V057",
+      "original_action": "Verify rates, eligibility, compliance and worker identity.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V058",
+      "original_action": "Connect confirmed workers to temporary clocking profiles.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V059",
+      "original_action": "Complete clocking, approval and invoice/actual-cost reconciliation.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V060",
+      "original_action": "Prove expiry, revocation, replacement and supplier outcomes.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V061",
+      "original_action": "Complete role-specific onboarding and contextual coaching.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V062",
+      "original_action": "Prove multilingual, voice and accessible delivery.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V063",
+      "original_action": "Connect genuine assessment and assessor evidence.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V064",
+      "original_action": "Separate course completion from demonstrated competency.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V065",
+      "original_action": "Verify expiry, overdue mastery and rare-skill currency.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V066",
+      "original_action": "Complete supervised practice, trainer capacity and succession coverage.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V067",
+      "original_action": "Integrate training-versus-shift conflict checks.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "COMPLETED_BOUNDED_STEP",
+        "agent": "/root/workforce_planning_audit"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "COMPLETED_BOUNDED_STEP",
+        "agent": "/root/experience_reporting_audit"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution",
+      "team_state": "SOURCE_REPAIR_PUBLISHED",
+      "source_commit": "c6ded217c9d53cf19d3df66b8d85ee0c53aa382f",
+      "existing_pr": 521,
+      "customer_complete": false
+    },
+    {
+      "lane_id": "V068",
+      "original_action": "Integrate the simple role-specific screens and action queues.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V069",
+      "original_action": "Complete clear priorities, options, reasons and saved outcomes.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V070",
+      "original_action": "Verify visual schedules and consistent loading/error/empty states.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V071",
+      "original_action": "Complete accessibility, keyboard use and localisation.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V072",
+      "original_action": "Prove desktop, tablet and mobile workflows.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V073",
+      "original_action": "Complete native iOS/Android security, recovery and distribution.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V074",
+      "original_action": "Connect text and voice requests to registered product workflows.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V075",
+      "original_action": "Prove propose → confirm → execute → independent readback.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V076",
+      "original_action": "Cover scheduling, leave, agency, training, reporting and factory actions.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V077",
+      "original_action": "Verify accents, background noise, languages and device fallback.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V078",
+      "original_action": "Integrate governed templates, saved reports and versioned definitions.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V079",
+      "original_action": "Complete filtering, grouping, sorting and role-safe access.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V080",
+      "original_action": "Integrate and verify typed CSV/XLSX/PDF/DOCX exports.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V081",
+      "original_action": "Resolve browser lifecycle, stale-response and interrupted-flow issues.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V082",
+      "original_action": "Complete authorised scheduled delivery and acknowledgement.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V083",
+      "original_action": "Keep delivery disabled until durable dispatch and uncertain-result containment are proven.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V084",
+      "original_action": "Connect KPIs to causes, recommended actions and measured outcomes.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V085",
+      "original_action": "Configure and certify the required real customer connections.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V086",
+      "original_action": "Complete authenticated mapping, paging, freshness and reconciliation.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V087",
+      "original_action": "Resolve SAP conflict and Oracle warning-status handling.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V088",
+      "original_action": "Prove schema changes, outages, revocation and recovery.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V089",
+      "original_action": "Wire helper-only repairs into actual runtime consumers.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V090",
+      "original_action": "Complete source-to-product and product-to-provider read/write proof across the required ERP, HCM, payroll, LMS, MES, PLM, QMS, CMMS, access-control and energy systems.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V091",
+      "original_action": "Complete the shared people/skills/assets/orders/materials/cost graph.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V092",
+      "original_action": "Integrate document, drawing, BOM, routing and revision intelligence.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V093",
+      "original_action": "Complete bottleneck, demand and production-capacity modelling.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V094",
+      "original_action": "Verify material, tooling, quality and configuration readiness.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V095",
+      "original_action": "Integrate output-gap, order-start variance and material-availability assessments.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V096",
+      "original_action": "Complete changeover crew readiness and shift-handover acknowledgement.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V097",
+      "original_action": "Integrate preventive, corrective and predictive maintenance.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V098",
+      "original_action": "Complete work orders, inspections, checklists, spares and tools.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V099",
+      "original_action": "Verify technician qualifications and contractor readiness.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V100",
+      "original_action": "Integrate downtime, reliability and cause-evidence packages.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V101",
+      "original_action": "Complete labour, contractor and spare-parts costing.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V102",
+      "original_action": "Coordinate maintenance with production, staffing and energy.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V103",
+      "original_action": "Integrate permit, isolation and safe-work evidence checks.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "COMPLETED_BOUNDED_STEP",
+        "agent": "/root/manufacturing_value_audit"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "COMPLETED_BOUNDED_STEP",
+        "agent": "/root/payroll_integrations_audit"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution",
+      "team_state": "SOURCE_REPAIR_PUBLISHED",
+      "source_commit": "1cb72ddd39c8ce3789f77f3a1bc667443b5db0e1",
+      "existing_pr": 526,
+      "customer_complete": false
+    },
+    {
+      "lane_id": "V104",
+      "original_action": "Complete frozen what-if simulations with a do-nothing baseline.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V105",
+      "original_action": "Compare absence, breakdown, urgent-order and material-delay responses.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V106",
+      "original_action": "Quantify overtime, agency, redeployment and resequencing options.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V107",
+      "original_action": "Enforce safety constraints and current execution authority.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V108",
+      "original_action": "Prove approved execution, rollback and outcome capture.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V109",
+      "original_action": "Complete whole-period labour, premium, agency and travel costing.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V110",
+      "original_action": "Reconcile calculated costs with payroll and operational actuals.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V111",
+      "original_action": "Show unknown evidence correctly rather than false zero-cost results.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V112",
+      "original_action": "Integrate the Savings/Outcome Ledger.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V113",
+      "original_action": "Separate projected, realised, avoided and at-risk values.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V114",
+      "original_action": "Prove attribution and prevent double counting.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V115",
+      "original_action": "Complete cash-to-capacity, invoice milestones and working-capital workflows.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V116",
+      "original_action": "Integrate quality loss, staffing surplus and administration-effort assessments.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V117",
+      "original_action": "Complete tariff, meter and invoice reconciliation.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V118",
+      "original_action": "Integrate energy-aware scheduling and maintenance options.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V119",
+      "original_action": "Verify demand peaks, flexibility events and settlement.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V120",
+      "original_action": "Complete water, utility and environmental capacity constraints.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V121",
+      "original_action": "Prove safe degraded operation and continuity arrangements.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V122",
+      "original_action": "Prove detection → diagnosis → containment → repair → verification → recovery.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V123",
+      "original_action": "Complete durable incident/engineering memory and recurrence prevention.",
+      "stage_at_initial_triage": "DEVELOPMENT",
+      "primary": {
+        "role": "Implementation lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V124",
+      "original_action": "Verify unique ownership, leases and dispatch intent.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V125",
+      "original_action": "Complete forecast-versus-actual learning and outcome calibration.",
+      "stage_at_initial_triage": "INTEGRATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V126",
+      "original_action": "Demonstrate the zero-human implementation/support target under realistic failures.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V127",
+      "original_action": "Prove tenant, role, site and payroll-data isolation throughout.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V128",
+      "original_action": "Complete enterprise identity/account lifecycle requirements, including OIDC/SCIM.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V129",
+      "original_action": "Verify revocation, retention, erasure and minimum disclosure.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V130",
+      "original_action": "Complete worker challenge, oversight and authority boundaries.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V131",
+      "original_action": "Recheck release protection, artifact integrity and current security findings.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V132",
+      "original_action": "Prove backup/restore and operation at 10,000 employees across 50 sites.",
+      "stage_at_initial_triage": "TEST",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V133",
+      "original_action": "Run the complete Golden Journey on one identified live version.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V134",
+      "original_action": "Verify every action through saved state, refresh and fresh login.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V135",
+      "original_action": "Include required real-provider acceptance and readback.",
+      "stage_at_initial_triage": "BLOCKED",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V136",
+      "original_action": "Retain independent browser, audit and recovery evidence.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V137",
+      "original_action": "Complete customer acceptance and a reproducible end-to-end demonstration.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V138",
+      "original_action": "Recruitment, talent and performance.",
+      "stage_at_initial_triage": "RESEARCH",
+      "primary": {
+        "role": "Research lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Evidence challenger",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V139",
+      "original_action": "Court/client-event scheduling.",
+      "stage_at_initial_triage": "RESEARCH",
+      "primary": {
+        "role": "Research lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Evidence challenger",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V140",
+      "original_action": "Construction/public-works certified payroll.",
+      "stage_at_initial_triage": "RESEARCH",
+      "primary": {
+        "role": "Research lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Evidence challenger",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V141",
+      "original_action": "Field-service dispatch and offline completion.",
+      "stage_at_initial_triage": "RESEARCH",
+      "primary": {
+        "role": "Research lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Evidence challenger",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V142",
+      "original_action": "Supplier licensing, insurance and assurance.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V143",
+      "original_action": "RFP scoring and buyer-specific migration/cutover.",
+      "stage_at_initial_triage": "RESEARCH",
+      "primary": {
+        "role": "Research lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Evidence challenger",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V144",
+      "original_action": "Portable Skills Trust, robot/AMR planning, industrial edge interoperability and autonomy receipts.",
+      "stage_at_initial_triage": "STATUS_RECONCILIATION",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "V145",
+      "original_action": "Remaining named frontier concepts, including Thermal Capacity Twin and commercial automation.",
+      "stage_at_initial_triage": "RESEARCH",
+      "primary": {
+        "role": "Research lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Evidence challenger",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    },
+    {
+      "lane_id": "CP-001",
+      "original_action": "Independently customer-prove functionality already deployed while development proceeds.",
+      "stage_at_initial_triage": "CUSTOMER_PROOF",
+      "primary": {
+        "role": "Stage execution lead",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "independent_partner": {
+        "role": "Independent verifier",
+        "assignment_state": "QUEUED_UNTIL_ACCEPTED"
+      },
+      "write_rule": "One owner per file; existing domain and canonical release owners retained",
+      "completion_rule": "Exact-version independent customer evidence required; role definitions are not execution"
+    }
+  ],
+  "original_lane_count": 145,
+  "extra_proof_lane": 1,
+  "rule": "Two distinct stage-appropriate roles for every eligible lane; actual accepted tasks recorded separately. No self-approval, duplicate writer or fictitious dispatch."
+}

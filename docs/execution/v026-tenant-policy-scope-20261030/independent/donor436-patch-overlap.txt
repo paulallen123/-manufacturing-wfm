@@ -1,0 +1,23 @@
+Checking patch policy/runtime/global-site-policy-preflight.cjs...
+error: while searching for:
+function createGlobalSitePolicyPreflight({graph}={}){
+  if(!graph||typeof graph.resolve!=='function') throw new Error('Global site preflight requires jurisdiction policy graph.');
+  function assess(input={}){
+    const tenant=text(input.tenant,120),site=input.site||{},workers=Array.isArray(input.workers)?input.workers:[];
+    if(!tenant||!text(site.id,120)) throw new Error('tenant and site.id are required.');
+    const country=text(site.country,2).toUpperCase(),baseQuestions=[];
+
+error: patch failed: policy/runtime/global-site-policy-preflight.cjs:7
+error: policy/runtime/global-site-policy-preflight.cjs: patch does not apply
+Checking patch policy/runtime/jurisdiction-policy-graph.cjs...
+error: while searching for:
+function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error((name||'timestamp')+' must be valid ISO.');return new Date(ms).toISOString();}
+function list(v,max=100,maxLen=240){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
+function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
+function exactOrListMatch(expected,actual){
+  if(expected==null||expected===''||(Array.isArray(expected)&&expected.length===0)) return true;
+  const values=Array.isArray(expected)?expected:[expected];
+
+error: patch failed: policy/runtime/jurisdiction-policy-graph.cjs:23
+error: policy/runtime/jurisdiction-policy-graph.cjs: patch does not apply
+Checking patch policy/runtime/v026-tenant-policy-scope.test.cjs...

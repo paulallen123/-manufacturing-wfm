@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "runnerGitBlob": "b736e153d621daeec4915fbe8627885b6496ff00",
+  "runnerSha256": "5d5921f54b3e501f70004d324036e3c5fbd336b1f04550cb0ec390434252d903",
+  "node": "v22.23.2",
+  "primaryTask": "/root/customer_proof_unblock",
+  "independentVerifier": "/root/signed_journey_verifier",
+  "primaryExistingSuite": {
+    "pass": 50,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "independentDefaultBase": {
+    "pass": 24,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "independentRestoredCandidate": {
+    "pass": 24,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0
+  },
+  "rejectedUnpublishedPrototype": {
+    "tests": 1,
+    "pass": 0,
+    "fail": 1,
+    "exitCode": 1,
+    "expectedSyntheticSubmissions": 0,
+    "actualSyntheticSubmissions": 1,
+    "sourceSha256": "d9212a6d71ba9503fd990195c8a1caa1218ede6cae09b2ed68817d4ccc4aed9b",
+    "publication": "unsafe source and prototype-only heldout remain unpublished"
+  },
+  "proof": "No approved hosted business action; no full product readiness",
+  "liveMutations": 0,
+  "authoritativeGrantBlocker": [
+    "server-held trustworthy synthetic approval provenance and independent issuer policy",
+    "exact request/action/actor/tenant/run/config/version/period/freshness binding",
+    "server-side atomic consume plus business action/state transition and append-only audit",
+    "independent durable readback and uncertain-result containment"
+  ],
+  "fileSha256": {
+    "heldout-auth.test.mjs": "8a6b5e089e2bd7946c728545f96d1705f69cd4feaca2c1e63efbbee029916dac",
+    "baseline-auth-node22.tap": "26ed6000f640dede35b30f7a3793f2e02a31a2d768164bed6824954b09ac81b2",
+    "restored-auth-node22.tap": "21e9101600b8e8ea1867b60849395a3114c4ca043f1473e2ef56c497a22a9909",
+    "restored-existing50-node22.tap": "179328c4b22bef7a8f5cc8beb629c2cd0308c77ae5eeb9bda5db7a3a1a0b48b2",
+    "rejected-prototype-no-authority-node22.tap": "29c5f77acb6cfa493844e1747396679e2447349c543547d4a305d8d6da467e2f"
+  }
+}

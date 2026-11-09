@@ -1,0 +1,402 @@
+{
+  "audit_at": "2026-10-29",
+  "scope": "Payroll / Agency workforce / Integrations leaf bullets from previous assistant inventory",
+  "lane_count": 19,
+  "method": "Independent read-only GitHub PR/source/comment reconciliation plus fresh isolated exact-blob PR495 synthetic suite on Node24.22.1. No provider calls, shared source mutations or deployment.",
+  "critical_corrections": [
+    "PR501 body stale; comments show61718e1 current integration candidate and parentbf7 hosted success, successor proof open.",
+    "PR4955f30507 repaired and exact code/security-reviewed, superseding old PR506 defect wording.",
+    "PR512 full reconstructed runtime329/329 receipt supersedes initial231/233 missing-file limitation."
+  ],
+  "lanes": [
+    {
+      "group": "Payroll",
+      "bullet": "Integrate the Staffology lifecycle repair, including authoritative leaver status.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/512#issuecomment-6390223225",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/512"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        512
+      ],
+      "next_action": "Wait for/verify existing code review completion, compare exact donor to current integration source, adopt bounded four-file delta under sole integrator, rerun complete exact-source suite and image admission.",
+      "current_status": "Open non-draft donor2e04efe. Latest comment supersedes initial missing-file blockers: exact-source Node22.23.2 composed runtime329/329 zero skips. Code review still reported RUNNING; security completed. Not integrated/image/hosted/customer-proven.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Payroll",
+      "bullet": "Complete safe first import and employee/provider identity mapping.",
+      "stage": "CUSTOMER_PROOF",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/309",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/512"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        309,
+        512
+      ],
+      "next_action": "Verify current installed Staffology version and protected cohort/site/mapping profile; exercise approved synthetic first-worker import and independent persisted identity readback; retain external provider gate.",
+      "current_status": "PR309 closed after canonical merge3420d526 and deployed admission; genuine provider configuration and authenticated journey unproven. PR512 lifecycle follow-up remains separate.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Payroll",
+      "bullet": "Resolve payroll receipt and aggregate-variance findings.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/495#issuecomment-6378173927",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/495#issuecomment-6378211681",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/495#issuecomment-6379331408",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/506"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        495,
+        506
+      ],
+      "next_action": "Run supported Node22 affected suite against repaired exact5f30507, authenticate receipts/export bytes at existing consumer, then integrate and image-test; do not reimplement superseded b644 defects.",
+      "current_status": "PR495 body and PR506 old defect wording stale. New5f30507 repair7/7 focused and17/17 oracle+suite on Node24; exact code/security reviews completed no findings. Node22/image/adoption/customer proof open.",
+      "verification_boundary": "Fresh exact-blob module test7/7 Node24.22.1, no skips. Historical Node24 review receipts separately cited; supported Node22 and full runtime gates remain unrun here.",
+      "fresh_test": {
+        "pr": 495,
+        "source_sha": "5f30507d3dc3f634b699a4a9c477a2766cf3456a",
+        "node": "24.22.1",
+        "command": "node --test payroll-release-variance.test.cjs",
+        "pass": 7,
+        "fail": 0,
+        "skip": 0,
+        "exit": 0,
+        "source_blob": "4eae492658e5c20adf29830cfe70ee481abd50a7",
+        "test_blob": "8be4c4c2a818236657328f7d761acf52f3616aaa",
+        "claim_boundary": "Isolated synthetic module test only; not Node22/image/integration/hosted/provider/customer proof."
+      }
+    },
+    {
+      "group": "Payroll",
+      "bullet": "Verify exact calculations, premiums, factors and export serialization.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/497",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/506",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        497,
+        506,
+        501
+      ],
+      "next_action": "Reconcile exact current factor/money fixes and test-only packages; obtain independent exact-delta review; run all19-column Unicode/quote/formula boundaries and independent expected pay calculations on integrated runtime.",
+      "current_status": "PR497/506 synthetic serialization/domain receipts pass; no actual browser/HTTP/SQLite/process-restart/provider proof. PR501 preserves payroll-factor repairs but does not establish whole payroll accuracy.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Payroll",
+      "bullet": "Prove rejected releases leave state unchanged.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/497",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/506"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        497,
+        506
+      ],
+      "next_action": "Adopt existing atomicity/mutation checks and add only missing real consumer transaction/restart assertions; capture unchanged batch/audit/provider state for each refused release.",
+      "current_status": "PR497 real domain method tests include unsafe-field rejection and deliberate premature-write mutant detection; independent review remained blocked in body, not customer proof.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Payroll",
+      "bullet": "Complete authorised submission \u2192 provider acceptance \u2192 independent readback.",
+      "stage": "BLOCKED",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/309"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        501,
+        309
+      ],
+      "next_action": "Bind approved non-production provider/employer/employee/period/released batch and current actor; perform one authorized submission, independently query acceptance and reconcile IDs/period/amount; preserve UNKNOWN until readback.",
+      "current_status": "Protected provider profile, authorization and exact target bindings needed. Historical readback without VECTOR dispatch is insufficient. No genuine provider write claimed.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Payroll",
+      "bullet": "Verify uncertain submissions, retries and duplicate prevention.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/506",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        506,
+        501
+      ],
+      "next_action": "Use existing durable intent/current-authority path; run lost-ack, restart and concurrent retry scenarios in isolated approved fixture; assert single provider effect and independent UNKNOWN reconciliation.",
+      "current_status": "Synthetic dispatch/readback/JSON reload/retry exists; real transport/process/store/provider proof remains open. Do not blindly replay uncertain writes.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Payroll",
+      "bullet": "Prove the complete payroll journey in the customer environment.",
+      "stage": "BLOCKED",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501#issuecomment-6460500669",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/309"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        501,
+        309
+      ],
+      "next_action": "After exact integrated deployment and protected sessions are ready, execute full Golden Journey with independent payroll oracle and approved provider readback; retain screenshots/audit and fresh-session persistence evidence.",
+      "current_status": "Parentbf7 hosted sign-in evidence is fixtureOnly=true and productionApproved/pilotReady=false; successor/current authenticated payroll customer journey unproven.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Agency workforce",
+      "bullet": "Complete requisitions, supplier selection and responses.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/82",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        82,
+        239
+      ],
+      "next_action": "Reconcile existing exchange/V2 package and source ownership; map accepted requisition/response requirements to current consumers and missing tests, then develop only confirmed gaps.",
+      "current_status": "PR82 exchange foundations and PR239 V2 remain open drafts; existing research and shadow implementation already present. Do not start a third agency engine.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Agency workforce",
+      "bullet": "Verify rates, eligibility, compliance and worker identity.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/465",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/470",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/472",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        465,
+        470,
+        472,
+        239
+      ],
+      "next_action": "Reconcile cumulative455/465/470 and distinct457/472 with current authority readers; run unchanged paired consumer468 and supported full image. Obtain genuine policy/source evidence for actual eligibility.",
+      "current_status": "Assurance conflict, expiry/calendar and continuity repairs are tested isolated; immutable source and legal/customer authority remain dependencies. Research is not substitute for actual evidence.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Agency workforce",
+      "bullet": "Connect confirmed workers to temporary clocking profiles.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/82"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        239,
+        82
+      ],
+      "next_action": "Locate current two-file clocking handoff and compare to actual runtime consumer before adopting; prove confirmation\u2192scoped temporary profile\u2192clock\u2192expiry in isolated fixture.",
+      "current_status": "Recorded backlog says current handoff exists but stale broader PR overlaps. Exact current consumer integration not established in this audit.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Agency workforce",
+      "bullet": "Complete clocking, approval and invoice/actual-cost reconciliation.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/82"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        239,
+        82
+      ],
+      "next_action": "Trace agency confirmation/attendance/approval/cost/invoice pipeline on current head, identify genuinely absent links, then implement scoped delta and exact expected-amount/revision tests.",
+      "current_status": "Shadow architecture exists; end-to-end authoritative invoice/actual-cost workflow not demonstrated by retrieved PR receipts.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Agency workforce",
+      "bullet": "Prove expiry, revocation, replacement and supplier outcomes.",
+      "stage": "INTEGRATION",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/88",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/470",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/472",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        88,
+        470,
+        472,
+        239
+      ],
+      "next_action": "Adopt reviewed expiry/continuity/delivery reconciliation without resends; exercise stale/revoked/replaced identities and provider UNKNOWN\u2192verified outcome with durable readback.",
+      "current_status": "PR88 has12/12 historical isolated deterministic checks, no PostgreSQL migration/provider callback/hosted proof. PR470 final16/16+8/8 synthetic; image/hosted gates open.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Integrations",
+      "bullet": "Configure and certify the required real customer connections.",
+      "stage": "BLOCKED",
+      "research_needed": "targeted_only",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/142",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        194,
+        142,
+        501
+      ],
+      "next_action": "Inventory exact required providers with current tenant consent and endpoint/permission profiles; reuse existing spec-verified adapters, research only current undocumented provider contract deltas; certify each authenticated sandbox connection separately.",
+      "current_status": "Provider catalog/spec research not live certification. Workday/UKG/SAP/NetSuite documentation-backed helpers do not supply customer credentials or provider consent.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Integrations",
+      "bullet": "Complete authenticated mapping, paging, freshness and reconciliation.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "targeted_only",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/504",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/309"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        194,
+        504,
+        309
+      ],
+      "next_action": "Wire authenticated source adapters and exact ID/scope/completeness checkpoints to existing import consumers; resolve504 helper-only wiring; test paging/duplicates/multi-job/effective dates against source receipts.",
+      "current_status": "PR194 provides locally tested provider evidence authorities; PR50428/28 Node22 identity helper reviewed but no runtime caller found. Staffology current config import foundation exists.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Integrations",
+      "bullet": "Resolve SAP conflict and Oracle warning-status handling.",
+      "stage": "STATUS_RECONCILIATION",
+      "research_needed": "unknown",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/142"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        194,
+        142
+      ],
+      "next_action": "Find current provider-specific repair packages and verify exact same-position conflict/warning contract against existing mapping/runtime; inspect current official docs only if semantic ambiguity remains, then implement/test bounded missing handling.",
+      "current_status": "Generic authority fence conflicts fail closed; actual latest SAP/Oracle repair adoption not established. Do not treat old generic body as current resolved provider proof.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Integrations",
+      "bullet": "Prove schema changes, outages, revocation and recovery.",
+      "stage": "TEST",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/505",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/408",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/142"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        505,
+        408,
+        142
+      ],
+      "next_action": "Adopt existing Gusto durable denial and reconnect oracles; run real HTTP/session/process-restart fixture followed by approved provider revocation/recovery and exact schema-drift reconciliation.",
+      "current_status": "PR505 current f54cf28 evidence-only successor has Node22 affected40/40; three synthetic handler cases do not establish real HTTP/restart/fresh login. PR40821/21 oracle+19/19 hub historical only.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Integrations",
+      "bullet": "Wire helper-only repairs into actual runtime consumers.",
+      "stage": "DEVELOPMENT",
+      "research_needed": "no",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/504",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        504,
+        194,
+        501
+      ],
+      "next_action": "Trace existing import call graph on exact integration head; establish one trusted caller seam for reviewed identity/reconciliation helpers, retain existing owner, run missing-ID and cross-scope negative consumer tests before adoption.",
+      "current_status": "PR504 explicitly reports no caller. Presence in Docker image is not business-path integration; PR501 retains such gaps.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    },
+    {
+      "group": "Integrations",
+      "bullet": "Complete source-to-product and product-to-provider read/write proof across the required ERP, HCM, payroll, LMS, MES, PLM, QMS, CMMS, access-control and energy systems.",
+      "stage": "BLOCKED",
+      "research_needed": "targeted_only",
+      "evidence": [
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/142",
+        "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+      ],
+      "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+      "existing_prs": [
+        194,
+        142,
+        501
+      ],
+      "next_action": "Create provider-specific subproofs under this lane with real scope/consent/source mappings; take read-only paths first, gate writes to separately approved non-production action/rollback/readback; never count platform connector access as product certification.",
+      "current_status": "Wide provider family scope exceeds one live contract; no genuine all-provider certification returned. Requires actual authorized environments and exact integrated consumer paths, not more general research.",
+      "verification_boundary": "Read-only metadata/source/comment audit; cited tests are historical returned receipts, not executed in this audit"
+    }
+  ],
+  "fresh_test": {
+    "pr": 495,
+    "source_sha": "5f30507d3dc3f634b699a4a9c477a2766cf3456a",
+    "node": "24.22.1",
+    "command": "node --test payroll-release-variance.test.cjs",
+    "pass": 7,
+    "fail": 0,
+    "skip": 0,
+    "exit": 0,
+    "source_blob": "4eae492658e5c20adf29830cfe70ee481abd50a7",
+    "test_blob": "8be4c4c2a818236657328f7d761acf52f3616aaa",
+    "claim_boundary": "Isolated synthetic module test only; not Node22/image/integration/hosted/provider/customer proof."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "group": "Agency workforce",
+  "original_bullet": "Verify rates, eligibility, compliance and worker identity.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    465,
+    470,
+    472,
+    239
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/465",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/470",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/472",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/239"
+  ],
+  "next_action": "Reconcile cumulative455/465/470 and distinct457/472 with current authority readers; run unchanged paired consumer468 and supported full image. Obtain genuine policy/source evidence for actual eligibility.",
+  "blocker": [],
+  "observed_evidence": "Assurance conflict, expiry/calendar and continuity repairs are tested isolated; immutable source and legal/customer authority remain dependencies. Research is not substitute for actual evidence.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V057",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V057.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

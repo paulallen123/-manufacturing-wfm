@@ -1,0 +1,27 @@
+{
+  "group": "Training and competency",
+  "original_bullet": "Separate course completion from demonstrated competency.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain author(s); sole canonical integration/release owner retained; no new write lease claimed",
+  "existing_prs": [
+    516,
+    232
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/516",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/232"
+  ],
+  "next_action": "Preserve these existing guards during integration and demonstrate actual training completion does not grant restricted competency in hosted fresh-session readback.",
+  "blocker": [],
+  "observed_evidence": "Existing test assertions guidance cannot certify, browser cannot self-certify, teach-back required and expired mastery leaves totals passed 18/18 independently.",
+  "source_audit": "experience-reporting-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V064",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V064.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

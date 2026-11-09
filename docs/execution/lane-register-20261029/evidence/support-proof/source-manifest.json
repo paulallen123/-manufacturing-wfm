@@ -1,0 +1,66 @@
+[
+  {
+    "path": "scripts/permission-revocation-race-oracle.mjs",
+    "blob": "d8f5a44e0cafc0e04176917ee44cafb917d50ca0",
+    "ref": "b45904fccf633ac8a2ec7c531c777fba0599921c",
+    "pr": 399,
+    "sha256": "7eedb828055e434f93a254cd2e81e9534d518bd19a5c38e456929b55df8a43a6",
+    "bytes": 3848
+  },
+  {
+    "path": "tests/permission-revocation-race-oracle.test.mjs",
+    "blob": "2f73de8e3ced3b3b960147341e2facba8ce902c9",
+    "ref": "b45904fccf633ac8a2ec7c531c777fba0599921c",
+    "pr": 399,
+    "sha256": "3efe273db530b1325589d90b100e4fe17127f8b3d0d7dd63626c858b86ece2aa",
+    "bytes": 2676
+  },
+  {
+    "path": "scripts/bad-deployment-rollback-oracle.mjs",
+    "blob": "b1f984796e20bde0ed747a9a4a1224fefbbee319",
+    "ref": "d046d26fb2f961f4cce88db18942612cfce78244",
+    "pr": 400,
+    "sha256": "3867f984f6309c2b69bbfcd6eeaea8f79961a04056c13ed9546a66fd56d229c0",
+    "bytes": 3976
+  },
+  {
+    "path": "tests/bad-deployment-rollback-oracle.test.mjs",
+    "blob": "a40d12cba3722e87aef3c1c5dbec9306f6c37e62",
+    "ref": "d046d26fb2f961f4cce88db18942612cfce78244",
+    "pr": 400,
+    "sha256": "1ed7c6fd576104c16348febfcf0eda2859a8618115151968f4470dec0d33475b",
+    "bytes": 3668
+  },
+  {
+    "path": "scripts/payroll-restart-proof-oracle.mjs",
+    "blob": "a073efeccdfe39e9b3b650212aba4053a69b0aac",
+    "ref": "590fd63694d6298119e05b20c8c8e2e8dbecc720",
+    "pr": 383,
+    "sha256": "d2aaefb815428c3f936b3ee768099a0d40ed2e4181276e796d5a568f994a2fbb",
+    "bytes": 2548
+  },
+  {
+    "path": "tests/payroll-restart-proof-oracle.test.mjs",
+    "blob": "bcc318b4682c4ebeca428cf2abb07c892ce5deb5",
+    "ref": "590fd63694d6298119e05b20c8c8e2e8dbecc720",
+    "pr": 383,
+    "sha256": "4b0d8cea56a047122080746c935ca2ad4f9a5ab9d179b757af99314357225e2d",
+    "bytes": 2641
+  },
+  {
+    "path": "scripts/restore-freshness-proof-oracle.mjs",
+    "blob": "887ae15d09818474c4594f803e60a75578ad41f4",
+    "ref": "56d4a4656346d37f7e0bad4c5b3f44279d781e07",
+    "pr": 389,
+    "sha256": "e4e1a623dce11f710eb937bc78bbd63ed38209f7da88d09b21293c8d2b676839",
+    "bytes": 1970
+  },
+  {
+    "path": "tests/restore-freshness-proof-oracle.test.mjs",
+    "blob": "37daebb0c513e42519cc3bca5c41f5943368b3bb",
+    "ref": "56d4a4656346d37f7e0bad4c5b3f44279d781e07",
+    "pr": 389,
+    "sha256": "db4d68ed9cd4d4c879659343cdb2b51d38acb1c16d28b4cfdab21968392148fc",
+    "bytes": 1868
+  }
+]

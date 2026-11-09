@@ -1,0 +1,27 @@
+{
+  "group": "Integrations",
+  "original_bullet": "Resolve SAP conflict and Oracle warning-status handling.",
+  "stage": "STATUS_RECONCILIATION",
+  "research_needed": "unknown",
+  "pool": "A",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing scoped PR author; sole canonical integration/release owner retains adoption",
+  "existing_prs": [
+    194,
+    142
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/194",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/142"
+  ],
+  "next_action": "Find current provider-specific repair packages and verify exact same-position conflict/warning contract against existing mapping/runtime; inspect current official docs only if semantic ambiguity remains, then implement/test bounded missing handling.",
+  "blocker": [],
+  "observed_evidence": "Generic authority fence conflicts fail closed; actual latest SAP/Oracle repair adoption not established. Do not treat old generic body as current resolved provider proof.",
+  "source_audit": "payroll-integrations-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V087",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V087.json",
+  "research_route": "RECONCILE_EVIDENCE_OR_SCOPE_FIRST_NO_AUTOMATIC_RESEARCH_RESTART",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

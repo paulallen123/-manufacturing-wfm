@@ -1,0 +1,33 @@
+{
+  "group": "Costs, savings and cash",
+  "original_bullet": "Complete cash-to-capacity, invoice milestones and working-capital workflows.",
+  "stage": "INTEGRATION",
+  "research_needed": "no",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing Cash-to-Capacity/integration owner",
+  "existing_prs": [
+    210,
+    425,
+    438,
+    423,
+    451
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/210",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/425",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/438",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/423",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/451"
+  ],
+  "next_action": "Reconcile exact cash repairs, bind authoritative production commitment and invoice/payment outcomes, prove role-safe economic presentation and actual milestone reconciliation.",
+  "blocker": [],
+  "observed_evidence": "Cash-to-Capacity evaluator and evidence-time/role/snapshot repairs exist as frontier/open work; no real MES/ERP/AR/treasury roundtrip.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V115",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V115.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

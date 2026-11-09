@@ -1,0 +1,27 @@
+{
+  "group": "Historical extensions still needing an explicit scope decision",
+  "original_bullet": "Construction/public-works certified payroll.",
+  "stage": "RESEARCH",
+  "research_needed": "yes",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing canonical integration/release owner; narrow donor ownership preserved",
+  "existing_prs": [
+    106
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/106"
+  ],
+  "next_action": "Recover original target jurisdictions and accepted customer workflow; verify primary-source rules only after scope is grounded, then reuse payroll contract.",
+  "blocker": [
+    "Explicit scope/jurisdiction disposition"
+  ],
+  "observed_evidence": "See exact audit record",
+  "source_audit": "support-security-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V140",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V140.json",
+  "research_route": "TARGETED_RESEARCH_WITH_EXIT_CRITERION",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

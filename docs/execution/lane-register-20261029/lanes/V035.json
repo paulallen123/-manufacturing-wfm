@@ -1,0 +1,29 @@
+{
+  "group": "Time and attendance",
+  "original_bullet": "Prove personal/mobile and shared-kiosk clocking.",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    83,
+    242,
+    220
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/83",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/242",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/220"
+  ],
+  "next_action": "Inventory actually deployed supported surfaces; exercise authorised synthetic clock-in/out, same worker identity and durable readback, report unsupported surfaces explicitly.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "Existing clocking and native-client packages are recorded; no current authenticated kiosk/mobile end-to-end result observed.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V035",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V035.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,27 @@
+{
+  "group": "Factory and production intelligence",
+  "original_bullet": "Integrate document, drawing, BOM, routing and revision intelligence.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "yes",
+  "pool": "C",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing graph/Engineering Memory owner",
+  "existing_prs": [
+    205,
+    230
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/205",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/230"
+  ],
+  "next_action": "Inspect accepted extraction specifications and evaluate only unresolved OCR/CAD/provider contracts; implement one provenance-bound extractor into existing graph with held-out manufacturing documents.",
+  "blocker": [],
+  "observed_evidence": "Engineering Memory accepts supplied vectors/text, but #205 explicitly excludes real OCR/GD&T/CAD extraction and production retrieval proof.",
+  "source_audit": "manufacturing-value-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V092",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V092.json",
+  "research_route": "TARGETED_RESEARCH_WITH_EXIT_CRITERION",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}

@@ -1,0 +1,198 @@
+(node:7) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: verified official snapshot becomes current evidence
+ok 1 - verified official snapshot becomes current evidence
+  ---
+  duration_ms: 2.367871
+  type: 'test'
+  ...
+# Subtest: stale source cannot silently remain usable
+ok 2 - stale source cannot silently remain usable
+  ---
+  duration_ms: 2.166676
+  type: 'test'
+  ...
+# Subtest: unverified retrieval cannot enter authoritative evidence
+ok 3 - unverified retrieval cannot enter authoritative evidence
+  ---
+  duration_ms: 1.139836
+  type: 'test'
+  ...
+# Subtest: source metadata never grants execution authority
+ok 4 - source metadata never grants execution authority
+  ---
+  duration_ms: 0.388246
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: registry resolves only verified effective packs and never grants authority
+ok 5 - registry resolves only verified effective packs and never grants authority
+  ---
+  duration_ms: 10.782414
+  type: 'test'
+  ...
+# Subtest: missing country pack fails closed with explicit limitation
+ok 6 - missing country pack fails closed with explicit limitation
+  ---
+  duration_ms: 1.580899
+  type: 'test'
+  ...
+# Subtest: verified pack requires provenance
+ok 7 - verified pack requires provenance
+  ---
+  duration_ms: 0.465178
+  type: 'test'
+  ...
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: complete known site becomes advisory-ready with zero routine customer rule entry
+ok 8 - complete known site becomes advisory-ready with zero routine customer rule entry
+  ---
+  duration_ms: 4.300854
+  type: 'test'
+  ...
+# Subtest: unknown organisational facts create only targeted exception questions
+ok 9 - unknown organisational facts create only targeted exception questions
+  ---
+  duration_ms: 1.471869
+  type: 'test'
+  ...
+# Subtest: worker temporarily located in unsupported country blocks only that worker policy coverage
+ok 10 - worker temporarily located in unsupported country blocks only that worker policy coverage
+  ---
+  duration_ms: 0.72944
+  type: 'test'
+  ...
+# Subtest: preflight never grants execution or customer mutation authority
+ok 11 - preflight never grants execution or customer mutation authority
+  ---
+  duration_ms: 0.443017
+  type: 'test'
+  ...
+# (node:22) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: bitemporal resolution distinguishes legal validity from what VECTOR knew
+ok 12 - bitemporal resolution distinguishes legal validity from what VECTOR knew
+  ---
+  duration_ms: 5.042019
+  type: 'test'
+  ...
+# Subtest: mandatory ceilings compose to the strictest applicable rule across layers
+ok 13 - mandatory ceilings compose to the strictest applicable rule across layers
+  ---
+  duration_ms: 1.109116
+  type: 'test'
+  ...
+# Subtest: customer policy cannot weaken a mandatory ceiling
+ok 14 - customer policy cannot weaken a mandatory ceiling
+  ---
+  duration_ms: 0.858384
+  type: 'test'
+  ...
+# Subtest: collective agreement scope does not leak to workers outside that agreement
+ok 15 - collective agreement scope does not leak to workers outside that agreement
+  ---
+  duration_ms: 1.123268
+  type: 'test'
+  ...
+# Subtest: verified exceptions never silently weaken the base rule
+ok 16 - verified exceptions never silently weaken the base rule
+  ---
+  duration_ms: 0.990385
+  type: 'test'
+  ...
+# (node:28) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: unchanged authoritative snapshot creates no change
+ok 17 - unchanged authoritative snapshot creates no change
+  ---
+  duration_ms: 1.459016
+  type: 'test'
+  ...
+# Subtest: material workforce-law change always requires qualified review
+ok 18 - material workforce-law change always requires qualified review
+  ---
+  duration_ms: 1.78804
+  type: 'test'
+  ...
+# Subtest: stale source evidence cannot create a candidate
+ok 19 - stale source evidence cannot create a candidate
+  ---
+  duration_ms: 1.731323
+  type: 'test'
+  ...
+# Subtest: low-ambiguity non-material change can be prepared automatically but never promoted automatically
+ok 20 - low-ambiguity non-material change can be prepared automatically but never promoted automatically
+  ---
+  duration_ms: 0.367653
+  type: 'test'
+  ...
+# (node:34) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: same site and legal entity IDs do not cross an explicit tenant scope
+ok 21 - same site and legal entity IDs do not cross an explicit tenant scope
+  ---
+  duration_ms: 17.224677
+  type: 'test'
+  ...
+# Subtest: missing or malformed tenant context cannot match an explicitly scoped node
+ok 22 - missing or malformed tenant context cannot match an explicitly scoped node
+  ---
+  duration_ms: 1.869179
+  type: 'test'
+  ...
+# Subtest: an explicit list of tenant scopes admits only exact named tenants
+ok 23 - an explicit list of tenant scopes admits only exact named tenants
+  ---
+  duration_ms: 0.55951
+  type: 'test'
+  ...
+# Subtest: explicitly malformed tenant scopes are rejected instead of becoming global
+ok 24 - explicitly malformed tenant scopes are rejected instead of becoming global
+  ---
+  duration_ms: 1.16739
+  type: 'test'
+  ...
+# Subtest: an explicit tenant scope cannot disappear during JSON cloning
+ok 25 - an explicit tenant scope cannot disappear during JSON cloning
+  ---
+  duration_ms: 0.374207
+  type: 'test'
+  ...
+# Subtest: unscoped public rules remain available with or without a tenant
+ok 26 - unscoped public rules remain available with or without a tenant
+  ---
+  duration_ms: 0.612384
+  type: 'test'
+  ...
+# Subtest: preflight forwards its tenant so only that tenant gains scoped coverage
+ok 27 - preflight forwards its tenant so only that tenant gains scoped coverage
+  ---
+  duration_ms: 1.540187
+  type: 'test'
+  ...
+# Subtest: preflight context digest binds exact tenant while leaving caller input unchanged
+ok 28 - preflight context digest binds exact tenant while leaving caller input unchanged
+  ---
+  duration_ms: 1.060379
+  type: 'test'
+  ...
+# Subtest: preflight rejects tenant inputs that would coerce or truncate into another binding
+ok 29 - preflight rejects tenant inputs that would coerce or truncate into another binding
+  ---
+  duration_ms: 1.056883
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 187.9232

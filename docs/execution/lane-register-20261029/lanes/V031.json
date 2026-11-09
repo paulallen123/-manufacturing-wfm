@@ -1,0 +1,29 @@
+{
+  "group": "Scheduling",
+  "original_bullet": "Complete open shifts, bids, swaps and employee acceptance.",
+  "stage": "DEVELOPMENT",
+  "research_needed": "no",
+  "pool": "B",
+  "execution_state": "TRIAGED_QUEUED_FOR_NEXT_ACTION",
+  "existing_owner": "Existing domain PR owner; sole canonical integration/release owner retained",
+  "existing_prs": [
+    233,
+    515,
+    352
+  ],
+  "evidence": [
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/233",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/515",
+    "https://github.com/paulallen123/-manufacturing-wfm/pull/352"
+  ],
+  "next_action": "Reuse existing service/approval route; implement any missing bid/acceptance transition with revision fencing and persist+readback tests.",
+  "blocker": "Canonical integration owner must reconcile once; exact merged image and live role proof remain mandatory.",
+  "observed_evidence": "PR233 engine has advisory opens/swaps; PR515 only exact published-revision response assessor, no execution authority.",
+  "source_audit": "workforce-planning-lanes.json",
+  "required_completion": "Current exact integrated version; intended-role workflow; authoritative backend and durable state; refresh/fresh-login; applicable provider acceptance and independent readback; audit; independent security/recovery proof.",
+  "claimed_customer_complete": false,
+  "id": "V031",
+  "record_path": "docs/execution/lane-register-20261029/lanes/V031.json",
+  "research_route": "SKIP_REPEAT_RESEARCH",
+  "model_policy": "Efficient available Sol/Codex for triage/development; independent reviewer; escalate only hard safety/security/payroll/recovery questions. Actual model selection/dispatch must be recorded, not assumed."
+}
