@@ -1,0 +1,80 @@
+{
+  "lane": "V108",
+  "stage": "CUSTOMER_PROOF",
+  "research_needed": "NO",
+  "execution_state": "LOCAL_TESTS_TERMINAL_INDEPENDENT_SOURCE_REVIEW_ACCEPTED",
+  "source_commit": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "node": "v22.23.2",
+  "baseline_defect_reproduced": false,
+  "source_unchanged": true,
+  "checks": [
+    {
+      "name": "new test",
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    {
+      "name": "affected suites (overlap)",
+      "pass": 85,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    {
+      "name": "unsafe local expiry-removal sensitivity control",
+      "pass": 0,
+      "fail": 3,
+      "skip": 0,
+      "exit": 1
+    }
+  ],
+  "files": [
+    {
+      "path": "evidence/source-manifest.json",
+      "sha256": "ff6d121f3d3c74d67ecd0c46465c207de106836a7e87a42f0e033fad1857f86b",
+      "bytes": 1807
+    },
+    {
+      "path": "evidence/focused-node22.tap",
+      "sha256": "8ca260fa30961328ebe3a9f1978fab9db4e39b8f417667e4911ff506dd086a7c",
+      "bytes": 1232
+    },
+    {
+      "path": "evidence/affected-node22.tap",
+      "sha256": "1d3baa901a801fec39341516648b005ab1ce466278faa3dfce4862c88244bd10",
+      "bytes": 18780
+    },
+    {
+      "path": "evidence/sensitivity-no-expiry-node22.tap",
+      "sha256": "03a1ebd080d0fd941724000c031d5fc5fd98d95170f71a30646686b9a639a4cb",
+      "bytes": 3584
+    },
+    {
+      "path": "evidence/v108-test-only.patch",
+      "sha256": "f9d5def073c5e68b3f800cda579023cc761416b3c5300d2ce33305f59c1322a6",
+      "bytes": 10730
+    },
+    {
+      "path": "evidence/owner-handoff-draft.md",
+      "sha256": "480386a9095717bd2cf8ba3e9e0d5f000054a2b3e47d95af86703e7206867b6c",
+      "bytes": 5066
+    }
+  ],
+  "remote_mutation": false,
+  "customer_complete": false,
+  "independent_review": {
+    "reviewer": "/root",
+    "semantics": "ACCEPTED",
+    "focused_node22": {
+      "pass": 76,
+      "fail": 0,
+      "skip": 0,
+      "exit": 0
+    },
+    "counts_overlap": true,
+    "additional_independent_heldouts": false
+  },
+  "phase": "local_review_checkpoint_before_publication"
+}
