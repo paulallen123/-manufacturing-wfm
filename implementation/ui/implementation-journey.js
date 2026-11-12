@@ -269,7 +269,7 @@ async function saveSetup(form,background=false){
   const button=form?.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent='Saving…';}
   S.setupSaving=true;updateSetupFeedback();let followUp=false;
   try{
-    const saved=await request(IMPL+'/setup',{method:'POST',body:JSON.stringify({expectedRevision:S.setup?.revision||0,answers})});
+    const saved=await request(IMPL+'/setup',{method:'POST',body:JSON.stringify({setupBinding:S.setup?.setupBinding,expectedRevision:S.setup?.revision||0,answers})});
     if(!currentWorkspace())return;
     if(!saved)throw Error('Sign in to save your workspace setup.');
     if((saved.tenant&&tenant&&saved.tenant!==tenant)||(saved.runId&&runId&&saved.runId!==runId))throw Error('The workspace changed. Reload your saved answers before retrying.');
@@ -304,7 +304,7 @@ async function applySetup(){
   S.setupSaving=true;const button=document.querySelector('[data-ij-setup-apply]');if(button)button.disabled=true;
   let followUp=false;
   try{
-    const result=await request(IMPL+'/setup/apply',{method:'POST',body:JSON.stringify({expectedRevision:S.setup.revision,reviewToken:S.setup.reviewToken})});
+    const result=await request(IMPL+'/setup/apply',{method:'POST',body:JSON.stringify({setupBinding:S.setup.setupBinding,expectedRevision:S.setup.revision,reviewToken:S.setup.reviewToken})});
     if(!currentWorkspace())return;
     if(!result||result.status!=='APPLIED')throw Error('The setup was not applied. Reload the saved review and try again.');
     if(generation!==S.setupEditGeneration){
@@ -451,7 +451,7 @@ async function load(force){
     if(token)calls.push(request(IMPL+'/invitation?token='+encodeURIComponent(token)).catch(error=>({error:error.message,status:error.status})));
     const result=await Promise.all(calls);
     S.status=result[0];S.integrations=result[1];S.learning=result[2];S.invitation=result[4]||null;
-    const changedBinding=S.setup&&result[3]&&(S.setup.tenant!==result[3].tenant||S.setup.runId!==result[3].runId);
+    const changedBinding=S.setup&&result[3]&&(S.setup.tenant!==result[3].tenant||S.setup.runId!==result[3].runId||S.setup.setupBinding!==result[3].setupBinding);
     if(changedBinding){resetSetupBinding();S.setupDirty=false;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
     if((changedBinding||!S.setupDirty&&!S.setupSaving)&&result[3]&&(!S.setup||changedBinding||result[3].revision>=S.setup.revision))S.setup=result[3];
     if(!S.status){resetSetupBinding();S.error='Your account does not have access to implementation control.';S.setupDirty=false;S.setup=null;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}

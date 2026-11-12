@@ -198,9 +198,10 @@ async function fixture(t) {
   assert.ok([200, 201].includes(scoped.status), JSON.stringify(scoped.body));
 
   const route = '/api/implementation/autonomous/setup';
-  const first = await call(engine, managerToken, 'POST', route, {expectedRevision: 0, answers: nowAnswers()});
+  const first = await call(engine, managerToken, 'POST', route, {setupBinding:(await call(engine,managerToken,'GET',route)).body.setupBinding,expectedRevision: 0, answers: nowAnswers()});
   assert.equal(first.status, 200, JSON.stringify(first.body));
   const applied = await call(engine, managerToken, 'POST', route + '/apply', {
+    setupBinding: first.body.setupBinding,
     expectedRevision: first.body.revision,
     reviewToken: first.body.reviewToken
   });
@@ -271,6 +272,7 @@ test('now to later clears active integration claims without deleting authorised 
   const f = await fixture(t);
   const before = readState(f.db, f.engine);
   const saved = await call(f.engine, managerToken, 'POST', f.route, {
+    setupBinding: f.first.body.setupBinding,
     expectedRevision: f.first.body.revision,
     answers: laterAnswers()
   });
@@ -280,6 +282,7 @@ test('now to later clears active integration claims without deleting authorised 
   assert.deepEqual(duringDraft.environment, before.environment, 'saving a draft must not change the environment');
 
   const applied = await call(f.engine, managerToken, 'POST', f.route + '/apply', {
+    setupBinding: saved.body.setupBinding,
     expectedRevision: saved.body.revision,
     reviewToken: saved.body.reviewToken
   });
@@ -317,12 +320,14 @@ test('stale amendment cannot apply and repeated reviewed deferral is idempotent'
   const f = await fixture(t);
   const before = readState(f.db, f.engine);
   const saved = await call(f.engine, managerToken, 'POST', f.route, {
+    setupBinding: f.first.body.setupBinding,
     expectedRevision: f.first.body.revision,
     answers: laterAnswers()
   });
   assert.equal(saved.status, 200, JSON.stringify(saved.body));
 
   const stale = await call(f.engine, managerToken, 'POST', f.route + '/apply', {
+    setupBinding: f.first.body.setupBinding,
     expectedRevision: f.first.body.revision,
     reviewToken: f.first.body.reviewToken
   });
@@ -330,12 +335,14 @@ test('stale amendment cannot apply and repeated reviewed deferral is idempotent'
   assert.deepEqual(readState(f.db, f.engine).scope, before.scope);
 
   const applied = await call(f.engine, managerToken, 'POST', f.route + '/apply', {
+    setupBinding: saved.body.setupBinding,
     expectedRevision: saved.body.revision,
     reviewToken: saved.body.reviewToken
   });
   assert.equal(applied.status, 200, JSON.stringify(applied.body));
   const once = readState(f.db, f.engine);
   const replay = await call(f.engine, managerToken, 'POST', f.route + '/apply', {
+    setupBinding: saved.body.setupBinding,
     expectedRevision: saved.body.revision,
     reviewToken: saved.body.reviewToken
   });
@@ -351,6 +358,7 @@ test('stale amendment cannot apply and repeated reviewed deferral is idempotent'
 test('failed deferred amendment rolls back scope, environment, draft application and evidence together', async t => {
   const f = await fixture(t);
   const saved = await call(f.engine, managerToken, 'POST', f.route, {
+    setupBinding: f.first.body.setupBinding,
     expectedRevision: f.first.body.revision,
     answers: laterAnswers()
   });
@@ -359,6 +367,7 @@ test('failed deferred amendment rolls back scope, environment, draft application
   f.db.exec("CREATE TRIGGER refuse_deferred_amendment BEFORE INSERT ON tenant_environment_events WHEN NEW.event='ENVIRONMENT_RECONFIGURED' BEGIN SELECT RAISE(ABORT,'test audit unavailable'); END");
 
   const failed = await call(f.engine, managerToken, 'POST', f.route + '/apply', {
+    setupBinding: saved.body.setupBinding,
     expectedRevision: saved.body.revision,
     reviewToken: saved.body.reviewToken
   });
@@ -375,6 +384,7 @@ test('failed deferred amendment rolls back scope, environment, draft application
 
   f.db.exec('DROP TRIGGER refuse_deferred_amendment');
   const retried = await call(f.engine, managerToken, 'POST', f.route + '/apply', {
+    setupBinding: saved.body.setupBinding,
     expectedRevision: saved.body.revision,
     reviewToken: saved.body.reviewToken
   });

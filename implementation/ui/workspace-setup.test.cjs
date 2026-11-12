@@ -241,3 +241,21 @@ test('explicit access denial clears the private draft and cancels its delayed sa
  const f=boundFixture((url)=>({status:url.endsWith('/status')?403:200,body:url===setupRoute?{tenant:'alpha',runId:'run-a',revision:2,answers:{}}:{error:'Access denied'}}));
  f.edit('organisationName','Private old workspace');await f.run('load(true)');await f.advance(1000);assert.equal(f.run('S.setup'),null);assert.equal(f.run('S.setupInput'),null);assert.equal(f.calls.filter(call=>call.method==='POST').length,0);assert.doesNotMatch(f.content.innerHTML,/Private old workspace/);
 });
+
+test('V011 save and Apply carry the binding from the loaded setup',async()=>{
+ const binding='a'.repeat(64);
+ const f=boundFixture((url,options)=>({status:200,body:{...savedDraft(options),setupBinding:binding,status:url.endsWith('/apply')?'APPLIED':'DRAFT',reviewToken:'review'}}));
+ f.set('setup',{tenant:'alpha',runId:'run-a',revision:2,setupBinding:binding});
+ f.edit('organisationName','Session-bound draft');await f.advance(500);
+ assert.equal(JSON.parse(f.calls[0].body).setupBinding,binding);
+ await f.run('applySetup()');assert.equal(JSON.parse(f.calls[1].body).setupBinding,binding);
+});
+test('V011 a changed session binding on refresh clears pending old-session input',async()=>{
+ const remote={tenant:'alpha',runId:'run-a',revision:2,answers:{},setupBinding:'b'.repeat(64)};
+ const f=boundFixture(url=>({status:200,body:url===setupRoute?remote:{tenant:'alpha',runId:'run-a',state:'BUILDING'}}));
+ f.set('setup',{...remote,setupBinding:'a'.repeat(64)});
+ f.edit('organisationName','Old-session private draft');await f.run('load(true)');await f.advance(500);
+ assert.equal(f.run('S.setupInput'),null);assert.equal(f.run('S.setupDirty'),false);
+ assert.equal(f.calls.filter(c=>c.method==='POST').length,0);
+ assert.equal(f.run('S.setup.setupBinding'),'b'.repeat(64));
+});

@@ -146,8 +146,8 @@ test('trusted adoption resolves identity independently of spoofed body and prese
   const started=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'legacy-contract',recipientEmail:'manager@alpha'},f.internal);
   assert.equal(started.status,201);
   const route='/api/implementation/autonomous/setup';
-  const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()});
-  assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  const saved=await call(f.engine,f.tokens.manager,'POST',route,{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:0,answers:setupAnswers()});
+  assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
   const env=db.prepare('SELECT * FROM tenant_environments WHERE tenant=?').get('alpha');
   trusted={operation:'adopt-existing',verified:true,ownerAuthorized:true,customerId:'legacy-customer',customerAuthorityRef:'fixture-verified-customer',tenant:'alpha',provider:'fixture-verified-provider',eventId:'adoption',contractRef:'renewal',relationship:'renewal',ownerEmail:'manager@alpha',ownerAuthorityRef:'fixture-existing-owner',existingRunId:started.body.implementation.runId,existingEnvironmentId:env.environment_id,existingNamespace:env.namespace};
   const tables=['implementation_runs','implementation_scope','tenant_environments','workspace_setup_drafts','workspace_setup_events','users','implementation_invitations','implementation_notification_outbox','implementation_events','implementation_work_jobs'];
@@ -158,11 +158,13 @@ test('trusted adoption resolves identity independently of spoofed body and prese
   assert.deepEqual(preserved(),before);assert.equal((await send()).body.workspace.workspaceId,adopted.body.workspace.workspaceId);assert.deepEqual(preserved(),before);
   const complete=(await call(f.engine,f.tokens.manager,'GET',route)).body;assert.equal(complete.questionnaireComplete,true);
   const fresh='fresh-session-after-adoption';db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(fresh),'manager@alpha',Date.now()+60_000);
-  assert.deepEqual((await call(f.engine,fresh,'GET',route)).body,complete);
+  const freshComplete=(await call(f.engine,fresh,'GET',route)).body;
+  assert.notEqual(freshComplete.setupBinding,complete.setupBinding);
+  assert.deepEqual({...freshComplete,setupBinding:complete.setupBinding},complete);
   for(const relationship of ['renewal','amendment']){
     trusted={...trusted,eventId:relationship+'-next',contractRef:relationship+'-next',relationship,existingWorkspaceId:adopted.body.workspace.workspaceId};
     for(const key of ['operation','existingRunId','existingEnvironmentId','existingNamespace'])delete trusted[key];
-    assert.equal((await send()).status,200);assert.deepEqual(preserved(),before);assert.deepEqual((await call(f.engine,fresh,'GET',route)).body,complete);
+    assert.equal((await send()).status,200);assert.deepEqual(preserved(),before);assert.deepEqual((await call(f.engine,fresh,'GET',route)).body,freshComplete);
   }
   const bypass=await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'alpha',contractRef:'unverified-renewal',recipientEmail:'manager@alpha'},f.internal);
   assert.equal(bypass.status,409);assert.deepEqual(preserved(),before);assert.equal(f.invitationAttempts,1);
@@ -288,13 +290,13 @@ for(const change of ['permission','session','freeze']) test('setup apply recheck
   const f=signingFixture(t);assert.equal((await f.send()).status,201);
   const token='race-owner-session';f.db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(token),f.owner,Date.now()+60000);
   const route='/api/implementation/autonomous/setup';
-  const saved=await call(f.engine,token,'POST',route,{expectedRevision:0,answers:setupAnswers()});assert.equal(saved.status,200);
+  const saved=await call(f.engine,token,'POST',route,{setupBinding:(await call(f.engine,token,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:0,answers:setupAnswers()});assert.equal(saved.status,200);
   const before=f.db.prepare('SELECT * FROM workspace_setup_drafts').all();
   const req=Readable.from((async function*(){
     if(change==='permission')f.db.prepare('UPDATE users SET permissions=? WHERE email=?').run('[]',f.owner);
     if(change==='session')f.db.prepare('DELETE FROM sessions WHERE email=?').run(f.owner);
     if(change==='freeze')f.db.exec("CREATE TABLE identity_tenant_control(tenant TEXT PRIMARY KEY,privileged_freeze INTEGER); INSERT INTO identity_tenant_control VALUES('alpha',1)");
-    yield JSON.stringify({expectedRevision:1,reviewToken:saved.body.reviewToken});
+    yield JSON.stringify({setupBinding:saved.body.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken});
   })());
   req.method='POST';req.url=route+'/apply';req.headers={cookie:'wfm_session='+token};const res=response();
   await f.engine.handleRequest(req,res);
@@ -319,8 +321,8 @@ test('verified signing creates a new owner once and renewal preserves completed 
   // This route test uses an isolated session. Separate WebAuthn proof must enrol/authenticate the new owner.
   const token='new-owner-session-fixture';f.db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(token),f.owner,Date.now()+60000);
   const route='/api/implementation/autonomous/setup';
-  const saved=await call(f.engine,token,'POST',route,{expectedRevision:0,answers:setupAnswers()});assert.equal(saved.status,200);
-  assert.equal((await call(f.engine,token,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  const saved=await call(f.engine,token,'POST',route,{setupBinding:(await call(f.engine,token,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:0,answers:setupAnswers()});assert.equal(saved.status,200);
+  assert.equal((await call(f.engine,token,'POST',route+'/apply',{setupBinding:(await call(f.engine,token,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
   const completed=(await call(f.engine,token,'GET',route)).body;assert.equal(completed.questionnaireComplete,true);
   assert.equal((await f.send()).status,200);assert.equal(f.provisions,1);assert.equal(f.sentInvitations.length,1);
   const renewal=await f.send({...f.initial,eventId:'renewal-event',contractRef:'renewal-contract',relationship:'renewal',existingWorkspaceId:workspace.workspace_id});
@@ -385,18 +387,18 @@ test('setup routes require manager authority and bind drafts to the session tena
     assert.equal((await call(f.engine,null,method,route,{})).status,401);
     assert.equal((await call(f.engine,f.tokens.employee,method,route,{})).status,403);
   }
-  const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()});
+  const saved=await call(f.engine,f.tokens.manager,'POST',route,{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:0,answers:setupAnswers()});
   assert.equal(saved.status,200); assert.equal(saved.body.tenant,'alpha');
   assert.equal((await call(f.engine,f.tokens.bravo,'GET',route)).status,409);
-  assert.equal((await call(f.engine,f.tokens.bravo,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,409);
+  assert.equal((await call(f.engine,f.tokens.bravo,'POST',route+'/apply',{setupBinding:(await call(f.engine,f.tokens.bravo,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken})).status,409);
 });
 test('reviewed setup applies metadata through the fenced effect and keeps all 21 readiness controls',async t=>{
   const f=await setupFixture(t), route='/api/implementation/autonomous/setup';
-  const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()});
+  const saved=await call(f.engine,f.tokens.manager,'POST',route,{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:0,answers:setupAnswers()});
   assert.equal(saved.status,200);
   const db=f.inspectDb();
   assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_scope').get().n,0);
-  const applied=await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken});
+  const applied=await call(f.engine,f.tokens.manager,'POST',route+'/apply',{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken});
   assert.equal(applied.status,200,JSON.stringify(applied.body)); assert.equal(applied.body.status,'APPLIED');
   const env=db.prepare('SELECT * FROM tenant_environments WHERE tenant=?').get('alpha');
   const config=JSON.parse(env.configuration_json);
@@ -406,16 +408,16 @@ test('reviewed setup applies metadata through the fenced effect and keeps all 21
   const current=f.engine.statusForTenant('alpha'); assert.equal(current.requirements.length,21); assert.equal(current.operationalReady,false);
   assert.equal(current.requirements.find(r=>r.key==='source-systems').satisfied,false);
   assert.equal(current.requirements.find(r=>r.key==='identity-access').satisfied,false);
-  assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
 });
 for(const table of ['implementation_events','tenant_environment_events','workspace_setup_events']) {
   test('setup application rolls back scope, environment, jobs and draft when '+table+' audit fails',async t=>{
     const f=await setupFixture(t), route='/api/implementation/autonomous/setup';
-    const saved=await call(f.engine,f.tokens.manager,'POST',route,{expectedRevision:0,answers:setupAnswers()}); assert.equal(saved.status,200);
+    const saved=await call(f.engine,f.tokens.manager,'POST',route,{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:0,answers:setupAnswers()}); assert.equal(saved.status,200);
     const db=f.inspectDb();
     const before=JSON.stringify(db.prepare('SELECT * FROM implementation_work_jobs').all());
     db.exec('CREATE TRIGGER refuse_setup_apply BEFORE INSERT ON '+table+" BEGIN SELECT RAISE(ABORT,'test audit unavailable'); END");
-    const result=await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken});
+    const result=await call(f.engine,f.tokens.manager,'POST',route+'/apply',{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken});
     assert.equal(result.status,500);
     assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_scope').get().n,0);
     assert.equal(db.prepare('SELECT COUNT(*) n FROM tenant_environments').get().n,0);
@@ -423,7 +425,7 @@ for(const table of ['implementation_events','tenant_environment_events','workspa
     assert.equal(JSON.stringify(db.prepare('SELECT * FROM implementation_work_jobs').all()),before);
     assert.equal((await call(f.engine,f.tokens.manager,'GET',route)).body.status,'DRAFT');
     db.exec('DROP TRIGGER refuse_setup_apply');
-    assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+    assert.equal((await call(f.engine,f.tokens.manager,'POST',route+'/apply',{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
   });
 }
 test('legacy scope write cannot commit when the required scope audit fails',async t=>{
@@ -786,8 +788,8 @@ test('stored order HTTP completion uses its nominee and permanent workspace thro
   const token=new URL(f.sentInvitations[0].startUrl).searchParams.get('implementation_invite');
   assert.equal((await call(f.engine,f.tokens.bravo,'POST','/api/implementation/autonomous/start',{token})).status,404);
   const started=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/start',{token});assert.equal(started.status,201);
-  const saved=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/setup',{expectedRevision:0,answers:setupAnswers()});
-  assert.equal((await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/setup/apply',{expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
+  const saved=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/setup',{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:0,answers:setupAnswers()});
+  assert.equal((await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/setup/apply',{setupBinding:(await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/setup')).body?.setupBinding,expectedRevision:1,reviewToken:saved.body.reviewToken})).status,200);
   const tables=['users','implementation_runs','tenant_environments','workspace_setup_drafts','workspace_setup_events','implementation_scope','organisation_access_setup'];
   const snapshot=()=>tables.map(table=>db.prepare('SELECT * FROM '+table).all());const before=snapshot();
   event=verifiedOrderCompletion({eventId:'duplicate-completion'});const replay=await send();assert.equal(replay.status,200);assert.equal(replay.body.workspace.workspaceId,workspace.workspace_id);assert.equal(replay.body.questionnaireReset,false);
@@ -2303,3 +2305,41 @@ test('current admission: orchestration surfaces customer authority instead of pr
 });
 
 }
+
+// Synthetic sessions exercise the real engine auth, routing, SQLite and audit boundary.
+for(const change of ['tenant','session','run','missing','malformed','revoked']) test('V011 setup binding rejects '+change+' before draft or audit writes',async t=>{
+  const f=await setupFixture(t),route='/api/implementation/autonomous/setup',db=f.inspectDb();
+  const loaded=await call(f.engine,f.tokens.manager,'GET',route);
+  let token=f.tokens.manager,binding=loaded.body.setupBinding;
+  if(change==='tenant'){
+    await call(f.engine,null,'POST','/api/implementation/autonomous/contract-activated',{tenant:'bravo',contractRef:'bravo-setup',recipientEmail:'manager@bravo.test'},f.internal);
+    token=f.tokens.bravo;
+  }
+  if(change==='session'){token='fresh-manager-session';db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(token),'manager@alpha',Date.now()+60000);}
+  if(change==='run')db.prepare('UPDATE implementation_runs SET id=? WHERE tenant=?').run('replacement-run','alpha');
+  if(change==='missing')binding=undefined;
+  if(change==='malformed')binding={tenant:'alpha'};
+  if(change==='revoked')db.prepare('DELETE FROM sessions WHERE token_hash=?').run(sha256(token));
+  const before=db.prepare('SELECT * FROM workspace_setup_drafts').all(),audit=db.prepare('SELECT * FROM workspace_setup_events').all();
+  const result=await call(f.engine,token,'POST',route,{setupBinding:binding,expectedRevision:0,answers:setupAnswers()});
+  assert.equal(result.status,change==='revoked'?401:409,JSON.stringify(result.body));
+  assert.deepEqual(db.prepare('SELECT * FROM workspace_setup_drafts').all(),before);
+  assert.deepEqual(db.prepare('SELECT * FROM workspace_setup_events').all(),audit);
+});
+test('V011 setup binding supports save resume fresh-session review and later changes',async t=>{
+  const f=await setupFixture(t),route='/api/implementation/autonomous/setup',db=f.inspectDb();
+  const first=(await call(f.engine,f.tokens.manager,'GET',route)).body;
+  assert.match(first.setupBinding,/^[a-f0-9]{64}$/);
+  const saved=await call(f.engine,f.tokens.manager,'POST',route,{setupBinding:first.setupBinding,expectedRevision:0,answers:setupAnswers()});assert.equal(saved.status,200,JSON.stringify(saved.body));
+  const token='fresh-session-for-resume';db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(sha256(token),'manager@alpha',Date.now()+60000);
+  const resumed=(await call(f.engine,token,'GET',route)).body;
+  assert.deepEqual(resumed.answers,saved.body.answers);assert.notEqual(resumed.setupBinding,first.setupBinding);
+  const oldApply=await call(f.engine,token,'POST',route+'/apply',{setupBinding:first.setupBinding,expectedRevision:1,reviewToken:resumed.reviewToken});assert.equal(oldApply.status,409);
+  const applied=await call(f.engine,token,'POST',route+'/apply',{setupBinding:resumed.setupBinding,expectedRevision:1,reviewToken:resumed.reviewToken});assert.equal(applied.status,200,JSON.stringify(applied.body));
+  const answers=setupAnswers();answers.organisation.name='Later synthetic settings';
+  const changed=await call(f.engine,token,'POST',route,{setupBinding:applied.body.setupBinding,expectedRevision:1,answers});assert.equal(changed.status,200);
+  assert.equal(changed.body.completedAt,applied.body.completedAt);assert.equal(changed.body.questionnaireComplete,true);
+  const final=await call(f.engine,token,'POST',route+'/apply',{setupBinding:changed.body.setupBinding,expectedRevision:2,reviewToken:changed.body.reviewToken});assert.equal(final.status,200);
+  assert.equal(db.prepare("SELECT count(*) n FROM workspace_setup_events WHERE event='DRAFT_SAVED'").get().n,2);
+  assert.equal(db.prepare("SELECT count(*) n FROM workspace_setup_events WHERE event='CONFIGURATION_APPLIED'").get().n,2);
+});

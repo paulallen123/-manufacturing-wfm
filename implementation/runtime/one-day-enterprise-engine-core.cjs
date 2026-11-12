@@ -2402,20 +2402,31 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
   }) : null;
 
+  function workspaceSetupBinding(req,ctx,bound) {
+    // A loaded form belongs to this authenticated session and workspace/run.
+    // This is a consistency fence, never a replacement for manager authorization.
+    return createHmac('sha256',cookieSessionToken(req)).update(JSON.stringify([
+      'workspace-setup-v1',ctx.email,bound.tenant,bound.runId
+    ])).digest('hex');
+  }
+
   async function handleWorkspaceSetup(ctx,req,res,apply=false) {
     if(!workspaceSetup) return writeJson(res,503,{error:'Workspace setup is unavailable on this deployment.'});
     const run=currentRun.get(ctx.tenant);
     if(!run) return writeJson(res,409,{error:'Start the implementation before setting up the workspace.'});
     const bound={tenant:ctx.tenant,runId:run.id};
-    if(req.method==='GET') return writeJson(res,200,workspaceSetup.read(bound));
-    const body=await readJson(req), allowed=apply?['expectedRevision','reviewToken']:['expectedRevision','answers'];
+    if(req.method==='GET') return writeJson(res,200,{...workspaceSetup.read(bound),setupBinding:workspaceSetupBinding(req,ctx,bound)});
+    const body=await readJson(req), allowed=apply?['expectedRevision','reviewToken','setupBinding']:['expectedRevision','answers','setupBinding'];
     if(!body || typeof body!=='object' || Array.isArray(body) || Object.keys(body).some(key=>!allowed.includes(key))) return writeJson(res,400,{error:'Unsupported workspace setup fields.'});
     db.exec('BEGIN IMMEDIATE');let result;
     try{
       const current=requireManager(req,res);
       if(!current){db.exec('ROLLBACK');return true;}
       if(current.tenant!==bound.tenant||current.email!==ctx.email||currentRun.get(current.tenant)?.id!==bound.runId)throw Object.assign(Error('Workspace authority changed. Reload before continuing.'),{statusCode:409});
-      result=workspaceSetup[apply?'apply':'save']({...bound,...body,actor:sha256(current.email).slice(0,16)});
+      const setupBinding=workspaceSetupBinding(req,current,bound);
+      if(typeof body.setupBinding!=='string'||!/^[a-f0-9]{64}$/.test(body.setupBinding)||!secureEqual(body.setupBinding,setupBinding))throw Object.assign(Error('Workspace session changed. Reload before saving or applying.'),{statusCode:409});
+      const {setupBinding:ignored,...input}=body;
+      result={...workspaceSetup[apply?'apply':'save']({...bound,...input,actor:sha256(current.email).slice(0,16)}),setupBinding};
       db.exec('COMMIT');
     }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
     return writeJson(res,200,result);
