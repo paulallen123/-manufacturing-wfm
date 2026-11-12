@@ -6,6 +6,7 @@ const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
 const VERSION='version-d-3';
 const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',decisionError:'',timer:null,lastLoad:0,setup:null,setupDirty:false,setupSaving:false,setupError:'',setupInput:null,setupEditGeneration:0,setupSettings:false,setupSaveTimer:null,setupEpoch:0,setupAutosavePaused:false};
+const setupInputEvents=new WeakMap();
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
 const isEmployeeRole=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
@@ -240,8 +241,14 @@ function scheduleSetupSave(){
 function openSetupSettings(){S.setupSettings=true;renderView(true);}
 function closeSetupSettings(){S.setupSettings=false;renderView(true);}
 function rememberSetupInput(form){
-  S.setupInput=collectSetupAnswers(form);S.setupDirty=true;S.setupEditGeneration++;
+  const answers=collectSetupAnswers(form),serialized=JSON.stringify(answers),previous=setupInputEvents.get(form);
+  // Text inputs emit change again on blur, possibly after their input autosaved.
+  // Compare observed form values, since the saved response may normalize them.
+  if(previous?.epoch===S.setupEpoch&&previous.serialized===serialized)return false;
+  setupInputEvents.set(form,{epoch:S.setupEpoch,serialized});
+  S.setupInput=answers;S.setupDirty=true;S.setupEditGeneration++;
   updateSetupFeedback();scheduleSetupSave();
+  return true;
 }
 function collectSetupAnswers(form){
   const data=new FormData(form),get=name=>String(data.get(name)||'').trim(),split=value=>String(value||'').split(',').map(x=>x.trim()).filter(Boolean);
@@ -604,7 +611,7 @@ document.addEventListener('click',event=>{
 },true);
 function setupEdited(event){
   const form=event.target.closest('[data-ij-setup-form]');if(!form)return;
-  rememberSetupInput(form);
+  if(!rememberSetupInput(form))return;
   const button=document.querySelector('[data-ij-setup-apply]');if(button)button.disabled=true;
 }
 document.addEventListener('input',setupEdited,true);

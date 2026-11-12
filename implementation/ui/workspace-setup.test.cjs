@@ -259,3 +259,38 @@ test('V011 a changed session binding on refresh clears pending old-session input
  assert.equal(f.calls.filter(c=>c.method==='POST').length,0);
  assert.equal(f.run('S.setup.setupBinding'),'b'.repeat(64));
 });
+
+for(const normalized of [false,true])test('V011 blur after autosave keeps the reviewed Apply available: normalized='+normalized,async()=>{
+ const f=boundFixture((url)=>{
+   const saved=savedDraft(f.calls.find(call=>call.url===setupRoute));
+   if(normalized)saved.answers.organisation.sites[0].code='AA';
+   return {status:200,body:{...saved,status:url.endsWith('/apply')?'APPLIED':'DRAFT'}};
+ });
+ const field=normalized?'siteCode':'organisationName',value=normalized?['aa']:'Focused saved answer';
+ f.edit(field,value);await f.advance(500);const generation=f.run('S.setupEditGeneration');
+ assert.equal(f.run('S.setupDirty'),false);
+ // A real text input emits change on blur after its input event has autosaved.
+ f.edit(field,value,'change');
+ assert.equal(f.run('S.setupDirty'),false,'Unchanged blur must not revoke the saved review');
+ assert.equal(f.run('S.setupEditGeneration'),generation);
+ await f.run('applySetup()');await f.advance(1000);
+ assert.deepEqual(f.calls.map(c=>c.url),[setupRoute,setupRoute+'/apply']);
+ assert.equal(f.run('S.setup.status'),'APPLIED');
+});
+
+test('V011 duplicate change during a pending save does not queue an identical revision',async()=>{
+ let release;const f=boundFixture(()=>f.calls.length===1?new Promise(resolve=>{release=resolve;}):{status:200,body:savedDraft(f.calls.at(-1))});
+ f.edit('organisationName','Pending answer');await f.advance(500);
+ f.edit('organisationName','Pending answer','change');release({status:200,body:savedDraft(f.calls[0])});await f.settled();await f.advance(1000);
+ assert.equal(f.calls.length,1);assert.equal(f.run('S.setupDirty'),false);
+ f.edit('organisationName','Genuine later answer');await f.advance(500);
+ assert.equal(f.calls.length,2);assert.equal(JSON.parse(f.calls[1].body).answers.organisation.name,'Genuine later answer');
+});
+
+test('V011 identical input in a new form or workspace epoch is still observed',async()=>{
+ const f=boundFixture(()=>({status:200,body:savedDraft(f.calls.at(-1))}));
+ f.edit('organisationName','Same field value');await f.advance(500);
+ const newer={...f.form,values:{...f.form.values}};f.context.currentForm=newer;
+ f.events.input({target:{closest(){return newer;}}});await f.advance(500);assert.equal(f.calls.length,2);
+ f.run('S.setupEpoch++');f.events.input({target:{closest(){return newer;}}});await f.advance(500);assert.equal(f.calls.length,3);
+});
