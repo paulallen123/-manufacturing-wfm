@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "Existing sole-R scheduled recovery; materialize independently accepted one-file Staffology fixture repair and source-bound marker for distinct review",
   "authorization": "https://github.com/paulallen123/-manufacturing-wfm/issues/527#issuecomment-6858434407",
@@ -36,5 +36,38 @@
     "fixture_sha256": "a37f4cae11e10c97c37bee3d36b209dbf8b0968b3e5c7a900ee2bdfdc153ad2d",
     "independent_node22": "43_PASS_0_FAIL_0_SKIP_PLUS_DEFAULT_HELPER_1_PASS",
     "repository_instructions": "No AGENTS.md found in exact source lineage"
-  }
+  },
+  "result": {
+    "status": "STAFFOLOGY_FIXTURE_SOURCE_MARKER_MATERIALIZED_PENDING_DISTINCT_REVIEW",
+    "source_action": "PRIVATE_GIT_OBJECTS_ONLY_NO_PUBLIC_REF_MOVE",
+    "public_head": "20d0ffa36813679410c9613ade174a8255e06224",
+    "public_tree": "325894bfdee7ae95aabec1ab00f6200d294f3f98",
+    "source_commit": "dfaac43dd5ca79c13f127acb2e656c24bb2a2261",
+    "source_tree": "8eaf49f48bd75ee6a3723d0500d73cfd58235c74",
+    "source_parent": "20d0ffa36813679410c9613ade174a8255e06224",
+    "source_change": "exactly integrations/staffology/test-support/applied-source-fixture.cjs",
+    "fixture_blob": "44a2581e31cb192a9ba3c74f79ac30e870edcfb0",
+    "fixture_sha256": "a37f4cae11e10c97c37bee3d36b209dbf8b0968b3e5c7a900ee2bdfdc153ad2d",
+    "marker_commit": "d751b0f05799690564f83509ecdaa219c9c7ad73",
+    "marker_tree": "e267ab246172249476e3c2cbefbfea7c0bd57261",
+    "marker_parent": "dfaac43dd5ca79c13f127acb2e656c24bb2a2261",
+    "marker_change": "exactly artifact/vector-proof-freeze.trigger",
+    "marker_blob": "82e5221c6c2fcf4640e831205ccb5de594566428",
+    "inherited_marker_chars": 81195,
+    "review_handoff": "issue527/6857806858 edited 2026-11-13T16:25:16Z",
+    "required_verdict": "ACCEPT_BOUNDED_STAFFOLOGY_SOURCE_MARKER_REVIEW_OR_PRECISE_BLOCK",
+    "github_actions": "NO_RUN_NO_DISPATCH_NO_RERUN_PUBLIC_HEAD_UNCHANGED",
+    "circleci": "PROHIBITED_BY_USER_OVERRIDE_NO_ACTION",
+    "controlled_processes": "ALL_TERMINAL",
+    "completed_source_key": "a37f4cae:PR621:staffology-fixture-source-marker-materialization:v1",
+    "whole_github_gate": "NOT_PASS_COMPLETE",
+    "canonical": "1dc4bd4f6d77f045df5f3910dae1ae253f7ffa43_UNCHANGED",
+    "production_changed": false,
+    "DONE": 0,
+    "customer_ready": "NO",
+    "next": "Distinct reviewer returns exact source-marker ACCEPT/BLOCK for d751b0f0; on ACCEPT sole R may take a new lease and guarded non-force expected-head publication to PR621, then consume ordinary automatic exact-child GitHub Actions.",
+    "original146_owners_holds_schedules": "PRESERVED"
+  },
+  "released_at": "2026-11-13T16:25:48.484Z",
+  "released_claim": "efd8ad70b22d8e19a821993314984f76758fb2fb"
 }
