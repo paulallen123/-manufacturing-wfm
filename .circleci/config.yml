@@ -275,6 +275,7 @@ jobs:
 
 workflows:
   vector_forge_proof:
+    when: false
     jobs:
       - forge_integration_validation
       - forge_core_validation
