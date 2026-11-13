@@ -46,19 +46,53 @@ const forbidden = {
   BROWSER_ROLE_PROOF_SCRIPT: 'fictional_obsolete_eval()', UNKNOWN_FUTURE_CREDENTIAL: 'FICTIONAL_UNKNOWN_SENTINEL'
 };
 
-async function observeRun({ exitCode = 0, signal = null, childPid, triggerSignal, leaderExitAfterMs, kill, cleanupGraceMs, childTimeoutMs, expectedError } = {}) {
+async function observeRun({ exitCode = 0, signal = null, childPid, triggerSignal,
+  triggerSignalOrder = 'before-deadline', leaderExitAfterMs, kill, cleanupGraceMs,
+  childTimeoutMs, expectedError } = {}) {
   const env = { ...transport, ...proof, ...forbidden,
     RAILWAY_SERVICE_ID: 'f84fe27d-af17-451c-b164-54dfef6b6a4b',
     RAILWAY_ENVIRONMENT_ID: 'eed9f097-610a-416e-83b9-6bc7bdb3eeef' };
   const calls = [], logs = [], signalHandlers = {};
-  let spawnedChild, groupAlive = true;
+  let spawnedChild, groupAlive = true, triggerSignalDelivered = false;
+  const heldDeadline = { callback: null, cleared: false, released: false,
+    handle: { unref() {} } };
+  assert.ok(['before-deadline', 'after-hard-kill'].includes(triggerSignalOrder));
+  const deliverTriggerSignal = () => {
+    if (!triggerSignal || triggerSignalDelivered) return;
+    triggerSignalDelivered = true;
+    signalHandlers[triggerSignal]?.();
+  };
+  const releaseHeldDeadline = () => {
+    if (!heldDeadline.callback || heldDeadline.cleared || heldDeadline.released) return;
+    heldDeadline.released = true;
+    heldDeadline.callback();
+  };
+  const fixtureSetTimeout = (callback, delay, ...args) => {
+    if (triggerSignalOrder === 'before-deadline' && triggerSignal &&
+      Number.isSafeInteger(childTimeoutMs) && delay === childTimeoutMs && !heldDeadline.callback) {
+      heldDeadline.callback = () => callback(...args);
+      return heldDeadline.handle;
+    }
+    return setTimeout(callback, delay, ...args);
+  };
+  const fixtureClearTimeout = handle => {
+    if (handle === heldDeadline.handle) { heldDeadline.cleared = true; return; }
+    clearTimeout(handle);
+  };
   const defaultKill = (pid, sentSignal) => {
     calls.push({ kind: 'group-signal', pid, signal: sentSignal });
     if (sentSignal === 0 && !groupAlive) { const error = new Error('gone'); error.code = 'ESRCH'; throw error; }
     if (sentSignal === 'SIGKILL') { groupAlive = false; setImmediate(() => spawnedChild?.emit('exit', null, 'SIGKILL')); }
   };
   const processFixture = { env, execPath: process.execPath, platform: 'linux', getuid: () => 0, getgid: () => 0,
-    kill: kill || defaultKill, on(name, handler) { signalHandlers[name] = handler; }, off(name) { delete signalHandlers[name]; }, exitCode: 0 };
+    kill(pid, sentSignal) {
+      const result = (kill || defaultKill)(pid, sentSignal);
+      if (triggerSignalOrder === 'before-deadline' && sentSignal === 'SIGTERM')
+        queueMicrotask(releaseHeldDeadline);
+      if (triggerSignalOrder === 'after-hard-kill' && sentSignal === 'SIGKILL') queueMicrotask(deliverTriggerSignal);
+      return result;
+    },
+    on(name, handler) { signalHandlers[name] = handler; }, off(name) { delete signalHandlers[name]; }, exitCode: 0 };
   const moduleFixture = { exports: {} };
   const load = id => {
     if (id === 'node:fs') return { ...fs, chownSync() {} };
@@ -76,7 +110,7 @@ async function observeRun({ exitCode = 0, signal = null, childPid, triggerSignal
         const child = new EventEmitter(); child.kill = () => {}; child.pid = childPid;
         spawnedChild = child;
         if (triggerSignal) {
-          setImmediate(() => signalHandlers[triggerSignal]?.());
+          if (triggerSignalOrder === 'before-deadline') queueMicrotask(deliverTriggerSignal);
           if (Number.isSafeInteger(leaderExitAfterMs)) setTimeout(() => child.emit('exit', exitCode, signal), leaderExitAfterMs);
         }
         else setImmediate(() => child.emit('exit', exitCode, signal));
@@ -87,7 +121,8 @@ async function observeRun({ exitCode = 0, signal = null, childPid, triggerSignal
     return require(id);
   };
   vm.runInNewContext(source, { require: load, module: moduleFixture, exports: moduleFixture.exports,
-    process: processFixture, Buffer, URL, Uint8Array, AbortController, setTimeout, clearTimeout,
+    process: processFixture, Buffer, URL, Uint8Array, AbortController,
+    setTimeout: fixtureSetTimeout, clearTimeout: fixtureClearTimeout,
     console: { log: line => logs.push(line) } }, { filename: launcherPath });
   let runError;
   try { await moduleFixture.exports.run(bundle.payload, bundle.bundleHash, { fetchImpl: async url => {
@@ -156,7 +191,6 @@ test('TERM starts bounded escalation without waiting for the direct child to exi
   assert.ok(result.calls.some(call => call.kind === 'group-signal' && call.signal === 'SIGTERM'));
   assert.ok(result.calls.some(call => call.kind === 'group-signal' && call.signal === 'SIGKILL'));
 });
-
 test('hard deadline immediately escalates an already pending graceful shutdown', async () => {
   const result = await observeRun({ childPid: 4292, triggerSignal: 'SIGTERM', cleanupGraceMs: 100, childTimeoutMs: 5 });
   const signals = result.calls.filter(call => call.kind === 'group-signal').map(call => call.signal);
@@ -184,10 +218,11 @@ test('deadline signal failure after leader exit preserves source and work files'
 });
 
 test('graceful escalation failure remains observed after hard cleanup starts first', async () => {
-  let groupAlive = true, killCount = 0;
+  let groupAlive = true, killCount = 0; const signals = [];
   const result = await observeRun({ childPid: 4309, triggerSignal: 'SIGTERM', leaderExitAfterMs: 10,
     cleanupGraceMs: 100, childTimeoutMs: 5,
     kill(pid, signal) {
+      signals.push(signal);
       if (signal === 'SIGKILL' && ++killCount === 2) {
         groupAlive = false;
         const error = new Error('graceful escalation denied'); error.code = 'EACCES'; throw error;
@@ -195,6 +230,19 @@ test('graceful escalation failure remains observed after hard cleanup starts fir
       if (signal === 0 && !groupAlive) { const error = new Error('gone'); error.code = 'ESRCH'; throw error; }
     },
     expectedError: /graceful escalation denied/ });
+  assert.deepEqual(signals.filter(signal => signal !== 0).slice(0, 3),
+    ['SIGTERM', 'SIGKILL', 'SIGKILL']);
+  assert.deepEqual(result.preserved, { root: true, work: true });
+});
+
+test('deadline-first late TERM coalesces into hard cleanup and preserves quarantined files', async () => {
+  const signals = [];
+  const result = await observeRun({ childPid: 4310, triggerSignal: 'SIGTERM',
+    triggerSignalOrder: 'after-hard-kill', cleanupGraceMs: 1, childTimeoutMs: 1,
+    kill(pid, signal) { signals.push(signal); },
+    expectedError: /PROOF_CHILD_CLEANUP_FAILED/ });
+  assert.equal(signals.filter(signal => signal === 'SIGKILL').length, 1);
+  assert.equal(signals[0], 'SIGKILL');
   assert.deepEqual(result.preserved, { root: true, work: true });
 });
 
@@ -210,3 +258,4 @@ test('failed group-disappearance verification preserves source and work files', 
     kill() {}, expectedError: /PROOF_CHILD_CLEANUP_FAILED/ });
   assert.deepEqual(result.preserved, { root: true, work: true });
 });
+
