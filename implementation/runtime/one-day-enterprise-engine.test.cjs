@@ -2343,3 +2343,118 @@ test('V011 setup binding supports save resume fresh-session review and later cha
   assert.equal(db.prepare("SELECT count(*) n FROM workspace_setup_events WHERE event='DRAFT_SAVED'").get().n,2);
   assert.equal(db.prepare("SELECT count(*) n FROM workspace_setup_events WHERE event='CONFIGURATION_APPLIED'").get().n,2);
 });
+
+// V026 synthetic policy provenance: validate raw inputs before authority writes.
+for (const kind of ['time', 'absence']) {
+  test('V026 '+kind+' policy rejects lossy source/date coercion before decision audit writes', async () => {
+    const f=fixture({strictEvidence:true,requireCandidateBinding:true});
+    try {
+      const run=await startRun(f);
+      const key=kind+'-policy-authority';
+      const detail={authoritativeConfirmation:true,sourceRef:'synthetic-policy/'+kind+'/v1',
+        effectiveDate:'2026-01-01',unresolvedRules:0,unknownPolicyFields:0,
+        ...(kind==='time'
+          ? {breakRulesVerified:true,overtimeRulesVerified:true,workingTimeRulesVerified:true,timeZoneVerified:true}
+          : {leaveYearVerified:true,entitlementMethodVerified:true,approvalRulesVerified:true,absenceTypesVerified:true,
+              usesOpeningBalance:false,openingBalanceFictional:false,openingBalanceSourceVerified:false})};
+      const db=new DatabaseSync(f.dbPath);
+      const snapshot=()=>({
+        decisions:db.prepare('SELECT * FROM implementation_decisions WHERE run_id=? ORDER BY id').all(run.runId),
+        evidence:db.prepare('SELECT * FROM implementation_evidence WHERE run_id=? ORDER BY id').all(run.runId),
+        events:db.prepare('SELECT * FROM implementation_events WHERE run_id=? ORDER BY id').all(run.runId)
+      });
+      try {
+        for(const action of ['ACCEPTED','CHANGED']) {
+          const before=snapshot();
+          for(const invalid of [
+            {...detail,sourceRef:{unexpected:'synthetic source object'}},
+            {...detail,sourceRef:[{reference:'synthetic source object'}]},
+            {...detail,sourceRef:[['synthetic',{reference:'nested source object'}]]},
+            {...detail,effectiveDate:['2026-01-01']},
+            {...detail,effectiveDate:'2026-01-01T00:00:00.000000000000000000000ZJUNK'}
+          ]) {
+            const result=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/decision',
+              {runId:run.runId,key,action,...(action==='CHANGED'?{value:invalid}:{detail:invalid})});
+            assert.equal(result.status,409,kind+' '+action+' '+JSON.stringify(invalid));
+            assert.deepEqual(snapshot(),before,'Denied provenance must not write a decision, evidence or audit event');
+          }
+          // Existing valid text/date and timestamp representations stay accepted.
+          const valid={...detail,sourceRef:'Synthetic approved policy \u2014 '+kind+' '+action,
+            effectiveDate:action==='ACCEPTED'?'2024-02-29':'2026-10-01T23:30:00-02:00'};
+          const accepted=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/decision',
+            {runId:run.runId,key,action,...(action==='CHANGED'?{value:valid}:{detail:valid})});
+          assert.equal(accepted.status,200,JSON.stringify(accepted.body));
+          assert.equal(accepted.body.requirements.find(row=>row.key===kind+'-policies').satisfied,true);
+          assert.deepEqual(JSON.parse(db.prepare('SELECT decision_json FROM implementation_decisions WHERE run_id=? AND decision_key=?').get(run.runId,key).decision_json),valid);
+        }
+        // A valid full ISO value must retain its precision and explicit offset;
+        // a forty-character prefix is not the customer's original effective date.
+        const fullDate='2026-01-01T00:00:00.000000000000000000000000000+05:30';
+        const exact={...detail,effectiveDate:fullDate};
+        const full=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/decision',
+          {runId:run.runId,key,action:'CHANGED',value:exact});
+        assert.equal(full.status,200,JSON.stringify(full.body));
+        const persisted=db.prepare('SELECT detail_json FROM implementation_evidence WHERE run_id=? AND kind=? ORDER BY id DESC LIMIT 1').get(run.runId,kind+'-policies');
+        assert.equal(JSON.parse(persisted.detail_json).effectiveDate,fullDate);
+        // Declining authority never requires a fabricated source or date.
+        const rejected=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/decision',
+          {runId:run.runId,key,action:'REJECTED',detail:{reason:'Synthetic policy needs owner review'}});
+        assert.equal(rejected.status,200);
+        assert.equal(db.prepare('SELECT status FROM implementation_decisions WHERE run_id=? AND decision_key=?').get(run.runId,key).status,'REJECTED');
+      } finally { db.close(); }
+    } finally { f.close(); }
+  });
+}
+
+// Isolate stored-provenance validation in the existing unbound compatibility
+// mode. Independent strict source-upgrade tests separately cover epoch binding.
+for (const kind of ['time', 'absence']) {
+  test('V026 '+kind+' policy revalidates identifiable lossy legacy provenance without rewriting evidence',async()=>{
+    const cases=[
+      {sourceRef:{reference:'synthetic legacy source'}},
+      {sourceRef:[['synthetic',{reference:'nested legacy source'}]]},
+      {effectiveDate:['2026-01-01']},
+      {effectiveDate:'2026-01-01T00:00:00.000000000000000000000ZJUNK'},
+      {effectiveDate:'2026-01-01T00:00:00.000000000000000000000000000+05:30'}
+    ];
+    for(const legacy of cases){
+      const f=fixture({strictEvidence:true,requireCandidateBinding:false});
+      try{
+        const run=await startRun(f),key=kind+'-policy-authority';
+        const detail={authoritativeConfirmation:true,sourceRef:'synthetic-policy/'+kind+'/legacy',
+          effectiveDate:'2026-01-01',unresolvedRules:0,unknownPolicyFields:0,
+          ...(kind==='time'
+            ? {breakRulesVerified:true,overtimeRulesVerified:true,workingTimeRulesVerified:true,timeZoneVerified:true}
+            : {leaveYearVerified:true,entitlementMethodVerified:true,approvalRulesVerified:true,absenceTypesVerified:true,
+                usesOpeningBalance:false,openingBalanceFictional:false,openingBalanceSourceVerified:false})};
+        const accepted=await call(f.engine,f.tokens.manager,'POST','/api/implementation/autonomous/decision',
+          {runId:run.runId,key,action:'ACCEPTED',detail});
+        assert.equal(accepted.status,200);
+        assert.equal(accepted.body.requirements.find(row=>row.key===kind+'-policies').satisfied,true);
+        const db=new DatabaseSync(f.dbPath);
+        try{
+          // Preserve the exact original answer beside the old route's lossy
+          // projection. Do not manufacture a replacement proof epoch.
+          const original={...detail,...legacy};
+          db.prepare('UPDATE implementation_decisions SET decision_json=? WHERE run_id=? AND decision_key=?')
+            .run(JSON.stringify(original),run.runId,key);
+          const row=db.prepare('SELECT * FROM implementation_evidence WHERE run_id=? AND kind=? ORDER BY id DESC LIMIT 1').get(run.runId,kind+'-policies');
+          const projection=JSON.parse(row.detail_json);
+          projection.sourceRef=String(original.sourceRef).slice(0,300);
+          projection.effectiveDate=String(original.effectiveDate).slice(0,40);
+          projection._customerAuthorityReceipt.sourceRefDigest=sha256(String(original.sourceRef)).slice(0,16);
+          db.prepare('UPDATE implementation_evidence SET detail_json=? WHERE id=?').run(JSON.stringify(projection),row.id);
+          const before=db.prepare('SELECT * FROM implementation_evidence WHERE run_id=? ORDER BY id').all(run.runId);
+          const events=db.prepare('SELECT * FROM implementation_events WHERE run_id=? ORDER BY id').all(run.runId);
+          const status=await call(f.engine,f.tokens.manager,'GET','/api/implementation/autonomous/status');
+          const gate=status.body.requirements.find(item=>item.key===kind+'-policies');
+          assert.equal(gate.satisfied,false,JSON.stringify(legacy));
+          assert.equal(gate.status,'REVALIDATION_REQUIRED');
+          assert.deepEqual(db.prepare('SELECT * FROM implementation_evidence WHERE run_id=? ORDER BY id').all(run.runId),before);
+          assert.deepEqual(JSON.parse(db.prepare('SELECT decision_json FROM implementation_decisions WHERE run_id=? AND decision_key=?').get(run.runId,key).decision_json),original);
+          assert.deepEqual(db.prepare('SELECT * FROM implementation_events WHERE run_id=? ORDER BY id').all(run.runId).slice(0,events.length),events);
+        }finally{db.close();}
+      }finally{f.close();}
+    }
+  });
+}

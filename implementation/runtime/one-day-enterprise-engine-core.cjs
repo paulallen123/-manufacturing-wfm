@@ -817,6 +817,26 @@ function createOneDayEnterpriseEngine(options = {}) {
         scopeChangeEventId: detail._configurationValidation?.scopeChangeEventId ?? null } };
   }
 
+  function customerPolicyProvenance(answer) {
+    if (!answer || typeof answer !== 'object' || Array.isArray(answer)) return null;
+    // The bounded JSON answer may contain arrays. Preserve object-free scalar/
+    // array compatibility, but never turn an object into '[object Object]' proof.
+    const sourceParts = [answer.sourceRef];
+    while (sourceParts.length) {
+      const part = sourceParts.pop();
+      if (Array.isArray(part)) {
+        for (const item of part) sourceParts.push(item);
+      } else if (part !== null && typeof part === 'object') {
+        return null;
+      }
+    }
+    const sourceRef = compact(answer.sourceRef, 300);
+    // Validate and retain the supplied date: projection can discard an offset
+    // or turn an invalid suffix into a valid date prefix.
+    const effectiveDate = answer.effectiveDate;
+    return sourceRef.trim() && validEffectiveDate(effectiveDate) ? { sourceRef, effectiveDate } : null;
+  }
+
   function customerAuthorityReceiptError(run, kind, row, detail) {
     if (!POLICY_REQUIREMENT_KINDS.has(kind)) return null;
     const receipt = detail?._customerAuthorityReceipt;
@@ -832,6 +852,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       return 'Policy authority receipt is not backed by the current authenticated customer decision.';
     }
     const answer = parseJsonSafe(decision.decision_json, {});
+    const provenance = customerPolicyProvenance(answer);
+    if (!provenance || detail.sourceRef !== provenance.sourceRef || detail.effectiveDate !== provenance.effectiveDate) {
+      return 'Policy authority receipt requires revalidation of the original source and effective date.';
+    }
     if (sha256(String(answer?.sourceRef || '')).slice(0, 16) !== receipt.sourceRefDigest) {
       return 'Policy authority receipt source no longer matches the customer decision.';
     }
@@ -929,13 +953,13 @@ function createOneDayEnterpriseEngine(options = {}) {
       error.statusCode = 409;
       throw error;
     }
-    const sourceRef = compact(answer.sourceRef, 300);
-    const effectiveDate = compact(answer.effectiveDate, 40);
-    if (!sourceRef || !validEffectiveDate(effectiveDate)) {
+    const provenance = customerPolicyProvenance(answer);
+    if (!provenance) {
       const error = new Error('Policy confirmation requires a traceable sourceRef and effectiveDate.');
       error.statusCode = 409;
       throw error;
     }
+    const { sourceRef, effectiveDate } = provenance;
 
     const detail = {
       exactCandidateSha: candidateSha,

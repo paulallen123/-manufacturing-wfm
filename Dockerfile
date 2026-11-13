@@ -60,7 +60,7 @@ RUN node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime
       integrations/staffology/independent/full-http-employee-journey.test.cjs \
       3>&2 > /proof/staffology-private-artifacts/staffology-runner-private.log 2>&1; status=$?; \
     printf 'STAFFOLOGY_ADMISSION stage=exit status=%s\n' "$status" >&2; exit "$status") \
- && node --test scripts/compose-vector-local-runtime.contract.test.cjs scripts/workspace-compiler-composition.test.cjs verification/first-use-regressions-20261012/existing-output-compiler.test.cjs
+ && VECTOR_ORG_TEST_RUNTIME=/proof/staffology-full-runtime VECTOR_COST_TEST_RUNTIME=/proof/staffology-full-runtime node --test scripts/compose-vector-local-runtime.contract.test.cjs scripts/workspace-compiler-composition.test.cjs verification/first-use-regressions-20261012/existing-output-compiler.test.cjs scripts/organisation-calendar-composition.test.cjs scripts/tenant-cost-calendar-composition.test.cjs
 RUN WFM_SUPPORT_HTTP_RUNTIME=/proof/staffology-full-runtime \
     WFM_SUPPORT_HTTP_HARNESS=/proof/verification/vector-repair-20260921/attendance-runtime-harness.mjs \
     node --test verification/provider-recovery-correction/tests/support-recovery-http.test.cjs
@@ -121,7 +121,7 @@ COPY integrations/staffology/staffology-adapter.cjs integrations/staffology/cano
 COPY verification/provider-recovery-correction/operations/runtime/ /workspace/verification/provider-recovery-correction/operations/runtime/
 COPY verification/provider-recovery-correction/ui/ /workspace/verification/provider-recovery-correction/ui/
 COPY operations/runtime/tenant-calendar.cjs operations/runtime/workflow-action-evidence-contract.cjs operations/runtime/workflow-action-evidence-bridge.cjs operations/runtime/workflow-action-evidence-sources.cjs operations/runtime/payroll-money.cjs /workspace/operations/runtime/
-COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs /workspace/scripts/
+COPY scripts/compose-vector-local-runtime.mjs scripts/patch-payroll-money.mjs scripts/patch-workspace-compiler.mjs scripts/tenant-cost-calendar-overlay.cjs /workspace/scripts/
 COPY integration/runtime/nango-credential-provider.cjs /workspace/integration/runtime/
 COPY integration/runtime/provider-metadata-review.cjs /workspace/integration/runtime/
 RUN node /workspace/scripts/compose-vector-local-runtime.mjs /app \

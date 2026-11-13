@@ -94,7 +94,7 @@ function assertLocalTimezoneConsumers(runtime) {
 }
 function assertCompiledTimezone(runtime) {
  const compilerPath=join(runtime,'lib/configuration-compiler.cjs');
- assert.equal(createHash('sha256').update(readFileSync(compilerPath)).digest('hex'),'c16762100bef6c7516ec77a139c9f792adbc04f5a2363b21c32cfc86eaff584e');
+ assert.equal(createHash('sha256').update(readFileSync(compilerPath)).digest('hex'),'a16862558087c7ada8f6877479d11219a24d9534f1aa257e8b414c09fd267337');
  const result=require(compilerPath).compile({sites:[{code:'AA',name:'Factory',timezone:'America/Argentina/Buenos_Aires'}],modules:['core'],workforce:{count:1,languages:['en'],shiftPatterns:1},integrations:[],trainingRoles:['employee']});
  assert.equal(result.status,'compiled');
  assert.equal(result.scope.sites[0].timezone,'America/Argentina/Buenos_Aires');

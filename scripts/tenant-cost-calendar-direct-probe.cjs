@@ -1,0 +1,11 @@
+'use strict';
+const path=require('node:path');const root=process.argv[2];
+process.env.NODE_ENV='test';process.env.WFM_TENANT_TIMEZONE='Europe/London';process.env.WFM_TENANT_CLOCK_ISO='2026-01-15T12:00:00Z';
+const C=require(path.join(root,'public/cost-engine.js'));
+if(process.argv[3]==='eager')require(path.join(root,'public/work-rules.js'));
+const policy={effectiveFrom:'2026-01-01',stacking:'highest',weeklyTiers:[],dailyTiers:[],bankHolidayMultiplier:1,weekendMultiplier:1,nightMultiplier:1,region:'england-and-wales',warningPercent:90,version:'synthetic'};
+const contract={id:'synthetic-contract',revision:1,effectiveFrom:'2026-01-01',overtimeBasis:'custom',overtimeAfter:40,overtimeMultiplier:1.5,secondAfter:null,dailyBasis:'calendar_day',dailyAfter:null,dailyMultiplier:1.5,premiumNightStart:'23:00',premiumNightEnd:'06:00',nightMultiplier:1,weekendMultiplier:1,bankHolidayMultiplier:1,stacking:'highest',jurisdiction:'GB-ENG'};
+const s={staff:[{id:'w',site:'synthetic',job:'Synthetic job'}],costing:{rates:{w:[{effectiveFrom:'2026-01-01',currency:'GBP',basis:'hourly',hourlyRate:10,oncostPercent:0,oncostHourly:0}]},policies:{synthetic:[policy]},employeePolicies:{}},workRules:{revision:1,contracts:{w:[contract]},premiums:[{id:'synthetic-allowance',name:'Synthetic allowance',trigger:'job',match:'Synthetic job',basis:'used',mode:'per_hour',amount:3,enabled:true,effectiveFrom:'2026-01-01'}],annualOpening:{}}};
+const shifts=[{id:'s',employee:'w',start:'2026-01-15T08:00:00Z',end:'2026-01-15T09:00:00Z',breaks:[]}];
+const stateBefore=JSON.stringify(s),before=!!globalThis.WFMWorkRules,first=C.priceShifts(s,'w',shifts),between=!!globalThis.WFMWorkRules,second=C.priceShifts(s,'w',shifts),after=!!globalThis.WFMWorkRules;
+console.log(JSON.stringify({before,between,after,first:first.totalPence,second:second.totalPence,stateUnchanged:stateBefore===JSON.stringify(s)}));
