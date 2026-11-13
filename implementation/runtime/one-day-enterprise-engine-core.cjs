@@ -460,7 +460,12 @@ function createOneDayEnterpriseEngine(options = {}) {
   installOrganisationAccessLifecycle(db);
   const customerWorkspaces = createCustomerWorkspaceRegistry({db,createInitialWorkspace(binding){
     if(!publicOrigin.startsWith('https://')||!dedicatedInvitationRecoverySecret)throw Object.assign(Error('Secure workspace invitation delivery is not configured.'),{statusCode:503});
-    if(!db.prepare('SELECT id FROM tenants WHERE id=?').get(binding.tenant)){
+    const existingTenant=db.prepare('SELECT id FROM tenants WHERE id=?').get(binding.tenant);
+    // Opting into new-customer construction cannot implicitly adopt or reset an
+    // existing tenant. Registry replay/renewal and explicit adoption bypass this
+    // creation callback and retain their established association checks.
+    if(existingTenant&&options.createCanonicalTenant!=null)throw Object.assign(Error('An existing tenant requires an explicit customer workspace association.'),{statusCode:409,code:'EXISTING_TENANT_REQUIRES_WORKSPACE_ASSOCIATION'});
+    if(!existingTenant){
       if(typeof options.createCanonicalTenant!=='function')throw Object.assign(Error('Clean customer workspace creation is not configured.'),{statusCode:503});
       const result=options.createCanonicalTenant({db,binding});
       if(result&&typeof result.then==='function')throw Error('Canonical tenant creation must be synchronous.');
@@ -812,6 +817,26 @@ function createOneDayEnterpriseEngine(options = {}) {
         scopeChangeEventId: detail._configurationValidation?.scopeChangeEventId ?? null } };
   }
 
+  function customerPolicyProvenance(answer) {
+    if (!answer || typeof answer !== 'object' || Array.isArray(answer)) return null;
+    // The bounded JSON answer may contain arrays. Preserve object-free scalar/
+    // array compatibility, but never turn an object into '[object Object]' proof.
+    const sourceParts = [answer.sourceRef];
+    while (sourceParts.length) {
+      const part = sourceParts.pop();
+      if (Array.isArray(part)) {
+        for (const item of part) sourceParts.push(item);
+      } else if (part !== null && typeof part === 'object') {
+        return null;
+      }
+    }
+    const sourceRef = compact(answer.sourceRef, 300);
+    // Validate and retain the supplied date: projection can discard an offset
+    // or turn an invalid suffix into a valid date prefix.
+    const effectiveDate = answer.effectiveDate;
+    return sourceRef.trim() && validEffectiveDate(effectiveDate) ? { sourceRef, effectiveDate } : null;
+  }
+
   function customerAuthorityReceiptError(run, kind, row, detail) {
     if (!POLICY_REQUIREMENT_KINDS.has(kind)) return null;
     const receipt = detail?._customerAuthorityReceipt;
@@ -827,6 +852,10 @@ function createOneDayEnterpriseEngine(options = {}) {
       return 'Policy authority receipt is not backed by the current authenticated customer decision.';
     }
     const answer = parseJsonSafe(decision.decision_json, {});
+    const provenance = customerPolicyProvenance(answer);
+    if (!provenance || detail.sourceRef !== provenance.sourceRef || detail.effectiveDate !== provenance.effectiveDate) {
+      return 'Policy authority receipt requires revalidation of the original source and effective date.';
+    }
     if (sha256(String(answer?.sourceRef || '')).slice(0, 16) !== receipt.sourceRefDigest) {
       return 'Policy authority receipt source no longer matches the customer decision.';
     }
@@ -924,13 +953,13 @@ function createOneDayEnterpriseEngine(options = {}) {
       error.statusCode = 409;
       throw error;
     }
-    const sourceRef = compact(answer.sourceRef, 300);
-    const effectiveDate = compact(answer.effectiveDate, 40);
-    if (!sourceRef || !validEffectiveDate(effectiveDate)) {
+    const provenance = customerPolicyProvenance(answer);
+    if (!provenance) {
       const error = new Error('Policy confirmation requires a traceable sourceRef and effectiveDate.');
       error.statusCode = 409;
       throw error;
     }
+    const { sourceRef, effectiveDate } = provenance;
 
     const detail = {
       exactCandidateSha: candidateSha,
@@ -2397,20 +2426,31 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
   }) : null;
 
+  function workspaceSetupBinding(req,ctx,bound) {
+    // A loaded form belongs to this authenticated session and workspace/run.
+    // This is a consistency fence, never a replacement for manager authorization.
+    return createHmac('sha256',cookieSessionToken(req)).update(JSON.stringify([
+      'workspace-setup-v1',ctx.email,bound.tenant,bound.runId
+    ])).digest('hex');
+  }
+
   async function handleWorkspaceSetup(ctx,req,res,apply=false) {
     if(!workspaceSetup) return writeJson(res,503,{error:'Workspace setup is unavailable on this deployment.'});
     const run=currentRun.get(ctx.tenant);
     if(!run) return writeJson(res,409,{error:'Start the implementation before setting up the workspace.'});
     const bound={tenant:ctx.tenant,runId:run.id};
-    if(req.method==='GET') return writeJson(res,200,workspaceSetup.read(bound));
-    const body=await readJson(req), allowed=apply?['expectedRevision','reviewToken']:['expectedRevision','answers'];
+    if(req.method==='GET') return writeJson(res,200,{...workspaceSetup.read(bound),setupBinding:workspaceSetupBinding(req,ctx,bound)});
+    const body=await readJson(req), allowed=apply?['expectedRevision','reviewToken','setupBinding']:['expectedRevision','answers','setupBinding'];
     if(!body || typeof body!=='object' || Array.isArray(body) || Object.keys(body).some(key=>!allowed.includes(key))) return writeJson(res,400,{error:'Unsupported workspace setup fields.'});
     db.exec('BEGIN IMMEDIATE');let result;
     try{
       const current=requireManager(req,res);
       if(!current){db.exec('ROLLBACK');return true;}
       if(current.tenant!==bound.tenant||current.email!==ctx.email||currentRun.get(current.tenant)?.id!==bound.runId)throw Object.assign(Error('Workspace authority changed. Reload before continuing.'),{statusCode:409});
-      result=workspaceSetup[apply?'apply':'save']({...bound,...body,actor:sha256(current.email).slice(0,16)});
+      const setupBinding=workspaceSetupBinding(req,current,bound);
+      if(typeof body.setupBinding!=='string'||!/^[a-f0-9]{64}$/.test(body.setupBinding)||!secureEqual(body.setupBinding,setupBinding))throw Object.assign(Error('Workspace session changed. Reload before saving or applying.'),{statusCode:409});
+      const {setupBinding:ignored,...input}=body;
+      result={...workspaceSetup[apply?'apply':'save']({...bound,...input,actor:sha256(current.email).slice(0,16)}),setupBinding};
       db.exec('COMMIT');
     }catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
     return writeJson(res,200,result);

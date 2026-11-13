@@ -736,8 +736,15 @@ function createVectorReportingService(options={}){
         const createdAt=new Date().toISOString();
         const definitionDigest=digest(definition);
         if(!await access(c,{id,tenant:c.tenant,created_by:c.email,source_id:definition.sourceId,version_of:versionOf}))return writeJson(res,404,{error:'Report authority is unavailable.'});
-        insert.run(id,c.tenant,c.email,c.role,definition.title,definition.sourceId,JSON.stringify(definition),definitionDigest,versionOf,createdAt);
-        record(c,id,versionOf?'REPORT_VERSION_CREATED':'REPORT_CREATED',{sourceId:definition.sourceId,definitionDigest,versionOf});
+        db.exec('BEGIN IMMEDIATE');
+        try{
+          insert.run(id,c.tenant,c.email,c.role,definition.title,definition.sourceId,JSON.stringify(definition),definitionDigest,versionOf,createdAt);
+          record(c,id,versionOf?'REPORT_VERSION_CREATED':'REPORT_CREATED',{sourceId:definition.sourceId,definitionDigest,versionOf});
+          db.exec('COMMIT');
+        }catch(error){
+          try{db.exec('ROLLBACK');}catch{}
+          throw error;
+        }
         return writeJson(res,201,{report:{id,title:definition.title,sourceId:definition.sourceId,definition,definitionDigest,versionOf,createdBy:c.email,createdAt}});
       }catch(error){
         return writeJson(res,400,{error:compact(error?.message||'Unable to save report.',300)});
@@ -758,8 +765,15 @@ function createVectorReportingService(options={}){
         const dashboard=normaliseDashboard({title:body.title||previous?.dashboard?.title||'My reporting dashboard',reportIds:ids});
         const id='vd-'+randomUUID(),createdAt=new Date().toISOString(),dashboardDigest=digest(dashboard);
         if(!await access(c,one.get(c.tenant,reportId)))return writeJson(res,404,{error:'Report not found.'});
-        dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous?.id||null,createdAt);
-        record(c,reportId,'REPORT_PINNED',{dashboardId:id,dashboardDigest,versionOf:previous?.id||null});
+        db.exec('BEGIN IMMEDIATE');
+        try{
+          dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous?.id||null,createdAt);
+          record(c,reportId,'REPORT_PINNED',{dashboardId:id,dashboardDigest,versionOf:previous?.id||null});
+          db.exec('COMMIT');
+        }catch(error){
+          try{db.exec('ROLLBACK');}catch{}
+          throw error;
+        }
         return writeJson(res,201,{dashboard:{id,dashboard,dashboardDigest,versionOf:previous?.id||null,createdBy:c.email,createdAt}});
       }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to pin report.',300)});}
     }
@@ -773,8 +787,15 @@ function createVectorReportingService(options={}){
         const previous=dashboardRow(latest),dashboard=normaliseDashboard({title:previous.dashboard.title,reportIds:(previous.dashboard.reportIds||[]).filter(id=>id!==reportId)});
         const id='vd-'+randomUUID(),createdAt=new Date().toISOString(),dashboardDigest=digest(dashboard);
         if(!await access(c,one.get(c.tenant,reportId)))return writeJson(res,404,{error:'Report not found.'});
-        dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous.id,createdAt);
-        record(c,reportId,'REPORT_UNPINNED',{dashboardId:id,dashboardDigest,versionOf:previous.id});
+        db.exec('BEGIN IMMEDIATE');
+        try{
+          dashboardInsert.run(id,c.tenant,c.email,JSON.stringify(dashboard),dashboardDigest,previous.id,createdAt);
+          record(c,reportId,'REPORT_UNPINNED',{dashboardId:id,dashboardDigest,versionOf:previous.id});
+          db.exec('COMMIT');
+        }catch(error){
+          try{db.exec('ROLLBACK');}catch{}
+          throw error;
+        }
         return writeJson(res,201,{dashboard:{id,dashboard,dashboardDigest,versionOf:previous.id,createdBy:c.email,createdAt}});
       }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to unpin report.',300)});}
     }
@@ -790,9 +811,16 @@ function createVectorReportingService(options={}){
         if(!await access(c,report))return writeJson(res,404,{error:'Report not found.'});
         if(!await access(c,{tenant:c.tenant,created_by:c.email,schedule_json:JSON.stringify(schedule)},'schedule'))return writeJson(res,403,{error:'Current delivery authority is unavailable.'});
         const id='vs-'+randomUUID(),createdAt=new Date().toISOString(),scheduleDigest=digest(schedule);
-        scheduleInsert.run(id,c.tenant,c.email,JSON.stringify(schedule),scheduleDigest,createdAt);
-        scheduleEvent.run(c.tenant,id,1,c.email,createdAt);
-        record(c,schedule.reportId,'REPORT_SCHEDULE_CREATED',{scheduleId:id,scheduleDigest,delivery:schedule.delivery,cadence:schedule.cadence});
+        db.exec('BEGIN IMMEDIATE');
+        try{
+          scheduleInsert.run(id,c.tenant,c.email,JSON.stringify(schedule),scheduleDigest,createdAt);
+          scheduleEvent.run(c.tenant,id,1,c.email,createdAt);
+          record(c,schedule.reportId,'REPORT_SCHEDULE_CREATED',{scheduleId:id,scheduleDigest,delivery:schedule.delivery,cadence:schedule.cadence});
+          db.exec('COMMIT');
+        }catch(error){
+          try{db.exec('ROLLBACK');}catch{}
+          throw error;
+        }
         return writeJson(res,201,{schedule:{id,schedule,scheduleDigest,enabled:true,createdBy:c.email,createdAt}});
       }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to schedule report.',300)});}
     }
@@ -800,12 +828,26 @@ function createVectorReportingService(options={}){
     const scheduleStateMatch=path.match(/^\/api\/reporting\/schedules\/([^/]+)\/state$/);
     if(scheduleStateMatch&&method==='POST'){
       try{
-        const id=decodeURIComponent(scheduleStateMatch[1]),row=scheduleOne.get(c.tenant,id);
+        const id=decodeURIComponent(scheduleStateMatch[1]),row=scheduleOne.get(c.tenant,id),token=cookieToken(req);
         const body=await readJson(req);if(typeof body.enabled!=='boolean')return writeJson(res,400,{error:'enabled must be true or false.'});
         if(!await access(c,row,'schedule'))return writeJson(res,404,{error:'Schedule not found.'});
-        const createdAt=new Date().toISOString();scheduleEvent.run(c.tenant,id,body.enabled?1:0,c.email,createdAt);
-        const schedule=JSON.parse(row.schedule_json);
-        record(c,schedule.reportId,body.enabled?'REPORT_SCHEDULE_RESUMED':'REPORT_SCHEDULE_PAUSED',{scheduleId:id});
+        const schedule=JSON.parse(row.schedule_json),createdAt=new Date().toISOString();
+        db.exec('BEGIN IMMEDIATE');
+        try{
+          // Async authority can only deny; the current local session, actor and
+          // complete report ancestry must still permit this control at commit.
+          const current=context(req),frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(c.tenant)?.privileged_freeze)===1;
+          if(cookieToken(req)!==token||!current||current.email!==c.email||current.tenant!==c.tenant||current.role!==c.role||frozen||row.tenant!==current.tenant||row.created_by!==current.email||!localReportAccess(current,one.get(current.tenant,schedule.reportId),new Set(['schedule:'+id]))){
+            db.exec('ROLLBACK');
+            return writeJson(res,404,{error:'Schedule not found.'});
+          }
+          scheduleEvent.run(c.tenant,id,body.enabled?1:0,c.email,createdAt);
+          record(c,schedule.reportId,body.enabled?'REPORT_SCHEDULE_RESUMED':'REPORT_SCHEDULE_PAUSED',{scheduleId:id});
+          db.exec('COMMIT');
+        }catch(error){
+          try{db.exec('ROLLBACK');}catch{}
+          throw error;
+        }
         return writeJson(res,200,{schedule:{...scheduleRow(row),enabled:body.enabled,control:{actor:c.email,createdAt}}});
       }catch(error){return writeJson(res,400,{error:compact(error?.message||'Unable to change schedule state.',300)});}
     }

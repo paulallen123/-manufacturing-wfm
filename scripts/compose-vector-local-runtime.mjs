@@ -5,6 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import tenantCostCalendar from './tenant-cost-calendar-overlay.cjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.resolve(process.argv[2] || path.join(root, 'candidate-runtime'));
@@ -27,6 +28,22 @@ function validateSealedRuntime(runtime) {
     if (sha256(fs.readFileSync(path.join(runtime, relative))) !== digest) throw Error('SEALED_SOURCE_DRIFT: ' + relative);
     if (runtimeManifest[relative] !== digest) throw Error('SEALED_MANIFEST_MISMATCH: ' + relative);
   }
+}
+function composeNangoMetadata(runtime, server) {
+  const sources = ['integration/runtime/nango-credential-provider.cjs', 'integration/runtime/provider-metadata-review.cjs'];
+  const importAnchor = "const IG=require('./lib/integration-gateway.cjs')";
+  const brokerAnchor = 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider})';
+  const statusAnchor = 'providerMetadataBroker:providerMetadataBroker.status()';
+  if ([importAnchor, brokerAnchor, statusAnchor].some(anchor => server.split(anchor).length !== 2) || server.includes('const NangoCredentialProvider=') || server.includes('const ProviderMetadataReview=')) throw Error('NANGO_METADATA_BROKER_ANCHOR_CHANGED');
+  for (const source of sources) {
+    recordInput(source);
+    const target = path.join(runtime, 'integration-runtime', path.basename(source));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(root, source), target);
+  }
+  return server.replace(importAnchor, "const NangoCredentialProvider=require('./integration-runtime/nango-credential-provider.cjs');\nconst ProviderMetadataReview=require('./integration-runtime/provider-metadata-review.cjs');\n" + importAnchor)
+    .replace(brokerAnchor, 'providerMetadataBroker=PMB.createBroker({profiles:providerMetadataProfiles,permitVerifier:providerCollectionPermitRuntime.verifier,permitProvider:providerCollectionPermitRuntime.permitProvider,credentialProvider:NangoCredentialProvider.createForMetadataProfiles({profiles:providerMetadataProfiles,env:process.env})})')
+    .replace(statusAnchor, 'providerMetadataBroker:ProviderMetadataReview.statusForActor(providerMetadataBroker.status(),a)');
 }
 function composeStaffology(runtime) {
   validateSealedRuntime(runtime);
@@ -131,6 +148,7 @@ function composeStaffology(runtime) {
   const applyReceiptAnchor="});if(result.replayed){db.exec('ROLLBACK');return json(res,200,{...result,version:state.version});}";
   if(server.split(applyReceiptAnchor).length!==2)throw Error('STAFFOLOGY_APPLY_RECEIPT_ANCHOR_CHANGED');
   server=server.replace(applyReceiptAnchor,"});staffologyEmployeePreviews.afterApply(a,input.id);if(result.replayed){db.exec('ROLLBACK');return json(res,200,{...result,version:state.version});}");
+  server = composeNangoMetadata(runtime, server);
   fs.writeFileSync(serverPath, server);
   const receipt = {
     schemaVersion: 1,
@@ -182,6 +200,13 @@ function leaveBudget(s,id,exclude,interval){
   fs.writeFileSync(operationsPath,operations.replace(budgetAnchor,budgetReplacement));
   fs.writeFileSync(rulesPath,rules.replace(capacityAnchor,'const dated=root.WFMOps?.leaveBudget(s,p.employee,p.requestId,p);'));
 }
+function patchAnnualOnlyLeaveKind(runtime) {
+  const file=path.join(runtime,'public','work-rules.js'),text=fs.readFileSync(file,'utf8');
+  const anchor="assert(a.role==='employee','Employee access is required.',403);const v=normaliseLeave(s,{...p,employee:a.personId});";
+  const replacement="assert(a.role==='employee','Employee access is required.',403);assert(p?.kind===undefined||p.kind==='Annual leave','Only Annual leave requests are supported by this interface.',409);const v=normaliseLeave(s,{...p,employee:a.personId});";
+  if(text.split(anchor).length!==2)throw Error('ANNUAL_LEAVE_KIND_ANCHOR_CHANGED');
+  fs.writeFileSync(file,text.replace(anchor,replacement));
+}
 function patchTenantLocalTime(rules){
  const resolverAnchor="function localResolve(value,fold='reject'){\n assert(typeof value==='string'&&/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(value)&&validDate(value.slice(0,10))&&timeOK(value.slice(11)),'Invalid local date/time.');\n assert(['reject','earlier','later'].includes(fold),'Unknown clock-change choice.');\n const plain=Date.parse(value+':00Z'),fmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});\n const options=[plain-HOUR,plain].filter(ms=>fmt.format(new Date(ms)).replace(' ','T')===value);\n assert(options.length>0,'This local time does not exist when the clocks move forward.');\n assert(options.length===1||fold!=='reject','This local time occurs twice. Choose earlier or later explicitly.');\n return new Date(options[fold==='later'?options.length-1:0]).toISOString();\n}";
  const infoAnchor="const infoFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),infoCache=new Map();\nfunction localInfo(t){const key=Math.floor(t/MIN);if(infoCache.has(key))return infoCache.get(key);const p=Object.fromEntries(infoFmt.formatToParts(new Date(t)).map(x=>[x.type,x.value]));const v={date:`${p.year}-${p.month}-${p.day}`,minute:Number(p.hour)*60+Number(p.minute)};if(infoCache.size>200000)infoCache.clear();infoCache.set(key,v);return v;}\n";
@@ -213,12 +238,36 @@ function localResolve(value,fold='reject'){
  return new Date(options[fold==='later'?options.length-1:0]).toISOString();
 }`).replace(infoAnchor,"const infoFmt=zone=>new Intl.DateTimeFormat('en-GB',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),infoCache=new Map();\nfunction localInfo(t){const zone=requireCalendar().timeZone,key=zone+'|'+Math.floor(t/MIN);if(infoCache.has(key))return infoCache.get(key);const p=Object.fromEntries(infoFmt(zone).formatToParts(new Date(t)).map(x=>[x.type,x.value]));const v={date:`${p.year}-${p.month}-${p.day}`,minute:Number(p.hour)*60+Number(p.minute)};if(infoCache.size>200000)infoCache.clear();infoCache.set(key,v);return v;}\n");
 }
+function patchOrganisationCalendar(runtime, browserCalendar) {
+ const file=path.join(runtime,'public','org-admin.js');
+ let source=fs.readFileSync(file,'utf8');
+ const replace=(before,after)=>{if(source.split(before).length!==2)throw Error('ORGANISATION_CALENDAR_ANCHOR_CHANGED');source=source.replace(before,after);};
+ replace("const TODAY='2026-09-15',SCHEMA=1;", "const SCHEMA=1;"+browserCalendar+"\nconst currentDate=()=>{const date=requireCalendar().localDate;assert(validDate(date),'Tenant calendar date is invalid.');return date;};");
+ replace("function validDate(x){return typeof x==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(x)&&!Number.isNaN(Date.parse(x+'T00:00:00Z'));}", "function validDate(x){if(typeof x!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(x))return false;const at=Date.parse(x+'T00:00:00Z');return Number.isFinite(at)&&new Date(at).toISOString().slice(0,10)===x;}");
+ replace('function decorate(s,asOf=TODAY){', "function decorate(s,asOf=currentDate()){\n assert(validDate(asOf),'Choose a valid organisation date.');");
+ replace('function effectiveOrg(s,asOf=TODAY){', "function effectiveOrg(s,asOf=currentDate()){assert(validDate(asOf),'Choose a valid organisation date.');");
+ replace('function validateMove(s,a,x){decorate(s);', 'function validateMove(s,a,x,asOf=currentDate()){decorate(s,asOf);');
+ replace('function scheduleMove(s,a,x){decorate(s);', 'function scheduleMove(s,a,x){const asOf=currentDate();decorate(s,asOf);');
+ replace('const {node:n}=validateMove(s,a,x),currentParent=n.parent;', 'const {node:n}=validateMove(s,a,x,asOf),currentParent=n.parent;');
+ replace("status:x.effectiveFrom<=TODAY?'effective':'scheduled'", "status:x.effectiveFrom<=asOf?'effective':'scheduled'");
+ replace('s.org=effectiveOrg(s,TODAY);', 's.org=effectiveOrg(s,asOf);');
+ replace('function cancelMove(s,a,x){decorate(s);', 'function cancelMove(s,a,x){const asOf=currentDate();decorate(s,asOf);');
+ replace("c.status==='scheduled'&&c.effectiveFrom>TODAY", "c.status==='scheduled'&&c.effectiveFrom>asOf");
+ replace('function report(s,a,asOf=TODAY){', 'function report(s,a,asOf=currentDate()){');
+ replace('changes:s.orgAdmin.changes.slice().sort((a,b)=>b.sequence-a.sequence).map(clone)', "changes:s.orgAdmin.changes.slice().sort((a,b)=>b.sequence-a.sequence).map(c=>({...clone(c),status:c.status==='cancelled'?'cancelled':c.effectiveFrom<=asOf?'effective':'scheduled'}))");
+ replace('const api={SCHEMA,TODAY,', 'const api={SCHEMA,get TODAY(){return currentDate();},');
+ fs.writeFileSync(file,source);
+ const uiFile=path.join(runtime,'public','org-admin-ui.js'),ui=fs.readFileSync(uiFile,'utf8'),uiAnchor='value="2026-09-15"';
+ if(ui.split(uiAnchor).length!==2)throw Error('ORGANISATION_DATE_UI_ANCHOR_CHANGED');
+ fs.writeFileSync(uiFile,ui.replace(uiAnchor,'value="${esc(r.asOf)}"'));
+}
 function patchAuthoritativeCalendar(runtime){
  const indexPath=path.join(runtime,'public','index.html'),calendarScript='<script src="/api/tenant-calendar.js"></script>',coreScript='<script src="core.js"></script>';
  const index=fs.readFileSync(indexPath,'utf8');
  if(index.includes(calendarScript)||index.split(coreScript).length!==2)throw Error('BROWSER_CALENDAR_BOOTSTRAP_ANCHOR_CHANGED');
  fs.writeFileSync(indexPath,index.replace(coreScript,calendarScript+coreScript));
  const browserCalendar="const calendarSnapshot=()=>{if(typeof module!=='undefined'&&module.exports){try{return require('../operations-runtime/tenant-calendar.cjs').createTenantCalendar({env:process.env}).snapshot();}catch{return null;}}return root.WFMTenantCalendarSnapshot||null;};const requireCalendar=()=>{const value=calendarSnapshot();if(!value||!value.asOf||!value.localDate||!value.timeZone)throw Error('Tenant calendar authority unavailable.');return value;};";
+ patchOrganisationCalendar(runtime,browserCalendar);
  const corePath=path.join(runtime,'public','core.js');if(fs.existsSync(corePath)){let text=fs.readFileSync(corePath,'utf8');const anchor="const NOW='2026-09-14T08:38:00+01:00';";if(text.includes(anchor)){text=text.replace(anchor,browserCalendar+"\nconst currentNow=()=>requireCalendar().asOf;");text=text.replace(/\bNOW\b/g,'currentNow()').replace('const api={currentNow(),seed','const api={NOW:currentNow(),seed');fs.writeFileSync(corePath,text);}}
  const operationsPath=path.join(runtime,'public','operations-engine.js');if(fs.existsSync(operationsPath)){let text=fs.readFileSync(operationsPath,'utf8');const anchor="const assert=E.assert,clone=x=>JSON.parse(JSON.stringify(x)),MIN=60000,HOUR=60*MIN,NOW=E.AS_OF,DATE='2026-09-14';";if(text.includes(anchor)){text=text.replace(anchor,"const assert=E.assert,clone=x=>JSON.parse(JSON.stringify(x)),MIN=60000,HOUR=60*MIN;"+browserCalendar+"\nconst currentNow=()=>requireCalendar().asOf,currentDate=()=>requireCalendar().localDate;");text=text.replace(/\bNOW\b/g,'currentNow()').replace(/\bDATE\b/g,'currentDate()');fs.writeFileSync(operationsPath,text);}}
  const demandPath=path.join(runtime,'public','demand-engine.js');if(fs.existsSync(demandPath)){let text=fs.readFileSync(demandPath,'utf8');const anchor="const NOW='2026-09-14', DAY=86400000;";if(text.includes(anchor)){text=text.replace(anchor,browserCalendar+"\nconst currentDate=()=>requireCalendar().localDate, DAY=86400000;");text=text.replace(/\bNOW\b/g,'currentDate()').replace('const api={currentDate(),SOURCES','const api={NOW:currentDate(),SOURCES');fs.writeFileSync(demandPath,text);}}
@@ -226,6 +275,8 @@ function patchAuthoritativeCalendar(runtime){
  const enginePath=path.join(runtime,'public','engine.js');if(fs.existsSync(enginePath)){let text=fs.readFileSync(enginePath,'utf8');const anchor="const DAY=86400000,HOUR=3600000,AS_OF='2026-09-14T08:38:00+01:00',REVIEWED='2026-09-14';";if(text.includes(anchor)){text=text.replace(anchor,"const DAY=86400000,HOUR=3600000,REVIEWED='2026-09-14';"+browserCalendar+"\nconst runtimeNow=()=>requireCalendar().asOf,runtimeDate=()=>requireCalendar().localDate;");text=text.replace("function audit(s,actor,type,employee,detail){s.audit.push({id:'a'+s.audit.length+'-'+Date.now(),by:actor.personId,employee,type,note:detail,at:AS_OF});","function audit(s,actor,type,employee,detail){s.audit.push({id:'a'+s.audit.length+'-'+Date.now(),by:actor.personId,employee,type,note:detail,at:runtimeNow()});");text=text.replace("function periodBounds(kind,asOf=AS_OF){assert(['daily','weekly','monthly','yearly'].includes(kind),'Unsupported reporting period.');const end=localDay(asOf),d=new Date(end+'T12:00:00Z');let start=end,previousStart;","function periodBounds(kind,asOf=null){assert(['daily','weekly','monthly','yearly'].includes(kind),'Unsupported reporting period.');const live=asOf||runtimeNow(),end=asOf?localDay(live):runtimeDate(),d=new Date(end+'T12:00:00Z');let start=end,previousStart;");text=text.replace("cutoffLocal:new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(asOf)),timezone:'Europe/London'","cutoffLocal:new Intl.DateTimeFormat('en-GB',{timeZone:requireCalendar().timeZone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(live)),timezone:requireCalendar().timeZone");text=text.replace("p.reportedAt='08:38';","p.reportedAt=String(requireCalendar().localTime||'').slice(0,5)||null;").replace("function syncToday(s){for(const r of s.history.filter(r=>r.date==='2026-09-14'))","function syncToday(s){const current=runtimeDate();for(const r of s.history.filter(r=>r.date===current))");text=text.replace(/\bAS_OF\b/g,'runtimeNow()').replace("const api={runtimeNow(),SOURCES","const api={get AS_OF(){return runtimeNow();},SOURCES");fs.writeFileSync(enginePath,text);}}
  const rulesPath=path.join(runtime,'public','work-rules.js');if(fs.existsSync(rulesPath)){let text=fs.readFileSync(rulesPath,'utf8');const anchor="const DAY=86400000,HOUR=3600000,MIN=60000,AS_OF='2026-09-14',CHECKED='2026-09-14';";if(text.includes(anchor)){text=text.replace(anchor,"const DAY=86400000,HOUR=3600000,MIN=60000,CHECKED='2026-09-14';"+browserCalendar+"\nconst runtimeNow=()=>requireCalendar().asOf,runtimeDate=()=>requireCalendar().localDate;");text=patchTenantLocalTime(text);text=text.replace("r.reviewedAt=new Date().toISOString();","r.reviewedAt=runtimeNow();").replace("s.workRules.audit.push({at:new Date().toISOString(),","s.workRules.audit.push({at:runtimeNow(),").replace("effectiveFrom:AS_OF,revision:1","effectiveFrom:CHECKED,revision:1").replace("p.id==='e1'?'part-time':'weekday',AS_OF,28","p.id==='e1'?'part-time':'weekday',CHECKED,28");text=text.replace(/\bAS_OF\b/g,'runtimeDate()').replace("const api={runtimeDate(),CHECKED","const api={get AS_OF(){return runtimeDate();},CHECKED");fs.writeFileSync(rulesPath,text);}}
  const onboardingPath=path.join(runtime,'public','onboarding-engine.js');if(fs.existsSync(onboardingPath)){let text=fs.readFileSync(onboardingPath,'utf8');const anchor="const assert=E.assert,AS_OF=E.AS_OF,SCHEMA=1,LOCALES=new Set(['en-GB','fr-FR','de-DE','pl-PL']),CONTRACTS=new Set(['full_time','part_time','annualised','zero_hours']);";if(text.includes(anchor)){text=text.replace(anchor,"const assert=E.assert,SCHEMA=1,LOCALES=new Set(['en-GB','fr-FR','de-DE','pl-PL']),CONTRACTS=new Set(['full_time','part_time','annualised','zero_hours']);"+browserCalendar+"\nconst runtimeNow=()=>requireCalendar().asOf;");text=text.replace(/\bAS_OF\b/g,'runtimeNow()');fs.writeFileSync(onboardingPath,text);}}
+ recordInput('scripts/tenant-cost-calendar-overlay.cjs');
+ tenantCostCalendar.patchProposal(runtime,browserCalendar);
 }
 function patchCustomerFacingCopy(runtime) {
   const replacements = new Map([
@@ -248,7 +299,7 @@ const run = (file, args = []) => { recordInput(file); return execFileSync(proces
 recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
   run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
-  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);patchDatedLeaveBudget(output);
+  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);patchDatedLeaveBudget(output);patchAnnualOnlyLeaveKind(output);
   copyKioskClient(output);
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
@@ -269,13 +320,14 @@ const copy = (source, destination) => { recordInput(source); const target = path
 const groups = {
   security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'proof-runner-auth.cjs', 'passkey-schema.cjs', 'passkey-auth.cjs', 'federated-auth.cjs', 'federated-ui.js', 'passkey-entry.html', 'passkey-ui.js', 'passkey-ui.css', 'package.json', 'package-lock.json', 'hosted-listen-guard.cjs', 'hosted-application-user-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
   integration: ['three-min-feed.cjs', 'autonomous-integration-hub.cjs', 'gusto-company-connector.cjs', 'gusto-oauth-landing.cjs', 'gusto-webhook-receiver.mjs', 'gusto-webhook-preload.mjs'],
+  'integration-fabric': ['batch-reconciliation.mjs', 'scope-partition.mjs', 'dataset-coverage.mjs'],
   integrations: ['staffology/canonical-operations.cjs', 'staffology/configured-site-authority.cjs', 'staffology/employee-import-previews.cjs'],
   implementation: [
     'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
     'agents-api-adapter.cjs', 'agents-api-bootstrap-route.cjs', 'implementation-work-controller.cjs',
     'readiness-evidence-contract.cjs', 'configuration-inference-engine.cjs',
     'implementation-digital-twin.cjs', 'tenant-environment-provisioner.cjs',
-    'workspace-setup.cjs','organisation-access-setup.cjs','customer-workspace.cjs','setup-only-policy.cjs','organisation-access-lifecycle.cjs'
+    'clean-customer-state.cjs','workspace-setup.cjs','organisation-access-setup.cjs','customer-workspace.cjs','setup-only-policy.cjs','organisation-access-lifecycle.cjs'
   ],
   learning: [
     'adaptive-learning-engine.cjs', 'training-workflow-manifest.cjs',
@@ -298,10 +350,30 @@ const groups = {
 for (const [group, files] of Object.entries(groups)) for (const file of files) {const sourceRoot=group==='integrations'?'integrations':`${group}/runtime`,targetRoot=group==='integrations'?'integrations':`${group}-runtime`;copy(`${sourceRoot}/${file}`,`${targetRoot}/${file}`);}
 copy('resilience/support-selfhelp.cjs', 'support-runtime/support-selfhelp.cjs');
 copy('resilience/support-selfhelp-service.cjs', 'support-runtime/support-selfhelp-service.cjs');
+// Mirror the existing final-image cash, energy, agency and attendance COPY sets. Keep relative
+// module imports intact and include every copied source in proof provenance.
+for (const name of [
+  'cash-to-capacity-engine.mjs', 'cash-to-capacity-evidence.mjs',
+  'cash-to-capacity-decision.mjs', 'cash-to-capacity-outcome.mjs',
+  'energy-bill-evidence.mjs', 'energy-data-reconciliation.mjs', 'energy-flexibility.mjs',
+  'energy-input-hardening.mjs', 'energy-profile-benchmark.mjs', 'energy-profile-binding.mjs'
+]) copy(`src/frontier/${name}`, `operations-runtime/${name}`);
+for (const name of fs.readdirSync(path.join(root, 'src/frontier')).filter(name => /^agency-.*\.mjs$/.test(name)).sort()) {
+  copy(`src/frontier/${name}`, `operations-runtime/agency/${name}`);
+}
+for (const name of [
+  'access-control-evidence.mjs', 'access-feed-supervisor.mjs', 'access-onboarding-autopilot.mjs',
+  'access-push-adapters.mjs', 'attendance-certification.mjs', 'attendance-coverage-assurance.mjs',
+  'attendance-coverage-planner.mjs', 'attendance-payroll-gate.mjs', 'attendance-release-control.mjs',
+  'attendance-source-supervisor.mjs', 'durable-attendance-journal.mjs', 'durable-source-supervisor.mjs',
+  'invisible-attendance-engine.mjs', 'signed-rollback-anchor.mjs', 'sqlite-attendance-runtime.mjs',
+  'sqlite-attendance-worker.mjs', 'telemetry-continuity-guard.mjs', 'trust-root-recovery-controller.mjs',
+  'trust-root-recovery.mjs', 'wifi-evidence-adapters.mjs', 'windows-wef-evidence.mjs'
+]) copy(`clocking-security-v2/${name}`, `operations-runtime/attendance/${name}`);
 composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);
-patchPayrollMoney(output);patchDatedLeaveBudget(output);
+patchPayrollMoney(output);patchDatedLeaveBudget(output);patchAnnualOnlyLeaveKind(output);
 // Copy the lockfile-installed dependency closure; never install from the proof process.
 const securityDependencies = path.join(root, 'security/runtime/node_modules');
 if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');

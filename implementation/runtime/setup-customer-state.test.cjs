@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { DatabaseSync } = require('node:sqlite');
-const { createCleanCustomerState, createSetupCustomerState } = require('./clean-customer-state.cjs');
+const { createCleanCustomerState, createSetupCustomerState } = require(require('node:path').join(process.env.CLEAN_CUSTOMER_RUNTIME_ROOT || __dirname, 'clean-customer-state.cjs'));
 const input = () => ({ tenant: 'synthetic-setup-tenant', customerId: 'synthetic-customer-001',
   authority: { tenant: 'synthetic-setup-tenant', customerId: 'synthetic-customer-001',
     purpose: 'construct-setup-customer-state', reference: 'synthetic-trusted-binding-001' } });

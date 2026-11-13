@@ -108,6 +108,24 @@ function certs(v){
     expiresAt:x.expiresAt?iso(x.expiresAt,'certification expiry'):null
   })).filter(x=>x.name):[];
 }
+function directedRoutes(input){
+  const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v),out=Object.create(null);
+  if(!record(input)) return null;
+  for(const from of Object.keys(input)){
+    const row=input[from];
+    if(!record(row)){ out[from]=null; continue; }
+    const destinations=Object.create(null);
+    for(const to of Object.keys(row)){
+      const value=row[to];
+      // Keep invalid owned entries explicit; JSON cloning undefined would
+      // otherwise erase them and enable a permissive legacy fallback.
+      destinations[to]=typeof value==='number'&&Number.isFinite(value)&&value>=0&&
+        value<=Number.MAX_SAFE_INTEGER/60000?value:null;
+    }
+    out[from]=destinations;
+  }
+  return out;
+}
 function normaliseWorker(input={}){
   const id=text(input.id,120);
   if(!id) throw new Error('Worker id is required.');
@@ -131,6 +149,8 @@ function normaliseWorker(input={}){
     contingentPremiumPerHour:Math.max(0,n(input.contingentPremiumPerHour,0)),
     travelCostBySite:clone(input.travelCostBySite||{}),
     travelMinutesBySite:clone(input.travelMinutesBySite||{}),
+    travelMinutesByRoute:Object.hasOwn(input,'travelMinutesByRoute')?
+      directedRoutes(input.travelMinutesByRoute):Object.create(null),
     preferences:{
       preferredSites:list(p.preferredSites,100,160),preferredLines:list(p.preferredLines,100,160),
       avoidedTags:list(p.avoidedTags,100,80).map(x=>x.toUpperCase()),
@@ -187,6 +207,63 @@ function certValid(worker,name,end){
 function assignedHours(workerId,assignments){
   return assignments.filter(a=>a.workerId===workerId).reduce((s,a)=>s+hours(a.start,a.end),0);
 }
+function transferMinutes(worker,fromSite,toSite){
+  if(fromSite===toSite) return 0;
+  const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  const routes=worker.travelMinutesByRoute,legacy=worker.travelMinutesBySite;
+  let value;
+  if(Object.hasOwn(worker,'travelMinutesByRoute')&&!record(routes)) return null;
+  if(record(routes)&&Object.hasOwn(routes,fromSite)){
+    const row=routes[fromSite];
+    if(!record(row)) return null;
+    if(Object.hasOwn(row,toSite)){
+      value=row[toSite];
+      return typeof value==='number'&&Number.isFinite(value)&&value>=0&&
+        value<=Number.MAX_SAFE_INTEGER/60000?value:null;
+    }
+  }
+  if(fromSite===worker.homeSite&&record(legacy)&&Object.hasOwn(legacy,toSite)) value=legacy[toSite];
+  return typeof value==='number'&&Number.isFinite(value)&&value>=0&&
+    value<=Number.MAX_SAFE_INTEGER/60000?value:null;
+}
+function transferFailures(worker,slot,assignments){
+  // Declared planning context only. An omitted adjacent location retains
+  // the legacy hypothetical contract for that journey, never another duty.
+  const own=assignments.filter(a=>a.workerId===worker.id),siteKnown=v=>
+    typeof v==='string'&&v.length>0&&v.length<=160&&v===v.trim();
+  const start=ms(slot.start),end=ms(slot.end);
+  let before=[],after=[],beforeTime=-Infinity,afterTime=Infinity;
+  for(const a of own){
+    const aEnd=ms(a.end),aStart=ms(a.start);
+    if(aEnd<=start){
+      if(aEnd>beforeTime){ before=[a];beforeTime=aEnd; }
+      else if(aEnd===beforeTime) before.push(a);
+    }
+    if(aStart>=end){
+      if(aStart<afterTime){ after=[a];afterTime=aStart; }
+      else if(aStart===afterTime) after.push(a);
+    }
+  }
+  const failures=[];
+  for(const [rows,isBefore,gap] of [[before,true,start-beforeTime],[after,false,afterTime-end]]){
+    if(!rows.length) continue;
+    const sites=new Set();let omitted=false,invalid=false;
+    for(const row of rows){
+      if(!Object.hasOwn(row,'site')) omitted=true;
+      else if(!siteKnown(row.site)) invalid=true;
+      else sites.add(row.site);
+    }
+    if(invalid||sites.size>1||(omitted&&sites.size)){
+      failures.push('ASSIGNMENT_SITE_UNPROVEN');continue;
+    }
+    if(!sites.size) continue; // No declared origin/destination to infer.
+    const site=[...sites][0],from=isBefore?site:slot.site,to=isBefore?slot.site:site;
+    const minutes=transferMinutes(worker,from,to);
+    if(minutes===null) failures.push('CROSS_SITE_TRAVEL_UNPROVEN');
+    else if(gap<minutes*60000) failures.push('INSUFFICIENT_TRANSFER_TIME');
+  }
+  return [...new Set(failures)];
+}
 function evaluateWorkerForSlot(worker,slot,ctx={}){
   const policy=ctx.policy||normalisePolicy(),assignments=normaliseAssignments(ctx.assignments);
   const start=iso(slot.start,'slot start'),end=iso(slot.end,'slot end');
@@ -218,6 +295,7 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
     !overlaps(a.start,a.end,start,end)&&
     (ms(a.end)<=ms(start)?ms(start)-ms(a.end):ms(a.start)-ms(end))<policy.minRestHours*3600000))
     failures.push('MINIMUM_REST_BREACH');
+  failures.push(...transferFailures(worker,slot,assignments));
   for(const ref of policy.requiredRuleRefs) if(worker.ruleBlocks.has(ref)) failures.push('RULE_BLOCK:'+ref);
   if(slot.lockedWorkerIds.length&&!slot.lockedWorkerIds.includes(worker.id)) failures.push('LOCKED_REQUIREMENT_OTHER_WORKER');
 
@@ -361,7 +439,13 @@ function createSchedulingPlan(input={}){
   const validation=validateSchedule(solved.assignments,workersById,slotsById,policy,preferred);
   if(!validation.valid) throw new Error('Independent schedule validation failed; plan refused.');
   const unfilled=solved.assignments.filter(a=>!a.workerId).map(a=>{
-    const checks=built.all.get(a.slotId)||[],counts=new Map();
+    const slot=slotsById.get(a.slotId),counts=new Map();
+    // Add only travel denials against the final selected duties. Existing
+    // independent candidate scoring and non-travel explanation stay intact.
+    const checks=(built.all.get(a.slotId)||[]).map(c=>{
+      const travel=transferFailures(workersById.get(c.workerId),slot,solved.assignments);
+      return travel.length?{...c,eligible:false,failures:[...new Set([...c.failures,...travel])]}:c;
+    });
     for(const c of checks) for(const r of c.failures) counts.set(r,(counts.get(r)||0)+1);
     return {slotId:a.slotId,requirementId:a.requirementId,eligibleCandidateCount:checks.filter(c=>c.eligible).length,
       topReasons:[...counts.entries()].sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).slice(0,8).map(x=>({reason:x[0],workersBlocked:x[1]}))};

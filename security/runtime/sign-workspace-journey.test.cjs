@@ -32,8 +32,8 @@ for(const provider of ['test-provider','docusign'])test(provider==='docusign'?'s
     async sendInvitation(message){messages.push(message);return {provider:'test-delivery',messageId:'message-one'};}
   });
   t.after(()=>{engine.close();auth.close();guard.securityControlForTests().db.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});
-  async function request(url,body={},cookie='',headers={}){
-    const raw=JSON.stringify(body),req=Readable.from([raw]);req.method='POST';req.url=url;req.socket={};
+  async function request(url,body={},cookie='',headers={},method='POST'){
+    const raw=JSON.stringify(body),req=Readable.from(method==='GET'?[]:[raw]);req.method=method;req.url=url;req.socket={};
     req.headers={origin,'content-type':'application/json','x-forwarded-proto':'https',cookie,...headers};
     const res={statusCode:200,headers:{},setHeader(k,v){this.headers[k.toLowerCase()]=v;},end(value){this.text=String(value);this.writableEnded=true;}};
     if(url.startsWith('/api/passkeys/'))await auth.handleRequest(req,res);
@@ -55,16 +55,17 @@ for(const provider of ['test-provider','docusign'])test(provider==='docusign'?'s
   const login=await request('/api/passkeys/authenticate/verify',{response:device.assertion(loginOptions.body)},loginOptions.cookies);assert.equal(login.status,200,JSON.stringify(login.body));
   const answers={organisation:{name:'New Works',countries:['UK'],sites:[{code:'ONE',name:'First Factory',timezone:'UTC'}]},workforce:{count:10,languages:['en'],shiftPatterns:1},capabilities:{modules:['core'],trainingRoles:['manager']},connections:{timing:'later',systems:[]}};
   const setup='/api/implementation/autonomous/setup';
-  const saved=await request(setup,{expectedRevision:0,answers},login.cookies);assert.equal(saved.status,200,JSON.stringify(saved.body));
-  const applied=await request(setup+'/apply',{expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies);assert.equal(applied.status,200,JSON.stringify(applied.body));assert.equal(applied.body.questionnaireComplete,true);
+  const setupBinding=(await request(setup,{},login.cookies,{},'GET')).body.setupBinding;
+  const saved=await request(setup,{setupBinding,expectedRevision:0,answers},login.cookies);assert.equal(saved.status,200,JSON.stringify(saved.body));
+  const applied=await request(setup+'/apply',{setupBinding,expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies);assert.equal(applied.status,200,JSON.stringify(applied.body));assert.equal(applied.body.questionnaireComplete,true);
   const completedAt=applied.body.completedAt,workspace=db.prepare('SELECT * FROM customer_workspaces').get(),namespace=db.prepare('SELECT namespace FROM tenant_environments').get().namespace;
   assert.equal((await request('/api/implementation/autonomous/contract-signed',signBody,'',signHeaders)).status,200);
-  const replay=await request(setup+'/apply',{expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies);assert.equal(replay.status,200);assert.equal(replay.body.completedAt,completedAt);
+  const replay=await request(setup+'/apply',{setupBinding,expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies);assert.equal(replay.status,200);assert.equal(replay.body.completedAt,completedAt);
   assert.equal(db.prepare('SELECT COUNT(*) n FROM customer_workspaces').get().n,1);assert.equal(db.prepare('SELECT COUNT(*) n FROM implementation_runs').get().n,1);assert.equal(messages.length,1);
   assert.equal(db.prepare('SELECT namespace FROM tenant_environments').get().namespace,namespace);assert.equal(replay.body.runId,workspace.initial_run_id);
-  const amendment=await request(setup,{expectedRevision:replay.body.revision,answers:{...answers,organisation:{...answers.organisation,name:'Updated Works'},workforce:{...answers.workforce,count:12}}},login.cookies);
+  const amendment=await request(setup,{setupBinding,expectedRevision:replay.body.revision,answers:{...answers,organisation:{...answers.organisation,name:'Updated Works'},workforce:{...answers.workforce,count:12}}},login.cookies);
   assert.equal(amendment.status,200);assert.equal(amendment.body.questionnaireComplete,true);assert.equal(amendment.body.completedAt,completedAt);
-  const amended=await request(setup+'/apply',{expectedRevision:amendment.body.revision,reviewToken:amendment.body.reviewToken},login.cookies);
+  const amended=await request(setup+'/apply',{setupBinding,expectedRevision:amendment.body.revision,reviewToken:amendment.body.reviewToken},login.cookies);
   assert.equal(amended.status,200,JSON.stringify(amended.body));assert.equal(amended.body.completedAt,completedAt);
   assert.equal(JSON.parse(db.prepare('SELECT configuration_json FROM tenant_environments').get().configuration_json).companyName,'Updated Works');
   assert.equal(db.prepare('SELECT namespace FROM tenant_environments').get().namespace,namespace);
@@ -77,11 +78,11 @@ for(const provider of ['test-provider','docusign'])test(provider==='docusign'?'s
     completedEnvelope='revoked-renewal';
     engine.recordCustomerOrder({orderId:'stored-renewal',expectedRevision:0,orderAuthorized:true,ownerAuthorized:true,orderAuthorityRef:'synthetic-renewal',customerId:'customer-one',customerAuthorityRef:'synthetic-vector-register',tenant:'new-tenant',provider:'docusign',envelopeId:completedEnvelope,contractRef:'renewal-contract',relationship:'renewal',existingWorkspaceId:workspace.workspace_id,nominatedSuperUserEmail:owner,nominationAuthorityRef:'customer-nomination'});
     assert.equal((await request('/api/implementation/autonomous/contract-signed',signBody,'',signHeaders)).status,403);
-    assert.ok([401,403].includes((await request(setup+'/apply',{expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies)).status));
+    assert.ok([401,403].includes((await request(setup+'/apply',{setupBinding,expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies)).status));
     assert.equal((await request('/api/passkeys/register/options',{invitation})).status,401);assert.deepEqual(snapshot(),before);assert.equal(messages.length,1);
   }
   db.prepare('UPDATE users SET permissions=? WHERE email=?').run('[]',owner);
-  assert.ok([401,403].includes((await request(setup+'/apply',{expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies)).status));
+  assert.ok([401,403].includes((await request(setup+'/apply',{setupBinding,expectedRevision:saved.body.revision,reviewToken:saved.body.reviewToken},login.cookies)).status));
   assert.equal(db.prepare('SELECT completed_at FROM workspace_setup_drafts').get().completed_at,completedAt);
   assert.equal((await request('/api/passkeys/register/options',{invitation})).status,401);
 });

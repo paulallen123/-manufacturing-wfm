@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import http from 'node:http';
 import { chromium } from 'playwright';
 import proofRunnerAuth from '../security/runtime/proof-runner-auth.cjs';
 
@@ -14,7 +15,41 @@ export function browserProcessEnvironment(env = process.env) {
   return Object.freeze(clean);
 }
 
-export function createProofClient(env = process.env) {
+async function requestSignedAssertion(env, email, origin) {
+  const port = Number(env.VECTOR_PROOF_SIGNER_PORT);
+  const token = env.VECTOR_PROOF_SIGNER_TOKEN;
+  const capabilityExpiresAt = Number(env.VECTOR_PROOF_SIGNER_EXPIRES_AT);
+  assert.ok(Number.isInteger(port) && port > 0 && port <= 65535, 'Isolated proof signer port required.');
+  assert.match(token || '', /^[A-Za-z0-9_-]{40,120}$/, 'Isolated proof signer capability required.');
+  assert.ok(Number.isSafeInteger(capabilityExpiresAt) && Date.now() < capabilityExpiresAt, 'Isolated proof signer capability expired.');
+  const requestBody = JSON.stringify({ email });
+  const assertion = await new Promise((resolve, reject) => {
+    const request = http.request({ hostname: '127.0.0.1', port, path: '/assertion', method: 'POST', headers: {
+      'content-type': 'application/json', 'content-length': Buffer.byteLength(requestBody),
+      'x-vector-signer-token': token
+    } }, response => {
+      let body = '', bytes = 0;
+      response.setEncoding('utf8');
+      response.on('data', chunk => { bytes += Buffer.byteLength(chunk); if (bytes > 8192) response.destroy(new Error('Signer response too large.')); else body += chunk; });
+      response.on('end', () => {
+        if (response.statusCode !== 200) return reject(new Error('Isolated proof signer refused request.'));
+        try { resolve(JSON.parse(body)); } catch { reject(new Error('Invalid isolated proof signer response.')); }
+      });
+    });
+    request.once('error', reject); request.end(requestBody);
+  });
+  assert.ok(assertion && typeof assertion === 'object' && !Array.isArray(assertion), 'Invalid isolated proof signer response.');
+  assert.deepEqual(Object.keys(assertion).sort(), ['email','expiresAt','issuedAt','nonce','origin','signature']);
+  assert.equal(assertion.email, email); assert.equal(assertion.origin, origin);
+  assert.ok(Date.now() < capabilityExpiresAt, 'Isolated proof signer capability expired.');
+  assert.match(assertion.nonce || '', /^[A-Za-z0-9_-]{20,120}$/);
+  assert.ok(Number.isSafeInteger(assertion.issuedAt) && Number.isSafeInteger(assertion.expiresAt) &&
+    assertion.expiresAt > assertion.issuedAt && assertion.expiresAt - assertion.issuedAt <= 60_000);
+  assert.match(assertion.signature || '', /^[A-Za-z0-9_-]{80,120}$/);
+  return assertion;
+}
+
+export function createProofClient(env = process.env, options = {}) {
   const mode = env.VECTOR_PROOF_AUTH_PROFILE;
   assert.ok(mode === 'signed' || mode === 'fixture-password', 'An explicit proof authentication profile is required.');
   const target = new URL(env.VECTOR_PROOF_URL);
@@ -29,7 +64,7 @@ export function createProofClient(env = process.env) {
     { slug: 'company-admin', role: 'director', payroll: 200, surface: '/api/onboarding', nav: 'Integrations' },
     { slug: 'isolation-manager', role: 'manager', payroll: 403, surface: '/api/bootstrap', nav: 'Time & Attendance' }
   ];
-  let actors, privateKey, password, expectedDeployment, expectedTenant, expectedRun, expectedConfiguration;
+  let actors, signAssertion, password, expectedDeployment, expectedTenant, expectedRun, expectedConfiguration;
   if (mode === 'fixture-password') {
     assert.ok(['http:', 'https:'].includes(target.protocol) && ['localhost', '127.0.0.1', '[::1]'].includes(target.hostname), 'Password fixtures require loopback.');
     password = env.WFM_STAGING_PASSWORD;
@@ -62,16 +97,10 @@ export function createProofClient(env = process.env) {
       assert.ok(d.slug === 'isolation-manager' ? a.tenant !== expectedTenant : a.tenant === expectedTenant, 'Explicit journey tenant mismatch.');
       return { ...d, email: a.email.toLowerCase(), tenant: a.tenant };
     });
-    try {
-      const encoded = env.PROOF_PRIVATE_KEY_B64;
-      if (typeof encoded !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) || encoded.length > 8192) throw new Error();
-      const decoded = Buffer.from(encoded, 'base64');
-      if (decoded.toString('base64') !== encoded) throw new Error();
-      const pem = decoded.toString('utf8');
-      if (!/^-----BEGIN PRIVATE KEY-----\r?\n[\s\S]+\r?\n-----END PRIVATE KEY-----\r?\n?$/.test(pem)) throw new Error();
-      privateKey = crypto.createPrivateKey(pem);
-      if (privateKey.asymmetricKeyType !== 'ed25519') throw new Error();
-    } catch { throw new Error('Existing signer must be canonical base64 PKCS8 PEM Ed25519.'); }
+    assert.equal(env.PROOF_PRIVATE_KEY_B64, undefined, 'Browser proof process must not receive the private signer.');
+    signAssertion = typeof options.signAssertion === 'function'
+      ? options.signAssertion
+      : (email => requestSignedAssertion(env, email, origin));
   }
   actors = Object.freeze(actors.map(a => Object.freeze(a)));
   let implementationContext = null;
@@ -127,9 +156,7 @@ export function createProofClient(env = process.env) {
     if (mode === 'signed') requireSource(unauthenticated);
     let body, path;
     if (mode === 'signed') {
-      const issuedAt = Date.now();
-      body = { email: actor.email, origin, nonce: crypto.randomBytes(24).toString('base64url'), issuedAt, expiresAt: issuedAt + 45000 };
-      body.signature = crypto.sign(null, Buffer.from(proofRunnerAuth.canonicalAssertion(body), 'utf8'), privateKey).toString('base64url');
+      body = await signAssertion(actor.email);
       path = proofRunnerAuth.PROOF_RUNNER_PATH;
     } else { path = '/api/login'; body = { email: actor.email, password }; }
     const exchange = await readPage(page, path, body);

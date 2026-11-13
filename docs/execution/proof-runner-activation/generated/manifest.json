@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "source": "UNPUBLISHED_BROWSER_ENV_REPAIR_20261031",
+  "source": "497a5b3707389dcef0bdd72cb3bad7eeb6781a11",
   "scope": "existing isolated signed browser runner; prepared, not activated",
-  "runnerSource": "UNPUBLISHED_BROWSER_ENV_REPAIR_20261031",
+  "runnerSource": "497a5b3707389dcef0bdd72cb3bad7eeb6781a11",
   "intendedReviewedTargetSha": null,
-  "sourceCommitBinding": null,
+  "sourceCommitBinding": "497a5b3707389dcef0bdd72cb3bad7eeb6781a11",
   "reviewedBaseSha": "76c5f4d32910d6cac6d347cfff9917dd93301ffb",
-  "activationBlocked": "Unpublished browser environment repair; exact reviewed source-commit rebind and regenerated artifacts required before hosted activation",
+  "activationBlocked": "Published source binding only; exact-image different-UID proc denial, in-flight capability expiry/revocation and cleanup review, /usr/bin/tini availability and trust, no-init orphan reaping, effective Railway start-chain parity, independent code/security/artifact review, approved target and protected bindings remain required before hosted activation",
   "runnerSourceValidation": "run rejects unpublished, non-lowercase-40-hex and all-zero SOURCE before identity fetch, materialization, SQLite, npm or child startup; review and exact commit/file matching remain owner gates",
   "targetSelection": "explicit WFM_EXPECTED_CANDIDATE_SHA from reviewed deployment configuration; never inferred from response or runner source",
   "preflight": {
@@ -25,19 +25,21 @@
     ]
   },
   "serviceId": "f84fe27d-af17-451c-b164-54dfef6b6a4b",
-  "bundleSha256": "a5838846239de320f3458d99a80de5b4f0b5486623bcb3db2bb79b1cf0fb68f5",
-  "startCommandSha256": "e2fa73f40df0dcd8ca29dbcef1df2cbd18db23d138c22ea5b5238cae7a63f4c3",
-  "startCommandBytes": 65449,
-  "installerEnvironment": "minimal transport/CA/path/locale allowlist; proof and provider credentials excluded",
-  "proofChildEnvironment": "explicit signed proof/browser/transport allowlist; provider, worker, password, eval and preload inputs excluded",
+  "bundleSha256": "d7871157b8984a0639a5d81183ad85fc6fd551366a30938b95d26be6da44ccf0",
+  "startCommandSha256": "3c2c69daf3372e9c10d2d2177f991a83d9d0c25d5d72e1f4d9a66f80e886e9b5",
+  "startCommandBytes": 82402,
+  "installerEnvironment": "minimal transport/CA/path/locale allowlist; committed exact npm lock and two-package closure; proof and provider credentials excluded",
+  "proofChildEnvironment": "UID/GID 65534, separate writable home and process group, read-only root-owned code, explicit proof/browser/transport allowlist plus bounded loopback signer capability; shared close completion, hard deadline retained through descendant cleanup, distinct immediate deadline KILL, signal-failure terminal outcome, delete only after verified group exit, private key and unrelated authority excluded",
   "browserProcessEnvironment": "explicit operational/transport allowlist; signer, password, proof bindings, Node/loader hooks and unknown inputs excluded",
   "playwright": "1.63.0",
   "image": "mcr.microsoft.com/playwright:v1.63.0-noble",
   "files": {
-    "scripts/current-candidate-role-browser-proof.mjs": "ce86cfc54636d50c2a3cfddbcf6ddc9a2752976c78d8a61e5399a40508692ea4",
+    "scripts/current-candidate-role-browser-proof.mjs": "c7d6b6b8ef3c2adb6e6aebfbca9da2dda61246608c115095b3e3029d99f7583c",
     "scripts/current-candidate-role-browser-proof-server.mjs": "9f945ad2e768ad0645b493015f03fd85022e79b5c1f51038dcb485d6191b9e06",
     "scripts/vector-proof-result.mjs": "6feddbe9a318eae12f79e0374d0bfa13fdace67fd610a6e26abd6a0c4a09205e",
-    "security/runtime/proof-runner-auth.cjs": "0701e4d5d01a211bde865dce2256b9892475f95ae27a415a02132700f1d4fa5b"
+    "security/runtime/proof-runner-auth.cjs": "0701e4d5d01a211bde865dce2256b9892475f95ae27a415a02132700f1d4fa5b",
+    "docs/execution/proof-runner-activation/package.json": "7c80f48a766c87ff0ceb74bfb8e3c166b593a6321bf996085459b1ed4c350b32",
+    "docs/execution/proof-runner-activation/package-lock.json": "a0e7cf7a75adbc2f209e8fb2461c3eccc4c9a118d5b8176d8cea691b8b4bdbf5"
   },
   "proof": {
     "materializationOnly": true,

@@ -150,3 +150,199 @@ for(const status of [401,403])test('delivery-only authority denial '+status+' cl
 test('confirmed empty delivery history remains distinct from unavailable and can recover on refresh',async()=>{
  const x=fixture();x.setDeliveryReply({status:503});await x.api.open();x.setDeliveryReply({status:200,body:{deliveries:[]}});await x.focus();assert.match(x.nodes.get('[data-report-deliveries]').textContent,/No scheduled deliveries yet/);assert.doesNotMatch(x.nodes.get('[data-report-status]').textContent,/unavailable/);
 });
+
+// V084 declared episode projection regressions.
+function loadProjection(){
+ let exported='';const window={};
+ let source=fs.readFileSync(path.join(__dirname,process.env.PROJECTION_BASELINE?'baseline-ui.js':'vector-reporting-ui.js'),'utf8');
+ // Expose shipped consumer/render/export functions only in this test. Skip DOM
+ // installation; production requests, authority and session code stay untouched.
+ source=source.slice(0,source.indexOf('const observer=new MutationObserver'))+'window.probe={rowsFor,state,tableMarkup,chartMarkup,csv};})();';
+ vm.runInNewContext(source,{window,document:{createElement:()=>({click(){}})},Blob:class{constructor(parts){exported=parts.join('');}},URL:{createObjectURL:()=>'',revokeObjectURL(){}},setTimeout(){},Intl,Date,Map,Set});
+ return {...window.probe,exported:()=>exported};
+}
+const {createDecisionEpisode}=require('../../operations/runtime/decision-episode.cjs');
+function episode(){return createDecisionEpisode({tenant:'fictional',site:'fictional-site',decisionType:'fictional-recovery',triggerId:'fixture',contextRevision:'fixture-r1',mode:'SHADOW',triggeredAt:'2026-01-01T00:00:00.000Z',sourceEvidence:['=fictional\tref'],objective:{throughputUnits:1},options:[{id:'do-nothing',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0,prediction:{throughputUnits:0}},{id:'candidate',label:'=Candidate <action>\t',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0,prediction:{throughputUnits:50}}]});}
+test('actual helper-produced unselected shadow exposes recommendation estimate without selection or verification',()=>{
+ const h=loadProjection(),e=episode(),r=h.rowsFor('decision-outcomes',{episodes:[e]})[0];
+ assert.match(r.selectedOption,/Unknown/);assert.match(r.predictedImpact,/Recommendation only/);assert.match(r.predictedImpact,/50/);assert.match(r.actualImpact,/Unknown/);assert.match(r.verification,/Unknown/);assert.match(r.evidenceRef,/fictional/);
+});
+test('selected estimate, zero/null recorded values and provenance render/export without numeric chart authority',()=>{
+ const h=loadProjection(),e=JSON.parse(JSON.stringify(episode()));
+ e.selection={optionId:'do-nothing',authorityDecision:'SHADOW_OBSERVED'};
+ const selected=e.options.find(option=>option.id==='do-nothing');selected.label='=Selected <action>\t';selected.prediction={throughputUnits:0,overtimeCost:null,blank:'',numericString:'44',nonfinite:Infinity};
+ e.outcome={actual:{throughputUnits:0,overtimeCost:null,blank:'',numericString:'55',nonfinite:Infinity},evidenceRefs:['=outcome\nref']};
+ const rows=h.rowsFor('decision-outcomes',{episodes:[e]});const r=rows[0];
+ assert.equal(r.selectedOption,selected.label);assert.match(r.predictedImpact,/Selected-option estimate/);assert.match(r.predictedImpact,/"throughputUnits":0/);assert.match(r.predictedImpact,/"overtimeCost":null/);assert.doesNotMatch(r.predictedImpact,/50|44|blank|nonfinite/);
+ assert.match(r.actualImpact,/Recorded, unverified/);assert.match(r.actualImpact,/"throughputUnits":0/);assert.match(r.actualImpact,/"overtimeCost":null/);assert.doesNotMatch(r.actualImpact,/55|blank|nonfinite/);assert.match(r.verification,/Unknown/);assert.match(r.evidenceRef,/source/);assert.match(r.evidenceRef,/outcome/);
+ assert.deepEqual(Object.keys(r).sort(),['site','decisionType','status','selectedOption','verification','predictedImpact','actualImpact','evidenceRef'].sort());
+ h.state.rows=rows;h.state.raw={episodes:[e]};h.state.columns=Object.keys(r);
+ const html=h.tableMarkup();assert.match(html,/&lt;action&gt;/);assert.match(html,/unverified/);
+ for(const kind of ['kpi','bar','line'])assert.match(h.chartMarkup(kind),/No numeric measure/);
+ h.csv();assert.match(h.exported(),/Selected-option estimate/);assert.match(h.exported(),/Recorded, unverified/);assert.match(h.exported(),/text:/);assert.doesNotMatch(h.exported(),/SHADOW_OBSERVED/);
+});
+test('flat legacy episodes use generic mapping per row and empty/null rows remain safe',()=>{
+ const h=loadProjection(),flat={decisionType:'legacy',selectedOption:'explicit',actualImpact:'Legacy supplied field'},e=episode();
+ const rows=h.rowsFor('decision-outcomes',{episodes:[flat,e,null,{}]});assert.equal(rows[0].actualImpact,flat.actualImpact);assert.equal(rows[0].selectedOption,'explicit');assert.match(rows[1].predictedImpact,/Recommendation only/);assert.equal(Object.keys(rows[2]).length,0);assert.equal(Object.keys(rows[3]).length,0);
+ assert.equal(h.rowsFor('decision-outcomes',{episodes:[]}).length,0);assert.equal(h.rowsFor('decision-outcomes',{decisions:[flat]})[0].actualImpact,flat.actualImpact);
+});
+
+test('absent and invalid recorded selections are distinct and recommendation stays advisory',()=>{
+ const h=loadProjection(),e=episode();
+ {const r=h.rowsFor('decision-outcomes',{episodes:[e]})[0];assert.match(r.selectedOption,/no recorded selection/);assert.match(r.predictedImpact,/Recommendation only/);}
+ for(const selection of [null,undefined,{optionId:'missing'},{},'',false,0,{optionId:0}]){const r=h.rowsFor('decision-outcomes',{episodes:[{...e,selection}]})[0];assert.match(r.selectedOption,/invalid recorded selection/);assert.match(r.predictedImpact,/Recommendation only/);assert.match(r.verification,/Unknown/);}
+});
+
+// V084: fictional decision source-to-reporting boundary.
+{
+'use strict';
+// Fictional private SQLite fixture. No listener, provider, or customer database.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const os = require('node:os');
+const vm = require('node:vm');
+const { Readable } = require('node:stream');
+const { createHash } = require('node:crypto');
+const { DatabaseSync } = require('node:sqlite');
+const { createDemandDecisionService } = require('../../operations/runtime/demand-decision-service.cjs');
+const { createDecisionEpisode, selectDecisionOption, recordDecisionOutcome } = require('../../operations/runtime/decision-episode.cjs');
+const { visibleCatalog } = require('../runtime/vector-reporting-service.cjs');
+
+const hash = value => createHash('sha256').update(String(value)).digest('hex');
+function response() {
+  return {statusCode:200, headers:{}, headersSent:false, writableEnded:false, body:'',
+    setHeader(k,v){this.headers[String(k).toLowerCase()]=v;},
+    end(v=''){this.body=String(v);this.headersSent=true;this.writableEnded=true;}};
+}
+async function get(service, url, token) {
+  const req=Readable.from([]); req.method='GET'; req.url=url; req.headers=token?{cookie:'wfm_session='+token}:{};
+  const res=response(); await service.handleRequest(req,res);
+  return {status:res.statusCode, body:JSON.parse(res.body), headers:res.headers};
+}
+function projection() {
+  const window={};
+  let source=fs.readFileSync(path.join(__dirname,'vector-reporting-ui.js'),'utf8');
+  const cut=source.indexOf('const observer=new MutationObserver');
+  assert.ok(cut>0,'existing VM harness boundary must exist');
+  source=source.slice(0,cut)+'window.probe={rowsFor};})();';
+  vm.runInNewContext(source,{window,document:{createElement:()=>({click(){}})},Blob:class{},URL:{},setTimeout(){},Intl,Date,Map,Set});
+  return window.probe.rowsFor;
+}
+function episode(tenant,site) {
+  return createDecisionEpisode({
+    tenant,site,decisionType:'fictional-recovery',triggerId:'fixture-'+site,contextRevision:'fixture-r1',
+    mode:'SHADOW',triggeredAt:'2026-01-01T00:00:00.000Z',sourceEvidence:['fictional-source-'+site],
+    objective:{throughputUnits:1},
+    options:[
+      {id:'do-nothing',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0,prediction:{throughputUnits:0}},
+      {id:'candidate',label:'Fictional candidate',feasible:true,policyAllowed:true,hardConstraintsPassed:true,uncertainty:0,prediction:{throughputUnits:50}}
+    ]
+  });
+}
+
+test('fictional tenant-scoped decision GET projects saved episodes without inventing outcomes',async()=>{
+  const fixtureDir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-v084-'));
+  const dbPath=path.join(fixtureDir,'fictional.sqlite');
+  let db=new DatabaseSync(dbPath);
+  db.exec('CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT NOT NULL,role TEXT NOT NULL);'+
+          'CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT NOT NULL,expires INTEGER NOT NULL);');
+  const users=[['alpha@example.test','alpha','manager','fictional-alpha-token'],
+               ['beta@example.test','beta','manager','fictional-beta-token'],
+               ['employee@example.test','alpha','employee','fictional-employee-token']];
+  for(const [email,tenant,role,token] of users){
+    db.prepare('INSERT INTO users(email,tenant,role) VALUES(?,?,?)').run(email,tenant,role);
+    db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)').run(hash(token),email,Date.now()+3600000);
+  }
+  db.close();
+  let service=createDemandDecisionService({dbPath,internalToken:'fictional-unused-v084'});
+  try {
+    const alphaUnselected=episode('alpha','fictional-alpha-open');
+    const selected=selectDecisionOption(episode('alpha','fictional-alpha-recorded'),{
+      optionId:'candidate',selectedAt:'2026-01-02T00:00:00.000Z',actorRef:'fictional-actor',authorityDecision:'SHADOW_OBSERVED'});
+    const alphaRecorded=recordDecisionOutcome(selected,{
+      observedAt:'2026-01-03T00:00:00.000Z',actual:{throughputUnits:0},evidenceRefs:['fictional-outcome-ref']});
+    const beta=episode('beta','fictional-beta-private');
+    db=new DatabaseSync(dbPath);
+    const insert=db.prepare('INSERT INTO vector_decision_episodes(tenant,episode_id,decision_type,episode_json,created_at) VALUES(?,?,?,?,?)');
+    for(const e of [alphaUnselected,alphaRecorded,beta])insert.run(e.tenant,e.episodeId,e.decisionType,JSON.stringify(e),e.triggeredAt);
+    const before=db.prepare('SELECT tenant,episode_id,episode_json FROM vector_decision_episodes ORDER BY tenant,episode_id').all();
+    db.close();
+
+    const catalog=visibleCatalog('manager');
+    const source=catalog.sources.find(item=>item.id==='decision-outcomes');
+    assert.equal(source.endpoint,'/api/operations/intelligence/decisions');
+    assert.equal(visibleCatalog('employee').sources.some(item=>item.id==='decision-outcomes'),false);
+    const alpha=await get(service,source.endpoint,'fictional-alpha-token');
+    const betaResult=await get(service,source.endpoint,'fictional-beta-token');
+    const employee=await get(service,source.endpoint,'fictional-employee-token');
+    const anonymous=await get(service,source.endpoint,null);
+    assert.equal(alpha.status,200); assert.equal(alpha.headers['cache-control'],'no-store');
+    assert.equal(alpha.body.contractVersion,'VECTOR_DECISION_EPISODE_LIST_V1');
+    assert.equal(alpha.body.tenant,'alpha'); assert.equal(alpha.body.episodes.length,2);
+    assert.doesNotMatch(JSON.stringify(alpha.body),/fictional-beta-private/);
+    assert.equal(betaResult.status,200); assert.equal(betaResult.body.tenant,'beta');
+    assert.equal(betaResult.body.episodes.length,1);
+    assert.doesNotMatch(JSON.stringify(betaResult.body),/fictional-alpha/);
+    assert.equal(employee.status,403); assert.equal(anonymous.status,401);
+
+    const rows=projection()('decision-outcomes',alpha.body);
+    const open=rows.find(row=>row.site==='fictional-alpha-open');
+    const recorded=rows.find(row=>row.site==='fictional-alpha-recorded');
+    assert.equal(rows.length,2);
+    assert.match(open.selectedOption,/no recorded selection/);
+    assert.match(open.predictedImpact,/Recommendation only/);
+    assert.match(open.actualImpact,/Unknown/); assert.match(open.verification,/Unknown/);
+    assert.equal(recorded.selectedOption,'Fictional candidate');
+    assert.match(recorded.predictedImpact,/Selected-option estimate/);
+    assert.match(recorded.actualImpact,/Recorded, unverified/);
+    assert.match(recorded.actualImpact,/"throughputUnits":0/);
+    assert.match(recorded.verification,/Unknown/);
+    assert.match(recorded.evidenceRef,/fictional-outcome-ref/);
+    assert.doesNotMatch(JSON.stringify(rows),/fictional-beta-private/);
+
+
+    // Drive the shipped Run function using a fake fetch transport to the real
+    // service handler. The modal is a markup-capturing stub, not a browser.
+    const main={innerHTML:''}, status={textContent:''};
+    const modal={hidden:false,querySelector(selector){
+      if(selector==='[data-report-main]')return main;
+      if(selector==='[data-report-status]')return status;
+      return null;
+    }};
+    const document={getElementById(id){return id==='vector-reporting-modal'?modal:null;}};
+    const window={}; let requests=0;
+    const fetch=async(url,options)=>{
+      requests++;
+      assert.equal(url,source.endpoint);
+      assert.equal(options.credentials,'same-origin');
+      assert.equal(options.cache,'no-store');
+      assert.equal(options.method??'GET','GET');
+      const result=await get(service,url,'fictional-alpha-token');
+      return {ok:result.status<400,status:result.status,json:async()=>result.body};
+    };
+    let shipped=fs.readFileSync(path.join(__dirname,'vector-reporting-ui.js'),'utf8');
+    const cut=shipped.indexOf('const observer=new MutationObserver');
+    assert.ok(cut>0);
+    shipped=shipped.slice(0,cut)+'window.probe={run,state};})();';
+    vm.runInNewContext(shipped,{window,document,fetch,Intl,Date,Map,Set,setTimeout(){}});
+    const ui=window.probe;
+    ui.state.catalog=catalog;ui.state.selectedTemplate='decision-learning';ui.state.selectedSource=source;
+    ui.state.columns=['site','selectedOption','predictedImpact','actualImpact','verification','evidenceRef'];
+    await ui.run();
+    assert.equal(requests,1);assert.equal(ui.state.raw.tenant,'alpha');assert.equal(ui.state.rows.length,2);
+    assert.match(main.innerHTML,/Recommendation only/);
+    assert.match(main.innerHTML,/Recorded, unverified/);
+    assert.match(main.innerHTML,/fictional-outcome-ref/);
+    assert.doesNotMatch(main.innerHTML,/fictional-beta-private/);
+
+    db=new DatabaseSync(dbPath);
+    const after=db.prepare('SELECT tenant,episode_id,episode_json FROM vector_decision_episodes ORDER BY tenant,episode_id').all();
+    db.close(); assert.deepEqual(after,before);
+    service.close(); service=createDemandDecisionService({dbPath,internalToken:'fictional-unused-v084'});
+    const reopened=await get(service,source.endpoint,'fictional-alpha-token');
+    assert.equal(reopened.status,200); assert.deepEqual(reopened.body,alpha.body);
+  } finally { service.close(); fs.rmSync(fixtureDir,{recursive:true,force:true}); }
+});
+}

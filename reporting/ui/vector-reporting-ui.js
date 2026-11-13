@@ -7,6 +7,7 @@
 
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
+const UI_FILTER_OPERATORS=new Set(['eq','neq','contains','gte','lte','gt','lt']);
 const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],calculations:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],deliveriesAvailable:false,loading:false,scheduleOpen:false};
 let authorityEpoch=0,editorRevision=0,savingToken=null,returnFocus=null;
 function currentDefinitionSaved(){return Boolean(state.selectedReportId&&state.savedRevision===editorRevision);}
@@ -19,6 +20,22 @@ function clearReporting(){
   for(const selector of ['[data-report-templates]','[data-report-saved]','[data-report-dashboard]','[data-report-schedules]','[data-report-deliveries]','[data-report-main]'])modal().querySelector(selector).innerHTML='';
 }
 function announce(message){const host=modal().querySelector('[data-report-status]');if(host)host.textContent=message;}
+
+
+function supportsFilter(filter){
+  return Boolean(filter&&typeof filter==='object'&&!Array.isArray(filter)&&typeof filter.field==='string'&&filter.field.length&&UI_FILTER_OPERATORS.has(filter.operator)&&
+    (filter.value==null||typeof filter.value!=='object'||Array.isArray(filter.value)));
+}
+function sourceSupportsFilter(filter,source){
+  return supportsFilter(filter)&&Array.isArray(source?.fields)&&source.fields.includes(filter.field);
+}
+function rejectUnsupportedFilters(){
+  advanceEditor();state.savedRevision=null;state.hiddenDefinition={};
+  state.selectedTemplate=null;state.selectedSource=null;state.selectedReportId=null;
+  state.baseRows=[];state.rows=[];state.raw=null;state.columns=[];state.calculations=[];state.filters=[];state.sorts=[];state.scheduleOpen=false;
+  modal().querySelector('[data-report-main]').innerHTML='<div class="vector-reporting-empty"><strong>Saved report unavailable</strong><span>This viewer cannot apply one or more filters. The report was not run.</span></div>';
+  announce('Report filters cannot be applied in this viewer.');
+}
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const text=v=>String(v??'').replace(/\s+/g,' ').trim();
@@ -256,6 +273,35 @@ function flatten(obj,prefix='',depth=0,out=Object.create(null)){
   }
   return out;
 }
+function decisionEpisodeRows(body){
+  if(!Array.isArray(body?.episodes))return genericRows(body,['decisions','items','problems','rows']);
+  return body.episodes.map(episode=>{
+    // Native episode contract only; legacy flat rows keep their existing mapping.
+    if(episode?.contractVersion!=='VECTOR_DECISION_EPISODE_V1'||
+      !Array.isArray(episode.options)||episode.options.length<2||
+      !episode.options.every(option=>option&&typeof option.id==='string')||
+      !episode.options.some(option=>option.id==='do-nothing'))return flatten(episode);
+    const selectionPresent=Object.hasOwn(episode,'selection');
+    const selected=selectionPresent&&episode.selection&&typeof episode.selection==='object'&&typeof episode.selection.optionId==='string'
+      ?episode.options.find(option=>option.id===episode.selection.optionId):null;
+    const recommended=episode.options.find(option=>option.id===episode.recommendation?.optionId);
+    const values=input=>input&&typeof input==='object'&&!Array.isArray(input)
+      ?Object.fromEntries(Object.entries(input).filter(([,value])=>value===null||(typeof value==='number'&&Number.isFinite(value)))):null;
+    const refs=input=>Array.isArray(input)&&input.every(ref=>typeof ref==='string')?input:null;
+    const predicted=values((selected||recommended)?.prediction),actual=values(episode.outcome?.actual);
+    const basis=selected?'Selected-option estimate':recommended?'Recommendation only ('+String(recommended.label||recommended.id)+'), estimate':'Unknown';
+    return {
+      site:typeof episode.site==='string'?episode.site:'Unknown',
+      decisionType:typeof episode.decisionType==='string'?episode.decisionType:'Unknown',
+      status:typeof episode.mode==='string'?'Mode: '+episode.mode:'Unknown',
+      selectedOption:selected?String(selected.label||selected.id):selectionPresent?'Unknown (invalid recorded selection)':'Unknown (no recorded selection)',
+      verification:'Unknown (not established by this source)',
+      predictedImpact:predicted&&Object.keys(predicted).length?basis+': '+JSON.stringify(predicted):basis+' (no estimate supplied)',
+      actualImpact:actual&&Object.keys(actual).length?'Recorded, unverified: '+JSON.stringify(actual):'Unknown (no recorded actual)',
+      evidenceRef:'Declared, unverified references: '+JSON.stringify({source:refs(episode.sourceEvidence),outcome:refs(episode.outcome?.evidenceRefs)})
+    };
+  });
+}
 function rowsFor(id,body){
   if(id==='factory-readiness')return factoryRows(body);
   if(id==='weekly-review')return genericRows(body,['teams','reviews','items','rows']);
@@ -263,7 +309,7 @@ function rowsFor(id,body){
   if(id==='time-review')return genericRows(body,['items','exceptions','teams','rows']);
   if(id==='payroll-control')return genericRows(body,['teams','items','runs','rows']);
   if(id==='value-realisation')return genericRows(body,['items','results','realizations','realisation','rows']);
-  if(id==='decision-outcomes')return genericRows(body,['episodes','decisions','items','problems','rows']);
+  if(id==='decision-outcomes')return decisionEpisodeRows(body);
   if(id==='audit-evidence')return genericRows(body,['events','proofs','items','rows']);
   return [];
 }
@@ -386,11 +432,20 @@ async function chooseTemplate(id){
 }
 async function chooseSaved(id){
   advanceEditor();const revision=editorRevision;
-  let body;try{body=await json('/api/reporting/reports/'+encodeURIComponent(id));}catch(e){if(!e.stale)await loadCatalog();return;}
+  let body;try{body=await json('/api/reporting/reports/'+encodeURIComponent(id));}catch(e){
+    if(e.stale)return;
+    const authorityDenied=[401,403,404].includes(e.status);
+    if(revision!==editorRevision&&!authorityDenied)return;
+    const refresh=loadCatalog(),epoch=authorityEpoch;await refresh;
+    if(!authorityDenied&&epoch===authorityEpoch&&!modal().hidden)toast('Could not open saved report. Choose the saved report again to retry.');
+    return;
+  }
   const d=body?.report?.definition;if(!d||body.report.id!==id||revision!==editorRevision)return;
+  const selectedSource=source(d.sourceId),filters=d.filters==null?[]:d.filters;
+  if(!Array.isArray(filters)||filters.some(filter=>!sourceSupportsFilter(filter,selectedSource))){rejectUnsupportedFilters();return;}
   state.hiddenDefinition=Object.fromEntries(['limit','claimBoundary'].filter(key=>Object.hasOwn(d,key)).map(key=>[key,d[key]]));
   state.savedRevision=revision;
-  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.calculations=[...(d.calculations||[])];state.filters=[...(d.filters||[])];state.sorts=[...(d.sorts||[])];state.visualisation=d.visualisation||'table';state.scheduleOpen=false;
+  state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.calculations=[...(d.calculations||[])];state.filters=[...filters];state.sorts=[...(d.sorts||[])];state.visualisation=d.visualisation||'table';state.scheduleOpen=false;
   renderReport();
 }
 function compareValue(a,b){
@@ -420,6 +475,7 @@ function calculateRow(row){
   return out;
 }
 function applyControls(rows){
+  if(state.filters.some(filter=>!supportsFilter(filter)))throw new Error('Report filters cannot be applied in this viewer.');
   let out=rows.map(calculateRow);
   for(const f of state.filters)out=out.filter(r=>matchesFilter(r,f));
   if(state.sorts.length)out.sort((a,b)=>{for(const s of state.sorts){const n=compareValue(a?.[s.field],b?.[s.field]);if(n)return s.direction==='desc'?-n:n;}return 0;});
@@ -428,6 +484,7 @@ function applyControls(rows){
 function recalc(){state.rows=applyControls(state.baseRows);renderReport();}
 async function run(){
   if(!state.selectedSource||state.loading)return;
+  if(state.filters.some(filter=>!sourceSupportsFilter(filter,state.selectedSource))){rejectUnsupportedFilters();return;}
   const revision=editorRevision,selectedSource=state.selectedSource;
   state.loading=true;renderReport();
   try{
@@ -606,7 +663,11 @@ async function handleClick(e){
   if(e.target.closest('[data-report-print]')){printReport();return;}
   if(e.target.closest('[data-report-filter-add]')){
     const root=modal(),field=root.querySelector('[data-report-filter-field]')?.value,operator=root.querySelector('[data-report-filter-operator]')?.value,value=root.querySelector('[data-report-filter-value]')?.value;
-    if(field&&operator&&value!==''){advanceEditor();state.filters.push({field,operator,value});if(state.raw)recalc();else renderReport();}return;
+    if(field&&operator&&value!==''){
+      const filter={field,operator,value};
+      if(!sourceSupportsFilter(filter,state.selectedSource)){announce('Report filters cannot be applied in this viewer.');return;}
+      advanceEditor();state.filters.push(filter);if(state.raw)recalc();else renderReport();
+    }return;
   }
   const fr=e.target.closest('[data-report-filter-remove]');if(fr){advanceEditor();state.filters.splice(Number(fr.dataset.reportFilterRemove),1);if(state.raw)recalc();else renderReport();return;}
   if(e.target.closest('[data-report-sort-add]')){

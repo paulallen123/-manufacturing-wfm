@@ -58,3 +58,36 @@ test('data route hierarchy prioritises authoritative supplier, meter and finance
   assert.equal(out.routes[2].data,'actual_spend');
   assert.ok(out.routes[1].future.includes('consented_smart_data_repository'));
 });
+
+test('refuses unsupported tariff currencies before producing GBP prices',()=>{
+  const intervals=[meter('2026-09-18T08:00:00Z',10)];
+  for(const currency of ['EUR','USD','gbp',' GBP ']){
+    const out=priceIntervals({tariff:{...tariff,currency},intervals});
+    assert.deepEqual(out,{status:'unpriced',errors:['unsupported_currency']},currency);
+  }
+});
+
+test('does not reconcile a non-GBP tariff with a numerically matching GBP invoice',()=>{
+  const intervals=[meter('2026-09-18T08:00:00Z',10)];
+  for(const currency of ['EUR','USD']){
+    const out=reconcileActualSpend({tariff:{...tariff,currency},meterIntervals:intervals,
+      invoice:{tenantId:'t1',siteId:'s1',totalBeforeTaxGBP:4},
+      ledgerEntry:{tenantId:'t1',siteId:'s1',postedAmountGBP:4}});
+    assert.equal(out.status,'unreconciled',currency);
+    assert.equal(out.reason,'meter_or_tariff_unpriced');
+    assert.deepEqual(out.details,{status:'unpriced',errors:['unsupported_currency']});
+    assert.notEqual(out.exactSpendClaimAllowed,true);
+  }
+});
+
+test('does not measure GBP energy value from a non-GBP tariff',()=>{
+  for(const currency of ['EUR','USD']){
+    const out=measureEnergyOutcome({tariff:{...tariff,currency},
+      baselineIntervals:[meter('2026-09-18T08:00:00Z',20)],
+      actualIntervals:[meter('2026-09-18T06:00:00Z',15)],
+      actualSpendReconciliation:{status:'reconciled',exactSpendClaimAllowed:true,invoiceBeforeTaxGBP:2.5},
+      flexibilityRevenueGBP:2,
+      baselineMethod:{method:'production_normalised_counterfactual',evidenceId:'baseline-1'}});
+    assert.deepEqual(out,{status:'unverified',reason:'baseline_or_actual_unpriced'},currency);
+  }
+});

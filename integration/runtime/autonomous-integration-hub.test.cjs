@@ -668,3 +668,185 @@ test('manager-only tenant-scoped provenance shadow route does not persist suppli
     db.close();
   } finally { f.close(); }
 });
+
+function mappingStateSnapshot(f, connectionId) {
+  const db = new DatabaseSync(f.dbPath);
+  try {
+    return {
+      connection: db.prepare('SELECT * FROM integration_connections WHERE id=?').get(connectionId),
+      mappings: db.prepare('SELECT * FROM integration_mappings WHERE connection_id=? ORDER BY id').all(connectionId),
+      events: db.prepare('SELECT * FROM integration_events WHERE connection_id=? ORDER BY id').all(connectionId)
+    };
+  } finally {
+    db.close();
+  }
+}
+
+for (const canonicalField of ['employeeId', 'location']) {
+  for (const reverse of [false, true]) {
+    test(`V086 conflicting ${canonicalField} targets reject ${reverse ? 'reversed' : 'forward'} replacement without changing the working mapping`, async () => {
+      const f = fixture();
+      try {
+        const connection = await configuredConnection(f);
+        const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+        const authorized = await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
+          connectionId: connection.id,
+          authorizationRef: 'vault://tenant/alpha/workday',
+          grantedScopes: ['people.read']
+        }, internal);
+        assert.equal(authorized.status, 200);
+        const mappings = [
+          { sourceField: 'employee_id', canonicalField: 'employeeId' },
+          { sourceField: 'site', canonicalField: 'location' }
+        ];
+        const activated = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+          connectionId: connection.id, mappings
+        });
+        assert.equal(activated.status, 200);
+        assert.equal(activated.body.mappingVersion, 1);
+        const before = mappingStateSnapshot(f, connection.id);
+        const conflicting = [...mappings, { sourceField: 'alternate_field', canonicalField }];
+        if (reverse) conflicting.reverse();
+        const rejected = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+          connectionId: connection.id, mappings: conflicting
+        });
+        assert.equal(rejected.status, 400);
+        assert.equal(rejected.body.canonicalField, canonicalField);
+        assert.deepEqual(mappingStateSnapshot(f, connection.id), before);
+
+        const validated = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', {
+          tenant: 'alpha', connectionId: connection.id,
+          records: [{ employee_id: 'E-100', site: 'Plant 1', alternate_field: 'WRONG' }]
+        }, internal);
+        assert.equal(validated.status, 200);
+        assert.equal(validated.body.reconciliation.status, 'PASS');
+        assert.equal(validated.body.canonicalImport.mappingVersion, 1);
+        const db = new DatabaseSync(f.dbPath);
+        try {
+          const row = db.prepare('SELECT employee_key,canonical_json FROM integration_canonical_people WHERE batch_id=?')
+            .get(validated.body.canonicalImport.batchId);
+          assert.equal(row.employee_key, sha256('E-100'));
+          assert.deepEqual(JSON.parse(row.canonical_json), { employeeId: 'E-100', location: 'Plant 1' });
+        } finally {
+          db.close();
+        }
+      } finally {
+        f.close();
+      }
+    });
+  }
+}
+
+test('V086 conflicting identity targets cannot create the first mapping version', async () => {
+  const f = fixture();
+  try {
+    const connection = await configuredConnection(f);
+    const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+    const authorized = await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
+      connectionId: connection.id,
+      authorizationRef: 'vault://tenant/alpha/workday',
+      grantedScopes: ['people.read']
+    }, internal);
+    assert.equal(authorized.status, 200);
+    const before = mappingStateSnapshot(f, connection.id);
+    const rejected = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+      connectionId: connection.id,
+      mappings: [
+        { sourceField: 'employee_id', canonicalField: 'employeeId' },
+        { sourceField: 'worker_id', canonicalField: 'employeeId' }
+      ]
+    });
+    assert.equal(rejected.status, 400);
+    assert.equal(rejected.body.canonicalField, 'employeeId');
+    assert.deepEqual(mappingStateSnapshot(f, connection.id), before);
+  } finally {
+    f.close();
+  }
+});
+
+function integrationDatabaseSnapshot(f) {
+  const db = new DatabaseSync(f.dbPath);
+  try {
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all();
+    return Object.fromEntries(tables.map(({ name }) => [name,
+      db.prepare(`SELECT * FROM "${name.replaceAll('"', '""')}" ORDER BY rowid`).all()
+    ]));
+  } finally {
+    db.close();
+  }
+}
+
+for (const canonicalField of ['employeeId', 'location']) {
+  test(`V086 persisted ambiguous ${canonicalField} mapping refuses sync without writes and permits a valid replacement`, async () => {
+    const f = fixture();
+    let reopened;
+    try {
+      const connection = await configuredConnection(f);
+      const internal = { 'x-wfm-integration-internal': 'integration-worker-test-token' };
+      const authorized = await call(f.hub, null, 'POST', '/api/integrations/autonomous/authorize-complete', {
+        connectionId: connection.id,
+        authorizationRef: 'vault://tenant/alpha/workday',
+        grantedScopes: ['people.read']
+      }, internal);
+      assert.equal(authorized.status, 200);
+      const mappings = [
+        { sourceField: 'employee_id', canonicalField: 'employeeId' },
+        { sourceField: 'site', canonicalField: 'location' }
+      ];
+      const activated = await call(f.hub, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+        connectionId: connection.id, mappings
+      });
+      assert.equal(activated.status, 200);
+      const syncBody = { tenant: 'alpha', connectionId: connection.id,
+        records: [{ employee_id: 'E-100', site: 'Plant 1', alternate_field: 'WRONG' }] };
+      const firstSync = await call(f.hub, null, 'POST', '/api/integrations/autonomous/sync-validate', syncBody, internal);
+      assert.equal(firstSync.status, 200);
+      assert.equal(firstSync.body.connection.state, 'ACTIVE');
+      f.hub.close();
+
+      // Model a mapping version accepted before canonical-target uniqueness.
+      const db = new DatabaseSync(f.dbPath);
+      try {
+        db.prepare('INSERT INTO integration_mappings(id,tenant,connection_id,canonical_entity,source_field,canonical_field,confidence,status,mapping_version,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
+          .run('legacy-duplicate', 'alpha', connection.id, 'Person', 'alternate_field', canonicalField,
+            1, 'ACTIVE', 1, '2026-10-01T00:00:00.000Z');
+      } finally {
+        db.close();
+      }
+      reopened = createAutonomousIntegrationHub({ dbPath: f.dbPath, internalToken: 'integration-worker-test-token' });
+      const before = integrationDatabaseSnapshot(f);
+      const rejected = await call(reopened, null, 'POST', '/api/integrations/autonomous/sync-validate', syncBody, internal);
+      assert.equal(rejected.status, 409);
+      assert.equal(rejected.body.code, 'AMBIGUOUS_ACTIVE_MAPPING');
+      assert.equal(rejected.body.canonicalField, canonicalField);
+      assert.deepEqual(integrationDatabaseSnapshot(f), before);
+
+      const replacement = await call(reopened, f.tokens.manager, 'POST', '/api/integrations/autonomous/mapping-activate', {
+        connectionId: connection.id, mappings
+      });
+      assert.equal(replacement.status, 200);
+      assert.equal(replacement.body.mappingVersion, 2);
+      const recovered = await call(reopened, null, 'POST', '/api/integrations/autonomous/sync-validate', syncBody, internal);
+      assert.equal(recovered.status, 200);
+      assert.equal(recovered.body.reconciliation.status, 'PASS');
+      assert.equal(recovered.body.canonicalImport.mappingVersion, 2);
+      assert.equal(recovered.body.canonicalImport.replayed, false);
+      const replay = await call(reopened, null, 'POST', '/api/integrations/autonomous/sync-validate', syncBody, internal);
+      assert.equal(replay.status, 200);
+      assert.equal(replay.body.canonicalImport.replayed, true);
+      assert.equal(replay.body.canonicalImport.batchId, recovered.body.canonicalImport.batchId);
+      assert.equal(replay.body.canonicalImport.checksum, recovered.body.canonicalImport.checksum);
+      const after = integrationDatabaseSnapshot(f);
+      assert.deepEqual(after.integration_mappings.filter(row => row.mapping_version === 1), before.integration_mappings);
+      assert.equal(after.integration_canonical_batches.length, 2);
+      assert.equal(after.integration_canonical_people.length, 2);
+      for (const row of after.integration_canonical_people) {
+        assert.equal(row.employee_key, sha256('E-100'));
+        assert.deepEqual(JSON.parse(row.canonical_json), { employeeId: 'E-100', location: 'Plant 1' });
+      }
+    } finally {
+      if (reopened) reopened.close();
+      f.close();
+    }
+  });
+}

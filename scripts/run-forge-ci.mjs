@@ -2,6 +2,18 @@
 import { spawnSync } from 'node:child_process';
 
 const checks = [
+  ['node', ['--test', '--test-timeout=10000', '--test-concurrency=1', 'ux-overlay/vector-leave-review-boundary.test.cjs']],
+  ['node', ['--test', '--test-timeout=30000', '--test-concurrency=1', 'reporting/runtime/vector-reporting-persisted-no-adapter.test.cjs', 'reporting/runtime/vector-reporting-resume-no-adapter.test.cjs', 'reporting/runtime/v079-schedule-role-drift.test.cjs']],
+  ['node', ['integration/runtime/nango-credential-provider.test.cjs']],
+  ['node', ['integration/runtime/nango-metadata-broker.test.cjs']],
+  ['node', ['scripts/nango-metadata-wiring.test.cjs']],
+  ['node', ['integration/runtime/provider-metadata-review.test.cjs']],
+  ['node', ['ux-overlay/vector-provider-metadata.test.cjs']],
+  ['node', ['--test', 'integration/runtime/autonomous-integration-hub.identity-consumer.test.cjs']],
+  ['node', ['--test', 'integration/runtime/autonomous-integration-hub.audit-atomicity.test.cjs']],
+  ['node', ['verification/vector-pr542-receiving/run-isolated.cjs']],
+  ['node', ['--test', 'reporting/ui/vector-reporting-saved-filter-refusal.test.cjs']],
+  ['node', ['--test', 'ux-overlay/vector-action-queue.test.cjs', 'ux-overlay/vector-settings-navigation.test.cjs', 'ux-overlay/vector-leave-balance-display.test.cjs']],
   ['node', ['scripts/validate-deployment.mjs']],
   ['node', ['scripts/validate-proof-lane-policy.mjs']],
   ['node', ['scripts/validate-research-convergence-ledger.mjs']],

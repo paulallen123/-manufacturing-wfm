@@ -90,7 +90,7 @@ function bounded(value,min,max,name){
   return n;
 }
 function numberOrNull(value,name){
-  if(value==null) return null;
+  if(value==null || (typeof value==='string' && value.trim()==='')) return null;
   const n=Number(value);
   if(!Number.isFinite(n)) throw new Error(`${name} must be numeric when provided.`);
   return n;

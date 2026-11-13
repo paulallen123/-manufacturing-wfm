@@ -8,7 +8,7 @@ const vm = require('node:vm');
 const { execFileSync } = require('node:child_process');
 const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
-const { createCleanCustomerState } = require('./clean-customer-state.cjs');
+const { createCleanCustomerState } = require(require('node:path').join(process.env.CLEAN_CUSTOMER_RUNTIME_ROOT || __dirname, 'clean-customer-state.cjs'));
 
 // Missing/wrong archive is a hard failure, never a mocked or seed-based fallback.
 const archive = process.env.CLEAN_CUSTOMER_ARCHIVE || path.resolve(__dirname,

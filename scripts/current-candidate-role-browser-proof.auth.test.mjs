@@ -21,7 +21,8 @@ function loadFactory(){
   if(source.includes('export function createProofClient')){
     const end=source.indexOf('// VECTOR_PROOF_CLIENT_RUNNER_START');assert.ok(end>0);
     const prefix=source.slice(0,end).replace(/^import .*?;\r?\n/gm,'').replaceAll('export function ','function ');
-    return vm.runInNewContext(prefix+'\n;createProofClient',{assert,crypto,proofRunnerAuth,URL,process:{env:{}},Buffer});
+    const raw=vm.runInNewContext(prefix+'\n;createProofClient',{assert,crypto,http,proofRunnerAuth,URL,process:{env:{}},Buffer});
+    return (env,options={})=>raw(env,{signAssertion:options.signAssertion||env.__testSignAssertion});
   }
   // Baseline control executes the real original login helper, not a fake repair.
   const helper=source.slice(source.indexOf('async function loginRole(page, email) {'),source.indexOf('async function openLeaveRoute('));
@@ -29,7 +30,7 @@ function loadFactory(){
 }
 const createProofClient=loadFactory(),sha='a'.repeat(40),deployment='synthetic-deployment',runId='synthetic-run',digest='b'.repeat(64),origin='https://proof.vector.test';
 const actors=[{slug:'manager',email:'manager@fixture.invalid',role:'manager',tenant:'fixture'},{slug:'employee',email:'employee@fixture.invalid',role:'employee',tenant:'fixture'},{slug:'payroll',email:'payroll@fixture.invalid',role:'payroll_admin',tenant:'fixture'},{slug:'company-admin',email:'admin@fixture.invalid',role:'director',tenant:'fixture'},{slug:'isolation-manager',email:'isolation@fixture.invalid',role:'manager',tenant:'other'}];
-function env(privateKey){return{VECTOR_PROOF_AUTH_PROFILE:'signed',VECTOR_PROOF_URL:origin,WFM_EXPECTED_CANDIDATE_SHA:sha,EXPECTED_DEPLOYMENT_ID:deployment,EXPECTED_IMPLEMENTATION_TENANT:'fixture',EXPECTED_IMPLEMENTATION_RUN_ID:runId,EXPECTED_CONFIGURATION_DIGEST:digest,VECTOR_PROOF_ACTORS_JSON:JSON.stringify(actors),PROOF_PRIVATE_KEY_B64:Buffer.from(privateKey.export({type:'pkcs8',format:'pem'})).toString('base64')};}
+function env(){return{VECTOR_PROOF_AUTH_PROFILE:'signed',VECTOR_PROOF_URL:origin,WFM_EXPECTED_CANDIDATE_SHA:sha,EXPECTED_DEPLOYMENT_ID:deployment,EXPECTED_IMPLEMENTATION_TENANT:'fixture',EXPECTED_IMPLEMENTATION_RUN_ID:runId,EXPECTED_CONFIGURATION_DIGEST:digest,VECTOR_PROOF_ACTORS_JSON:JSON.stringify(actors)};}
 function fixture(t,mutate={}){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'auth-client-')),dbPath=path.join(dir,'test.sqlite'),db=new DatabaseSync(dbPath);
   db.exec("CREATE TABLE tenants(id TEXT PRIMARY KEY,version INTEGER,state TEXT); CREATE TABLE users(email TEXT PRIMARY KEY,tenant TEXT,person_id TEXT,role TEXT,costs INTEGER,salt TEXT,password_hash TEXT,permissions TEXT); CREATE TABLE sessions(token_hash TEXT PRIMARY KEY,email TEXT,expires INTEGER);");
@@ -57,7 +58,8 @@ function fixture(t,mutate={}){
     if(mutate.header)headers['x-wfm-source-sha']='d'.repeat(40);
     return{status:res.statusCode,json:async()=>res.body,headers:{get:name=>headers[name.toLowerCase()]??null}};
   }})};}
-  t.after(()=>{control.db.close();auth.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});return{keys,db,calls,bodies,page,status,config:env(keys.privateKey)};
+  const config=env();config.__testSignAssertion=async email=>{const issuedAt=Date.now(),body={email,origin,nonce:crypto.randomBytes(24).toString('base64url'),issuedAt,expiresAt:issuedAt+45000};body.signature=crypto.sign(null,Buffer.from(proofRunnerAuth.canonicalAssertion(body)),keys.privateKey).toString('base64url');return body;};
+  t.after(()=>{control.db.close();auth.close();db.close();fs.rmSync(dir,{recursive:true,force:true});});return{keys,db,calls,bodies,page,status,config};
 }
 test('signed client uses actual handler cookie and persisted actor rather than password login',async t=>{
   const f=fixture(t),client=createProofClient(f.config),p=f.page();await client.authenticate(p,actors[0].email);
@@ -92,12 +94,12 @@ test('historical evidence observed identity is never treated as current deployme
   const partial=client.partialEvidence();assert.equal(partial.authCompatibility.status,'PARTIAL');assert.equal(partial.leaveJourney,null);assert.equal(partial.attendanceJourney,null);assert.equal(partial.payrollJourney,null);
   const result=roleProofResult({status:'BOUND'},partial.leaveJourney,partial.attendanceJourney,partial.payrollJourney);assert.equal(result.status,'PARTIAL');assert.equal(result.scopedLeaveJourneyVerified,false);assert.equal(result.scopedAttendanceJourneyVerified,false);assert.equal(result.scopedPayrollJourneyVerified,false);assert.equal(result.endToEndVerified,false);assert.equal(result.productReady,false);
 });
-for(const key of ['VECTOR_PROOF_AUTH_PROFILE','VECTOR_PROOF_ACTORS_JSON','EXPECTED_DEPLOYMENT_ID','EXPECTED_IMPLEMENTATION_TENANT','EXPECTED_IMPLEMENTATION_RUN_ID','EXPECTED_CONFIGURATION_DIGEST','PROOF_PRIVATE_KEY_B64'])test('signed constructor fails before transport when '+key+' is absent',t=>{const f=fixture(t),config={...f.config};delete config[key];assert.throws(()=>createProofClient(config));});
+for(const key of ['VECTOR_PROOF_AUTH_PROFILE','VECTOR_PROOF_ACTORS_JSON','EXPECTED_DEPLOYMENT_ID','EXPECTED_IMPLEMENTATION_TENANT','EXPECTED_IMPLEMENTATION_RUN_ID','EXPECTED_CONFIGURATION_DIGEST'])test('signed constructor fails before transport when '+key+' is absent',t=>{const f=fixture(t),config={...f.config};delete config[key];assert.throws(()=>createProofClient(config));});
 test('malformed actor JSON, missing roles, duplicate emails and wrong isolation tenant reject',t=>{
   const f=fixture(t);for(const value of ['{',JSON.stringify(actors.slice(0,4)),JSON.stringify(actors.map((a,i)=>({...a,email:i===1?actors[0].email:a.email}))),JSON.stringify(actors.map(a=>({...a,tenant:'fixture'})))])assert.throws(()=>createProofClient({...f.config,VECTOR_PROOF_ACTORS_JSON:value}));
 });
-test('signer accepts declared base64 PEM Ed25519 only and never appears in returned profile',t=>{
-  const f=fixture(t);assert.throws(()=>createProofClient({...f.config,PROOF_PRIVATE_KEY_B64:'not-a-key'}));const rsa=crypto.generateKeyPairSync('rsa',{modulusLength:2048}).privateKey;assert.throws(()=>createProofClient({...f.config,PROOF_PRIVATE_KEY_B64:Buffer.from(rsa.export({type:'pkcs8',format:'pem'})).toString('base64')}));const client=createProofClient(f.config);assert.ok(!JSON.stringify(client).includes(f.config.PROOF_PRIVATE_KEY_B64));
+test('browser client rejects direct private-key authority and uses injected isolated signer',t=>{
+  const f=fixture(t);assert.throws(()=>createProofClient({...f.config,PROOF_PRIVATE_KEY_B64:'forbidden'}));const client=createProofClient(f.config);assert.equal(JSON.stringify(client).includes('PRIVATE KEY'),false);
 });
 
 test('signed runner emits distinct partial receipt and excludes the fixed business branch',async t=>{

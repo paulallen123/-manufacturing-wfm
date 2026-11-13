@@ -13,6 +13,10 @@ const setupPolicyPath = path.basename(__dirname) === 'integration-runtime'
   ? '../implementation-runtime/setup-only-policy.cjs'
   : '../../implementation/runtime/setup-only-policy.cjs';
 const { createSetupOnlyPolicy } = require(setupPolicyPath);
+const batchReconciliationPath = path.basename(__dirname) === 'integration-runtime'
+  ? '../integration-fabric-runtime/batch-reconciliation.mjs'
+  : '../../integration-fabric/runtime/batch-reconciliation.mjs';
+const { makeScopedExternalIdentity } = require(batchReconciliationPath);
 
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
@@ -974,6 +978,7 @@ function createAutonomousIntegrationHub(options = {}) {
     const allowed = new Set(CANONICAL_FIELDS.Person);
     const cleaned = [];
     const seenSource = new Set();
+    const seenCanonical = new Set();
     for (const mapping of body.mappings) {
       const sourceField = compact(mapping.sourceField, 120);
       const canonicalField = compact(mapping.canonicalField, 80);
@@ -981,7 +986,9 @@ function createAutonomousIntegrationHub(options = {}) {
         return writeJson(res, 400, { error: 'Mapping contains an unsupported field.', sourceField, canonicalField });
       }
       if (seenSource.has(sourceField)) return writeJson(res, 400, { error: 'Each source field can only be mapped once.', sourceField });
+      if (seenCanonical.has(canonicalField)) return writeJson(res, 400, { error: 'Each canonical field can only be mapped once.', canonicalField });
       seenSource.add(sourceField);
+      seenCanonical.add(canonicalField);
       cleaned.push({ sourceField, canonicalField, confidence: Number(mapping.confidence || 1) });
     }
     if (!cleaned.some(x => x.canonicalField === 'employeeId')) {
@@ -1027,9 +1034,19 @@ function createAutonomousIntegrationHub(options = {}) {
 
     const mappings = activeMappings.all(connection.tenant, connection.id, Number(connection.mapping_version));
     if (!mappings.length) return writeJson(res, 409, { error: 'Activate mappings before validating a sync.' });
+    const seenCanonical = new Set();
+    for (const mapping of mappings) {
+      if (seenCanonical.has(mapping.canonical_field)) {
+        return writeJson(res, 409, { error: 'Active mappings contain a conflicting canonical field. Activate a unique replacement before validating a sync.',
+          code: 'AMBIGUOUS_ACTIVE_MAPPING', canonicalField: mapping.canonical_field });
+      }
+      seenCanonical.add(mapping.canonical_field);
+    }
 
     const ids = [];
     const canonicalRecords = [];
+    const identityScope = Object.freeze({ providerId: connection.product_key,
+      connectionId: connection.id, tenant: connection.tenant, resource: 'people' });
     let invalid = 0;
     const seen = new Set();
     let duplicateCount = 0;
@@ -1041,14 +1058,19 @@ function createAutonomousIntegrationHub(options = {}) {
         if (value === undefined || value === null) continue;
         canonical[mapping.canonical_field] = typeof value === 'string' ? value.trim() : value;
       }
-      const employeeId = canonical.employeeId === undefined || canonical.employeeId === null ? '' : String(canonical.employeeId).trim();
+      const declaredId = canonical.employeeId;
+      if (typeof declaredId !== 'string' && (typeof declaredId !== 'number' || !Number.isFinite(declaredId))) { invalid++; continue; }
+      const employeeId = String(declaredId).trim();
       if (!employeeId) { invalid++; continue; }
       const hashedId = sha256(employeeId);
-      if (seen.has(hashedId)) {
+      // Scope local deduplication without changing stored keys or claiming source completeness.
+      const scopedIdentity = makeScopedExternalIdentity({ provider: connection.product_key,
+        connector: connection.id, scope: identityScope, recordId: hashedId });
+      if (seen.has(scopedIdentity)) {
         duplicateCount++;
         continue;
       }
-      seen.add(hashedId);
+      seen.add(scopedIdentity);
       ids.push(hashedId);
       const normalized = {};
       for (const field of CANONICAL_FIELDS.Person) {
@@ -1065,99 +1087,96 @@ function createAutonomousIntegrationHub(options = {}) {
     const valid = canonicalRecords.length;
     const status = invalid === 0 && duplicateCount === 0 && valid === body.records.length ? 'PASS' : 'NEEDS_REVIEW';
     const idDigest = sha256(ids.slice().sort().join('|'));
-    insertRecon.run(
-      randomUUID(), connection.tenant, connection.id, Number(connection.mapping_version), body.records.length,
-      valid, invalid, duplicateCount, idDigest, status, nowIso()
-    );
-
+    const batchChecksum = status === 'PASS' ? sha256([
+      connection.id,
+      String(connection.mapping_version),
+      ...canonicalRecords.map(item => item.recordChecksum).sort()
+    ].join('|')) : null;
+    const expectedCanonicalChecksum = status === 'PASS' ? compact(body.expectedCanonicalChecksum, 64).toLowerCase() : '';
+    if (expectedCanonicalChecksum && !/^[0-9a-f]{64}$/.test(expectedCanonicalChecksum)) {
+      return writeJson(res, 400, { error: 'expectedCanonicalChecksum must be a SHA-256 hex digest.' });
+    }
+    const checksumMismatch = Boolean(expectedCanonicalChecksum && expectedCanonicalChecksum !== batchChecksum);
     let canonicalImport = null;
-    if (status === 'PASS') {
-      const batchChecksum = sha256([
-        connection.id,
-        String(connection.mapping_version),
-        ...canonicalRecords.map(item => item.recordChecksum).sort()
-      ].join('|'));
-      const expectedCanonicalChecksum = compact(body.expectedCanonicalChecksum, 64).toLowerCase();
-      if (expectedCanonicalChecksum) {
-        if (!/^[0-9a-f]{64}$/.test(expectedCanonicalChecksum)) {
-          return writeJson(res, 400, { error: 'expectedCanonicalChecksum must be a SHA-256 hex digest.' });
-        }
-        if (expectedCanonicalChecksum !== batchChecksum) {
-          const stamp = nowIso();
-          markSync.run('DEGRADED', 'DATA_CHECKSUM', stamp, stamp, stamp, connection.id, connection.tenant);
-          record(connection.tenant, connection.id, 'canonical-checksum-mismatch', {
-            mappingVersion: connection.mapping_version,
-            expectedDigest: expectedCanonicalChecksum.slice(0, 16),
-            observedDigest: batchChecksum.slice(0, 16)
-          });
-          return writeJson(res, 409, {
-            error: 'Canonical import checksum does not match the expected source handoff.',
-            reconciliation: { sourceCount: body.records.length, validCount: valid, invalidCount: invalid, duplicateCount, status },
-            canonicalImport: null
-          });
-        }
-      }
-      let batch = canonicalBatchByChecksum.get(
-        connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const reconciliationWrite = insertRecon.run(
+        randomUUID(), connection.tenant, connection.id, Number(connection.mapping_version), body.records.length,
+        valid, invalid, duplicateCount, idDigest, status, nowIso()
       );
-      let replayed = Boolean(batch);
-      if (!batch) {
-        const batchId = randomUUID();
+      if (reconciliationWrite.changes !== 1) throw Error('SYNC_RECONCILIATION_WRITE_LOST');
+      if (checksumMismatch) {
         const stamp = nowIso();
-        const sites = new Set(canonicalRecords.map(item => compact(item.canonical.location, 180)).filter(Boolean));
-        const departments = new Set(canonicalRecords.map(item => compact(item.canonical.department, 180)).filter(Boolean));
-        db.exec('BEGIN IMMEDIATE');
-        try {
-          batch = canonicalBatchByChecksum.get(
+        const updated = markSync.run('DEGRADED', 'DATA_CHECKSUM', stamp, stamp, stamp, connection.id, connection.tenant);
+        if (updated.changes !== 1) throw Error('SYNC_CONNECTION_STATE_LOST');
+        const auditWrite = eventStmt.run(connection.tenant, connection.id, 'canonical-checksum-mismatch', JSON.stringify({
+          mappingVersion: connection.mapping_version,
+          expectedDigest: expectedCanonicalChecksum.slice(0, 16),
+          observedDigest: batchChecksum.slice(0, 16)
+        }), nowIso());
+        if (auditWrite.changes !== 1) throw Error('SYNC_AUDIT_WRITE_LOST');
+      } else {
+        if (status === 'PASS') {
+          let batch = canonicalBatchByChecksum.get(
             connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum
           );
+          const replayed = Boolean(batch);
           if (!batch) {
-            insertCanonicalBatch.run(
+            const batchId = randomUUID();
+            const stamp = nowIso();
+            const sites = new Set(canonicalRecords.map(item => compact(item.canonical.location, 180)).filter(Boolean));
+            const departments = new Set(canonicalRecords.map(item => compact(item.canonical.department, 180)).filter(Boolean));
+            const batchWrite = insertCanonicalBatch.run(
               batchId, connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum,
               body.records.length, canonicalRecords.length, sites.size, departments.size, 'PASS', stamp
             );
+            if (batchWrite.changes !== 1) throw Error('SYNC_CANONICAL_BATCH_WRITE_LOST');
             for (const item of canonicalRecords) {
-              insertCanonicalPerson.run(
+              const personWrite = insertCanonicalPerson.run(
                 batchId, connection.tenant, connection.id, item.employeeKey, item.recordChecksum,
                 JSON.stringify(item.canonical), stamp
               );
+              if (personWrite.changes !== 1) throw Error('SYNC_CANONICAL_PERSON_WRITE_LOST');
             }
             batch = canonicalBatchByChecksum.get(
               connection.tenant, connection.id, Number(connection.mapping_version), batchChecksum
             );
-            replayed = false;
-          } else {
-            replayed = true;
           }
-          db.exec('COMMIT');
-        } catch (error) {
-          try { db.exec('ROLLBACK'); } catch {}
-          throw error;
+          canonicalImport = {
+            batchId: batch.id,
+            mappingVersion: batch.mapping_version,
+            checksum: batch.batch_checksum,
+            recordCount: batch.record_count,
+            siteCount: batch.site_count,
+            departmentCount: batch.department_count,
+            replayed
+          };
         }
+        const nextState = status === 'PASS' ? 'ACTIVE' : 'DEGRADED';
+        const failureClass = status === 'PASS' ? null : 'DATA_VALIDATION';
+        const stamp = nowIso();
+        const updated = markSync.run(nextState, failureClass, stamp, stamp, stamp, connection.id, connection.tenant);
+        if (updated.changes !== 1) throw Error('SYNC_CONNECTION_STATE_LOST');
+        const auditWrite = eventStmt.run(connection.tenant, connection.id, 'sync-validation-completed', JSON.stringify({
+          sourceCount: body.records.length, validCount: valid, invalidCount: invalid,
+          duplicateCount, status, mappingVersion: connection.mapping_version,
+          canonicalBatchId: canonicalImport?.batchId || null,
+          canonicalBatchChecksum: canonicalImport?.checksum || null,
+          replayed: canonicalImport?.replayed || false
+        }), nowIso());
+        if (auditWrite.changes !== 1) throw Error('SYNC_AUDIT_WRITE_LOST');
       }
-      canonicalImport = {
-        batchId: batch.id,
-        mappingVersion: batch.mapping_version,
-        checksum: batch.batch_checksum,
-        recordCount: batch.record_count,
-        siteCount: batch.site_count,
-        departmentCount: batch.department_count,
-        replayed
-      };
+      db.exec('COMMIT');
+    } catch (error) {
+      try { db.exec('ROLLBACK'); } catch {}
+      throw error;
     }
-
-    const nextState = status === 'PASS' ? 'ACTIVE' : 'DEGRADED';
-    const failureClass = status === 'PASS' ? null : 'DATA_VALIDATION';
-    const stamp = nowIso();
-    markSync.run(nextState, failureClass, stamp, stamp, stamp, connection.id, connection.tenant);
-    const updated = connectionById.get(connection.id, connection.tenant);
-    record(connection.tenant, connection.id, 'sync-validation-completed', {
-      sourceCount: body.records.length, validCount: valid, invalidCount: invalid,
-      duplicateCount, status, mappingVersion: connection.mapping_version,
-      canonicalBatchId: canonicalImport?.batchId || null,
-      canonicalBatchChecksum: canonicalImport?.checksum || null,
-      replayed: canonicalImport?.replayed || false
+    if (checksumMismatch) return writeJson(res, 409, {
+      error: 'Canonical import checksum does not match the expected source handoff.',
+      reconciliation: { sourceCount: body.records.length, validCount: valid, invalidCount: invalid, duplicateCount, status },
+      canonicalImport: null
     });
+    const updated = connectionById.get(connection.id, connection.tenant);
     return writeJson(res, 200, {
       connection: publicConnection(updated),
       reconciliation: { sourceCount: body.records.length, validCount: valid, invalidCount: invalid, duplicateCount, status },

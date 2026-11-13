@@ -11,11 +11,11 @@ function mean(xs){return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:0;}
 function sd(xs){if(xs.length<2)return 0;const m=mean(xs);return Math.sqrt(xs.reduce((s,x)=>s+(x-m)*(x-m),0)/(xs.length-1));}
 function mae(actual,pred){return actual.length?actual.reduce((s,x,i)=>s+Math.abs(x-pred[i]),0)/actual.length:Infinity;}
 function normalise(input){
-  const observations=(Array.isArray(input.observations)?input.observations:[]).map((o,i)=>({
-    at:o.at?new Date(o.at).toISOString():String(i),
-    value:Math.max(0,num(o.value??o.headcount??o.units,NaN)),
-    evidenceRef:text(o.evidenceRef,220)||null
-  })).filter(o=>Number.isFinite(o.value));
+  const observations=Array.from(Array.isArray(input.observations)?input.observations:[],(o,i)=>{
+    const value=o&&typeof o==='object'&&!Array.isArray(o)?o.value??o.headcount??o.units:undefined;
+    if(typeof value!=='number'||!Number.isFinite(value)||value<0)throw new Error(`Invalid demand observation at index ${i}.`);
+    return {at:o.at?new Date(o.at).toISOString():String(i),value,evidenceRef:text(o.evidenceRef,220)||null};
+  });
   if(observations.length<4)throw new Error('At least four valid demand observations are required.');
   const horizon=Math.max(1,Math.min(96,Math.trunc(num(input.horizonPeriods,1))));
   const season=Math.max(2,Math.min(168,Math.trunc(num(input.seasonLength,7))));
@@ -70,9 +70,21 @@ function forecastDemand(input={}){
   return Object.freeze({...payload,forecastId:digest(payload)});
 }
 function toHeadcountForecast({forecast,unitsPerLabourHour,shiftHours=8}={}){
-  if(!forecast||forecast.version!==FORECAST_VERSION)throw new Error('Valid VECTOR demand forecast required.');
-  const rate=num(unitsPerLabourHour,0),duration=num(shiftHours,0);if(rate<=0||duration<=0)throw new Error('Positive unitsPerLabourHour and shiftHours are required.');
-  const steps=forecast.steps.map(s=>({period:s.period,p50Headcount:Math.max(0,Math.ceil(s.p50/(rate*duration))),p90Headcount:Math.max(0,Math.ceil(s.p90/(rate*duration))),confidence:forecast.confidence}));
+  if(!forecast||forecast.version!==FORECAST_VERSION||!Array.isArray(forecast.steps)||!forecast.steps.length)throw new Error('Valid VECTOR demand forecast required.');
+  const rate=unitsPerLabourHour,duration=shiftHours;
+  if(typeof rate!=='number'||typeof duration!=='number'||!Number.isFinite(rate)||!Number.isFinite(duration)||rate<=0||duration<=0)
+    throw new Error('Positive finite numeric unitsPerLabourHour and shiftHours are required.');
+  const capacity=rate*duration;
+  if(!Number.isFinite(capacity)||capacity<=0)throw new Error('Labour capacity must remain finite and positive.');
+  const steps=forecast.steps.map(s=>{
+    if(!s||typeof s.p50!=='number'||typeof s.p90!=='number'||!Number.isFinite(s.p50)||!Number.isFinite(s.p90)||s.p50<0||s.p90<s.p50)
+      throw new Error('Forecast quantities must be finite nonnegative numbers with p90 >= p50.');
+    const p50Headcount=Math.ceil(s.p50/capacity),p90Headcount=Math.ceil(s.p90/capacity);
+    if(!Number.isSafeInteger(p50Headcount)||!Number.isSafeInteger(p90Headcount)||
+      (s.p50>0&&p50Headcount===0)||(s.p90>0&&p90Headcount===0))
+      throw new Error('Labour headcount must remain a safe integer without demand underflow.');
+    return {period:s.period,p50Headcount,p90Headcount,confidence:forecast.confidence};
+  });
   return Object.freeze({version:'VECTOR_LABOUR_DEMAND_TRANSLATION_V1',forecastId:forecast.forecastId,unitsPerLabourHour:rate,shiftHours:duration,steps,claimBoundary:'CAPACITY_TRANSLATION_REQUIRES_CUSTOMER_VALIDATED_RATE'});
 }
 module.exports={FORECAST_VERSION,forecastDemand,toHeadcountForecast};

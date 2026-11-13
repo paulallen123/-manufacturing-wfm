@@ -44,3 +44,98 @@ test('outcome records predicted versus actual delta with evidence',()=>{
   assert.equal(final.outcome.predictionError.planAttainmentPct,-0.5);
   assert.ok(final.outcomeDigest);
 });
+
+{
+'use strict';
+// Fictional in-memory helper fixtures only. References below are labels, not authentication.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const {createDecisionEpisode, selectDecisionOption, recordDecisionOutcome} = require('./decision-episode.cjs');
+const metrics = ['throughputUnits', 'planAttainmentPct', 'labourCost', 'delayMinutes', 'riskScore', 'energyCost', 'qualityRisk'];
+function option(id, prediction) {
+  return {id, feasible: true, policyAllowed: true, hardConstraintsPassed: true, uncertainty: 0, prediction};
+}
+function episode(options, objective = {throughputUnits: 1}) {
+  const result = createDecisionEpisode({
+    tenant: 'fictional-v084', site: 'fictional-site', decisionType: 'fixture-only',
+    triggerId: 'fictional-trigger', contextRevision: 'fictional-revision', mode: 'SHADOW',
+    triggeredAt: '2026-11-03T12:00:00Z', sourceEvidence: ['fictional:unverified-input'],
+    objective, options
+  });
+  assert.equal(result.mode, 'SHADOW');
+  assert.equal(result.recommendation.executionPermitted, false);
+  assert.equal(result.recommendation.authorityRequired, 'NO_EXECUTION');
+  return result;
+}
+function prediction(result, id) { return result.options.find(o => o.id === id).prediction; }
+for (const [label, blank] of [['empty', ''], ['ASCII whitespace', ' \t\r\n '], ['NBSP', '\u00a0']]) {
+  test('V084 heldout: ' + label + ' is missing for every prediction metric', () => {
+    const result = episode([
+      option('do-nothing', Object.fromEntries(metrics.map(key => [key, blank]))),
+      option('complete', {throughputUnits: 5})
+    ]);
+    for (const key of metrics) assert.equal(prediction(result, 'do-nothing')[key], null, key);
+  });
+}
+test('V084 heldout: missing positive-weight cost excludes option before range calculation', () => {
+  const result = episode([
+    option('do-nothing', {throughputUnits: 1000, labourCost: ' '}),
+    option('complete-a', {throughputUnits: 10, labourCost: 20}),
+    option('complete-b', {throughputUnits: 20, labourCost: 10})
+  ], {throughputUnits: 1, labourCost: 1, uncertaintyPenalty: 0});
+  assert.equal(result.recommendation.reason, 'RANKED');
+  assert.deepEqual(result.recommendation.ranking.map(r => r.optionId), ['complete-b', 'complete-a']);
+  assert.deepEqual(result.recommendation.ranking.map(r => r.score), [1, 0]);
+  assert.equal(result.recommendation.optionId, 'complete-b');
+});
+test('V084 heldout: every eligible option incomplete yields missing-metrics reason', () => {
+  const result = episode([
+    option('do-nothing', {throughputUnits: '', labourCost: 3}),
+    option('alternative', {throughputUnits: 8, labourCost: '\t'})
+  ], {throughputUnits: 1, labourCost: 1});
+  assert.equal(result.recommendation.reason, 'MISSING_WEIGHTED_METRICS');
+  assert.equal(result.recommendation.optionId, null);
+  assert.deepEqual(result.recommendation.ranking, []);
+});
+test('V084 heldout: missing zero-weight metric permits ranking', () => {
+  const result = episode([
+    option('do-nothing', {throughputUnits: 0, labourCost: '\u00a0'}),
+    option('alternative', {throughputUnits: 8, labourCost: ''})
+  ], {throughputUnits: 1, labourCost: 0, uncertaintyPenalty: 0});
+  assert.equal(prediction(result, 'do-nothing').labourCost, null);
+  assert.equal(prediction(result, 'alternative').labourCost, null);
+  assert.equal(result.recommendation.reason, 'RANKED');
+  assert.equal(result.recommendation.ranking.length, 2);
+  assert.equal(result.recommendation.optionId, 'alternative');
+});
+test('V084 heldout: numeric zero and nonblank numeric strings remain numbers', () => {
+  const values = {throughputUnits: 0, planAttainmentPct: '0', labourCost: ' 37 ',
+    delayMinutes: '1e2', riskScore: '-2.5', energyCost: 0, qualityRisk: '0.25'};
+  const result = episode([option('do-nothing', values), option('alternative', {throughputUnits: 1})]);
+  assert.deepEqual(prediction(result, 'do-nothing'), {
+    throughputUnits: 0, planAttainmentPct: 0, labourCost: 37,
+    delayMinutes: 100, riskScore: -2.5, energyCost: 0, qualityRisk: 0.25
+  });
+  assert.equal(result.recommendation.ranking.length, 2);
+});
+test('V084 heldout: fictional SHADOW outcome keeps missing prediction error null', () => {
+  const result = episode([
+    option('do-nothing', {throughputUnits: 0, labourCost: ' '}),
+    option('alternative', {throughputUnits: 8, labourCost: 12})
+  ]);
+  const selected = selectDecisionOption(result, {
+    optionId: 'do-nothing', selectedAt: '2026-11-03T12:01:00Z',
+    authorityDecision: 'SHADOW_OBSERVED', actorRef: 'fictional:unauthenticated-observer'
+  });
+  assert.equal(selected.selection.executionPermitted, false);
+  const recorded = recordDecisionOutcome(selected, {
+    observedAt: '2026-11-03T12:02:00Z', evidenceRefs: ['fictional:unverified-outcome'],
+    actual: {throughputUnits: 0, labourCost: 14}
+  });
+  assert.equal(recorded.outcome.actual.labourCost, 14);
+  assert.equal(recorded.outcome.predictionError.labourCost, null);
+  assert.equal(recorded.outcome.predictionError.throughputUnits, 0);
+  assert.equal(recorded.selection.executionPermitted, false);
+  assert.equal(recorded.recommendation.executionPermitted, false);
+});
+}

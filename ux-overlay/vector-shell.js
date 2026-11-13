@@ -255,6 +255,119 @@ document.addEventListener('click',event=>{const target=event.target.closest('[da
 window.addEventListener('pagehide',invalidateThreeMinPanel);
 
 let staffologyPanel=null,staffologyEpoch=0;
+const METADATA_PROVIDERS=Object.freeze({netsuite:'NetSuite',successfactors:'SAP SuccessFactors'});
+let metadataPanel=null,metadataEpoch=0;
+function metadataIdentity(){
+ try{
+  if(typeof F==='undefined'||F.ready!==true||!F.actor||!available('integrations'))return null;
+  const actor=F.actor;
+  if(typeof actor.tenant!=='string'||!actor.tenant||!(actor.email||actor.personId||actor.id)||
+   !Array.isArray(actor.permissions)||!actor.permissions.includes('company.configure'))return null;
+  return JSON.stringify([actor.tenant,actor.email||'',actor.personId||actor.id||'',actor.role||'',
+   [...new Set(actor.permissions)].sort()]);
+ }catch{return null;}
+}
+function metadataRoot(){return typeof ui==='undefined'?null:ui.root;}
+function invalidateMetadataPanel(){metadataEpoch++;metadataPanel?.controller.abort();metadataPanel?.card.remove();metadataPanel=null;}
+function metadataCurrent(panel){return metadataPanel===panel&&panel.epoch===metadataEpoch&&page()==='integrations'&&
+ panel.identity===metadataIdentity()&&panel.root===metadataRoot()&&panel.card.isConnected;}
+function metadataStale(panel){if(metadataPanel===panel)invalidateMetadataPanel();const error=new Error('Field check context changed.');error.stale=true;return error;}
+async function metadataRequest(panel,path,body){
+ if(!metadataCurrent(panel))throw metadataStale(panel);
+ const response=await fetch(path,{method:body===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',
+  headers:{Accept:'application/json',...(body===undefined?{}:{'Content-Type':'application/json'})},
+  ...(body===undefined?{}:{body:JSON.stringify(body)}),signal:panel.controller.signal});
+ if(!metadataCurrent(panel))throw metadataStale(panel);
+ if(!response.ok){const error=new Error('Field check unavailable.');error.status=response.status;throw error;}
+ const value=await response.json();
+ if(!metadataCurrent(panel))throw metadataStale(panel);
+ return value;
+}
+function metadataText(value,max){return typeof value==='string'&&value.length>0&&value.length<=max&&value.trim()===value&&!/[\u0000-\u001f\u007f]/.test(value);}
+function metadataProfiles(value){
+ const status=value?.providerMetadataBroker;
+ if(status?.schemaVersion!=='vector-provider-metadata-review-v1'||status.reviewOnly!==true||status.liveSyncVerified!==false||
+  !Array.isArray(status.profiles)||status.profiles.length>100||status.configured!==(status.profiles.length>0))throw Error('Field check options unavailable.');
+ const ids=new Set();
+ return status.profiles.map(row=>{
+  if(!row||!metadataText(row.id,100)||!/^[A-Za-z0-9_.:-]{3,100}$/.test(row.id)||ids.has(row.id)||
+   !Object.hasOwn(METADATA_PROVIDERS,row.provider)||!metadataText(row.system,120))throw Error('Field check options unavailable.');
+  ids.add(row.id);return {id:row.id,provider:row.provider,system:row.system};
+ });
+}
+function metadataResult(value,profile,startedAt){
+ const draft=value?.draft,evidence=value?.brokerEvidence,at=Date.parse(evidence?.retrievedAt||'');
+ if(value?.authority!=='server-broker-read-review-only'||value.networkFetchPerformed!==true||value.activationAvailable!==false||
+  draft?.status!=='draft_review_required'||draft.provider!==profile.provider||draft.system!==profile.system||
+  draft.metadataSource!=='server-broker:'+profile.id||draft.activation?.allowed!==false||
+  !/^[a-f0-9]{64}$/.test(draft.schemaDigest||'')||evidence?.sourceArtifactSha256!==draft.schemaDigest||
+  evidence.provider!==profile.provider||evidence.metadataValidated!==true||evidence.networkFetchPerformed!==true||
+  evidence.dnsPinned!==true||evidence.redirectsAllowed!==false||evidence.credentialExposed!==false||evidence.rawMetadataReturned!==false||
+  evidence.collectionPermit?.verified!==true||!Number.isFinite(at)||at<startedAt-60000||at>Date.now()+60000||
+  !Array.isArray(draft.fields)||draft.fields.length<1||draft.fields.length>5000)throw Error('Field check result unavailable.');
+ const names=new Set();
+ for(const field of draft.fields){
+  if(!field||!metadataText(field.name,160)||names.has(field.name)||field.readable!==true||field.writable!==false)throw Error('Field check result unavailable.');
+  names.add(field.name);
+ }
+ return {checkedAt:new Date(at).toISOString(),count:draft.fields.length,fields:draft.fields.slice(0,50).map(field=>field.name)};
+}
+function metadataError(error){
+ if(error?.status===401)return 'Sign in again to check these fields.';
+ if(error?.status===403)return 'These field checks are not available for your account.';
+ return 'Fields could not be checked. Ask an administrator to check account access, or try again.';
+}
+function renderMetadataPanel(panel){
+ if(!metadataCurrent(panel))return;
+ const profiles=panel.profiles,busy=Boolean(panel.busy),counts=new Map(),positions=new Map();
+ for(const profile of profiles||[])counts.set(profile.provider,(counts.get(profile.provider)||0)+1);
+ const rows=(profiles||[]).map(profile=>{
+  const position=(positions.get(profile.provider)||0)+1;positions.set(profile.provider,position);
+  const label=METADATA_PROVIDERS[profile.provider]+(counts.get(profile.provider)>1?' · Source '+position:'');
+  const result=panel.results.get(profile.id),error=panel.errors.get(profile.id),checking=panel.busy===profile.id;
+  return `<section class="vector-card"><h3>${esc(label)}</h3><p role="status">${checking?'Checking fields…':error?esc(error):result?'Fields available':'Ready to check'}</p>${result?
+   `<p>${result.count} fields · Last checked ${esc(new Date(result.checkedAt).toLocaleString('en-GB'))}</p><details><summary>View fields${result.count>50?' (first 50)':''}</summary><ul>${result.fields.map(name=>`<li>${esc(name)}</li>`).join('')}</ul></details>`:
+   '<p>Check whether field details are available from this source. Account access has not been confirmed by this page.</p>'}
+   <button type="button" class="btn secondary" data-vector-metadata-check="${esc(profile.id)}" ${busy?'disabled':''}>Check fields</button></section>`;
+ }).join('');
+ const message=panel.busy==='refresh'?'Loading available sources…':panel.error?panel.error:profiles===null?'Field checks are unavailable.':profiles.length?'Choose a source to check its available fields.':'Account setup needed. Ask an administrator to finish setting up a NetSuite or SAP SuccessFactors account for this workspace.';
+ panel.card.innerHTML=`<div class="vector-card-head"><h2>NetSuite and SAP field checks</h2><button type="button" class="btn secondary" data-vector-metadata-refresh ${busy?'disabled':''}>Refresh</button></div><p role="status">${esc(message)}</p>${rows}<p class="muted">This check does not import records or verify live data sync.</p>`;
+}
+async function refreshMetadataPanel(panel){
+ if(!metadataCurrent(panel)||panel.busy)return;
+ panel.busy='refresh';panel.profiles=null;panel.results.clear();panel.errors.clear();panel.error='';renderMetadataPanel(panel);
+ try{panel.profiles=metadataProfiles(await metadataRequest(panel,'/api/integrations'));}
+ catch(error){if(!metadataCurrent(panel)){metadataStale(panel);return;}panel.error=metadataError(error);}
+ finally{if(metadataCurrent(panel)){panel.busy='';renderMetadataPanel(panel);}}
+}
+async function checkMetadataFields(panel,id){
+ if(!metadataCurrent(panel)||panel.busy)return;
+ const profile=panel.profiles?.find(row=>row.id===id);if(!profile)return;
+ panel.results.delete(id);panel.errors.delete(id);panel.busy=id;const startedAt=Date.now();renderMetadataPanel(panel);
+ try{const result=await metadataRequest(panel,'/api/integrations/discovery/broker-preview',{profileId:profile.id});panel.results.set(id,metadataResult(result,profile,startedAt));}
+ catch(error){
+  if(!metadataCurrent(panel)){metadataStale(panel);return;}
+  if(error?.status===401||error?.status===403){panel.profiles=null;panel.results.clear();panel.errors.clear();panel.error=metadataError(error);}
+  else{panel.results.delete(id);panel.errors.set(id,metadataError(error));}
+ }
+ finally{if(metadataCurrent(panel)){panel.busy='';renderMetadataPanel(panel);}}
+}
+function syncMetadataPanel(content){
+ const identity=page()==='integrations'?metadataIdentity():null;
+ if(!identity){if(metadataPanel)invalidateMetadataPanel();return;}
+ if(metadataPanel&&metadataPanel.identity===identity&&metadataPanel.root===metadataRoot()&&metadataPanel.card.parentElement===content)return;
+ invalidateMetadataPanel();const card=document.createElement('section');card.className='vector-card';card.dataset.vectorMetadataCard='1';card.setAttribute('aria-label','NetSuite and SAP field checks');content.prepend(card);
+ const panel={card,identity,root:metadataRoot(),epoch:metadataEpoch,controller:new AbortController(),profiles:null,results:new Map(),errors:new Map(),error:'',busy:''};
+ metadataPanel=panel;renderMetadataPanel(panel);void refreshMetadataPanel(panel);
+}
+document.addEventListener('click',event=>{
+ const panel=metadataPanel;if(!panel||!metadataCurrent(panel)||!panel.card.contains(event.target))return;
+ const check=event.target.closest('[data-vector-metadata-check]');
+ if(check){event.preventDefault();void checkMetadataFields(panel,check.dataset.vectorMetadataCheck);return;}
+ if(event.target.closest('[data-vector-metadata-refresh]')){event.preventDefault();void refreshMetadataPanel(panel);}
+});
+window.addEventListener('pagehide',invalidateMetadataPanel);
+
 const STAFFOLOGY_PREFIX='/api/integrations/staffology';
 function invalidateStaffologyPanel(){staffologyEpoch++;staffologyPanel?.controller.abort();staffologyPanel?.card.remove();staffologyPanel=null;}
 function staffologyIdentity(){const actor=sourceIdentity();return `${actor.tenant||''}:${actor.email||actor.id||''}`;}
@@ -698,8 +811,8 @@ function employeeHomeMarkup(v){
  const requests=(Array.isArray(v?.requests)?v.requests:[]).slice(0,6),clock=v?.clock||{},leave=v?.leave||{};
  const fmtTime=value=>{try{return zone?new Intl.DateTimeFormat('en-GB',{timeZone:zone,dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):String(value||'');}catch{return String(value||'');}};
  return `<section class="vector-welcome" data-vector-employee-home="1"><div><span class="vector-page-kicker">${esc(title)}</span><h1>${esc(name)}</h1><p>Your current assignments, attendance and leave come from your authenticated personal record.</p></div><span class="vector-evidence-label">${esc(zone||'Tenant/site timezone not verified')}</span></section>
- <section class="vector-mini-grid"><button type="button" class="vector-mini-card" data-vector-route="personal"><span><b>Attendance</b><strong>${esc(clock.status||'Current record')}</strong><small>${clock.active?.start?'Started '+esc(fmtTime(clock.active.start)):'Open your personal record for current attendance.'}</small><em>Open Personal</em></span></button><button type="button" class="vector-mini-card" data-vector-route="leave"><span><b>Available leave</b><strong>${Number.isFinite(Number(leave.availableMinutes))?esc((Number(leave.availableMinutes)/60).toLocaleString('en-GB',{maximumFractionDigits:2})+' h'):'—'}</strong><small>Source-saved balance; no sample entitlement is invented.</small><em>Open leave</em></span></button></section>
- <section class="vector-card"><div class="vector-card-head"><h2>Upcoming assignments</h2><button type="button" data-vector-route="shifts">Open shifts ${icon('arrow')}</button></div>${shifts.length?shifts.map(shift=>`<button type="button" class="vector-leave-row" data-vector-route="shifts"><span><b>${esc(shift.job||v?.identity?.job||'Assignment')}</b><small>${esc(shift.site||v?.identity?.site||'Current site')}</small></span><em>${esc(fmtTime(shift.start))}</em><strong>Published</strong>${icon('chevron')}</button>`).join(''):'<div class="vector-empty">No upcoming published assignments are in your current personal record.</div>'}</section>
+ <section class="vector-mini-grid"><button type="button" class="vector-mini-card" data-vector-route="personal"><span><b>Attendance</b><strong>${esc(clock.status||'Current record')}</strong><small>${clock.active?.start?'Started '+esc(fmtTime(clock.active.start)):'Open your personal record for current attendance.'}</small><em>Open Personal</em></span></button><button type="button" class="vector-mini-card" data-vector-route="leave"><span><b>Available leave</b><strong>${Number.isFinite(leave.availableMinutes)?esc((leave.availableMinutes/60).toLocaleString('en-GB',{maximumFractionDigits:2})+' h'):'—'}</strong><small>Source-saved balance; no sample entitlement is invented.</small><em>Open leave</em></span></button></section>
+ <section class="vector-card"><div class="vector-card-head"><h2>Upcoming assignments</h2><button type="button" data-vector-route="shifts">Open shifts ${icon('arrow')}</button></div>${shifts.length?shifts.map(shift=>`<button type="button" class="vector-leave-row" data-vector-route="shifts"><span><b>${esc(shift.job||v?.identity?.job||'Assignment')}</b><small>${esc(shift.site||v?.identity?.site||'Current site')}</small></span><em>${esc(fmtTime(shift.start))}</em><strong>Published</strong>${icon('chevron')}</button>`).join(''):'<div class="vector-empty">'+(Number.isFinite(nowMs)?'No upcoming published assignments are in your current personal record.':'Upcoming assignments cannot be verified because the source time is unavailable.')+'</div>'}</section>
  <section class="vector-card"><div class="vector-card-head"><h2>Recent leave requests</h2><button type="button" data-vector-route="leave">Open leave ${icon('arrow')}</button></div>${requests.length?requests.map(r=>`<div class="vector-alert-row"><i class="blue"></i><b>${esc(r.kind||'Leave')}<small> · ${esc(r.status||'recorded')}</small></b><span>${esc(r.date||r.start||'')}</span></div>`).join(''):'<div class="vector-empty">No leave requests are recorded.</div>'}</section>`;
 }
 const employeeHomeRenderCache=new WeakMap();
@@ -790,12 +903,18 @@ function syncSettingsMenu(content){
  const links=sourceButtons().filter(button=>button.dataset.page&&!NAV.some(section=>section.routes.includes(button.dataset.page))&&available(button.dataset.page));
  const panel=document.createElement('section');panel.className='vector-card vector-settings';panel.dataset.vectorSettingsPanel='1';panel.setAttribute('aria-label','Settings and more');panel.innerHTML='<div class="vector-card-head"><h2>Settings & more</h2><button type="button" data-vector-settings>Close</button></div><div class="vector-settings-links">'+links.map(button=>`<button type="button" data-vector-route="${esc(button.dataset.page)}">${esc(text(button))}</button>`).join('')+'</div>';content.prepend(panel);return panel;
 }
-function settingsMenu(){const content=document.querySelector('.content');if(!content)return;state.settingsOpen=!state.settingsOpen;const panel=syncSettingsMenu(content);if(panel)panel.scrollIntoView({block:'start'});}
-function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{syncTimeReviewEvidenceOwner();const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content){void loadTimeReviewEvidence();return;}document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(state.calendar.status==='idle')void loadTenantCalendar().then(value=>{if(value&&page()==='overview')queueMicrotask(apply);});syncGustoPanel(content);syncStaffologyPanel(content);syncThreeMinPanel(content);if(page()==='overview'&&employee())void renderEmployeeHome(content);else if(page()==='overview')renderHome(content);else generalPage(content);syncSettingsMenu(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
-document.addEventListener('click',e=>{if(e.target.closest('[data-vector-close-review]')){document.getElementById('modal').close();return;}const review=e.target.closest('[data-vector-review-coverage]');if(review){const id=review.dataset.vectorReviewCoverage;const r=data.requests?.find(r=>String(r.id)===id);if(r&&visiblePeople().some(p=>String(p.id)===String(r.employee)))void approveRequest(id);return;}if(e.target.closest('[data-vector-settings]')){settingsMenu();return;}const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec){const r=firstRoute(spec.routes);if(r)go(r);}return;}if(e.target.closest('[data-vector-return-context]')){clearActionContext();state.returnFocus=true;go('overview');return;}const actionButton=e.target.closest('[data-vector-source-id][data-vector-workflow][data-vector-route]');if(actionButton){if(actionButton.dataset.vectorWorkflow==='leave'){openLeaveReview(actionButton.dataset.vectorSourceId);return;}rememberActionContext({sourceId:actionButton.dataset.vectorSourceId,workflow:actionButton.dataset.vectorWorkflow,route:actionButton.dataset.vectorRoute,title:actionButton.closest('.vector-alert-row')?.querySelector('b')?.textContent||'Time Review item'});go(actionButton.dataset.vectorRoute);return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){openVectorHelp();return;}if(e.target.closest('[data-vector-alerts]')){go('attendance');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('vector-menu-open');const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
+function settingsMenu(opener=document.activeElement){
+ const content=document.querySelector('.content');if(!content)return;
+ state.settingsOpen=!state.settingsOpen;if(state.settingsOpen)state.settingsOpener=opener;
+ const panel=syncSettingsMenu(content);
+ if(panel){panel.scrollIntoView({block:'start'});panel.querySelector('[data-vector-settings]')?.focus();}
+ else{const returnFocus=state.settingsOpener;state.settingsOpener=null;if(returnFocus?.isConnected&&!returnFocus.disabled)returnFocus.focus();}
+}
+function apply(){if(state.queued)return;state.queued=true;queueMicrotask(()=>{state.queued=false;shellObserver?.disconnect();try{syncTimeReviewEvidenceOwner();const app=document.querySelector('.app'),content=document.querySelector('.content');if(!app||!content){void loadTimeReviewEvidence();return;}document.body.classList.remove('ux-reset-active');document.body.classList.add('vector-ui-active');document.body.dataset.vectorUi=DESIGN_ID;app.dataset.vectorShell=MARKER;const retiredTarget=RETIRED_ROUTE_REDIRECTS[page()];if(retiredTarget){go(retiredTarget);return;}if(vectorHomeRequested()&&page()!=='overview'){clearVectorHomeRequest();go('overview');return;}if(vectorHomeRequested())clearVectorHomeRequest();ensureSidebar(app);ensureTopbar(app);if(state.calendar.status==='idle')void loadTenantCalendar().then(value=>{if(value&&page()==='overview')queueMicrotask(apply);});syncGustoPanel(content);syncStaffologyPanel(content);syncThreeMinPanel(content);syncMetadataPanel(content);if(page()==='overview'&&employee())void renderEmployeeHome(content);else if(page()==='overview')renderHome(content);else generalPage(content);syncSettingsMenu(content);updateNav();document.querySelectorAll('[data-vector-route]').forEach(b=>{if(b.tagName==='BUTTON'&&!available(b.dataset.vectorRoute)){b.disabled=true;b.title='This workflow is not available in this release for your role.';}});if(!historyReady){historyReady=true;const r=requestedRoute();if(r&&r!==page()){queueMicrotask(restoreRoute);}else if(!r)history.replaceState({vectorRoute:page()},'',routeHash(page()));}void loadTimeReviewEvidence();void loadReadinessEvidence();}catch(error){document.body.classList.add('vector-ui-active');const root=document.getElementById('root');if(root&&!root.querySelector('.vector-render-error')){root.innerHTML='<div class="vector-render-error" role="alert"><strong>Vector could not render this screen.</strong><span>Reload the page. If this remains visible, the client render failed before the workspace could mount.</span></div>';}}finally{try{shellObserver?.observe(document.documentElement,observerConfig);}catch{}}});}
+document.addEventListener('click',e=>{if(e.target.closest('[data-vector-close-review]')){document.getElementById('modal').close();return;}const review=e.target.closest('[data-vector-review-coverage]');if(review){const id=review.dataset.vectorReviewCoverage;const r=data.requests?.find(r=>String(r.id)===id);if(r&&visiblePeople().some(p=>String(p.id)===String(r.employee)))void approveRequest(id);return;}if(e.target.closest('[data-vector-settings]')){settingsMenu(e.target.closest('[data-vector-settings]'));return;}const navButton=e.target.closest('[data-vector-nav]');if(navButton){const spec=NAV[Number(navButton.dataset.vectorNav)];if(spec){const r=firstRoute(spec.routes);if(r)go(r);}return;}if(e.target.closest('[data-vector-return-context]')){clearActionContext();state.returnFocus=true;go('overview');return;}const actionButton=e.target.closest('[data-vector-source-id][data-vector-workflow][data-vector-route]');if(actionButton){if(actionButton.dataset.vectorWorkflow==='leave'){openLeaveReview(actionButton.dataset.vectorSourceId);return;}rememberActionContext({sourceId:actionButton.dataset.vectorSourceId,workflow:actionButton.dataset.vectorWorkflow,route:actionButton.dataset.vectorRoute,title:actionButton.closest('.vector-alert-row')?.querySelector('b')?.textContent||'Time Review item'});go(actionButton.dataset.vectorRoute);return;}const route=e.target.closest('[data-vector-route]')?.dataset.vectorRoute;if(route){go(route);return;}if(e.target.closest('[data-vector-menu]')){document.body.classList.toggle('vector-menu-open');return;}if(e.target.closest('[data-vector-help]')){openVectorHelp();return;}if(e.target.closest('[data-vector-alerts]')){go('attendance');return;}const prompt=e.target.closest('[data-vector-prompt]')?.dataset.vectorPrompt;if(prompt){askWorkforce(prompt);return;}if(e.target.closest('[data-vector-assistant-send]')){const box=document.querySelector('.vector-assistant-input input');if(box?.value.trim())askWorkforce(box.value.trim());return;}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.body.classList.remove('vector-menu-open');if(state.settingsOpen&&e.target.closest('[data-vector-settings-panel]')){e.preventDefault();settingsMenu();return;}}const input=e.target.closest('.vector-global-search input,.vector-assistant-input input');if(input&&e.key==='Enter'&&input.value.trim()){e.preventDefault();askWorkforce(input.value.trim());}});
 const previousRender=window.render;
-if(typeof previousRender==='function')window.render=async function(...args){invalidateEmployeeHome();invalidateGustoPanel();invalidateStaffologyPanel();invalidateThreeMinPanel();invalidateTimeReviewEvidence();invalidateReadinessEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);syncTimeReviewEvidenceOwner();document.body.classList.remove('vector-menu-open');void loadTimeReviewEvidence();queueMicrotask(apply);return result;};
+if(typeof previousRender==='function')window.render=async function(...args){invalidateEmployeeHome();invalidateGustoPanel();invalidateStaffologyPanel();invalidateThreeMinPanel();invalidateMetadataPanel();invalidateTimeReviewEvidence();invalidateReadinessEvidence();let result;if(page()==='vector-people'&&!employee()){document.getElementById('root').innerHTML=shell(peoplePage());}else result=await previousRender.apply(this,args);syncTimeReviewEvidenceOwner();document.body.classList.remove('vector-menu-open');void loadTimeReviewEvidence();queueMicrotask(apply);return result;};
 window.nav=go;
 document.addEventListener('input',e=>{if(e.target.matches('[aria-label="Search people"]')){const q=e.target.value.trim().toLowerCase();let count=0;document.querySelectorAll('[data-vector-person-row]').forEach(r=>{r.hidden=!r.dataset.search.includes(q);if(!r.hidden)count++;});const empty=document.querySelector('.vector-no-results');if(empty)empty.hidden=count>0;}});
 shellObserver=new MutationObserver(()=>apply());

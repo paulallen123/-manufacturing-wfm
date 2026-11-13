@@ -6,6 +6,7 @@ const INTEGRATIONS='/api/integrations/autonomous';
 const LEARNING='/api/learning/adaptive';
 const VERSION='version-d-3';
 const S={status:null,integrations:null,learning:null,invitation:null,loading:false,error:'',decisionError:'',timer:null,lastLoad:0,setup:null,setupDirty:false,setupSaving:false,setupError:'',setupInput:null,setupEditGeneration:0,setupSettings:false,setupSaveTimer:null,setupEpoch:0,setupAutosavePaused:false};
+const setupInputEvents=new WeakMap();
 const inviteToken=()=>{try{return new URL(window.location.href).searchParams.get('implementation_invite')||'';}catch{return '';}};
 const currentPage=()=>{try{return typeof ui!=='undefined'?ui.page:null;}catch{return null;}};
 const isEmployeeRole=()=>{try{return typeof isEmployee==='function'&&isEmployee();}catch{return false;}};
@@ -240,8 +241,14 @@ function scheduleSetupSave(){
 function openSetupSettings(){S.setupSettings=true;renderView(true);}
 function closeSetupSettings(){S.setupSettings=false;renderView(true);}
 function rememberSetupInput(form){
-  S.setupInput=collectSetupAnswers(form);S.setupDirty=true;S.setupEditGeneration++;
+  const answers=collectSetupAnswers(form),serialized=JSON.stringify(answers),previous=setupInputEvents.get(form);
+  // Text inputs emit change again on blur, possibly after their input autosaved.
+  // Compare observed form values, since the saved response may normalize them.
+  if(previous?.epoch===S.setupEpoch&&previous.serialized===serialized)return false;
+  setupInputEvents.set(form,{epoch:S.setupEpoch,serialized});
+  S.setupInput=answers;S.setupDirty=true;S.setupEditGeneration++;
   updateSetupFeedback();scheduleSetupSave();
+  return true;
 }
 function collectSetupAnswers(form){
   const data=new FormData(form),get=name=>String(data.get(name)||'').trim(),split=value=>String(value||'').split(',').map(x=>x.trim()).filter(Boolean);
@@ -269,7 +276,7 @@ async function saveSetup(form,background=false){
   const button=form?.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent='Saving…';}
   S.setupSaving=true;updateSetupFeedback();let followUp=false;
   try{
-    const saved=await request(IMPL+'/setup',{method:'POST',body:JSON.stringify({expectedRevision:S.setup?.revision||0,answers})});
+    const saved=await request(IMPL+'/setup',{method:'POST',body:JSON.stringify({setupBinding:S.setup?.setupBinding,expectedRevision:S.setup?.revision||0,answers})});
     if(!currentWorkspace())return;
     if(!saved)throw Error('Sign in to save your workspace setup.');
     if((saved.tenant&&tenant&&saved.tenant!==tenant)||(saved.runId&&runId&&saved.runId!==runId))throw Error('The workspace changed. Reload your saved answers before retrying.');
@@ -304,7 +311,7 @@ async function applySetup(){
   S.setupSaving=true;const button=document.querySelector('[data-ij-setup-apply]');if(button)button.disabled=true;
   let followUp=false;
   try{
-    const result=await request(IMPL+'/setup/apply',{method:'POST',body:JSON.stringify({expectedRevision:S.setup.revision,reviewToken:S.setup.reviewToken})});
+    const result=await request(IMPL+'/setup/apply',{method:'POST',body:JSON.stringify({setupBinding:S.setup.setupBinding,expectedRevision:S.setup.revision,reviewToken:S.setup.reviewToken})});
     if(!currentWorkspace())return;
     if(!result||result.status!=='APPLIED')throw Error('The setup was not applied. Reload the saved review and try again.');
     if(generation!==S.setupEditGeneration){
@@ -451,7 +458,7 @@ async function load(force){
     if(token)calls.push(request(IMPL+'/invitation?token='+encodeURIComponent(token)).catch(error=>({error:error.message,status:error.status})));
     const result=await Promise.all(calls);
     S.status=result[0];S.integrations=result[1];S.learning=result[2];S.invitation=result[4]||null;
-    const changedBinding=S.setup&&result[3]&&(S.setup.tenant!==result[3].tenant||S.setup.runId!==result[3].runId);
+    const changedBinding=S.setup&&result[3]&&(S.setup.tenant!==result[3].tenant||S.setup.runId!==result[3].runId||S.setup.setupBinding!==result[3].setupBinding);
     if(changedBinding){resetSetupBinding();S.setupDirty=false;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
     if((changedBinding||!S.setupDirty&&!S.setupSaving)&&result[3]&&(!S.setup||changedBinding||result[3].revision>=S.setup.revision))S.setup=result[3];
     if(!S.status){resetSetupBinding();S.error='Your account does not have access to implementation control.';S.setupDirty=false;S.setup=null;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
@@ -604,7 +611,7 @@ document.addEventListener('click',event=>{
 },true);
 function setupEdited(event){
   const form=event.target.closest('[data-ij-setup-form]');if(!form)return;
-  rememberSetupInput(form);
+  if(!rememberSetupInput(form))return;
   const button=document.querySelector('[data-ij-setup-apply]');if(button)button.disabled=true;
 }
 document.addEventListener('input',setupEdited,true);
