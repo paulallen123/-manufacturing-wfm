@@ -1,0 +1,142 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: Gusto forbidden denial survives real HTTP and a separate-process reopen
+ok 1 - Gusto forbidden denial survives real HTTP and a separate-process reopen
+  ---
+  duration_ms: 565.280227
+  type: 'test'
+  ...
+# Subtest: Gusto wrong-company denial survives real HTTP and a separate-process reopen
+ok 2 - Gusto wrong-company denial survives real HTTP and a separate-process reopen
+  ---
+  duration_ms: 543.993954
+  type: 'test'
+  ...
+# Subtest: Gusto missing-scope denial survives real HTTP and a separate-process reopen
+ok 3 - Gusto missing-scope denial survives real HTTP and a separate-process reopen
+  ---
+  duration_ms: 478.624578
+  type: 'test'
+  ...
+# (node:93) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: reports only declared permit/isolation evidence for review, without execution authority
+ok 4 - reports only declared permit/isolation evidence for review, without execution authority
+  ---
+  duration_ms: 3.095503
+  type: 'test'
+  ...
+# Subtest: missing, withdrawn and incomplete safety records block review
+ok 5 - missing, withdrawn and incomplete safety records block review
+  ---
+  duration_ms: 1.935467
+  type: 'test'
+  ...
+# Subtest: foreign, stale and contradictory safety evidence fails closed
+ok 6 - foreign, stale and contradictory safety evidence fails closed
+  ---
+  duration_ms: 2.192424
+  type: 'test'
+  ...
+# Subtest: rejects active-object hash substitution before invoking caller getters
+ok 7 - rejects active-object hash substitution before invoking caller getters
+  ---
+  duration_ms: 0.623338
+  type: 'test'
+  ...
+# Subtest: rejects accessor revisions, inherited records and proxy traps before evidence reads
+ok 8 - rejects accessor revisions, inherited records and proxy traps before evidence reads
+  ---
+  duration_ms: 0.489423
+  type: 'test'
+  ...
+# Subtest: rejects hidden or symbolic record fields while retaining own plain-data records
+ok 9 - rejects hidden or symbolic record fields while retaining own plain-data records
+  ---
+  duration_ms: 0.807483
+  type: 'test'
+  ...
+# (node:101) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: bounded training and published shift overlap is advisory and hides worker reference
+ok 10 - bounded training and published shift overlap is advisory and hides worker reference
+  ---
+  duration_ms: 3.780925
+  type: 'test'
+  ...
+# Subtest: touching boundaries have no declared overlap, without claiming full availability
+ok 11 - touching boundaries have no declared overlap, without claiming full availability
+  ---
+  duration_ms: 0.273717
+  type: 'test'
+  ...
+# Subtest: foreign identity, incomplete state and reused source evidence reject
+ok 12 - foreign identity, incomplete state and reused source evidence reject
+  ---
+  duration_ms: 1.391357
+  type: 'test'
+  ...
+# Subtest: past, future, rolled and inverted evidence times reject
+ok 13 - past, future, rolled and inverted evidence times reject
+  ---
+  duration_ms: 0.44955
+  type: 'test'
+  ...
+# Subtest: active root scope and receipt selectors reject without invoking getters
+ok 14 - active root scope and receipt selectors reject without invoking getters
+  ---
+  duration_ms: 0.404326
+  type: 'test'
+  ...
+# Subtest: active receipt fields reject before a value can change after validation
+ok 15 - active receipt fields reject before a value can change after validation
+  ---
+  duration_ms: 1.049693
+  type: 'test'
+  ...
+# Subtest: frozen accessor receipts remain active and must reject without invocation
+ok 16 - frozen accessor receipts remain active and must reject without invocation
+  ---
+  duration_ms: 0.411153
+  type: 'test'
+  ...
+# Subtest: proxy roots and receipt records reject without running traps
+ok 17 - proxy roots and receipt records reject without running traps
+  ---
+  duration_ms: 0.751096
+  type: 'test'
+  ...
+# Subtest: inherited scope and active extra fields cannot enter validated records
+ok 18 - inherited scope and active extra fields cannot enter validated records
+  ---
+  duration_ms: 2.604369
+  type: 'test'
+  ...
+# Subtest: plain JSON, null-prototype data and ignored extra data retain ordinary behavior
+ok 19 - plain JSON, null-prototype data and ignored extra data retain ordinary behavior
+  ---
+  duration_ms: 3.274611
+  type: 'test'
+  ...
+# (node:109) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:109) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: setup-only workspace cannot reach worker people sync or persist operational people
+ok 20 - setup-only workspace cannot reach worker people sync or persist operational people
+  ---
+  duration_ms: 290.084003
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2361.585355

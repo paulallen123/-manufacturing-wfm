@@ -1,0 +1,44 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: owns its listener even when the former fixed port serves a healthy foreign process
+ok 1 - owns its listener even when the former fixed port serves a healthy foreign process
+  ---
+  duration_ms: 698.698245
+  type: 'test'
+  ...
+# Subtest: bounds a stalled health request and preserves startup diagnostics
+ok 2 - bounds a stalled health request and preserves startup diagnostics
+  ---
+  duration_ms: 5034.700244
+  type: 'test'
+  ...
+# Subtest: cleans up a child that exits by signal without waiting for a second exit event
+ok 3 - cleans up a child that exits by signal without waiting for a second exit event
+  ---
+  duration_ms: 222.038071
+  type: 'test'
+  ...
+# Subtest: startup timeout distinguishes a child that never opens its owned listener
+ok 4 - startup timeout distinguishes a child that never opens its owned listener
+  ---
+  duration_ms: 550.684797
+  type: 'test'
+  ...
+# Subtest: startup timeout reports persistent unhealthy responses without accepting the listener as readiness
+ok 5 - startup timeout reports persistent unhealthy responses without accepting the listener as readiness
+  ---
+  duration_ms: 5070.876024
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11991.440341

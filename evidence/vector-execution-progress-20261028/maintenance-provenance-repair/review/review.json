@@ -1,0 +1,75 @@
+{
+  "reviewer": "/root/readiness_reconcile",
+  "observedAt": "2026-10-28T02:48:11.122Z",
+  "decision": "ACCEPT_BOUNDED_REPAIR",
+  "scope": "Two-file donor PR519 provenance repair; no canonical adoption or external mutation performed by reviewer.",
+  "donor": {
+    "pr": 519,
+    "head": "f3132670f043f1c3f5f4e090ce3eb1b40a18ef02",
+    "branch": "feature/maintenance-parts-cost-20261026",
+    "base": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2"
+  },
+  "files": [
+    {
+      "path": "operations/runtime/maintenance-parts-cost.cjs",
+      "gitBlob": "aad640449451d297817326089cb0f9f4c45e92d1",
+      "sha256": "d2d175b1f7baf2b33d02fba107f05e2ec8ffa779094439470cf54c6f9b254382"
+    },
+    {
+      "path": "operations/runtime/maintenance-parts-cost.test.cjs",
+      "gitBlob": "b17050c8b5110dfe3f8d923a2035b77411db47bf",
+      "sha256": "82bba711a002e54df15a786c93fc103cc00d537b7e29f03e476e5398b2ed8d57"
+    }
+  ],
+  "testEvidence": {
+    "node": "v22.23.2",
+    "authored": 6,
+    "priorIndependent": 3,
+    "newIndependent": 4,
+    "total": {
+      "pass": 13,
+      "fail": 0,
+      "skip": 0
+    },
+    "newHeldoutsOnOriginalDonor": {
+      "pass": 2,
+      "fail": 2,
+      "skip": 0
+    },
+    "coverage": [
+      "Exact order/price source identity collision at either price position",
+      "ASCII/Unicode/NUL/JSON punctuation tuple identities",
+      "Distinct source/recordId/revision tuple fields accepted without delimiter collision",
+      "Existing work-order/price and price/price hash collision defenses retained",
+      "Explicit zero price accepted; missing price rejected",
+      "Frozen outputs, unchanged caller inputs and all action/authentication flags false"
+    ]
+  },
+  "findings": [],
+  "resolvedFinding": "519-01: sourceKeys now seeded with validated work-order tuple; unambiguous JSON tuple encoding replaces NUL concatenation.",
+  "ownership": {
+    "canonicalOwner": "/root",
+    "canonicalPR501Head": "ca05f1017c1e10f9b164c58a044d2cd4159d4ea3",
+    "remoteOwnershipFile": "inventory/ownership.json at ca05f1017c1e10f9b164c58a044d2cd4159d4ea3",
+    "donorHeadAndRefAgree": true,
+    "donorAssignees": [],
+    "donorComments": 0,
+    "donorReviews": 0,
+    "donorUpdatedAt": "2026-10-26T22:44:06Z",
+    "taskSpecific519LeaseObserved": false,
+    "otherOwnerAbsenceNotProven": true,
+    "maintainerCanModify": false,
+    "maintainerFlagMeaning": "Observed flag is not affirmative write entitlement; existing GitHub authorization/protection still governs any actual update.",
+    "recommendation": "Existing user authority permits ordinary reversible repairs on branches, and root remains authorized integration owner. A guarded fast-forward update of this EXISTING donor branch is reasonable after root records a bounded claim through the existing ownership protocol and immediately rechecks source/ref; no separate user permission needed solely because no task-specific lease was previously recorded. Do not treat no assignees/comments as proof of hidden-owner inactivity.",
+    "requiredGuards": [
+      "Use exact f3132670f043f1c3f5f4e090ce3eb1b40a18ef02 as parent; preserve every other path.",
+      "Recheck PR519 head/ref, latest comments and claims immediately before mutation; stop/reconcile if changed.",
+      "Append a normal commit with only reviewed source/test plus accurately scoped evidence if needed; no force update or branch reset.",
+      "Use compare-and-swap expected old head where available, otherwise non-force fast-forward update from exact parent; if remote moved concurrently do not overwrite.",
+      "Respect actual branch protection and required reviews; source acceptance is not merge/deploy approval.",
+      "Update existing canonical checkpoint with donor repair SHA/proof; do not introduce module into canonical runtime without its authenticated consumer."
+    ],
+    "fallback": "If actual branch permissions/protection deny update or conflicting ownership appears, preserve exact patch/evidence in existing PR501 checkpoint for owner handoff; do not create another lane or bypass denial."
+  },
+  "proofBoundary": "Isolated source repair only. No provider authentication, complete customer work-order/price source binding, runtime consumer, image, hosted/customer journey or commercial authority gained."
+}

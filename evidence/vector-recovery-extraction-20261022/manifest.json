@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "capabilityId": "P1-ROOTLESS-RECOVERY-PROOF",
+  "timestamp": "2026-10-22T20:25:30.209Z",
+  "actor": "Work session722aeb5410a4",
+  "sourceBase": "9b02a38d0cff42ab4894b24be617b69818647b2b",
+  "commitParent": "17f6f9930f7c0fdfcdbb516fc9a95f513e53a14c",
+  "classification": "SIMULATED",
+  "implementation": "coded",
+  "verification": "local",
+  "availability": "internal",
+  "imageDigest": null,
+  "railwayDeployment": null,
+  "patch": {
+    "path": "scripts/validate-autonomous-recovery-proof.mjs",
+    "beforeBlob": "24710b2ec94b6803c5fcbc2cd4cb75cabc2d314c",
+    "afterBlob": "fa87463ed31a31290ab3ac33e6085f0d9029f4d1",
+    "sha256": "cdd31d7d348d3ef8bb2f782cbd44f087662425dc69bad4aeb1a21ebc9aebae93"
+  },
+  "results": {
+    "red": "exit1: tar ownership restoration rejected before assertions",
+    "green": "exit0: recovery and all safety assertions pass",
+    "independent": "review_extraction: no findings; exit0; recovery812ms within2500ms",
+    "regression": {
+      "node": "22.23.2",
+      "tests": 153,
+      "pass": 153,
+      "fail": 0,
+      "skip": 0,
+      "sha256": "051b1053d02f0280b1a80c5811d0463b153eaa7a33223ad490e52b15f919d292"
+    },
+    "discardedRun": "129pass24fail due executable EACCES in synced workspace; repeated using verified binary in /tmp"
+  },
+  "artifacts": [
+    {
+      "path": "evidence/vector-recovery-extraction-20261022/recovery-red.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b3400bdbc10fc7bc79fdbed6829abf2fd6b5596"
+    },
+    {
+      "path": "evidence/vector-recovery-extraction-20261022/recovery-green.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c05b7929ef616ab3dfedbac6e076099b780dd2e8"
+    },
+    {
+      "path": "evidence/vector-recovery-extraction-20261022/reviewer-recovery.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a57f10ad2dbdf3adff2d6006f763f99ee2156136"
+    },
+    {
+      "path": "evidence/vector-recovery-extraction-20261022/node22-regression.tap",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ebc8f47c7a43cd57df4cc075e3b2a75a9823354"
+    }
+  ],
+  "limits": [
+    "No image/hosted/provider/customer proof",
+    "No canonical merge or deployment",
+    "Prepared successor only: release owner has image admission in flight"
+  ],
+  "nextAction": "Integration owner apply this one-line validator repair after reconciling current exact-image admission; rerun relevant core gate; no freeze or promotion authority granted"
+}

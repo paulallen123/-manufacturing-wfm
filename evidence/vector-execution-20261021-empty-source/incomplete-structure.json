@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-10-21T20:23:32.141Z",
+  "baseSHA": "765a131bbccc86f2e66f79d30d69bfe5849d03ae",
+  "scope": "Missing/blank organisation structure and partially unidentified population requires explicit review",
+  "files": {
+    "implementation/runtime/configuration-inference-engine.cjs": "1435718925a5b7f11b39e2de921aff9510855a2c222b443d21d31380757feff6",
+    "implementation/runtime/configuration-inference-engine.test.cjs": "d4ccef8daa37488ad4be56a7136785a92be9ed5866e0e795978ea7e8047a9013"
+  },
+  "before": {
+    "pass": 22,
+    "fail": 3
+  },
+  "after": {
+    "runtime": "Node22.23.2",
+    "pass": 25,
+    "fail": 0,
+    "skip": 0
+  },
+  "review": {
+    "owner": "/root/review_inference",
+    "pass": 25,
+    "heldOutAssertions": 96
+  },
+  "proofLevel": "ISOLATED_TESTED",
+  "imageGate": {
+    "sha": "765a131bbccc86f2e66f79d30d69bfe5849d03ae",
+    "job": 1036,
+    "status": "FAILURE",
+    "rootCause": "Unknown; authenticated logs unavailable. Not resolved by this patch."
+  },
+  "notProven": [
+    "source freshness/provenance",
+    "manager cycles",
+    "installed image",
+    "hosted customer journey",
+    "provider/customer proof"
+  ],
+  "released": false
+}

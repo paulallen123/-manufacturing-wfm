@@ -12,6 +12,15 @@ const root = path.resolve(__dirname, '..');
 const bootstrap = fs.readFileSync(path.join(root, 'security/runtime/bootstrap.cjs'), 'utf8');
 const relativeRequires = Array.from(bootstrap.matchAll(/require\(['"]\.\/([^'"]+)['"]\)/g), m => m[1]);
 function copyMappings(docker) {const mappings=new Set();for(const line of docker.split('\n')){if(!line.startsWith('COPY '))continue;const words=line.trim().split(/\s+/).slice(1);while(words[0]?.startsWith('--'))words.shift();const destination=words.pop();for(const source of words){const target=destination.endsWith('/')&&!source.endsWith('/')?destination+path.posix.basename(source):destination;mappings.add(`${source} ${target}`);}}return mappings;}
+const {runtimeStageAncestry} = require('../scripts/docker-runtime-ancestry.cjs');
+test('runtime packaging follows inherited stages without accepting sibling fixtures', () => {
+  const fixture = 'FROM node AS base\nCOPY runtime /app/\nFROM base AS proof\nCOPY fixtures /proof/\nFROM base\nCOPY --from=proof /receipt /tmp/receipt\n';
+  const final = runtimeStageAncestry(fixture);
+  assert.ok(final.includes('COPY runtime /app/'));
+  assert.ok(final.includes('COPY --from=proof /receipt /tmp/receipt'));
+  assert.ok(!final.includes('COPY fixtures /proof/'));
+  assert.ok(!runtimeStageAncestry(fixture.replace('FROM base\n', 'FROM scratch\n')).includes('COPY runtime /app/'));
+});
 const sealedArchiveSha256='3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 const sealedPublicHelpers=Object.freeze({'public/engine.js':Object.freeze(['allowedPeople','descendants']),'public/operations-engine.js':Object.freeze(['approvedSite'])});
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -44,7 +53,7 @@ function assertSealedPublicPackaging(required,composer,docker,proof){
  assert.match(composer,/const archive = path\.join\(root, 'artifact\/wfm-0\.6\.76-hosted-staging-rc1\.tar\.gz'\);/,'composer must select the exact sealed artifact');
  assert.ok(composer.includes("const expected = '"+sealedArchiveSha256+"';"),'composer must pin the exact sealed archive');
  assert.ok(composer.indexOf(mismatch)>=0&&composer.indexOf(extract)>composer.indexOf(mismatch),'composer must verify archive bytes before extracting members into the actual runtime root');
- const finalStage=docker.slice(docker.lastIndexOf('\nFROM '));
+ const finalStage=runtimeStageAncestry(docker);
  const source='COPY artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz /tmp/runtime.tgz';
  const check='RUN echo "'+sealedArchiveSha256+'  /tmp/runtime.tgz" | sha256sum -c -';
  const unpack='&& tar -xzf /tmp/runtime.tgz -C /app';
@@ -52,7 +61,7 @@ function assertSealedPublicPackaging(required,composer,docker,proof){
 }
 test('the final Docker stage includes every relative bootstrap dependency', () => {
   const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
-  const finalStage = docker.slice(docker.lastIndexOf('\nFROM '));
+  const finalStage = runtimeStageAncestry(docker);
   const mappings=copyMappings(finalStage);
   for (const file of relativeRequires) {
     assert.ok(mappings.has(`security/runtime/${file} /app/security-runtime/${file}`), `required runtime module omitted from image: ${file}`);
@@ -93,6 +102,15 @@ test('local proof assembly includes absolute bootstrap runtime dependencies and 
     }
     if (required === 'server.cjs') {
       assert.match(composer, /artifact\/wfm-0\.6\.76-hosted-staging-rc1\.tar\.gz/, 'base server must remain sourced from the pinned sealed runtime artifact');
+      continue;
+    }
+    if (required === 'support-runtime/support-selfhelp-service.cjs') {
+      for (const file of ['support-selfhelp.cjs', 'support-selfhelp-service.cjs']) {
+        assert.ok(fs.existsSync(path.join(root, 'resilience', file)), `support dependency missing: ${file}`);
+        assert.ok(composer.includes(`copy('resilience/${file}', 'support-runtime/${file}')`), `support dependency not composed: ${file}`);
+        assert.ok(docker.includes(`resilience/${file}`), `support dependency not packaged: ${file}`);
+      }
+      assert.match(docker, /COPY resilience\/support-selfhelp\.cjs resilience\/support-selfhelp-service\.cjs \/app\/support-runtime\//);
       continue;
     }
     const [runtimeGroup, ...rest] = required.split('/');

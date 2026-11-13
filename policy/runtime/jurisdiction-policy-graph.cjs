@@ -20,9 +20,29 @@ function stable(v){
 }
 function digest(v){return createHash('sha256').update(stable(v)).digest('hex');}
 function text(v,max=240){return String(v??'').trim().slice(0,max);}
-function iso(v,name){const raw=text(v,80),ms=Date.parse(raw);if(!raw||!Number.isFinite(ms)) throw new Error((name||'timestamp')+' must be valid ISO.');return new Date(ms).toISOString();}
+function iso(v,name){
+  const raw=text(v,80),ms=Date.parse(raw),date=/^([+-]\d{6}|\d{4})-(\d{1,2})-(\d{1,2})(?=\D|$)/.exec(raw);
+  let calendarValid=true;
+  if(date){
+    const year=Number(date[1]),month=Number(date[2]),day=Number(date[3]);
+    const leap=year%4===0&&(year%100!==0||year%400===0);
+    const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+    calendarValid=month>=1&&month<=12&&day>=1&&day<=days[month-1];
+  }
+  if(!raw||!Number.isFinite(ms)||!calendarValid) throw new Error((name||'timestamp')+' must be valid ISO.');
+  return new Date(ms).toISOString();
+}
 function list(v,max=100,maxLen=240){return Array.isArray(v)?[...new Set(v.map(x=>text(x,maxLen)).filter(Boolean))].slice(0,max):[];}
 function clone(v){return v==null?v:JSON.parse(JSON.stringify(v));}
+function validTenant(v){return typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[\u0000-\u001f\u007f]/.test(v);}
+function validTenantScope(v){return Array.isArray(v)?v.length>0&&v.every(validTenant):validTenant(v);}
+function deepFreeze(v){
+  if(v&&typeof v==='object'){
+    for(const child of Object.values(v)) deepFreeze(child);
+    Object.freeze(v);
+  }
+  return v;
+}
 function exactOrListMatch(expected,actual){
   if(expected==null||expected===''||(Array.isArray(expected)&&expected.length===0)) return true;
   const values=Array.isArray(expected)?expected:[expected];
@@ -41,7 +61,7 @@ function normaliseRule(rule={},node={}){
   if(numeric && !Number.isFinite(Number(rule.value))) throw new Error('Numeric policy operator requires finite value.');
   if(legalCharacter==='EXCEPTION' && (!rule.exceptionTo || rule.verifiedException!==true)) throw new Error('Policy exception requires exceptionTo and verifiedException=true.');
   const core={id,domain,key,legalCharacter,operator,value:numeric?Number(rule.value):clone(rule.value),unit:rule.unit?text(rule.unit,60):null,summary:text(rule.summary,500),sourceRefs:list(rule.sourceRefs?.length?rule.sourceRefs:node.sourceRefs,30,300),exceptionTo:rule.exceptionTo?text(rule.exceptionTo,160):null,verifiedException:rule.verifiedException===true,remediation:list(rule.remediation,20,240)};
-  return Object.freeze({...core,ruleDigest:digest(core)});
+  return deepFreeze({...core,ruleDigest:digest(core)});
 }
 
 function normaliseNode(node={}){
@@ -55,16 +75,21 @@ function normaliseNode(node={}){
   if(supersededAt&&Date.parse(supersededAt)<Date.parse(recordedAt)) throw new Error('supersededAt cannot precede recordedAt.');
   const sourceRefs=list(node.sourceRefs,40,300);
   if(node.verified!==true||!sourceRefs.length) throw new Error('Policy node must be verified and provenance-backed.');
-  const scope=clone(node.scope||{});
+  const suppliedScope=node.scope||{},hasTenantScope=Object.hasOwn(suppliedScope,'tenant');
+  if(hasTenantScope&&!validTenantScope(suppliedScope.tenant)) throw new Error('Policy tenant scope must name a tenant or a nonempty list of tenants.');
+  const scope=clone(suppliedScope);
+  if(hasTenantScope&&(!scope||!Object.hasOwn(scope,'tenant'))) throw new Error('Policy tenant scope cannot disappear during serialization.');
+  if(scope&&Object.hasOwn(scope,'tenant')&&!validTenantScope(scope.tenant)) throw new Error('Serialized policy tenant scope is invalid.');
   const rules=(node.rules||[]).map(rule=>normaliseRule(rule,{sourceRefs}));
   if(!rules.length) throw new Error('Policy node requires at least one rule.');
   if(new Set(rules.map(x=>x.id)).size!==rules.length) throw new Error('Policy rule ids must be unique within a node.');
   const core={contractVersion:CONTRACT_VERSION,id,layer,effectiveFrom,effectiveTo,recordedAt,supersededAt,sourceRefs,scope,rules,verified:true,grantsExecutionAuthority:false};
-  return Object.freeze({...core,nodeDigest:digest(core)});
+  return deepFreeze({...core,nodeDigest:digest(core)});
 }
 
 function nodeMatchesContext(node,context={}){
   const s=node.scope||{};
+  if(Object.hasOwn(s,'tenant')&&(!validTenant(context.tenant)||!exactOrListMatch(s.tenant,context.tenant))) return false;
   for(const f of ['supranationalRegime','country','subdivision','sector','legalEntityId','siteId','employmentCategory','workerClass','workLocationCountry','workLocationSubdivision']) if(!exactOrListMatch(s[f],context[f])) return false;
   if(!exactOrListMatch(s.collectiveAgreements,context.collectiveAgreements||[])) return false;
   return true;
@@ -123,7 +148,7 @@ function createJurisdictionPolicyGraph(initial=[]){
     const rules=applicable.flatMap(node=>node.rules.map(rule=>({node,rule})));
     const composed=composeRuleSet(rules);
     const payload={contractVersion:'VECTOR_JURISDICTION_POLICY_CONTEXT_V1',legalAt,knownAt,context,applicableNodes:applicable.map(n=>({id:n.id,layer:n.layer,nodeDigest:n.nodeDigest,sourceRefs:n.sourceRefs,effectiveFrom:n.effectiveFrom,effectiveTo:n.effectiveTo,recordedAt:n.recordedAt})),constraints:composed.constraints,review:composed.review,informational:composed.informational,verifiedCoverage:applicable.length>0,executionAuthority:false,claimBoundary:'Advisory policy context only. This resolver does not grant payroll, scheduling, legal or machine-control authority.'};
-    return Object.freeze({...clone(payload),contextDigest:digest(payload)});
+    return deepFreeze({...clone(payload),contextDigest:digest(payload)});
   }
   return Object.freeze({register,resolve,all});
 }

@@ -1,0 +1,20 @@
+[
+  {
+    "controlledCommandExit": 0,
+    "wrapperExit": 0,
+    "stdout": "CONTROLLED_TAP\n",
+    "stderr": ""
+  },
+  {
+    "controlledCommandExit": 1,
+    "wrapperExit": 1,
+    "stdout": "CONTROLLED_TAP\n",
+    "stderr": ""
+  },
+  {
+    "controlledCommandExit": 137,
+    "wrapperExit": 137,
+    "stdout": "CONTROLLED_TAP\n",
+    "stderr": ""
+  }
+]

@@ -156,6 +156,63 @@ function patchPayrollMoney(runtime) {
   recordInput('operations/runtime/payroll-money.cjs');
   execFileSync(process.execPath, [path.join(root, 'scripts/patch-payroll-money.mjs'), path.join(runtime, 'public')], {stdio:'inherit'});
 }
+function patchDatedLeaveBudget(runtime) {
+  const operationsPath=path.join(runtime,'public','operations-engine.js'),rulesPath=path.join(runtime,'public','work-rules.js');
+  const operations=fs.readFileSync(operationsPath,'utf8'),rules=fs.readFileSync(rulesPath,'utf8');
+  const budgetAnchor='function leaveBudget(s,id,exclude){if(!s.operations?.leaveOpenings[id])return null;return leaveRow(s,id,currentDate(),exclude).availableMinutes/60;}';
+  const capacityAnchor='const dated=root.WFMOps?.leaveBudget(s,p.employee,p.requestId);';
+  if(operations.split(budgetAnchor).length!==2||rules.split(capacityAnchor).length!==2)throw Error('DATED_LEAVE_BUDGET_ANCHOR_CHANGED');
+  // An existing dated opening is credit for its recorded window only. NaN keeps an
+  // inapplicable entry unavailable without reviving the undated legacy fallback.
+  const budgetReplacement=`/* VECTOR_DATED_LEAVE_BUDGET_V1 */
+function leaveBudget(s,id,exclude,interval){
+ const openings=s.operations?.leaveOpenings;if(!openings||!Object.prototype.hasOwnProperty.call(openings,id))return null;
+ const o=openings[id],calendar=requireCalendar(),asOf=calendar.localDate;
+ if(!o||![o.yearStart,o.yearEnd,o.asOf,asOf].every(C.validDate)||o.yearStart>o.asOf||o.asOf>asOf||asOf>o.yearEnd)return NaN;
+ const hasInterval=interval!==undefined&&interval!==null;
+ if(hasInterval&&(!interval||typeof interval!=='object'||typeof interval.start!=='string'||typeof interval.end!=='string'))return NaN;
+ const startMs=hasInterval?Date.parse(interval.start):null,endMs=hasInterval?Date.parse(interval.end):null;
+ if(hasInterval&&(!Number.isFinite(startMs)||!Number.isFinite(endMs)||endMs<=startMs))return NaN;
+ const formatter=new Intl.DateTimeFormat('en-GB',{timeZone:calendar.timeZone,calendar:'gregory',numberingSystem:'latn',year:'numeric',month:'2-digit',day:'2-digit'});
+ const dateAt=ms=>{const parts=Object.fromEntries(formatter.formatToParts(new Date(ms)).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return parts.year+'-'+parts.month+'-'+parts.day;};
+ const start=hasInterval?dateAt(startMs):asOf,end=hasInterval?dateAt(endMs-1):asOf;
+ if(start<o.asOf||end>o.yearEnd||start>end)return NaN;
+ return leaveRow(s,id,asOf,exclude).availableMinutes/60;
+}`;
+  fs.writeFileSync(operationsPath,operations.replace(budgetAnchor,budgetReplacement));
+  fs.writeFileSync(rulesPath,rules.replace(capacityAnchor,'const dated=root.WFMOps?.leaveBudget(s,p.employee,p.requestId,p);'));
+}
+function patchTenantLocalTime(rules){
+ const resolverAnchor="function localResolve(value,fold='reject'){\n assert(typeof value==='string'&&/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(value)&&validDate(value.slice(0,10))&&timeOK(value.slice(11)),'Invalid local date/time.');\n assert(['reject','earlier','later'].includes(fold),'Unknown clock-change choice.');\n const plain=Date.parse(value+':00Z'),fmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});\n const options=[plain-HOUR,plain].filter(ms=>fmt.format(new Date(ms)).replace(' ','T')===value);\n assert(options.length>0,'This local time does not exist when the clocks move forward.');\n assert(options.length===1||fold!=='reject','This local time occurs twice. Choose earlier or later explicitly.');\n return new Date(options[fold==='later'?options.length-1:0]).toISOString();\n}";
+ const infoAnchor="const infoFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),infoCache=new Map();\nfunction localInfo(t){const key=Math.floor(t/MIN);if(infoCache.has(key))return infoCache.get(key);const p=Object.fromEntries(infoFmt.formatToParts(new Date(t)).map(x=>[x.type,x.value]));const v={date:`${p.year}-${p.month}-${p.day}`,minute:Number(p.hour)*60+Number(p.minute)};if(infoCache.size>200000)infoCache.clear();infoCache.set(key,v);return v;}\n";
+ if(rules.split(resolverAnchor).length!==2||rules.split(infoAnchor).length!==2)throw Error('SEALED_LOCAL_TIME_ANCHOR_CHANGED');
+ return rules.replace(resolverAnchor,String.raw`const localOffsetCache=new Map();
+function localResolve(value,fold='reject'){
+ assert(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)&&validDate(value.slice(0,10))&&timeOK(value.slice(11)),'Invalid local date/time.');
+ assert(['reject','earlier','later'].includes(fold),'Unknown clock-change choice.');
+ const zone=requireCalendar().timeZone,plain=Date.parse(value+':00Z');
+ const fmt=new Intl.DateTimeFormat('sv-SE',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+ const key=zone+'|'+value.slice(0,10);let offsets=localOffsetCache.get(key);
+ if(!offsets){
+  const offsetFmt=new Intl.DateTimeFormat('en-US',{timeZone:zone,timeZoneName:'longOffset'}),midday=Date.parse(value.slice(0,10)+'T12:00:00Z');
+  offsets=new Set();
+  // Cache only this zone/day's nearby offsets, never an authority decision.
+  // Exact round trips below still determine each requested local instant.
+  for(let hour=-48;hour<=48;hour++){
+   const label=offsetFmt.formatToParts(new Date(midday+hour*HOUR)).find(part=>part.type==='timeZoneName')?.value;
+   const match=/^GMT(?:([+-])(\d{2}):(\d{2})(?::(\d{2}))?)?$/.exec(label||'');
+   assert(match,'Tenant timezone offset is unavailable.');
+   const seconds=Number(match[2]||0)*3600+Number(match[3]||0)*60+Number(match[4]||0);
+   offsets.add((match[1]==='-'?-1:1)*seconds*1000);
+  }
+  if(localOffsetCache.size>=512)localOffsetCache.clear();localOffsetCache.set(key,offsets);
+ }
+ const options=[...new Set([...offsets].map(offset=>plain-offset))].filter(ms=>fmt.format(new Date(ms)).replace(' ','T')===value+':00').sort((a,b)=>a-b);
+ assert(options.length>0,'This local time does not exist when the clocks move forward.');
+ assert(options.length===1||fold!=='reject','This local time occurs twice. Choose earlier or later explicitly.');
+ return new Date(options[fold==='later'?options.length-1:0]).toISOString();
+}`).replace(infoAnchor,"const infoFmt=zone=>new Intl.DateTimeFormat('en-GB',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),infoCache=new Map();\nfunction localInfo(t){const zone=requireCalendar().timeZone,key=zone+'|'+Math.floor(t/MIN);if(infoCache.has(key))return infoCache.get(key);const p=Object.fromEntries(infoFmt(zone).formatToParts(new Date(t)).map(x=>[x.type,x.value]));const v={date:`${p.year}-${p.month}-${p.day}`,minute:Number(p.hour)*60+Number(p.minute)};if(infoCache.size>200000)infoCache.clear();infoCache.set(key,v);return v;}\n");
+}
 function patchAuthoritativeCalendar(runtime){
  const indexPath=path.join(runtime,'public','index.html'),calendarScript='<script src="/api/tenant-calendar.js"></script>',coreScript='<script src="core.js"></script>';
  const index=fs.readFileSync(indexPath,'utf8');
@@ -167,7 +224,7 @@ function patchAuthoritativeCalendar(runtime){
  const demandPath=path.join(runtime,'public','demand-engine.js');if(fs.existsSync(demandPath)){let text=fs.readFileSync(demandPath,'utf8');const anchor="const NOW='2026-09-14', DAY=86400000;";if(text.includes(anchor)){text=text.replace(anchor,browserCalendar+"\nconst currentDate=()=>requireCalendar().localDate, DAY=86400000;");text=text.replace(/\bNOW\b/g,'currentDate()').replace('const api={currentDate(),SOURCES','const api={NOW:currentDate(),SOURCES');fs.writeFileSync(demandPath,text);}}
  const readinessPath=path.join(runtime,'public','readiness-engine.js');if(fs.existsSync(readinessPath)){let text=fs.readFileSync(readinessPath,'utf8');const anchor="const VERSION='readiness-1',AS_OF=E.AS_OF,DATE='2026-09-14';";if(text.includes(anchor)){text=text.replace(anchor,"const VERSION='readiness-1';"+browserCalendar+"\nconst currentNow=()=>requireCalendar().asOf,currentDate=()=>requireCalendar().localDate;");text=text.replace(/\bAS_OF\b/g,'currentNow()').replace(/\bDATE\b/g,'currentDate()');text=text.replace("const api={VERSION,currentNow(),currentDate(),decorate","const api={VERSION,AS_OF:currentNow(),DATE:currentDate(),decorate");text=text.replace("let result={schemaVersion:VERSION,asOf:currentNow(),fixtureOnly:true,","let result={schemaVersion:VERSION,asOf:currentNow(),timeZone:requireCalendar().timeZone,maxAgeMs:requireCalendar().maxAgeMs,fixtureOnly:true,");fs.writeFileSync(readinessPath,text);}}
  const enginePath=path.join(runtime,'public','engine.js');if(fs.existsSync(enginePath)){let text=fs.readFileSync(enginePath,'utf8');const anchor="const DAY=86400000,HOUR=3600000,AS_OF='2026-09-14T08:38:00+01:00',REVIEWED='2026-09-14';";if(text.includes(anchor)){text=text.replace(anchor,"const DAY=86400000,HOUR=3600000,REVIEWED='2026-09-14';"+browserCalendar+"\nconst runtimeNow=()=>requireCalendar().asOf,runtimeDate=()=>requireCalendar().localDate;");text=text.replace("function audit(s,actor,type,employee,detail){s.audit.push({id:'a'+s.audit.length+'-'+Date.now(),by:actor.personId,employee,type,note:detail,at:AS_OF});","function audit(s,actor,type,employee,detail){s.audit.push({id:'a'+s.audit.length+'-'+Date.now(),by:actor.personId,employee,type,note:detail,at:runtimeNow()});");text=text.replace("function periodBounds(kind,asOf=AS_OF){assert(['daily','weekly','monthly','yearly'].includes(kind),'Unsupported reporting period.');const end=localDay(asOf),d=new Date(end+'T12:00:00Z');let start=end,previousStart;","function periodBounds(kind,asOf=null){assert(['daily','weekly','monthly','yearly'].includes(kind),'Unsupported reporting period.');const live=asOf||runtimeNow(),end=asOf?localDay(live):runtimeDate(),d=new Date(end+'T12:00:00Z');let start=end,previousStart;");text=text.replace("cutoffLocal:new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(asOf)),timezone:'Europe/London'","cutoffLocal:new Intl.DateTimeFormat('en-GB',{timeZone:requireCalendar().timeZone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(live)),timezone:requireCalendar().timeZone");text=text.replace("p.reportedAt='08:38';","p.reportedAt=String(requireCalendar().localTime||'').slice(0,5)||null;").replace("function syncToday(s){for(const r of s.history.filter(r=>r.date==='2026-09-14'))","function syncToday(s){const current=runtimeDate();for(const r of s.history.filter(r=>r.date===current))");text=text.replace(/\bAS_OF\b/g,'runtimeNow()').replace("const api={runtimeNow(),SOURCES","const api={get AS_OF(){return runtimeNow();},SOURCES");fs.writeFileSync(enginePath,text);}}
- const rulesPath=path.join(runtime,'public','work-rules.js');if(fs.existsSync(rulesPath)){let text=fs.readFileSync(rulesPath,'utf8');const anchor="const DAY=86400000,HOUR=3600000,MIN=60000,AS_OF='2026-09-14',CHECKED='2026-09-14';";if(text.includes(anchor)){text=text.replace(anchor,"const DAY=86400000,HOUR=3600000,MIN=60000,CHECKED='2026-09-14';"+browserCalendar+"\nconst runtimeNow=()=>requireCalendar().asOf,runtimeDate=()=>requireCalendar().localDate;");text=text.replace("const plain=Date.parse(value+':00Z'),fmt=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/London'","const plain=Date.parse(value+':00Z'),fmt=new Intl.DateTimeFormat('sv-SE',{timeZone:requireCalendar().timeZone");text=text.replace("const infoFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London'","const infoFmt=()=>new Intl.DateTimeFormat('en-GB',{timeZone:requireCalendar().timeZone").replace('infoFmt.formatToParts','infoFmt().formatToParts');text=text.replace("r.reviewedAt=new Date().toISOString();","r.reviewedAt=runtimeNow();").replace("s.workRules.audit.push({at:new Date().toISOString(),","s.workRules.audit.push({at:runtimeNow(),").replace("effectiveFrom:AS_OF,revision:1","effectiveFrom:CHECKED,revision:1").replace("p.id==='e1'?'part-time':'weekday',AS_OF,28","p.id==='e1'?'part-time':'weekday',CHECKED,28");text=text.replace(/\bAS_OF\b/g,'runtimeDate()').replace("const api={runtimeDate(),CHECKED","const api={get AS_OF(){return runtimeDate();},CHECKED");fs.writeFileSync(rulesPath,text);}}
+ const rulesPath=path.join(runtime,'public','work-rules.js');if(fs.existsSync(rulesPath)){let text=fs.readFileSync(rulesPath,'utf8');const anchor="const DAY=86400000,HOUR=3600000,MIN=60000,AS_OF='2026-09-14',CHECKED='2026-09-14';";if(text.includes(anchor)){text=text.replace(anchor,"const DAY=86400000,HOUR=3600000,MIN=60000,CHECKED='2026-09-14';"+browserCalendar+"\nconst runtimeNow=()=>requireCalendar().asOf,runtimeDate=()=>requireCalendar().localDate;");text=patchTenantLocalTime(text);text=text.replace("r.reviewedAt=new Date().toISOString();","r.reviewedAt=runtimeNow();").replace("s.workRules.audit.push({at:new Date().toISOString(),","s.workRules.audit.push({at:runtimeNow(),").replace("effectiveFrom:AS_OF,revision:1","effectiveFrom:CHECKED,revision:1").replace("p.id==='e1'?'part-time':'weekday',AS_OF,28","p.id==='e1'?'part-time':'weekday',CHECKED,28");text=text.replace(/\bAS_OF\b/g,'runtimeDate()').replace("const api={runtimeDate(),CHECKED","const api={get AS_OF(){return runtimeDate();},CHECKED");fs.writeFileSync(rulesPath,text);}}
  const onboardingPath=path.join(runtime,'public','onboarding-engine.js');if(fs.existsSync(onboardingPath)){let text=fs.readFileSync(onboardingPath,'utf8');const anchor="const assert=E.assert,AS_OF=E.AS_OF,SCHEMA=1,LOCALES=new Set(['en-GB','fr-FR','de-DE','pl-PL']),CONTRACTS=new Set(['full_time','part_time','annualised','zero_hours']);";if(text.includes(anchor)){text=text.replace(anchor,"const assert=E.assert,SCHEMA=1,LOCALES=new Set(['en-GB','fr-FR','de-DE','pl-PL']),CONTRACTS=new Set(['full_time','part_time','annualised','zero_hours']);"+browserCalendar+"\nconst runtimeNow=()=>requireCalendar().asOf;");text=text.replace(/\bAS_OF\b/g,'runtimeNow()');fs.writeFileSync(onboardingPath,text);}}
 }
 function patchCustomerFacingCopy(runtime) {
@@ -183,11 +240,16 @@ function patchCustomerFacingCopy(runtime) {
     fs.writeFileSync(file,text);
   }
 }
+function copyKioskClient(runtime) {
+  const source='ux-overlay/kiosk-client.js';recordInput(source);
+  fs.copyFileSync(path.join(root,source),path.join(runtime,'public/kiosk-client.js'));
+}
 const run = (file, args = []) => { recordInput(file); return execFileSync(process.execPath, [path.join(root, file), ...args], { stdio: 'inherit' }); };
 recordInput('scripts/compose-vector-local-runtime.mjs');
 if (fs.existsSync(output)) {
   run('scripts/patch-workspace-compiler.mjs', [path.join(output,'lib/configuration-compiler.cjs')]);
-  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);
+  const result=composeStaffology(output);patchAuthoritativeCalendar(output);patchCustomerFacingCopy(output);patchPayrollMoney(output);patchDatedLeaveBudget(output);
+  copyKioskClient(output);
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
 }
@@ -205,8 +267,8 @@ run('scripts/retire-legacy-presentation.mjs', [publicRoot]);
 run('scripts/harden-attendance-integrity.mjs', [publicRoot]);
 const copy = (source, destination) => { recordInput(source); const target = path.join(output, destination); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.copyFileSync(path.join(root, source), target); };
 const groups = {
-  security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'proof-runner-auth.cjs', 'passkey-schema.cjs', 'passkey-auth.cjs', 'passkey-entry.html', 'passkey-ui.js', 'passkey-ui.css', 'package.json', 'package-lock.json', 'hosted-listen-guard.cjs', 'hosted-application-user-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
-  integration: ['autonomous-integration-hub.cjs', 'gusto-company-connector.cjs', 'gusto-oauth-landing.cjs', 'gusto-webhook-receiver.mjs', 'gusto-webhook-preload.mjs'],
+  security: ['bootstrap.cjs', 'runtime-identity.cjs', 'identity-survival-guard.cjs', 'proof-runner-auth.cjs', 'passkey-schema.cjs', 'passkey-auth.cjs', 'federated-auth.cjs', 'federated-ui.js', 'passkey-entry.html', 'passkey-ui.js', 'passkey-ui.css', 'package.json', 'package-lock.json', 'hosted-listen-guard.cjs', 'hosted-application-user-guard.cjs', 'owner-access-recovery.cjs', 'durable-state-guard.cjs', 'retired-presentation.cjs'],
+  integration: ['three-min-feed.cjs', 'autonomous-integration-hub.cjs', 'gusto-company-connector.cjs', 'gusto-oauth-landing.cjs', 'gusto-webhook-receiver.mjs', 'gusto-webhook-preload.mjs'],
   integrations: ['staffology/canonical-operations.cjs', 'staffology/configured-site-authority.cjs', 'staffology/employee-import-previews.cjs'],
   implementation: [
     'one-day-enterprise-engine.cjs', 'one-day-enterprise-engine-core.cjs',
@@ -228,16 +290,18 @@ const groups = {
     'decision-outcome-proof.cjs', 'realtime-event-service.cjs',
     'autopilot-execution-engine.cjs', 't9-customer-guardian.cjs',
     'manufacturing-scheduling-engine.cjs', 'manufacturing-demand-forecast.cjs',
-    'schedule-attendance-reconciliation.cjs', 'scheduling-intelligence-service.cjs', 'scheduling-authority.cjs'
+    'schedule-attendance-reconciliation.cjs', 'scheduling-intelligence-service.cjs', 'scheduling-authority.cjs', 'order-start-variance.cjs', 'production-output-gap.cjs', 'order-material-availability.cjs'
   ],
   reporting: ['vector-reporting-service.cjs'],
   trust: ['vector-trust-spine.cjs']
 };
 for (const [group, files] of Object.entries(groups)) for (const file of files) {const sourceRoot=group==='integrations'?'integrations':`${group}/runtime`,targetRoot=group==='integrations'?'integrations':`${group}-runtime`;copy(`${sourceRoot}/${file}`,`${targetRoot}/${file}`);}
+copy('resilience/support-selfhelp.cjs', 'support-runtime/support-selfhelp.cjs');
+copy('resilience/support-selfhelp-service.cjs', 'support-runtime/support-selfhelp-service.cjs');
 composeStaffology(output);
 patchAuthoritativeCalendar(output);
 patchCustomerFacingCopy(output);
-patchPayrollMoney(output);
+patchPayrollMoney(output);patchDatedLeaveBudget(output);
 // Copy the lockfile-installed dependency closure; never install from the proof process.
 const securityDependencies = path.join(root, 'security/runtime/node_modules');
 if (!fs.existsSync(path.join(securityDependencies, '@simplewebauthn/server/package.json'))) throw Error('PASSKEY_DEPENDENCIES_MISSING: run npm ci --prefix security/runtime --ignore-scripts before composing proof.');
@@ -246,6 +310,7 @@ copy('security/runtime/passkey-session-ui.js', 'public/passkey-session-ui.js');
 copy('operations/runtime/workforce-lifecycle-guard.cjs', 'operations-runtime/workforce-lifecycle-core.cjs');
 copy('operations/runtime/workforce-lifecycle-router.cjs', 'operations-runtime/workforce-lifecycle-guard.cjs');
 copy('ux-overlay/vector-workflows.js', 'public/vector-workflows.js');
+copyKioskClient(output);
 const read = file => { recordInput(file); return fs.readFileSync(path.join(root, file), 'utf8'); };
 const css = '/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + fs.readFileSync(path.join(publicRoot, 'factory-control-ui.css'), 'utf8') + '\n/* WFM_ADAPTIVE_COACH_BEGIN */\n' + read('learning/ui/adaptive-coach.css') + '\n/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' + read('implementation/ui/implementation-journey.css') + '\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + read('ux-overlay/vector-shell.css') + read('ux-overlay/vector-workflows.css') + '\n/* VECTOR_REPORTING_UI_V1 */\n' + read('reporting/ui/vector-reporting-ui.css');
 const js = "'use strict';\n/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n" + '\n;/* WFM_ADAPTIVE_COACH_BEGIN */\n' + read('learning/ui/adaptive-coach.js') + '\n;/* WFM_IMPLEMENTATION_JOURNEY_VERSION_D_BEGIN */\n' + read('implementation/ui/implementation-journey.js') + '\n;/* VECTOR_WORKFORCE_OPERATIONS_APPROVED_V1 */\n' + read('ux-overlay/vector-shell.js') + '\n;/* VECTOR_REPORTING_UI_V1 */\n' + read('reporting/ui/vector-reporting-ui.js');

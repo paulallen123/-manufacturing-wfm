@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-30T01:26:50Z",
+  "heads": {
+    "501": {
+      "head": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "branch": "test/vector-empty-organisation-regression-20261020",
+      "base": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/501"
+    },
+    "521": {
+      "head": "c6ded217c9d53cf19d3df66b8d85ee0c53aa382f",
+      "branch": "feature/training-shift-collision-20261027",
+      "base": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/521"
+    },
+    "526": {
+      "head": "1cb72ddd39c8ce3789f77f3a1bc667443b5db0e1",
+      "branch": "feature/maintenance-permit-evidence-20261029",
+      "base": "48dce8f697825c8cd5f99b3e5aeea3953647f8c2",
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/526"
+    },
+    "528": {
+      "head": "d7cb3eb771dcf9d6dee6d0b4c35e5bc7cedd4f74",
+      "branch": "docs/vector-lanes-20261029",
+      "base": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/528"
+    },
+    "529": {
+      "head": "2afb04d18801f0e43d3291a8e55917dee4701f5d",
+      "branch": "feature/v088-gusto-http-process-proof-20261029",
+      "base": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/529"
+    },
+    "531": {
+      "head": "e20a4c0cddaea85b2661b42a1c6165220a29eb93",
+      "branch": "test/vector-v014-setup-containment-20261029",
+      "base": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+      "url": "https://github.com/paulallen123/-manufacturing-wfm/pull/531"
+    }
+  },
+  "agentsFiles": [],
+  "treeTruncated": false
+}

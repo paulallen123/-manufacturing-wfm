@@ -43,7 +43,11 @@ for (const key of [
 assert.equal(manifest.parent_source_content_sha256, manifest.canonical_source_sha256, 'Canonical source provenance must match the parent source identity.');
 assert.equal(manifest.hosted_source_sha256, manifest.hosted_full_source_content_sha256, 'Hosted source provenance fields disagree.');
 
-const fromImage = dockerfile.match(/^FROM\s+(\S+)\s*$/m)?.[1];
+const runtimeStages = [...dockerfile.matchAll(/^FROM[ \t]+(\S+)[ \t]+AS[ \t]+hardened-runtime[ \t]*\r?$/gm)];
+assert.equal(runtimeStages.length, 1, 'Exactly one hardened runtime base is required.');
+const fromImage = runtimeStages[0][1];
+const stages = [...dockerfile.matchAll(/^FROM[ \t]+([^\r\n]+)$/gm)];
+assert.equal(stages.at(-1)?.[1].trim(), 'hardened-runtime', 'Final image must inherit the validated hardened runtime.');
 assert.equal(fromImage, manifest.node_image, 'Docker base image and deployment manifest must match exactly.');
 const imageMatch = String(manifest.node_image).match(/^node:(\d+\.\d+\.\d+)-([^@]+)@sha256:([a-f0-9]{64})$/i);
 assert.ok(imageMatch, 'Deployment manifest must pin an exact Node image version and immutable sha256 digest.');

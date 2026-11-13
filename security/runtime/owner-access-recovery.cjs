@@ -159,36 +159,44 @@ function firstPasskeyPage(res) {
 }
 
 function recoveryPage(res) {
-  const nonce = randomBytes(24).toString('base64');
+  // This public help page conveys no account or grant state and grants no authority.
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000');
-  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'`);
-  res.end(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recover Vector access</title>
-<style nonce="${nonce}">body{font:17px system-ui;max-width:32rem;margin:4rem auto;padding:1rem;color:#17302b}label{display:block;margin-top:1rem}input,button{box-sizing:border-box;width:100%;font:inherit;padding:.7rem;margin-top:.4rem}button{margin-top:1.5rem}#status{min-height:3rem}</style>
-<h1>Recover your Vector access</h1><p>Use the one-time recovery code provided by your environment owner. This changes the password for superuser@northstar.example.</p>
-<form id="recovery"><label>Recovery code<input id="token" type="password" autocomplete="off" required maxlength="43"></label><label>New password (20–256 characters)<input id="password" type="password" autocomplete="new-password" required minlength="20" maxlength="256"></label><label>Confirm new password<input id="confirm" type="password" autocomplete="new-password" required minlength="20" maxlength="256"></label><button>Set new password</button></form><p id="status" role="status"></p><a href="/">Return to sign in</a>
-<script nonce="${nonce}">'use strict';const form=document.getElementById('recovery'),token=document.getElementById('token'),password=document.getElementById('password'),confirm=document.getElementById('confirm'),status=document.getElementById('status');form.addEventListener('submit',async event=>{event.preventDefault();if(password.value!==confirm.value){status.textContent='Passwords must match.';return;}const button=form.querySelector('button');button.disabled=true;try{const response=await fetch('${API_PATH}',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',cache:'no-store',body:JSON.stringify({token:token.value,password:password.value})});token.value='';password.value='';confirm.value='';status.textContent=response.ok?'Password updated. Return to sign in with your new password.':'Recovery could not be completed. Ask your environment owner to check the code and security status.';if(response.ok)form.hidden=true;}catch{status.textContent='No result was confirmed. Try signing in with your new password before requesting a new code.';}finally{button.disabled=false;}});</script></html>`);
+  res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+  res.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VECTOR · Help signing in</title><link rel="stylesheet" href="/passkey-ui.css"></head>
+<body><header><a href="/" aria-label="VECTOR home">VECTOR</a></header><main><section aria-labelledby="heading"><h1 id="heading">Help signing in</h1>
+<p>Use a registered passkey on this device, another device or a security key to sign in.</p>
+<p>New here? Open your secure invitation to set up your first passkey. If your environment owner gave you a one-time access setup code, ask them to check that access setup is available.</p>
+<p>If you have lost every registered passkey, contact your organisation’s administrator to verify your identity and arrange the appropriate recovery process.</p>
+<a href="/">Return to secure sign in</a><p>Your biometric information stays on your device.</p></section></main></body></html>`);
   return true;
 }
-
 function createOwnerAccessRecovery({ env = process.env, clock = Date.now } = {}) {
   return {
     async handleRequest(req, res) {
       const path = String(req.url || '').split('?')[0];
       if (path !== API_PATH && path !== PAGE_PATH) return false;
       try {
+        if (path === PAGE_PATH) {
+          // Help is public; account setup still requires the existing explicit grant.
+          const origin = new URL(env.WFM_PUBLIC_ORIGIN);
+          if (origin.protocol !== 'https:' || origin.origin !== env.WFM_PUBLIC_ORIGIN || origin.username || origin.password) throw Error('Recovery unavailable.');
+          if (req.url !== path || req.headers.host !== origin.host || req.headers['x-forwarded-proto'] !== 'https' ||
+              FORBIDDEN_IDENTITY_HEADERS.some(name => req.headers[name] !== undefined)) throw denied();
+          if (req.method !== 'GET') throw denied(405);
+          const now = clock();
+          let setupGrant;
+          try { setupGrant = configuration(env, now); } catch { /* Invalid setup authority never enables a form. */ }
+          return setupGrant?.purpose === 'first-passkey' && now < setupGrant.expiresAt ? firstPasskeyPage(res) : recoveryPage(res);
+        }
         const grant = configuration(env, clock());
         if (!grant || clock() >= grant.expiresAt) return respond(res, 404, { error: 'Not Found' });
         if (req.url !== path || req.headers.host !== grant.host || req.headers['x-forwarded-proto'] !== 'https' ||
             FORBIDDEN_IDENTITY_HEADERS.some(name => req.headers[name] !== undefined)) throw denied();
-        if (path === PAGE_PATH) {
-          if (req.method !== 'GET') throw denied(405);
-          return grant.purpose === 'first-passkey' ? firstPasskeyPage(res) : recoveryPage(res);
-        }
         if (req.method !== 'POST') throw denied(405);
         if (req.headers.origin !== grant.origin || (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site'] !== 'same-origin')) throw denied();
         if (!/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(req.headers['content-type'] || '') || req.headers['content-encoding']) throw denied(415);

@@ -1,0 +1,110 @@
+{
+  "run_id": "vector-startup-repair-20261023",
+  "timestamp": "2026-10-23T20:13:05Z",
+  "owner": "/root",
+  "workspace": "/workspace/scratch/cd4e2bcb0821",
+  "claim_comment": 6373750129,
+  "pr": 501,
+  "parent_sha": "13276a7806ae9994f44ca4a9a0c3b8b1f2bbf3b1",
+  "candidate_identity": "Resolve containing Git commit; four reviewed source/test blobs below",
+  "files": [
+    {
+      "path": "verification/vector-repair-20260921/attendance-runtime-harness.mjs",
+      "sha256": "9cb3c057d935b311de5d436656ba99d1a8c1465065eeca502aedf174f86d217b",
+      "git_blob": "3846c78b0fd3670b8e3600a67dbfb9a445fba144"
+    },
+    {
+      "path": "verification/vector-repair-20260921/attendance-runtime-harness.test.mjs",
+      "sha256": "f60e4e25ad0b2c884745472d2e9e683c9f15b76a734cbabc7566c7f9105aa9f1",
+      "git_blob": "68a86c7713ce728493e4ff07f763d96abcc7db50"
+    },
+    {
+      "path": "verification/vector-repair-20260921/isolated-build-receipt.cjs",
+      "sha256": "b04b0c3f815578c6699fccac87634d006849738cd7daa0f432f1c6254c1eb6e7",
+      "git_blob": "58e340fa154886450c5da9410a076bb1bf59259d"
+    },
+    {
+      "path": "verification/vector-repair-20260921/isolated-build-receipt.test.cjs",
+      "sha256": "d79d3f8eb5bdcde1bf9dc252299821c7fba14f147adaf023d5a6c52749601578",
+      "git_blob": "ab0a86859394195fdf64274b8f5549b9baa79d99"
+    },
+    {
+      "path": "evidence/vector-startup-repair-20261023/harness-fixture-repair.tap",
+      "sha256": "419c4312aa02bc60340aa115e44dd722d14c5c00fb0f554c62b11bf9f7799b3c",
+      "git_blob": "8569d46625aa794c0651d9e45a30ab3d544d8216"
+    },
+    {
+      "path": "evidence/vector-startup-repair-20261023/composed-diagnostic-candidate.tap",
+      "sha256": "3feb64c59f3d42f4abce72100c9d55ee49cf399f76d8c1aec00d1976657cc18f",
+      "git_blob": "0d65c9871d4a1bdbf907cf0b865a6552933b51c2"
+    },
+    {
+      "path": "evidence/vector-startup-repair-20261023/receipt-tests-final.tap",
+      "sha256": "a1b076540a6cd53733a40a1e9f9e3734e8663e2f94e138cc129dfed32985dd3a",
+      "git_blob": "aecc13e93e76dda2733db721614a7a0791936b8e"
+    }
+  ],
+  "changes": [
+    "Timeout diagnostics distinguish waiting-listener, waiting-health and lastHTTPstatus",
+    "Fixture budgets allow cold subprocess startup while preserving real negative assertions",
+    "Isolated receipt requires artifact/runtime/reviewed source SHA agreement before listening; no hardcoded tree or customer-readiness claim"
+  ],
+  "unchanged": [
+    "Runtime readiness default30000ms",
+    "Dockerfile/full release tests",
+    "Adopted six-file repair and auth transaction repair",
+    "Canonical release branch and customer deployment"
+  ],
+  "tests": [
+    {
+      "command": "node --test verification/vector-repair-20260921/attendance-runtime-harness.test.mjs",
+      "node": "22.23.2",
+      "pass": 5,
+      "fail": 0,
+      "exit": 0,
+      "evidence": "harness-fixture-repair.tap"
+    },
+    {
+      "command": "node --test operations/runtime/workflow-action-evidence-sources.test.cjs scripts/workflow-action-evidence.composed.test.mjs",
+      "node": "22.23.2",
+      "pass": 7,
+      "fail": 0,
+      "exit": 0,
+      "evidence": "composed-diagnostic-candidate.tap"
+    },
+    {
+      "command": "node --test verification/vector-repair-20260921/isolated-build-receipt.test.cjs",
+      "node": "22.23.2",
+      "pass": 4,
+      "fail": 0,
+      "exit": 0,
+      "evidence": "receipt-tests-final.tap"
+    }
+  ],
+  "independent_review": {
+    "identity": "/root/build_route_review",
+    "verdict": "No blocking finding for four reviewed blobs; current build/release gates required",
+    "record": "review.md",
+    "heldouts": "Observed reviewer execution results summarized; raw held-out transcript not saved by reviewer"
+  },
+  "proof_level": "ISOLATED_TESTED",
+  "dataset": "Synthetic fixtures; cached local dependencies",
+  "artifact_digest": null,
+  "verified_url": null,
+  "customer_proven": false,
+  "provider_proven": false,
+  "released": false,
+  "previous_build": {
+    "id": "c66e32ed-e56e-4017-b3c9-fcbdf2e8833c",
+    "source": "80e32463a113599a3e29f02fed267fed5ed1b5b7",
+    "status": "FAILED",
+    "cause": "30000ms startup timeout, root cause unresolved"
+  },
+  "next": "One bounded isolated build of containing reviewed candidate, source metadata checked against frozen SHA. Receipt command must pass only expectedSourceSha.",
+  "rollback": "Restore prior isolated source/config from existing inspection record if necessary; no customer-state mutation.",
+  "limitations": [
+    "No final image, browser trace, provider receipt, customer acceptance or new deployment yet",
+    "Local pass does not resolve prior hosted timeout",
+    "GitHub formal release approval not granted by agent review"
+  ]
+}

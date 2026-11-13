@@ -1,0 +1,59 @@
+{
+  "task_identity": "/root/backlog_reconcile",
+  "timestamp": "2026-10-27T01:37:45.141212+00:00",
+  "source_sha": "0dd1dd9064e6d6940d76d0577e06cdcbf481a779",
+  "reporting_source_blob": "57e4fb5950de5900a6bfdf881ee8f36b247513be",
+  "bootstrap_blob": "42e49e5d48ce627089f21ef6c42204c6dabf97c4",
+  "ownership_blob": "bc4ae715ed702218968f4e54d1a921b03c1a630c",
+  "ownership_reconciliation": "Prior reporting convergence completed; no active competing reporting delivery task visible. PR481 comments empty; sole review5555085510 remains historic exact-head no-go. No new remote claim/mutation.",
+  "current_wiring": {
+    "file": "security/runtime/bootstrap.cjs",
+    "constructor": "createVectorReportingService({ dbPath: process.env.WFM_DB })",
+    "adapter_supplied": false,
+    "external_schedule_creation": "Blocked by normaliseSchedule when no deliveryAdapter.deliver exists",
+    "existing_external_schedule_execution": "access predicate rejects when adapter.deliver/authorize unavailable",
+    "proof_scope": "Current source wiring, not runtime environment/hosted verification"
+  },
+  "test": {
+    "runtime": "Node v22.23.2",
+    "command": "node --test --test-name-pattern='delivery oracle:' reporting-delivery-assessment/oracle.test.cjs",
+    "tests": 4,
+    "pass": 0,
+    "fail": 4,
+    "skipped": 0,
+    "oracle_sha256": "4aab730a62ad1026998aa433e713ee935bc6e852d529314422ae85f1263603d9",
+    "evidence": "results.tap",
+    "designation": "Synthetic local SQLite and adapters; no provider calls"
+  },
+  "findings": [
+    {
+      "scenario": "Provider accepted then response lost",
+      "observed": "Side effect count1; durable receipt FAILED, not UNKNOWN. Same slot suppressed after receipt persists."
+    },
+    {
+      "scenario": "Response success without independent readback",
+      "observed": "Arbitrary resolved adapter receipt sets SENT; no readback invoked/required."
+    },
+    {
+      "scenario": "Concurrent service instances same DB/schedule/slot",
+      "observed": "Two external adapter calls before final INSERT OR IGNORE; inFlight is per process. Durable receipt uniqueness does not serialize external mutation."
+    },
+    {
+      "scenario": "Unknown outcome next slot containment",
+      "observed": "Same slot not retried, but next day performs another external call despite unresolved prior accepted/response-lost outcome."
+    }
+  ],
+  "inferred_not_fault_injected": [
+    "Worker death after external apply and before receipt insert leaves no durable intent; later replay may repeat mutation. Stable idempotency key is supplied but provider idempotency semantics are not required/verified."
+  ],
+  "release_disposition": "Do not enable external reporting email_link/sftp adapter. Current canonical no-adapter path is already disabled; no redundant blanket guard proposed.",
+  "enablement_acceptance_gate": [
+    "Durable tenant/action/payload-bound intent atomically claimed before external call across workers and restarts.",
+    "Deterministic current permit and stable provider-supported idempotency; reconcile before retry of uncertain mutation.",
+    "Accepted response loss/timeouts classified UNKNOWN; stop affected writes pending reconciliation.",
+    "Independent readback validates provider action/payload/destination state before verified delivery claim; unsuccessful readback cannot become SENT.",
+    "Append-only attempt/reconciliation events support unknown resolution without mutating historical receipts.",
+    "Failure tests: response loss, duplicate workers, crash after apply before record, delayed/stale readback, revocation, future-slot containment and authorized recovery."
+  ],
+  "mutations": "No source edits, external provider calls, remote writes or deployments."
+}

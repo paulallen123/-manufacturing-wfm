@@ -44,12 +44,14 @@ function createPasskeyAuth(options={}) {
     if(!row)return null;
     const passkey=get('SELECT * FROM passkey_sessions WHERE token_hash=?',tokenHash);
     const proof=fixtureProof?get('SELECT * FROM proof_runner_sessions WHERE token_hash=?',tokenHash):null;
-    const metadata=passkey||proof;
+    const federated=options.federatedAuth?.getSession(tokenHash);
+    if(federated&&!options.federatedAuth.validateSession(tokenHash,row))return null;
+    const metadata=passkey||proof||federated;
     if(!metadata||metadata.email!==row.email||metadata.tenant!==row.tenant||metadata.role!==row.role||metadata.expires<=Date.now()||metadata.issued_at<Date.now()-TTL)return null;
     if(passkey&&!get('SELECT id FROM passkey_credentials WHERE id=? AND tenant=? AND email=? AND revoked_at IS NULL',passkey.credential_id,row.tenant,row.email))return null;
     const control=scope(row);const binding=get('SELECT * FROM identity_session_bindings WHERE token_hash=?',tokenHash);
-    if(control.frozen||binding&&(binding.tenant!==row.tenant||binding.audience!=='wfm-api'||binding.session_epoch!==control.epoch||binding.policy_version!==control.policy||binding.issuer!==(passkey?'wfm-passkey':'wfm-proof-runner')))return null;
-    return {email:row.email,tenant:row.tenant,role:row.role,kind:passkey?'passkey':'proof',source:tokenHash,...control};
+    if(control.frozen||binding&&(binding.tenant!==row.tenant||binding.audience!=='wfm-api'||binding.session_epoch!==control.epoch||binding.policy_version!==control.policy||binding.issuer!==(federated?'wfm-federated':passkey?'wfm-passkey':'wfm-proof-runner')))return null;
+    return {email:row.email,tenant:row.tenant,role:row.role,kind:federated?'federated':passkey?'passkey':'proof',source:tokenHash,...control};
   }
   function authorize(req,body) {
     if (Object.hasOwn(body,'ownerRecovery')) {
@@ -181,16 +183,17 @@ function createPasskeyAuth(options={}) {
   function serveEntry(req,res) {
     if(req.method!=='GET')return false;
     const route=String(req.url||'').split('?')[0];
-    const assets={'/passkey-ui.js':['passkey-ui.js','text/javascript; charset=utf-8'],'/passkey-ui.css':['passkey-ui.css','text/css; charset=utf-8'],'/passkey-browser.js':['node_modules/@simplewebauthn/browser/dist/bundle/index.umd.min.js','text/javascript; charset=utf-8']};
+    const assets={'/federated-ui.js':['federated-ui.js','text/javascript; charset=utf-8'],'/passkey-ui.js':['passkey-ui.js','text/javascript; charset=utf-8'],'/passkey-ui.css':['passkey-ui.css','text/css; charset=utf-8'],'/passkey-browser.js':['node_modules/@simplewebauthn/browser/dist/bundle/index.umd.min.js','text/javascript; charset=utf-8']};
     let asset=assets[route];
     if(!asset&&!['/','/index.html','/passkeys'].includes(route))return false;
     const tokenHash=hash(cookie(req,'wfm_session'));
     const current=get('SELECT s.token_hash,u.email,u.tenant,u.role FROM sessions s JOIN users u ON s.email=u.email WHERE s.token_hash=? AND s.expires>?',tokenHash,Date.now());
-    const metadata=get('SELECT * FROM passkey_sessions WHERE token_hash=?',tokenHash)||get('SELECT * FROM proof_runner_sessions WHERE token_hash=?',tokenHash);
+    const federated=options.federatedAuth?.getSession(tokenHash);
+    const metadata=get('SELECT * FROM passkey_sessions WHERE token_hash=?',tokenHash)||get('SELECT * FROM proof_runner_sessions WHERE token_hash=?',tokenHash)||federated;
     const binding=get('SELECT * FROM identity_session_bindings WHERE token_hash=?',tokenHash);
-    const validSession=current&&metadata&&metadata.email===current.email&&metadata.tenant===current.tenant&&metadata.role===current.role&&metadata.expires>Date.now()&&
+    const validSession=current&&metadata&&(!federated||options.federatedAuth.validateSession(tokenHash,current))&&metadata.email===current.email&&metadata.tenant===current.tenant&&metadata.role===current.role&&metadata.expires>Date.now()&&
       (!metadata.credential_id||get('SELECT id FROM passkey_credentials WHERE id=? AND tenant=? AND email=? AND revoked_at IS NULL',metadata.credential_id,current.tenant,current.email))&&
-      (!binding||binding.tenant===current.tenant&&binding.audience==='wfm-api'&&binding.issuer===(metadata.credential_id?'wfm-passkey':'wfm-proof-runner')&&binding.session_epoch===scope(current).epoch&&binding.policy_version===scope(current).policy);
+      (!binding||binding.tenant===current.tenant&&binding.audience==='wfm-api'&&binding.issuer===(federated?'wfm-federated':metadata.credential_id?'wfm-passkey':'wfm-proof-runner')&&binding.session_epoch===scope(current).epoch&&binding.policy_version===scope(current).policy);
     if(route==='/passkeys'||route==='/'||route==='/index.html') {
       if(route!=='/passkeys'&&validSession)return false;
       asset=['passkey-entry.html','text/html; charset=utf-8'];

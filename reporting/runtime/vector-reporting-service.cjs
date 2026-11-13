@@ -2,6 +2,9 @@
 
 const { createHash, randomUUID } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { isProxy } = require('node:util').types;
+const ownDescriptor = Object.getOwnPropertyDescriptor;
+const freeze = Object.freeze;
 
 const PREFIX = '/api/reporting';
 const MAX_BODY_BYTES = 96 * 1024;
@@ -114,6 +117,16 @@ const TEMPLATES = Object.freeze([
   {id:'audit-pack',label:'Show me the evidence trail',sourceId:'audit-evidence',visualisation:'table',columns:['observedAt','actor','authority','action','status','buildId','evidenceRef'],comparison:'none',narrative:false}
 ]);
 
+// Public catalog metadata cannot mutate the private authorization inputs.
+for(let i=0;i<SOURCES.length;i++){
+  freeze(SOURCES[i].fields);
+  freeze(SOURCES[i]);
+}
+for(let i=0;i<TEMPLATES.length;i++){
+  freeze(TEMPLATES[i].columns);
+  freeze(TEMPLATES[i]);
+}
+
 function stable(value){
   if(Array.isArray(value)) return '['+value.map(stable).join(',')+']';
   if(value&&typeof value==='object') return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stable(value[k])).join(',')+'}';
@@ -129,12 +142,40 @@ function cookieToken(req){
   }
   return '';
 }
-function roleLevel(role){ return ROLE_LEVEL[compact(role,40).toLowerCase()] ?? -1; }
-function permitted(role,minRole){ return roleLevel(role)>=roleLevel(minRole); }
-function sourceById(id){ return SOURCES.find(s=>s.id===id)||null; }
+// Membership is explicit and private: rank never grants payroll authority.
+function roleLevel(role){
+  switch(role){
+    case 'employee': return 0;
+    case 'manager': return 1;
+    case 'payroll_admin': return 2;
+    case 'director': return 3;
+    case 'admin': case 'superuser': return 4;
+    default: return -1;
+  }
+}
+function permitted(role,minRole){
+  if(roleLevel(role)<0)return false;
+  switch(minRole){
+    case 'manager': return role!=='employee';
+    case 'payroll_admin': return role==='payroll_admin'||role==='admin'||role==='superuser';
+    case 'director': return role==='director'||role==='admin'||role==='superuser';
+    default: return false;
+  }
+}
+function sourceById(id){
+  for(let i=0;i<SOURCES.length;i++)if(SOURCES[i].id===id)return SOURCES[i];
+  return null;
+}
 function visibleCatalog(role){
-  const sources=SOURCES.filter(s=>permitted(role,s.minRole));
-  const ids=new Set(sources.map(s=>s.id));
+  const sources=[],templates=[];
+  for(let i=0;i<SOURCES.length;i++){
+    const source=SOURCES[i];
+    if(permitted(role,source.minRole))sources[sources.length]=source;
+  }
+  for(let i=0;i<TEMPLATES.length;i++){
+    const template=TEMPLATES[i],source=sourceById(template.sourceId);
+    if(source&&permitted(role,source.minRole))templates[templates.length]=template;
+  }
   return {
     schemaVersion:'VECTOR_REPORTING_V1',
     principles:[
@@ -145,9 +186,22 @@ function visibleCatalog(role){
       'evidence-visible-at-point-of-decision'
     ],
     sources,
-    templates:TEMPLATES.filter(t=>ids.has(t.sourceId)),
+    templates,
     limits:{maxColumns:MAX_COLUMNS,maxCalculations:MAX_CALCULATIONS,maxFilters:MAX_FILTERS,maxSorts:MAX_SORTS,maxRows:MAX_LIMIT}
   };
+}
+// Reject identity capabilities (getters, proxies and inherited values). Only
+// immutable primitive snapshots may cross an await or enter policy evaluation.
+function identitySnapshot(value,requireRole=true){
+  if(!value||typeof value!=='object'||isProxy(value))return null;
+  const snapshot={};
+  for(const key of requireRole?['email','tenant','role']:['email','tenant']){
+    const descriptor=ownDescriptor(value,key);
+    if(!descriptor||!('value' in descriptor)||typeof descriptor.value!=='string'||descriptor.value.length===0)return null;
+    snapshot[key]=descriptor.value;
+  }
+  if(requireRole&&roleLevel(snapshot.role)<0)return null;
+  return freeze(snapshot);
 }
 function cleanFilter(filter,allowed){
   if(!filter||typeof filter!=='object'||Array.isArray(filter)) throw new Error('Invalid filter.');
@@ -327,6 +381,33 @@ function createVectorReportingService(options={}){
       receipt_json TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+    -- Intent is committed before external I/O. It is deliberately never reclaimed
+    -- automatically: a worker crash cannot prove the provider did not apply it.
+    CREATE TABLE IF NOT EXISTS vector_report_delivery_intents(
+      delivery_key TEXT PRIMARY KEY,
+      tenant TEXT NOT NULL,
+      scope_key TEXT NOT NULL UNIQUE,
+      schedule_id TEXT NOT NULL,
+      report_id TEXT NOT NULL,
+      mode TEXT NOT NULL,
+      slot TEXT NOT NULL,
+      payload_digest TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TRIGGER IF NOT EXISTS no_vector_delivery_intent_update
+      BEFORE UPDATE ON vector_report_delivery_intents BEGIN SELECT RAISE(ABORT,'Delivery intents are immutable.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_delivery_intent_delete
+      BEFORE DELETE ON vector_report_delivery_intents BEGIN SELECT RAISE(ABORT,'Delivery intents require reviewed reconciliation.'); END;
+    CREATE TABLE IF NOT EXISTS vector_report_delivery_observations(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      delivery_key TEXT NOT NULL REFERENCES vector_report_delivery_intents(delivery_key),
+      observation_json TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TRIGGER IF NOT EXISTS no_vector_delivery_observation_update
+      BEFORE UPDATE ON vector_report_delivery_observations BEGIN SELECT RAISE(ABORT,'Delivery observations are append only.'); END;
+    CREATE TRIGGER IF NOT EXISTS no_vector_delivery_observation_delete
+      BEFORE DELETE ON vector_report_delivery_observations BEGIN SELECT RAISE(ABORT,'Delivery observations are append only.'); END;
     CREATE INDEX IF NOT EXISTS vector_report_deliveries_tenant_created
       ON vector_report_deliveries(tenant,created_at DESC);
     CREATE TRIGGER IF NOT EXISTS no_vector_report_update
@@ -372,15 +453,73 @@ function createVectorReportingService(options={}){
   const deliveryInsert=db.prepare('INSERT OR IGNORE INTO vector_report_deliveries(delivery_key,tenant,schedule_id,report_id,mode,status,receipt_json,created_at) VALUES(?,?,?,?,?,?,?,?)');
   const deliveryList=db.prepare('SELECT d.* FROM vector_report_deliveries d JOIN vector_report_schedules s ON s.id=d.schedule_id AND s.tenant=d.tenant WHERE d.tenant=? AND s.created_by=? ORDER BY d.created_at DESC LIMIT 100');
   const deliveryOne=db.prepare('SELECT delivery_key FROM vector_report_deliveries WHERE delivery_key=?');
+  const intentOne=db.prepare('SELECT delivery_key FROM vector_report_delivery_intents WHERE delivery_key=?');
+  const intentInsert=db.prepare('INSERT OR IGNORE INTO vector_report_delivery_intents(delivery_key,tenant,scope_key,schedule_id,report_id,mode,slot,payload_digest,created_at) VALUES(?,?,?,?,?,?,?,?,?)');
+  const pendingIntents=db.prepare('SELECT i.* FROM vector_report_delivery_intents i JOIN vector_report_schedules s ON s.id=i.schedule_id AND s.tenant=i.tenant WHERE i.tenant=? AND s.created_by=? AND NOT EXISTS(SELECT 1 FROM vector_report_deliveries d WHERE d.delivery_key=i.delivery_key) ORDER BY i.created_at DESC LIMIT 100');
+  const observationInsert=db.prepare('INSERT INTO vector_report_delivery_observations(delivery_key,observation_json,created_at) VALUES(?,?,?)');
+  const observations=db.prepare('SELECT id,observation_json,created_at FROM vector_report_delivery_observations WHERE delivery_key=? ORDER BY id ASC LIMIT 100');
+  const legacyUnresolved=db.prepare("SELECT d.mode,s.schedule_json FROM vector_report_deliveries d LEFT JOIN vector_report_schedules s ON s.id=d.schedule_id AND s.tenant=d.tenant WHERE d.tenant=? AND d.mode<>'in_app' AND d.status NOT LIKE 'BLOCKED_%' AND NOT EXISTS(SELECT 1 FROM vector_report_delivery_intents i WHERE i.delivery_key=d.delivery_key)");
+  // A single INSERT is an atomic cross-process claim, including its unique scope.
+  // Scope is conservatively broader than a schedule/report version: replacing a
+  // schedule, report or actor cannot bypass an unresolved destination outcome.
+  function claimDelivery(key,tenant,schedule,payload){
+    const destination=schedule.delivery==='email_link'?schedule.destination.toLowerCase():schedule.destination;
+    // Old SENT was response-only; old FAILED may have applied externally.
+    // They do not become verified merely because a new deployment starts.
+    for(const previous of legacyUnresolved.all(tenant)){
+      let old;try{old=JSON.parse(previous.schedule_json);}catch{return false;}
+      if(!old||typeof old.destination!=='string'||!old.destination.trim()||old.destination!==old.destination.trim()||!DELIVERY_MODES.has(old.delivery)||old.delivery!==previous.mode)return false;
+      const oldDestination=old.delivery==='email_link'?old.destination.toLowerCase():old.destination;
+      if(old.delivery===schedule.delivery&&oldDestination===destination)return false;
+    }
+    const scopeKey=digest(JSON.stringify([tenant,schedule.delivery,destination]));
+    return intentInsert.run(key,tenant,scopeKey,payload.scheduleId,payload.reportId,payload.delivery,payload.slot,digest(JSON.stringify(payload)),new Date().toISOString()).changes===1;
+  }
   const currentUser=db.prepare('SELECT email,tenant,role FROM users WHERE tenant=? AND email=?');
   const hasTable=name=>Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name));
   async function currentIdentity(c){
     try{
-      const actor=options.currentUserReader?await options.currentUserReader({tenant:c.tenant,email:c.email}):currentUser.get(c.tenant,c.email);
-      if(!actor||actor.email!==c.email||actor.tenant!==c.tenant)return null;
-      if(hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(c.tenant)?.privileged_freeze)===1)return null;
+      const principal=identitySnapshot(c,false);
+      if(!principal)return null;
+      const pending=options.currentUserReader?options.currentUserReader(principal):currentUser.get(principal.tenant,principal.email);
+      // Reject synchronous proxy results before await can inspect their then trap.
+      if(pending&&isProxy(pending))return null;
+      const candidate=await pending;
+      const actor=identitySnapshot(candidate);
+      if(!actor||actor.email!==principal.email||actor.tenant!==principal.tenant)return null;
+      if(hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(principal.tenant)?.privileged_freeze)===1)return null;
       return actor;
     }catch{return null;}
+  }
+  // In-app publication repeats the immutable report-chain checks synchronously
+  // against the local actor, so differing async snapshots cannot supply a grant.
+  function localReportAccess(actor,row,seen){
+    if(!actor||!row||row.tenant!==actor.tenant||row.created_by!==actor.email||roleLevel(actor.role)<1)return false;
+    const key='report:'+row.id;if(seen.has(key)||seen.size>=200)return false;seen.add(key);
+    const source=sourceById(row.source_id);
+    if(!source||!permitted(actor.role,source.minRole))return false;
+    return !row.version_of||localReportAccess(actor,one.get(actor.tenant,row.version_of),seen);
+  }
+  // A stale async actor cannot grant an external intent after local revocation.
+  // Serialize this deny-only fence, pause observation and durable claim; commit
+  // before any adapter or provider operation begins.
+  function claimCurrentDelivery(key,row,schedule,payload,actor,report){
+    db.exec('BEGIN IMMEDIATE');
+    try{
+      const localActor=currentUser.get(row.tenant,row.created_by);
+      const frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(row.tenant)?.privileged_freeze)===1;
+      const latestControl=scheduleState.get(row.tenant,row.id);
+      let result;
+      if(deliveryOne.get(key))result='ALREADY_RECORDED';
+      else if(!localActor||localActor.role!==actor.role||frozen||!localReportAccess(localActor,report,new Set(['schedule:'+row.id])))result='BLOCKED_AUTHORITY_DRIFT';
+      else if(latestControl&&Number(latestControl.enabled)!==1)result='BLOCKED_SCHEDULE_PAUSED';
+      else result=claimDelivery(key,row.tenant,schedule,payload)?true:intentOne.get(key)?'UNKNOWN':'BLOCKED_RECONCILIATION_REQUIRED';
+      db.exec('COMMIT');
+      return result;
+    }catch(error){
+      try{db.exec('ROLLBACK');}catch{}
+      throw error;
+    }
   }
   // One deny-only predicate for personal artifacts and every immutable reference.
   // Current authority comes from the user store, never role_at_creation.
@@ -467,21 +606,88 @@ function createVectorReportingService(options={}){
       try{
       let status='READY',externalReceipt=null;
       const c={tenant:row.tenant,email:row.created_by};
-      if(!await access(c,row,'schedule'))status='BLOCKED_AUTHORITY_DRIFT';
+      // A durable intent may already have dispatched. Recover uncertainty
+      // without asking current authority to authorize another provider action.
+      const pendingIntent=schedule.delivery!=='in_app'&&intentOne.get(key);
+      const authorisedActor=pendingIntent?null:await currentIdentity(c);
+      if(pendingIntent){status='UNKNOWN';externalReceipt={reconciliationRequired:true,dispatchOutcome:'UNKNOWN'};}
+      else if(!authorisedActor||!await access(c,row,'schedule'))status='BLOCKED_AUTHORITY_DRIFT';
       else if(schedule.delivery!=='in_app'){
         if(!deliveryAdapter||typeof deliveryAdapter.deliver!=='function')status='BLOCKED_NO_ADAPTER';
+        else if(typeof deliveryAdapter.readback!=='function')status='BLOCKED_READBACK_REQUIRED';
         else{
-          try{
-            externalReceipt=await deliveryAdapter.deliver({tenant:row.tenant,actor:row.created_by,scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,delivery:schedule.delivery,destination:schedule.destination,slot,idempotencyKey:key});
-            status='SENT';
-          }catch(error){status='FAILED';externalReceipt={errorDigest:digest(compact(error?.message||'delivery failure',240))};}
+          const dispatchActor=await currentIdentity(c);
+          const payload=Object.freeze({tenant:row.tenant,actor:row.created_by,scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,delivery:schedule.delivery,destination:schedule.destination,slot,idempotencyKey:key});
+          let claim;
+          if(!dispatchActor||dispatchActor.email!==authorisedActor.email||dispatchActor.tenant!==authorisedActor.tenant||dispatchActor.role!==authorisedActor.role){
+            status='BLOCKED_AUTHORITY_DRIFT';
+          }else if((claim=claimCurrentDelivery(key,row,schedule,payload,dispatchActor,report))!==true){
+            if(claim==='ALREADY_RECORDED')continue;
+            status=claim;
+            if(status==='UNKNOWN'||status==='BLOCKED_RECONCILIATION_REQUIRED')externalReceipt={reconciliationRequired:true,dispatchOutcome:'UNKNOWN'};
+          }else{
+            // Neither a response nor a timeout proves the external outcome.
+            // Keep the durable affected-scope hold even after an observation;
+            // releasing it requires a separately reviewed reconciliation path.
+            status='UNKNOWN';
+            externalReceipt={reconciliationRequired:true,dispatchAttempted:true,readbackAttempted:false};
+            try{await deliveryAdapter.deliver(payload);}
+            catch(error){externalReceipt.dispatchErrorDigest=digest(compact(error?.message||'delivery outcome unknown',240));}
+            // Readback is a separate provider-state operation using the same
+            // immutable intent, never the dispatch response as its evidence.
+            try{
+              if(!await access(c,row,'schedule'))throw Error('readback authority unavailable');
+              const current=await currentIdentity(c);
+              if(!current||current.email!==dispatchActor.email||current.tenant!==dispatchActor.tenant||current.role!==dispatchActor.role)throw Error('readback authority changed');
+              // An awaited actor may predate local revocation. Repeat the deny-only
+              // local fence immediately before provider I/O, without another await.
+              const localActor=currentUser.get(row.tenant,row.created_by);
+              const frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(row.tenant)?.privileged_freeze)===1;
+              if(!localActor||localActor.role!==dispatchActor.role||frozen||!localReportAccess(localActor,report,new Set(['schedule:'+row.id])))throw Error('readback local authority changed');
+              externalReceipt.readbackAttempted=true;
+              const observation=await deliveryAdapter.readback(payload);
+              // Do not persist arbitrary provider records, secrets or claims.
+              // This digest is an opaque observation receipt, not verification.
+              externalReceipt.readbackDigest=digest(JSON.stringify(observation??null));
+            }catch(error){externalReceipt.readbackErrorDigest=digest(compact(error?.message||'readback unavailable',240));}
+            // A racing observer may already have recorded UNKNOWN. Append this
+            // owner's observation independently so that receipt cannot erase it.
+            observationInsert.run(key,JSON.stringify(externalReceipt),new Date().toISOString());
+          }
         }
       }
-      const receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
+      // Final local authority, pause and READY publication share one write lock.
+      // An authority-blocked receipt and its audit must also commit together.
+      // No asynchronous authority reader or external operation runs under it.
+      const inAppReady=schedule.delivery==='in_app'&&status==='READY';
+      const externalBlocked=schedule.delivery!=='in_app'&&status.startsWith('BLOCKED_');
+      const receiptTransaction=inAppReady||status==='BLOCKED_AUTHORITY_DRIFT'||externalBlocked;
+      if(receiptTransaction)db.exec('BEGIN IMMEDIATE');
+      let receipt,inserted;
       const createdAt=new Date().toISOString();
-      const inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
+      try{
+        if(inAppReady){
+          // An awaited reader may return a snapshot captured before revocation.
+          // The local store is a deny-only fence, never a replacement grant.
+          const localActor=currentUser.get(row.tenant,row.created_by);
+          const frozen=hasTable('identity_tenant_control')&&Number(db.prepare('SELECT privileged_freeze FROM identity_tenant_control WHERE tenant=?').get(row.tenant)?.privileged_freeze)===1;
+          const latestControl=scheduleState.get(row.tenant,row.id);
+          if(!localActor||localActor.role!==authorisedActor.role||frozen||!localReportAccess(localActor,report,new Set(['schedule:'+row.id])))status='BLOCKED_AUTHORITY_DRIFT';
+          else if(latestControl&&Number(latestControl.enabled)!==1)status='BLOCKED_SCHEDULE_PAUSED';
+        }
+        // Another worker may have claimed while an authority reader awaited.
+        // Serialize classification with the claim: existing uncertainty wins
+        // over a new predispatch denial, and must not create a blocked audit.
+        if(externalBlocked&&intentOne.get(key)){status='UNKNOWN';externalReceipt={reconciliationRequired:true,dispatchOutcome:'UNKNOWN'};}
+        receipt={schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:row.id,reportId:schedule.reportId,definitionDigest:report.definition_digest,slot,mode:schedule.delivery,status,externalReceipt,claimBoundary:schedule.claimBoundary};
+        inserted=deliveryInsert.run(key,row.tenant,row.id,schedule.reportId,schedule.delivery,status,JSON.stringify(receipt),createdAt).changes;
+        if(inserted&&status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
+        if(receiptTransaction)db.exec('COMMIT');
+      }catch(error){
+        if(receiptTransaction)try{db.exec('ROLLBACK');}catch{}
+        throw error;
+      }
       if(inserted){
-        if(status==='BLOCKED_AUTHORITY_DRIFT')record(c,schedule.reportId,status,{scheduleId:row.id,slot,definitionDigest:report.definition_digest});
         results.push({...receipt,deliveryKey:key,createdAt});
       }
       }finally{inFlight.delete(key);}
@@ -605,9 +811,11 @@ function createVectorReportingService(options={}){
     }
 
     if(path===PREFIX+'/deliveries'&&method==='GET'){
-      const rows=[];for(const r of deliveryList.all(c.tenant,c.email))if(await access(c,scheduleOne.get(c.tenant,r.schedule_id),'schedule')&&await access(c,one.get(c.tenant,r.report_id)))rows.push(r);
+      const candidates=deliveryList.all(c.tenant,c.email);
+      for(const i of pendingIntents.all(c.tenant,c.email))candidates.push({...i,status:'UNKNOWN',receipt_json:JSON.stringify({schemaVersion:'VECTOR_REPORT_DELIVERY_V1',scheduleId:i.schedule_id,reportId:i.report_id,mode:i.mode,slot:i.slot,status:'UNKNOWN',externalReceipt:{reconciliationRequired:true,dispatchOutcome:'UNKNOWN'},claimBoundary:'Durable intent exists; execution and provider outcome are unresolved.'})});
+      const rows=[];for(const r of candidates)if(await access(c,scheduleOne.get(c.tenant,r.schedule_id),'schedule')&&await access(c,one.get(c.tenant,r.report_id)))rows.push(r);
       return writeJson(res,200,{schemaVersion:'VECTOR_REPORT_DELIVERY_LIST_V1',deliveries:rows.map(r=>({
-        deliveryKey:r.delivery_key,scheduleId:r.schedule_id,reportId:r.report_id,mode:r.mode,status:r.status,receipt:JSON.parse(r.receipt_json),createdAt:r.created_at
+        deliveryKey:r.delivery_key,scheduleId:r.schedule_id,reportId:r.report_id,mode:r.mode,status:r.status,receipt:JSON.parse(r.receipt_json),observations:observations.all(r.delivery_key).map(o=>({id:o.id,receipt:JSON.parse(o.observation_json),createdAt:o.created_at})),createdAt:r.created_at
       }))});
     }
 

@@ -1,0 +1,8 @@
+{
+  "observedAt": "2026-10-28T03:10:41.313432+00:00",
+  "readOnly": true,
+  "enabledTasks": 3,
+  "currentRunUnknown": true,
+  "finding": "One existing daily development task still directs PR369; all task owners must reconcile PR501 and docs/execution/STATE.md before claims. No attribution to new PRs is proven. No task schedule/prompt/permission was changed.",
+  "nextAction": "Existing tasks remain subject to single integration owner, remote lease reconciliation and WIP gates. Do not create a duplicate automation."
+}

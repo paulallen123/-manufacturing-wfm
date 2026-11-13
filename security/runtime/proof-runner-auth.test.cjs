@@ -162,6 +162,111 @@ test('signed proof identity mints a short-lived audited session without a passwo
   }
 });
 
+test('ambiguous normalized proof identity fails closed before session issuance', async () => {
+  const f = fixture();
+  const db = new DatabaseSync(f.dbPath);
+  try {
+    db.prepare('INSERT INTO tenants VALUES(?,?,?)').run('other-tenant', 1, '{}');
+    db.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)')
+      .run('SUPERUSER@NORTHSTAR.EXAMPLE','other-tenant','su2','payroll',0,'s','00','[]');
+
+    const res = response();
+    assert.equal(await f.auth.handleRequest(request(signedPayload(f), f.origin), res), true);
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.headers['set-cookie'], undefined);
+    for (const table of ['sessions', 'proof_runner_sessions', 'proof_runner_nonces']) {
+      assert.equal(db.prepare('SELECT count(*) AS count FROM ' + table).get().count, 0);
+    }
+    const audit = db.prepare("SELECT event FROM proof_runner_auth_events WHERE event='ambiguous-normalized-email' ORDER BY id DESC LIMIT 1").get();
+    assert.equal(audit.event, 'ambiguous-normalized-email');
+  } finally {
+    db.close();
+    f.close();
+  }
+});
+
+for (const mutation of ['add-ambiguous-user', 'change-tenant', 'change-role']) {
+  test('principal selection locks out concurrent ' + mutation + ' until issuance commits', async () => {
+    const f = fixture();
+    const rival = new DatabaseSync(f.dbPath);
+    rival.exec('PRAGMA busy_timeout=0');
+    rival.prepare('INSERT INTO tenants VALUES(?,?,?)').run('rival-tenant', 1, '{}');
+    const statementPrototype = Object.getPrototypeOf(rival.prepare('SELECT 1'));
+    const originalAll = statementPrototype.all;
+    let attempted = false;
+    let mutationError;
+    try {
+      // Deterministically interleave another real connection immediately after
+      // principal lookup, at the historical lookup/transaction race boundary.
+      statementPrototype.all = function (...args) {
+        const rows = originalAll.apply(this, args);
+        if (!attempted && args[0] === 'superuser@northstar.example' && rows[0]?.email) {
+          attempted = true;
+          try {
+            if (mutation === 'add-ambiguous-user') {
+              rival.prepare('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)')
+                .run('SUPERUSER@NORTHSTAR.EXAMPLE','rival-tenant','rival','payroll',0,'s','00','[]');
+            } else if (mutation === 'change-tenant') {
+              rival.prepare('UPDATE users SET tenant=? WHERE email=?')
+                .run('rival-tenant', 'superuser@northstar.example');
+            } else {
+              rival.prepare('UPDATE users SET role=? WHERE email=?')
+                .run('payroll', 'superuser@northstar.example');
+            }
+          } catch (error) { mutationError = error; }
+        }
+        return rows;
+      };
+      const res = response();
+      await f.auth.handleRequest(request(signedPayload(f), f.origin), res);
+      assert.equal(attempted, true);
+      assert.match(String(mutationError?.message), /locked|busy/i);
+      assert.equal(res.statusCode, 200);
+      assert.deepEqual(JSON.parse(res.body).actor, {
+        email: 'superuser@northstar.example', tenant: 'northstar-demo', role: 'superuser',
+      });
+      const stored = rival.prepare('SELECT tenant,role FROM proof_runner_sessions').get();
+      assert.equal(stored.tenant, 'northstar-demo');
+      assert.equal(stored.role, 'superuser');
+      // The lock is released at commit, not held for the lifetime of auth.
+      rival.prepare('UPDATE users SET costs=0 WHERE email=?').run('superuser@northstar.example');
+    } finally {
+      statementPrototype.all = originalAll;
+      rival.close();
+      f.close();
+    }
+  });
+}
+
+test('principal lookup failure rolls back and refuses without issuing credentials', async () => {
+  const f = fixture();
+  const db = new DatabaseSync(f.dbPath);
+  const statementPrototype = Object.getPrototypeOf(db.prepare('SELECT 1'));
+  const originalAll = statementPrototype.all;
+  try {
+    statementPrototype.all = function (...args) {
+      if (args[0] === 'superuser@northstar.example') throw new Error('injected lookup failure');
+      return originalAll.apply(this, args);
+    };
+    const payload = signedPayload(f);
+    const refused = response();
+    await f.auth.handleRequest(request(payload, f.origin), refused);
+    assert.equal(refused.statusCode, 503);
+    assert.equal(refused.headers['set-cookie'], undefined);
+    for (const table of ['sessions', 'proof_runner_sessions', 'proof_runner_nonces']) {
+      assert.equal(db.prepare('SELECT count(*) AS count FROM ' + table).get().count, 0);
+    }
+    statementPrototype.all = originalAll;
+    const retry = response();
+    await f.auth.handleRequest(request(payload, f.origin), retry);
+    assert.equal(retry.statusCode, 200);
+  } finally {
+    statementPrototype.all = originalAll;
+    db.close();
+    f.close();
+  }
+});
+
 test('signed assertion is single use and replay fails closed', async () => {
   const f = fixture();
   try {

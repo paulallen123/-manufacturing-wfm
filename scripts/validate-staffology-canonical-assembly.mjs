@@ -20,7 +20,7 @@ try{
  const server=await readFile(path.join(temporary,'server.cjs'),'utf8');
  assert.match(server,/url\.pathname==='\/api\/integrations\/apply'/,'reviewed integration application route is missing');
  assert.match(server,/people:\(rows,batch\)=>.*ON\.stage/,'persisted onboarding application handler is missing');
- assert.match(server,/staffology:\{\.\.\.staffologyIntegration\.status\(\),operation:staffologyOperations\.status\(\)\}/,'Staffology status is missing from the existing integration report');
+ assert.match(server,/staffology:\{\.\.\.staffologyIntegration\.status\(\),operation:\{\.\.\.staffologyOperations\.status\(a\),configurationError:staffologyConfigurationError\}\}/,'Staffology status is missing from the existing integration report');
  assert.match(server,/staffology\/employees\/acquire-stage/,'Authenticated Staffology acquisition route is missing');
  assert.match(server,/staffology\/payroll\/approve-deliver/,'Authenticated Staffology approval and delivery route is missing');
  assert.match(server,/staffology\/payroll\/recover/,'Explicit Staffology recovery route is missing');

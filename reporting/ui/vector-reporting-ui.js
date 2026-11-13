@@ -7,12 +7,15 @@
 
 const MARKER='VECTOR_REPORTING_UI_V1';
 const IMPROVE_ROUTES=new Set(['insights','costs','recommendations','benchmarks','compliance','overtime-watch']);
-const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],calculations:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],loading:false,scheduleOpen:false};
-let authorityEpoch=0,returnFocus=null;
+const state={catalog:null,selectedTemplate:null,selectedSource:null,selectedReportId:null,baseRows:[],rows:[],raw:null,columns:[],calculations:[],filters:[],sorts:[],visualisation:'table',saved:[],dashboards:[],schedules:[],deliveries:[],deliveriesAvailable:false,loading:false,scheduleOpen:false};
+let authorityEpoch=0,editorRevision=0,savingToken=null,returnFocus=null;
+function currentDefinitionSaved(){return Boolean(state.selectedReportId&&state.savedRevision===editorRevision);}
+function advanceEditor(){editorRevision++;state.loading=false;}
 function clearReporting(){
+  advanceEditor();savingToken=null;state.savedRevision=null;state.hiddenDefinition={};
   state.catalog=null;state.selectedTemplate=null;state.selectedSource=null;state.selectedReportId=null;
   state.baseRows=[];state.rows=[];state.raw=null;state.columns=[];state.calculations=[];state.filters=[];state.sorts=[];
-  state.saved=[];state.dashboards=[];state.schedules=[];state.deliveries=[];state.loading=false;state.scheduleOpen=false;
+  state.saved=[];state.dashboards=[];state.schedules=[];state.deliveries=[];state.deliveriesAvailable=false;state.loading=false;state.scheduleOpen=false;
   for(const selector of ['[data-report-templates]','[data-report-saved]','[data-report-dashboard]','[data-report-schedules]','[data-report-deliveries]','[data-report-main]'])modal().querySelector(selector).innerHTML='';
 }
 function announce(message){const host=modal().querySelector('[data-report-status]');if(host)host.textContent=message;}
@@ -127,17 +130,18 @@ async function loadCatalog(){
       json('/api/reporting/reports').catch(()=>({reports:[]})),
       json('/api/reporting/dashboards').catch(()=>({dashboards:[]})),
       json('/api/reporting/schedules').catch(()=>({schedules:[]})),
-      json('/api/reporting/deliveries').catch(()=>({deliveries:[]}))
+      json('/api/reporting/deliveries').catch(error=>{if([401,403].includes(error.status))throw error;return null;})
     ]);
     if(epoch!==authorityEpoch)return;
     state.catalog=catalog;
     state.saved=Array.isArray(saved?.reports)?saved.reports:[];
     state.dashboards=Array.isArray(dashboards?.dashboards)?dashboards.dashboards:[];
     state.schedules=Array.isArray(schedules?.schedules)?schedules.schedules:[];
-    state.deliveries=Array.isArray(deliveries?.deliveries)?deliveries.deliveries:[];
+    state.deliveriesAvailable=Array.isArray(deliveries?.deliveries);
+    state.deliveries=state.deliveriesAvailable?deliveries.deliveries:[];
     renderTemplates('');renderSaved();renderDashboard();renderDeliveries();renderSchedules();
     main.innerHTML='<div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div>';
-    announce('Reporting controls updated. Only currently available reports are shown.');
+    announce(state.deliveriesAvailable?'Reporting controls updated. Only currently available reports are shown.':'Reporting controls updated. Delivery history is unavailable; delivery outcomes could not be checked.');
   }catch(e){
     if(epoch!==authorityEpoch)return;
     clearReporting();
@@ -168,9 +172,25 @@ function renderDashboard(){
 function renderDeliveries(){
   const host=modal().querySelector('[data-report-deliveries]');if(!host)return;
   const byId=new Map(state.saved.map(r=>[r.id,r]));
-  const rows=state.deliveries.filter(d=>d.status==='READY').slice(0,5);
-  host.innerHTML='<div class="vector-reporting-section-label">Scheduled for you</div>'+
-    (rows.length?rows.map(d=>{const r=byId.get(d.reportId);return `<button type="button" class="vector-reporting-saved-row delivery" data-report-saved-id="${esc(d.reportId)}"><b>${esc(r?.title||'Scheduled report')}</b><span>Ready · ${esc(new Date(d.createdAt).toLocaleString())}</span></button>`;}).join(''):'<div class="vector-reporting-none">No scheduled deliveries yet.</div>');
+  // Keep every outcome returned by the authorized endpoint visible, including
+  // unknown and blocked writes. A receipt/dispatch response is not readback.
+  if(!state.deliveriesAvailable){host.innerHTML='<div class="vector-reporting-section-label">Delivery outcomes</div><div class="vector-reporting-none">Delivery history is unavailable. Outcomes could not be checked. Reopen reporting to refresh.</div>';return;}
+  const rows=state.deliveries;
+  const labels={
+    UNKNOWN:'Outcome unknown — reconciliation required. Do not repeat the delivery.',
+    BLOCKED_RECONCILIATION_REQUIRED:'Blocked — an earlier delivery needs reconciliation.',
+    BLOCKED_READBACK_REQUIRED:'Blocked — independent confirmation is unavailable.',
+    BLOCKED_NO_ADAPTER:'Blocked — delivery connection is unavailable.',
+    BLOCKED_AUTHORITY_DRIFT:'Blocked — current authorization is unavailable.',
+    BLOCKED_SCHEDULE_PAUSED:'Blocked — schedule was paused.'
+  };
+  host.innerHTML='<div class="vector-reporting-section-label">Delivery outcomes</div>'+
+    (rows.length?rows.map(d=>{
+      const r=byId.get(d.reportId),date=new Date(d.createdAt);
+      const label=d.status==='READY'&&d.mode==='in_app'?'In-product report ready.':Object.hasOwn(labels,d.status)?labels[d.status]:'Outcome unverified — reconciliation required.';
+      const when=Number.isFinite(date.getTime())?date.toLocaleString():'Time unavailable';
+      return `<button type="button" class="vector-reporting-saved-row delivery" data-report-saved-id="${esc(d.reportId)}"><b>${esc(r?.title||'Scheduled report')}</b><span>${esc(label)}</span><span>${esc(when)} · Open current report</span></button>`;
+    }).join(''):'<div class="vector-reporting-none">No scheduled deliveries yet.</div>');
 }
 function renderSchedules(){
   const host=modal().querySelector('[data-report-schedules]');if(!host)return;
@@ -212,7 +232,7 @@ function factoryRows(body){
 }
 function genericRows(body,candidates){
   const rows=arr(body,candidates);
-  if(rows.length)return rows.map(flatten);
+  if(rows.length)return rows.map(row=>flatten(row));
   if(body&&typeof body==='object'&&!Array.isArray(body)){
     const out=[];
     for(const [k,v] of Object.entries(body)){
@@ -223,12 +243,15 @@ function genericRows(body,candidates){
   }
   return [];
 }
-function flatten(obj,prefix='',depth=0,out={}){
+function flatten(obj,prefix='',depth=0,out=Object.create(null)){
   if(!obj||typeof obj!=='object'||depth>2)return out;
   for(const [k,v] of Object.entries(obj)){
     const key=prefix?prefix+'.'+k:k;
-    if(v==null||['string','number','boolean'].includes(typeof v))out[key]=v;
-    else if(Array.isArray(v))out[key]=v.length;
+    if(v==null||['string','number','boolean'].includes(typeof v)||Array.isArray(v)){
+      // A flat dotted field and a nested path must not silently select a value.
+      if(Object.hasOwn(out,key))throw new TypeError('Ambiguous report source fields.');
+      out[key]=Array.isArray(v)?v.length:v;
+    }
     else if(depth<2)flatten(v,key,depth+1,out);
   }
   return out;
@@ -276,11 +299,11 @@ function renderReport(){
     <div class="vector-reporting-report-head">
       <div><span class="vector-reporting-kicker">${esc(s.label)}</span><h3>${esc(t?.label||s.label)}</h3><p>${esc(s.description)}</p></div>
       <div class="vector-reporting-actions">
-        <button type="button" class="secondary" data-report-save>${state.selectedReportId?'Saved':'Save'}</button>
+        <button type="button" class="secondary" data-report-save ${savingToken?'disabled':''}>${savingToken?'Saving…':currentDefinitionSaved()?'Saved':'Save'}</button>
         <button type="button" class="secondary" data-report-pin>${isPinnedReport(state.selectedReportId)?'Remove from dashboard':'Pin to dashboard'}</button>
         <button type="button" class="secondary" data-report-schedule>Schedule</button>
-        <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>CSV / Excel</button>
-        <button type="button" class="secondary" data-report-print ${state.rows.length?'':'disabled'}>Print / PDF</button>
+        <button type="button" class="secondary" data-report-export ${state.rows.length?'':'disabled'}>CSV review</button>
+        <button type="button" class="secondary" data-report-print ${state.rows.length?'':'disabled'}>Print</button>
         <button type="button" class="primary" data-report-run>${state.loading?'Running…':'Run report'}</button>
       </div>
     </div>
@@ -356,13 +379,17 @@ function tableMarkup(){
 }
 async function chooseTemplate(id){
   const t=template(id);if(!t)return;
+  advanceEditor();state.savedRevision=null;state.hiddenDefinition={};
   state.selectedTemplate=t.id;state.selectedSource=source(t.sourceId);state.selectedReportId=null;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(t.columns||[])];state.calculations=[];state.filters=[];state.sorts=[];state.visualisation=t.visualisation||'table';state.scheduleOpen=false;
   renderTemplates(modal().querySelector('[data-report-search]')?.value||'');
   renderReport();
 }
 async function chooseSaved(id){
+  advanceEditor();const revision=editorRevision;
   let body;try{body=await json('/api/reporting/reports/'+encodeURIComponent(id));}catch(e){if(!e.stale)await loadCatalog();return;}
-  const d=body?.report?.definition;if(!d)return;
+  const d=body?.report?.definition;if(!d||body.report.id!==id||revision!==editorRevision)return;
+  state.hiddenDefinition=Object.fromEntries(['limit','claimBoundary'].filter(key=>Object.hasOwn(d,key)).map(key=>[key,d[key]]));
+  state.savedRevision=revision;
   state.selectedTemplate=null;state.selectedSource=source(d.sourceId);state.selectedReportId=id;state.baseRows=[];state.rows=[];state.raw=null;state.columns=[...(d.columns||[])];state.calculations=[...(d.calculations||[])];state.filters=[...(d.filters||[])];state.sorts=[...(d.sorts||[])];state.visualisation=d.visualisation||'table';state.scheduleOpen=false;
   renderReport();
 }
@@ -401,15 +428,18 @@ function applyControls(rows){
 function recalc(){state.rows=applyControls(state.baseRows);renderReport();}
 async function run(){
   if(!state.selectedSource||state.loading)return;
+  const revision=editorRevision,selectedSource=state.selectedSource;
   state.loading=true;renderReport();
   try{
-    const body=await json(state.selectedSource.endpoint);
-    state.raw=body;state.baseRows=rowsFor(state.selectedSource.id,body);state.rows=applyControls(state.baseRows);
+    const body=await json(selectedSource.endpoint);
+    if(revision!==editorRevision||selectedSource!==state.selectedSource)return;
+    state.raw=body;state.baseRows=rowsFor(selectedSource.id,body);state.rows=applyControls(state.baseRows);
     if(!state.columns.length)state.columns=availableColumns(state.rows,[]);
   }catch(e){
     if(e.stale)return;
     if([401,403,404].includes(e.status)){await loadCatalog();return;}
-    state.raw={error:e.message};state.rows=[];
+    if(revision!==editorRevision||selectedSource!==state.selectedSource)return;
+    state.raw={error:e.message};state.baseRows=[];state.rows=[];state.columns=[];
     const main=modal().querySelector('[data-report-main]');
     main.innerHTML='<div class="vector-reporting-error"><strong>Source could not be read</strong><span>'+esc(e.message)+'</span><button type="button" data-report-run>Try again</button></div>';
     state.loading=false;return;
@@ -417,34 +447,69 @@ async function run(){
   state.loading=false;renderReport();
 }
 async function save(){
-  const s=state.selectedSource;if(!s)return;
-  const t=template(state.selectedTemplate);
+  const s=state.selectedSource;if(!s||savingToken)return null;
+  const t=template(state.selectedTemplate),revision=editorRevision,token={};
+  const request=JSON.parse(JSON.stringify({versionOf:state.selectedReportId||null,definition:{
+    ...state.hiddenDefinition,
+    title:t?.label||s.label,sourceId:s.id,
+    columns:state.columns.filter(c=>(s.fields||[]).includes(c)),
+    calculations:state.calculations,filters:state.filters,sorts:state.sorts,
+    visualisation:state.visualisation,comparison:t?.comparison||'none',
+    narrative:t?.narrative!==false,includeEvidence:true
+  }}));
+  const hiddenKeys=Object.keys(state.hiddenDefinition||{});
+  const retainsHidden=definition=>definition&&hiddenKeys.every(key=>definition[key]===request.definition[key]);
+  savingToken=token;renderReport();
   try{
-    const body=await json('/api/reporting/reports',{method:'POST',body:JSON.stringify({versionOf:state.selectedReportId||null,definition:{
-      title:t?.label||s.label,
-      sourceId:s.id,
-      columns:state.columns.filter(c=>(s.fields||[]).includes(c)),
-      calculations:state.calculations,
-      filters:state.filters,
-      sorts:state.sorts,
-      visualisation:state.visualisation,
-      comparison:t?.comparison||'none',
-      narrative:t?.narrative!==false,
-      includeEvidence:true
-    }})});
-    if(body?.report){state.selectedReportId=body.report.id;state.saved.unshift(body.report);renderSaved();renderDashboard();renderDeliveries();renderReport();toast('Report saved as an immutable, audited definition.');}
-  }catch(e){await operationError(e,'Could not save report.');}
+    if(hiddenKeys.length){
+      // The server owns normalization and evidence policy. Refuse a version
+      // when it cannot retain settings this editor does not expose.
+      const checked=await json('/api/reporting/validate',{method:'POST',body:JSON.stringify({definition:request.definition})});
+      if(revision!==editorRevision)return null;
+      if(checked?.valid!==true||!retainsHidden(checked.definition)){
+        toast('Hidden settings cannot be retained under current report policy. No new version was saved.');return null;
+      }
+    }
+    const body=await json('/api/reporting/reports',{method:'POST',body:JSON.stringify(request)});
+    if(revision!==editorRevision){
+      if(body?.report?.id)toast(currentDefinitionSaved()
+        ?'An earlier report version was created. The current saved report was not replaced; reopen saved reports to review it.'
+        :'An earlier report version was created. Current edits remain unsaved; reopen saved reports to review it.');
+      return null;
+    }
+    if(!body?.report||typeof body.report.id!=='string'||!body.report.id)return null;
+    if(!retainsHidden(body.report.definition)){
+      toast('A version was created with changed hidden settings. Reopen it to review before continuing.');return null;
+    }
+    state.selectedReportId=body.report.id;state.savedRevision=revision;
+    state.hiddenDefinition=Object.fromEntries(['limit','claimBoundary'].filter(key=>Object.hasOwn(body.report.definition,key)).map(key=>[key,body.report.definition[key]]));
+    state.saved.unshift(body.report);renderSaved();renderDashboard();renderDeliveries();renderReport();
+    toast('Report saved as an immutable, audited definition.');return body.report.id;
+  }catch(e){
+    if(revision===editorRevision||[401,403,404].includes(e.status))await operationError(e,'Could not save report.');
+    return null;
+  }finally{
+    if(savingToken===token){savingToken=null;if(state.selectedSource&&!modal().hidden)renderReport();}
+  }
 }
 async function ensureSaved(){
-  if(state.selectedReportId)return state.selectedReportId;
-  await save();
-  return state.selectedReportId;
+  if(state.selectedReportId){
+    if(currentDefinitionSaved())return state.selectedReportId;
+    toast('Save current edits before pinning or scheduling.');return null;
+  }
+  return save();
 }
 async function pin(){
-  const id=await ensureSaved();if(!id)return;
+  const revision=editorRevision,id=await ensureSaved();if(!id||revision!==editorRevision)return;
   const removing=isPinnedReport(id),url=removing?'/api/reporting/dashboards/unpin':'/api/reporting/dashboards/pin';
   try{
     const body=await json(url,{method:'POST',body:JSON.stringify({reportId:id})});
+    if(revision!==editorRevision){
+      if(body?.dashboard)toast(removing
+        ?'The earlier saved version was removed from the dashboard. The current editor was not changed.'
+        :'The earlier saved version was pinned to the dashboard. The current editor was not changed.');
+      return;
+    }
     if(body?.dashboard){state.dashboards.unshift(body.dashboard);renderDashboard();renderReport();toast(removing?'Removed from My dashboard.':'Pinned to My dashboard.');}
   }catch(e){await operationError(e,'Could not update dashboard.');}
 }
@@ -458,22 +523,53 @@ function schedulePanelMarkup(){
   </section>`;
 }
 async function createSchedule(){
-  const id=await ensureSaved();if(!id)return;
+  const revision=editorRevision;
   const panel=modal().querySelector('.vector-reporting-schedule-panel'),cadence=panel?.querySelector('[data-report-cadence]')?.value||'weekly';
   const raw=panel?.querySelector('[data-report-time]')?.value||'08:00',[hh,mm]=raw.split(':').map(Number),now=new Date();
+  const id=await ensureSaved();if(!id||revision!==editorRevision)return;
   const payload={reportId:id,cadence,hour:hh,minute:mm,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC',delivery:'in_app'};
   if(cadence==='weekly')payload.weekday=now.getDay();
   if(cadence==='monthly')payload.dayOfMonth=Math.min(28,now.getDate());
   try{
     const body=await json('/api/reporting/schedules',{method:'POST',body:JSON.stringify(payload)});
+    if(revision!==editorRevision){
+      if(body?.schedule)toast('The earlier saved version was scheduled. The current editor was not changed.');
+      return;
+    }
     if(body?.schedule)state.schedules.unshift(body.schedule);
     state.scheduleOpen=false;renderSchedules();renderReport();toast(body?.schedule?'Schedule created. VECTOR will deliver it in-product at the selected cadence.':'Schedule created.');
   }catch(e){await operationError(e,'Could not schedule report.');}
 }
 function csv(){
   if(!state.rows.length)return;
-  const cols=availableColumns(state.rows,state.columns),quote=v=>'"'+cell(v).replace(/"/g,'""')+'"';
-  const data=[cols.map(quote).join(','),...state.rows.map(r=>cols.map(c=>quote(r[c])).join(','))].join('\r\n');
+  // A review-only representation: type tags and escaped JSON prevent raw
+  // spreadsheet formulas, links and controls from leading any CSV cell.
+  // This does not provide a typed import or an approved spreadsheet profile.
+  const token=(type,value)=>type+':'+JSON.stringify(value).replace(/[\u007f-\uffff]/g,
+    ch=>'\\u'+ch.charCodeAt(0).toString(16).padStart(4,'0'));
+  const reviewCell=value=>{
+    if(value===null)return 'null:null';
+    if(typeof value==='string')return token('text',value);
+    if(typeof value==='boolean')return token('boolean',value);
+    if(typeof value==='number'&&Number.isFinite(value))return token('number',value);
+    if(value&&typeof value==='object'){
+      const json=JSON.stringify(value);
+      if(typeof json==='string')return token('json',json);
+    }
+    throw new TypeError('Unsupported CSV review value');
+  };
+  const quote=v=>'"'+v.replace(/"/g,'""')+'"';
+  let data;
+  try{
+    const cols=availableColumns(state.rows,state.columns);
+    if(!cols.length)throw new TypeError('No exportable columns');
+    data=[cols.map(c=>quote(token('header',c))).join(','),
+      ...state.rows.map(r=>cols.map(c=>{
+        const descriptor=r&&typeof r==='object'&&Object.getOwnPropertyDescriptor(r,c);
+        if(!descriptor||!Object.hasOwn(descriptor,'value'))throw new TypeError('Missing export value');
+        return quote(reviewCell(descriptor.value));
+      }).join(','))].join('\r\n')+'\r\n';
+  }catch{toast('Could not prepare CSV review. Check the report data.');return;}
   const blob=new Blob([data],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='vector-report-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -495,7 +591,7 @@ async function setScheduleState(id,enabled){
 function toast(message){try{if(typeof window.toast==='function')return window.toast(message);}catch{}alert(message);}
 function handleChange(e){
   const vis=e.target.closest('[data-report-visualisation]');
-  if(vis){state.visualisation=vis.value;renderReport();}
+  if(vis){advanceEditor();state.visualisation=vis.value;renderReport();}
 }
 async function handleClick(e){
   const t=e.target.closest('[data-report-template]');if(t){await chooseTemplate(t.dataset.reportTemplate);return;}
@@ -510,21 +606,21 @@ async function handleClick(e){
   if(e.target.closest('[data-report-print]')){printReport();return;}
   if(e.target.closest('[data-report-filter-add]')){
     const root=modal(),field=root.querySelector('[data-report-filter-field]')?.value,operator=root.querySelector('[data-report-filter-operator]')?.value,value=root.querySelector('[data-report-filter-value]')?.value;
-    if(field&&operator&&value!==''){state.filters.push({field,operator,value});if(state.raw)recalc();else renderReport();}return;
+    if(field&&operator&&value!==''){advanceEditor();state.filters.push({field,operator,value});if(state.raw)recalc();else renderReport();}return;
   }
-  const fr=e.target.closest('[data-report-filter-remove]');if(fr){state.filters.splice(Number(fr.dataset.reportFilterRemove),1);if(state.raw)recalc();else renderReport();return;}
+  const fr=e.target.closest('[data-report-filter-remove]');if(fr){advanceEditor();state.filters.splice(Number(fr.dataset.reportFilterRemove),1);if(state.raw)recalc();else renderReport();return;}
   if(e.target.closest('[data-report-sort-add]')){
     const root=modal(),field=root.querySelector('[data-report-sort-field]')?.value,direction=root.querySelector('[data-report-sort-direction]')?.value;
-    if(field&&direction){state.sorts.push({field,direction});if(state.raw)recalc();else renderReport();}return;
+    if(field&&direction){advanceEditor();state.sorts.push({field,direction});if(state.raw)recalc();else renderReport();}return;
   }
-  const sr=e.target.closest('[data-report-sort-remove]');if(sr){state.sorts.splice(Number(sr.dataset.reportSortRemove),1);if(state.raw)recalc();else renderReport();return;}
+  const sr=e.target.closest('[data-report-sort-remove]');if(sr){advanceEditor();state.sorts.splice(Number(sr.dataset.reportSortRemove),1);if(state.raw)recalc();else renderReport();return;}
   if(e.target.closest('[data-report-calc-add]')){
     const root=modal(),label=root.querySelector('[data-report-calc-label]')?.value?.trim(),left=root.querySelector('[data-report-calc-left]')?.value,operator=root.querySelector('[data-report-calc-operator]')?.value,right=root.querySelector('[data-report-calc-right]')?.value;
-    if(label&&left&&right&&operator&&state.calculations.length<8){state.calculations.push({label,left,operator,right});if(state.raw)recalc();else renderReport();}return;
+    if(label&&left&&right&&operator&&state.calculations.length<8){advanceEditor();state.calculations.push({label,left,operator,right});if(state.raw)recalc();else renderReport();}return;
   }
-  const cr=e.target.closest('[data-report-calc-remove]');if(cr){state.calculations.splice(Number(cr.dataset.reportCalcRemove),1);if(state.raw)recalc();else renderReport();return;}
+  const cr=e.target.closest('[data-report-calc-remove]');if(cr){advanceEditor();state.calculations.splice(Number(cr.dataset.reportCalcRemove),1);if(state.raw)recalc();else renderReport();return;}
   const col=e.target.closest('[data-report-column]');
-  if(col){const f=col.dataset.reportColumn;if(col.checked&&!state.columns.includes(f))state.columns.push(f);if(!col.checked)state.columns=state.columns.filter(x=>x!==f);if(state.raw)renderReport();}
+  if(col){advanceEditor();const f=col.dataset.reportColumn;if(col.checked&&!state.columns.includes(f))state.columns.push(f);if(!col.checked)state.columns=state.columns.filter(x=>x!==f);renderReport();}
 }
 
 const observer=new MutationObserver(()=>installLaunch());

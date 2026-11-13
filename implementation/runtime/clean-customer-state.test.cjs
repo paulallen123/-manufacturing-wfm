@@ -16,7 +16,7 @@ const archive = process.env.CLEAN_CUSTOMER_ARCHIVE || path.resolve(__dirname,
 const archiveHash = '3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d';
 assert.equal(createHash('sha256').update(fs.readFileSync(archive)).digest('hex'), archiveHash);
 const runtime = fs.mkdtempSync(path.join(os.tmpdir(), 'clean-customer-pinned-'));
-execFileSync('tar', ['xzf', archive, '-C', runtime]);
+execFileSync('tar', ['--no-same-owner', '-xzf', archive, '-C', runtime]);
 test.after(() => fs.rmSync(runtime, { recursive: true, force: true }));
 const read = file => fs.readFileSync(path.join(runtime, file), 'utf8');
 const mod = name => require(path.join(runtime, 'public', name + '.js'));

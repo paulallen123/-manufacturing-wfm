@@ -13,6 +13,9 @@ const {
 const { forecastDemand, toHeadcountForecast } = require('./manufacturing-demand-forecast.cjs');
 const { reconcileScheduleToAttendance } = require('./schedule-attendance-reconciliation.cjs');
 const { createSchedulingAuthority, branchFor, workerReferences } = require('./scheduling-authority.cjs');
+const { assessOrderStartVariance } = require('./order-start-variance.cjs');
+const { assessProductionOutputGap } = require('./production-output-gap.cjs');
+const { assessOrderMaterialAvailability } = require('./order-material-availability.cjs');
 
 const PREFIX = '/api/operations/scheduling';
 const INTERNAL_HEADER = 'x-wfm-scheduling-internal';
@@ -256,6 +259,83 @@ function createSchedulingIntelligenceService(options = {}) {
     return writeJson(res, 200, authority.output(source, { contractVersion: CONTRACT_VERSION, tenant: c.tenant, result }));
   }
 
+  async function managerOrderStartScenario(req, res, c) {
+    // This endpoint consumes declarations only. No existing integration record
+    // authenticates ERP/MES order evidence, so no persisted/source-backed claim
+    // or execution permission may follow from a successful comparison.
+    const body = await readJson(req, 16 * 1024);
+    c = requireCurrentManager(req, res, c);
+    if (!c) return true;
+    function exactFields(value, fields) {
+      return value && typeof value === 'object' && !Array.isArray(value) &&
+        Object.keys(value).length === fields.length && fields.every(key => Object.hasOwn(value, key));
+    }
+    const recordFields = ['tenantId', 'siteId', 'lineId', 'orderId', 'source', 'recordId', 'revision', 'recordSha256', 'observedAt', 'complete', 'state'];
+    if (!exactFields(body, ['siteId', 'lineId', 'orderId', 'department', 'plan', 'actual']) ||
+        !exactFields(body.plan, [...recordFields, 'plannedStart', 'plannedEnd']) ||
+        !exactFields(body.actual, [...recordFields, 'plannedRevision', 'plannedRecordSha256', 'actualStart']) ||
+        [...new URL(String(req.url), 'http://wfm.invalid').searchParams.keys()].some(key => !['scope', 'branch'].includes(key))) {
+      return writeJson(res, 400, { error: 'A declared order-start scenario with exact fields is required.', executionPermitted: false });
+    }
+    const source = authority.readContext(c, branchFor(req));
+    authority.assertDepartmentSite(source, body.department, body.siteId);
+    const asOf = nowIso();
+    const result = assessOrderStartVariance({ tenantId: c.tenant, siteId: body.siteId, lineId: body.lineId,
+      orderId: body.orderId, plan: body.plan, actual: body.actual, asOf, maxAgeMinutes: 120 });
+    // The fixed assessor projection contains no financial data or free-form
+    // source narrative; keep every false boundary flag, including costVerified.
+    return writeJson(res, 200, { contractVersion: 'DECLARED_ORDER_START_SCENARIO_V1', scenarioOnly: true,
+      persisted: false, sourceBasis: 'CALLER_DECLARED_ERP_MES_RECORDS', asOf, freshnessPolicyMinutes: 120,
+      result, authority: 'NO_EXECUTION' });
+  }
+
+  async function managerFactoryScenario(req, res, c, kind) {
+    // JSON declarations cannot establish provider custody, line/order authority
+    // or actual stock availability. The existing native scope is rechecked
+    // after the only awaited operation and no write/event path is invoked.
+    const body = await readJson(req, 256 * 1024);
+    c = requireCurrentManager(req, res, c);
+    if (!c) return true;
+    const exact = (value, fields) => value && typeof value === 'object' && !Array.isArray(value) &&
+      Object.keys(value).length === fields.length && fields.every(key => Object.hasOwn(value, key));
+    const outputScope = ['tenantId', 'siteId', 'lineId', 'productId', 'orderId'];
+    const orderScope = ['tenantId', 'siteId', 'orderId'];
+    const outputSource = [...outputScope, 'window', 'sourceName', 'revision', 'digest', 'observedAt', 'complete', 'evidenceRef'];
+    const materialSource = [...orderScope, 'source', 'revision', 'digest', 'observedAt', 'complete'];
+    const component = [...orderScope, 'componentId', 'unit', 'evidenceRef', 'evidenceDigest'];
+    const rows = (value, fields) => Array.isArray(value) && value.length >= 1 && value.length <= 1000 && value.every(row => exact(row, fields));
+    const valid = kind === 'output'
+      ? exact(body, ['siteId', 'lineId', 'productId', 'orderId', 'department', 'window', 'plan', 'production']) &&
+        exact(body.window, ['start', 'end']) && exact(body.plan, [...outputSource, 'targetUnits']) &&
+        exact(body.production, [...outputSource, 'acceptedUnits']) &&
+        exact(body.plan.window, ['start', 'end']) && exact(body.production.window, ['start', 'end'])
+      : exact(body, ['siteId', 'orderId', 'department', 'bom', 'inventory']) &&
+        exact(body.bom, [...materialSource, 'effectiveStart', 'effectiveEnd', 'components']) &&
+        exact(body.inventory, [...materialSource, 'bomRevision', 'bomDigest', 'balances']) &&
+        rows(body.bom.components, [...component, 'requiredMilliunits']) && rows(body.inventory.balances, [...component, 'allocatableMilliunits']);
+    if (!valid || [...new URL(String(req.url), 'http://wfm.invalid').searchParams.keys()].some(key => !['scope', 'branch'].includes(key))) {
+      return writeJson(res, 400, { error: 'A declared factory scenario with exact fields is required.', executionPermitted: false });
+    }
+    const source = authority.readContext(c, branchFor(req));
+    authority.assertDepartmentSite(source, body.department, body.siteId);
+    // These two inherited assessors require exact UTC seconds. Floor only the
+    // server-owned as-of clock; never transform caller record timestamps.
+    const asOf = nowIso().replace(/\.\d{3}Z$/, 'Z');
+    const result = kind === 'output'
+      ? assessProductionOutputGap({ tenantId: c.tenant, siteId: body.siteId, lineId: body.lineId, productId: body.productId,
+          orderId: body.orderId, window: body.window, asOf, plan: body.plan, production: body.production })
+      : assessOrderMaterialAvailability({ tenantId: c.tenant, siteId: body.siteId, orderId: body.orderId, asOf, bom: body.bom, inventory: body.inventory });
+    if (kind === 'material' && result.bom.digest === result.inventory.digest) throw Error('BOM and inventory must declare distinct snapshot digests.');
+    return writeJson(res, 200, {
+      contractVersion: kind === 'output' ? 'DECLARED_PRODUCTION_OUTPUT_GAP_SCENARIO_V1' : 'DECLARED_ORDER_MATERIAL_AVAILABILITY_SCENARIO_V1',
+      scenarioOnly: true, persisted: false,
+      sourceBasis: kind === 'output' ? 'CALLER_DECLARED_ERP_MES_RECORDS' : 'CALLER_DECLARED_BOM_STOCK_RECORDS',
+      asOf, ...(kind === 'output' ? { periodPolicyMaxDays: 31 } : { freshnessPolicyMinutes: 15 }), result,
+      sourceAuthenticated: false, lineOrderAuthority: false, causeVerified: false, costVerified: false,
+      scheduleAuthority: false, executionAuthority: false, authority: 'NO_EXECUTION'
+    });
+  }
+
   function canReadReconciliation(source, reconciliation) {
     try {
       if(reconciliation.tenant!==source.actor.tenant)return false;
@@ -339,6 +419,9 @@ function createSchedulingIntelligenceService(options = {}) {
       if (req.method === 'POST' && path === PREFIX + '/what-if') return await managerWhatIf(req, res, c);
       if (req.method === 'POST' && path === PREFIX + '/open-shift/evaluate') return await managerOpenShift(req, res, c);
       if (req.method === 'POST' && path === PREFIX + '/swap/evaluate') return await managerSwap(req, res, c);
+      if (req.method === 'POST' && path === PREFIX + '/order-start-variance/scenario') return await managerOrderStartScenario(req, res, c);
+      if (req.method === 'POST' && path === PREFIX + '/production-output-gap/scenario') return await managerFactoryScenario(req, res, c, 'output');
+      if (req.method === 'POST' && path === PREFIX + '/order-material-availability/scenario') return await managerFactoryScenario(req, res, c, 'material');
       return writeJson(res, 404, { error: 'Scheduling intelligence endpoint not found.' });
     } catch (error) {
       return writeJson(res, Number(error?.statusCode || 400), {

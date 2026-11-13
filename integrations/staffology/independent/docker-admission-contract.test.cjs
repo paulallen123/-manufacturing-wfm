@@ -31,8 +31,12 @@ test('supported Docker admission composes and binds the strict full canonical ru
  assert.match(proof,/STAFFOLOGY_RUNTIME_MODE=full/);
  assert.match(proof,/WFM_BUILD_SOURCE_SHA="\$RAILWAY_GIT_COMMIT_SHA"/);
  assert.match(proof,/STAFFOLOGY_PRIVATE_EVIDENCE_DIR=\/proof\/staffology-private-artifacts/);
- assert.match(proof,/set \+e; CANONICAL_SOURCE_DIR=\/proof/);
- assert.match(proof,/cat \/proof\/staffology-private-artifacts\/staffology-full\.tap; exit \$status/);
+ assert.match(proof,/set \+e; printf 'STAFFOLOGY_ADMISSION stage=start/);
+ assert.match(proof,/--test-reporter=tap --test-reporter-destination=\/proof\/staffology-private-artifacts\/staffology-full\.tap/);
+ assert.match(proof,/--test-reporter=\.\/scripts\/staffology-build-diagnostics\.cjs --test-reporter-destination=stdout/);
+ assert.match(proof,/3>&2 > \/proof\/staffology-private-artifacts\/staffology-runner-private\.log 2>&1; status=\$\?/);
+ assert.match(proof,/printf 'STAFFOLOGY_ADMISSION stage=exit status=%s\\n' "\$status" >&2; exit "\$status"/);
+ assert.doesNotMatch(proof,/cat \/proof\/staffology-private-artifacts\/staffology-full\.tap/);
  assert.match(proof,/integrations\/staffology\/\*\.test\.cjs/);
  assert.match(proof,/independent\/succession-regressions\.test\.cjs/);
  assert.match(proof,/independent\/current-authority-recovery-held-out\.test\.cjs/);

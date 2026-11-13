@@ -1,0 +1,121 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: materializes exact four files in private isolated layout and loads real serializer
+ok 1 - materializes exact four files in private isolated layout and loads real serializer
+  ---
+  duration_ms: 8.529884
+  type: 'test'
+  ...
+# Subtest: separate materializations cannot overwrite one another
+ok 2 - separate materializations cannot overwrite one another
+  ---
+  duration_ms: 5.38979
+  type: 'test'
+  ...
+# Subtest: rejects changed compressed bytes and noncanonical base64
+ok 3 - rejects changed compressed bytes and noncanonical base64
+  ---
+  duration_ms: 2.567997
+  type: 'test'
+  ...
+# Subtest: rejects altered source bytes even with recomputed outer bundle hash
+ok 4 - rejects altered source bytes even with recomputed outer bundle hash
+  ---
+  duration_ms: 2.839379
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path ../escape.cjs
+ok 5 - rejects unapproved path ../escape.cjs
+  ---
+  duration_ms: 6.20802
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path /tmp/escape.cjs
+ok 6 - rejects unapproved path /tmp/escape.cjs
+  ---
+  duration_ms: 7.367445
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path __proto__
+ok 7 - rejects unapproved path __proto__
+  ---
+  duration_ms: 8.509284
+  type: 'test'
+  ...
+# Subtest: rejects missing, extra and duplicate files
+not ok 8 - rejects missing, extra and duplicate files
+  ---
+  duration_ms: 13.745597
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/runner-activation/launcher.test.cjs:57:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /BUNDLE_FILE_SET_MISMATCH/. Input:
+    
+    'RangeError [ERR_BUFFER_TOO_LARGE]: Cannot create a Buffer larger than 200000 bytes'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: 'Cannot create a Buffer larger than 200000 bytes'
+  name: 'RangeError'
+  stack: |-
+    processChunkSync (node:zlib:457:15)
+    zlibBufferSync (node:zlib:180:12)
+    Object.syncBufferWrapper [as gunzipSync] (node:zlib:790:14)
+    Object.validateBundle (/workspace/scratch/cd4e2bcb0821/runner-activation/launcher.cjs:30:34)
+    /workspace/scratch/cd4e2bcb0821/runner-activation/launcher.test.cjs:60:34
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/runner-activation/launcher.test.cjs:60:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/runner-activation/launcher.test.cjs:60:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: rejects different source and decompression bombs
+ok 9 - rejects different source and decompression bombs
+  ---
+  duration_ms: 7.820586
+  type: 'test'
+  ...
+# Subtest: environment requirements are exact; no presence check is treated as proof
+ok 10 - environment requirements are exact; no presence check is treated as proof
+  ---
+  duration_ms: 0.726184
+  type: 'test'
+  ...
+# Subtest: generated shell command fails closed before installing when bindings are missing
+ok 11 - generated shell command fails closed before installing when bindings are missing
+  ---
+  duration_ms: 43.450556
+  type: 'test'
+  ...
+# Subtest: install failure propagates, cleans materialized files and never logs private values
+ok 12 - install failure propagates, cleans materialized files and never logs private values
+  ---
+  duration_ms: 70.310636
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 272.938125

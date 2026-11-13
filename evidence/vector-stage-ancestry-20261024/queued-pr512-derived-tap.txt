@@ -1,0 +1,337 @@
+ok 1 - profile staging connector needs no generic ingress bearer and preserves compatible configured connectors
+ok 2 - wrong tenant, permission, connector, scope, or conflicting configured connector fails closed
+ok 3 - client connector or scope override is rejected before provider acquisition
+ok 4 - configured connector conflict is rejected by operation preflight before provider acquisition
+ok 5 - composer does not register profile staging as generic authenticated ingress
+ok 6 - strict full HTTP fixture binds its configured connector to the same server-held scope
+ok 7 - hosted profile resolves absent deployment identity from the trusted runtime
+ok 8 - hosted profile accepts only an explicit exact deployment identity
+ok 9 - hosted profile rejects absent, malformed, wrong, or stale runtime deployment evidence
+ok 10 - trusted deployment identity cannot substitute for the sealed candidate source
+ok 11 - non-hosted fixtures remain explicit and do not consume Railway identity
+ok 12 - invalid canonical workforce mapping fails before Staffology acquisition
+ok 13 - stale principal fails before mapping validation or provider acquisition
+ok 14 - authority replaced during provider awaits is rechecked before staging PII
+ok 15 - invalid reviewed email fails the real canonical preflight before provider acquisition
+ok 16 - exact acquisition accepts reviewed missing-email mapping through adapter and canonical bridge
+ok 17 - status discloses exact non-secret operation scope only to a current authorised principal
+ok 18 - operation profile is dormant by default and exact-source-bound when enabled
+ok 19 - acquisition-only profile keeps payroll dormant until a released-batch scope is configured
+ok 20 - operation status reveals non-secret exact scope only to the current authorised tenant account
+ok 21 - authenticated acquisition accepts only the server-held tenant, employer and exact cohort
+ok 22 - provider list outside the exact cohort is rejected before any employee detail is fetched
+ok 23 - real bridge, SQLite authority and operation attach trusted binding and reconcile one simulated POST across reopen
+ok 24 - outside-cohort or conflicting payroll and recovery scope fails before provider read and durable intent
+ok 25 - known valid scope reaches the intercepted baseline GET only after trusted binding is attached
+ok 26 - canonical mapping options reject invalid workforce choices before provider acquisition
+ok 27 - canonical mapping options accept an exact current state selection
+ok 28 - production boundary rejects a lost owner and consumes exact authority once
+ok 29 - uncertain dispatch survives reopen and begin cannot resend it
+ok 30 - £1,250 provider result remains rejected for approved £12.50 basic pay
+ok 31 - authenticated approved coordinator issues exact authority once and retains simulated financial readback
+ok 32 - authority accepts only the exact canonical binding and permit schema
+ok 33 - R01 an actor from another tenant cannot issue approval
+ok 34 - R01b an actor from another tenant cannot revoke approval
+ok 35 - R02 a permit for another binding, delivery or payload cannot dispatch
+ok 36 - authority storage faults are not disguised as a denied permit
+ok 37 - R03 a differently bound store cannot read another tenant private delivery
+ok 38 - R04 a request with the wrong method or employer cannot dispatch
+ok 39 - exact unconsumed permit is atomically reused after a pre-dispatch retry
+ok 40 - approval is bound to canonical person identity, not a reused email
+ok 41 - provider deadline budget expands the fenced lease for bounded sequential requests
+ok 42 - exact permit safely replaces a still-unconsumed approval owned by a different canonical person
+ok 43 - provably undispatched recovery returns and persists the newly consumed approval identity
+ok 44 - post-dispatch recovery is classified read-only and retains the original consumed approval
+ok 45 - changed immutable baseline remains honestly held without dispatch
+ok 46 - definitive recovery rejection reports the persisted dispatch and consumed approval
+ok 47 - canonical bridge derives the narrow import from exact retained released bytes
+ok 48 - changed retained bytes fail checksum reconciliation
+ok 49 - sent batches cannot be silently reused
+ok 50 - multi-line and unsupported components remain held
+ok 51 - runtime requires current payroll permission and remains dormant
+ok 52 - runtime derives mapping choices only from the current canonical tenant state
+ok 53 - people acquisition crosses only with complete reviewed onboarding mappings
+ok 54 - mixed lifecycle acquisition durably holds Former and stages eligible Current records separately
+ok 55 - explicit current leaver evidence cannot be converted to Former solely by an end date
+ok 56 - missing provider email uses only an explicit reviewed VECTOR mapping
+ok 57 - reviewed email cannot replace an existing provider identity or contain unsafe bytes
+ok 58 - callbacks return exact current site labels from matching applied records and immutable source event
+ok 59 - unapplied or missing setup has no site authority even when staff carries a site name
+ok 60 - wrong digest or an unbound applied audit cannot bless stored configuration
+ok 61 - current permanent run wins over a newer unrelated implementation run
+ok 62 - configuration change events remain distinct when content returns to a previous digest
+ok 63 - empty workforce exposes missing real job contract and hours prerequisites without defaults
+ok 64 - missing source tables leave an optional integration unavailable without writing schema or tenant data
+ok 65 - first employee can preview, validate and stage the exact configured site with staff empty
+ok 66 - configured sites are authoritative even when staff contains other site labels
+ok 67 - explicit configuredSitesForTenant null fails closed
+ok 68 - explicit configuredSitesForTenant undefined fails closed
+ok 69 - explicit configuredSitesForTenant [object Object] fails closed
+ok 70 - explicit configuredSitesForTenant request-callback fails closed
+ok 71 - configuredSitesForTenant callback failure cannot stage
+ok 72 - configuredSitesForTenant asynchronous result is not synchronous authority
+ok 73 - explicit configurationContextForTenant null fails closed
+ok 74 - explicit configurationContextForTenant undefined fails closed
+ok 75 - explicit configurationContextForTenant [object Object] fails closed
+ok 76 - explicit configurationContextForTenant request-callback fails closed
+ok 77 - configurationContextForTenant callback failure cannot stage
+ok 78 - configurationContextForTenant asynchronous result is not synchronous authority
+ok 79 - one missing constructor callback never falls back to staff-derived sites
+ok 80 - null context fails closed
+ok 81 - missing context.tenant fails closed
+ok 82 - missing context.runId fails closed
+ok 83 - missing context.configurationDigest fails closed
+ok 84 - missing context.scopeChangeEventId fails closed
+ok 85 - invalid context event -1 fails closed
+ok 86 - invalid context event 1.5 fails closed
+ok 87 - invalid context event 17 fails closed
+ok 88 - invalid context event NaN fails closed
+ok 89 - invalid context event Infinity fails closed
+ok 90 - invalid context event 9007199254740992 fails closed
+ok 91 - null authority fails closed
+ok 92 - missing authority.tenant fails closed
+ok 93 - missing authority.runId fails closed
+ok 94 - missing authority.configurationDigest fails closed
+ok 95 - missing authority.scopeChangeEventId fails closed
+ok 96 - invalid authority event -1 fails closed
+ok 97 - invalid authority event 1.5 fails closed
+ok 98 - invalid authority event 17 fails closed
+ok 99 - invalid authority event NaN fails closed
+ok 100 - invalid authority event Infinity fails closed
+ok 101 - invalid authority event 9007199254740992 fails closed
+ok 102 - context applied=false is not applied authority
+ok 103 - context applied=undefined is not applied authority
+ok 104 - context applied=true is not applied authority
+ok 105 - context applied=1 is not applied authority
+ok 106 - foreign expected tenant is rejected even when both trusted snapshots agree
+ok 107 - configured-site tenant mismatch fails closed
+ok 108 - reviewed tenant mismatch cannot validate or stage
+ok 109 - current tenant change after preview rejects old binding
+ok 110 - configured-site runId mismatch fails closed
+ok 111 - reviewed runId mismatch cannot validate or stage
+ok 112 - current runId change after preview rejects old binding
+ok 113 - configured-site configurationDigest mismatch fails closed
+ok 114 - reviewed configurationDigest mismatch cannot validate or stage
+ok 115 - current configurationDigest change after preview rejects old binding
+ok 116 - configured-site scopeChangeEventId mismatch fails closed
+ok 117 - reviewed scopeChangeEventId mismatch cannot validate or stage
+ok 118 - current scopeChangeEventId change after preview rejects old binding
+ok 119 - same-label/same-digest newer scope event invalidates preview and permits a fresh preview
+ok 120 - authority is re-read after mapping validation and immediately before staging
+ok 121 - a configuration change in the connector guard is caught before staging
+ok 122 - invalid or ambiguous site labels undefined fail closed
+ok 123 - invalid or ambiguous site labels null fail closed
+ok 124 - invalid or ambiguous site labels "Exact configured site" fail closed
+ok 125 - invalid or ambiguous site labels [] fail closed
+ok 126 - invalid or ambiguous site labels [""] fail closed
+ok 127 - invalid or ambiguous site labels [" Exact configured site"] fail closed
+ok 128 - invalid or ambiguous site labels ["Exact configured site "] fail closed
+ok 129 - invalid or ambiguous site labels ["bad\\nlabel"] fail closed
+ok 130 - invalid or ambiguous site labels ["badlabel"] fail closed
+ok 131 - invalid or ambiguous site labels [123] fail closed
+ok 132 - invalid or ambiguous site labels [null] fail closed
+ok 133 - invalid or ambiguous site labels [{"name":"Exact configured site"}] fail closed
+ok 134 - invalid or ambiguous site labels ["Exact configured site","Exact configured site"] fail closed
+ok 135 - invalid or ambiguous site labels ["Exact configured site"," Exact configured site"] fail closed
+ok 136 - invalid or ambiguous site labels [null] fail closed
+ok 137 - exact labels retain case, internal whitespace, order and full length without site-code invention
+ok 138 - returned binding and labels are frozen copies, not retained authority references
+ok 139 - request fields cannot supply missing authority or reviewed binding
+ok 140 - missing or malformed reviewed comparison null fails closed
+ok 141 - missing or malformed reviewed comparison {} fails closed
+ok 142 - missing or malformed reviewed comparison [] fails closed
+ok 143 - missing or malformed reviewed comparison true fails closed
+ok 144 - existing employee managerId guard remains enforced
+ok 145 - existing employee job guard remains enforced
+ok 146 - existing employee contractType guard remains enforced
+ok 147 - existing employee weeklyHours guard remains enforced
+ok 148 - existing employee email guard remains enforced
+ok 149 - existing employee email guard remains enforced
+ok 150 - existing employee site guard remains enforced
+ok 151 - permission and connector guards remain enforced
+ok 152 - provider cohort, payroll identity and review guards remain enforced
+ok 153 - provider cohort, payroll identity and review guards remain enforced
+ok 154 - provider cohort, payroll identity and review guards remain enforced
+ok 155 - provider cohort, payroll identity and review guards remain enforced
+ok 156 - incomplete provider acquisition remains blocked
+ok 157 - mixed Current/Former lifecycle stages revalidate each separate effect
+ok 158 - legacy assembly without either callback retains its existing staff-only behavior
+ok 159 - canonical acquisition with a server-held preview stages the first employee
+ok 160 - canonical acquisition with a server-held preview rejects a scope event during await
+ok 161 - review boundary: site callback advancing tenant cannot return old authority
+ok 162 - review boundary: site callback advancing runId cannot return old authority
+ok 163 - review boundary: site callback advancing configurationDigest cannot return old authority
+ok 164 - review boundary: site callback advancing scopeChangeEventId cannot return old authority
+ok 165 - review boundary: post-snapshot context null fails closed
+ok 166 - review boundary: post-snapshot context {"tenant":"configured-site-tenant","runId":"run-001","configurationDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","scopeChangeEventId":17,"applied":false} fails closed
+ok 167 - review boundary: post-snapshot context {"tenant":"configured-site-tenant","runId":"run-001","configurationDigest":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","scopeChangeEventId":null,"applied":true} fails closed
+ok 168 - review boundary: inherited configuredSitesForTenant configuration is rejected
+ok 169 - review boundary: inherited configurationContextForTenant configuration is rejected
+ok 170 - review boundary: inherited configuredSitesForTenant and configurationContextForTenant configuration is rejected
+ok 171 - review boundary: inherited callback getters are rejected without evaluating them
+ok 172 - own callback configuration remains usable when it shadows prototype callback properties
+ok 173 - review boundary: alternating mapping site getter cannot stage an unconfigured label
+ok 174 - review boundary: receipt accessors are rejected before any envelope construction
+ok 175 - review boundary: nonplain and inherited mapping data cannot cross configured staging
+ok 176 - review boundary: self-deleting constructor configuredSitesForTenant accessor cannot erase opt-in
+ok 177 - review boundary: self-deleting constructor configurationContextForTenant accessor cannot erase opt-in
+ok 178 - review boundary: callback mutation cannot repair an initially unconfigured mapping during validate
+ok 179 - review boundary: callback mutation cannot repair an initially unconfigured mapping during stage
+ok 180 - plain JSON receipt is snapshotted before callbacks and shared unchanged with the envelope
+ok 181 - configured receipt snapshot rejects nested accessors, cyclic and sparse data before callbacks
+ok 182 - mixed lifecycle stages share the same immutable mapping snapshot
+ok 183 - real signed-workspace setup writer supplies applied provenance while empty workforce facts remain unavailable
+ok 184 - preview persistence binds current source, actor, connection namespace, exact mappings and cohort
+ok 185 - request binding fields cannot overwrite an authenticated persisted preview
+ok 186 - opaque preview IDs never admit other tenants people or revoked permissions
+ok 187 - freshness source revisions and native workrule facts are checked again before staging
+ok 188 - expiry and missing genuine workrule facts are unavailable rather than defaults
+ok 189 - audit interruption rolls back staged PII batch preview journal and dedup state
+ok 190 - actual staged batch identity and immutable record digests are rechecked inside apply transaction
+ok 191 - source changes during an await cannot be applied after staged acquisition
+ok 192 - preview and batch snapshot identities cannot be replaced or reset
+ok 193 - an invalid trusted clock cannot bypass a persisted preview expiry
+ok 194 - concurrent acquisition shares one provider cycle and returns a freshly authorised durable replay
+ok 195 - failed acquisition releases its reservation for a current preview retry but never for revoked authority
+ok 196 - another durable acquisition owner is held and cannot release or stage a replaced fence
+ok 197 - sharing a pending read never lends preview or actor authority and pending revocation rejects every caller
+ok 198 - a failed read is never a success cache and a fresh current retry can stage once
+ok 199 - an expired abandoned acquisition is reclaimed with a new fence only under current preview authority
+ok 200 - required acquisition completion journal failure atomically rolls back staged PII and can retry
+ok 201 - configured consumer retrieves review binding from the persisted preview for both validation and staging
+ok 202 - persisted preview is rejected again after provider awaits without staging or emitting a successful audit
+ok 203 - people acquisition does not manufacture payroll export authority for a clean first owner
+ok 204 - missing employee facts do not redefine the existing authenticated payroll operation permission
+ok 205 - I01 independent 1250 cents expectation rejects returned 125000 cents
+ok 206 - I02 losing owner during awaited final authorization must not dispatch
+ok 207 - I03 existing additional payroll lines must block this basic-only replacement
+ok 208 - I04 unexplained non-basic financial delta must remain unresolved
+ok 209 - I05 oversized streaming response must stop reading at the bound
+ok 210 - I06 a text-only response is refused without invoking unbounded text()
+ok 211 - I07 oversized response cancels its reader and aborts the request
+ok 212 - I08 stalled body deadline cancels the pending read
+ok 213 - I09 UTF-8 split across chunks is decoded intact
+ok 214 - I10 successful basic-only transition requires the guarded dispatch boundary
+ok 215 - I11 ownership revoked at persistence dispatch guard refuses submission
+ok 216 - I12 ignored or delayed guarded dispatch cannot become a late provider write
+ok 217 - I13 malformed, duplicate or additional baseline lines refuse replacement
+ok 218 - I14 every unapproved container, unknown field and type change remains held
+ok 219 - I15 changed run-level financial data remains held with complete comparison evidence
+ok 220 - I16 missing persisted baseline refuses dispatch despite recordEvidence returning true
+ok 221 - I17 basic-only changes are classified and bound to preserved baseline/readback hashes
+ok 222 - I18 accepted unresolved 404 cancels an unused response body
+ok 223 - I19 a late client response after deadline is cancelled without reading
+ok 224 - I20 denied pre-dispatch authority cannot later reconcile already-matching pay
+ok 225 - I21 wrong amount retains complete comparison, classified as unapproved
+ok 226 - I22 missing, malformed or inconsistent baseline line amounts refuse before POST
+ok 227 - I23 immediate empty chunks cannot starve the deadline
+ok 228 - current canonical resolver binds the exact approving account when two accounts share personId
+ok 229 - current canonical authority replacement invalidates permit even when issued request actor is immutable snapshot
+ok 230 - zero-dispatch initial read failure remains safely recoverable through real store successor
+ok 231 - fresh fenced successor can resume the original intent once and reconcile without the old worker
+ok 232 - supported Docker admission composes and binds the strict full canonical runtime
+ok 233 - runtime packaging refuses an omitted reviewed module: staffology-adapter.cjs
+ok 234 - runtime packaging refuses an omitted reviewed module: canonical-runtime-bridge.cjs
+ok 235 - runtime packaging refuses an omitted reviewed module: canonical-production-boundaries.cjs
+ok 236 - runtime packaging refuses an omitted reviewed module: canonical-operations.cjs
+ok 237 - runtime packaging refuses an omitted reviewed module: configured-site-authority.cjs
+ok 238 - runtime packaging refuses an omitted reviewed module: employee-import-previews.cjs
+ok 239 - runtime packaging refuses unreviewed additional module
+ok 240 - runtime packaging refuses wrong destination
+ok 241 - runtime packaging refuses duplicate workspace COPY
+ok 242 - runtime packaging refuses module copy after composition
+ok 243 - runtime packaging refuses missing composition
+ok 244 - runtime packaging refuses missing workspace compiler patcher
+ok 245 - runtime packaging refuses workspace removed before composition
+ok 246 - hosted caller binds configured candidate to the independently read sealed build file
+ok 247 - strict full HTTP journey uses actual attendance, canonical release and one simulated provider write across restart
+ok 248 - actual generated Staffology child preload compiles and retains fail-closed loopback fencing
+ok 249 - successor red: a pre-dispatch read failure is durably distinguished from an attempted send
+ok 250 - successor red: a former employee cannot enter the onboarding upsert workflow
+ok 251 - successor red: permit consumption remains bound to the approver current authority
+ok 252 - multi-line released batch is fully acknowledged once and replay issues zero additional provider POSTs
+ok 253 - read-only payroll discovery uses GET only, refuses stale authority and returns no PII or secret material
+ok 254 - successful POST transport evidence survives SQLite reopen and missing request id is explicit null
+ok 255 - transport-evidence persistence failure can neither acknowledge nor resend
+ok 256 - R01 production binding uses the adapter canonical field names
+ok 257 - R02 legacy alias binding cannot bypass canonical source identity
+ok 258 - R03 malformed permit check fails closed instead of throwing
+ok 259 - R04 live ownership cannot be stolen by uncertain recovery
+ok 260 - R05 original baseline evidence cannot be replaced
+ok 261 - R06 acknowledged receipt cannot be overwritten
+ok 262 - R07 acknowledged delivery cannot be downgraded to uncertain
+ok 263 - R08 production coordinator accepts the exact adapter binding
+ok 264 - R06 rejects £1,250 released gross for approved 1.25 × £10 = £12.50
+ok 265 - R08 rejects duplicated acquired employee that omits another reviewed employee
+ok 266 - R08 accepts a one-to-one exact acquired and reviewed employee cohort
+ok 267 - S01 two independent SQLite connections permit exactly one outbound submission
+ok 268 - S02 acknowledgement and evidence survive closing and reopening SQLite without a resend
+ok 269 - S03 uncertain provider outcome stays held after SQLite reopen
+ok 270 - S04 mismatched financial details persist across reopen and cannot be acknowledged
+ok 271 - S05 wrong owner token cannot change SQLite evidence or receipt
+ok 272 - S06 transaction failure cannot produce a successful receipt or a resend
+ok 273 - S07 fresh recovery after reopen uses the original persisted baseline, not a new baseline
+ok 274 - S08 missing baseline after restart cannot acknowledge a matching readback
+ok 275 - S09 comparison persistence failure cannot acknowledge or resend
+ok 276 - S10 failed dispatch reservation transaction prevents the provider write
+ok 277 - C01 API keys use HTTP Basic, never Bearer
+ok 278 - C02 arbitrary HTTPS credential destinations are rejected
+ok 279 - C03 origin credentials, query, fragment and non-root path are rejected
+ok 280 - C04 plain-text 401 retains authentication classification
+ok 281 - C05 requests carry cancellation and a deadline
+ok 282 - C06 read timeout terminates even if the client ignores the AbortSignal
+ok 283 - C07 raw POST refuses missing write authority before any client call
+ok 284 - C08 employee detail maps documented nested fields and canonical Person columns
+ok 285 - C08a provider leaver authority is preserved, revision-bound and contradictory states fail closed
+ok 286 - C09 pageNum=0 plus full pages and detail GETs acquire the whole fixture cohort
+ok 287 - C10 duplicate list IDs and mismatched detail identity are refused
+ok 288 - C11 missing employee dates are not invented and impossible dates fail
+ok 289 - C12 content changes alter sourceVersion even without provider revision
+ok 290 - C13 stable data with later acquisition timestamps retains sourceVersion
+ok 291 - C14 payroll wire mapping is a PayOptionsImport array with explicit basic rate/hours
+ok 292 - C15 unsupported multi-line mapping, invalid dates and overflowing numbers fail closed
+ok 293 - C16 sub-cent calculations require an explicit rounding policy
+ok 294 - C17 all financial containers and unknown fields are retained
+ok 295 - C18 snapshots are immutable copies and hashes remain valid
+ok 296 - C19 arrays and objects cannot compare equal and difference paths are retained
+ok 297 - C20 empty import success is followed by real-coordinate readback and financial verification
+ok 298 - C21 wrong returned amount £1250 for expected £12.50 is never acknowledged
+ok 299 - C22 identity-only or missing financial evidence is never acknowledged
+ok 300 - C23 wrong year, period, ordinal or version never acknowledges
+ok 301 - C24 same-identity wrong employee/code and wrong rate/hours are rejected
+ok 302 - C25 uncertain POST and response-body loss both read back without resending
+ok 303 - C26 unknown 404 readback remains held across a new coordinator
+ok 304 - C27 stable business key prevents second send without deliveryId
+ok 305 - C28 concurrent losing atomic claim cannot POST
+ok 306 - C29 same business key with changed intent is held, not resent
+ok 307 - C30 wrong tenant/build/deployment/run/configuration and missing authority refuse POST
+ok 308 - C31 missing binding or missing owner assertion refuses coordinator setup
+ok 309 - C32 a lost ownership token refuses all outbound mutation
+ok 310 - C33 full baseline and mismatched readback are preserved, not just their hashes
+ok 311 - C34 failure to persist baseline evidence prevents POST
+ok 312 - C35 failing local acknowledgement remains unresolved and cannot resend
+ok 313 - C36 a silently ignored acknowledgement cannot produce reconciled
+ok 314 - C37 persisted intent must be reloaded before reconciliation and cannot be caller-supplied
+ok 315 - C38 a changed current open period blocks the import
+ok 316 - C39 unknown and infinite pages cannot loop indefinitely
+ok 317 - C40 changed mapped employer/date identity and truncated IDs fail rather than alias
+ok 318 - C41 documented payRunVersion entry field is validated without an invented version field
+ok 319 - C42 revoked final-boundary permit never acknowledges even when existing pay matches
+ok 320 - C43 removed rolled-back or explicitly obsolete entries refuse import
+ok 321 - C44 effective date outside explicitly selected pay-run period refuses import
+ok 322 - C45 definitive POST authentication rejection is durable and cannot false-acknowledge or resend
+ok 323 - C46 financial validator normalizes only documented omitted zero basic pay without bypassing dispatch-bound inspect
+ok 324 - reviewed one-character Staffology payroll codes persist across restart without duplicate apply or cross-tenant read
+ok 325 - canonical onboarding keeps strict source identity and unsafe or duplicate payroll rejection
+ok 326 - composed preview acquisition and apply use stored source authority and reject its subsequent change
+ok 327 - concurrent acquisition of one stored preview must not duplicate provider reads or staging effects
+ok 328 - completion journal interruption must roll back staged batch and preview result
+ok 329 - dormant Staffology preview remains unavailable without blocking the existing integration-free workspace
+1..329
+# tests 329
+# pass 329
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 37916.565903

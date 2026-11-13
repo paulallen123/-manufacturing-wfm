@@ -1,0 +1,234 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: delta batch can advance only after transfer/schema/checksum integrity and never grants deletion authority
+ok 1 - delta batch can advance only after transfer/schema/checksum integrity and never grants deletion authority
+  ---
+  duration_ms: 1.995909
+  type: 'test'
+  ...
+# Subtest: clean but incomplete batch is quarantined and cannot advance its watermark
+ok 2 - clean but incomplete batch is quarantined and cannot advance its watermark
+  ---
+  duration_ms: 0.466349
+  type: 'test'
+  ...
+# Subtest: partial or corrupt batch is quarantined and watermark does not move
+ok 3 - partial or corrupt batch is quarantined and watermark does not move
+  ---
+  duration_ms: 0.224221
+  type: 'test'
+  ...
+# Subtest: timestamp watermark comparison uses instants rather than unsafe string ordering
+ok 4 - timestamp watermark comparison uses instants rather than unsafe string ordering
+  ---
+  duration_ms: 0.772111
+  type: 'test'
+  ...
+# Subtest: integer watermarks compare numerically and support values beyond Number precision
+ok 5 - integer watermarks compare numerically and support values beyond Number precision
+  ---
+  duration_ms: 0.584073
+  type: 'test'
+  ...
+# Subtest: opaque cursors are not falsely ordered but still require a complete verified batch
+ok 6 - opaque cursors are not falsely ordered but still require a complete verified batch
+  ---
+  duration_ms: 0.331259
+  type: 'test'
+  ...
+# Subtest: invalid or undeclared comparable watermark formats fail closed
+ok 7 - invalid or undeclared comparable watermark formats fail closed
+  ---
+  duration_ms: 1.256146
+  type: 'test'
+  ...
+# Subtest: string-valued safety flags are rejected instead of being treated as truthy evidence
+ok 8 - string-valued safety flags are rejected instead of being treated as truthy evidence
+  ---
+  duration_ms: 0.196791
+  type: 'test'
+  ...
+# Subtest: complete transfer alone cannot grant deletion authority
+ok 9 - complete transfer alone cannot grant deletion authority
+  ---
+  duration_ms: 0.617293
+  type: 'test'
+  ...
+# Subtest: only reconciled authoritative complete snapshot yields tombstone-candidate authority
+ok 10 - only reconciled authoritative complete snapshot yields tombstone-candidate authority
+  ---
+  duration_ms: 0.622129
+  type: 'test'
+  ...
+# Subtest: checkpoint scope mismatch is rejected before watermark admission
+ok 11 - checkpoint scope mismatch is rejected before watermark admission
+  ---
+  duration_ms: 0.387072
+  type: 'test'
+  ...
+# Subtest: dataset deletion evidence cannot be borrowed across source scopes
+ok 12 - dataset deletion evidence cannot be borrowed across source scopes
+  ---
+  duration_ms: 0.343858
+  type: 'test'
+  ...
+# Subtest: scoped identity preserves legitimate multi-row worker records
+ok 13 - scoped identity preserves legitimate multi-row worker records
+  ---
+  duration_ms: 0.268396
+  type: 'test'
+  ...
+# Subtest: scoped identity rejects omitted record ID before hashing
+not ok 14 - scoped identity rejects omitted record ID before hashing
+  ---
+  duration_ms: 0.48705
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/integration-review-504/integration-fabric/runtime/batch-reconciliation.test.mjs:112:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/cd4e2bcb0821/integration-review-504/integration-fabric/runtime/batch-reconciliation.test.mjs:113:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: scoped identity rejects undefined record ID before hashing
+not ok 15 - scoped identity rejects undefined record ID before hashing
+  ---
+  duration_ms: 0.203962
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/integration-review-504/integration-fabric/runtime/batch-reconciliation.test.mjs:112:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/cd4e2bcb0821/integration-review-504/integration-fabric/runtime/batch-reconciliation.test.mjs:113:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: scoped identity rejects null record ID before hashing
+not ok 16 - scoped identity rejects null record ID before hashing
+  ---
+  duration_ms: 0.111895
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/integration-review-504/integration-fabric/runtime/batch-reconciliation.test.mjs:112:3'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/cd4e2bcb0821/integration-review-504/integration-fabric/runtime/batch-reconciliation.test.mjs:113:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: literal sentinel IDs and numeric zero retain canonical identity semantics
+ok 17 - literal sentinel IDs and numeric zero retain canonical identity semantics
+  ---
+  duration_ms: 0.307895
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: sparse Katana inventory signals never imply deleted variants
+ok 18 - sparse Katana inventory signals never imply deleted variants
+  ---
+  duration_ms: 2.034817
+  type: 'test'
+  ...
+# Subtest: incremental deltas require overlap replay and do not infer deletion
+ok 19 - incremental deltas require overlap replay and do not infer deletion
+  ---
+  duration_ms: 0.155019
+  type: 'test'
+  ...
+# Subtest: event signals are never completeness evidence
+ok 20 - event signals are never completeness evidence
+  ---
+  duration_ms: 0.101931
+  type: 'test'
+  ...
+# Subtest: pagination gap blocks deletion even for an authoritative complete snapshot
+ok 21 - pagination gap blocks deletion even for an authoritative complete snapshot
+  ---
+  duration_ms: 0.267315
+  type: 'test'
+  ...
+# Subtest: unproven tenant/site scope blocks deletion
+ok 22 - unproven tenant/site scope blocks deletion
+  ---
+  duration_ms: 0.111255
+  type: 'test'
+  ...
+# Subtest: only a reconciled authoritative complete snapshot may yield a tombstone candidate
+ok 23 - only a reconciled authoritative complete snapshot may yield a tombstone candidate
+  ---
+  duration_ms: 0.176621
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: scope namespace is deterministic across key order and Unicode normalisation
+ok 24 - scope namespace is deterministic across key order and Unicode normalisation
+  ---
+  duration_ms: 1.176208
+  type: 'test'
+  ...
+# Subtest: company, environment, region, API version and dataset changes isolate checkpoints
+ok 25 - company, environment, region, API version and dataset changes isolate checkpoints
+  ---
+  duration_ms: 0.312832
+  type: 'test'
+  ...
+# Subtest: provider-required dimensions fail closed when missing
+ok 26 - provider-required dimensions fail closed when missing
+  ---
+  duration_ms: 0.354294
+  type: 'test'
+  ...
+# Subtest: checkpoint continuation is refused across source scopes
+ok 27 - checkpoint continuation is refused across source scopes
+  ---
+  duration_ms: 0.375916
+  type: 'test'
+  ...
+# Subtest: lineage preserves approved source dimensions and drops arbitrary secret fields
+ok 28 - lineage preserves approved source dimensions and drops arbitrary secret fields
+  ---
+  duration_ms: 0.242088
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 25
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 99.204316

@@ -1,0 +1,119 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: materializes exact four files in private isolated layout and loads real serializer
+ok 1 - materializes exact four files in private isolated layout and loads real serializer
+  ---
+  duration_ms: 6.509135
+  type: 'test'
+  ...
+# Subtest: separate materializations cannot overwrite one another
+ok 2 - separate materializations cannot overwrite one another
+  ---
+  duration_ms: 3.96391
+  type: 'test'
+  ...
+# Subtest: rejects changed compressed bytes and noncanonical base64
+ok 3 - rejects changed compressed bytes and noncanonical base64
+  ---
+  duration_ms: 1.343355
+  type: 'test'
+  ...
+# Subtest: rejects altered source bytes even with recomputed outer bundle hash
+ok 4 - rejects altered source bytes even with recomputed outer bundle hash
+  ---
+  duration_ms: 2.13686
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path ../escape.cjs
+ok 5 - rejects unapproved path ../escape.cjs
+  ---
+  duration_ms: 4.419573
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path /tmp/escape.cjs
+ok 6 - rejects unapproved path /tmp/escape.cjs
+  ---
+  duration_ms: 4.494212
+  type: 'test'
+  ...
+# Subtest: rejects unapproved path __proto__
+ok 7 - rejects unapproved path __proto__
+  ---
+  duration_ms: 5.109307
+  type: 'test'
+  ...
+# Subtest: rejects missing, extra and duplicate files
+ok 8 - rejects missing, extra and duplicate files
+  ---
+  duration_ms: 9.26798
+  type: 'test'
+  ...
+# Subtest: rejects different source and decompression bombs
+ok 9 - rejects different source and decompression bombs
+  ---
+  duration_ms: 6.851408
+  type: 'test'
+  ...
+# Subtest: environment requirements are exact; no presence check is treated as proof
+ok 10 - environment requirements are exact; no presence check is treated as proof
+  ---
+  duration_ms: 0.957053
+  type: 'test'
+  ...
+# Subtest: generated shell command fails closed before installing when bindings are missing
+ok 11 - generated shell command fails closed before installing when bindings are missing
+  ---
+  duration_ms: 37.161693
+  type: 'test'
+  ...
+# Subtest: install failure propagates, cleans materialized files and never logs private values
+ok 12 - install failure propagates, cleans materialized files and never logs private values
+  ---
+  duration_ms: 61.265728
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: independent exact Git blobs and all source digests match canonical manifest
+ok 13 - independent exact Git blobs and all source digests match canonical manifest
+  ---
+  duration_ms: 3.913256
+  type: 'test'
+  ...
+# Subtest: generated package reproduces deterministically from canonical source
+ok 14 - generated package reproduces deterministically from canonical source
+  ---
+  duration_ms: 44.808813
+  type: 'test'
+  ...
+# Subtest: actual canonical wrapper failure propagates with cleanup and no network/browser execution
+ok 15 - actual canonical wrapper failure propagates with cleanup and no network/browser execution
+  ---
+  duration_ms: 1176.542417
+  type: 'test'
+  ...
+# Subtest: SIGTERM is propagated to running canonical child and materialized files are cleaned
+ok 16 - SIGTERM is propagated to running canonical child and materialized files are cleaned
+  ---
+  duration_ms: 129.897616
+  type: 'test'
+  ...
+# Subtest: changed environment and source reject before mock npm creates any artifacts
+ok 17 - changed environment and source reject before mock npm creates any artifacts
+  ---
+  duration_ms: 106.620117
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1541.340792

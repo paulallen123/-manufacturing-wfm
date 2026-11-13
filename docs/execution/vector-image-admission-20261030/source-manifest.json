@@ -1,0 +1,64 @@
+{
+  "canonicalSource": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "stackedBase": "521affbc019fb2ef48b1e3740401613b16bf408a",
+  "stackedBasePR": 537,
+  "files": [
+    {
+      "path": "Dockerfile",
+      "preimage": {
+        "sha256": "a02d4a1182a077ef48d0ab898a28e29dc08a5ab082136c9a4e46a256144f7b27",
+        "gitBlob": "03ff80449601bd7bbbd8f28a7b6541515f18a4cd",
+        "bytes": 48924
+      },
+      "postimage": {
+        "sha256": "8f46c2a468ef4a4966d5b9209bac6ebcad8b45894a45ad23096c23358b9bb908",
+        "gitBlob": "de6fe1a75dafdefb1c6ee6be562cf3dd6423a9a7",
+        "bytes": 50213
+      }
+    },
+    {
+      "path": "verification/vector-v014-setup-containment/heldout.test.cjs",
+      "preimage": {
+        "sha256": "8a26938319a5f1049db9fd14c19d590facfe059ae9e74e6ced01b061752e4055",
+        "gitBlob": "022b6e366f02a94a94abf180b31d3072d402f644",
+        "bytes": 6322
+      },
+      "postimage": {
+        "sha256": "b32419b1fa731b2f599216787d6a52b53dac7cdf5b1e258f762acd0917664394",
+        "gitBlob": "3425230edc9c8aab92413dd6fdf407884b27bc90",
+        "bytes": 6857
+      }
+    },
+    {
+      "path": "integration/runtime/fixtures/gusto-http-child.cjs",
+      "preimage": {
+        "sha256": "608d746a1ecb6e703abb8dc211d0bf23fe4b4982213b4c8ea9d4cf68dd13f5f7",
+        "gitBlob": "1629afb3b06588e23e6c0c6666d7dd2b9ab07432",
+        "bytes": 2506
+      },
+      "postimage": {
+        "sha256": "122a0d62eb00568434e2fcf444a640d448ab3f40ead3ea610c1d528ad274b695",
+        "gitBlob": "bba078cd80fa46ad5cce528e864da2157092f8f2",
+        "bytes": 2741
+      }
+    }
+  ],
+  "sourcePatch": "221ebc1d4b5a0b3d17dc182162749318ffce41ff560a0f8ab9109194dc3e6f4f",
+  "supplement": {
+    "sha256": "67f620cf095fcebe4b7a79373d16695b1783a3e58b4184e6cdfdb6610ee9bb0e",
+    "gitBlob": "f2ea3ec6aa7384ba24834dca99f575410c422c27",
+    "bytes": 5807
+  },
+  "v009CompletePatch": "8d3fbc19b54738a78261aa05d4226b510c98b054ffd0089ff40d2572b6376537",
+  "independentReview": {
+    "reviewer": "/root",
+    "sourceReview": "accepted bounded three-file diff",
+    "freshInstalledTest": {
+      "nodeVersion": "22.23.2",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "formalGithubApproval": false
+  }
+}

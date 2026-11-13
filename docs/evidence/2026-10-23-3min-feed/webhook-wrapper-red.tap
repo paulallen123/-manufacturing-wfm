@@ -1,0 +1,41 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: documented 3Min webhook wrapper yields an intake receipt for its original payload
+not ok 1 - documented 3Min webhook wrapper yields an intake receipt for its original payload
+  ---
+  duration_ms: 216.631434
+  type: 'test'
+  location: '/workspace/scratch/6b06c133d8ed/vector-3min/integration/runtime/three-min-feed.test.cjs:55:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'REJECTED_VALIDATION'
+    - 'RECEIVED_UNVALIDATED'
+         ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'RECEIVED_UNVALIDATED'
+  actual: 'REJECTED_VALIDATION'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/6b06c133d8ed/vector-3min/integration/runtime/three-min-feed.test.cjs:58:36)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 479.936361

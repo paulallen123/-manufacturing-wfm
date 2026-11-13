@@ -1,0 +1,60 @@
+{
+  "b4": {
+    "deploymentId": "cdc12c32-33a7-4d57-bbb7-26a2ed63f675",
+    "logs": [
+      {
+        "timestamp": "2026-10-25T20:28:42.682634290Z",
+        "message": "  ---\n  duration_ms: 4.196973\n  type: 'test'\n  ...\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:28:42.686488412Z",
+        "message": "1..78\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:28:42.686886923Z",
+        "message": "# tests 78\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:28:42.687367803Z",
+        "message": "# suites 0\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:28:42.687817454Z",
+        "message": "# pass 78\n# fail 0\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:28:42.688328044Z",
+        "message": "# cancelled 0\n# skipped 0\n# todo 0\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:28:42.688331604Z",
+        "message": "# duration_ms 708.726335\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:28:57.147921235Z",
+        "message": "Build Failed: build daemon returned an error < failed to solve: process \"/bin/sh -c node scripts/compose-vector-local-runtime.mjs /proof/staffology-full-runtime  && VECTOR_SETUP_POLICY_RUNTIME_ROOT=/proof/staffology-full-runtime/implementation-runtime node --test implementation/runtime/setup-only-policy.test.cjs implementation/runtime/customer-workspace.test.cjs  && mkdir -p /proof/staffology-private-artifacts  && cp /proof/staffology-full-runtime/STAFFOLOGY_ASSEMBLY.json /proof/staffology-full-runtime/LOCAL_PROOF_PROVENANCE.json /proof/staffology-private-artifacts/  && printf '%s\\\\n' \\\"$RAILWAY_GIT_COMMIT_SHA\\\" > /proof/staffology-private-artifacts/source-sha.txt  && (set +e; CANONICAL_SOURCE_DIR=/proof     WFM_RUNTIME=/proof/staffology-full-runtime     STAFFOLOGY_RUNTIME_MODE=full     WFM_BUILD_SOURCE_SHA=\\\"$RAILWAY_GIT_COMMIT_SHA\\\"     STAFFOLOGY_PRIVATE_EVIDENCE_DIR=/proof/staffology-private-artifacts     node --test       integrations/staffology/*.test.cjs       integrations/staffology/independent/succession-regressions.test.cjs       integrations/staffology/independent/current-authority-recovery-held-out.test.cjs       integrations/staffology/independent/docker-admission-contract.test.cjs       integrations/staffology/independent/generated-provider-preload.test.cjs       integrations/staffology/independent/full-http-employee-journey.test.cjs       > /proof/staffology-private-artifacts/staffology-full.tap 2>&1; status=$?;     cat /proof/staffology-private-artifacts/staffology-full.tap; exit $status)  && node --test scripts/compose-vector-local-runtime.contract.test.cjs scripts/workspace-compiler-composition.test.cjs verification/first-use-regressions-20261012/existing-output-compiler.test.cjs\" did not complete successfully: exit code: 1 >"
+      }
+    ]
+  },
+  "older": {
+    "deploymentId": "dd9c50cb-22f1-4137-9192-c6253bc6ff46",
+    "logs": [
+      {
+        "timestamp": "2026-10-25T20:42:21.285268550Z",
+        "message": "# Subtest: role denials and external response failures preserve the current screen\nok 95 - role denials and external response failures preserve the current screen\n  ---\n  duration_ms: 4.234606\n  type: 'test'\n  ...\n# (node:73) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n# (Use `node --trace-warnings ...` to show where the warning was created)\n# Subtest: new signed owner enrols, signs in and resumes the one permanent reviewed workspace\nok 96 - new signed owner enrols, signs in and resumes the one permanent reviewed workspace\n  ---\n  duration_ms: 13783.806498\n  type: 'test'\n  ...\n# Subtest: stored order nominee enrols with real passkey and resumes the permanent reviewed workspace\nok 97 - stored order nominee enrols with real passkey and resumes the permanent reviewed workspace\n  ---\n  duration_ms: 8793.347908\n  type: 'test'\n  ...\n# Subtest: stored order nomination invalidates an outstanding real passkey challenge\nok 98 - stored order nomination invalidates an outstanding real passkey challenge\n  ---\n  duration_ms: 6058.911342\n  type: 'test'\n  ...\n# Subtest: stored order revocation invalidates an outstanding real passkey challenge\nok 99 - stored order revocation invalidates an outstanding real passkey challenge\n  ---\n  duration_ms: 4550.939655\n  type: 'test'\n  ...\n1..99\n# tests 99\n# suites 0\n# pass 99\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 116345.380764\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:42:55.949277749Z",
+        "message": "# Subtest: composed workflow evidence reads existing authorised sources without replaying a browser session\nnot ok 7 - composed workflow evidence reads existing authorised sources without replaying a browser session\n  ---\n  duration_ms: 33325.096956\n  type: 'test'\n  location: '/proof/scripts/workflow-action-evidence.composed.test.mjs:11:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Attendance runtime did not become healthy within 30000ms. phase=waiting-listener; lastHealthStatus=none\n    \n  code: 'ERR_TEST_FAILURE'\n  stack: |-\n    Object.start (file:///proof/verification/vector-repair-20260921/attendance-runtime-harness.mjs:84:13)\n    process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    async TestContext.<anonymous> (file:///proof/scripts/workflow-action-evidence.composed.test.mjs:19:15)\n    async Test.run (node:internal/test_runner/test:1054:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)\n  ...\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:42:55.985486392Z",
+        "message": "1..7\n# tests 7\n# suites 0\n# pass 6\n# fail 1\n# cancelled 0\n"
+      },
+      {
+        "timestamp": "2026-10-25T20:42:55.985539650Z",
+        "message": "# skipped 0\n# todo 0\n"
+      }
+    ]
+  }
+}

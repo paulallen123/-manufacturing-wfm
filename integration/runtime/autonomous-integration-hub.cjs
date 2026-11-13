@@ -2,8 +2,17 @@
 
 const { createHash, randomUUID, timingSafeEqual } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
+const path = require('node:path');
 const { createGustoCompanyConnector } = require('./gusto-company-connector.cjs');
 const { serveGustoOAuthLanding } = require('./gusto-oauth-landing.cjs');
+
+const { createThreeMinFeed } = require('./three-min-feed.cjs');
+// Source/tests retain their tree layout; the installed image places the two
+// runtime directories side by side under /app.
+const setupPolicyPath = path.basename(__dirname) === 'integration-runtime'
+  ? '../implementation-runtime/setup-only-policy.cjs'
+  : '../../implementation/runtime/setup-only-policy.cjs';
+const { createSetupOnlyPolicy } = require(setupPolicyPath);
 
 const PREFIX = '/api/integrations/autonomous';
 const DISCOVERY_SOURCES = new Set(['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE', 'USER', 'AGENT']);
@@ -364,8 +373,42 @@ function createAutonomousIntegrationHub(options = {}) {
       'BEGIN SELECT RAISE(ABORT,\'Integration events are append only.\'); END;'
   );
 
+  const feed = createThreeMinFeed({
+    db, env: options.env || process.env, now: options.now || Date.now,
+    assertEffect: tenant => requirePhase(tenant, 'OPERATIONAL_READ')
+  });
+
+  // The hub can also run for legacy tenants with no customer-workspace
+  // registry. Once any registry state exists, use its current, durable phase
+  // binding before an integration effect. An incomplete registry fails closed.
+  const setupRegistryMarker = db.prepare(
+    "SELECT 1 FROM sqlite_master WHERE type='table' AND " +
+    "(name='customer_workspaces' OR name GLOB 'customer_workspace_*') LIMIT 1"
+  );
+  const setupRegistryRequiredCount = db.prepare(
+    "SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name IN " +
+    "('customer_workspaces','customer_workspace_contracts','customer_workspace_events'," +
+    "'customer_workspace_adoptions','customer_workspace_orders','tenants','implementation_runs')"
+  );
+  let setupPolicy;
+  function requirePhase(tenant, purpose) {
+    if (!setupPolicy) {
+      if (!setupRegistryMarker.get()) return;
+      setupPolicy = createSetupOnlyPolicy({ db });
+    }
+    if (setupRegistryRequiredCount.get().n !== 7) {
+      throw Object.assign(new Error('Setup mode binding unavailable.'), {
+        code: 'SETUP_MODE_BINDING_UNAVAILABLE', statusCode: 503
+      });
+    }
+    setupPolicy.assertAllowed({ tenant, purpose });
+  }
+
   const gustoEnv = options.env || process.env;
-  const gusto = createGustoCompanyConnector({ db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now });
+  const gusto = createGustoCompanyConnector({
+    db, env: gustoEnv, fetchImpl: options.fetchImpl || globalThis.fetch, now: options.now || Date.now,
+    assertEffect: tenant => requirePhase(tenant, 'INITIAL_CREDENTIAL')
+  });
 
   const authStmt = db.prepare(
     'SELECT u.email,u.tenant,u.role FROM sessions s JOIN users u ON u.email=s.email WHERE s.token_hash=? AND s.expires>?'
@@ -623,6 +666,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleDiscover(ctx, req, res) {
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
     const source = compact(body.source, 40).toUpperCase();
     if (!DISCOVERY_SOURCES.has(source)) return writeJson(res, 400, { error: 'Unsupported discovery source.' });
     if (!Array.isArray(body.apps)) return writeJson(res, 400, { error: 'apps must be an array.' });
@@ -639,6 +683,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleCreateDiscoverySession(ctx, req, res) {
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
     const provider = compact(body.provider, 40).toUpperCase();
     if (!['ENTRA', 'OKTA', 'GOOGLE_WORKSPACE'].includes(provider)) {
       return writeJson(res, 400, { error: 'Unsupported directory discovery provider.' });
@@ -663,6 +708,7 @@ function createAutonomousIntegrationHub(options = {}) {
     const body = await readJson(req, maxBodyBytes);
     const session = discoverySessionById.get(compact(body.discoverySessionId, 80));
     if (!session) return writeJson(res, 404, { error: 'Discovery session not found.' });
+    requirePhase(session.tenant, 'INITIAL_CREDENTIAL');
     if (session.status !== 'PENDING') return writeJson(res, 409, { error: 'Discovery session has already been used.' });
     const nowMs = Date.now();
     if (Number(session.expires_at) <= nowMs) return writeJson(res, 410, { error: 'Discovery session has expired.' });
@@ -691,6 +737,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleConfirm(ctx, req, res) {
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
     const candidate = candidateById.get(compact(body.candidateId, 80), ctx.tenant);
     if (!candidate) return writeJson(res, 404, { error: 'Candidate not found.' });
     const authoritativeFor = arrayOfStrings(body.authoritativeFor, 12, 40)
@@ -703,6 +750,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleConnect(ctx, req, res) {
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
     const candidate = candidateById.get(compact(body.candidateId, 80), ctx.tenant);
     if (!candidate) return writeJson(res, 404, { error: 'Candidate not found.' });
     if (candidate.status !== 'CONFIRMED') return writeJson(res, 409, { error: 'Confirm the detected system before connecting it.' });
@@ -780,6 +828,7 @@ function createAutonomousIntegrationHub(options = {}) {
   }
 
   function saveGustoVerification(ctx, verified, preserveActive = false) {
+    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
     const connection = connectionById.get(verified.connectionId, ctx.tenant);
     if (!connection || connection.product_key !== 'gusto') {
       throw Object.assign(new Error('Gusto connection not found.'), { statusCode: 404 });
@@ -801,6 +850,7 @@ function createAutonomousIntegrationHub(options = {}) {
   async function handleGustoAuthorize(ctx, req, res) {
     if (!requireGustoAdministrator(ctx, res)) return true;
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
     const connection = gustoConnection(ctx, res, body.connectionId);
     if (!connection) return true;
     const availability = gustoConfigurationFor(ctx.tenant);
@@ -825,6 +875,7 @@ function createAutonomousIntegrationHub(options = {}) {
     });
     if (!requireGustoOrigin(req, res)) return true;
     const body = await readJson(req, 8192);
+    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
     if ((body.code && body.providerError) || typeof body.state !== 'string' ||
         (body.code !== undefined && body.code !== null && typeof body.code !== 'string') ||
         (body.providerError !== undefined && body.providerError !== null && typeof body.providerError !== 'string')) {
@@ -847,6 +898,7 @@ function createAutonomousIntegrationHub(options = {}) {
     });
     if (!requireGustoOrigin(req, res)) return true;
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'INITIAL_CREDENTIAL');
     const connection = gustoConnection(ctx, res, body.connectionId);
     if (!connection) return true;
     try {
@@ -875,6 +927,7 @@ function createAutonomousIntegrationHub(options = {}) {
     const body = await readJson(req, maxBodyBytes);
     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+    requirePhase(connection.tenant, 'INITIAL_CREDENTIAL');
     if (connection.product_key === 'gusto') {
       return writeJson(res, 409, { error: 'Complete Gusto authorization through the verified company connector.', code: 'GUSTO_PROVIDER_VERIFICATION_REQUIRED' });
     }
@@ -908,6 +961,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleMappingActivate(ctx, req, res) {
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
     const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
     if (!['VALIDATING', 'DEGRADED', 'ACTIVE'].includes(connection.state)) {
@@ -960,6 +1014,7 @@ function createAutonomousIntegrationHub(options = {}) {
       });
       return writeJson(res, 403, { error: 'Connection does not belong to the requested tenant.' });
     }
+    requirePhase(connection.tenant, 'OPERATIONAL_READ');
     if (!['VALIDATING', 'ACTIVE', 'DEGRADED'].includes(connection.state)) {
       return writeJson(res, 409, { error: 'Connection is not ready for validation.' });
     }
@@ -1114,6 +1169,7 @@ function createAutonomousIntegrationHub(options = {}) {
     const body = await readJson(req, maxBodyBytes);
     const connection = connectionByIdAnyTenant.get(compact(body.connectionId, 80));
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
+    requirePhase(connection.tenant, 'OPERATIONAL_READ');
     const health = compact(body.health, 40);
     const transitions = {
       healthy: ['ACTIVE', null],
@@ -1139,6 +1195,7 @@ function createAutonomousIntegrationHub(options = {}) {
 
   async function handleRepair(ctx, req, res) {
     const body = await readJson(req, maxBodyBytes);
+    requirePhase(ctx.tenant, 'SETUP_LOCAL_CONFIGURATION');
     const connection = connectionById.get(compact(body.connectionId, 80), ctx.tenant);
     if (!connection) return writeJson(res, 404, { error: 'Connection not found.' });
     let requiredAction = { type: 'NONE', instruction: 'No repair action is currently required.' };
@@ -1160,6 +1217,7 @@ function createAutonomousIntegrationHub(options = {}) {
     if (gustoRoute) res.setHeader('Referrer-Policy', 'no-referrer');
 
     try {
+      if (await feed.handleRequest(req, res)) return true;
       // Gusto returns through a cross-site navigation. A minimal local document
       // establishes this site's origin before the session-bound POST, preserving
       // the application's existing SameSite=Strict session cookie.
@@ -1174,6 +1232,14 @@ function createAutonomousIntegrationHub(options = {}) {
 
       const ctx = requireManager(req, res);
       if (!ctx) return true;
+      const credentialRoute = [PREFIX + '/gusto/authorize', PREFIX + '/gusto/complete', PREFIX + '/gusto/verify', PREFIX + '/discovery-session'].includes(path);
+      const localSetupRoute = [PREFIX + '/discover', PREFIX + '/confirm', PREFIX + '/connect',
+        PREFIX + '/mapping-preview', PREFIX + '/mapping-activate', PREFIX + '/repair'].includes(path);
+      const purpose = req.method === 'POST'
+        ? credentialRoute ? 'INITIAL_CREDENTIAL' : localSetupRoute ? 'SETUP_LOCAL_CONFIGURATION' : 'OPERATIONAL_READ'
+        : 'SETUP_VIEW';
+      requirePhase(ctx.tenant, purpose);
+      if (req.method === 'GET' && path === PREFIX + '/feeds/3min') return writeJson(res, 200, feed.statusForTenant(ctx.tenant));
       if (req.method === 'GET' && path === PREFIX + '/gusto/configuration') {
         if (!requireGustoAdministrator(ctx, res)) return true;
         return writeJson(res, 200, gustoConfigurationFor(ctx.tenant));
@@ -1224,3 +1290,4 @@ module.exports = {
   validCredentialReference,
   screenWorkforceProvenanceShadow
 };
+

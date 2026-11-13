@@ -164,7 +164,7 @@ function createProofRunnerAuth(options = {}) {
       BEFORE DELETE ON proof_runner_auth_events BEGIN SELECT RAISE(ABORT,'Proof runner auth events are append only.'); END;
   `);
 
-  const userStmt = db.prepare('SELECT email,tenant,role FROM users WHERE lower(email)=lower(?)');
+  const userStmt = db.prepare('SELECT email,tenant,role FROM users WHERE lower(email)=lower(?) ORDER BY email');
   const sessionStmt = db.prepare('INSERT INTO sessions(token_hash,email,expires) VALUES(?,?,?)');
   const proofSessionStmt = db.prepare(`INSERT INTO proof_runner_sessions
     (token_hash,email,tenant,role,issued_at,expires) VALUES(?,?,?,?,?,?)`);
@@ -267,18 +267,26 @@ function createProofRunnerAuth(options = {}) {
       return reject(res, 401, 'signature-verification-failed', {}, email);
     }
 
-    const user = userStmt.get(email);
-    if (!user) {
-      return reject(res, 403, 'allowlisted-user-missing', {}, email);
-    }
-
     const nonceHash = sha256(nonce);
     const sessionExpires = now + sessionTtlMs;
     const token = randomBytes(32).toString('hex');
     const tokenHash = sha256(token);
 
+    let user;
     try {
       db.exec('BEGIN IMMEDIATE');
+      // Bind identity selection to issuance: another connection must not change
+      // normalized-email uniqueness, tenant or role between lookup and commit.
+      const users = userStmt.all(email);
+      if (users.length === 0) {
+        db.exec('ROLLBACK');
+        return reject(res, 403, 'allowlisted-user-missing', {}, email);
+      }
+      if (users.length > 1) {
+        db.exec('ROLLBACK');
+        return reject(res, 409, 'ambiguous-normalized-email', { matches: users.length }, email);
+      }
+      user = users[0];
       cleanupNonceStmt.run(now);
       cleanupProofSessionStmt.run(now);
       nonceStmt.run(nonceHash, expiresAt + CLOCK_SKEW_MS, new Date(now).toISOString());
@@ -299,7 +307,7 @@ function createProofRunnerAuth(options = {}) {
       const replay = String(error?.message || '').toLowerCase().includes('proof_runner_nonces');
       return reject(res, replay ? 409 : 503, replay ? 'assertion-replay-refused' : 'session-mint-failed', {
         replay,
-      }, user.email, user.tenant);
+      }, user?.email || email, user?.tenant);
     }
 
     const maxAge = Math.floor(sessionTtlMs / 1000);

@@ -1,0 +1,91 @@
+[
+  {
+    "path": "integration/runtime/three-min-feed.cjs",
+    "baseline": {
+      "gitBlob": "f81bd20286c34dbd5fcfe4f783a8061f288d7452",
+      "sha256": "796186e1163520bb528fcd60aad64cdbb868fdcb1c351bf0a8087db29f8cadd9"
+    },
+    "candidate": {
+      "gitBlob": "3654e587b9de85e1970609ab8e8617f97df01bb7",
+      "sha256": "33cc0470bacf098a97c3fd3ec310476bc9200c406cc1df95e484b66bca144a7f"
+    }
+  },
+  {
+    "path": "integration/runtime/gusto-http-process-recovery.test.cjs",
+    "baseline": null,
+    "candidate": {
+      "gitBlob": "456321470fe17a1c7731c607c5cc43c71caa69f0",
+      "sha256": "72f59766dcb55ba3fea2a8d3b5f57d57c2a92b986ef3535706a992af1ef20c32"
+    }
+  },
+  {
+    "path": "integration/runtime/gusto-company-connector.cjs",
+    "baseline": {
+      "gitBlob": "b53fb02bb707f876b579294ffa93c978fd41da97",
+      "sha256": "edac7b8313e2deb80476c50745a43c04ff33d59bca20cf7e95ede1b6f127d2b4"
+    },
+    "candidate": {
+      "gitBlob": "05632471531d2a246c2f4dfdd328b3c489610305",
+      "sha256": "84e4df58692612f578d831885885aa0fa55154b99ebb389358786f66ff8f7fd3"
+    }
+  },
+  {
+    "path": "integration/runtime/autonomous-integration-hub.cjs",
+    "baseline": {
+      "gitBlob": "16eeaa836be9495bfbe3c3a1b04484f88af8eb44",
+      "sha256": "7425aa10155d02747784e1c2db360adc97f4b6786900e15cf570df109c1aa88d"
+    },
+    "candidate": {
+      "gitBlob": "127f83a656dedbf56611d1115f71150517083251",
+      "sha256": "e158dd5be8e55e4b771fcb85117d9ef72cf424f4e410d64c6af4360c526aea99"
+    }
+  },
+  {
+    "path": "integration/runtime/fixtures/gusto-http-child.cjs",
+    "baseline": null,
+    "candidate": {
+      "gitBlob": "1629afb3b06588e23e6c0c6666d7dd2b9ab07432",
+      "sha256": "608d746a1ecb6e703abb8dc211d0bf23fe4b4982213b4c8ea9d4cf68dd13f5f7"
+    }
+  },
+  {
+    "path": "operations/runtime/training-shift-collision.cjs",
+    "baseline": null,
+    "candidate": {
+      "gitBlob": "5b64589a538e3a45029343f85a2cd884ab42955d",
+      "sha256": "a7c7282ef0f2a891fc8f4e299d9775d7299cbb16054b7e4d0e55071fd856fe00"
+    }
+  },
+  {
+    "path": "operations/runtime/maintenance-permit-evidence.cjs",
+    "baseline": null,
+    "candidate": {
+      "gitBlob": "a23a0d479074c8e51f2ab8a029b84f1ff4904822",
+      "sha256": "7cc281371f9ab37081763bb22243008beab6c643d5d160cc90402964477b9e15"
+    }
+  },
+  {
+    "path": "operations/runtime/maintenance-permit-evidence.test.cjs",
+    "baseline": null,
+    "candidate": {
+      "gitBlob": "921b2eff9ac69d0cf040fa9de9a61125fefd417e",
+      "sha256": "fe45a5df0691bdcf86ba8a9b9feda51f69bbbb10c4c7475c98a7024d8deb9339"
+    }
+  },
+  {
+    "path": "operations/runtime/training-shift-collision.test.cjs",
+    "baseline": null,
+    "candidate": {
+      "gitBlob": "41805320b9c4559e62c4de6443a4e9fbc3991992",
+      "sha256": "561808ec4fb6e0bb2363faf4310f943fb67d45ddde2e9fa3ec8efe986884d38e"
+    }
+  },
+  {
+    "path": "verification/vector-v014-setup-containment/heldout.test.cjs",
+    "baseline": null,
+    "candidate": {
+      "gitBlob": "022b6e366f02a94a94abf180b31d3072d402f644",
+      "sha256": "8a26938319a5f1049db9fd14c19d590facfe059ae9e74e6ced01b061752e4055"
+    }
+  }
+]

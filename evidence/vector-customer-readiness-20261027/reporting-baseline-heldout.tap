@@ -1,0 +1,591 @@
+✖ independent all returned delivery rows 390 (11.979462ms)
+✖ independent all returned delivery rows 820 (5.206839ms)
+✖ independent all returned delivery rows 1280 (4.623558ms)
+✖ independent fail-closed READY/undefined (5.531259ms)
+✖ independent fail-closed READY/email_link (5.025542ms)
+✖ independent fail-closed READY/sftp (3.654057ms)
+✖ independent fail-closed VERIFIED/in_app (3.899659ms)
+✖ independent fail-closed constructor/in_app (4.160104ms)
+✖ independent fail-closed null/in_app (3.999521ms)
+✖ independent fail-closed UNKNOWN/in_app (4.085353ms)
+✔ independent empty delivery list remains honest (3.119647ms)
+✖ independent unavailability and recovery {"status":404} (4.071833ms)
+✖ independent unavailability and recovery {"status":429} (2.624897ms)
+✖ independent unavailability and recovery {"status":502} (3.240816ms)
+✖ independent unavailability and recovery {"status":200,"body":null} (3.227147ms)
+✖ independent unavailability and recovery {"status":200,"body":{"deliveries":"[]"}} (2.615213ms)
+✖ independent unavailability and recovery {"status":200,"body":{"deliveries":{"length":0}}} (3.493029ms)
+✖ independent unavailability and recovery {"status":200,"rejectJson":true} (2.554483ms)
+✖ independent delayed delivery denial 401 (5.803371ms)
+✖ independent delayed delivery denial 403 (5.520433ms)
+✔ independent stale delivery failure after close 404 (5.051321ms)
+✔ independent stale delivery failure after close 503 (4.537781ms)
+✔ independent stale delivery failure after close 401 (6.027812ms)
+✔ independent malformed member fails closed without false empty history (5.013183ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 5
+ℹ fail 19
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 223.098171
+
+✖ failing tests:
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:75:35
+✖ independent all returned delivery rows 390 (11.979462ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 127
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:78:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 127,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:75:35
+✖ independent all returned delivery rows 820 (5.206839ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 127
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:78:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 127,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:75:35
+✖ independent all returned delivery rows 1280 (4.623558ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 127
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:78:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 127,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:83:174
+✖ independent fail-closed READY/undefined (5.531259ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /unknown|unverified/. Input:
+  
+  'Scheduled for youRestricted payroll titleReady · Invalid Date'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:85:67)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Scheduled for youRestricted payroll titleReady · Invalid Date',
+    expected: /unknown|unverified/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:83:174
+✖ independent fail-closed READY/email_link (5.025542ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /unknown|unverified/. Input:
+  
+  'Scheduled for youRestricted payroll titleReady · Invalid Date'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:85:67)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Scheduled for youRestricted payroll titleReady · Invalid Date',
+    expected: /unknown|unverified/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:83:174
+✖ independent fail-closed READY/sftp (3.654057ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /unknown|unverified/. Input:
+  
+  'Scheduled for youRestricted payroll titleReady · Invalid Date'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:85:67)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Scheduled for youRestricted payroll titleReady · Invalid Date',
+    expected: /unknown|unverified/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:83:174
+✖ independent fail-closed VERIFIED/in_app (3.899659ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:85:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:83:174
+✖ independent fail-closed constructor/in_app (4.160104ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:85:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:83:174
+✖ independent fail-closed null/in_app (3.999521ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:85:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:83:174
+✖ independent fail-closed UNKNOWN/in_app (4.085353ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:85:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:89:191
+✖ independent unavailability and recovery {"status":404} (4.071833ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Outcome unknown/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:90:107)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Outcome unknown/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:89:191
+✖ independent unavailability and recovery {"status":429} (2.624897ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Outcome unknown/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:90:107)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Outcome unknown/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:89:191
+✖ independent unavailability and recovery {"status":502} (3.240816ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Outcome unknown/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:90:107)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Outcome unknown/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:89:191
+✖ independent unavailability and recovery {"status":200,"body":null} (3.227147ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Outcome unknown/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:90:107)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Outcome unknown/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:89:191
+✖ independent unavailability and recovery {"status":200,"body":{"deliveries":"[]"}} (2.615213ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Outcome unknown/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:90:107)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Outcome unknown/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:89:191
+✖ independent unavailability and recovery {"status":200,"body":{"deliveries":{"length":0}}} (3.493029ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Outcome unknown/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:90:107)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Outcome unknown/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:89:191
+✖ independent unavailability and recovery {"status":200,"rejectJson":true} (2.554483ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Outcome unknown/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:90:107)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Outcome unknown/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:94:31
+✖ independent delayed delivery denial 401 (5.803371ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /Restricted payroll title|Payroll secret|In-product report ready|No scheduled deliveries/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:95:232)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Restricted payroll title|Payroll secret|In-product report ready|No scheduled deliveries/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
+
+test at reporting-ui-repair/review/baseline-heldout.test.cjs:94:31
+✖ independent delayed delivery denial 403 (5.520433ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /Restricted payroll title|Payroll secret|In-product report ready|No scheduled deliveries/. Input:
+  
+  '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n' +
+    '    <div class="vector-reporting-backdrop" data-report-close=""></div>\n' +
+    '    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n' +
+    '      <header class="vector-reporting-head">\n' +
+    '        <div>\n' +
+    '          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n' +
+    '          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n' +
+    '          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n' +
+    '        </div>\n' +
+    '        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n' +
+    '      </header>\n' +
+    '      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n' +
+    '      <div class="vector-reporting-body">\n' +
+    '        <aside class="vector-reporting-sidebar">\n' +
+    '          <label class="vector-reporting-search">\n' +
+    '            <span>What do you need to know?</span>\n' +
+    '            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n' +
+    '          </label>\n' +
+    '          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n' +
+    '          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n' +
+    '        </aside>\n' +
+    '        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n' +
+    '      </div>\n' +
+    '    </section></div>'
+  
+      at TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/reporting-ui-repair/review/baseline-heldout.test.cjs:95:232)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<button data-fixture-launch="1"></button><div id="vector-reporting-modal" class="vector-reporting-modal">\n    <div class="vector-reporting-backdrop" data-report-close=""></div>\n    <section class="vector-reporting-shell" role="dialog" aria-modal="true" aria-labelledby="vector-reporting-title">\n      <header class="vector-reporting-head">\n        <div>\n          <span class="vector-reporting-kicker">Evidence-backed reporting</span>\n          <h2 id="vector-reporting-title">Ask VECTOR what you need to know</h2>\n          <p>Start with the decision. Advanced controls stay out of the way until you need them.</p>\n        </div>\n        <button type="button" class="vector-reporting-close" data-report-close="" aria-label="Close reporting">×</button>\n      </header>\n      <div class="vector-reporting-status" data-report-status="" role="status" aria-live="polite" aria-atomic="true">Reporting controls updated. Only currently available reports are shown.</div>\n      <div class="vector-reporting-body">\n        <aside class="vector-reporting-sidebar">\n          <label class="vector-reporting-search">\n            <span>What do you need to know?</span>\n            <input type="search" data-report-search="" placeholder="e.g. What blocks payroll?" autocomplete="off">\n          </label>\n          <div class="vector-reporting-template-list" data-report-templates=""><div class="vector-reporting-section-label">Suggested questions</div><button type="button" class="vector-reporting-template " data-report-template="payroll"><b>Private payroll question</b><span>Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-dashboard=""><div class="vector-reporting-section-label">My dashboard</div><button type="button" class="vector-reporting-saved-row dashboard" data-report-saved-id="private"><b>Restricted payroll title</b><span>▦ Pinned · Payroll secret</span></button></div>\n          <div class="vector-reporting-saved" data-report-deliveries=""><div class="vector-reporting-section-label">Scheduled for you</div><div class="vector-reporting-none">No scheduled deliveries yet.</div></div>\n          <div class="vector-reporting-saved" data-report-schedules=""><div class="vector-reporting-section-label">Schedules</div><div class="vector-reporting-schedule-row"><button type="button" data-report-saved-id="private"><b>Restricted payroll title</b><span>daily · 08:00 · UTC</span></button><button type="button" class="state" data-report-schedule-state="schedule" data-next-enabled="false">Pause</button></div></div>\n          <div class="vector-reporting-saved" data-report-saved=""><div class="vector-reporting-section-label">Saved reports</div><button type="button" class="vector-reporting-saved-row" data-report-saved-id="private"><b>Restricted payroll title</b><span>Payroll secret</span></button></div>\n        </aside>\n        <main class="vector-reporting-main" data-report-main=""><div class="vector-reporting-empty"><strong>Choose a question</strong><span>Only report sources available to your current role are shown.</span></div></main>\n      </div>\n    </section></div>',
+    expected: /Restricted payroll title|Payroll secret|In-product report ready|No scheduled deliveries/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }

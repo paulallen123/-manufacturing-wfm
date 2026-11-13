@@ -17,7 +17,7 @@ test('truthy non-boolean review capability cannot expose review-only content',as
 function attachOwnerShell(p){
  const c=p.c;c.window=c;c.addEventListener=()=>{};c.location={href:'https://example.invalid/'};c.me=()=>({...c.F.actor,id:c.F.actor.personId,name:'Current employee'});c.isEmployee=()=>c.F.actor.role==='employee';
  c.document.querySelectorAll=()=>[];c.document.querySelector=()=>null;c.document.documentElement={};c.document.body={classList:{add(){},remove(){},toggle(){}},dataset:{}};
- c.MutationObserver=class{observe(){}disconnect(){}};c.setTimeout=()=>0;c.queueMicrotask=()=>{};c.sessionStorage={getItem:()=>null,removeItem(){},setItem(){}};c.URL=URL;
+ c.MutationObserver=class{observe(){}disconnect(){}};c.setTimeout=()=>0;c.clearTimeout=()=>{};c.performance={now:()=>0};c.queueMicrotask=()=>{};c.sessionStorage={getItem:()=>null,removeItem(){},setItem(){}};c.URL=URL;
  const shellSource=fs.readFileSync(path.resolve(__dirname,'../../../ux-overlay/vector-shell.js'),'utf8');
  const instrumented=shellSource.replace('window.VectorWorkforceOperations={marker:MARKER','window.VectorWorkforceOperations={state,renderEmployeeHome,marker:MARKER');assert.notEqual(instrumented,shellSource);
  vm.runInContext(instrumented,c);return c.VectorWorkforceOperations;
@@ -34,7 +34,7 @@ test('missing authenticated actor blocks support fetch and clears retained capab
 test('sign-out during support load discards response even without another render',async()=>{const p=page();let release;p.c.request=()=>new Promise(r=>{release=r;});const pending=p.c.render();p.c.F.ready=false;release(report());await pending;assert.equal(p.stored(),null);assert.doesNotMatch(p.html(),/Service diagnostics|Investigation queue/);});
 test('employee Home to Support to Home refreshes personal balances once and observer redraws stay stable',async()=>{
  const p=page();p.c.F.actor={tenant:'alpha',email:'employee@alpha',personId:'e1',role:'employee',permissions:[]};const owner=attachOwnerShell(p);let personal=0,support=0;
- owner.state.calendar={status:'ready',value:{tenant:'alpha',asOf:new Date().toISOString(),localDate:'2026-10-11',timeZone:'Europe/London',maxAgeMs:300000}};
+ owner.state.calendar={status:'ready',requestedAt:0,value:{tenant:'alpha',asOf:new Date().toISOString(),localDate:'2026-10-11',timeZone:'Europe/London',maxAgeMs:300000}};
  p.c.fetch=async()=>{personal++;return {ok:true,json:async()=>({identity:{name:'Current employee'},leave:{availableMinutes:personal===1?60:120},shifts:[],requests:[]})};};
  p.c.request=async()=>{support++;return {...report(),canReview:false};};
  const host={html:'',dataset:{},isConnected:true,get innerHTML(){return this.html;},set innerHTML(x){this.html=x;},querySelector(){return this.html.includes('data-vector-employee-home')?{}:null;}};

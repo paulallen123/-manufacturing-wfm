@@ -1,0 +1,257 @@
+{
+  "forge": {
+    "name": "forge-final-four-donors",
+    "command": [
+      "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+      "scripts/run-forge-ci.mjs"
+    ],
+    "node": "22.23.2",
+    "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/final-source-run",
+    "exit": 0,
+    "seconds": 20.232651233673096,
+    "commands": 16,
+    "totals": {
+      "tests": 445,
+      "pass": 445,
+      "fail": 0,
+      "skipped": 0
+    },
+    "sha256": "d02e3133e5217502f6b8f743c2663367a98f9155416a5a9886ea4b731cb0034a",
+    "bytes": 133453,
+    "localPreparationOnly": "TAR_OPTIONS=--no-same-owner"
+  },
+  "staffologyComposed": {
+    "name": "staffology-final-composed",
+    "command": [
+      "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-reporter=tap",
+      "integrations/staffology/canonical-operations-connector.test.cjs",
+      "integrations/staffology/canonical-operations-deployment-binding.test.cjs",
+      "integrations/staffology/canonical-operations-mapping-preflight.test.cjs",
+      "integrations/staffology/canonical-operations-status.test.cjs",
+      "integrations/staffology/canonical-operations.test.cjs",
+      "integrations/staffology/canonical-production-boundaries.test.cjs",
+      "integrations/staffology/canonical-runtime-bridge.test.cjs",
+      "integrations/staffology/configured-site-authority.test.cjs",
+      "integrations/staffology/configured-site-import.test.cjs",
+      "integrations/staffology/configured-site-source-writer.test.cjs",
+      "integrations/staffology/employee-import-previews.test.cjs",
+      "integrations/staffology/employee-preview-consumer.test.cjs",
+      "integrations/staffology/full-http-startup-diagnostics.test.cjs",
+      "integrations/staffology/independent-boundaries.test.cjs",
+      "integrations/staffology/independent/current-authority-recovery-held-out.test.cjs",
+      "integrations/staffology/independent/docker-admission-contract.test.cjs",
+      "integrations/staffology/independent/full-http-employee-journey.test.cjs",
+      "integrations/staffology/independent/generated-provider-preload.test.cjs",
+      "integrations/staffology/independent/succession-regressions.test.cjs",
+      "integrations/staffology/multiline-batch.test.cjs",
+      "integrations/staffology/payroll-discovery-transport-heldout.test.cjs",
+      "integrations/staffology/review-5921699729-regressions.test.cjs",
+      "integrations/staffology/review-5925613376-regressions.test.cjs",
+      "integrations/staffology/sqlite-contract.test.cjs",
+      "integrations/staffology/staffology-adapter.test.cjs",
+      "integrations/staffology/staffology-employee-persistence.test.cjs",
+      "scripts/staffology-preview-active-route.test.mjs",
+      "scripts/staffology-preview-route.test.mjs"
+    ],
+    "node": "22.23.2",
+    "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/final-source-run",
+    "env": {
+      "CANONICAL_SOURCE_DIR": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/final-source-run",
+      "WFM_RUNTIME": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/runtime-final",
+      "STAFFOLOGY_RUNTIME_MODE": "full",
+      "WFM_BUILD_SOURCE_SHA": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "STAFFOLOGY_PRIVATE_EVIDENCE_DIR": "disposable local private directory"
+    },
+    "exit": 0,
+    "seconds": 36.1740083694458,
+    "testFiles": 28,
+    "totals": {
+      "tests": 336,
+      "pass": 336,
+      "fail": 0,
+      "skipped": 0
+    },
+    "sha256": "7d99966902bf10de29af695eb038a895dd8391d3b7d53bd2b4596ccddba0a818",
+    "bytes": 81773,
+    "sourceCommit": null,
+    "providerResponses": "synthetic preload and injected clients; no actual provider operation"
+  },
+  "affected": [
+    {
+      "name": "v023-independent-source",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/final-source-run/docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/independent-followon-heldout.cjs"
+      ],
+      "env": {
+        "V023_REVIEW_ROOT": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate"
+      },
+      "node": "22.23.2",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+      "exit": 0,
+      "seconds": 0.158,
+      "totals": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "c315aac9a7a4d82a58ee23cabba21524d6540fded963a16cb44c4052490b433c"
+    },
+    {
+      "name": "v023-independent-composed",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/final-source-run/docs/execution/vector-v023-lifecycle-adoption-20261030/evidence/independent-followon-heldout.cjs"
+      ],
+      "env": {
+        "V023_REVIEW_ROOT": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/runtime-final"
+      },
+      "node": "22.23.2",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+      "exit": 0,
+      "seconds": 0.137,
+      "totals": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "d0b30b6799f0fbd7fba850d93dd34593be0fb9bc389cd112fc8d93ce0eba2707"
+    },
+    {
+      "name": "v026-independent-preservation",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "/workspace/scratch/2ea1ba0f2164/site-policy-verifier/tenant-isolation-heldouts.cjs",
+        "/workspace/scratch/2ea1ba0f2164/site-policy-verifier/pr436-transplant/donor-guard-heldouts.cjs"
+      ],
+      "env": {
+        "V026_SOURCE_ROOT": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+        "V026_BASE_ROOT": "/workspace/scratch/2ea1ba0f2164/site-policy-compatibility/baseline"
+      },
+      "node": "22.23.2",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+      "exit": 0,
+      "seconds": 0.133,
+      "totals": {
+        "tests": 24,
+        "pass": 24,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "10ac5dd08d5b1a3533ee12dfeab7198bbff250050f0c5134290f096593ab64de"
+    },
+    {
+      "name": "v005-final-offline-heldouts",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/final-source-run/docs/execution/vector-v005-preflight-adoption-20261030/heldout-config.test.cjs"
+      ],
+      "env": {
+        "V005_SOURCE_ROOT": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate"
+      },
+      "node": "22.23.2",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+      "exit": 0,
+      "seconds": 0.167,
+      "totals": {
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "1a736a9ac144a430ee60a38cdedb3c86821f070910bd4098dd09858e886b0f27"
+    },
+    {
+      "name": "v005-final-composition",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "scripts/proof-access-preflight.test.cjs",
+        "docs/execution/proof-runner-activation/launcher.test.cjs",
+        "docs/execution/proof-runner-activation/preflight.test.cjs",
+        "scripts/current-candidate-role-browser-proof.auth.test.mjs",
+        "scripts/current-candidate-role-browser-proof-server.test.mjs",
+        "security/runtime/proof-runner-auth.test.cjs"
+      ],
+      "env": {},
+      "node": "22.23.2",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+      "exit": 0,
+      "seconds": 1.596,
+      "totals": {
+        "tests": 99,
+        "pass": 99,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "527b86296585d4ff398bd959973ef41c50cb32e6cbec8a56ffd51ad7166429c4"
+    },
+    {
+      "name": "reporting-final-affected",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate/reporting/ui/vector-reporting-export-heldout.test.cjs",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate/reporting/ui/vector-reporting-export-safety.test.cjs",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate/reporting/ui/vector-reporting-mapping-integrity.test.cjs",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate/reporting/ui/vector-reporting-multirow-export.test.cjs",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate/reporting/ui/vector-reporting-ui.test.cjs",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate/reporting/runtime/vector-report-interchange.test.cjs",
+        "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate/reporting/runtime/vector-reporting-service.test.cjs"
+      ],
+      "env": {},
+      "node": "22.23.2",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+      "exit": 0,
+      "seconds": 2.59,
+      "totals": {
+        "tests": 120,
+        "pass": 120,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "ee4913fcea2bc2a9c46d812780858ac60edf266214363b1f47638a72e4a4f88c"
+    },
+    {
+      "name": "docker-final-policy-source-command",
+      "command": [
+        "/workspace/scratch/722aeb5410a4/node-v22.23.2-linux-x64/bin/node",
+        "--test",
+        "scripts/validate-staffology-canonical-assembly.test.mjs",
+        "scripts/proof-access-preflight.test.cjs",
+        "resilience/research-convergence-theory-simulator.test.cjs",
+        "policy/runtime/country-policy-pack-registry.test.cjs",
+        "policy/runtime/jurisdiction-policy-graph.test.cjs",
+        "policy/runtime/global-site-policy-preflight.test.cjs",
+        "policy/runtime/authoritative-policy-source-registry.test.cjs",
+        "policy/runtime/regulatory-change-candidate.test.cjs",
+        "policy/runtime/v026-tenant-policy-scope.test.cjs",
+        "security/runtime/runtime-identity.test.cjs"
+      ],
+      "env": {},
+      "node": "22.23.2",
+      "cwd": "/workspace/scratch/2ea1ba0f2164/canonical-union-20261030/candidate",
+      "exit": 0,
+      "seconds": 0.466,
+      "totals": {
+        "tests": 127,
+        "pass": 127,
+        "fail": 0,
+        "skipped": 0
+      },
+      "sha256": "cd26aefb549ef3d0eff80600568cfc951382cae1dd35b3b56e957dd1e2f10429"
+    }
+  ],
+  "scope": "Fresh final four-donor source tests; overlapping counts are separate observations, not additive.",
+  "preparationFailure": "Initial selector-edit preparation asserted an incorrect Docker test order and stopped before altering Docker; corrected against actual reviewed V086 order. No accepted test result arose from that preparation.",
+  "earlierThreeDonorReceipts": "Retained only in scratch; final receipt set reruns after corrected V023 source adoption."
+}

@@ -1,0 +1,38 @@
+{
+  "run_id": "vector-installed-archive-20261025",
+  "owner": "/root",
+  "verifier": "/root/build_route_review",
+  "source_sha": "5d8b3f11fe04a09b63f258c34bbb8b9568942859",
+  "source_tree": "967f4c02b5869bb52313a089e79aeb5c79a95dde",
+  "deployment_id": "1e1dafcd-176d-4aea-a76d-6833fd02df35",
+  "status": "SUCCESS",
+  "image_digest": "sha256:b75a2110ecc558946f237705cd6150b2086a4eed2f8bbe93275d44a89c44336d",
+  "image_config_digest": "sha256:4528bb2d29a5dbdfd54a52563342d081fae43c0a9a44129cd743b679e80f3207",
+  "source_tests": {
+    "pass": 1599,
+    "fail": 0,
+    "skipped": 0
+  },
+  "installed_archive": {
+    "pass": 88,
+    "fail": 0,
+    "skipped": 0,
+    "required_cases": 12
+  },
+  "healthcheck": {
+    "timestamp": "2026-10-25T02:23:18.691843606Z",
+    "scope": "identity receipt only"
+  },
+  "public_url": null,
+  "dataset": "synthetic fixtures",
+  "customer_proven": false,
+  "provider_proven": false,
+  "limitations": [
+    "No authenticated customer application journey",
+    "No provider mutation/readback",
+    "No restore drill",
+    "Formal release approval outstanding",
+    "Current docs successor must not inherit source/image proof"
+  ],
+  "evidence": "build-log.json"
+}

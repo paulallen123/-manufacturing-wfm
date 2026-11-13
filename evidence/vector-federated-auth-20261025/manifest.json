@@ -1,0 +1,42 @@
+{
+  "runId": "vector-federated-auth-20261025",
+  "parentCommit": "f0b14c3dc05ac5869780a78e445123e72a1b0ea9",
+  "sourceTree": "c5bc1f2eaa2d9563ad1b45e2c34c67ba750f9221",
+  "owner": "/root",
+  "implementationAgent": "/root/auth_race_review",
+  "independentReviewer": "/root/build_route_review",
+  "state": "ISOLATED_TESTED",
+  "enabled": false,
+  "providerProven": false,
+  "customerProven": false,
+  "imageDigest": null,
+  "tests": {
+    "combined": {
+      "pass": 148,
+      "fail": 0,
+      "skipped": 0
+    },
+    "workspaceJourney": {
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0
+    },
+    "independentFocused": {
+      "pass": 36,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "composition": "PASS; synthetic local runtime, no image",
+  "initialConcurrentRun": "Incomplete TAP despite exit0; retained separately, not admitted. Sequential run completed148.",
+  "browser": "Attempted synthetic browser transport check blocked by missing browser binary. No browser/provider proof.",
+  "dependencies": [
+    "Google Web OAuth registration and secure client credentials",
+    "Apple Services ID and unexpired signed developer client-secret JWT",
+    "Approved stable provider-subject mappings to existing tenant/user and existing tenant control row",
+    "Existing signed proof runner explicit actors/auth-profile/context bindings",
+    "Current immutable build and required formal release controls",
+    "Real provider callback and mobile browser verification"
+  ],
+  "claimBoundary": "Disabled source increment only; existing isolated5d image/customer deployment unchanged."
+}

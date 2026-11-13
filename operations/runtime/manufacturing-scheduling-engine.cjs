@@ -51,7 +51,11 @@ function normaliseAssignments(input=[]){
 
 function normalisePolicy(input={}){
   const w=input.weights||{};
+  const maxShiftHours=input.maxShiftHours;
+  if(maxShiftHours!==undefined&&(typeof maxShiftHours!=='number'||!Number.isFinite(maxShiftHours)||maxShiftHours<=0))
+    throw new Error('maxShiftHours must be a finite positive number when configured.');
   return {
+    ...(maxShiftHours!==undefined?{maxShiftHours}:{}),
     minRestHours:clamp(input.minRestHours,0,72,11),
     maxWeeklyHours:clamp(input.maxWeeklyHours,1,168,48),
     maxOvertimeHours:clamp(input.maxOvertimeHours,0,100,12),
@@ -82,11 +86,21 @@ function normalisePolicy(input={}){
   };
 }
 function availability(v){
-  return Array.isArray(v)?v.slice(0,200).map((x,i)=>{
+  const windows=Array.isArray(v)?v.slice(0,200).map((x,i)=>{
     const start=iso(x.start,'availability '+i+' start'),end=iso(x.end,'availability '+i+' end');
     if(ms(end)<=ms(start)) throw new Error('Availability end must be after start.');
     return {start,end};
   }):[];
+  // Merge owned, validated copies by absolute time without filling real gaps.
+  windows.sort((a,b)=>ms(a.start)-ms(b.start)||ms(a.end)-ms(b.end));
+  const merged=[];
+  windows.forEach(window=>{
+    const previous=merged[merged.length-1];
+    if(previous&&ms(window.start)<=ms(previous.end)){
+      if(ms(window.end)>ms(previous.end)) previous.end=window.end;
+    }else merged.push(window);
+  });
+  return merged;
 }
 function certs(v){
   return Array.isArray(v)?v.slice(0,200).map(x=>({
@@ -195,6 +209,7 @@ function evaluateWorkerForSlot(worker,slot,ctx={}){
   if(worker.previousShiftEnd&&((ms(slot.start)-ms(worker.previousShiftEnd))/3600000)<policy.minRestHours) failures.push('MINIMUM_REST_BREACH');
   if(projectedWeek>policy.maxWeeklyHours) failures.push('MAX_WEEKLY_HOURS_BREACH');
   if(projectedOT>policy.maxOvertimeHours) failures.push('MAX_OVERTIME_BREACH');
+  if(policy.maxShiftHours!==undefined&&duration>policy.maxShiftHours) failures.push('MAX_SHIFT_HOURS_BREACH');
   if(worker.consecutiveShifts+1>policy.maxConsecutiveShifts) failures.push('MAX_CONSECUTIVE_SHIFTS_BREACH');
   if(night&&worker.consecutiveNights+1>policy.maxConsecutiveNights) failures.push('MAX_CONSECUTIVE_NIGHTS_BREACH');
   if(assignments.some(a=>a.workerId===worker.id&&overlaps(a.start,a.end,slot.start,slot.end))) failures.push('OVERLAPPING_ASSIGNMENT');
@@ -355,6 +370,7 @@ function createSchedulingPlan(input={}){
     contractVersion:CONTRACT_VERSION,solverVersion:SOLVER_VERSION,tenant,contextRevision,
     createdAt:iso(input.createdAt||new Date().toISOString(),'createdAt'),mode:'SHADOW',executionPermitted:false,
     sourceEvidence,policy:{minRestHours:policy.minRestHours,maxWeeklyHours:policy.maxWeeklyHours,maxOvertimeHours:policy.maxOvertimeHours,
+      ...(policy.maxShiftHours!==undefined?{maxShiftHours:policy.maxShiftHours}:{}),
       maxConsecutiveShifts:policy.maxConsecutiveShifts,maxConsecutiveNights:policy.maxConsecutiveNights,crossSiteAllowed:policy.crossSiteAllowed,
       agencyAllowed:policy.agencyAllowed,contingentAllowed:policy.contingentAllowed,ruleVersion:policy.ruleVersion,
       requiredRuleRefs:policy.requiredRuleRefs,weights:policy.weights},
@@ -386,8 +402,11 @@ function evaluateSwap(input={}){
   if(input.currentAssignments!==undefined){
     for(const [worker,slot] of [[a,sa],[b,sb]]){
       const outgoing=current.find(x=>x.slotId===slot.slotId);
-      if(!outgoing||outgoing.workerId!==worker.id||outgoing.start!==slot.start||outgoing.end!==slot.end)
-        throw new Error('Swap requires matching outgoing assignment ids, owners and times.');
+      // Check any declared location before removing outgoing rows from the
+      // hypothetical exchange; omitted sites retain the legacy evaluation.
+      if(!outgoing||outgoing.workerId!==worker.id||outgoing.start!==slot.start||outgoing.end!==slot.end||
+        Object.hasOwn(outgoing,'site')&&outgoing.site!==slot.site)
+        throw new Error('Swap requires matching outgoing assignment ids, owners and times; any declared site must match its requirement.');
     }
   }
   const base=current.filter(x=>x.slotId!==sa.slotId&&x.slotId!==sb.slotId);
@@ -422,6 +441,7 @@ function capabilityContract(){
     contractVersion:CONTRACT_VERSION,
     tableStakes:{
       demandForecastConsumption:true,skillsAndCertification:true,availability:true,minimumRestAndHours:true,
+      configuredMaximumShiftHours:true,
       overtimeLimitsAndCost:true,agencyAndContingentLabour:true,multiSiteEligibility:true,employeePreferences:true,
       fairnessSignals:true,fatigueSignals:true,openShiftEligibility:true,shiftSwapValidation:true,
       realTimeShadowRepair:true,explainableInfeasibility:true,independentScheduleValidation:true,scheduleQualityKpis:true

@@ -1,0 +1,30 @@
+{
+  "candidate": "9fb494e040bf2c2641571a1bc8718623012caa2d",
+  "donor": "e8fe808a01d073cc38681dcc11c48580ba6afc91",
+  "verdict": "ADOPT source-helper repair only; no production import admission",
+  "sourceBlob": "df4908d647bfb2dcbe7d8411ac5908306b12de71",
+  "testBlob": "ba94938c32142a8f45c9a39fa7e8299227606e84",
+  "red": {
+    "pass": 25,
+    "fail": 3,
+    "skip": 0
+  },
+  "green": {
+    "pass": 28,
+    "fail": 0,
+    "skip": 0
+  },
+  "node": "22.23.2",
+  "consumerAudit": {
+    "exactCodeBlobs": 841,
+    "definition": "integration-fabric/runtime/batch-reconciliation.mjs:70",
+    "testOnlyImports": "integration-fabric/runtime/batch-reconciliation.test.mjs",
+    "packaging": "Dockerfile:137 copies helper to /app/integration-fabric-runtime",
+    "productionConsumerFound": false,
+    "method": "Exact current .js/.cjs/.mjs/.ts/.tsx/.jsx/.sh and Dockerfile blobs searched for helper name and module name; dynamic computed imports and sealed archive internals not exhaustively proven absent",
+    "existingImporter": "Staffology employee-import-previews.cjs validates exact protected cohort externalIds at preview creation and canonical-runtime-bridge.cjs uses its own mapping/current authority. Neither calls helper.",
+    "concreteGap": "Define canonical provider/connector/tenant/company scope and dimensions at actual persisted import ingress; invoke missing-ID rejection before identity creation; test absent/null/numeric0/literal sentinel IDs, scope separation and persistent duplicate/replay behavior. Do not blindly replace existing provider IDs with this hash."
+  },
+  "ownership": "PR504 open unchanged since focused verification comment6380939795; current review5626988420 COMMENTED not APPROVED; no active focused writer seen",
+  "scope": "Synthetic pure functions only; no hosted/provider/customer proof"
+}

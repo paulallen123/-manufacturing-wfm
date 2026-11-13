@@ -1,0 +1,11 @@
+{
+  "report.json": "e02956ad283eeb2f42bdfe51cee440c767b821777c4e75f5c7aa1a5c0d545cb7",
+  "red.tap": "6be37000417fccfba5aad8c7578ff660a57add05b91952463cdb04656fe3782f",
+  "green.tap": "fc44d9ee27351fc6161aa7d1aae67001d3f27bfb435e9179b997503ba2497ede",
+  "green-complete.tap": "a39c03235606544c2c524c860a1db893988c0def228a22e8ed0dc448227d85cf",
+  "heldout.tap": "0f864b1c9fee1c853aa0b68ccdb89af85bcfe83efeddc3e0c1fbedcab8397601",
+  "current-blobs.json": "1d04dd8d4b6f58d34e475a99424411ebb48ab88da84e31887638c72088b94f87",
+  "learning/runtime/adaptive-learning-engine.cjs": "85dbbebec3e14f2aaabf31a8f475853c84500adc4e36e0c5375acc083a2a8a45",
+  "learning/runtime/adaptive-learning-engine.test.cjs": "10a82ed01bdc236b691608ed1e484c36b6e48909dc415e442ca0f84de57dc64c",
+  "learning/runtime/privileged-expiry-heldout.test.cjs": "5428cfce92cd1ebc4d57d41d51221c4b7913cc7d42ffe45c26ba3cd63d2c59f1"
+}

@@ -1,0 +1,289 @@
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:12) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: rejects nonstring operational identifiers and rollback reason before issuing a permit
+ok 1 - rejects nonstring operational identifiers and rollback reason before issuing a permit
+  ---
+  duration_ms: 127.941519
+  type: 'test'
+  ...
+# Subtest: cold-starts on a fresh database without pre-created decision tables
+ok 2 - cold-starts on a fresh database without pre-created decision tables
+  ---
+  duration_ms: 90.806294
+  type: 'test'
+  ...
+# Subtest: requires current context and reversible plan
+ok 3 - requires current context and reversible plan
+  ---
+  duration_ms: 153.298358
+  type: 'test'
+  ...
+# Subtest: executes verifies and is idempotent
+ok 4 - executes verifies and is idempotent
+  ---
+  duration_ms: 138.720583
+  type: 'test'
+  ...
+# Subtest: failed verification rolls back or contains
+ok 5 - failed verification rolls back or contains
+  ---
+  duration_ms: 157.988245
+  type: 'test'
+  ...
+# Subtest: failed apply requires reconciliation when trusted readback is unavailable and stays idempotent
+ok 6 - failed apply requires reconciliation when trusted readback is unavailable and stays idempotent
+  ---
+  duration_ms: 214.446474
+  type: 'test'
+  ...
+# Subtest: failed compensating rollback requires reconciliation and never claims containment
+ok 7 - failed compensating rollback requires reconciliation and never claims containment
+  ---
+  duration_ms: 92.035104
+  type: 'test'
+  ...
+# Subtest: post-write throw reads authoritative action and preserves readback evidence without claiming action success
+ok 8 - post-write throw reads authoritative action and preserves readback evidence without claiming action success
+  ---
+  duration_ms: 117.696945
+  type: 'test'
+  ...
+# Subtest: non-Error apply throw null persists unknown outcome and cannot replay
+ok 9 - non-Error apply throw null persists unknown outcome and cannot replay
+  ---
+  duration_ms: 136.515061
+  type: 'test'
+  ...
+# Subtest: non-Error apply throw undefined persists unknown outcome and cannot replay
+ok 10 - non-Error apply throw undefined persists unknown outcome and cannot replay
+  ---
+  duration_ms: 126.526344
+  type: 'test'
+  ...
+# Subtest: non-Error rollback throw persists reconciliation state without repeating mutation
+ok 11 - non-Error rollback throw persists reconciliation state without repeating mutation
+  ---
+  duration_ms: 119.411414
+  type: 'test'
+  ...
+# Subtest: worker death at PREPARED cannot repeat a possibly applied write
+ok 12 - worker death at PREPARED cannot repeat a possibly applied write
+  ---
+  duration_ms: 414.143556
+  type: 'test'
+  ...
+# Subtest: worker death at APPLIED cannot repeat a possibly applied write
+ok 13 - worker death at APPLIED cannot repeat a possibly applied write
+  ---
+  duration_ms: 258.334727
+  type: 'test'
+  ...
+# Subtest: concurrent processes claim a permit once without holding a database lock over adapter I/O
+ok 14 - concurrent processes claim a permit once without holding a database lock over adapter I/O
+  ---
+  duration_ms: 782.578924
+  type: 'test'
+  ...
+# Subtest: failed claim commit rolls back without dispatch and permits a safe retry
+ok 15 - failed claim commit rolls back without dispatch and permits a safe retry
+  ---
+  duration_ms: 1597.975477
+  type: 'test'
+  ...
+# Subtest: concurrent distinct permits cannot bypass affected employee quarantine
+ok 16 - concurrent distinct permits cannot bypass affected employee quarantine
+  ---
+  duration_ms: 1577.281104
+  type: 'test'
+  ...
+# Subtest: affected scope blocks renewed fresh permit
+ok 17 - affected scope blocks renewed fresh permit
+  ---
+  duration_ms: 81.035035
+  type: 'test'
+  ...
+# Subtest: affected scope blocks new-key fresh permit
+ok 18 - affected scope blocks new-key fresh permit
+  ---
+  duration_ms: 103.378817
+  type: 'test'
+  ...
+# Subtest: affected scope blocks expired fresh permit
+ok 19 - affected scope blocks expired fresh permit
+  ---
+  duration_ms: 59.060063
+  type: 'test'
+  ...
+# Subtest: affected scope blocks other-kind fresh permit
+ok 20 - affected scope blocks other-kind fresh permit
+  ---
+  duration_ms: 50.119171
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior CONTAINED conservatively
+ok 21 - fresh permit treats prior CONTAINED conservatively
+  ---
+  duration_ms: 52.699134
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior ROLLED_BACK conservatively
+ok 22 - fresh permit treats prior ROLLED_BACK conservatively
+  ---
+  duration_ms: 60.629396
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior UNRECOGNIZED conservatively
+ok 23 - fresh permit treats prior UNRECOGNIZED conservatively
+  ---
+  duration_ms: 60.789581
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior PREPARED conservatively
+ok 24 - fresh permit treats prior PREPARED conservatively
+  ---
+  duration_ms: 60.230166
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior APPLIED conservatively
+ok 25 - fresh permit treats prior APPLIED conservatively
+  ---
+  duration_ms: 56.948891
+  type: 'test'
+  ...
+# Subtest: fresh permit treats prior VERIFIED conservatively
+ok 26 - fresh permit treats prior VERIFIED conservatively
+  ---
+  duration_ms: 64.690757
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {bad-json
+ok 27 - malformed historical scope fails closed: {bad-json
+  ---
+  duration_ms: 48.794147
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {}
+ok 28 - malformed historical scope fails closed: {}
+  ---
+  duration_ms: 48.087846
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"unknown","action":{"employeeId":"synthetic-worker"}}
+ok 29 - malformed historical scope fails closed: {"adapter":"unknown","action":{"employeeId":"synthetic-worker"}}
+  ---
+  duration_ms: 56.777966
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":" synthetic-worker "}}
+ok 30 - malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":" synthetic-worker "}}
+  ---
+  duration_ms: 45.742899
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}}
+ok 31 - malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}}
+  ---
+  duration_ms: 48.784528
+  type: 'test'
+  ...
+# Subtest: malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":42}}
+ok 32 - malformed historical scope fails closed: {"adapter":"workforce-lifecycle","action":{"employeeId":42}}
+  ---
+  duration_ms: 64.699075
+  type: 'test'
+  ...
+# Subtest: quarantine preserves employee and tenant isolation
+ok 33 - quarantine preserves employee and tenant isolation
+  ---
+  duration_ms: 87.46192
+  type: 'test'
+  ...
+# Subtest: latest BLOCKED cannot hide an earlier dispatch intent
+ok 34 - latest BLOCKED cannot hide an earlier dispatch intent
+  ---
+  duration_ms: 75.122295
+  type: 'test'
+  ...
+# Subtest: missing historical permit fails closed
+ok 35 - missing historical permit fails closed
+  ---
+  duration_ms: 68.142153
+  type: 'test'
+  ...
+# Subtest: blocked-only receipts do not poison scope once prior latest state is verified
+ok 36 - blocked-only receipts do not poison scope once prior latest state is verified
+  ---
+  duration_ms: 79.243266
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: cross-origin
+ok 37 - cross-origin
+  ---
+  duration_ms: 229.017738
+  type: 'test'
+  ...
+# Subtest: missing origin
+ok 38 - missing origin
+  ---
+  duration_ms: 207.059964
+  type: 'test'
+  ...
+# Subtest: non-JSON simple request
+ok 39 - non-JSON simple request
+  ---
+  duration_ms: 161.008861
+  type: 'test'
+  ...
+# Subtest: authorised origin retains permit validation
+ok 40 - authorised origin retains permit validation
+  ---
+  duration_ms: 134.417561
+  type: 'test'
+  ...
+# Subtest: unknown roles fail closed
+ok 41 - unknown roles fail closed
+  ---
+  duration_ms: 162.336358
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:14) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: a reused event key cannot turn a different event into verified Autopilot execution
+ok 42 - a reused event key cannot turn a different event into verified Autopilot execution
+  ---
+  duration_ms: 178.433414
+  type: 'test'
+  ...
+# Subtest: idempotency accepts equivalent payload ordering but rejects changed content
+ok 43 - idempotency accepts equivalent payload ordering but rejects changed content
+  ---
+  duration_ms: 43.6434
+  type: 'test'
+  ...
+# Subtest: HTTP retry with changed content returns 409 and preserves the first persisted event
+ok 44 - HTTP retry with changed content returns 409 and preserves the first persisted event
+  ---
+  duration_ms: 223.212613
+  type: 'test'
+  ...
+# Subtest: caller-supplied expected outcome cannot become authoritative measured savings
+ok 45 - caller-supplied expected outcome cannot become authoritative measured savings
+  ---
+  duration_ms: 194.841851
+  type: 'test'
+  ...
+1..45
+# tests 45
+# suites 0
+# pass 45
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7703.143963

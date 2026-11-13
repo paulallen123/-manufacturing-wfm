@@ -1,0 +1,18 @@
+[
+  {
+    "path": "source.patch.gz",
+    "rawSha256": "2a1286a9d3f9892c522500ed9db9e5a0a5555c31988461967e650de0ae1b9293",
+    "rawBytes": 49316,
+    "gzipSha256": "899c9f72d6d17cf96941419ec7d8d267efee19cbee6cab409536139e89a59e00",
+    "gzipBytes": 11635,
+    "losslessReadbackVerified": true
+  },
+  {
+    "path": "tenant-baseline-red.tap.gz",
+    "rawSha256": "d229d8797dfff5282f41d664a3f39aa1e136253cda38e698ced487c14433e301",
+    "rawBytes": 14849,
+    "gzipSha256": "9b61806365566422969d56ab805b8381330db84fee8656f7d93d6e6747c23c91",
+    "gzipBytes": 1881,
+    "losslessReadbackVerified": true
+  }
+]

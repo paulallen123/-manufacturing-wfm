@@ -1,0 +1,102 @@
+{
+  "canonicalHead": "61718e1862fa650136e1952f622c9d8dd4c22af8",
+  "parent": "57907609bca28aa0401298db3089cb49bf1beb0f",
+  "parentTree": "4f007281eca1b080a7884165e1a6fc8775730ab3",
+  "parentVerifiedBlobs": 1694,
+  "unrelatedParentBlobsPreserved": 1684,
+  "sourceChanges": [
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "beforeBlob": "686a7582e4098a5727efa372e25cd73201fe8a6c",
+      "afterBlob": "ffc1d067b60fbf105099450fae3447a356ba83fa",
+      "sha256": "49002dd6fd0f7e7a8038ee849ab793e4732aeaae19bc56048699f9ea7bf48d13",
+      "bytes": 50846
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.cjs",
+      "mode": "100644",
+      "beforeBlob": "bd9f8e7d3063c1393e1afcbed187f367c0560c8e",
+      "afterBlob": "b7e9cf1103f93e1cda7be9ac79ef2f581ba082fc",
+      "sha256": "d32ae0388e26b227781cb5ed9f7152a6e0c17be289f0d33c73fd4c70c36c6d2d",
+      "bytes": 5394
+    },
+    {
+      "path": "policy/runtime/authoritative-policy-source-registry.test.cjs",
+      "mode": "100644",
+      "beforeBlob": "00e10eca8168d3493cd1e468d965e655496fb89d",
+      "afterBlob": "63036a41cf4e892ba731755998b1726924f7bddc",
+      "sha256": "805818903ee53d7d42961cf65592af2b75054b4c09aa05c211089bb8c61ca150",
+      "bytes": 9415
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.cjs",
+      "mode": "100644",
+      "beforeBlob": "4f18cffc150935e760c914a216c97c0700e23e44",
+      "afterBlob": "e8e1916987d83a46d4ccb14aedd191133574a63a",
+      "sha256": "3be7031da996d7a9ebd7fc7069d425a5cf6f69529cf4a58ff6f8ac9bbd9eeef8",
+      "bytes": 4983
+    },
+    {
+      "path": "policy/runtime/global-site-policy-preflight.test.cjs",
+      "mode": "100644",
+      "beforeBlob": "94b52c87dac164ba2315d9aab5870e6767bd3871",
+      "afterBlob": "be6821daeb0a62ee931c5eaf1927db72fd8b913f",
+      "sha256": "90decac4c5b8876a432266f00c19094305c06194aaa29e38c14c5dbd86f6c57e",
+      "bytes": 4973
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.cjs",
+      "mode": "100644",
+      "beforeBlob": "7f58c8ac9289311a8837e899af200ec785563987",
+      "afterBlob": "42cc5c49cb77eb850d8e899de3d72ed844a6363c",
+      "sha256": "589953c828b94e2a16feeaa158ce224eadf46d617956335efd2592f9f0c97d5f",
+      "bytes": 11239
+    },
+    {
+      "path": "policy/runtime/jurisdiction-policy-graph.test.cjs",
+      "mode": "100644",
+      "beforeBlob": "4307e86a5b0e6f172867912b147d61a58c6888bb",
+      "afterBlob": "490ba9d52f78961a2e534d3d5e822b7317423ec1",
+      "sha256": "7a8e819578791553eb4118820a0acec1ef3e6cfd8ad555ffbc110caeb3829189",
+      "bytes": 6259
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.cjs",
+      "mode": "100644",
+      "beforeBlob": "32131300a7f028323b354a7c02d1b4ed6da4391a",
+      "afterBlob": "036b8a5a23aa9918f82c54f6cd266a605bbb91e0",
+      "sha256": "4220d548be4149824669efd94d2d9b09a7aa68468ddd203b8611ab720798e87a",
+      "bytes": 3825
+    },
+    {
+      "path": "policy/runtime/regulatory-change-candidate.test.cjs",
+      "mode": "100644",
+      "beforeBlob": "d43879fe7db0028e521d443a38af1cbd0b306354",
+      "afterBlob": "5561056aabee0fd9f9becbab08b452127e309007",
+      "sha256": "581f6f22adaaa8afd7d741f2052d1f25072830ac09f5ef594e7177f6b738c251",
+      "bytes": 5621
+    },
+    {
+      "path": "policy/runtime/v026-tenant-policy-scope.test.cjs",
+      "mode": "100644",
+      "beforeBlob": null,
+      "afterBlob": "9532276d22eff245acec2155eb5d3b80ec3b2531",
+      "sha256": "b3652978342c2cb7e607bf4b4404ab2c94af8200e988cd1daaa7f62c378fe782",
+      "bytes": 5604
+    },
+    {
+      "path": "scripts/run-forge-ci.mjs",
+      "mode": "100644",
+      "beforeBlob": "c36fc77d0805be18957dfd0e7b5fdc19dfee1db8",
+      "afterBlob": "718924de026372ca6dc9162c5a3bc321ba30ce61",
+      "sha256": "d73a0f0965dff15d2306a137c7845725ac87880260342e95f8ea949985be52c6",
+      "bytes": 2824
+    }
+  ],
+  "donorPolicy": "fe60c47a6c5cd9aa84a8103a7b0722ab87e90fd9",
+  "donorParent": "c92d1321f1f88c6300b8600522dca06a078a9f7c",
+  "duplicateAlternatePatchApplied": false,
+  "freezeMarkerUnchanged": true,
+  "ciConfigUnchanged": true
+}

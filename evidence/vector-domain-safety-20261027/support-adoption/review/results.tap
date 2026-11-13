@@ -1,0 +1,58 @@
+(node:5) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:12) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: public catalogue edits cannot replace approved advice or sources
+ok 1 - public catalogue edits cannot replace approved advice or sources
+  ---
+  duration_ms: 2.280867
+  type: 'test'
+  ...
+# Subtest: public role edits cannot widen or disable the support role boundary
+ok 2 - public role edits cannot widen or disable the support role boundary
+  ---
+  duration_ms: 1.350752
+  type: 'test'
+  ...
+# Subtest: public pattern edits cannot manufacture an approved support procedure
+ok 3 - public pattern edits cannot manufacture an approved support procedure
+  ---
+  duration_ms: 0.5704
+  type: 'test'
+  ...
+# Subtest: public RegExp internal edits cannot change private intent matching
+ok 4 - public RegExp internal edits cannot change private intent matching
+  ---
+  duration_ms: 0.61783
+  type: 'test'
+  ...
+# Subtest: returned source edits cannot change later support answers
+ok 5 - returned source edits cannot change later support answers
+  ---
+  duration_ms: 0.404452
+  type: 'test'
+  ...
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: all public nested data and matchers can be poisoned without changing private answer matrix
+ok 6 - all public nested data and matchers can be poisoned without changing private answer matrix
+  ---
+  duration_ms: 5.452762
+  type: 'test'
+  ...
+# Subtest: catalogue cannot be structurally replaced through array operations and answer results remain detached
+ok 7 - catalogue cannot be structurally replaced through array operations and answer results remain detached
+  ---
+  duration_ms: 0.751249
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.420032

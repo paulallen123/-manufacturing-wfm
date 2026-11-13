@@ -1,0 +1,54 @@
+{
+  "runId": "vector-builder-compat-20261024",
+  "timestamp": "2026-10-24T21:01:26.318Z",
+  "owner": "/root",
+  "task": "PR501 claim6389452655; workspace/workspace/scratch/cd4e2bcb0821",
+  "parentSha": "975d813e0666b5f6be6770afd2ebfbce077e929c",
+  "sourceProposalTree": "82518a013fe22b0e036980a5f5779d94416960dd",
+  "candidateSha": "containing commit; resolve from Git",
+  "previousDeployment": {
+    "id": "260ff9b9-2419-4027-8093-bc81f776b30a",
+    "status": "FAILED",
+    "source": "975d813e0666b5f6be6770afd2ebfbce077e929c",
+    "failure": "Railway builder rejects bind mounts before test execution",
+    "imageDigest": null
+  },
+  "repair": "Proof-only descendant of hardened runtime with root-owned readonly fixtures and unchanged non-root verifier; final inherits hardened runtime and successful source marker only. Validator binds actual runtime base; packaging tests follow FROM ancestry.",
+  "tests": {
+    "node": "22.23.2",
+    "initialPackaging": {
+      "pass": 24,
+      "fail": 2,
+      "skip": 0
+    },
+    "repairedPackaging": {
+      "pass": 27,
+      "fail": 0,
+      "skip": 0
+    },
+    "affected": {
+      "pass": 28,
+      "fail": 0,
+      "skip": 0
+    },
+    "deploymentValidator": "PASS",
+    "negativeImageAndParent": 2,
+    "independentValidatorChecks": 5
+  },
+  "artifactHashes": {
+    "builder-compat-deployment.json": "7f2752fd36984564f4502326c20aba95984dd0b61c233b8929f0a5e7cd494d73",
+    "builder-compat-tests.tap": "502945a26a34515ae1eb1d63553d850ad1654926f4c72ae9a9dbb08cc907f7f0",
+    "builder-compat-tests-green.tap": "0ed6460f79ae17428ef46e1dcd68196fddcbba86059bed15df4df445f65db5e0",
+    "builder-compat-affected.tap": "9789c1f586d1678fb002f2e758b3369c865f5e520c0d9951c17490ba01413d31",
+    "builder-compat-negatives.json": "fd85de38c1f147a04b59a51fb4a3d2f5261f02f287197ed0b2bcf165f4e1a357"
+  },
+  "proof": {
+    "hostedSuccessor": "PENDING",
+    "image": null,
+    "authenticatedWizard": "UNPROVEN",
+    "provider": "UNPROVEN",
+    "customer": "UNPROVEN"
+  },
+  "rollbackArtifact": "sha256:397ef420f6d940294e84e90c14cd3a894b1cb265042b58c2240abd0c75609f73 (prior isolated receipt; not customer rollout)",
+  "scope": "synthetic local and build-configuration evidence; no provider/customer mutation; no new resource/subscription"
+}

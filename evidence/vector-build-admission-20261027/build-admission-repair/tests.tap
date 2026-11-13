@@ -1,0 +1,192 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: public catalogue edits cannot replace approved advice or sources
+ok 1 - public catalogue edits cannot replace approved advice or sources
+  ---
+  duration_ms: 2.22624
+  type: 'test'
+  ...
+# Subtest: public role edits cannot widen or disable the support role boundary
+ok 2 - public role edits cannot widen or disable the support role boundary
+  ---
+  duration_ms: 1.585242
+  type: 'test'
+  ...
+# Subtest: public pattern edits cannot manufacture an approved support procedure
+ok 3 - public pattern edits cannot manufacture an approved support procedure
+  ---
+  duration_ms: 0.586857
+  type: 'test'
+  ...
+# Subtest: public RegExp internal edits cannot change private intent matching
+ok 4 - public RegExp internal edits cannot change private intent matching
+  ---
+  duration_ms: 0.379561
+  type: 'test'
+  ...
+# Subtest: returned source edits cannot change later support answers
+ok 5 - returned source edits cannot change later support answers
+  ---
+  duration_ms: 0.416956
+  type: 'test'
+  ...
+# (node:14) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: server contract payroll preserves decimal half-penny rounding
+ok 6 - server contract payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 33.39059
+  type: 'test'
+  ...
+# Subtest: server legacy payroll preserves decimal half-penny rounding
+ok 7 - server legacy payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 5.870174
+  type: 'test'
+  ...
+# Subtest: browser contract payroll preserves decimal half-penny rounding
+ok 8 - browser contract payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 15.10506
+  type: 'test'
+  ...
+# Subtest: browser legacy payroll preserves decimal half-penny rounding
+ok 9 - browser legacy payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 4.650562
+  type: 'test'
+  ...
+# Subtest: independent exact rate/minute matrix covers both real pricing paths
+ok 10 - independent exact rate/minute matrix covers both real pricing paths
+  ---
+  duration_ms: 88.841687
+  type: 'test'
+  ...
+# Subtest: paid and unpaid breaks retain their observed durations and component rounding
+ok 11 - paid and unpaid breaks retain their observed durations and component rounding
+  ---
+  duration_ms: 5.688836
+  type: 'test'
+  ...
+# Subtest: effective rate changes at midnight use separately rounded original decimal rates
+ok 12 - effective rate changes at midnight use separately rounded original decimal rates
+  ---
+  duration_ms: 4.808855
+  type: 'test'
+  ...
+# Subtest: overtime and allowance decimal factors preserve exact gross and allocated premiums
+ok 13 - overtime and allowance decimal factors preserve exact gross and allocated premiums
+  ---
+  duration_ms: 5.620285
+  type: 'test'
+  ...
+# Subtest: additive premium calculation and allowance sums use decimal operands
+ok 14 - additive premium calculation and allowance sums use decimal operands
+  ---
+  duration_ms: 0.684451
+  type: 'test'
+  ...
+# Subtest: server contract keeps original long-decimal allowance operands until pence rounding
+ok 15 - server contract keeps original long-decimal allowance operands until pence rounding
+  ---
+  duration_ms: 3.642783
+  type: 'test'
+  ...
+# Subtest: browser contract keeps original long-decimal allowance operands until pence rounding
+ok 16 - browser contract keeps original long-decimal allowance operands until pence rounding
+  ---
+  duration_ms: 4.260945
+  type: 'test'
+  ...
+# Subtest: exact additive factors stay unrounded when multiplied into gross pay
+ok 17 - exact additive factors stay unrounded when multiplied into gross pay
+  ---
+  duration_ms: 0.170692
+  type: 'test'
+  ...
+# Subtest: equivalent allowance sums retain one continuous rounding component
+ok 18 - equivalent allowance sums retain one continuous rounding component
+  ---
+  duration_ms: 5.526816
+  type: 'test'
+  ...
+# Subtest: oncosts use the rounded gross plus exact hourly allowance at the existing boundary
+ok 19 - oncosts use the rounded gross plus exact hourly allowance at the existing boundary
+  ---
+  duration_ms: 0.139356
+  type: 'test'
+  ...
+# Subtest: invalid and unsafe monetary values fail closed
+ok 20 - invalid and unsafe monetary values fail closed
+  ---
+  duration_ms: 0.414923
+  type: 'test'
+  ...
+# Subtest: patching fails closed on source drift or duplicate application
+ok 21 - patching fails closed on source drift or duplicate application
+  ---
+  duration_ms: 0.641267
+  type: 'test'
+  ...
+# (node:15) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: server: incomplete allowance arrays cannot silently reduce pay
+ok 22 - server: incomplete allowance arrays cannot silently reduce pay
+  ---
+  duration_ms: 2.07097
+  type: 'test'
+  ...
+# Subtest: server: inherited or accessor factors are not authoritative operands
+ok 23 - server: inherited or accessor factors are not authoritative operands
+  ---
+  duration_ms: 0.375905
+  type: 'test'
+  ...
+# Subtest: server: custom array traversal cannot substitute pay factors
+ok 24 - server: custom array traversal cannot substitute pay factors
+  ---
+  duration_ms: 0.201658
+  type: 'test'
+  ...
+# Subtest: server: valid decimal rounding and explicit zero remain unchanged
+ok 25 - server: valid decimal rounding and explicit zero remain unchanged
+  ---
+  duration_ms: 0.578255
+  type: 'test'
+  ...
+# Subtest: embedded browser: incomplete allowance arrays cannot silently reduce pay
+ok 26 - embedded browser: incomplete allowance arrays cannot silently reduce pay
+  ---
+  duration_ms: 0.509363
+  type: 'test'
+  ...
+# Subtest: embedded browser: inherited or accessor factors are not authoritative operands
+ok 27 - embedded browser: inherited or accessor factors are not authoritative operands
+  ---
+  duration_ms: 0.272572
+  type: 'test'
+  ...
+# Subtest: embedded browser: custom array traversal cannot substitute pay factors
+ok 28 - embedded browser: custom array traversal cannot substitute pay factors
+  ---
+  duration_ms: 0.292823
+  type: 'test'
+  ...
+# Subtest: embedded browser: valid decimal rounding and explicit zero remain unchanged
+ok 29 - embedded browser: valid decimal rounding and explicit zero remain unchanged
+  ---
+  duration_ms: 0.350558
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 341.23657

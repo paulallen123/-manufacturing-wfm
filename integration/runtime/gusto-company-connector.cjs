@@ -31,7 +31,12 @@ function fail(code, statusCode, message) {
   throw new GustoConnectorError(code, statusCode, message);
 }
 
+const isPhaseError = error =>
+  ['SETUP_ONLY_REQUIRED', 'SETUP_MODE_BINDING_UNAVAILABLE'].includes(error?.code) &&
+  [403, 503].includes(error?.statusCode);
+
 function safeError(error) {
+  if (isPhaseError(error)) return error;
   return error instanceof GustoConnectorError ? error
     : new GustoConnectorError('GUSTO_STORAGE_UNAVAILABLE', 503, 'Gusto credential storage is temporarily unavailable.');
 }
@@ -149,7 +154,7 @@ function safeMetadata(row, authorizationRef = true) {
   return result;
 }
 
-function createGustoCompanyConnector({ db, env = process.env, fetchImpl = globalThis.fetch, now = Date.now }) {
+function createGustoCompanyConnector({ db, env = process.env, fetchImpl = globalThis.fetch, now = Date.now, assertEffect = () => {} }) {
   if (!db || typeof db.prepare !== 'function' || typeof db.exec !== 'function') throw new TypeError('A SQLite connection is required.');
   const config = readConfiguration(env);
   db.exec(`CREATE TABLE IF NOT EXISTS gusto_oauth_states (
@@ -202,6 +207,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
     const expiresAt = createdAt + STATE_TTL_MS;
     const state = randomBytes(32).toString('base64url');
     const stateHash = createHash('sha256').update(state).digest('hex');
+    assertEffect(tenant);
     db.prepare('DELETE FROM gusto_oauth_states WHERE expires_at <= ?').run(createdAt);
     db.prepare(`INSERT INTO gusto_oauth_states
       (state_hash, tenant, connection_id, session_hash, company_uuid, environment, client_id_hash, created_at, expires_at)
@@ -216,7 +222,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
     return { authorizationUrl: authorization.toString(), expiresAt: new Date(expiresAt).toISOString(), environment: config.environment };
   }
 
-  async function requestJson(path, { accessToken, body, operation = 'read' } = {}) {
+  async function requestJson(path, { accessToken, body, operation = 'read', tenant } = {}) {
     const base = GUSTO_HOSTS[config.environment];
     // Every caller uses a constant path or a validated UUID; no provider-supplied URL is followed.
     const target = new URL(path, base);
@@ -235,6 +241,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
       }, REQUEST_TIMEOUT_MS);
     });
     const request = async () => {
+      assertEffect(tenant);
       const headers = { Accept: 'application/json', 'X-Gusto-API-Version': API_VERSION };
       if (accessToken) headers.Authorization = 'Bearer ' + accessToken;
       if (body) headers['Content-Type'] = 'application/json';
@@ -277,13 +284,14 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
     try { return await Promise.race([request(), timeout]); }
     catch (error) {
       cancelReader();
+      if (isPhaseError(error)) throw error;
       if (error instanceof GustoConnectorError) throw error;
       fail('GUSTO_PROVIDER_UNAVAILABLE', 502, 'Gusto could not complete the request.');
     } finally { clearTimeout(timer); }
   }
 
-  async function verifyCompany(accessToken, companyUuid) {
-    const info = await requestJson('/v1/token_info', { accessToken });
+  async function verifyCompany(accessToken, companyUuid, tenant) {
+    const info = await requestJson('/v1/token_info', { accessToken, tenant });
     if (info.resource?.type !== 'Company' || typeof info.resource.uuid !== 'string' || !UUID.test(info.resource.uuid)) {
       fail('GUSTO_TOKEN_SUBJECT_INVALID', 403, 'Gusto authorization must belong to a company.');
     }
@@ -291,7 +299,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
     if (typeof info.scope !== 'string' || info.scope.length > 16_384) fail('GUSTO_INVALID_PROVIDER_RESPONSE', 502, 'Gusto did not return valid granted scopes.');
     const scopes = new Set(info.scope.split(/\s+/).filter(Boolean));
     if (!scopes.has('companies:read')) fail('GUSTO_SCOPE_REQUIRED', 403, 'Gusto company read access is required to verify this connection.');
-    const company = await requestJson('/v1/companies/' + companyUuid, { accessToken });
+    const company = await requestJson('/v1/companies/' + companyUuid, { accessToken, tenant });
     if (typeof company.uuid !== 'string' || !UUID.test(company.uuid) || company.uuid.toLowerCase() !== companyUuid) {
       fail('GUSTO_COMPANY_MISMATCH', 403, 'The Gusto company response does not match the expected company.');
     }
@@ -318,6 +326,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
       fail('GUSTO_INVALID_STATE', 400, 'The Gusto authorization state is invalid or expired.');
     }
     const at = now();
+    assertEffect(tenant);
     // A single SQLite statement claims the state before any network operation.
     const claimed = db.prepare(`UPDATE gusto_oauth_states SET consumed_at = ?
       WHERE state_hash = ? AND tenant = ? AND session_hash = ? AND environment = ? AND client_id_hash = ?
@@ -330,13 +339,14 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
     }
     if (providerError !== undefined && providerError !== null && providerError !== '') fail('GUSTO_OAUTH_DENIED', 400, 'Gusto authorization was declined. Start authorization again.');
     if (!cleanText(code, 4096)) fail('GUSTO_INVALID_INPUT', 400, 'A valid Gusto authorization code is required.');
-    const tokens = parseTokenResponse(await requestJson('/oauth/token', { operation: 'authorization', body: {
+    const tokens = parseTokenResponse(await requestJson('/oauth/token', { tenant, operation: 'authorization', body: {
       client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.publicOrigin + CALLBACK_PATH,
       code, grant_type: 'authorization_code'
     } }), now());
-    const verified = await verifyCompany(tokens.accessToken, claimed.company_uuid);
+    const verified = await verifyCompany(tokens.accessToken, claimed.company_uuid, tenant);
     const verifiedAt = new Date(now()).toISOString();
     const encrypted = sealTokens(config.encryptionKey, claimed, tokens);
+    assertEffect(tenant);
     const stored = db.prepare(`INSERT INTO gusto_company_credentials
       (tenant, connection_id, environment, company_uuid, client_id_hash, company_name, granted_scopes, encrypted_tokens, token_expires_at,
         credential_version, verified_version, verified_at, updated_at)
@@ -371,6 +381,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
   }
 
   async function refreshCredentials(row) {
+    assertEffect(row.tenant);
     const at = now();
     const leaseId = randomBytes(16).toString('hex');
     const claimed = db.prepare(`UPDATE gusto_company_credentials SET refresh_lease_id = ?, refresh_lease_until = ?
@@ -388,18 +399,18 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
     try {
       requireCredentialContext(claimed);
       const prior = openTokens(config.encryptionKey, claimed);
-      const tokens = parseTokenResponse(await requestJson('/oauth/token', { operation: 'refresh', body: {
+      const tokens = parseTokenResponse(await requestJson('/oauth/token', { tenant: row.tenant, operation: 'refresh', body: {
         client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.publicOrigin + CALLBACK_PATH,
         refresh_token: prior.refreshToken, grant_type: 'refresh_token'
       } }), now());
       // Refresh tokens are single-use. Save the replacement before subsequent reads,
       // retaining an unverified version until company verification succeeds.
       const encrypted = sealTokens(config.encryptionKey, claimed, tokens);
-      const rotated = await persistRotatedTokens(() => db.prepare(`UPDATE gusto_company_credentials SET encrypted_tokens = ?, token_expires_at = ?,
+      const rotated = await persistRotatedTokens(() => { assertEffect(row.tenant); return db.prepare(`UPDATE gusto_company_credentials SET encrypted_tokens = ?, token_expires_at = ?,
         credential_version = credential_version + 1, verified_version = NULL, refresh_lease_id = NULL,
         refresh_lease_until = NULL, updated_at = ?
         WHERE tenant = ? AND connection_id = ? AND credential_version = ? AND refresh_lease_id = ? RETURNING *`)
-        .get(encrypted, tokens.expiresAt, now(), row.tenant, row.connection_id, row.credential_version, leaseId));
+        .get(encrypted, tokens.expiresAt, now(), row.tenant, row.connection_id, row.credential_version, leaseId); });
       if (!rotated) fail('GUSTO_REFRESH_CONFLICT', 409, 'Gusto credentials changed during refresh. Retry verification.');
       return rotated;
     } finally {
@@ -416,6 +427,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
   async function verifyConnection({ tenant, connectionId } = {}) {
     requireConfigured();
     binding(tenant, connectionId);
+    assertEffect(tenant);
     let row = credential(tenant, connectionId);
     if (!row) fail('GUSTO_CONNECTION_NOT_FOUND', 404, 'No stored Gusto authorization exists for this connection.');
     requireCredentialContext(row);
@@ -427,12 +439,13 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
         refreshed = true;
       }
       let verified;
-      try { verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid); }
+      try { verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid, tenant); }
       catch (error) {
         if (error.code !== 'GUSTO_UNAUTHORIZED' || refreshed) throw error;
         row = await refreshCredentials(row);
-        verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid);
+        verified = await verifyCompany(openTokens(config.encryptionKey, row).accessToken, row.company_uuid, tenant);
       }
+      assertEffect(tenant);
       const saved = db.prepare(`UPDATE gusto_company_credentials SET company_name = ?, granted_scopes = ?,
         verified_version = credential_version, verified_at = ?, updated_at = ?
         WHERE tenant = ? AND connection_id = ? AND credential_version = ? RETURNING *`)
@@ -441,6 +454,7 @@ function createGustoCompanyConnector({ db, env = process.env, fetchImpl = global
       return safeMetadata(saved);
     } catch (error) {
       if (['GUSTO_REAUTHORIZATION_REQUIRED', 'GUSTO_UNAUTHORIZED', 'GUSTO_FORBIDDEN', 'GUSTO_COMPANY_MISMATCH', 'GUSTO_TOKEN_SUBJECT_INVALID', 'GUSTO_SCOPE_REQUIRED'].includes(error.code)) {
+        assertEffect(tenant);
         const invalidated = db.prepare(`UPDATE gusto_company_credentials SET verified_version = NULL
           WHERE tenant = ? AND connection_id = ? AND credential_version = ?`)
           .run(tenant, connectionId, row.credential_version);

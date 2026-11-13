@@ -1,7 +1,7 @@
 'use strict';
 
 const { createHash } = require('node:crypto');
-const { createDecisionEpisode, BENEFIT_METRICS, COST_METRICS } = require('./decision-episode.cjs');
+const { createDecisionEpisode, BENEFIT_METRICS, COST_METRICS, snapshotData } = require('./decision-episode.cjs');
 
 const TRIGGERS = Object.freeze(['OUTPUT_SHORTFALL','DEMAND_SURGE','CAPACITY_RISK','ORDER_AT_RISK']);
 const DOMAINS = Object.freeze(['workforce','machine','material','maintenance','quality','schedule','demand','energy','upstream','downstream','unknown']);
@@ -93,7 +93,7 @@ function normaliseAction(input={},planId){
 function economicValue(input={}){
   const keys=['recoveredContribution','avoidedDowntime','avoidedExpedite','avoidedLabourPremium','avoidedScrap','interventionCost','inducedDownstreamCost'];
   const out={};
-  for(const k of keys) out[k]=num(input[k],'economic '+k,{nullable:true});
+  for(const k of keys) out[k]=num(input[k],'economic '+k,{min:0,nullable:true});
   out.netRecoveredValue=keys.some(k=>out[k]==null)?null:
     out.recoveredContribution+out.avoidedDowntime+out.avoidedExpedite+
     out.avoidedLabourPremium+out.avoidedScrap-out.interventionCost-out.inducedDownstreamCost;
@@ -116,7 +116,8 @@ function causalEvidence(input={}){
   });
 }
 
-function normalisePlan(input={}){
+function compareId(a,b,deterministicOrder){return deterministicOrder===true?(a<b?-1:a>b?1:0):a.localeCompare(b);}
+function normalisePlan(input={},deterministicOrder=false){
   const id=text(input.id,120);
   if(!id) throw new Error('Capacity Rescue plan id is required.');
   const actions=(Array.isArray(input.actions)?input.actions:[]).map(a=>normaliseAction(a,id));
@@ -139,7 +140,7 @@ function normalisePlan(input={}){
   for(const a of actions) visit(a.id);
   if(id==='do-nothing'&&actions.some(a=>a.type!=='DO_NOTHING'))
     throw new Error('The do-nothing plan must contain only DO_NOTHING actions.');
-  actions.sort((a,b)=>a.id.localeCompare(b.id));
+  actions.sort((a,b)=>compareId(a.id,b.id,deterministicOrder));
   const nonWorkforce=actions.some(a=>['MAINTENANCE','MATERIAL_REALLOCATION','WORK_ORDER_RESEQUENCE','CHANGEOVER_SHIFT','CROSS_LINE_REBALANCE','CROSS_SITE_REBALANCE'].includes(a.type));
   const highConsequence=actions.some(a=>['MAINTENANCE','CROSS_SITE_REBALANCE'].includes(a.type)||a.reversible!==true);
   const planGraphDigest=digest(actions).slice(0,20);
@@ -160,7 +161,8 @@ function normalisePlan(input={}){
   });
 }
 
-function buildCapacityRescueShadow(input={}){
+function buildCapacityRescueShadow(input={},evaluationOptions={}){
+  const deterministicOrder=snapshotData(evaluationOptions,'capacity evaluation options')?.deterministicOrder===true;
   const triggerKind=text(input.triggerKind,80).toUpperCase();
   if(!TRIGGERS.includes(triggerKind)) throw new Error('Unsupported Capacity Rescue trigger.');
   const sourceEvidence=list(input.sourceEvidence,50,220,'Capacity Rescue source evidence');
@@ -176,11 +178,11 @@ function buildCapacityRescueShadow(input={}){
   const capacityGapUnits=Math.max(0,targetUnits-projectedUnits);
 
   const constraints=(Array.isArray(input.constraints)?input.constraints:[]).map(normaliseConstraint)
-    .sort((a,b)=>b.score-a.score||b.confidence-a.confidence||a.id.localeCompare(b.id));
+    .sort((a,b)=>b.score-a.score||b.confidence-a.confidence||compareId(a.id,b.id,deterministicOrder));
   if(!constraints.length) throw new Error('At least one evidenced Capacity Rescue constraint is required.');
   const primaryConstraint=constraints[0];
 
-  const plans=(Array.isArray(input.plans)?input.plans:[]).map(normalisePlan);
+  const plans=(Array.isArray(input.plans)?input.plans:[]).map(p=>normalisePlan(p,deterministicOrder));
   if(plans.length<2) throw new Error('At least two Capacity Rescue plans are required.');
   if(!plans.some(p=>p.id==='do-nothing')) throw new Error('Capacity Rescue requires a do-nothing plan.');
 
@@ -232,7 +234,7 @@ function buildCapacityRescueShadow(input={}){
       hardConstraintsPassed:p.hardConstraintsPassed,uncertainty:p.uncertainty,
       prediction:p.prediction,evidenceRefs:p.evidenceRefs,reasonCodes:p.reasonCodes
     }))
-  });
+  },{deterministicOrder});
 
   // Canonical cloning can turn non-finite arithmetic into null; never publish that as a rank.
   for(const rank of episode.recommendation.ranking) num(rank.score,'canonical rank score');

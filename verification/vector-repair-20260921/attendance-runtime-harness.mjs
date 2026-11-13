@@ -45,7 +45,7 @@ export function createAttendanceRuntime({runtime,database,startupBudgetMs=Number
       cwd:runtime,
       env:{...process.env,PORT:'0',WFM_DB:database,WFM_HOSTED_STAGING:'false',NODE_ENV:'test'},
       stdio:['ignore','pipe','pipe','ipc']
-    }),exited:false,diagnostics:'',origin:'',failure:null};
+    }),exited:false,diagnostics:'',origin:'',failure:null,lastHealthStatus:null};
     current=child;
     child.closed=new Promise(resolve=>child.process.once('close',resolve));
     child.process.once('exit',()=>{child.exited=true;});
@@ -69,6 +69,7 @@ export function createAttendanceRuntime({runtime,database,startupBudgetMs=Number
         if(child.origin){
           try{
             const response=await fetch(child.origin+'/api/health',{signal:AbortSignal.timeout(Math.max(1,Math.min(1000,deadline-Date.now())))});
+            child.lastHealthStatus=response.status;
             const healthy=response.ok;
             await response.body?.cancel();
             if(healthy&&!child.exited&&!child.failure)return child.origin;
@@ -77,7 +78,7 @@ export function createAttendanceRuntime({runtime,database,startupBudgetMs=Number
         const remaining=deadline-Date.now();
         if(remaining>0)await delay(Math.min(50,remaining));
       }
-      throw Error('Attendance runtime did not become healthy within '+startupBudgetMs+'ms.');
+      throw Error('Attendance runtime did not become healthy within '+startupBudgetMs+'ms. phase='+(child.origin?'waiting-health':'waiting-listener')+'; lastHealthStatus='+(child.lastHealthStatus??'none'));
     }catch(error){
       await stop();
       throw Error(error.message+'\n'+child.diagnostics);

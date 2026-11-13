@@ -1,0 +1,11 @@
+# PR494 payroll factor admission — bounded independent review
+
+Reviewer `/root/build_route_review`; integration owner `/root`. Verdict **ACCEPT** exact donor helper a97af941a0313808f3d71b8c3b9428d5108a18f7 and added test5b41d822dd9942c57c51cff4c1ef52a35738277a from donor5b09019aa684f0f06c077335e118b854cf3b89fa against baseline helper e632abdfb83fb480033510ed580c0c2b33c1c07b. All three blobs fetched independently and exact Git hashes verified. Publish exact remote bytes, excluding additional scratch transport newline.
+
+The helper now snapshots dense own data entries from actual arrays using descriptors, validates numeric finite minima and bounded length, and evaluates the snapshot with index loops. Sparse/inherited/accessor entries fail before arithmetic; custom reduce/some/iteration methods cannot replace operands. Empty allowance sets retain zero; multiplier sets remain nonempty and require values at least1. Highest/additive formulas and rational decimal rounding functions remain unchanged. The factory remains self-contained for serialization into the browser consumer.
+
+Independent Node22.23.2 tests14/14 passed,0 failures/skips: eight donor cases plus six heldouts covering server and serialized factory. Heldouts use throwing traversal accessors, descriptor accessor rejection without execution,1000/1001 length boundaries and100 valid pricing vectors per execution form against the unmodified baseline components/factor keys. All valid vector outputs preserved baseline rounding exactly. Parent's separate24/24 pricing/consumer run is not reattributed to this reviewer.
+
+This boundary covers ordinary arrays with dense own data and trusted built-ins. It is not a sandbox against arbitrary JavaScript proxies: descriptor traps can execute, and a hostile realm or accessor-bearing overall components options are outside this exact delta. No claim of safe execution of arbitrary caller code is made. Existing downstream consumer/build checks remain required for the combined candidate; no production pay action, provider write, hosted proof, customer outcome or formal GitHub approval follows from these isolated tests.
+
+No shared source edits or remote mutations by this lane. Exact retrieved blob copies and heldout evidence are retained here.

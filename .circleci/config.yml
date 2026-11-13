@@ -5,13 +5,31 @@ commands:
     steps:
       - run:
           name: Admit explicit frozen candidate only
-          command: |
-            if git rev-parse HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- artifact/vector-proof-freeze.trigger; then
-              echo 'No frozen-candidate trigger change; halting heavy proof without marking product failure.'
-              circleci-agent step halt
-            fi
+          command: bash scripts/require-frozen-candidate.sh
 
 jobs:
+  forge_integration_validation:
+    docker:
+      - image: cimg/node:22.23.2
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Validate exact ordinary integration source without freeze gating
+          command: |
+            set -euo pipefail
+            test "$(node --version)" = "v22.23.2"
+            test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
+            mkdir -p circleci-artifacts/ordinary-integration
+            printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/ordinary-integration/source-sha.txt
+            node --version > circleci-artifacts/ordinary-integration/node-version.txt
+            git ls-files --stage -- .circleci/config.yml scripts/run-forge-ci.mjs scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/ordinary-integration/git-blobs.txt
+            node --test scripts/require-frozen-candidate.test.mjs 2>&1 | tee circleci-artifacts/ordinary-integration/admission-tests.tap
+            node scripts/run-forge-ci.mjs 2>&1 | tee circleci-artifacts/ordinary-integration/source-validation.log
+      - store_artifacts:
+          path: circleci-artifacts/ordinary-integration
+          destination: ordinary-integration-proof
+
   forge_core_validation:
     docker:
       - image: cimg/node:22.23.2
@@ -30,8 +48,16 @@ jobs:
             test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
             printf '%s\n' "$CIRCLE_SHA1" > circleci-artifacts/auth-client-source-sha.txt
             node --version > circleci-artifacts/auth-client-node-version.txt
+            git ls-files --stage -- scripts/require-frozen-candidate.sh scripts/require-frozen-candidate.test.mjs > circleci-artifacts/frozen-candidate-gate-git-blobs.txt
             git ls-files --stage -- .circleci/config.yml artifact/vector-proof-freeze.trigger Dockerfile.current-candidate-role-browser-proof scripts/current-candidate-role-browser-proof.mjs scripts/current-candidate-role-browser-proof.auth.test.mjs scripts/current-candidate-role-browser-proof-server.mjs scripts/current-candidate-role-browser-proof-server.test.mjs scripts/vector-proof-result.mjs security/runtime/proof-runner-auth.cjs security/runtime/proof-runner-auth.test.cjs security/runtime/identity-survival-guard.cjs security/runtime/identity-survival-guard.test.cjs security/runtime/runtime-identity.cjs security/runtime/runtime-identity.test.cjs security/runtime/bootstrap.cjs security/runtime/bootstrap-proof-runner-wiring.test.cjs implementation/runtime/readiness-evidence-contract.cjs implementation/runtime/one-day-enterprise-engine-core.cjs implementation/runtime/one-day-enterprise-engine.test.cjs scripts/run-forge-ci.mjs > circleci-artifacts/auth-client-git-blobs.txt
+            git ls-files --stage -- docs/execution/proof-runner-activation/README.md docs/execution/proof-runner-activation/launcher.cjs docs/execution/proof-runner-activation/prepare.cjs docs/execution/proof-runner-activation/launcher.test.cjs docs/execution/proof-runner-activation/preflight.test.cjs docs/execution/proof-runner-activation/child-environment.test.cjs docs/execution/proof-runner-activation/source-binding.test.cjs docs/execution/proof-runner-activation/published-source.test-fixture.cjs docs/execution/proof-runner-activation/generated/bundle.json docs/execution/proof-runner-activation/generated/manifest.json docs/execution/proof-runner-activation/generated/start-command.txt scripts/current-candidate-role-browser-proof.environment.test.mjs > circleci-artifacts/cp001-unpublished-runner-git-blobs.txt
             node --test \
+              scripts/require-frozen-candidate.test.mjs \
+              docs/execution/proof-runner-activation/launcher.test.cjs \
+              docs/execution/proof-runner-activation/preflight.test.cjs \
+              docs/execution/proof-runner-activation/child-environment.test.cjs \
+              docs/execution/proof-runner-activation/source-binding.test.cjs \
+              scripts/current-candidate-role-browser-proof.environment.test.mjs \
               scripts/current-candidate-role-browser-proof.auth.test.mjs \
               security/runtime/proof-runner-auth.test.cjs \
               security/runtime/identity-survival-guard.test.cjs \
@@ -183,7 +209,14 @@ jobs:
             cp /tmp/bootstrap-unauth.json /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
             cp /tmp/demand-unauth.json /tmp/circleci-runtime-artifacts/ 2>/dev/null || true
             printf '%s\n' "$CIRCLE_SHA1" > /tmp/circleci-runtime-artifacts/source-sha.txt
+            docker inspect --format '{{.Image}}' vector-forge-proof > /tmp/circleci-runtime-artifacts/runtime-container-image-id.txt 2>/dev/null || true
             docker inspect "vector-forge-ci:${CIRCLE_SHA1}" > /tmp/circleci-runtime-artifacts/image-inspect.json 2>/dev/null || true
+      - run:
+          name: Bind mandatory runtime artifact manifest
+          command: |
+            set -euo pipefail
+            test "$(git rev-parse HEAD)" = "${CIRCLE_SHA1}"
+            node scripts/runtime-artifact-manifest.mjs /tmp/circleci-runtime-artifacts "${CIRCLE_SHA1}"
       - run:
           name: Clean up proof container
           when: always
@@ -195,6 +228,7 @@ jobs:
 workflows:
   vector_forge_proof:
     jobs:
+      - forge_integration_validation
       - forge_core_validation
       - forge_runtime_validation:
           requires:
@@ -206,5 +240,6 @@ workflows:
                 - /release\/.*/
                 - /staging\/.*/
                 - /review\/staffology-.*/
+                - test/vector-empty-organisation-regression-20261020
             tags:
               ignore: /.*/

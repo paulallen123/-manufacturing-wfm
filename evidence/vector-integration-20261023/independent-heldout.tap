@@ -1,0 +1,75 @@
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: revoked row and collection proxies never execute traps or infer population
+ok 1 - revoked row and collection proxies never execute traps or infer population
+  ---
+  duration_ms: 326.5338
+  type: 'test'
+  ...
+# Subtest: null-prototype proposal stays valid and detached after caller mutation
+ok 2 - null-prototype proposal stays valid and detached after caller mutation
+  ---
+  duration_ms: 7.284435
+  type: 'test'
+  ...
+# Subtest: array index accessor is rejected without executing the getter
+ok 3 - array index accessor is rejected without executing the getter
+  ---
+  duration_ms: 0.410896
+  type: 'test'
+  ...
+# Subtest: malformed evidence cannot produce partial mass assignments
+ok 4 - malformed evidence cannot produce partial mass assignments
+  ---
+  duration_ms: 7.206656
+  type: 'test'
+  ...
+# Subtest: unknown diagnostic accessors neither run nor suppress missing identity review
+ok 5 - unknown diagnostic accessors neither run nor suppress missing identity review
+  ---
+  duration_ms: 1.19238
+  type: 'test'
+  ...
+# Subtest: fresh-process retry preserves interrupted claim without adapter dispatch
+ok 6 - fresh-process retry preserves interrupted claim without adapter dispatch
+  ---
+  duration_ms: 1661.157283
+  type: 'test'
+  ...
+# Subtest: terminal receipt after commit is never superseded by retry evidence
+ok 7 - terminal receipt after commit is never superseded by retry evidence
+  ---
+  duration_ms: 77.022322
+  type: 'test'
+  ...
+# Subtest: failed retry append leaves original evidence and permits safe later retry
+ok 8 - failed retry append leaves original evidence and permits safe later retry
+  ---
+  duration_ms: 65.976732
+  type: 'test'
+  ...
+# Subtest: wrong tenant retry cannot read or mutate another tenant claim
+ok 9 - wrong tenant retry cannot read or mutate another tenant claim
+  ---
+  duration_ms: 52.146113
+  type: 'test'
+  ...
+# Subtest: persisted reconciliation is returned after engine restart without duplicate receipt
+ok 10 - persisted reconciliation is returned after engine restart without duplicate receipt
+  ---
+  duration_ms: 67.242371
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3664.200382

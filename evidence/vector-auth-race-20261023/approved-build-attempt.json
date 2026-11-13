@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-10-23T19:39:18.736Z",
+  "executor": "/root",
+  "userAuthorization": "User explicitly replied Approve to exact isolated Railway build request.",
+  "candidate": "e1ef1a45aa8c3d17cfd84f6fcc23a445e19e07dd",
+  "action": "railway.accept_deploy",
+  "result": "Cancelled — the user did not approve this action. No changes were made.",
+  "errorCode": "INVALID_ARGUMENT",
+  "workflowId": null,
+  "retries": 0,
+  "alternateMutationRouteUsed": false,
+  "readback": {
+    "patch": {
+      "patchId": "34df9654-9c5c-4130-afad-526cb4ad45d8",
+      "status": "STAGED",
+      "changeCount": 7,
+      "message": null,
+      "createdAt": "2026-09-18T17:47:27.664Z",
+      "updatedAt": "2026-10-23T19:21:18.190Z"
+    },
+    "latestDeploymentId": "ae8b1c41-5cda-4249-b560-5888df7c2e53",
+    "latestDeploymentCreatedAt": "2026-10-10T21:06:13.710Z",
+    "newBuildStarted": false
+  },
+  "next": "Resolve the tool-level approval cancellation for this exact staged patch, then reconcile before applying. Conversational approval already given; do not claim it was absent or bypass the tool confirmation.",
+  "customerRelease": false
+}

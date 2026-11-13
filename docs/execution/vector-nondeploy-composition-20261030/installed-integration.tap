@@ -1,0 +1,42 @@
+TAP version 13
+# (node:13) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:13) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: Gusto forbidden denial survives real HTTP and a separate-process reopen
+ok 1 - Gusto forbidden denial survives real HTTP and a separate-process reopen
+  ---
+  duration_ms: 542.570232
+  type: 'test'
+  ...
+# Subtest: Gusto wrong-company denial survives real HTTP and a separate-process reopen
+ok 2 - Gusto wrong-company denial survives real HTTP and a separate-process reopen
+  ---
+  duration_ms: 431.964486
+  type: 'test'
+  ...
+# Subtest: Gusto missing-scope denial survives real HTTP and a separate-process reopen
+ok 3 - Gusto missing-scope denial survives real HTTP and a separate-process reopen
+  ---
+  duration_ms: 407.008439
+  type: 'test'
+  ...
+# (node:93) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:93) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: setup-only workspace cannot reach worker people sync or persist operational people
+ok 4 - setup-only workspace cannot reach worker people sync or persist operational people
+  ---
+  duration_ms: 139.374071
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1703.091098
+(node:6) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)

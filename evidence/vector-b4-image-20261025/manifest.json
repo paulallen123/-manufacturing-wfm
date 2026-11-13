@@ -1,0 +1,73 @@
+{
+  "runId": "vector-b4-image-20261025",
+  "checkpointAt": "2026-10-25T21:06:36.320Z",
+  "sourceSha": "b4a2582c59ccf1c2618274b16e569870fd9b3517",
+  "artifactDigest": "sha256:e00d867daf78ef512d306867333850a5d8c559dad0bbc263388b6e8bc247e36d",
+  "imageConfigDigest": "sha256:87787213eab88cb8958e6a5a5c84af8e82962509f89fb07477c81534f35684f1",
+  "projectId": "9cd73309-0ece-4b9a-891f-7daa13d94f0d",
+  "environmentId": "9e7875b6-e214-4c32-9cee-81235e3d49ff",
+  "serviceId": "845b5dcc-9c95-42cf-95fb-5719e96511f2",
+  "deploymentId": "e906c10b-1f64-43cd-b487-da16264a5f53",
+  "status": "REMOVED_AFTER_SUCCESS",
+  "successAt": "2026-10-25T21:02:59.783Z",
+  "scope": "isolated image admission; receipt-only health",
+  "verifiedUrl": null,
+  "simulation": true,
+  "customerProven": false,
+  "providerProven": false,
+  "gates": {
+    "auth": {
+      "pass": 99,
+      "skip": 0
+    },
+    "staffology": {
+      "pass": 327,
+      "skip": 0
+    },
+    "source": {
+      "pass": 1599,
+      "skip": 0
+    },
+    "installedArchive": {
+      "pass": 88,
+      "skip": 0,
+      "requiredCases": 12
+    },
+    "broadInstalled": {
+      "pass": 679,
+      "skip": 12
+    }
+  },
+  "verifier": "/root/build_route_review",
+  "evidenceHashes": "e906-independent-hashes.json",
+  "policyRevision": null,
+  "configurationRevision": "Exact service source/receipt binding verified in b39-independent-evidence.json",
+  "schemaRevision": null,
+  "customerAcceptance": null,
+  "providerActionIds": [],
+  "workflowIds": [],
+  "screenshots": [],
+  "traces": [],
+  "limitations": [
+    "Receipt health is not customer application startup",
+    "Staffology provider is simulated",
+    "Previous same-source failure root cause remains unknown",
+    "New logging patch not in admitted image",
+    "Hosted authenticated/restart/rollback proof remains outstanding",
+    "Google/Apple registrations and bindings absent",
+    "No production promotion"
+  ],
+  "activeJobs": [],
+  "rollback": "previous isolated aea image retained as historical artifact, not current candidate; customer unchanged",
+  "servingReconciliation": {
+    "at": "2026-10-25T21:08:34.418Z",
+    "sourceSha": "b4a2582c59ccf1c2618274b16e569870fd9b3517",
+    "deploymentId": "b39f0232-0a2e-44e4-a50b-2a32203924c2",
+    "status": "SUCCESS",
+    "imageDigest": "sha256:fb43ff18357726b80f7b62ad660cbf417cd50c3b313fa7f6df9e67649936c154",
+    "configDigest": "sha256:2d46b999ea6b2a4f51876e66c6b4fa6c7765ae74e81f43a52d9aaeca5a84c10c",
+    "evidenceHashes": "b39-independent-hashes.json",
+    "proof": "exact current installed88/88/all12 plus receipt-only health",
+    "customerProven": false
+  }
+}

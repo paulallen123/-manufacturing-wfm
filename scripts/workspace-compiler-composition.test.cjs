@@ -6,6 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const {createHash} = require('node:crypto');
 const {execFileSync, spawnSync} = require('node:child_process');
+const {runtimeStageAncestry} = require('./docker-runtime-ancestry.cjs');
 const root = path.resolve(__dirname, '..');
 const archive = path.join(root, 'artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz');
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -28,7 +29,7 @@ test('Docker extracted-runtime composition has its full compiler patch dependenc
   const {temporary, runtime} = fixture(t);
   const workspace = path.join(temporary, 'workspace');
   const docker = fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8');
-  const finalStage = docker.slice(docker.lastIndexOf('\nFROM '));
+  const finalStage = runtimeStageAncestry(docker);
   const beforeComposition = finalStage.slice(0, finalStage.indexOf('RUN node /workspace/scripts/compose-vector-local-runtime.mjs'));
   for (const line of beforeComposition.split('\n')) {
     if (!line.startsWith('COPY ')) continue;

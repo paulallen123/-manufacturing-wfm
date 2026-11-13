@@ -1,0 +1,58 @@
+{
+  "reviewer": "/root/build_route_review",
+  "timestamp": "2026-10-25T03:25:51.617952+00:00",
+  "files": {
+    "security/runtime/federated-auth.cjs": {
+      "git_blob": "ae5140b0440b3ad0cc05abf63b52a23ad5b193a7",
+      "sha256": "94bcec970700ed9b38fc2def6eab9ae94d9297ec09b95cae11e0396bd5a9a2dd"
+    },
+    "security/runtime/federated-auth.test.cjs": {
+      "git_blob": "522a766ea36276973eb103cf20a62e034f261d89",
+      "sha256": "4da28d6e875954b12888acc341d89bdca56c888164a225cd18564007b14f00e7"
+    },
+    "security/runtime/federated-session-boundary.test.cjs": {
+      "git_blob": "c969ab42019568f98af87f69a41e9624e3de92d5",
+      "sha256": "d05f3d6b1677435ab81fb417299704d798a8bb604a02088e690974615459a497"
+    },
+    "security/runtime/federated-ui.test.cjs": {
+      "git_blob": "e774963abf8f3cbbf27ae4a4d3f57f87a30598fe",
+      "sha256": "d2f1129c3b46ad4d23840ed9435b310a603453a740b7a6869f01280d445eb7b2"
+    },
+    "security/runtime/bootstrap.cjs": {
+      "git_blob": "42e49e5d48ce627089f21ef6c42204c6dabf97c4",
+      "sha256": "f08e3a9de1045fd0a437aa7498ad4901d642c02eca6966525c5e28a8e1502d23"
+    },
+    "security/runtime/passkey-auth.cjs": {
+      "git_blob": "6982f1be4151f4e8b6099a2169c92a363e4e935e",
+      "sha256": "8cf5e8e9d6d5643fe03a82a59ddda9a4e24854b076c80ee7d7b4a5950921ad52"
+    },
+    "security/runtime/identity-survival-guard.cjs": {
+      "git_blob": "e9f58f604d97d526fb1689feb9d9d78547f46011",
+      "sha256": "1942c392b191c825d3ef358307422567b4688977acd6fd9752ca259c056c7c2b"
+    },
+    "security/runtime/passkey-entry.html": {
+      "git_blob": "cc09c25978e12fc09e93c8b216debc96474e6006",
+      "sha256": "29a3f00db351ad780d1f7fec388f25d8c01a5640b3eb86ea34f8a7994457ceb8"
+    },
+    "security/runtime/federated-ui.js": {
+      "git_blob": "322cbdc35d342e8255253b910ad3205c044ca197",
+      "sha256": "4491296df9fd7730557ef03c25fc09f3a64ffd75b58cda957b306bb9280bbec7"
+    },
+    "scripts/compose-vector-local-runtime.mjs": {
+      "git_blob": "e3bff62af0e4a35306739c989e54074e7d69d814",
+      "sha256": "787ab17cb7c7b98b162e5870f3b8c1987a3c9604cf0612e94da923e5b755efe1"
+    },
+    "scripts/proof-access-preflight.cjs": {
+      "git_blob": "80668b6f9c1e10d97501ca41e50ca59c684778ee",
+      "sha256": "0bc842a64a83e4bbe26e20f7b5f2b812c5b8df76a88afca68baa2e552b2a96b3"
+    },
+    "Dockerfile": {
+      "git_blob": "c0fe2b593b05fdcf10045dbeeec89913cbf69f0f",
+      "sha256": "d2336cf2d25a94ce7268a820baef7f1678512ca6e2b33c942a34d22bda89d207"
+    }
+  },
+  "evidence": {
+    "independent-federated-final.tap": "148ac93cb032a8b4b792a6dc8591b71b7837140ea771ceed54f199b4a90f8e23",
+    "independent-federated-final-review.md": "df4ed0e9035d9c44e47697e847cd8d2e6d118a5f6472e7f0557a42d1888dec0d"
+  }
+}

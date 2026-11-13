@@ -1,0 +1,187 @@
+TAP version 13
+# (node:16) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:16) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# Subtest: valid bound federated session reaches existing customer UI and identity guard
+ok 1 - valid bound federated session reaches existing customer UI and identity guard
+  ---
+  duration_ms: 47.705648
+  type: 'test'
+  ...
+# Subtest: federated session refuses role rather than legacy rebinding
+ok 2 - federated session refuses role rather than legacy rebinding
+  ---
+  duration_ms: 56.138481
+  type: 'test'
+  ...
+# Subtest: federated session refuses epoch rather than legacy rebinding
+ok 3 - federated session refuses epoch rather than legacy rebinding
+  ---
+  duration_ms: 48.689858
+  type: 'test'
+  ...
+# Subtest: federated session refuses freeze rather than legacy rebinding
+ok 4 - federated session refuses freeze rather than legacy rebinding
+  ---
+  duration_ms: 64.051629
+  type: 'test'
+  ...
+# Subtest: federated session refuses missing-metadata rather than legacy rebinding
+ok 5 - federated session refuses missing-metadata rather than legacy rebinding
+  ---
+  duration_ms: 55.558462
+  type: 'test'
+  ...
+# Subtest: federated session refuses missing-binding rather than legacy rebinding
+ok 6 - federated session refuses missing-binding rather than legacy rebinding
+  ---
+  duration_ms: 75.884172
+  type: 'test'
+  ...
+# Subtest: federated session refuses expired rather than legacy rebinding
+ok 7 - federated session refuses expired rather than legacy rebinding
+  ---
+  duration_ms: 121.244912
+  type: 'test'
+  ...
+# Subtest: missing federated verifier refuses a federated binding
+ok 8 - missing federated verifier refuses a federated binding
+  ---
+  duration_ms: 96.26325
+  type: 'test'
+  ...
+# Subtest: logout clears revoked cookie and permits a fresh federated flow
+not ok 9 - logout clears revoked cookie and permits a fresh federated flow
+  ---
+  duration_ms: 50.4777
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:44:80'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:55:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: logout clears expired cookie and permits a fresh federated flow
+not ok 10 - logout clears expired cookie and permits a fresh federated flow
+  ---
+  duration_ms: 60.724391
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:44:80'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:55:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: logout clears role cookie and permits a fresh federated flow
+not ok 11 - logout clears role cookie and permits a fresh federated flow
+  ---
+  duration_ms: 65.725302
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:44:80'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:55:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: logout clears epoch cookie and permits a fresh federated flow
+not ok 12 - logout clears epoch cookie and permits a fresh federated flow
+  ---
+  duration_ms: 58.395333
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:44:80'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:55:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: logout clears missing-metadata cookie and permits a fresh federated flow
+not ok 13 - logout clears missing-metadata cookie and permits a fresh federated flow
+  ---
+  duration_ms: 58.000021
+  type: 'test'
+  location: '/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:44:80'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'wfm_session=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/workspace/scratch/cd4e2bcb0821/current-source-proof/source/security/runtime/federated-session-boundary.test.cjs:55:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: valid session still blocks identity switching and is not cleared by the guard
+ok 14 - valid session still blocks identity switching and is not cleared by the guard
+  ---
+  duration_ms: 36.083384
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 9
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1130.678993

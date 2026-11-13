@@ -1,0 +1,38 @@
+{
+  "sourceSha": "aea2460194d824a9bfe1325298b96b4894478d2c",
+  "deploymentId": "f61925bc-3718-48f6-89d6-137786b09afb",
+  "status": "SUCCESS",
+  "imageDigest": "sha256:68562ed3b8d9e1c024bb0db019212b38fb7aed065eebef1a55830b0dfca1d153",
+  "imageConfigDigest": "sha256:149ddd56b7c62c3753d49b68577fa6ab88729f2fb9c782b833716761f5799aac",
+  "authGate": {
+    "passed": 98,
+    "failed": 0,
+    "skipped": 0
+  },
+  "installedArchiveGate": {
+    "passed": 88,
+    "failed": 0,
+    "skipped": 0,
+    "requiredCases": 12
+  },
+  "sourceSuite": {
+    "passed": 1599,
+    "failed": 0,
+    "skipped": 0
+  },
+  "retainedBroadInstalled": {
+    "passed": 679,
+    "skipped": 12
+  },
+  "healthScope": "Isolated source-identity receipt only, not customer bootstrap",
+  "providerProven": false,
+  "customerProven": false,
+  "verifiedCustomerUrl": null,
+  "verifier": "/root/build_route_review",
+  "limitations": [
+    "Cloud code review still reported running; old cloud security summary not current",
+    "Provider configuration absent; user reports neither/unsure of provider accounts",
+    "No real OAuth callback or phone browser proof",
+    "No customer release or authenticated Golden Journey"
+  ]
+}

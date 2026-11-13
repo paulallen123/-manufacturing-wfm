@@ -347,11 +347,13 @@ function createAdaptiveLearningEngine(options = {}) {
     const score = Math.min(100, [...best.values()].reduce((sum, value) => sum + value, 0));
     const requiresTeachBack = Boolean(COMPETENCIES[row.competency_key]?.teachBack);
     const independentSuccess = best.has('INDEPENDENT_TASK') || best.has('OBSERVED_SUCCESS');
-    const refreshPending = row.status === 'REFRESH_DUE' && freshIndependentSuccess !== true;
+    const now = Date.now();
+    const refreshPending = freshIndependentSuccess !== true &&
+      (row.status === 'REFRESH_DUE' || (row.status === 'MASTERED' && row.due_at_ms <= now));
     const mastered = !refreshPending && score >= 80 && independentSuccess && (!requiresTeachBack || best.has('TEACH_BACK'));
     const currentMasteredAt = row.mastered_at_ms || null;
-    const masteredAt = mastered ? (freshIndependentSuccess === true ? Date.now() : currentMasteredAt || Date.now()) : (refreshPending ? currentMasteredAt : null);
-    const dueAt = refreshPending ? row.due_at_ms : mastered ? masteredAt + nextRefreshMs(score) : Date.now();
+    const masteredAt = mastered ? (freshIndependentSuccess === true ? now : currentMasteredAt || now) : (refreshPending ? currentMasteredAt : null);
+    const dueAt = refreshPending ? row.due_at_ms : mastered ? masteredAt + nextRefreshMs(score) : now;
     const status = refreshPending ? 'REFRESH_DUE' : mastered ? 'MASTERED' : 'DUE';
     updateAssignment.run(status, score, dueAt, masteredAt, nowIso(), row.id);
     return assignmentByKey.get(row.tenant, row.email, row.competency_key);
@@ -384,7 +386,9 @@ function createAdaptiveLearningEngine(options = {}) {
     const rows = ensureAssignments(user).map(recomputeAssignment);
     const due = rows
       .filter(row => row.status !== 'MASTERED' || row.due_at_ms <= Date.now())
-      .map(publicAssignment);
+      .map(publicAssignment)
+      .sort((left, right) => Date.parse(left.dueAt) - Date.parse(right.dueAt) ||
+        left.competencyKey.localeCompare(right.competencyKey));
     const mastered = rows.filter(row => row.status === 'MASTERED').length;
     return {
       role: canonicalRole(user.role),
