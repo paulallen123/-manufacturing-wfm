@@ -1,88 +1,37 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "Existing sole-R accepted proof-runner fixture v2 publication and automatic GitHub Actions consumption",
-  "holder": "r-20261113192812-publish-9924-gha",
-  "invocation_fence": "r-20261113192812-publish-9924-gha",
+  "owner_execution": "Existing sole-R Staffology Docker admission contract fixture correction after exact 9924 GHA failure",
+  "holder": "r-20261113193924-staffology-contract-fixture",
+  "invocation_fence": "r-20261113193924-staffology-contract-fixture",
   "source": "9924ed0252f5e3edd720cfd92177801a78b13b13",
   "source_tree": "325cf7669258354dc4e75a71356bf118919c0481",
-  "target": "PR621 feature/vector-reviewed-source-union-616-620-20261101 OPEN/DRAFT",
+  "target": "private sole-child source and marker review candidate; PR621 remains exact 9924",
   "target_observed_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-  "action_scope": "Publish exact accepted marker 9924 once by guarded non-force CAS from d751; read back PR/ref; consume only ordinary automatic exact-9924 GitHub Actions; record receipt; checked release.",
-  "idempotency_key": "9924ed02:PR621:proof-runner-ordering-fixture-v2:ordinary-github-actions:v1",
-  "claimed_from": "dd25860cb5eb8f3c73201f18249c94e34ee1f786",
-  "claim_commit": "a0d7e72cd5400e7330b28924b3b303e594986c33",
-  "released_at": "2026-11-13T19:37:51.048Z",
-  "completed_result": {
-    "status": "PUBLICATION_APPLIED_CORE_REPAIRED_RUNTIME_CONTRACT_FAILED",
-    "publication": {
-      "expected": "d751b0f05799690564f83509ecdaa219c9c7ad73",
-      "actual": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-      "force": false,
-      "nonrepeatable": true
-    },
-    "github_actions": {
-      "provider": "github-actions",
-      "run_id": 43492557640,
-      "attempt": 1,
-      "event": "push",
-      "conclusion": "failure",
-      "old_run_rerun": false,
-      "manual_dispatch": false
-    },
-    "jobs": {
-      "integration": {
-        "id": 132117245015,
-        "conclusion": "success",
-        "broad": "917P/0F/0S"
-      },
-      "core": {
-        "id": 132117245703,
-        "conclusion": "success",
-        "broad": "917P/0F/0S",
-        "proof_runner_failure_closed": true
-      },
-      "runtime": {
-        "id": 132118050261,
-        "conclusion": "failure",
-        "staffology": "363T/362P/1F/0C/0S",
-        "first_failure": "integrations/staffology/independent/docker-admission-contract.test.cjs:22:9 ERR_ASSERTION",
-        "diagnosis": "contract expects three-script composer COPY; exact Dockerfile includes tenant-cost-calendar-overlay.cjs fourth script; scriptsAt=-1"
-      }
-    },
-    "artifacts": [
-      {
-        "id": 14070461378,
-        "bytes": 59699,
-        "sha256": "4ca52ea563316b5ea5ff42627253c93cd97674ab889a00a0475c5865988081e3"
-      },
-      {
-        "id": 14070561751,
-        "bytes": 18888,
-        "sha256": "f4f4e649bb1d34598dbdee66e23c1adaa95acdc076cf6ad6c63563fdef2bcc42"
-      },
-      {
-        "id": 14071055936,
-        "bytes": 114994,
-        "sha256": "8c82504cc90f78504447a1bc0ea322285fb79a5304749a114104330b0ed688bf"
-      }
-    ],
-    "receipt": {
-      "comment_id": 6857806858,
-      "updated_at": "2026-11-13T19:37:13Z"
-    },
-    "controlled_processes": "ALL_TERMINAL",
-    "delivery_credit": 0,
-    "done": "0/146",
-    "customer": "0/6",
-    "production": "NO-GO"
-  },
-  "denied_actions_observed": [
-    "no old-run rerun",
-    "no manual GitHub Actions dispatch",
-    "no CircleCI",
-    "no merge/canonical/image/registry/Railway/deployment/provider/customer/production mutation"
+  "action_scope": "Privately correct only docker-admission-contract expected scripts COPY to include already-accepted tenant-cost-calendar-overlay.cjs; bounded local verification; marker child; issue527 review request; checked release. No application ref publication.",
+  "idempotency_key": "9924ed02:staffology-docker-admission-copy-contract-fixture:v1",
+  "allowed_operations": [
+    "coord claim/release",
+    "private Git blob/tree/source commit and marker child",
+    "bounded local exact fixture verification",
+    "issue527 receipt update"
   ],
-  "next_action": "Under a new fresh scope, reconcile the exact Staffology Docker admission contract with the already-present tenant-cost-calendar-overlay.cjs COPY input, obtain distinct review, then publish a changed exact child once for ordinary automatic GitHub Actions. Do not rerun unchanged 9924."
+  "denied_operations": [
+    "PR621 feature ref update",
+    "GitHub Actions dispatch/rerun",
+    "CircleCI",
+    "V006 V024 V026 owner work mutation",
+    "merge/canonical/image/registry/Railway/deployment/provider/customer/production mutation"
+  ],
+  "claimed_from": "0840d980270769649fa7e149ffdd448fdce7e627",
+  "claimed_at": "2026-11-13T19:39:24.896Z",
+  "expires_at": "2026-11-13T20:54:24.896Z",
+  "evidence": {
+    "gha_run": 43492557640,
+    "runtime_job": 132118050261,
+    "failure": "integrations/staffology/independent/docker-admission-contract.test.cjs:22:9 ERR_ASSERTION",
+    "accepted_packet_comment": 6839727658
+  },
+  "controlled_processes": "CLAIM_ACTIVE"
 }
