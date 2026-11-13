@@ -1,65 +1,39 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "Existing sole-R proof-runner fixture correction v2 after independent Node24 block",
-  "holder": "r-20261113191353-proof-cleanup-fixture-v2",
-  "invocation_fence": "r-20261113191353-proof-cleanup-fixture-v2",
-  "source": "d751b0f05799690564f83509ecdaa219c9c7ad73",
-  "source_tree": "e267ab246172249476e3c2cbefbfea7c0bd57261",
+  "owner_execution": "Existing sole-R accepted proof-runner fixture v2 publication and automatic GitHub Actions consumption",
+  "holder": "r-20261113192812-publish-9924-gha",
+  "invocation_fence": "r-20261113192812-publish-9924-gha",
+  "source": "9924ed0252f5e3edd720cfd92177801a78b13b13",
+  "source_tree": "325cf7669258354dc4e75a71356bf118919c0481",
   "target": "PR621 feature/vector-reviewed-source-union-616-620-20261101 OPEN/DRAFT",
   "target_observed_head": "d751b0f05799690564f83509ecdaa219c9c7ad73",
-  "action_scope": "Private deterministic proof-runner test-fixture v2 plus marker-only child; bounded local verification; issue527 receipt update; checked release. No application ref publication.",
-  "idempotency_key": "d751b0f0:proof-runner-child-environment-deterministic-order-private:v2",
-  "claimed_from": "efadf4a7821a8fd1aa7e3dea08a970431109c3a7",
-  "claim_commit": "2054e44de7e5fda79f43a24ce8e891d0f5021c30",
-  "released_at": "2026-11-13T19:16:19.411Z",
-  "completed_result": {
-    "status": "PRIVATE_PROOF_RUNNER_FIXTURE_V2_MATERIALIZED_REVIEW_PENDING",
-    "consumed_block": "issue527/6857997711 BLOCK v1; Node22 28P, Node24 27P/1F",
-    "source_commit": "6a8ff6562bda29e9b03e29ab439adf15ef22a8e5",
-    "source_tree": "c4bafb174d5cc257be474edfd94a1cf663b61290",
-    "source_path": "docs/execution/proof-runner-activation/child-environment.test.cjs",
-    "source_blob": "f413857f05607b5caddade20481d4a253d0f3e5c",
-    "source_bytes": 15777,
-    "source_sha256": "ff1362f631fdab5d4cafa8dbadb37395ae48dc232d684de7264f17f9faba8f9e",
-    "marker_commit": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-    "marker_tree": "325cf7669258354dc4e75a71356bf118919c0481",
-    "marker_blob": "c5db37f37b87dcb62bf52806f2035d752c4cafa5",
-    "marker_prefix_chars": 83413,
-    "marker_total_chars": 85177,
-    "local_verification": {
-      "node": "24.22.1",
-      "syntax": "PASS",
-      "initial_changed_attempt": {
-        "pass": 27,
-        "fail": 1,
-        "skip": 0,
-        "reason": "new order assertion counted liveness probe 0"
-      },
-      "final_changed_invocation": {
-        "pass": 28,
-        "fail": 0,
-        "skip": 0,
-        "exit": 0
-      }
-    },
-    "receipt": "issue527/6857806858 updated 2026-11-13T19:15:22Z",
-    "distinct_review_required": "ACCEPT_BOUNDED_PROOF_RUNNER_SOURCE_MARKER_REVIEW_V2 or precise invariant-specific BLOCK",
-    "pr621": "UNCHANGED_OPEN_DRAFT_D751",
-    "github_actions": "run43481308207 remains terminal FAILURE attempt1; no manual rerun/dispatch",
-    "controlled_processes": "ALL_TERMINAL",
-    "delivery_credit": 0,
-    "done": "0OF146",
-    "customer": "0OF6"
-  },
-  "denied_actions_observed": [
-    "no PR621 ref move",
-    "no GitHub Actions manual dispatch or rerun",
-    "no CircleCI",
-    "no V009/V024/V026/V006 intake",
-    "no image registry Railway production provider customer mutation",
-    "no merge"
+  "action_scope": "Publish exact accepted marker 9924 once by guarded non-force CAS from d751; read back PR/ref; consume only ordinary automatic exact-9924 GitHub Actions; record receipt; checked release.",
+  "idempotency_key": "9924ed02:PR621:proof-runner-ordering-fixture-v2:ordinary-github-actions:v1",
+  "allowed_operations": [
+    "coord/vector-release-owner claim and checked release",
+    "PR621 feature ref non-force expected d751 to exact 9924 once",
+    "read-only exact-ref PR and GitHub Actions inspection",
+    "issue527 existing receipt 6857806858 update"
   ],
-  "next_action": "Distinct v2 actual-child source-marker review on pinned Node22.23.2 and Node24.22.1; only after ACCEPT may sole R take a fresh publication lease, recheck d751, guarded non-force CAS once, then consume ordinary automatic exact-child GitHub Actions."
+  "denied_operations": [
+    "manual GitHub Actions dispatch or rerun",
+    "CircleCI login dispatch or read",
+    "merge or canonical ref mutation",
+    "V006 V024 V026 A B C lane mutation or ownership transfer",
+    "image registry Railway deployment provider customer production mutation"
+  ],
+  "claimed_from": "dd25860cb5eb8f3c73201f18249c94e34ee1f786",
+  "claimed_at": "2026-11-13T19:28:12.862Z",
+  "expires_at": "2026-11-13T20:58:12.862Z",
+  "review": {
+    "comment_id": 6857997711,
+    "disposition": "ACCEPT_BOUNDED_PROOF_RUNNER_SOURCE_MARKER_REVIEW_V2",
+    "source": "6a8ff6562bda29e9b03e29ab439adf15ef22a8e5",
+    "marker": "9924ed0252f5e3edd720cfd92177801a78b13b13",
+    "node22": "28P/0F/0S",
+    "node24": "28P/0F/0S"
+  },
+  "controlled_processes": "CLAIM_ACTIVE"
 }
