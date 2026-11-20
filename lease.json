@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "Existing sole-R V006 stopped-traffic offline whole-database recovery reconciliation correction",
   "holder": "r-20261120004357-v006-offline-reconcile",
@@ -12,18 +12,49 @@
   "action_scope": "Privately add only V006 offline recovery reconciliation module, operator CLI, bootstrap admission call and focused synthetic restore/restart tests; bounded Node24 verification; marker child; update existing issue527 V006 receipt 6856509590 for distinct review; checked release. No application ref publication.",
   "idempotency_key": "9924ed02:V006-offline-whole-db-security-reconciliation:v1",
   "claimed_from": "ddc6940e0321534673303676b7b8e703147b95b7",
-  "claimed_at": "2026-11-20T00:43:57Z",
-  "expires_at": "2026-11-20T01:43:57Z",
-  "allowed_operations": [
-    "create private Git objects rooted at exact 9924",
-    "update existing V006 issue527 receipt 6856509590 with exact review request",
-    "update only refs/heads/coord/vector-release-owner by guarded non-force CAS"
+  "claim_commit": "f0aaf2ea552ef2e4880716109be744068270df34",
+  "released_at": "2026-11-20T00:46:54Z",
+  "completed_result": {
+    "status": "PRIVATE_V006_OFFLINE_RECOVERY_RECONCILIATION_REVIEW_PENDING",
+    "public_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
+    "source_commit": "ae7921d4dddb4d53e404396d2b6342ace4942e6a",
+    "source_tree": "34d648948a2a390c4834f6b476c5424ea727bbbf",
+    "source_compare": "five paths: four added, bootstrap modified",
+    "marker_commit": "76566e1987a06d0d71123bd1d01eb9f5056496cd",
+    "marker_tree": "9f635eb902e1a5589efc6467abdea3e048b396d8",
+    "marker_blob": "49981fca66c88004f32042e25b880633d25e52a2",
+    "marker_compare": "one marker path only; inherited 85177 characters plus one bound JSON line",
+    "local_node24": {
+      "version": "24.22.3",
+      "syntax": "3/3 exit0",
+      "focused": "9 pass 0 fail 0 skip exit0",
+      "positive": "actual operator CLI capture/apply/restart-check and separate-process admission",
+      "negative": [
+        "missing admission",
+        "bundle digest mismatch",
+        "stale evidence",
+        "schema mismatch",
+        "interrupted applying receipt"
+      ]
+    },
+    "review_request": {
+      "comment_id": 6856509590,
+      "updated_at": "2026-11-20T00:46:43Z",
+      "requested_disposition": "ACCEPT_V006_OFFLINE_RECOVERY_RECONCILIATION_FOR_INDEPENDENT_ASSESSMENT_OR_INVARIANT_SPECIFIC_BLOCK"
+    },
+    "controlled_processes": "ALL_TERMINAL",
+    "publication": false,
+    "github_actions_dispatch": false,
+    "delivery_credit": 0,
+    "done": "0/146",
+    "customer": "0/6",
+    "production": "NO-GO"
+  },
+  "denied_actions_observed": [
+    "PR621 remained exact 9924",
+    "no unchanged GitHub Actions rerun or manual dispatch",
+    "no CircleCI",
+    "no merge canonical image registry Railway deployment provider customer or production mutation"
   ],
-  "denied_operations": [
-    "PR621 ref publication",
-    "GitHub Actions manual dispatch or rerun",
-    "CircleCI",
-    "merge or canonical mutation",
-    "image registry Railway deployment provider customer or production mutation"
-  ]
+  "next_action": "Existing distinct recovery reviewer verifies exact ae7921 source and 76566 marker on Node22.23.2 and Node24.22.3, returning exact ACCEPT or invariant-specific BLOCK. On ACCEPT sole R may assess publication only under a new scoped lease after resolving the independently pending 9924->05d9->45f9 Docker contract review order."
 }
