@@ -1,58 +1,29 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "Existing sole-R Staffology Docker admission contract fixture correction after exact 9924 GHA failure",
-  "holder": "r-20261113193924-staffology-contract-fixture",
-  "invocation_fence": "r-20261113193924-staffology-contract-fixture",
+  "owner_execution": "Existing sole-R V006 stopped-traffic offline whole-database recovery reconciliation correction",
+  "holder": "r-20261120004357-v006-offline-reconcile",
+  "invocation_fence": "r-20261120004357-v006-offline-reconcile",
   "source": "9924ed0252f5e3edd720cfd92177801a78b13b13",
   "source_tree": "325cf7669258354dc4e75a71356bf118919c0481",
-  "target": "private sole-child source and marker review candidate; PR621 remains exact 9924",
+  "target": "private sole-child V006 source and marker review candidate; PR621 remains exact 9924",
   "target_observed_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-  "action_scope": "Privately correct only docker-admission-contract expected scripts COPY to include already-accepted tenant-cost-calendar-overlay.cjs; bounded local verification; marker child; issue527 review request; checked release. No application ref publication.",
-  "idempotency_key": "9924ed02:staffology-docker-admission-copy-contract-fixture:v1",
-  "claimed_from": "0840d980270769649fa7e149ffdd448fdce7e627",
-  "claim_commit": "d3b3183b069c653f66477020617583e3bc3341cd",
-  "released_at": "2026-11-13T19:43:19.794Z",
-  "completed_result": {
-    "status": "PRIVATE_STAFFOLOGY_DOCKER_ADMISSION_CONTRACT_FIXTURE_REVIEW_PENDING",
-    "public_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-    "source_commit": "05d9cbeef2136ee9737fcde55f6b1fa59f90816d",
-    "source_tree": "fb50866d25837718819e904ae599e23da8fcfc9b",
-    "source_path": "integrations/staffology/independent/docker-admission-contract.test.cjs",
-    "source_blob": "fa4d2a2385288f9f0aef47c59bfdf35137912587",
-    "source_bytes": 13664,
-    "source_sha256": "1274869417bbd0f716253afbe9e79536d4675dc11e369d04042f6c929391cfd3",
-    "source_compare": "one path; 1 addition/1 deletion",
-    "marker_commit": "45f9da1d2cd92625d3bfe7c3b000ee58121b64cd",
-    "marker_tree": "b212af64ee2d15a974052ebcd6ed543d271e82b5",
-    "marker_blob": "d3f9b89acdf75f5a74375a0692a49db33cd2035e",
-    "marker_chars": 85351,
-    "marker_compare": "one marker path; +1 line",
-    "local_node24": {
-      "version": "24.22.1",
-      "changed": "15P/0F/0S exit0",
-      "unchanged_control": "14P/1F/0S exit1"
-    },
-    "node22": "PENDING_DISTINCT_REVIEW",
-    "review_request": {
-      "comment_id": 6857806858,
-      "updated_at": "2026-11-13T19:42:42Z",
-      "requested_disposition": "ACCEPT_BOUNDED_STAFFOLOGY_DOCKER_ADMISSION_CONTRACT_FIXTURE_OR_PRECISE_BLOCK"
-    },
-    "controlled_processes": "ALL_TERMINAL",
-    "publication": false,
-    "github_actions_dispatch": false,
-    "delivery_credit": 0,
-    "done": "0/146",
-    "customer": "0/6",
-    "production": "NO-GO"
-  },
-  "denied_actions_observed": [
-    "PR621 remained exact 9924",
-    "no unchanged GHA rerun",
-    "no CircleCI",
-    "no merge/canonical/image/registry/Railway/deployment/provider/customer/production mutation"
+  "action_scope": "Privately add only V006 offline recovery reconciliation module, operator CLI, bootstrap admission call and focused synthetic restore/restart tests; bounded Node24 verification; marker child; update existing issue527 V006 receipt 6856509590 for distinct review; checked release. No application ref publication.",
+  "idempotency_key": "9924ed02:V006-offline-whole-db-security-reconciliation:v1",
+  "claimed_from": "ddc6940e0321534673303676b7b8e703147b95b7",
+  "claimed_at": "2026-11-20T00:43:57Z",
+  "expires_at": "2026-11-20T01:43:57Z",
+  "allowed_operations": [
+    "create private Git objects rooted at exact 9924",
+    "update existing V006 issue527 receipt 6856509590 with exact review request",
+    "update only refs/heads/coord/vector-release-owner by guarded non-force CAS"
   ],
-  "next_action": "Consume distinct exact source/marker custody and Node22.23.2+Node24.22.1 review. Only on ACCEPT may sole R take a fresh publication lease, recheck exact public 9924, publish marker 45f9 once, and consume ordinary automatic GitHub Actions. Never rerun unchanged 9924."
+  "denied_operations": [
+    "PR621 ref publication",
+    "GitHub Actions manual dispatch or rerun",
+    "CircleCI",
+    "merge or canonical mutation",
+    "image registry Railway deployment provider customer or production mutation"
+  ]
 }
