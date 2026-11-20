@@ -1,64 +1,29 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "RELEASED",
+  "state": "CLAIMED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "Existing sole-R V006 offline recovery packaging correction",
-  "holder": "r-20261120084023-v006-packaging",
-  "invocation_fence": "r-20261120084023-v006-packaging",
+  "owner_execution": "Existing sole-R V006 extracted-runtime packaging correction",
+  "holder": "r-202611200929-v006-extracted-packaging",
+  "invocation_fence": "r-202611200929-v006-extracted-packaging",
   "source": "9924ed0252f5e3edd720cfd92177801a78b13b13",
   "source_tree": "325cf7669258354dc4e75a71356bf118919c0481",
-  "target": "private corrected V006 source and marker review candidate; PR621 remains exact 9924",
+  "target": "private V006 extracted-runtime successor and marker review candidate; PR621 remains exact 9924",
   "target_observed_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-  "action_scope": "Correct only V006 recovery installation integration; private source/marker objects and existing receipt review request. No application ref publication or Actions dispatch.",
-  "idempotency_key": "9924ed02:V006-offline-recovery-packaging-integration:v2",
-  "claimed_from": "145e9f4d58de9c48138f2c435caa58445d1f6375",
-  "claim_commit": "7c3459c38dce63924c905774486c5032cfcc41af",
-  "released_at": "2026-11-20T08:48:13.356Z",
-  "completed_result": {
-    "status": "PRIVATE_V006_PACKAGING_CORRECTION_REVIEW_PENDING",
-    "public_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-    "historical_source": "ae7921d4dddb4d53e404396d2b6342ace4942e6a",
-    "historical_marker": "76566e1987a06d0d71123bd1d01eb9f5056496cd",
-    "corrected_source": "e2076a410a8b7a48f87cca5f59c06f93049e569c",
-    "corrected_tree": "90f37aa8e0b99a6914e3934ed22de13774e1a5fd",
-    "corrected_paths": 6,
-    "marker_commit": "7692ae7bcd6361d99d033de50e779042939d2c98",
-    "marker_tree": "eb5b0ecbc4f49e6b4a447334e54eb3a48d54713d",
-    "marker_blob": "a05d53360c72352b60288e733b7d83f351bdf7a1",
-    "marker_compare": "one marker path, one added line",
-    "unchanged_reconciliation_blob": "7fe0369405919455b8524053dd054f764e913d99",
-    "unchanged_bootstrap_blob": "b77517adfb5e5c672a628d13054ce0fe616a74c6",
-    "node24_22_3": {
-      "syntax": "4/4 exit0",
-      "recovery": "9 pass 0 fail 0 skip exit0",
-      "packaging_layouts": "2 pass 0 fail 0 skip exit0",
-      "positive": "installed capture/apply/separate-process restart-check",
-      "negatives": [
-        "missing admission",
-        "bundle digest mismatch",
-        "stale evidence",
-        "schema mismatch",
-        "interrupted applying receipt"
-      ]
-    },
-    "review_request": {
-      "comment_id": 6856509590,
-      "updated_at": "2026-11-20T08:47:35Z",
-      "requested_disposition": "ACCEPT_V006_OFFLINE_RECOVERY_PACKAGING_CORRECTION_FOR_INDEPENDENT_ASSESSMENT_OR_INVARIANT_SPECIFIC_BLOCK"
-    },
-    "controlled_processes": "ALL_TERMINAL",
-    "publication": false,
-    "github_actions_dispatch": false,
-    "delivery_credit": 0,
-    "done": "0/146",
-    "customer": "0/6",
-    "production": "NO-GO"
-  },
-  "denied_actions_observed": [
-    "PR621 remained exact 9924",
-    "no unchanged GitHub Actions rerun or manual dispatch",
-    "no CircleCI",
-    "no image build registry Railway customer database provider customer or production mutation"
+  "action_scope": "Correct only the independently identified V006 extracted-runtime packaging invariant in composer and slim Docker caller; preserve exact bootstrap/module bytes and refusal controls; verify bounded Node24 tests; create private sole-parent source/marker objects rooted at e2076a410a8b7a48f87cca5f59c06f93049e569c; update existing receipt 6856509590 for the original distinct Node22.23.2/Node24.22.3 object/marker/transaction reviewers; then checked release. No application ref publication, CI invocation, image build, deployment, provider, customer, or production action.",
+  "idempotency_key": "9924ed02:V006-offline-recovery-extracted-runtime-integration:v3",
+  "claimed_from": "e2a67aacb22d5b28cd72c1af1b153ed09cc29c6b",
+  "claimed_at": "2026-11-20T09:29:07.287Z",
+  "expires_at": "2026-11-20T10:14:07.287Z",
+  "allowed_operations": [
+    "create private Git blobs trees commits rooted at e2076a410a8b7a48f87cca5f59c06f93049e569c",
+    "update existing issue527 V006 receipt 6856509590",
+    "release this coordination lease"
   ],
-  "next_action": "Existing distinct V006 recovery/object reviewers execute exact e207 source and 7692 marker on Node22.23.2 and Node24.22.3, including actual canonical and extracted composer entry points, and return exact ACCEPT or invariant-specific BLOCK. Separate 9924->05d9->45f9 Docker-admission decision remains independently pending."
+  "denied_operations": [
+    "PR621 or any application ref update",
+    "GitHub Actions invocation dispatch rerun or workflow edit",
+    "Staffology implementation review chase publication or CI",
+    "merge image build registry Railway deployment provider customer production or database operation"
+  ],
+  "controlled_processes": "LOCAL_VERIFICATION_ACTIVE"
 }
