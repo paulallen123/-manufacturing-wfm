@@ -1,6 +1,6 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
   "owner_execution": "Existing sole-R V006 extracted-runtime packaging correction",
   "holder": "r-202611200929-v006-extracted-packaging",
@@ -9,21 +9,72 @@
   "source_tree": "325cf7669258354dc4e75a71356bf118919c0481",
   "target": "private V006 extracted-runtime successor and marker review candidate; PR621 remains exact 9924",
   "target_observed_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-  "action_scope": "Correct only the independently identified V006 extracted-runtime packaging invariant in composer and slim Docker caller; preserve exact bootstrap/module bytes and refusal controls; verify bounded Node24 tests; create private sole-parent source/marker objects rooted at e2076a410a8b7a48f87cca5f59c06f93049e569c; update existing receipt 6856509590 for the original distinct Node22.23.2/Node24.22.3 object/marker/transaction reviewers; then checked release. No application ref publication, CI invocation, image build, deployment, provider, customer, or production action.",
+  "action_scope": "Correct only the V006 extracted-runtime packaging invariant; private successor source/marker objects and existing receipt review request. No application ref publication, CI invocation, image build, deployment, provider, customer, or production action.",
   "idempotency_key": "9924ed02:V006-offline-recovery-extracted-runtime-integration:v3",
   "claimed_from": "e2a67aacb22d5b28cd72c1af1b153ed09cc29c6b",
-  "claimed_at": "2026-11-20T09:29:07.287Z",
-  "expires_at": "2026-11-20T10:14:07.287Z",
-  "allowed_operations": [
-    "create private Git blobs trees commits rooted at e2076a410a8b7a48f87cca5f59c06f93049e569c",
-    "update existing issue527 V006 receipt 6856509590",
-    "release this coordination lease"
+  "controlled_processes": "LOCAL_VERIFICATION_ACTIVE",
+  "claim_commit": "14225bd691b50bdb5c1a848ed2edb12c06bea6c6",
+  "released_at": "2026-11-20T09:35:29.027Z",
+  "completed_result": {
+    "status": "PRIVATE_V006_EXTRACTED_RUNTIME_SUCCESSOR_REVIEW_PENDING",
+    "public_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
+    "predecessor_source": "e2076a410a8b7a48f87cca5f59c06f93049e569c",
+    "predecessor_marker": "7692ae7bcd6361d99d033de50e779042939d2c98",
+    "successor_source": "e0a64a0c131225c955d60d37a8d580c2cae87b4a",
+    "successor_tree": "004e5a87d14f53e86aa30076b443409b4dd5de89",
+    "changed_paths": 3,
+    "changed_blobs": {
+      "Dockerfile": {
+        "git": "f9f2cfea1879c50ccc4940885cdc2b6b195a3466",
+        "sha256": "c60088120877b897835b712814ad5769d4d020b009fdaa04ada06d028673ddfe",
+        "bytes": 58884
+      },
+      "scripts/compose-vector-local-runtime.mjs": {
+        "git": "604b64a8e9f047442d6b9af8d043f62631953543",
+        "sha256": "c9bd222227f0328898007a7284152f7c737973bb7e66c4783589e7faf00393c2",
+        "bytes": 55687
+      },
+      "security/runtime/offline-recovery-packaging-contract.test.cjs": {
+        "git": "93fe233f1926d07c64dc401831a91776a775f5c9",
+        "sha256": "0d31c0e4c34e3300554f56ccc17c82249810b859068385e2439c8edcca2ee49c",
+        "bytes": 3316
+      }
+    },
+    "marker_commit": "253af921aaa355e9faa2d0fe08cdfa1ed1e1682c",
+    "marker_tree": "d40b0bfb54869d8e8082f5aa8dc4645ed55af607",
+    "marker_blob": "1bc61457b524118df9e2641e8e87a864d7e104d4",
+    "marker_compare": "one marker path, one added line, zero deleted",
+    "unchanged_bootstrap_blob": "b77517adfb5e5c672a628d13054ce0fe616a74c6",
+    "unchanged_reconciliation_blob": "7fe0369405919455b8524053dd054f764e913d99",
+    "unchanged_cli_blob": "30e1347f06ad8807edd60c38e12ab46d9b8c77a7",
+    "unchanged_actual_composer_contract_blob": "b2647771b04de2eddef85fb95399a66ba958bd22",
+    "node24_22_3": {
+      "syntax": "5/5 exit0",
+      "focused_packaging": "3 pass 0 fail 0 skip exit0",
+      "recovery_startup_restart_refusals": "9 pass 0 fail 0 skip exit0",
+      "actual_composer_author_execution": "NOT_RUN_EXACT_ARCHIVE_AND_FULL_SOURCE_CORPUS_ABSENT"
+    },
+    "receipt": {
+      "comment_id": 6856509590,
+      "updated_at": "2026-11-20T09:34:54Z",
+      "body_length": 29413
+    },
+    "review_request": "ACCEPT_V006_OFFLINE_RECOVERY_EXTRACTED_RUNTIME_PACKAGING_FOR_INDEPENDENT_ASSESSMENT_OR_INVARIANT_SPECIFIC_BLOCK",
+    "distinct_review": "PENDING_NODE22_23_2_NODE24_22_3_ACTUAL_BOTH_COMPOSER_PATHS_OBJECT_MARKER_TRANSACTION",
+    "controlled_processes": "ALL_TERMINAL",
+    "publication": false,
+    "github_actions_invoked": false,
+    "delivery_credit": 0,
+    "done": "0/146",
+    "customer": "0/6",
+    "production": "NO-GO"
+  },
+  "denied_actions_observed": [
+    "PR621 remained exact 9924",
+    "Staffology implementation review chase publication and CI remained paused",
+    "no GitHub Actions invocation rerun or manual dispatch",
+    "no CircleCI",
+    "no image build registry Railway deployment customer database provider customer or production mutation"
   ],
-  "denied_operations": [
-    "PR621 or any application ref update",
-    "GitHub Actions invocation dispatch rerun or workflow edit",
-    "Staffology implementation review chase publication or CI",
-    "merge image build registry Railway deployment provider customer production or database operation"
-  ],
-  "controlled_processes": "LOCAL_VERIFICATION_ACTIVE"
+  "next_action": "Original distinct V006 reviewer reconstructs e2076a41 -> e0a64a0c131225c955d60d37a8d580c2cae87b4a -> 253af921aaa355e9faa2d0fe08cdfa1ed1e1682c, runs actual canonical and extracted composer paths plus exact hashes/startup/restart/refusal controls on Node22.23.2 and Node24.22.3, and returns exact ACCEPT or invariant-specific BLOCK."
 }
