@@ -1,31 +1,78 @@
 {
   "schema": "VECTOR_RELEASE_OWNER_LEASE_V1",
-  "state": "CLAIMED",
+  "state": "RELEASED",
   "owner_task_id": "6ae68ba7ee488191870bc5774b593a45",
-  "owner_execution": "Existing sole-R V024 joined reader UX v9 policy Scheduling and V006 installed-runtime correction",
+  "owner_execution": "Existing sole-R V024 joined reader UX v9 policy Scheduling and V006 installed-runtime correction — terminal private object materialization",
   "holder": "r-202611230955-v024-joined-installed",
   "invocation_fence": "r-202611230955-v024-joined-installed",
   "source": "9924ed0252f5e3edd720cfd92177801a78b13b13",
   "source_tree": "325cf7669258354dc4e75a71356bf118919c0481",
   "target": "private joined successor and marker review candidate; PR621 remains exact 9924",
   "target_observed_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
-  "action_scope": "Materialize the first eligible private joined source and source-bound marker from accepted reader ce0, UX v9, selected policy/Scheduling and corrected V006 installed composition; record one internal #527 receipt; release coordination record. No application ref publication, GitHub Actions invocation, image build, deployment, provider, customer, or production action.",
+  "action_scope": "Completed private joined source, source-bound marker and exact #527/V006 receipt handback. No application ref publication, GitHub Actions invocation, image build, deployment, provider, customer, or production action.",
   "idempotency_key": "9924ed0252f5e3edd720cfd92177801a78b13b13:PR621:V024-joined-reader-ux9-policy-scheduling-v006-installed-correction-private:v1",
-  "allowed_operations": [
-    "create private Git blobs/tree/source commit parented by exact PR621 head",
-    "create one source-bound marker-only child",
-    "write one changed internal issue527 receipt requesting existing designated review",
-    "release only this exact coordination claim after all operations terminate"
-  ],
-  "denied_operations": [
-    "move PR621 or any application ref",
-    "invoke or rerun GitHub Actions",
-    "build or publish an image",
-    "Railway deployment or configuration mutation",
-    "provider customer database or production mutation"
-  ],
   "claimed_from": "1b3ab67eccd282d337462078d03d0b18561f8c2f",
-  "claimed_at": "2026-11-23T09:55:47Z",
-  "expires_at": "2026-11-23T10:40:47Z",
-  "controlled_processes": "CLAIM_SETUP_ONLY"
+  "claim_commit": "888219541ec2b6efe586a94a1ef110b3774d472e",
+  "controlled_processes": "ALL_TERMINAL",
+  "released_at": "2026-11-23T10:00:12Z",
+  "completed_result": {
+    "status": "PRIVATE_V024_JOINED_INSTALLED_RUNTIME_SOURCE_REVIEW_PENDING",
+    "public_head": "9924ed0252f5e3edd720cfd92177801a78b13b13",
+    "public_tree": "325cf7669258354dc4e75a71356bf118919c0481",
+    "private_source": "0b2e3c90c18c6d63a1399842b9f9604f98427416",
+    "private_tree": "785d602d811a50fbdbb40c4584d0b17564ddf4a5",
+    "changed_paths": 25,
+    "private_marker": "234c4d0af1fbfe6443f47bbe4b7ee66f17ce83d2",
+    "marker_tree": "dd225020bb120677114094b9c0716c992f4b6e29",
+    "marker_blob": "956354f71a7f93e7bc97591f698c6ef2c1690c1a",
+    "marker_compare": "one marker path, one added line, zero deleted",
+    "shared_blobs": {
+      "Dockerfile": "edc947e1c52f466a71f5d81435eb407fcb172f2e",
+      "composer": "e1c350a76c3042a4b3f0e3610fcbda530cfcd23d",
+      "composer_contract": "87aefa31f6db58bf6c73fd65fedccfed9970c4a0"
+    },
+    "exact_inputs": {
+      "reader_archive_git": "ce0fdd152488cc8c89f1210b56e1c9150c88278e",
+      "ux_index_git": "d0076a27e27c66db1d761fef8c9844b88c0e542d",
+      "ux_shell_git": "c014a0f64aceae87e56dd808203718c2200f3f00",
+      "b_index_git": "023339b8f6fca185d8e1ba48ff39c62b84b9aae4",
+      "prior_v006_source": "e0a64a0c131225c955d60d37a8d580c2cae87b4a",
+      "prior_v006_marker": "253af921aaa355e9faa2d0fe08cdfa1ed1e1682c"
+    },
+    "verification": {
+      "checker_unit": "8/8 exit0",
+      "checker_packet_controls": "4/4",
+      "composer_contract": "Node22.23.2 116/116 exit0; Node24.22.3 116/116 exit0",
+      "joined_selected": "Node22.23.2 124/124 exit0; Node24.22.3 124/124 exit0",
+      "recovery": "Node22.23.2 12/12 exit0; Node24.22.3 12/12 exit0",
+      "canonical_installed": "six/six each runtime",
+      "extracted_final_fragment_installed": "six/six each runtime; reader functional 503; loopback UX v9 HTTP200",
+      "full_image_union": "UNVERIFIED_NO_CONTAINER_ENGINE"
+    },
+    "retained_failures": [
+      "original ce0 standalone missing both reader modules after composer exit0",
+      "pre-presentation extracted runtime lacks policy Scheduling and UX by contract",
+      "first recovery command omitted V006_BOOTSTRAP_PATH and exited1 11/12",
+      "old shell 3a3d7f0a correctly refused for UX v9"
+    ],
+    "receipt": {
+      "comment_id": 6856509590,
+      "updated_at": "2026-11-23T09:59:28Z",
+      "body_length": 34336
+    },
+    "review_request": "REQUEST_EXISTING_DESIGNATED_REVIEW_OF_ACTUAL_SOURCE_AND_MARKER_CHILD_OR_INVARIANT_SPECIFIC_BLOCK",
+    "distinct_review": "PENDING; no substitute reviewer created",
+    "publication": false,
+    "github_actions_invoked": false,
+    "delivery_credit": 0,
+    "production": "WAIT_NO_GO"
+  },
+  "denied_actions_observed": [
+    "PR621 remained exact 9924",
+    "Staffology implementation review chase publication and CI remained paused",
+    "no GitHub Actions invocation rerun manual dispatch or unchanged CI retry",
+    "no CircleCI",
+    "no full image build registry Railway deployment provider customer database or production mutation"
+  ],
+  "next_action": "Existing designated reviewers reconstruct 9924ed02 -> 0b2e3c90 -> 234c4d0a, inspect the 25-path join and three shared reconciliations, independently run both installed runtime paths on Node22.23.2 and Node24.22.3, and return attributable exact ACCEPT or invariant-specific BLOCK. Only after joined acceptance and distinct verdicts may the sole-R owner consider guarded publication and automatically triggered exact-head GitHub Actions."
 }
