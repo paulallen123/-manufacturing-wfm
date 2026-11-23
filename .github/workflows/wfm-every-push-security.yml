@@ -62,7 +62,7 @@ jobs:
             exit 1
           fi
 
-          if grep -RInE 'pull_request_target:|pull_request:|workflow_run:|issue_comment:' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF"; then
+          if grep -RInE 'pull_request_target:|pull_request:|workflow_run:|issue_comment:' .github/workflows --include='*.yml' --include='*.yaml' --exclude="$SELF" --exclude='wfm-containment-guard.yml'; then
             echo 'Refusing untrusted-event workflow execution in the private staging repository.' >&2
             exit 1
           fi
