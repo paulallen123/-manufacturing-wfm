@@ -34,15 +34,17 @@ jobs:
   release_runtime_validation:
     machine:
       image: ubuntu-2404:current
+      docker_layer_caching: true
     resource_class: medium
     steps:
       - checkout
 
       - run:
           name: Build exact runtime candidate
+          no_output_timeout: 10m
           command: |
             set -euo pipefail
-            docker build --pull=false -t "wfm-zero-cost-ci:${CIRCLE_SHA1}" .
+            DOCKER_BUILDKIT=1 docker build --pull=false --progress=plain -t "wfm-zero-cost-ci:${CIRCLE_SHA1}" .
 
       - run:
           name: Verify runtime security boundary
