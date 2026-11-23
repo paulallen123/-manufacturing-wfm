@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: server contract payroll preserves decimal half-penny rounding
+ok 1 - server contract payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 72.327175
+  type: 'test'
+  ...
+# Subtest: server legacy payroll preserves decimal half-penny rounding
+ok 2 - server legacy payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 25.47326
+  type: 'test'
+  ...
+# Subtest: browser contract payroll preserves decimal half-penny rounding
+ok 3 - browser contract payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 141.967952
+  type: 'test'
+  ...
+# Subtest: browser legacy payroll preserves decimal half-penny rounding
+ok 4 - browser legacy payroll preserves decimal half-penny rounding
+  ---
+  duration_ms: 23.493369
+  type: 'test'
+  ...
+# Subtest: independent exact rate/minute matrix covers both real pricing paths
+ok 5 - independent exact rate/minute matrix covers both real pricing paths
+  ---
+  duration_ms: 224.260674
+  type: 'test'
+  ...
+# Subtest: paid and unpaid breaks retain their observed durations and component rounding
+ok 6 - paid and unpaid breaks retain their observed durations and component rounding
+  ---
+  duration_ms: 11.365581
+  type: 'test'
+  ...
+# Subtest: effective rate changes at midnight use separately rounded original decimal rates
+ok 7 - effective rate changes at midnight use separately rounded original decimal rates
+  ---
+  duration_ms: 9.865612
+  type: 'test'
+  ...
+# Subtest: overtime and allowance decimal factors preserve exact gross and allocated premiums
+ok 8 - overtime and allowance decimal factors preserve exact gross and allocated premiums
+  ---
+  duration_ms: 8.977647
+  type: 'test'
+  ...
+# Subtest: additive premium calculation and allowance sums use decimal operands
+ok 9 - additive premium calculation and allowance sums use decimal operands
+  ---
+  duration_ms: 1.070458
+  type: 'test'
+  ...
+# Subtest: server contract keeps original long-decimal allowance operands until pence rounding
+ok 10 - server contract keeps original long-decimal allowance operands until pence rounding
+  ---
+  duration_ms: 5.683135
+  type: 'test'
+  ...
+# Subtest: browser contract keeps original long-decimal allowance operands until pence rounding
+ok 11 - browser contract keeps original long-decimal allowance operands until pence rounding
+  ---
+  duration_ms: 5.817533
+  type: 'test'
+  ...
+# Subtest: exact additive factors stay unrounded when multiplied into gross pay
+ok 12 - exact additive factors stay unrounded when multiplied into gross pay
+  ---
+  duration_ms: 0.219087
+  type: 'test'
+  ...
+# Subtest: equivalent allowance sums retain one continuous rounding component
+ok 13 - equivalent allowance sums retain one continuous rounding component
+  ---
+  duration_ms: 7.721254
+  type: 'test'
+  ...
+# Subtest: oncosts use the rounded gross plus exact hourly allowance at the existing boundary
+ok 14 - oncosts use the rounded gross plus exact hourly allowance at the existing boundary
+  ---
+  duration_ms: 0.182051
+  type: 'test'
+  ...
+# Subtest: invalid and unsafe monetary values fail closed
+ok 15 - invalid and unsafe monetary values fail closed
+  ---
+  duration_ms: 0.503943
+  type: 'test'
+  ...
+# Subtest: patching fails closed on source drift or duplicate application
+ok 16 - patching fails closed on source drift or duplicate application
+  ---
+  duration_ms: 1.160136
+  type: 'test'
+  ...
+# Subtest: server domain module: quoted Unicode and leading-zero IDs survive actual release and readback
+ok 17 - server domain module: quoted Unicode and leading-zero IDs survive actual release and readback
+  ---
+  duration_ms: 129.809334
+  type: 'test'
+  ...
+# Subtest: server domain module: unsafe CSV fields reject before any batch or audit mutation
+ok 18 - server domain module: unsafe CSV fields reject before any batch or audit mutation
+  ---
+  duration_ms: 537.972465
+  type: 'test'
+  ...
+# Subtest: browser domain module: quoted Unicode and leading-zero IDs survive actual release and readback
+ok 19 - browser domain module: quoted Unicode and leading-zero IDs survive actual release and readback
+  ---
+  duration_ms: 23.072147
+  type: 'test'
+  ...
+# Subtest: browser domain module: unsafe CSV fields reject before any batch or audit mutation
+ok 20 - browser domain module: unsafe CSV fields reject before any batch or audit mutation
+  ---
+  duration_ms: 237.617965
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1223.823513

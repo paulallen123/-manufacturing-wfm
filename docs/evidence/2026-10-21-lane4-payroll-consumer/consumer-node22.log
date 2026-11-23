@@ -1,0 +1,23 @@
+TAP version 13
+# Expected UTF-8 SHA256: 02f4c4e56433cc4ea6c87b82b2396cb106f3f9aa04b4b23b42c00112ea0893f4
+# Subtest: CommonJS dispatch and reload preserve all 19 UTF-8 columns
+ok 1 - CommonJS dispatch and reload preserve all 19 UTF-8 columns
+  ---
+  duration_ms: 38.899463
+  type: 'test'
+  ...
+# Subtest: browser-global dispatch and reload preserve all 19 UTF-8 columns
+ok 2 - browser-global dispatch and reload preserve all 19 UTF-8 columns
+  ---
+  duration_ms: 24.782622
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 214.415211
