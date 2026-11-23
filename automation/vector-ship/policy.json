@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "repository": "paulallen123/-manufacturing-wfm",
+  "allowedRequesters": ["paulallen123"],
+  "trustedCheckAppIds": [15368],
+  "maxRepairAttempts": 2,
+  "maxSnapshotAgeSeconds": 300,
+  "routineDocumentationRoots": ["docs/"],
+  "routineTestRoots": ["tests/"],
+  "releaseOwnerTaskId": "6ae68ba7ee488191870bc5774b593a45",
+  "releaseOwnerRef": "refs/heads/coord/vector-release-owner",
+  "prClaimRefPrefix": "refs/heads/coord/vector-ship-pr-"
+}
