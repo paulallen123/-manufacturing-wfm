@@ -10,6 +10,95 @@ const {createHash}=require('node:crypto');
 const {DatabaseSync}=require('node:sqlite');
 const Reporting=require('./vector-reporting-service.cjs');
 
+function freezeV079Fixture(value){
+  if(value&&typeof value==='object'){
+    for(const child of Object.values(value))freezeV079Fixture(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+function v079Definition(value){
+  return {title:'Fictional scalar filter fixture',sourceId:'factory-readiness',filters:[{field:'department',operator:'in',value}]};
+}
+
+test('V079 scalar filter-list admission: rejects retained objects and nested arrays without mutating input',()=>{
+  for(const invalid of [{},{value:'OPEN'},[],['OPEN','CLOSED'],[['OPEN']]])for(const index of [0,49,99]){
+    const values=Array(100).fill('OPEN');values[index]=invalid;
+    const input=v079Definition(values),before=structuredClone(input);freezeV079Fixture(input);
+    assert.throws(()=>Reporting.normaliseDefinition(input,'manager'),/filter.*scalar/i,'retained index '+index);
+    assert.deepEqual(input,before);
+  }
+});
+
+test('V079 scalar filter-list admission: preserves flat scalar and separate string normalization contracts',()=>{
+  const input=v079Definition([' OPEN ',42,0,false,true,null,undefined,'x'.repeat(250)]);
+  const before=structuredClone(input);freezeV079Fixture(input);
+  const result=Reporting.normaliseDefinition(input,'manager');
+  assert.deepEqual(result.filters[0].value,['OPEN','42','0','false','true','','','x'.repeat(240)]);
+  assert.deepEqual(input,before);
+  assert.equal(Reporting.normaliseDefinition(v079Definition(null),'manager').filters[0].value,null);
+  assert.equal(Reporting.normaliseDefinition(v079Definition(undefined),'manager').filters[0].value,null);
+  assert.equal(Reporting.normaliseDefinition(v079Definition('  '+'y'.repeat(510)+'  '),'manager').filters[0].value,'y'.repeat(500));
+});
+
+test('V079 scalar filter-list admission: preserves empty lists and discards values after the first hundred',()=>{
+  assert.deepEqual(Reporting.normaliseDefinition(v079Definition([]),'manager').filters[0].value,[]);
+  const retained=Array.from({length:100},(_,index)=>' value '+index+' ');
+  const input=v079Definition([...retained,{},['DISCARDED']]),before=structuredClone(input);freezeV079Fixture(input);
+  assert.deepEqual(Reporting.normaliseDefinition(input,'manager').filters[0].value,retained.map(value=>value.trim()));
+  assert.deepEqual(input,before);
+});
+
+test('V079 scalar filter-list admission: validate handler refuses nested values without persisted rows',async()=>{
+  const x=setup();
+  try{
+    for(const value of [[{}],[['OPEN','CLOSED']],['OPEN',null,{value:'CLOSED'}]]){
+      const result=await call(x.service,'POST','/api/reporting/validate','manager-a',{definition:v079Definition(value)});
+      assert.equal(result.status,400);assert.equal(result.body.valid,false);assert.match(result.body.error,/filter.*scalar/i);
+    }
+    const db=new DatabaseSync(x.dbPath);
+    try{
+      assert.equal(db.prepare('SELECT count(*) AS count FROM vector_report_definitions').get().count,0);
+      assert.equal(db.prepare('SELECT count(*) AS count FROM vector_report_audit').get().count,0);
+    }finally{db.close();}
+  }finally{x.close();}
+});
+
+test('V079 scalar filter-list admission: save handler refuses nested values without appending report or audit',async()=>{
+  const x=setup();
+  try{
+    const accepted=await call(x.service,'POST','/api/reporting/reports','manager-a',{definition:v079Definition(['OPEN'])});
+    assert.equal(accepted.status,201);
+    for(const value of [[{}],[['OPEN','CLOSED']],['OPEN',null,{value:'CLOSED'}]]){
+      const result=await call(x.service,'POST','/api/reporting/reports','manager-a',{definition:v079Definition(value)});
+      assert.equal(result.status,400);assert.match(result.body.error,/filter.*scalar/i);
+    }
+    const db=new DatabaseSync(x.dbPath);
+    try{
+      assert.equal(db.prepare('SELECT count(*) AS count FROM vector_report_definitions').get().count,1);
+      assert.equal(db.prepare('SELECT count(*) AS count FROM vector_report_audit').get().count,1);
+      assert.equal(db.prepare('SELECT id FROM vector_report_definitions').get().id,accepted.body.report.id);
+    }finally{db.close();}
+  }finally{x.close();}
+});
+
+test('V079 scalar filter-list admission: accepted scalar lists validate save and read back consistently',async()=>{
+  const x=setup();
+  try{
+    const definition=v079Definition([' OPEN ',42,false,null,'x'.repeat(250)]),before=structuredClone(definition);freezeV079Fixture(definition);
+    const validated=await call(x.service,'POST','/api/reporting/validate','manager-a',{definition});
+    assert.equal(validated.status,200);assert.equal(validated.body.valid,true);
+    assert.deepEqual(validated.body.definition.filters[0].value,['OPEN','42','false','','x'.repeat(240)]);
+    const saved=await call(x.service,'POST','/api/reporting/reports','manager-a',{definition});
+    assert.equal(saved.status,201);assert.deepEqual(saved.body.report.definition,validated.body.definition);
+    assert.equal(saved.body.report.definitionDigest,validated.body.definitionDigest);
+    const fetched=await call(x.service,'GET','/api/reporting/reports/'+saved.body.report.id,'manager-a');
+    assert.equal(fetched.status,200);assert.deepEqual(fetched.body.report.definition,saved.body.report.definition);
+    assert.deepEqual(definition,before);
+  }finally{x.close();}
+});
+
 function sha(v){return createHash('sha256').update(String(v)).digest('hex');}
 function setup(options={}){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'vector-reporting-'));
