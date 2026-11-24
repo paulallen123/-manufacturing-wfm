@@ -116,6 +116,15 @@ The customer should normally see one implementation surface:
 
 They should not see connector internals, raw mappings, technical worker jobs or hundreds of scoping questions unless they deliberately expand advanced details.
 
+### Pilot guidance for held workforce imports
+
+To enable the review message on the Data Readiness card for an opted-in setup role,
+set both `WFM_IMPORT_GUIDANCE_PILOT_TENANT` and `WFM_IMPORT_GUIDANCE_PILOT_ROLE`
+to the exact stored tenant ID and role in the service environment. The service reads
+these settings at startup. Remove either setting and restart the service to end the
+pilot. Existing workspace permissions still apply. This setting changes only the
+message for a held import whose prerequisites are complete.
+
 ## Current proof architecture
 
 Current branch: `feature/one-day-enterprise-implementation-v1`

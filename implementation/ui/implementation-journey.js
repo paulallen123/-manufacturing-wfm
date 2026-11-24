@@ -126,7 +126,7 @@ function importAdvice(){
   if(!requirementComplete('test-data-cleanup'))needs.push('Live import remains locked until test data is proven clean.');
   const liveImport=requirement('live-data-import');
   if(!needs.length&&!liveImport?.satisfied){
-    needs.push(liveImport?.status==='REVALIDATION_REQUIRED'
+    needs.push(S.status?.showHeldImportGuidance===true && liveImport?.status==='REVALIDATION_REQUIRED'
       ? 'Review the live import status before proceeding.'
       : 'Source data is ready. The live import can now be reconciled.');
   }
