@@ -209,7 +209,10 @@ function cleanFilter(filter,allowed){
   if(!allowed.has(field)) throw new Error('Filter field is not allowed for this source.');
   if(!OPERATORS.has(operator)) throw new Error('Unsupported filter operator.');
   let value=filter.value;
-  if(Array.isArray(value)) value=value.slice(0,100).map(v=>compact(v,240));
+  if(Array.isArray(value)) value=value.slice(0,100).map(v=>{
+    if(v!=null&&typeof v==='object') throw new Error('Filter list values must be scalar.');
+    return compact(v,240);
+  });
   else if(value!=null&&typeof value==='object') throw new Error('Filter values must be scalar or list values.');
   else if(typeof value==='string') value=compact(value,500);
   return {field,operator,value:value??null};
