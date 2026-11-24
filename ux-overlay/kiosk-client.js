@@ -28,5 +28,14 @@ async function sync(){
   $('result').className='result '+(remaining.length?'queued':'synced');$('result').textContent=remaining.length?(b.results.find(x=>x.status==='held')?.error||'Some events remain queued for review.'):'Synced to the server. Attendance still follows the normal manager/payroll review process.';
  }catch(e){$('result').className='result queued';$('result').textContent='Still stored safely on this tablet. Sync will retry: '+e.message;}await render();
 }
-async function init(){db=await openDb();await render();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/kiosk-sw.js').catch(()=>{});$('saveDevice').onclick=async()=>{const id=$('deviceId').value.trim(),secret=$('deviceSecret').value.trim();if(!id||secret.length<32){$('result').textContent='Enter the complete device ID and secret.';return;}await write('config',{id,secret,name:id,nextSequence:1,clockOffsetMs:0});$('deviceSecret').value='';await render();};$('forget').onclick=async()=>{await write('config',null);await render();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>enqueue(b.dataset.kind).catch(e=>{ $('result').className='result error';$('result').textContent=e.message;}));$('sync').onclick=sync;window.addEventListener('online',sync);window.addEventListener('offline',render);setInterval(()=>{if(navigator.onLine)sync()},30000);}
+async function init(){db=await openDb();await render();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/kiosk-sw.js').catch(()=>{});const registrationResult = $('result').cloneNode(false);
+ registrationResult.id = 'registrationResult';
+ $('setup').append(registrationResult);
+ $('saveDevice').onclick=async()=>{
+ const feedback = $('setup').hidden ? $('result') : registrationResult;
+ const id=$('deviceId').value.trim(),secret=$('deviceSecret').value.trim();if(!id||secret.length<32){feedback.className='result error';feedback.textContent='Enter the complete device ID and secret.';return;}
+ try{await changeLocal((c,q)=>{if(q.length)throw Error('Pending clock events must be reviewed before registering this tablet.');return{config:{id,secret,name:id,nextSequence:1,clockOffsetMs:0}};});}
+ catch(e){feedback.className='result error';feedback.textContent=e.message;return;}
+ registrationResult.className='result';registrationResult.textContent='';$('deviceSecret').value='';await render();
+};$('forget').onclick=async()=>{await write('config',null);await render();};document.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>enqueue(b.dataset.kind).catch(e=>{ $('result').className='result error';$('result').textContent=e.message;}));$('sync').onclick=sync;window.addEventListener('online',sync);window.addEventListener('offline',render);setInterval(()=>{if(navigator.onLine)sync()},30000);}
 init().catch(e=>{document.body.innerHTML='<main class="kiosk"><section class="card"><h1>Clock unavailable</h1><p>'+String(e.message).replace(/[<>&]/g,'')+'</p></section></main>';});
