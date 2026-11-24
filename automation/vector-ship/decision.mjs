@@ -84,7 +84,8 @@ function validateSnapshot(s) {
   requireValue(object(s.event) && s.event.kind === 'pull_request' && text(s.event.action)
     && text(s.event.id) && text(s.event.actor), 'Malformed event');
   requireValue(object(s.state) && Array.isArray(s.state.processedKeys) && s.state.processedKeys.every(digest)
-    && Array.isArray(s.state.processedFeedback) && s.state.processedFeedback.every(f => object(f) && text(f.id) && sha(f.headSha) && sha(f.baseSha))
+    && Array.isArray(s.state.processedFeedback) && s.state.processedFeedback.every(f => object(f)
+      && ['github-review', 'github-check'].includes(f.source) && text(f.id) && sha(f.headSha) && sha(f.baseSha) && digest(f.fingerprint))
     && Array.isArray(s.state.attempts), 'Malformed durable state');
   requireValue(s.state.attempts.every(a => object(a) && sha(a.headSha) && sha(a.baseSha)
     && text(a.feedbackId) && digest(a.fingerprint) && ['failed', 'succeeded'].includes(a.outcome)), 'Malformed attempt history');
@@ -120,7 +121,7 @@ function validateSnapshot(s) {
 
 export function eventKey(s) {
   return createHash('sha256').update(JSON.stringify([s.repository, s.pr.number, s.pr.headSha, s.pr.baseSha,
-    s.event.action, s.event.id, s.feedback?.id ?? null, s.feedback?.fingerprint ?? null])).digest('hex');
+    s.event.action, s.event.id, s.feedback?.source ?? null, s.feedback?.id ?? null, s.feedback?.fingerprint ?? null])).digest('hex');
 }
 
 function readyReasons(s) {
@@ -195,8 +196,27 @@ export function evaluate(snapshot, policy, { now = Date.now() } = {}) {
     if (files.some(f => f.classification === 'invalid')) blocks.push('Malformed file path or file operation');
     if (new Set(p.files.entries.map(f => f.path)).size !== p.files.entries.length) blocks.push('Duplicate changed-file paths');
     if (blocks.length) return result('BLOCKED', blocks, 'Read-only assessment or refresh authorised GitHub state; do not write', { emitReceipt: false });
+    if (s.feedback) {
+      if (s.feedback.source === 'github-review' && s.feedback.authorLogin !== s.event.actor) {
+        return result('BLOCKED', ['Feedback author does not match the authorised event actor'], 'Read-only assessment; do not write', { emitReceipt: false });
+      }
+      if (s.feedback.source === 'github-check') {
+        const matches = s.checks.runs.filter(c => c.id === s.feedback.checkRunId);
+        if (!policy.trustedCheckAppIds.includes(s.feedback.appId) || matches.length !== 1
+          || matches[0].appId !== s.feedback.appId || matches[0].name !== s.feedback.checkName
+          || matches[0].headSha !== s.feedback.headSha || matches[0].headSha !== p.headSha) {
+          return result('BLOCKED', ['Check feedback is not bound to an exact-head check from a trusted app'],
+            'Read-only assessment; fetch the actual check and do not write', { emitReceipt: false });
+        }
+        if (s.feedback.actionable && (matches[0].status !== 'completed' || matches[0].conclusion === 'success')) {
+          return result('BLOCKED', ['Actionable check feedback requires a completed non-successful check'],
+            'Read-only assessment; fetch the actual check and do not write', { emitReceipt: false });
+        }
+      }
+    }
     if (s.state.processedKeys.includes(key)) return result('NOOP', ['Event already processed'], 'Do not repeat work');
-    if (s.feedback?.actionable && s.state.processedFeedback.some(f => f.id === s.feedback.id && f.headSha === p.headSha && f.baseSha === p.baseSha)) {
+    if (s.feedback?.actionable && s.state.processedFeedback.some(f => f.source === s.feedback.source && f.id === s.feedback.id
+      && f.fingerprint === s.feedback.fingerprint && f.headSha === p.headSha && f.baseSha === p.baseSha)) {
       return result('NOOP', ['Feedback already processed on this head and base'], 'Do not repeat work');
     }
     const owner = s.owner;
@@ -208,19 +228,6 @@ export function evaluate(snapshot, policy, { now = Date.now() } = {}) {
     const ownerReasons = files.filter(f => f.classification === 'owner').map(f => f.reason);
     if (ownerReasons.length) return result('OWNER_REVIEW_REQUIRED', [...ownerReasons, ...readyReasons(s)], 'Request designated owner assessment; no routine repair');
     if (s.feedback?.actionable) {
-      if (s.feedback.source === 'github-review' && s.feedback.authorLogin !== s.event.actor) {
-        return result('BLOCKED', ['Feedback author does not match the authorised event actor'], 'Read-only assessment; do not write', { emitReceipt: false });
-      }
-      if (s.feedback.source === 'github-check') {
-        const matches = s.checks.runs.filter(c => c.id === s.feedback.checkRunId);
-        if (!policy.trustedCheckAppIds.includes(s.feedback.appId) || matches.length !== 1
-          || matches[0].appId !== s.feedback.appId || matches[0].name !== s.feedback.checkName
-          || matches[0].headSha !== p.headSha || matches[0].status !== 'completed'
-          || matches[0].conclusion === 'success') {
-          return result('BLOCKED', ['Check feedback is not bound to an exact-head failed check from a trusted app'],
-            'Read-only assessment; fetch the actual check and do not write', { emitReceipt: false });
-        }
-      }
       if (s.feedback.headSha !== p.headSha) return result('BLOCKED', ['Feedback targets an older head'], 'Revalidate the finding on current code');
       const attempts = s.state.attempts.filter(a => a.headSha === p.headSha);
       if (attempts.length >= policy.maxRepairAttempts) return result('BLOCKED', ['Repair attempt budget exhausted'], 'Hand off the remaining defect with evidence');

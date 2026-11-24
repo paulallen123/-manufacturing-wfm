@@ -32,6 +32,12 @@ function feedback(s = fixture()) {
   s.feedback = { source: 'github-review', id: 'review-1', authorLogin: 'paulallen123', headSha: HEAD, fingerprint: HASH, actionable: true };
   return s;
 }
+function checkFeedback(s = fixture()) {
+  s.checks.runs[0].conclusion = 'failure';
+  s.feedback = { source: 'github-check', id: 'check-1', appId: 15368, checkRunId: 1, checkName: 'required-tests',
+    headSha: HEAD, fingerprint: HASH, actionable: true };
+  return s;
+}
 function decide(s, p = policy) {
   const result = evaluate(s, p, { now: NOW });
   assert.equal(result.release_authorized, false);
@@ -107,15 +113,56 @@ test('an authorised event cannot launder another author feedback', () => {
   const s = feedback(); s.feedback.authorLogin = 'untrusted-stranger';
   const r = decide(s); assert.equal(r.status, 'BLOCKED'); assert.equal(r.emitReceipt, false);
 });
+for (const [context, mutate] of [
+  ['routine scope', () => {}],
+  ['absent owner', s => { s.owner = null; }],
+  ['different owner', s => { s.owner.workerId = 'another-worker'; }],
+  ['privileged path', s => { s.pr.files.entries[0].path = 'docs/security.md'; }]
+]) {
+  for (const actionable of [true, false]) {
+    test(`untrusted review cannot emit a receipt: ${context}, actionable=${actionable}`, () => {
+      const s = feedback(); s.feedback.authorLogin = 'untrusted-stranger'; s.feedback.actionable = actionable; mutate(s);
+      const r = decide(s); assert.equal(r.status, 'BLOCKED'); assert.equal(r.emitReceipt, false);
+    });
+    test(`untrusted check cannot emit a receipt: ${context}, actionable=${actionable}`, () => {
+      const s = checkFeedback(); s.feedback.appId = 99; s.feedback.actionable = actionable; mutate(s);
+      const r = decide(s); assert.equal(r.status, 'BLOCKED'); assert.equal(r.emitReceipt, false);
+    });
+  }
+}
+test('authorised non-actionable feedback preserves clean owner handoff', () => {
+  const s = feedback(); s.feedback.actionable = false;
+  const r = decide(s); assert.equal(r.status, 'READY_FOR_RELEASE_OWNER'); assert.equal(r.emitReceipt, true);
+});
+test('non-actionable successful trusted check preserves clean owner handoff', () => {
+  const s = checkFeedback(); s.feedback.actionable = false; s.checks.runs[0].conclusion = 'success';
+  const r = decide(s); assert.equal(r.status, 'READY_FOR_RELEASE_OWNER'); assert.equal(r.emitReceipt, true);
+});
+test('non-actionable check feedback still requires an exact source binding', () => {
+  const s = checkFeedback(); s.feedback.actionable = false; s.checks.runs[0].conclusion = 'success';
+  for (const mutate of [x => { x.feedback.checkRunId = 99; }, x => { x.feedback.checkName = 'invented'; },
+    x => { x.feedback.headSha = OTHER; }, x => { x.checks.runs[0].headSha = OTHER; },
+    x => { x.checks.runs.push({ ...x.checks.runs[0] }); }]) {
+    const changed = structuredClone(s); mutate(changed);
+    const r = decide(changed); assert.equal(r.status, 'BLOCKED'); assert.equal(r.emitReceipt, false);
+  }
+});
+test('authentic own receipts remain non-emitting before feedback and draft gates', () => {
+  for (const make of [feedback, checkFeedback]) {
+    const s = make(); s.feedback.authorLogin = 'untrusted-stranger'; s.feedback.appId = 99;
+    s.event.receiptMarker = RECEIPT_MARKER; s.event.receiptWorker = s.worker.id;
+    s.pr.draft = true; s.pr.expectedHeadSha = OTHER; s.owner = null;
+    const r = decide(s); assert.equal(r.status, 'NOOP'); assert.equal(r.emitReceipt, false);
+  }
+});
 test('trusted failed check feedback is bound to actual app, run and commit', () => {
-  const s = fixture(); s.checks.runs[0].conclusion = 'failure';
-  s.feedback = { source: 'github-check', id: 'check-1', appId: 15368, checkRunId: 1, checkName: 'required-tests',
-    headSha: HEAD, fingerprint: HASH, actionable: true };
+  const s = checkFeedback();
   assert.equal(decide(s).status, 'REPAIR_ELIGIBLE');
   for (const mutate of [x => { x.feedback.appId = 99; }, x => { x.feedback.checkRunId = 99; },
-    x => { x.feedback.checkName = 'invented'; }, x => { x.checks.runs[0].headSha = OTHER; },
+    x => { x.feedback.checkName = 'invented'; }, x => { x.feedback.headSha = OTHER; }, x => { x.checks.runs[0].headSha = OTHER; },
     x => { x.checks.runs[0].conclusion = 'success'; }, x => { x.event.actor = 'github-actions[bot]'; }]) {
-    const altered = structuredClone(s); mutate(altered); assert.equal(decide(altered).status, 'BLOCKED');
+    const altered = structuredClone(s); mutate(altered);
+    const r = decide(altered); assert.equal(r.status, 'BLOCKED'); assert.equal(r.emitReceipt, false);
   }
 });
 test('exact event replay is a no-op', () => {
@@ -128,8 +175,42 @@ test('new feedback on the same commit is not lost', () => {
   assert.notEqual(eventKey(s), previousKey); assert.equal(decide(s).status, 'REPAIR_ELIGIBLE');
 });
 test('already handled feedback is suppressed despite a new delivery', () => {
-  const s = feedback(); s.state.processedFeedback.push({ id: s.feedback.id, headSha: HEAD, baseSha: BASE });
+  const s = feedback(); s.state.processedFeedback.push({ source: s.feedback.source, id: s.feedback.id,
+    headSha: HEAD, baseSha: BASE, fingerprint: s.feedback.fingerprint });
   s.event.id = 'redelivery'; assert.equal(decide(s).status, 'NOOP');
+});
+test('revised same-ID feedback is not suppressed by its processed original', () => {
+  const s = feedback(); s.state.processedKeys.push(eventKey(s));
+  s.state.processedFeedback.push({ source: s.feedback.source, id: s.feedback.id,
+    headSha: HEAD, baseSha: BASE, fingerprint: s.feedback.fingerprint });
+  s.feedback.fingerprint = 'e'.repeat(64);
+  assert.equal(decide(s).status, 'REPAIR_ELIGIBLE');
+});
+test('processed review IDs cannot suppress check feedback in another source namespace', () => {
+  const s = checkFeedback(); s.state.processedFeedback.push({ source: 'github-review', id: s.feedback.id,
+    headSha: HEAD, baseSha: BASE, fingerprint: s.feedback.fingerprint });
+  assert.equal(decide(s).status, 'REPAIR_ELIGIBLE');
+});
+test('event replay keys distinguish feedback source namespaces', () => {
+  const s = feedback(); const previousKey = eventKey(s); s.state.processedKeys.push(previousKey);
+  const sameId = s.feedback.id; checkFeedback(s); s.feedback.id = sameId;
+  assert.notEqual(eventKey(s), previousKey); assert.equal(decide(s).status, 'REPAIR_ELIGIBLE');
+});
+test('revised feedback still shares the existing head repair budget', () => {
+  const s = feedback(); s.state.processedFeedback.push({ source: s.feedback.source, id: s.feedback.id,
+    headSha: HEAD, baseSha: BASE, fingerprint: s.feedback.fingerprint });
+  s.feedback.fingerprint = 'e'.repeat(64);
+  s.state.attempts = [1, 2].map(i => ({ headSha: HEAD, baseSha: BASE, feedbackId: `old-${i}`,
+    fingerprint: String(i).repeat(64), outcome: 'succeeded' }));
+  const r = decide(s); assert.equal(r.status, 'BLOCKED'); assert.ok(r.reasons.includes('Repair attempt budget exhausted'));
+});
+for (const [name, change] of [
+  ['missing fingerprint', { fingerprint: undefined }], ['invalid fingerprint', { fingerprint: 'unknown' }],
+  ['missing source', { source: undefined }], ['unknown source', { source: 'github-issue' }]
+]) test(`unreconciled processed feedback fails closed: ${name}`, () => {
+  const s = feedback(); s.state.processedFeedback.push({ source: s.feedback.source, id: s.feedback.id,
+    headSha: HEAD, baseSha: BASE, fingerprint: s.feedback.fingerprint, ...change });
+  const r = decide(s); assert.equal(r.status, 'INVALID_INPUT'); assert.equal(r.emitReceipt, false);
 });
 test('idempotency includes base, action and feedback identity', () => {
   const s = feedback(); const key = eventKey(s);
