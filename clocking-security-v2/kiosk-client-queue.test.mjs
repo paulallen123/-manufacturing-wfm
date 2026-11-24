@@ -38,6 +38,8 @@ function fixture(){
 async function harness(state=fixture()){
  const nodes=new Map(),buttons=['in','out','break_start','break_end'].map(kind=>({dataset:{kind}})),calls=[],pending=[];
  const get=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',className:'',hidden:false});return nodes.get(id);};get('employee').value='fixture-worker';
+ get('result').cloneNode=()=>({textContent:'',className:'result'});
+ get('setup').append=node=>{nodes.set(node.id,node);node.parentElement=get('setup');};
  const navigator={onLine:false},context=vm.createContext({console,Promise,Set,Map,JSON,Date,Error,Object,Number,queueMicrotask,navigator,location:{protocol:'http:'},crypto:{randomUUID:state.nextId},indexedDB:{open(){const req={};queueMicrotask(()=>{req.result=state.database;req.onsuccess?.();});return req;}},document:{getElementById:get,querySelectorAll:()=>buttons,body:{}},window:{addEventListener(){}},setInterval:()=>0,fetch:async(url,options)=>{calls.push({url,options,payload:JSON.parse(options.body)});const d=deferred();pending.push(d);return d.promise;}});
  vm.runInContext(source,context,{filename:'kiosk-client.js'});for(let i=0;i<4;i++)await turn();assert.equal(typeof get('sync').onclick,'function');
  return{state,get,calls,pending,navigator,tap:kind=>buttons.find(b=>b.dataset.kind===(kind||'in')).onclick(),sync:()=>get('sync').onclick(),async waitCalls(n){for(let i=0;i<20&&calls.length<n;i++)await turn();assert.equal(calls.length,n);},events:()=>clone(state.rows.get('queue'))};
@@ -59,7 +61,8 @@ test('failed acknowledgement transaction keeps the event for an exact retry',asy
 test('unknown response identities never remove legitimate local events',async()=>{const h=await harness();await h.tap();const before=h.events(),p=h.sync();await h.waitCalls(1);h.pending[0].resolve(response([{eventId:'not-submitted',status:'accepted'}]));await p;assert.deepEqual(h.events(),before);});
 function v072Registration(h,id='replacement-device',secret='  synthetic-replacement-secret-not-live-0000  '){h.get('deviceId').value=id;h.get('deviceSecret').value=secret;}
 function v072View(h){return{setup:h.get('setup').hidden,clock:h.get('clock').hidden,secret:h.get('deviceSecret').value};}
-function v072Refusal(h){assert.equal(h.get('result').className,'result error');assert.match(h.get('result').textContent,/pending.*review/i);assert.equal(h.calls.length,0);}
+function v072Feedback(h){return h.get(h.get('setup').hidden?'result':'registrationResult');}
+function v072Refusal(h){assert.equal(v072Feedback(h).className,'result error');assert.match(v072Feedback(h).textContent,/pending.*review/i);assert.equal(h.calls.length,0);}
 test('V072 pending-queue registration: replacement preserves pending bytes, identity, sequence and entered secret',async()=>{
  const h=await harness();await h.tap();v072Registration(h);h.navigator.onLine=true;
  const before=clone([...h.state.rows]),view=v072View(h),queueBytes=JSON.stringify(h.events());
@@ -102,7 +105,7 @@ test('V072 pending-queue registration: an earlier enqueue transaction prevents a
 test('V072 pending-queue registration: an aborted registration write preserves state and reports the error',async()=>{
  const h=await harness();h.state.rows.get('config').nextSequence=19;v072Registration(h);const before=clone([...h.state.rows]),view=v072View(h);h.state.failKey='config';
  await assert.doesNotReject(h.get('saveDevice').onclick());
- assert.deepEqual([...h.state.rows],before);assert.deepEqual(v072View(h),view);assert.equal(h.get('result').className,'result error');assert.match(h.get('result').textContent,/Synthetic IndexedDB write failure/);assert.equal(h.calls.length,0);
+ assert.deepEqual([...h.state.rows],before);assert.deepEqual(v072View(h),view);assert.equal(v072Feedback(h).className,'result error');assert.match(v072Feedback(h).textContent,/Synthetic IndexedDB write failure/);assert.equal(h.calls.length,0);
 });
 test('V072 pending-queue registration: refusal survives a fresh VM without a replacement sync',async()=>{
  const state=fixture(),first=await harness(state);await first.tap();v072Registration(first);first.navigator.onLine=true;const before=clone([...state.rows]);await first.get('saveDevice').onclick();
@@ -110,6 +113,16 @@ test('V072 pending-queue registration: refusal survives a fresh VM without a rep
  const fresh=await harness(state);assert.deepEqual([...state.rows],before);assert.equal(fresh.get('setup').hidden,true);assert.equal(fresh.get('clock').hidden,false);assert.equal(fresh.get('queued').textContent,1);
  v072Registration(fresh);fresh.navigator.onLine=true;const view=v072View(fresh);await fresh.get('saveDevice').onclick();
  assert.deepEqual([...state.rows],before);assert.deepEqual(v072View(fresh),view);v072Refusal(fresh);
+});
+test('registration refusal is displayed inside the visible setup panel after forgetting a kiosk',async()=>{
+ const h=await harness();await h.tap();await h.get('forget').onclick();
+ v072Registration(h);await h.get('saveDevice').onclick();
+ const feedback=h.get('registrationResult');
+ assert.equal(feedback.parentElement,h.get('setup'));
+ assert.equal(feedback.parentElement.hidden,false);
+ assert.match(feedback.textContent,/pending.*review/i);
+ assert.equal(h.get('clock').hidden,true);
+ assert.equal(h.events().length,1);
 });
 test('existing-output composition replaces the archived client with the reviewed overlay',t=>{
  const root=path.resolve(__dirname,'..'),out=fs.mkdtempSync(path.join(os.tmpdir(),'v036-existing-composition-'));
