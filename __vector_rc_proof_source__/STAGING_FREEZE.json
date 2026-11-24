@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 3,
+  "channel": "isolated-customer-proof-staging",
+  "frozenRelease": "0.6.76-hosted-staging-rc1",
+  "parentRelease": "0.6.76-provider-payroll-handoff-status-reconciliation-candidate",
+  "parentArchiveSha256": "9485df8eeeb59f36b160b8f0515100adbd8b854d8a86dca60708c46d51c40581",
+  "hostedFullSourceContentSha256": "0eff86d3034c6493aba130ec052bce8ee98e2205c37baae7c89ac6bd01ea84d9",
+  "runtimeSourceContentSha256": "456e8f6961525e0dd9d4449db94772c0902a4e6743b312cf09070ce611014781",
+  "runtimeManifestSha256": "8d8bc31622e7f1c9710a479a9c0f5208297fa2f3b93e8e15e625114c850b28ce",
+  "runtimePackageManifestSha256": "b0c435abc6bf1ea6fa38d8fbb8f8eabdfac846dba3380c4b0cd4eab52099213a",
+  "runtimeSha256": "3ca08429d1b8dc9e9f604f0414865d41ff871c07bdf76f0a1c84541ab7f27f4d",
+  "regression": "1878/1878 resolved passing",
+  "hostedAcceptance": "PASS",
+  "promotionPolicy": "Do not replace this staging release merely because development advances. Promote a later candidate only after equivalent completed regression, hosted security, customer journey and provenance gates pass.",
+  "productionApproved": false,
+  "pilotReady": false
+}

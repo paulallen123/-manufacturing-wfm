@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Read-only exact-source input to the EXISTING independent hosted CI fallback; not a second product or release candidate",
+  "candidatePullRequest": 220,
+  "candidateBranch": "repair/vector-integrated-engine-proof-20260920",
+  "candidateCommit": "c056f34494986c9bf41736f61c98f59e74a84a44",
+  "candidateTree": "84b5eaf0633c330a37a48a143917d8c3b1ee6c07",
+  "snapshotDirectory": "__vector_rc_proof_source__",
+  "originalCiCommit": "7bd644bb8ae80ca2e9d395f754e5db7b4148ca33",
+  "originalCiRootDirectory": "/",
+  "originalCiDockerfile": "Dockerfile.hosted-ci-fallback",
+  "originalCiWatchPatterns": ["Dockerfile.hosted-ci-fallback", "scripts/**", "platform/**"],
+  "ciService": "845b5dcc-9c95-42cf-95fb-5719e96511f2",
+  "customerDataAccess": false,
+  "startsCustomerApplication": false,
+  "liveDeploymentModified": false
+}

@@ -1,0 +1,93 @@
+name: Customer Proof Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'DEPLOYMENT_MANIFEST.json'
+      - 'STAGING_FREEZE.json'
+      - 'artifact/**'
+      - 'resilience/**'
+      - 'scripts/validate-deployment.mjs'
+      - 'scripts/validate-resilience-scenarios.mjs'
+      - '.github/workflows/customer-proof-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-sealed-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout sealed proof repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up approved Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+
+      - name: Validate deployment provenance and security invariants
+        run: node scripts/validate-deployment.mjs
+
+      - name: Validate resilience scenarios
+        run: node scripts/validate-resilience-scenarios.mjs
+
+      - name: Verify sealed archive is readable
+        run: |
+          set -euo pipefail
+          tar -tzf artifact/wfm-0.6.76-hosted-staging-rc1.tar.gz >/dev/null
+
+      - name: Build exact customer-proof container
+        run: docker build --pull=false -t manufacturing-wfm:customer-proof .
+
+      - name: Start isolated proof container
+        run: |
+          set -euo pipefail
+          CI_PASSWORD="CI-$(openssl rand -hex 16)"
+          docker run -d --name wfm-proof -p 3000:3000 \
+            -e PORT=3000 \
+            -e NODE_ENV=staging \
+            -e NODE_OPTIONS=--experimental-sqlite \
+            -e WFM_HOSTED_STAGING=true \
+            -e WFM_PUBLIC_ORIGIN=https://wfm-ci.invalid \
+            -e WFM_DB=/tmp/wfm-proof.sqlite \
+            -e WFM_STAGING_PASSWORD="$CI_PASSWORD" \
+            manufacturing-wfm:customer-proof
+
+      - name: Prove runtime identity and reduced attack surface
+        run: |
+          set -euo pipefail
+          test "$(docker exec wfm-proof id -u)" != "0"
+          docker exec wfm-proof sh -lc '! command -v npm && ! command -v npx && ! command -v corepack && ! command -v yarn && ! command -v pnpm'
+
+      - name: Prove hosted HTTP boundary
+        run: |
+          set -euo pipefail
+          proxy_curl() {
+            curl -fsS -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' "$@"
+          }
+          for i in $(seq 1 30); do
+            if proxy_curl http://127.0.0.1:3000/api/health >/tmp/health.json; then break; fi
+            sleep 1
+          done
+          proxy_curl http://127.0.0.1:3000/api/health
+          proxy_curl http://127.0.0.1:3000/ >/dev/null
+          proxy_curl http://127.0.0.1:3000/kiosk.html >/dev/null
+          status=$(curl -sS -o /tmp/bootstrap-unauth.json -w '%{http_code}' \
+            -H 'Host: wfm-ci.invalid' -H 'X-Forwarded-Proto: https' \
+            http://127.0.0.1:3000/api/bootstrap)
+          test "$status" = "401"
+          echo "Unauthenticated /api/bootstrap correctly returned HTTP 401"
+
+      - name: Capture diagnostics on failure
+        if: failure()
+        run: docker logs wfm-proof || true
+
+      - name: Stop proof container
+        if: always()
+        run: docker rm -f wfm-proof || true

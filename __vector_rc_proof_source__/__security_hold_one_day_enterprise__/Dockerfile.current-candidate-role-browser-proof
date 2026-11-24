@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/playwright:v1.63.0-noble
+WORKDIR /proof
+COPY scripts/current-candidate-role-browser-proof.mjs ./current-candidate-role-browser-proof.mjs
+COPY scripts/current-candidate-role-browser-proof-server.mjs ./current-candidate-role-browser-proof-server.mjs
+RUN npm init -y >/dev/null 2>&1 \
+ && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install playwright@1.63.0 --no-audit --no-fund --save-exact >/dev/null 2>&1
+CMD ["node","current-candidate-role-browser-proof-server.mjs"]

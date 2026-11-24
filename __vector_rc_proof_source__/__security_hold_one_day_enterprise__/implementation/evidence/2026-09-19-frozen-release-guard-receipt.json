@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-19",
+  "programme": "24h-sell-readiness",
+  "control": "frozen-customer-proof-immutability",
+  "status": "PASS",
+  "reproducedDefect": {
+    "workflowRun": 35426380528,
+    "job": 105852956634,
+    "sourceCommit": "d106e92267fc32413bb1ba4ab833545c2a7f315b",
+    "remoteMutationOccurred": false,
+    "risk": "sanitizer attempted broad tracked-file SHA rewrites that could have crossed the frozen 0.6.76 proof boundary if granted broader write authority"
+  },
+  "repair": {
+    "isolatedBranch": "fix/sanitizer-frozen-release-guard-20260919-r11",
+    "isolatedCommit": "0f045edff3558c367fd33307d5ced3eb84c680f5",
+    "pullRequest": 144,
+    "mergedCommit": "2dd11cf35fe29d5f86f17a470960105bf051f510",
+    "permissions": "contents: read",
+    "repositoryMutation": false,
+    "customerProofMutation": false,
+    "productionMutation": false
+  },
+  "proof": {
+    "isolatedRepairWorkflowRun": 35426766043,
+    "isolatedRepairConclusion": "success",
+    "postMergeTransformWorkflowRun": 35426801527,
+    "postMergeTransformConclusion": "success",
+    "postMergeVectorUiGuardRun": 35426803265,
+    "postMergeVectorUiGuardConclusion": "success"
+  },
+  "claimBoundary": "This receipt proves the sanitizer mutation path is removed and the frozen customer-proof source artifact remains outside the repair mutation boundary. It does not claim live-provider acceptance or real customer zero-human provisioning."
+}

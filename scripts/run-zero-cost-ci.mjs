@@ -4,13 +4,20 @@ import { spawnSync } from 'node:child_process';
 const checks = [
   'scripts/validate-deployment.mjs',
   'scripts/validate-resilience-scenarios.mjs',
+  'scripts/validate-no-blocker-routing.mjs',
   'scripts/validate-autonomous-recovery-proof.mjs',
   'scripts/validate-autonomous-recovery-matrix.mjs',
   'scripts/validate-support-incident-recovery-proof.mjs',
   'scripts/validate-provider-recovery-authority-proof.mjs',
   'scripts/validate-provider-recovery-handoff-prototype.mjs',
   'scripts/validate-vector-only-ui.mjs',
+  'scripts/validate-vector-operating-context.mjs',
+  'scripts/validate-vector-review-contract.mjs',
   'scripts/validate-onedrive-sync-guardian.mjs',
+  'scripts/validate-factory-decision-kernel.mjs',
+  'scripts/validate-engineering-memory.mjs',
+  'scripts/validate-operational-history.mjs',
+  'scripts/validate-global-operating-context.mjs',
   'scripts/validate-release-policy.mjs'
 ];
 

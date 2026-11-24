@@ -1,0 +1,79 @@
+name: Live public browser reachability proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/live-public-browser-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-hosted-entry:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      WFM_ORIGIN: https://wfm-customer-proof-0676-production.up.railway.app
+      EXPECTED_RELEASE: 0.6.76-hosted-staging-rc1
+    steps:
+      - name: Install pinned browser driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/wfm-public-proof"
+          cd "$RUNNER_TEMP/wfm-public-proof"
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund --save-exact playwright@1.63.0 >/dev/null
+      - name: Prove HTTPS health and real browser entry on desktop and mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/wfm-public-proof"
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = (ok,msg) => { if(!ok) throw new Error(msg); };
+          const origin = process.env.WFM_ORIGIN;
+          (async()=>{
+            assert(origin.startsWith('https://'),'proof origin is not HTTPS');
+            const healthResponse = await fetch(origin + '/api/health');
+            assert(healthResponse.status === 200, `health HTTP ${healthResponse.status}`);
+            const health = await healthResponse.json();
+            assert(health.release === process.env.EXPECTED_RELEASE, `unexpected release ${health.release}`);
+            assert(health.fixtureOnly === true, 'host is not fixture-only');
+            assert(health.productionApproved === false, 'host unexpectedly production-approved');
+            const browser = await chromium.launch({channel:'chrome',headless:true});
+            try {
+              for (const [label, viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]) {
+                const context = await browser.newContext({viewport});
+                const page = await context.newPage();
+                const response = await page.goto(origin,{waitUntil:'load',timeout:30000});
+                await page.waitForTimeout(750);
+                assert(response && response.status() === 200, `${label} entry HTTP ${response?.status()}`);
+                assert(page.url().startsWith('https://'), `${label} browser did not stay on HTTPS`);
+                const title = await page.title();
+                const text = await page.locator('body').innerText();
+                assert(/Manufacturing Workforce/i.test(title + '\n' + text), `${label} missing product identity`);
+                assert(/Northstar|sign[ -]?in|log[ -]?in|demo/i.test(text), `${label} missing visible login/demo affordance`);
+                const buttons = await page.locator('button').count();
+                assert(buttons >= 1, `${label} has no interactive action`);
+                const overflow = await page.evaluate(() => ({scrollWidth:document.documentElement.scrollWidth, innerWidth:window.innerWidth}));
+                assert(overflow.scrollWidth <= overflow.innerWidth + 2, `${label} horizontal overflow ${overflow.scrollWidth} > ${overflow.innerWidth}`);
+                await page.keyboard.press('Tab');
+                const focusTag = await page.evaluate(() => document.activeElement?.tagName || '');
+                assert(focusTag && focusTag !== 'BODY', `${label} first Tab produced no focusable control`);
+                console.log(`BROWSER_${label.toUpperCase()}_ENTRY=PASS`);
+                console.log(`BROWSER_${label.toUpperCase()}_VIEWPORT=${viewport.width}x${viewport.height}`);
+                console.log(`BROWSER_${label.toUpperCase()}_SCROLLWIDTH=${overflow.scrollWidth}`);
+                console.log(`BROWSER_${label.toUpperCase()}_BUTTONS=${buttons}`);
+                await context.close();
+              }
+              console.log(`HOSTED_RELEASE=${health.release}`);
+              console.log('HTTPS_HEALTH=PASS');
+              console.log('LIVE_PUBLIC_BROWSER_REACHABILITY=PASS');
+              console.log('CLAIM_BOUNDARY=unauthenticated entry and health only; authenticated tenant proof remains separate');
+            } finally { await browser.close(); }
+          })().catch(err=>{ console.error(err); process.exit(1); });
+          NODE
