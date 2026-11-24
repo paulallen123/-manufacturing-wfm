@@ -426,7 +426,8 @@ function liveMarkup(){
 function errorMarkup(){
   return '<div class="wfm-ij-shell"><section class="wfm-ij-panel wfm-ij-error"><span class="wfm-ij-kicker">IMPLEMENTATION</span><h1>We could not load the implementation workspace</h1><p>'+safe(S.error||'Please refresh and try again.')+'</p><button class="btn primary" type="button" data-ij-refresh>Try again</button></section></div>';
 }
-function renderView(force=false){
+const renderedShells = new WeakMap();
+function renderView(force=false, background=false){
   if(currentPage()!=='onboarding'||isEmployeeRole())return;
   if(S.setupDirty&&!force&&!S.error&&S.status&&document.querySelector('[data-ij-setup-form]'))return;
   const content=document.querySelector('.content');if(!content)return;
@@ -434,12 +435,27 @@ function renderView(force=false){
   if(S.error){content.innerHTML=errorMarkup();return;}
   if(!S.status){content.innerHTML='<div class="wfm-ij-shell"><div class="wfm-ij-loading">Preparing your implementation workspace…</div></div>';return;}
   const prestart=['NOT_STARTED','AWAITING_CUSTOMER_START','INVITATION_EXPIRED'].includes(S.status.state);
-  content.innerHTML=prestart?welcomeMarkup():liveMarkup();
+  const markup = prestart ? welcomeMarkup() : liveMarkup();
+  const { tenant, runId } = S.status;
+  const previous = renderedShells.get(content.firstElementChild);
+  const sameWorkspace = background && tenant && runId && previous?.tenant === tenant && previous.runId === runId;
+  if (sameWorkspace && markup === previous.markup) return;
+  const focused = document.activeElement;
+  const route = sameWorkspace && focused && content.contains(focused) ? focused.dataset.ijRoute : null;
+  content.innerHTML = markup;
+  const shell = content.firstElementChild;
+  if (shell && tenant && runId) renderedShells.set(shell, { tenant, runId, markup });
+  if (route) {
+    const replacement = Array.from(content.querySelectorAll('button[data-ij-route]:enabled'))
+      .find(button => button.dataset.ijRoute === route);
+    replacement?.focus({ preventScroll: true });
+  }
 }
-async function load(force){
+async function load(force, background=false){
   if(currentPage()!=='onboarding'||isEmployeeRole())return;
   const now=Date.now();if(S.loading||(!force&&now-S.lastLoad<3500))return;
-  S.loading=true;S.lastLoad=now;S.error='';renderView();
+  S.loading=true;S.lastLoad=now;S.error='';
+  if(!background || !S.status)renderView();
   try{
     const token=inviteToken();
     const calls=[
@@ -457,11 +473,11 @@ async function load(force){
     if(!S.status){resetSetupBinding();S.error='Your account does not have access to implementation control.';S.setupDirty=false;S.setup=null;S.setupInput=null;S.setupSettings=false;S.setupEditGeneration++;}
     if(S.invitation?.error&&S.status?.state==='AWAITING_CUSTOMER_START')S.error=S.invitation.error;
   }catch(error){resetSetupBinding(true);S.status=null;S.integrations=null;S.learning=null;S.invitation=null;S.error=error.message||'Implementation workspace failed to load.';}
-  finally{S.loading=false;renderView();schedule();if(S.status&&S.setupDirty&&!S.setupSaving)scheduleSetupSave();}
+  finally{S.loading=false;renderView(false,background);schedule();if(S.status&&S.setupDirty&&!S.setupSaving)scheduleSetupSave();}
 }
 function schedule(){
   clearTimeout(S.timer);
-  if(currentPage()==='onboarding')S.timer=setTimeout(()=>load(true),12000);
+  if(currentPage()==='onboarding')S.timer=setTimeout(()=>load(true,true),12000);
 }
 function stop(){clearTimeout(S.timer);S.timer=null;}
 function openRoute(route){
