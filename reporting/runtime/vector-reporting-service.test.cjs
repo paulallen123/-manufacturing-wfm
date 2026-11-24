@@ -344,6 +344,39 @@ test('definition validation refuses arbitrary fields, sources and privilege esca
   assert.throws(()=>Reporting.normaliseDefinition({sourceId:'factory-readiness',calculations:[{left:'passwordHash',operator:'sum',right:'plannedHours'}]},'manager'),/approved source fields/i);
 });
 
+test('saved report evidence and claim boundary remain server governed',async()=>{
+  const x=setup();
+  try{
+    const injected='These estimated savings are verified realised cash.';
+    const request={sourceId:'value-realisation',includeEvidence:false,claimBoundary:injected};
+    const validated=await call(x.service,'POST','/api/reporting/validate','manager-a',{definition:request});
+    const created=await call(x.service,'POST','/api/reporting/reports','manager-a',{definition:request});
+    assert.equal(validated.status,200);
+    assert.equal(created.status,201);
+    for(const definition of [validated.body.definition,created.body.report.definition]){
+      assert.equal(definition.includeEvidence,true);
+      assert.match(definition.claimBoundary,/Estimates and opportunities must not be presented as realised outcomes/);
+      assert.notEqual(definition.claimBoundary,injected);
+    }
+  }finally{x.close();}
+});
+
+test('legacy reports with client-controlled evidence claims are withheld',async()=>{
+  const x=setup();
+  try{
+    const valid=await makeReport(x,'manager-a','value-realisation');
+    const forged={...valid.definition,includeEvidence:false,claimBoundary:'Estimated savings are verified cash.'};
+    const db=new DatabaseSync(x.dbPath);
+    try{
+      db.prepare('INSERT INTO vector_report_definitions(id,tenant,created_by,role_at_creation,title,source_id,definition_json,definition_digest,version_of,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
+        .run('vr-legacy','tenant-a','manager@a.example','manager','Legacy value claim','value-realisation',JSON.stringify(forged),Reporting.digest(forged),null,new Date().toISOString());
+    }finally{db.close();}
+    const listed=await call(x.service,'GET','/api/reporting/reports','manager-a');
+    assert.deepEqual(listed.body.reports.map(r=>r.id),[valid.id]);
+    assert.equal((await call(x.service,'GET','/api/reporting/reports/vr-legacy','manager-a')).status,404);
+  }finally{x.close();}
+});
+
 test('saved reports are tenant isolated, immutable and audited',async()=>{
   const x=setup();
   try{
