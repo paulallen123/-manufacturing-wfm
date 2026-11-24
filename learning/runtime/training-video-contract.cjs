@@ -21,7 +21,40 @@ function validHttpsOrigin(value){
     return u.protocol==='https:' && u.origin===u.href.replace(/\/$/,'');
   }catch{return false;}
 }
+function isRecord(value){return value!==null&&typeof value==='object'&&!Array.isArray(value);}
+function isScalar(value){return value==null||['string','number','boolean'].includes(typeof value);}
+function jobStructureErrors(job){
+  if(!isRecord(job)) return ['JOB_STRUCTURE_INVALID'];
+  const errors=[];
+  // Admission checks container kinds and safe scalar conversions. Existing
+  // evidence/value checks below still decide semantic validity.
+  if(typeof job.artifactFingerprint!=='string') errors.push('ARTIFACT_FINGERPRINT_INVALID');
+  if(![job.jobId,job.productSha,job.targetOrigin].every(isScalar)) errors.push('JOB_STRUCTURE_INVALID');
+  if(!isRecord(job.capture)) errors.push('CAPTURE_PLAN_NOT_READY');
+  else{
+    if(!isScalar(job.capture.route)) errors.push('CAPTURE_PLAN_NOT_READY');
+    if(!Array.isArray(job.capture.requiredSelectors)) errors.push('CAPTURE_SELECTORS_REQUIRED');
+  }
+  if(!Array.isArray(job.script)) errors.push('SCRIPT_REQUIRED');
+  else if(job.script.some(step=>!isRecord(step)||!isScalar(step.title)||!isScalar(step.instruction))) errors.push('SCRIPT_STEP_INVALID');
+  return [...new Set(errors)];
+}
+function receiptStructureErrors(receipt){
+  if(!isRecord(receipt)) return ['RECEIPT_STRUCTURE_INVALID'];
+  const errors=[];
+  if(!isRecord(receipt.capture)||!Array.isArray(receipt.capture.observedSelectors)) errors.push('RECEIPT_CAPTURE_STRUCTURE_INVALID');
+  if(!isRecord(receipt.scan)) errors.push('RECEIPT_SCAN_STRUCTURE_INVALID');
+  if(!Array.isArray(receipt.consoleErrors)) errors.push('RECEIPT_CONSOLE_STRUCTURE_INVALID');
+  if(!isRecord(receipt.media)) errors.push('RECEIPT_MEDIA_STRUCTURE_INVALID');
+  else if(![receipt.media.videoSha256,receipt.media.captionsSha256,receipt.media.transcriptSha256,receipt.media.durationMs].every(isScalar)) errors.push('RECEIPT_MEDIA_STRUCTURE_INVALID');
+  // Narration and publication are optional for a valid PROOF_ONLY receipt.
+  if(receipt.narration!=null&&(!isRecord(receipt.narration)||!isScalar(receipt.narration.audioSha256))) errors.push('RECEIPT_NARRATION_STRUCTURE_INVALID');
+  if(receipt.publication!=null&&(!isRecord(receipt.publication)||![receipt.publication.videoUrl,receipt.publication.captionsUrl,receipt.publication.transcriptUrl].every(isScalar))) errors.push('RECEIPT_PUBLICATION_STRUCTURE_INVALID');
+  return errors;
+}
 function validateVideoGenerationJob(job={}){
+  const structuralErrors=jobStructureErrors(job);
+  if(structuralErrors.length) return {ok:false,errors:structuralErrors};
   const errors=[];
   if(job.contractVersion!==VIDEO_JOB_VERSION) errors.push('JOB_CONTRACT_INVALID');
   if(!clean(job.jobId,120)) errors.push('JOB_ID_REQUIRED');
@@ -91,7 +124,7 @@ function createVideoGenerationJob(module,input={}){
   if(!validation.ok) throw new Error('Video job rejected: '+validation.errors.join(','));
   return Object.freeze(job);
 }
-function validateVideoReceipt(job,receipt={}){
+function validateAdmittedVideoReceipt(job,receipt){
   const jobValidation=validateVideoGenerationJob(job);
   const errors=[...jobValidation.errors];
   if(receipt.contractVersion!==VIDEO_RECEIPT_VERSION) errors.push('RECEIPT_CONTRACT_INVALID');
@@ -120,7 +153,13 @@ function validateVideoReceipt(job,receipt={}){
   const state=errors.length?'FAILED':(narrationPresent&&durable?'READY':'PROOF_ONLY');
   return {ok:errors.length===0,state,errors:[...new Set(errors)]};
 }
+function assessVideoReceipt(job,receipt={}){
+  const errors=[...new Set([...jobStructureErrors(job),...receiptStructureErrors(receipt)])];
+  if(errors.length) return {admissible:false,validation:{ok:false,state:'FAILED',errors}};
+  return {admissible:true,validation:validateAdmittedVideoReceipt(job,receipt)};
+}
+function validateVideoReceipt(job,receipt={}){return assessVideoReceipt(job,receipt).validation;}
 module.exports=Object.freeze({
   VIDEO_JOB_VERSION,VIDEO_RECEIPT_VERSION,SOURCE_CLASS,
-  createVideoGenerationJob,validateVideoGenerationJob,validateVideoReceipt
+  createVideoGenerationJob,validateVideoGenerationJob,validateVideoReceipt,assessVideoReceipt
 });

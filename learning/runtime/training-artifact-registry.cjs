@@ -1,7 +1,7 @@
 'use strict';
 
 const { DatabaseSync } = require('node:sqlite');
-const { validateVideoReceipt } = require('./training-video-contract.cjs');
+const { assessVideoReceipt } = require('./training-video-contract.cjs');
 
 function createTrainingArtifactRegistry(options={}){
   const dbPath=options.dbPath||process.env.WFM_DB;
@@ -38,7 +38,10 @@ function createTrainingArtifactRegistry(options={}){
   }
   function currentForFingerprint(fingerprint){return publicView(latest.get(String(fingerprint||'')));}
   function recordReceipt(job,receipt){
-    const validation=validateVideoReceipt(job,receipt);
+    const {admissible,validation}=assessVideoReceipt(job,receipt);
+    // A structural rejection is not admitted artifact evidence. Keep prior
+    // history and its current view unchanged; semantic FAILED events still append.
+    if(!admissible) return {validation,artifact:null};
     insert.run(job.artifactFingerprint,validation.state,JSON.stringify(job),JSON.stringify(receipt),new Date().toISOString());
     return {validation,artifact:currentForFingerprint(job.artifactFingerprint)};
   }
