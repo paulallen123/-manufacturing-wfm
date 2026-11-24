@@ -124,8 +124,13 @@ function importAdvice(){
   if(!requirementComplete('organisation-model'))needs.push('Confirm sites, departments and cost structure.');
   if(!requirementComplete('payroll-mapping'))needs.push('Reconcile payroll codes and mappings before the live load.');
   if(!requirementComplete('test-data-cleanup'))needs.push('Live import remains locked until test data is proven clean.');
-  if(!needs.length&&!requirementComplete('live-data-import'))needs.push('Source data is ready. The live import can now be reconciled.');
-  if(requirementComplete('live-data-import'))needs.push('Live data has been imported and reconciled.');
+  const liveImport=requirement('live-data-import');
+  if(!needs.length&&!liveImport?.satisfied){
+    needs.push(liveImport?.status==='REVALIDATION_REQUIRED'
+      ? 'Review the live import status before proceeding.'
+      : 'Source data is ready. The live import can now be reconciled.');
+  }
+  if(liveImport?.satisfied)needs.push('Live data has been imported and reconciled.');
   return '<ul>'+needs.slice(0,5).map(x=>'<li>'+safe(x)+'</li>').join('')+'</ul>';
 }
 function activeWork(){
