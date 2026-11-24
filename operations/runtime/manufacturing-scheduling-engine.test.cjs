@@ -422,3 +422,50 @@ test('V030 cap preserves V029 touching availability and real-gap denials with fr
  const denied=evaluateOpenShift({requirement:early,workers:gap,policy:{maxShiftHours:8}}).ranked[0];
  assert.equal(denied.eligible,false);assert.ok(denied.failures.includes('NOT_AVAILABLE'));
 });
+
+test('V031 same-site requirement identity: rejects a contradictory declaration on either outgoing leg',()=>{
+ for(const leg of [0,1]){
+  const x=swapInput();x.currentAssignments[leg].requirementId='different-requirement';
+  const before=structuredClone(x);freezeDeep(x);
+  assert.throws(()=>evaluateSwap(x),/outgoing.*requirement/i,'leg '+leg);
+  assert.deepEqual(x,before);
+ }
+});
+test('V031 same-site requirement identity: rejects malformed explicit declarations without coercion',()=>{
+ for(const leg of [0,1])for(const value of [undefined,null,false,true,0,1,'',' ',[],{},['early']]){
+  const x=swapInput();x.currentAssignments[leg].requirementId=value;
+  const before=structuredClone(x);freezeDeep(x);
+  assert.throws(()=>evaluateSwap(x),/outgoing.*requirement/i,'leg '+leg+' type '+typeof value);
+  assert.deepEqual(x,before);
+ }
+});
+test('V031 same-site requirement identity: checks declarations independently of assignment order',()=>{
+ for(const leg of [0,1])for(const reverse of [false,true]){
+  const x=swapInput();x.currentAssignments[leg].requirementId='different-requirement';
+  x.currentAssignments.push(assignment(shift('unrelated','2026-09-26T06:00:00Z','2026-09-26T14:00:00Z'),'a'));
+  if(reverse)x.currentAssignments.reverse();
+  const before=structuredClone(x);freezeDeep(x);
+  assert.throws(()=>evaluateSwap(x),/outgoing.*requirement/i,'leg '+leg+' reversed '+reverse);
+  assert.deepEqual(x,before);
+ }
+});
+test('V031 same-site requirement identity: accepts matching declarations and preserves frozen inputs',()=>{
+ const x=swapInput();const before=structuredClone(x);freezeDeep(x);
+ const result=evaluateSwap(x);
+ assert.equal(result.eligible,true);assert.equal(result.mode,'EVALUATE_ONLY');assert.equal(result.executionPermitted,false);
+ assert.deepEqual(x,before);
+});
+test('V031 same-site requirement identity: preserves omission on either or both outgoing legs',()=>{
+ for(const omitted of [[0],[1],[0,1]]){
+  const x=swapInput();for(const leg of omitted)delete x.currentAssignments[leg].requirementId;
+  const before=structuredClone(x);freezeDeep(x);const result=evaluateSwap(x);
+  assert.equal(result.eligible,true);assert.equal(result.mode,'EVALUATE_ONLY');assert.equal(result.executionPermitted,false);
+  assert.deepEqual(x,before);
+ }
+});
+test('V031 same-site requirement identity: preserves an omitted hypothetical schedule',()=>{
+ const x=swapInput();delete x.currentAssignments;const before=structuredClone(x);freezeDeep(x);
+ const result=evaluateSwap(x);
+ assert.equal(result.eligible,true);assert.equal(result.mode,'EVALUATE_ONLY');assert.equal(result.executionPermitted,false);
+ assert.deepEqual(x,before);
+});

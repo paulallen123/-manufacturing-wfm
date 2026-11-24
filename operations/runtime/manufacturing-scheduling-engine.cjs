@@ -407,6 +407,9 @@ function evaluateSwap(input={}){
       if(!outgoing||outgoing.workerId!==worker.id||outgoing.start!==slot.start||outgoing.end!==slot.end||
         Object.hasOwn(outgoing,'site')&&outgoing.site!==slot.site)
         throw new Error('Swap requires matching outgoing assignment ids, owners and times; any declared site must match its requirement.');
+      // A declared requirement must agree with the selected outgoing slot.
+      if(Object.hasOwn(outgoing,'requirementId')&&outgoing.requirementId!==slot.requirementId)
+        throw new Error('Swap requires matching declared outgoing requirement ids.');
     }
   }
   const base=current.filter(x=>x.slotId!==sa.slotId&&x.slotId!==sb.slotId);
