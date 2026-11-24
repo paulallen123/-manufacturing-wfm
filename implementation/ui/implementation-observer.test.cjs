@@ -72,11 +72,23 @@ function render(status){
   const context=vm.createContext({});
   vm.runInContext(source.slice(source.indexOf("const IMPL="),source.indexOf('function errorMarkup()')),context);
   context.input=status;
-  return vm.runInContext('S.status=input; ({stages:stageMarkup(),training:trainingPanel(false)})',context);
+  return vm.runInContext('S.status=input; ({stages:stageMarkup(),training:trainingPanel(false),importAdvice:importAdvice()})',context);
 }
 function status(overrides={}){
   return {requirements:[{key:'source-systems',satisfied:true},{key:'role-learning',satisfied:false},{key:'privileged-competency',satisfied:false},{key:'frontline-readiness',satisfied:false}],integrationTruth:{unifiedReady:false},providerJourney:{required:true,proven:false},learningSummary:{masteryPercent:100,mastered:124,assignments:124,users:12,requiredPopulation:50,privilegedReady:true,fullyCertified:true,populationReconciliationRequired:true,roleLearningPopulationReady:false,populationAndRoleCoverageReady:false,privilegedCoverageReady:true},...overrides};
 }
+test('Data Readiness explains a held import without replacing an unmet prerequisite',()=>{
+  const readyRequirements=['source-systems','people-data','organisation-model','payroll-mapping','test-data-cleanup']
+    .map(key=>({key,satisfied:true}));
+  const importRequirement={key:'live-data-import',satisfied:false,status:'REVALIDATION_REQUIRED'};
+  const adviceFor=(requirements,liveImport)=>render(status({requirements:[...requirements,liveImport]})).importAdvice;
+
+  assert.equal(adviceFor(readyRequirements,importRequirement),'<ul><li>Review the live import status before proceeding.</li></ul>');
+  const cleanupPending=readyRequirements.map(item=>item.key==='test-data-cleanup'?{...item,satisfied:false}:item);
+  assert.equal(adviceFor(cleanupPending,importRequirement),'<ul><li>Live import remains locked until test data is proven clean.</li></ul>');
+  assert.equal(adviceFor(readyRequirements,{...importRequirement,status:'MISSING'}),'<ul><li>Source data is ready. The live import can now be reconciled.</li></ul>');
+  assert.equal(adviceFor(readyRequirements,{...importRequirement,status:'PASS',satisfied:true}),'<ul><li>Live data has been imported and reconciled.</li></ul>');
+});
 function integrationStage(html){return html.match(/<div class="wfm-ij-stage [^>]+>.*?<b>Integrations<\/b><small>(.*?)<\/small>/)?.[1];}
 function trainingStage(html){return html.match(/<b>Training<\/b><small>(.*?)<\/small>/)?.[1];}
 test('connected source alone does not present blocked unified integrations as complete',()=>{
