@@ -57,6 +57,60 @@ test('sequence write failure aborts its event and does not show local success',a
 test('queue write failure leaves sequence unchanged and retry succeeds',async()=>{const h=await harness();h.state.failKey='queue';await h.tap();assert.deepEqual(h.events(),[]);assert.equal(h.state.rows.get('config').nextSequence,1);await h.tap();assert.equal(h.events()[0].sequence,1);});
 test('failed acknowledgement transaction keeps the event for an exact retry',async()=>{const h=await harness();await h.tap();const before=h.events(),p=h.sync();await h.waitCalls(1);h.state.failKey='queue';h.pending[0].resolve(response([{eventId:before[0].eventId,status:'accepted'}]));await p;assert.deepEqual(h.events(),before);const retry=h.sync();await h.waitCalls(2);assert.deepEqual(h.calls[1].payload,h.calls[0].payload);h.pending[1].resolve(response([{eventId:before[0].eventId,status:'accepted',replayed:true}]));await retry;assert.deepEqual(h.events(),[]);});
 test('unknown response identities never remove legitimate local events',async()=>{const h=await harness();await h.tap();const before=h.events(),p=h.sync();await h.waitCalls(1);h.pending[0].resolve(response([{eventId:'not-submitted',status:'accepted'}]));await p;assert.deepEqual(h.events(),before);});
+function v072Registration(h,id='replacement-device',secret='  synthetic-replacement-secret-not-live-0000  '){h.get('deviceId').value=id;h.get('deviceSecret').value=secret;}
+function v072View(h){return{setup:h.get('setup').hidden,clock:h.get('clock').hidden,secret:h.get('deviceSecret').value};}
+function v072Refusal(h){assert.equal(h.get('result').className,'result error');assert.match(h.get('result').textContent,/pending.*review/i);assert.equal(h.calls.length,0);}
+test('V072 pending-queue registration: replacement preserves pending bytes, identity, sequence and entered secret',async()=>{
+ const h=await harness();await h.tap();v072Registration(h);h.navigator.onLine=true;
+ const before=clone([...h.state.rows]),view=v072View(h),queueBytes=JSON.stringify(h.events());
+ await h.get('saveDevice').onclick();
+ assert.deepEqual([...h.state.rows],before);assert.equal(JSON.stringify(h.events()),queueBytes);assert.deepEqual(v072View(h),view);v072Refusal(h);
+});
+test('V072 pending-queue registration: same credentials cannot reset the pending sequence',async()=>{
+ const h=await harness();await h.tap();await h.tap('out');const current=clone(h.state.rows.get('config'));
+ v072Registration(h,current.id,current.secret);const before=clone([...h.state.rows]),view=v072View(h);
+ await h.get('saveDevice').onclick();
+ assert.deepEqual([...h.state.rows],before);assert.equal(h.state.rows.get('config').nextSequence,3);assert.deepEqual(v072View(h),view);v072Refusal(h);
+});
+test('V072 pending-queue registration: Forget removes credentials but its orphan queue cannot be rebound',async()=>{
+ const h=await harness();await h.tap();const queued=h.events();await h.get('forget').onclick();
+ assert.equal(h.state.rows.get('config'),null);assert.deepEqual(h.events(),queued);assert.equal(h.get('setup').hidden,false);assert.equal(h.get('clock').hidden,true);
+ v072Registration(h);const before=clone([...h.state.rows]),view=v072View(h);
+ await h.get('saveDevice').onclick();
+ assert.deepEqual([...h.state.rows],before);assert.deepEqual(v072View(h),view);v072Refusal(h);
+});
+test('V072 pending-queue registration: a legacy orphan queue remains untouched for review',async()=>{
+ const state=fixture();state.rows.delete('config');state.rows.set('queue',[{eventId:'legacy-event',sequence:19,employee:'fixture-worker',type:'in',capturedAt:'2026-11-24T08:00:00.000Z'}]);
+ const h=await harness(state);v072Registration(h);const before=clone([...state.rows]),view=v072View(h);
+ await h.get('saveDevice').onclick();
+ assert.deepEqual([...state.rows],before);assert.equal(state.rows.has('config'),false);assert.deepEqual(v072View(h),view);v072Refusal(h);
+});
+test('V072 pending-queue registration: empty queues retain initial and replacement registration behavior',async()=>{
+ for(const initial of [true,false]){
+  const state=fixture();if(initial)state.rows.delete('config');else state.rows.get('config').nextSequence=19;
+  const h=await harness(state);v072Registration(h);await h.get('saveDevice').onclick();
+  assert.deepEqual(clone(state.rows.get('config')),{id:'replacement-device',secret:'synthetic-replacement-secret-not-live-0000',name:'replacement-device',nextSequence:1,clockOffsetMs:0});
+  assert.deepEqual(h.events(),[]);assert.equal(h.get('deviceSecret').value,'');assert.equal(h.get('setup').hidden,true);assert.equal(h.get('clock').hidden,false);assert.equal(h.calls.length,0);
+ }
+});
+test('V072 pending-queue registration: an earlier enqueue transaction prevents a later connection from replacing identity',async()=>{
+ const state=fixture(),clock=await harness(state),setup=await harness(state),prior=clone(state.rows.get('config'));v072Registration(setup);const view=v072View(setup);
+ const enqueue=clock.tap(),register=setup.get('saveDevice').onclick();await Promise.all([enqueue,register]);
+ assert.equal(clock.events().length,1);assert.equal(clock.events()[0].sequence,1);assert.deepEqual(clone(state.rows.get('config')),{...prior,nextSequence:2});
+ assert.deepEqual(v072View(setup),view);assert.equal(clock.calls.length,0);v072Refusal(setup);
+});
+test('V072 pending-queue registration: an aborted registration write preserves state and reports the error',async()=>{
+ const h=await harness();h.state.rows.get('config').nextSequence=19;v072Registration(h);const before=clone([...h.state.rows]),view=v072View(h);h.state.failKey='config';
+ await assert.doesNotReject(h.get('saveDevice').onclick());
+ assert.deepEqual([...h.state.rows],before);assert.deepEqual(v072View(h),view);assert.equal(h.get('result').className,'result error');assert.match(h.get('result').textContent,/Synthetic IndexedDB write failure/);assert.equal(h.calls.length,0);
+});
+test('V072 pending-queue registration: refusal survives a fresh VM without a replacement sync',async()=>{
+ const state=fixture(),first=await harness(state);await first.tap();v072Registration(first);first.navigator.onLine=true;const before=clone([...state.rows]);await first.get('saveDevice').onclick();
+ assert.deepEqual([...state.rows],before);v072Refusal(first);
+ const fresh=await harness(state);assert.deepEqual([...state.rows],before);assert.equal(fresh.get('setup').hidden,true);assert.equal(fresh.get('clock').hidden,false);assert.equal(fresh.get('queued').textContent,1);
+ v072Registration(fresh);fresh.navigator.onLine=true;const view=v072View(fresh);await fresh.get('saveDevice').onclick();
+ assert.deepEqual([...state.rows],before);assert.deepEqual(v072View(fresh),view);v072Refusal(fresh);
+});
 test('existing-output composition replaces the archived client with the reviewed overlay',t=>{
  const root=path.resolve(__dirname,'..'),out=fs.mkdtempSync(path.join(os.tmpdir(),'v036-existing-composition-'));
  t.after(()=>fs.rmSync(out,{recursive:true,force:true}));
