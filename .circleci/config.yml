@@ -1,5 +1,10 @@
 version: 2.1
 
+parameters:
+  run-frozen-proof:
+    type: boolean
+    default: false
+
 commands:
   require_frozen_candidate:
     steps:
@@ -227,19 +232,22 @@ jobs:
 
 workflows:
   vector_forge_proof:
+    # Release and staging branches always run the full proof.
+    when: &frozen_proof >-
+      pipeline.git.branch starts-with "release/"
+      or pipeline.git.branch starts-with "staging/"
+      or (pipeline.parameters.run-frozen-proof and (
+        pipeline.git.branch starts-with "feature/vector-"
+        or pipeline.git.branch starts-with "review/staffology-"
+        or pipeline.git.branch == "test/vector-empty-organisation-regression-20261020"
+      ))
     jobs:
       - forge_integration_validation
       - forge_core_validation
       - forge_runtime_validation:
           requires:
             - forge_core_validation
-          filters:
-            branches:
-              only:
-                - /feature\/vector-.*/
-                - /release\/.*/
-                - /staging\/.*/
-                - /review\/staffology-.*/
-                - test/vector-empty-organisation-regression-20261020
-            tags:
-              ignore: /.*/
+  vector_integration:
+    unless: *frozen_proof
+    jobs:
+      - forge_integration_validation
