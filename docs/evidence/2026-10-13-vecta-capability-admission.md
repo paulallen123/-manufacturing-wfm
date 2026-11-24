@@ -1,0 +1,85 @@
+# Vecta capability-admission seam — bounded handoff
+
+Status: **TESTED locally on Node 24; draft handoff only**. This record does not claim canonical integration, exact-image admission, deployment, hosted proof, or customer readiness.
+
+## Requirement and source
+
+- Backlog row: F2.7, Vecta voice/text authorised operations.
+- Primary source: PR #241 and its current-base admission review comment `6136908883`.
+- Required boundary: deny a blocked capability before plan persistence; bind an allowed plan to tenant, actor, capability, and readiness revision; recheck the same authority at execution; deny revision drift; keep authority invariant across locale; do not expose or consume raw questionnaire answers.
+
+## Owner and conflict check
+
+- Exact base: `48dce8f697825c8cd5f99b3e5aeea3953647f8c2` (`release/vector-customer-ready-candidate-20260925`).
+- Reservation: issue #265 comment `6151527758`.
+- Searches covered the current open PR inventory through #455, Vecta/bot/admission branches, focused PR queries, and the current release tree.
+- The only Vecta bot implementation remains historical PR #241 / `feature/vector-operations-bot-voice-v1-20260925`; its review blocks direct transplantation.
+- No current claimant was found for this helper seam. Continue customer proof retains sole canonical integration, release, deployment, and hosted-proof authority.
+
+## Changed files
+
+- `operations/runtime/vector-operations-capability-admission.cjs`
+- `operations/runtime/vector-operations-capability-admission.test.cjs`
+- `.github/workflows/vecta-capability-admission-gate.yml`
+- `docs/evidence/2026-10-13-vecta-capability-admission.md`
+
+Current pre-commit SHA-256 identities for the executable package:
+
+- source: `1506a6eeed715f5ad149b8808f8deb70ffd299a826fd21f3b67677510be3aebb`
+- test: `6c1c955133e5ae6dee0bfa3bfeadc9b26ca7e661f6f678bd9c46631480469f3f`
+- scoped workflow: `2f07fbdf9e3516d2254ea94f72d3c71f9785b6fafe2d0e6e594cff14b98983a1`
+
+No bot, router, bootstrap, controller, database, Dockerfile, shared release workflow, or canonical branch file is changed.
+
+## Implementation result
+
+The new pure helper:
+
+- accepts only an explicit `VECTOR_CAPABILITY_READINESS_V1` projection;
+- rejects undeclared fields, including raw questionnaire material;
+- rejects active Proxy, accessor-backed, and inherited record/array inputs before reflective traps execute;
+- uses frozen null-prototype indexes for admitted capability and allowed-field lookup, avoiding ambient Map/Set prototype authority;
+- requires exact tenant, actor, capability, and revision identities without truncation;
+- creates no plan binding for BLOCK or undeclared capabilities;
+- HMAC-binds admitted plans using a caller-supplied server-held key;
+- rechecks scope, HMAC, exact readiness revision, tenant, and current capability state before execution;
+- omits locale from authority decisions and bindings;
+- returns immutable detached results and performs no persistence, network, provider, payroll, or personnel effect.
+
+## Tests actually run
+
+1. Initial RED: `node --test operations/runtime/vector-operations-capability-admission.test.cjs` failed because the module did not exist (`MODULE_NOT_FOUND`, exit 1).
+2. First GREEN: 12/12 passed on Node 24.19.0.
+3. HMAC review RED: the added authority-key regression failed; the pre-review implementation accepted no key and the new wrapper field was undeclared (12 failed, 1 passed, exit 1).
+4. HMAC GREEN: 13/13 passed on Node 24.19.0.
+5. Prototype-pollution RED: polluted inherited `Array.prototype.includes` suppressed duplicate blocking-reason detection (0/1, exit 1).
+6. First exact-head GREEN: 14/14 passed, zero failures/skips/cancellations/todos on Node 24.19.0. Both source and test syntax checks exited 0.
+7. Independent review reproduced two Important failures on exact head `ae8de223b906d89464a4bda059b6257e6da8dd56`: polluted `Map.prototype.get` changed a real BLOCK into ADMITTED, and a readiness Proxy executed its `getPrototypeOf` trap and was admitted.
+8. Held-out review RED: after adding both regressions, 14 passed / 2 failed. The Map case returned `admitted:true`; the Proxy record produced no rejection.
+9. Authority-key Proxy RED: the added no-trap key case failed with a TypedArray incompatible-receiver error before explicit rejection (0/1 focused).
+10. Revised local GREEN: 16/16 passed, zero failures/skips/cancellations/todos on Node 24.19.0. Both source and test syntax checks exited 0.
+11. Revised coverage: 92.07% lines, 79.63% branches, and 100% functions.
+
+The original exact-head scoped workflow run `38440996355` / job `115447223411` passed Node 22.23.2 with 14/14 plus syntax/diff checks. That receipt is superseded for source acceptance by the review repair; the revised head must pass its own supported workflow before advancing beyond local TESTED. The full repository suite was not run because this execution environment did not contain an authenticated repository checkout.
+
+## Review and integration state
+
+- Self-review found and repaired the unkeyed-digest weakness with a server-held HMAC contract.
+- Adversarial review found and repaired inherited `Array.prototype.includes` dependence in duplicate reason detection.
+- Independent review of `ae8de223b906d89464a4bda059b6257e6da8dd56` required changes for Map-prototype authority and active Proxy inputs. Both reported cases are repaired locally with permanent regressions; independent re-review is required on the revised committed head.
+- Canonical owner adoption/wiring is not performed or implied.
+
+## Deployment and proof state
+
+- Canonical integration: **not performed**.
+- Exact-image admission: **not run**.
+- Deployment/enabling: **not performed**.
+- Hosted/customer proof: **not run**.
+- Strongest supported state before PR CI/review: **TESTED locally**.
+
+## Remaining risks and next action
+
+- The owner must map an authoritative, revisioned readiness projection into this helper without questionnaire payloads.
+- The owner must store admitted bindings server-side, call verification immediately before registered action execution, and keep the existing plan expiry/confirmation/source-readback controls.
+- A valid HMAC proves server-key possession and exact binding, not that upstream readiness evidence is truthful.
+- Run the scoped Node 22.23.2 workflow and independent exact-head review; then the sole integrator may adopt once, run affected union/full-image gates, deploy through approved controls, and prove BLOCK, ALLOW, revision drift, locale invariance, fresh-login persistence, audit, and authoritative action readback on the exact serving image.

@@ -1,0 +1,30 @@
+name: Vecta capability admission gate
+
+on:
+  pull_request:
+    branches: [release/vector-customer-ready-candidate-20260925]
+    paths:
+      - 'operations/runtime/vector-operations-capability-admission.cjs'
+      - 'operations/runtime/vector-operations-capability-admission.test.cjs'
+      - '.github/workflows/vecta-capability-admission-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-vecta-capability-admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22.23.2'
+          package-manager-cache: false
+      - run: node --test operations/runtime/vector-operations-capability-admission.test.cjs
+      - run: node --check operations/runtime/vector-operations-capability-admission.cjs
+      - run: node --check operations/runtime/vector-operations-capability-admission.test.cjs
+      - run: git diff --check '${{ github.event.pull_request.base.sha }}'..HEAD
