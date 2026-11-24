@@ -39,7 +39,7 @@ jobs:
       - name: Refuse retired UI source
         run: node scripts/validate-vector-only-ui.mjs
       - name: Build exact runtime
-        run: docker build --pull=false -t wfm-vector-only .
+        run: docker build --pull=false --build-arg "RAILWAY_GIT_COMMIT_SHA=$(git rev-parse HEAD)" -t wfm-vector-only .
       - name: Prove Vector is the only active presentation
         shell: bash
         run: |
