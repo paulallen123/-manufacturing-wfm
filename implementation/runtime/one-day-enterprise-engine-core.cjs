@@ -332,6 +332,8 @@ function createOneDayEnterpriseEngine(options = {}) {
       observed: { candidateSha: observedSha || null, deploymentId: observedDeployment || null, proofEpoch: observedEpoch }
     };
   }
+  const importGuidanceTenant = process.env.WFM_IMPORT_GUIDANCE_PILOT_TENANT;
+  const importGuidanceRole = process.env.WFM_IMPORT_GUIDANCE_PILOT_ROLE;
   const internalToken = options.internalToken || process.env.WFM_IMPLEMENTATION_INTERNAL_TOKEN || '';
   const contractWebhookSecret = options.contractWebhookSecret || process.env.WFM_CONTRACT_WEBHOOK_SECRET || '';
   const dedicatedInvitationRecoverySecret = options.invitationRecoverySecret ||
@@ -1729,6 +1731,15 @@ function createOneDayEnterpriseEngine(options = {}) {
     return readiness;
   }
 
+  // Only customer-facing readiness responses carry this presentation setting.
+  function viewerReadiness(ctx, readiness) {
+    if (importGuidanceTenant && importGuidanceRole && ctx.tenant === readiness.tenant &&
+        ctx.tenant === importGuidanceTenant && ctx.role === importGuidanceRole) {
+      return { ...readiness, showHeldImportGuidance: true };
+    }
+    return readiness;
+  }
+
   function publicInvitation(row) {
     if (!row) return null;
     return {
@@ -2251,7 +2262,7 @@ function createOneDayEnterpriseEngine(options = {}) {
     }
     if (invitation.status === 'STARTED' && invitation.started_run_id) {
       const existing = runById.get(invitation.started_run_id, ctx.tenant);
-      if (existing) return writeJson(res, 200, readinessForRun(existing));
+      if (existing) return writeJson(res, 200, viewerReadiness(ctx, readinessForRun(existing)));
     }
     if (invitation.status !== 'PENDING') {
       return writeJson(res, 409, { error: 'Implementation invitation is no longer available.' });
@@ -2277,11 +2288,11 @@ function createOneDayEnterpriseEngine(options = {}) {
       const refreshed = invitationByToken.get(invitation.token_hash);
       if (refreshed?.started_run_id) {
         const existing = runById.get(refreshed.started_run_id, ctx.tenant);
-        if (existing) return writeJson(res, 200, readinessForRun(existing));
+        if (existing) return writeJson(res, 200, viewerReadiness(ctx, readinessForRun(existing)));
       }
       return writeJson(res, 409, { error: 'Implementation start state changed. Refresh and try again.' });
     }
-    return writeJson(res, 201, readinessForRun(run));
+    return writeJson(res, 201, viewerReadiness(ctx, readinessForRun(run)));
   }
 
   function cleanList(value, maxItems = 40, maxLength = 120) {
@@ -2427,10 +2438,11 @@ function createOneDayEnterpriseEngine(options = {}) {
       if(!current){db.exec('ROLLBACK');return true;}
       if(current.tenant!==ctx.tenant||current.email!==ctx.email||currentRun.get(current.tenant)?.id!==run.id)throw Object.assign(Error('Workspace authority changed.'),{statusCode:409});
       if(customerWorkspaces.forTenant(current.tenant))throw Object.assign(Error('Use the reviewed workspace setup or explicit workspace settings to change this customer configuration.'),{statusCode:409});
+      ctx = current;
       applyScopeConfiguration(run,scope,sha256(ctx.email).slice(0,16));
       db.exec('COMMIT');
     } catch(error) { try { db.exec('ROLLBACK'); } catch {} throw error; }
-    return writeJson(res, existing ? 200 : 201, recompute(run));
+    return writeJson(res, existing ? 200 : 201, viewerReadiness(ctx, recompute(run)));
   }
 
   async function handleEvidence(req, res) {
@@ -2767,6 +2779,12 @@ function createOneDayEnterpriseEngine(options = {}) {
 
   async function handleDecision(ctx, req, res) {
     const body = await readJson(req);
+    const current = requireManager(req, res);
+    if (!current) return true;
+    if (current.tenant !== ctx.tenant || current.email !== ctx.email) {
+      return writeJson(res, 409, { error: 'Workspace authority changed.' });
+    }
+    ctx = current;
     const runId = compact(body.runId, 80);
     const key = compact(body.key, 120);
     const action = compact(body.action, 20).toUpperCase();
@@ -2824,12 +2842,12 @@ function createOneDayEnterpriseEngine(options = {}) {
         by: sha256(ctx.email).slice(0, 16)
       });
     }
-    return writeJson(res, 200, recompute(run));
+    return writeJson(res, 200, viewerReadiness(ctx, recompute(run)));
   }
 
   function handleStatus(ctx, res) {
     const run = currentRun.get(ctx.tenant);
-    if (run) return writeJson(res, 200, recompute(run));
+    if (run) return writeJson(res, 200, viewerReadiness(ctx, recompute(run)));
     const invitation = latestInvitationForRecipient.get(ctx.tenant, recipientDigest(ctx.email));
     if (invitation) return writeJson(res, 200, {
       state: Date.now() > invitation.expires_at_ms ? 'INVITATION_EXPIRED' : 'AWAITING_CUSTOMER_START',

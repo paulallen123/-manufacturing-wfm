@@ -81,9 +81,13 @@ test('Data Readiness explains a held import without replacing an unmet prerequis
   const readyRequirements=['source-systems','people-data','organisation-model','payroll-mapping','test-data-cleanup']
     .map(key=>({key,satisfied:true}));
   const importRequirement={key:'live-data-import',satisfied:false,status:'REVALIDATION_REQUIRED'};
-  const adviceFor=(requirements,liveImport)=>render(status({requirements:[...requirements,liveImport]})).importAdvice;
+  const adviceFor=(requirements,liveImport,settings={showHeldImportGuidance:true})=>
+    render(status({...settings,requirements:[...requirements,liveImport]})).importAdvice;
 
   assert.equal(adviceFor(readyRequirements,importRequirement),'<ul><li>Review the live import status before proceeding.</li></ul>');
+  for (const settings of [{}, {showHeldImportGuidance:false}, {showHeldImportGuidance:'true'}]) {
+    assert.equal(adviceFor(readyRequirements,importRequirement,settings),'<ul><li>Source data is ready. The live import can now be reconciled.</li></ul>');
+  }
   const cleanupPending=readyRequirements.map(item=>item.key==='test-data-cleanup'?{...item,satisfied:false}:item);
   assert.equal(adviceFor(cleanupPending,importRequirement),'<ul><li>Live import remains locked until test data is proven clean.</li></ul>');
   assert.equal(adviceFor(readyRequirements,{...importRequirement,status:'MISSING'}),'<ul><li>Source data is ready. The live import can now be reconciled.</li></ul>');

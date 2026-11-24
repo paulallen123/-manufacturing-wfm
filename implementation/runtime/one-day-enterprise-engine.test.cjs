@@ -889,6 +889,61 @@ test('trusted activation auto-starts a legacy pending invitation without reporti
   }
 });
 
+function importGuidanceFixture(tenant, role) {
+  const settings = { WFM_IMPORT_GUIDANCE_PILOT_TENANT: tenant, WFM_IMPORT_GUIDANCE_PILOT_ROLE: role };
+  const previous = {};
+  try {
+    for (const [key, value] of Object.entries(settings)) {
+      previous[key] = process.env[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    return fixture();
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
+test('held import guidance follows the authenticated tenant and current setup role', async t => {
+  const f = importGuidanceFixture('alpha', 'manager');
+  t.after(() => f.close());
+  const route = '/api/implementation/autonomous';
+  const alpha = await startRun(f, 'alpha');
+  const bravo = await startRun(f, 'bravo');
+  assert.equal(alpha.showHeldImportGuidance, true);
+  assert.equal(bravo.showHeldImportGuidance, undefined);
+  assert.equal(f.engine.statusForTenant('alpha').showHeldImportGuidance, undefined);
+
+  const status = token => call(f.engine, token, 'GET', route + '/status');
+  assert.equal((await status(f.tokens.manager)).body.showHeldImportGuidance, true);
+  assert.equal((await status(f.tokens.bravo)).body.showHeldImportGuidance, undefined);
+  assert.equal((await status(f.tokens.employee)).status, 403);
+
+  const decision = await call(f.engine, f.tokens.manager, 'POST', route + '/decision', {
+    runId: alpha.runId, key: 'time-policy-authority', action: 'REJECTED'
+  });
+  assert.equal(decision.status, 200);
+  assert.equal(decision.body.showHeldImportGuidance, true);
+
+  const db = new DatabaseSync(f.dbPath);
+  t.after(() => db.close());
+  db.prepare('UPDATE users SET role=? WHERE email=?').run('admin', 'manager@alpha');
+  const otherRole = await status(f.tokens.manager);
+  assert.equal(otherRole.status, 200);
+  assert.equal(otherRole.body.showHeldImportGuidance, undefined);
+});
+
+for (const [tenant, role] of [[undefined, undefined], ['alpha', undefined], [undefined, 'manager']]) {
+  test('held import guidance stays off with tenant=' + tenant + ' and role=' + role, async t => {
+    const f = importGuidanceFixture(tenant, role);
+    t.after(() => f.close());
+    assert.equal((await startRun(f)).showHeldImportGuidance, undefined);
+  });
+}
+
 test('employee cannot inspect enterprise implementation control plane', async () => {
   const f = fixture();
   try {
