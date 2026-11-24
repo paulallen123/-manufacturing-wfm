@@ -103,7 +103,7 @@ function createTrainingDeliveryService(options={}){
       if(req.method==='POST'&&path===PREFIX+'/artifact-receipt'){
         if(!requireInternal(req,res)) return true;
         const body=await readJson(req);
-        if(!body.job||!body.receipt) return writeJson(res,400,{error:'job and receipt are required.'});
+        if(!body||typeof body!=='object'||Array.isArray(body)||!body.job||!body.receipt) return writeJson(res,400,{error:'job and receipt are required.'});
         const result=artifacts.recordReceipt(body.job,body.receipt);
         return writeJson(res,result.validation.ok?200:422,result);
       }
