@@ -157,3 +157,94 @@ test('false population coverage prevents a complete Training stage even when con
   assert.doesNotMatch(view.training,/team ready/i);
 });
 
+
+function pollWorkspace() {
+  let status = { state: 'BUILDING', tenant: 'factory-a', runId: 'setup-a', requirements: [] };
+  let callback, button, writes = 0;
+  const document = { activeElement: null, querySelector: key => key === '.content' ? content : null };
+  const content = {
+    dataset: {},
+    firstElementChild: null,
+    contains: node => node != null && node === button,
+    querySelectorAll: () => button ? [button] : [],
+    set innerHTML(html) {
+      writes++;
+      document.activeElement = null;
+      this.firstElementChild = {};
+      button = html.includes('data-ij-route="integrations"') ? {
+        dataset: { ijRoute: 'integrations' },
+        focus() { document.activeElement = this; }
+      } : null;
+    }
+  };
+  const context = vm.createContext({
+    document, window: { location: { href: 'https://fixture.invalid/' } }, URL,
+    ui: { page: 'onboarding' },
+    setTimeout(fn, delay) { if (delay === 12000) callback = fn; return 1; },
+    clearTimeout() {},
+    async fetch(url) {
+      if (url === '/api/implementation/autonomous/status' && status === null)
+        return { status: 403 };
+      const payload = url === '/api/implementation/autonomous/status' ? status : null;
+      return { status: 200, ok: true, json: async () => payload };
+    }
+  });
+  vm.runInContext(source.slice(source.indexOf('const IMPL='), source.indexOf('function stop()')), context);
+  return {
+    start: () => vm.runInContext('load(true)', context),
+    poll: () => callback(),
+    focus: () => button.focus(),
+    focused: () => document.activeElement,
+    writes: () => writes,
+    setStatus(next) { status = next; },
+    status: () => status,
+    detach() { content.firstElementChild = null; button = null; document.activeElement = null; }
+  };
+}
+
+test('an unchanged scheduled poll retains the mounted controls', async () => {
+  const view = pollWorkspace();
+  await view.start();
+  view.focus();
+  const original = view.focused(), writes = view.writes();
+  await view.poll();
+  assert.equal(view.writes(), writes);
+  assert.strictEqual(view.focused(), original);
+});
+
+test('a changed poll redraws once and restores the available navigation control', async () => {
+  const view = pollWorkspace();
+  await view.start();
+  view.focus();
+  const original = view.focused(), writes = view.writes();
+  view.setStatus({ ...view.status(), state: 'AT_RISK' });
+  await view.poll();
+  assert.equal(view.writes(), writes + 1);
+  assert.equal(view.focused()?.dataset.ijRoute, 'integrations');
+  assert.notStrictEqual(view.focused(), original);
+});
+
+test('an identical presentation in a different run is rebuilt without transferring focus', async () => {
+  const view = pollWorkspace();
+  await view.start();
+  view.focus();
+  const writes = view.writes();
+  view.setStatus({ ...view.status(), runId: 'setup-b' });
+  await view.poll();
+  assert.equal(view.writes(), writes + 1);
+  assert.equal(view.focused(), null);
+});
+
+test('polling repaints a detached shell and clears the view after access is lost', async () => {
+  const view = pollWorkspace();
+  await view.start();
+  view.detach();
+  const writes = view.writes();
+  await view.poll();
+  assert.equal(view.writes(), writes + 1);
+  view.focus();
+  view.setStatus(null);
+  await view.poll();
+  assert.equal(view.focused(), null);
+  assert.throws(() => view.focus());
+});
