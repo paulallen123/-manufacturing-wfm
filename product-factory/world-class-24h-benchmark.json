@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "name": "Vector 24-Hour World-Class Benchmark",
+  "claimPolicy": "Do not claim broad competitive superiority. A superiority claim may only be made for a named capability after the corresponding live evidence gate passes.",
+  "benchmarkSet": [
+    "CADDi",
+    "UKG Pro Workforce Management",
+    "Workday Workforce Management",
+    "SAP SuccessFactors Workforce Scheduling",
+    "Legion WFM",
+    "Quinyx"
+  ],
+  "winningDimensions": [
+    {
+      "id": "manufacturing-operating-graph",
+      "target": "Connect people, skills, certifications, availability, shifts, production demand, labour cost, compliance, outcomes and learning in one operational model.",
+      "proof": [
+        "live-role-workflows",
+        "data-lineage",
+        "decision-to-outcome-link"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "zero-human-implementation",
+      "target": "A customer can move from signed contract to configured isolated environment, integrations, validated data, training and handover without routine human implementation work.",
+      "proof": [
+        "recorded-real-cloud-run",
+        "repeatable-replay",
+        "exception-path-evidence"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "integration-fabric",
+      "target": "Discover, connect, map and continuously verify enterprise systems through reusable adapters and safe middleware-compatible patterns.",
+      "proof": [
+        "real-provider-test-where-authorised",
+        "contract-tests",
+        "failure-recovery-proof"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "agentic-operations",
+      "target": "AI explains what matters, why it matters, recommended action, expected impact and can execute bounded approved actions with audit evidence.",
+      "proof": [
+        "permission-bound-action",
+        "source-evidence",
+        "audit-event",
+        "replay-protection"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "verified-value-ledger",
+      "target": "Every savings claim separates identified opportunity from realised/verified value and links to source evidence.",
+      "proof": [
+        "value-source",
+        "attribution",
+        "no-fabricated-value"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "manager-experience",
+      "target": "Role-specific, task-first screens with no unnecessary information, no persistent horizontal overflow and a clear answer to 'so what?' on every data surface.",
+      "proof": [
+        "desktop-browser-proof",
+        "mobile-browser-proof",
+        "keyboard-access",
+        "overflow-gate",
+        "task-completion-evidence"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "employee-experience",
+      "target": "Fast self-service for leave, entitlement, shifts, availability, clocking and status with context before committing actions.",
+      "proof": [
+        "mobile-browser-proof",
+        "leave-balance-proof",
+        "conflict-proof",
+        "accessible-controls"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "manufacturing-optimization",
+      "target": "Optimise staffing against demand, skills, constraints, cost and productivity; extend to agency and energy decisions when evidence is available.",
+      "proof": [
+        "scenario-comparison",
+        "constraint-compliance",
+        "cost-delta-evidence"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "payroll-trust",
+      "target": "Trace payroll-ready outputs back to time/workforce evidence and reconcile expected simulation results without silent error.",
+      "proof": [
+        "10000-employee-50-site-simulation",
+        "reconciliation-receipt",
+        "exception-trace"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "enterprise-quality",
+      "target": "Security, tenant isolation, performance, observability, accessibility, resilience and rollback are automated release gates rather than optional review steps.",
+      "proof": [
+        "security-gates",
+        "performance-evidence",
+        "a11y-evidence",
+        "resilience-evidence",
+        "rollback-evidence"
+      ],
+      "releaseBlocking": true
+    },
+    {
+      "id": "self-evolving-capability",
+      "target": "Vector continuously converts verified customer outcomes, failures and successful trajectories into new evals, reusable skills, automations and product candidates, with independent verification and rollback.",
+      "proof": [
+        "learning-receipts",
+        "holdout-improvement-proof",
+        "skill-version-lineage",
+        "no-direct-production-authority"
+      ],
+      "releaseBlocking": true
+    }
+  ],
+  "tableStakesToMatch": [
+    "demand-forecasting",
+    "skills-and-certification-aware-scheduling",
+    "time-and-attendance",
+    "absence-and-leave",
+    "mobile-self-service",
+    "shift-swaps-and-open-shifts",
+    "labour-compliance",
+    "payroll-ready-time",
+    "multi-site-analytics",
+    "conversational-ai"
+  ],
+  "differentiatorsToProve": [
+    "zero-human-implementation-and-training",
+    "manufacturing-specific-digital-twin",
+    "cross-system-integration-autodiscovery",
+    "decision-to-outcome-learning",
+    "evidence-backed-savings-ledger",
+    "labour-plus-production-plus-energy-value",
+    "bounded-autonomous-support-and-recovery",
+    "governed-self-evolving-product-and-customer-intelligence"
+  ],
+  "releaseRule": "Any failed release-blocking dimension prevents a world-class claim for that dimension. Unknown evidence is not a pass. CADDi parity/beat gates remain UNKNOWN or FAIL until live evidence exists; competitive comparison must never convert aspiration into a claim.",
+  "competitorClasses": {
+    "manufacturingIntelligence": [
+      "CADDi"
+    ],
+    "enterpriseWFM": [
+      "UKG Pro Workforce Management",
+      "Workday Workforce Management",
+      "SAP SuccessFactors Workforce Scheduling",
+      "Legion WFM",
+      "Quinyx"
+    ]
+  },
+  "caddiParityAndBeatGates": [
+    {
+      "id": "manufacturing-data-ingestion",
+      "target": "Ingest and structure ERP, PLM, MES, QMS, CRM, HR, finance, file-server and unstructured manufacturing data without requiring replacement of source systems.",
+      "vectorBeat": "Connect the same manufacturing data to workforce, skills, availability, time, labour cost, agency, compliance and payroll context.",
+      "proof": [
+        "connector-contracts",
+        "schema-lineage",
+        "unstructured-ingestion-proof"
+      ],
+      "status": "UNKNOWN"
+    },
+    {
+      "id": "manufacturing-semantic-layer",
+      "target": "Create traceable semantic relationships across products, parts, processes, defects, suppliers, prices, people and finance.",
+      "vectorBeat": "Extend the graph through worker, skill, certification, line, shift, attendance, labour cost, production output, energy, payroll and decision outcome.",
+      "proof": [
+        "semantic-graph-contract",
+        "cross-domain-query-proof",
+        "source-lineage"
+      ],
+      "status": "UNKNOWN"
+    },
+    {
+      "id": "engineering-product-understanding",
+      "target": "Interpret drawings, BOMs, specifications and product data and identify reusable/similar manufacturing knowledge.",
+      "vectorBeat": "Use engineering/product similarity together with live workforce capability and production constraints to recommend what can actually be built, by whom, when, at what labour/energy cost and risk.",
+      "proof": [
+        "document-understanding-proof",
+        "part-similarity-proof",
+        "workforce-linked-production-proof"
+      ],
+      "status": "UNKNOWN"
+    },
+    {
+      "id": "manufacturing-discovery",
+      "target": "Search manufacturing knowledge across structured and unstructured sources.",
+      "vectorBeat": "One search/AI layer answers engineering, workforce, production, cost, compliance and payroll questions with evidence links.",
+      "proof": [
+        "cross-domain-search-proof",
+        "permission-proof",
+        "evidence-link-proof"
+      ],
+      "status": "UNKNOWN"
+    },
+    {
+      "id": "manufacturing-agents",
+      "target": "AI agents analyse manufacturing data and perform bounded operational tasks.",
+      "vectorBeat": "Agents reason across engineering + workforce + production + finance, then execute permission-bound actions and measure downstream operational/financial outcomes.",
+      "proof": [
+        "agent-reasoning-evidence",
+        "bounded-action-proof",
+        "outcome-attribution-proof"
+      ],
+      "status": "UNKNOWN"
+    },
+    {
+      "id": "workflow-products",
+      "target": "Support design reuse, asset lifecycle, production readiness, design/cost review and quoting workflows.",
+      "vectorBeat": "Add labour readiness, workforce scheduling, skills, attendance, agency labour, payroll controls, energy and implementation/support automation to the same operating graph.",
+      "proof": [
+        "workflow-coverage-proof",
+        "end-to-end-production-run",
+        "financial-attribution"
+      ],
+      "status": "UNKNOWN"
+    },
+    {
+      "id": "closed-learning-loop",
+      "target": "Capture decisions and outcomes so manufacturing knowledge compounds.",
+      "vectorBeat": "Learn the relationship between engineering choice, staffing choice, production result, quality, labour/energy cost and payroll outcome, then improve future recommendations.",
+      "proof": [
+        "decision-outcome-link",
+        "learning-update-proof",
+        "recommendation-improvement-evidence"
+      ],
+      "status": "UNKNOWN"
+    },
+    {
+      "id": "enterprise-proof",
+      "target": "Demonstrate credible scale, security, reliability and customer value.",
+      "vectorBeat": "Pass enterprise WFM + manufacturing intelligence gates together, including 10,000 employees / 50 sites, payroll reconciliation, integrations, resilience and evidence-backed value.",
+      "proof": [
+        "scale-proof",
+        "security-proof",
+        "reliability-proof",
+        "value-ledger-proof"
+      ],
+      "status": "UNKNOWN"
+    }
+  ]
+}

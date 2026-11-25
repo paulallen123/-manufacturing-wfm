@@ -26,6 +26,7 @@ jobs:
           command: |
             mkdir -p circleci-artifacts
             cp *-proof.json circleci-artifacts/ 2>/dev/null || true
+            cp zero-cost-ci-metrics.json circleci-artifacts/ 2>/dev/null || true
 
       - store_artifacts:
           path: circleci-artifacts
