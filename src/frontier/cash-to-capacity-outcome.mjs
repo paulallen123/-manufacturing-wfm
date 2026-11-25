@@ -1,3 +1,5 @@
+import {isProxy} from 'node:util/types';
+
 export const CASH_TO_CAPACITY_OUTCOME_VERSION='cash-to-capacity-outcome-v0.2.0';
 
 const SCOPE_KEYS=['decisionId','tenantId','siteId','legalEntityId','currency'];
@@ -109,8 +111,40 @@ function validateRecord(record){
   return rebuilt.status==='reconciled'&&stable(rebuilt)===stable(record);
 }
 
+// Saved outcome records contain only plain JSON data. Read own descriptors so
+// accessors and custom serializers cannot change evidence between validation
+// and aggregation. Reject proxies before any reflective operation invokes traps.
+function snapshotLearningData(value,ancestors=new Set()){
+  if(value===null||typeof value==='string'||typeof value==='boolean')return value;
+  if(finite(value))return value;
+  if(typeof value!=='object'||isProxy(value)||ancestors.has(value))throw new TypeError('invalid learning data');
+  const array=Array.isArray(value),prototype=Object.getPrototypeOf(value);
+  if(array?prototype!==Array.prototype:prototype!==Object.prototype&&prototype!==null){
+    throw new TypeError('invalid learning prototype');
+  }
+  const descriptors=Object.getOwnPropertyDescriptors(value);
+  const copy=array?[]:Object.create(null);
+  ancestors.add(value);
+  try{
+    for(const key of Reflect.ownKeys(descriptors)){
+      if(array&&key==='length')continue;
+      const descriptor=descriptors[key];
+      if(typeof key!=='string'||!descriptor.enumerable||!Object.hasOwn(descriptor,'value')||
+        (array&&(!/^(0|[1-9]\d*)$/.test(key)||Number(key)>=descriptors.length.value))){
+        throw new TypeError('invalid learning property');
+      }
+      Object.defineProperty(copy,key,{value:snapshotLearningData(descriptor.value,ancestors),enumerable:true});
+    }
+    if(array&&Object.keys(copy).length!==descriptors.length.value)throw new TypeError('sparse learning records');
+    return Object.freeze(copy);
+  }finally{ancestors.delete(value);}
+}
+
 export function learningSummary(records=[]){
-  if(!Array.isArray(records))return {count:0,status:'rejected',reason:'invalid_learning_records'};
+  if(isProxy(records)||!Array.isArray(records))return {count:0,status:'rejected',reason:'invalid_learning_records'};
+  try{records=snapshotLearningData(records);}catch{
+    return {count:0,status:'rejected',reason:'invalid_reconciled_record'};
+  }
   const unique=new Map();
   let learningScope;
   for(const record of records){
